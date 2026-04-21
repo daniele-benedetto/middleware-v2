@@ -1,64 +1,146 @@
-# Sprint: Dev Experience & Quality (Professional Setup)
+# TODO - Fase API (pre-CMS) - struttura ordinata e scalabile
 
-Obiettivo: portare il progetto a uno standard professionale con qualità automatica, fix rapidi e workflow consistente tra team, CI e editor.
+Contesto: Next.js 16 (App Router), Better Auth, Prisma, DB unico in produzione.
 
-## 1) ESLint professionale
+Decisioni gia fissate:
 
-- [x] Consolidare config ESLint per Next.js + TypeScript + import order.
-- [x] Aggiungere regole stricter su errori frequenti (unused vars, no-explicit-any controllato, no-floating-promises dove utile).
-- [x] Abilitare `--max-warnings=0` nello script lint CI.
-- [x] Definire script `lint:fix` per auto-fix locale.
+- Hard delete per tutte le entita.
+- `ADMIN` puo gestire utenti e assegnare ruoli.
+- `EDITOR` puo gestire tutto il resto (dominio editoriale), ma non utenti.
 
-## 2) Formatter / Beautifier
+## 0) Architettura target cartelle (single responsibility)
 
-- [x] Introdurre Prettier con config esplicita (`.prettierrc` + `.prettierignore`).
-- [x] Aggiungere plugin Prettier per sorting/import o usare ESLint-only strategy (scegliere una sola fonte di verità).
-- [x] Definire script `format` e `format:check`.
-- [x] Garantire compatibilità ESLint + Prettier (no conflitti di regole).
+- [ ] Definire e bloccare la struttura server-side API:
+- [ ] - `app/api/v1/.../route.ts` -> solo transport HTTP (parse request, call use-case, map response)
+- [ ] - `lib/server/auth/*` -> sessione + guardie ruolo
+- [ ] - `lib/server/http/*` -> response helpers, error mapping, pagination helpers
+- [ ] - `lib/server/validation/*` -> schemi input/output (Zod)
+- [ ] - `lib/server/modules/users/*`
+- [ ] - `lib/server/modules/issues/*`
+- [ ] - `lib/server/modules/categories/*`
+- [ ] - `lib/server/modules/tags/*`
+- [ ] - `lib/server/modules/articles/*`
+- [ ] - ogni modulo con sottocartelle: `repository`, `service`, `dto`, `schema`, `policy`
+- [ ] Definire regola forte: handler `route.ts` sottili, logica business solo nei service layer.
+- [ ] Marcare moduli server con `import "server-only"` dove opportuno.
 
-## 3) Husky + lint-staged
+## 1) Best practices Next.js 16 per Route Handlers
 
-- [x] Installare Husky e bootstrap hook git.
-- [x] Configurare `pre-commit` con `lint-staged` per file modificati:
-- [x] - ESLint auto-fix
-- [x] - Prettier write
-- [x] - opzionale: `tsc --noEmit` solo su pre-push (non su commit)
-- [x] Configurare `pre-push` con quality gate minimo (`lint` + `tsc` + build veloce se sostenibile).
+- [ ] Standardizzare route handlers su Web `Request/Response` + `Response.json(...)`.
+- [ ] Usare typing Next 16 per params dinamici (`params` Promise / `RouteContext<'/api/...'>`).
+- [ ] Impostare esplicitamente segment config per API CMS:
+- [ ] - `export const runtime = "nodejs"`
+- [ ] - `export const dynamic = "force-dynamic"` per endpoint CMS non cacheabili
+- [ ] Definire policy unica CORS/headers (se necessari client esterni).
+- [ ] Definire policy unica per `OPTIONS` e metodi non consentiti (Allow header coerente).
 
-## 4) Auto-resolve e auto-fix errori
+## 2) Contratto API e convenzioni
 
-- [x] Definire policy: prima auto-fix (`lint:fix`, `format`), poi check bloccanti.
-- [x] Aggiungere script orchestrato `check:all` (lint, typecheck, prisma validate, build).
-- [x] Aggiungere script `fix:all` (format + lint:fix) per recovery rapido.
-- [x] Documentare flusso standard: `fix:all` -> `check:all` -> commit.
+- [ ] Definire standard endpoint (`/api/v1/...`) e naming risorse.
+- [ ] Definire shape risposta comune (`data`, `error`, `meta`, `pagination`).
+- [ ] Definire catalogo errori stabili (`VALIDATION_ERROR`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`).
+- [ ] Definire paginazione unica (cursor o page-based) e mantenerla identica in tutte le list.
+- [ ] Definire sorting/filter contract supportato per ogni risorsa.
 
-## 5) VS Code professional config
+## 3) AuthN/AuthZ (ruoli)
 
-- [x] Creare `.vscode/settings.json` con:
-- [x] - `editor.formatOnSave: true`
-- [x] - `editor.codeActionsOnSave` (`source.fixAll.eslint`, `source.organizeImports`)
-- [x] - formatter predefinito coerente con il repo
-- [x] - validazione ESLint su TS/TSX
-- [x] Creare `.vscode/extensions.json` con estensioni raccomandate (ESLint, Prettier, Prisma).
-- [x] Creare `.vscode/tasks.json` per shortcut (`lint`, `typecheck`, `prisma:validate`).
+- [ ] Implementare middleware/guard server-side per autenticazione.
+- [ ] Implementare policy ruolo centralizzata (`ADMIN`, `EDITOR`).
+- [ ] Formalizzare matrice permessi:
+- [ ] - `ADMIN`: gestione utenti + tutto il dominio editoriale
+- [ ] - `EDITOR`: tutto il dominio editoriale, nessuna gestione utenti
+- [ ] Definire auditing minimo API: `actorId`, `role`, `action`, `resource`, `resourceId`, `timestamp`.
 
-## 6) CI Quality Gate
+## 4) Gestione utenti (solo ADMIN)
 
-- [x] Aggiungere workflow GitHub Actions (`.github/workflows/ci.yml`).
-- [x] Eseguire in CI: install, lint, typecheck, prisma validate, build.
-- [x] Bloccare merge in caso di warning/error se policy strict.
-- [x] Cache pnpm e dipendenze per build ripetibili e veloci.
+- [ ] `GET /users` (list)
+- [ ] `GET /users/:id` (detail)
+- [ ] `POST /users` (create)
+- [ ] `PATCH /users/:id` (update profilo)
+- [ ] `PATCH /users/:id/role` (assegnazione/promozione ruolo da admin)
+- [ ] `DELETE /users/:id` (hard delete)
+- [ ] Garantire blocco totale editor su `/users*` con `403` consistente.
 
-## 7) Convenzioni operative team
+## 5) CRUD core CMS (hard delete)
 
-- [x] Definire naming policy commit e branch.
-- [x] Definire checklist PR minima (schema change, migration, docs, rollback note).
-- [x] Definire policy su migration Prisma in produzione (`migrate deploy` in CI/CD).
-- [x] Documentare tutto in `README.md` e/o `AGENTS.md`.
+### Issue
 
-## Definition of Done
+- [ ] `POST /issues`
+- [ ] `GET /issues`
+- [ ] `GET /issues/:id`
+- [ ] `PATCH /issues/:id`
+- [ ] `DELETE /issues/:id` (hard delete)
 
-- [x] Ogni salvataggio file applica format + fix lint automatici.
-- [x] Ogni commit passa hook locale senza interventi manuali ripetitivi.
-- [x] CI blocca codice non conforme.
-- [x] Setup editor e quality tooling replicabile da zero in <10 minuti.
+### Category
+
+- [ ] `POST /categories`
+- [ ] `GET /categories`
+- [ ] `GET /categories/:id`
+- [ ] `PATCH /categories/:id`
+- [ ] `DELETE /categories/:id` (hard delete)
+
+### Tag
+
+- [ ] `POST /tags`
+- [ ] `GET /tags`
+- [ ] `GET /tags/:id`
+- [ ] `PATCH /tags/:id`
+- [ ] `DELETE /tags/:id` (hard delete)
+
+### Article
+
+- [ ] `POST /articles` con normalizzazione slug.
+- [ ] `GET /articles` con filtri (`status`, `issueId`, `categoryId`, `featured`, `q`) + paginazione.
+- [ ] `GET /articles/:id`
+- [ ] `PATCH /articles/:id`
+- [ ] `DELETE /articles/:id` (hard delete)
+- [ ] `PUT /articles/:id/tags` (sync tag atomico)
+
+## 6) Azioni editoriali (oltre CRUD)
+
+- [ ] `POST /articles/:id/publish` (enforce invarianti publish)
+- [ ] `POST /articles/:id/unpublish`
+- [ ] `POST /articles/:id/archive`
+- [ ] `POST /articles/:id/feature`
+- [ ] `POST /articles/:id/unfeature`
+- [ ] `POST /articles/reorder` (position dentro issue)
+
+## 7) Validazione e integrita applicativa
+
+- [ ] Definire schemi Zod per input/output per ogni endpoint.
+- [ ] Enforce invarianti nel service layer:
+- [ ] - `publishedAt` valorizzato solo con `status = PUBLISHED`
+- [ ] - slug sempre normalizzato prima del write
+- [ ] - unicita slug per issue con gestione conflict pulita
+- [ ] Usare transazioni Prisma per update composti (`article + tags + status`).
+
+## 8) Performance, sicurezza, operativita
+
+- [ ] Definire limite massimo `pageSize` e default robusti.
+- [ ] Definire rate-limit baseline per endpoint write/sensibili.
+- [ ] Verificare query principali rispetto agli indici attuali.
+- [ ] Definire idempotenza minima per endpoint critici (publish/reorder se richiesto).
+- [ ] Definire policy log errori (no leak di dettagli sensibili verso client).
+
+## 9) Testing API
+
+- [ ] Introdurre test integration API (auth, CRUD, publish flow, slug conflict).
+- [ ] Test autorizzazioni: admin allowed / editor forbidden su users.
+- [ ] Test invarianti dominio (`publishedAt/status`, slug).
+- [ ] Smoke test manuale con collezione HTTP (Bruno/Postman/Insomnia).
+
+## 10) Documentazione tecnica API
+
+- [ ] Aggiornare `README.md` con struttura cartelle API e convenzioni.
+- [ ] Documentare matrice permessi ruoli.
+- [ ] Documentare payload request/response reali per frontend CMS.
+- [ ] Documentare casi d'errore e codici HTTP per endpoint.
+
+## Definition of Ready - Inizio sviluppo CMS UI
+
+- [ ] Struttura cartelle API applicata e consistente (single responsibility reale).
+- [ ] CRUD completo per `Issue`, `Category`, `Tag`, `Article`.
+- [ ] Endpoint utenti disponibili e accessibili solo ad `ADMIN` (incluso `PATCH /users/:id/role`).
+- [ ] Hard delete implementato e testato su tutte le risorse.
+- [ ] Azioni editoriali (`publish/archive/feature/reorder`) operative.
+- [ ] Error model + validazione + autorizzazioni coerenti e documentate.

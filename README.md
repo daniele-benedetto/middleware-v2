@@ -29,11 +29,10 @@ Required vars:
 pnpm install
 pnpm prisma:format
 pnpm prisma:validate
-pnpm prisma:migrate --name init_db
 pnpm prisma:generate
 ```
 
-If the database is already provisioned, the migration command applies pending migrations.
+Current setup runs with a single database as source of truth (Vercel auto-deploy).
 
 ## Development commands
 
@@ -83,6 +82,22 @@ Naming conventions used in schema:
 - Create new tables/columns with backward-compatible migrations first.
 - Avoid destructive renames/drops in one step; prefer add -> backfill -> switch reads/writes -> drop later.
 - Use `pnpm prisma:migrate --name <change_name>` for versioned changes.
+
+## Data rules (current phase)
+
+- `Article.slug` is unique within an issue (`@@unique([issueId, slug])`).
+- Slug normalization is handled in API layer before write: lowercase, trim, hyphenate.
+- `Article.publishedAt` is an API-layer invariant: set only when status is `PUBLISHED`.
+- `contentRich` and `audioChunks` are JSON payloads and should be evolved with backward-compatible versioned structures.
+
+## Definition of Ready (next phase: API)
+
+Before starting API implementation, keep these conditions true:
+
+- Prisma schema is stable and reviewed against editorial flow.
+- Slug/status/auth-ID decisions are documented and unchanged.
+- Query indexes for listing and publish flows are confirmed.
+- README + AGENTS reflect the real single-env operating model.
 
 ## Team workflow conventions
 
