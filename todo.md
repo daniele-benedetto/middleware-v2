@@ -1,74 +1,64 @@
-# Sprint DB Foundation (Postgres + Prisma + Better Auth)
+# Sprint: Dev Experience & Quality (Professional Setup)
 
-Obiettivo: impostare una base dati pulita, con naming coerente, schema semplice ma scalabile, pronta per il backend applicativo.
+Obiettivo: portare il progetto a uno standard professionale con qualità automatica, fix rapidi e workflow consistente tra team, CI e editor.
 
-## Principi dello sprint
-- Nomi espliciti e consistenti (modelli, colonne, enum, relazioni).
-- Struttura minimale: aggiungere solo ciò che serve davvero oggi, lasciando estensioni chiare.
-- Vincoli e indici pensati sulle query reali (listing, publish, auth, taxonomy).
-- Migrazioni ripetibili e sicure (`migrate dev` in locale, SQL tracciato).
+## 1) ESLint professionale
 
-## Scope (in)
-- Setup Postgres locale/dev + `DATABASE_URL`.
-- Setup Prisma (`schema.prisma`, client generation, prima migration).
-- Setup Better Auth models (`User`, `Session`, `Account`, `Verification`) compatibili e stabili.
-- Dominio CMS base: `Issue`, `Category`, `Tag`, `Article`, `ArticleTag`.
-- Enum editoriali e ruoli utente.
-- Indici/unique principali e policy `onDelete` coerenti.
+- [x] Consolidare config ESLint per Next.js + TypeScript + import order.
+- [x] Aggiungere regole stricter su errori frequenti (unused vars, no-explicit-any controllato, no-floating-promises dove utile).
+- [x] Abilitare `--max-warnings=0` nello script lint CI.
+- [x] Definire script `lint:fix` per auto-fix locale.
 
-## Out of scope (ora)
-- API/backend handlers completi.
-- UI admin completa.
-- Ricerca full-text avanzata.
-- CDN/media processing pipeline.
+## 2) Formatter / Beautifier
 
-## TODO
+- [x] Introdurre Prettier con config esplicita (`.prettierrc` + `.prettierignore`).
+- [x] Aggiungere plugin Prettier per sorting/import o usare ESLint-only strategy (scegliere una sola fonte di verità).
+- [x] Definire script `format` e `format:check`.
+- [x] Garantire compatibilità ESLint + Prettier (no conflitti di regole).
 
-### 1) Infrastruttura DB e env
-- [ ] Definire `DATABASE_URL` per ambiente locale.
-- [ ] Avviare Postgres in locale (container o servizio) con credenziali documentate.
-- [ ] Verificare connessione DB con Prisma (`pnpm exec prisma validate`).
+## 3) Husky + lint-staged
 
-### 2) Prisma base
-- [ ] Configurare `datasource db` con `provider = "postgresql"` e `url = env("DATABASE_URL")`.
-- [ ] Confermare `generator client` e path output condiviso dal progetto.
-- [ ] Aggiungere script npm/pnpm utili (`prisma:generate`, `prisma:migrate`, `prisma:studio`, `prisma:format`).
+- [x] Installare Husky e bootstrap hook git.
+- [x] Configurare `pre-commit` con `lint-staged` per file modificati:
+- [x] - ESLint auto-fix
+- [x] - Prettier write
+- [x] - opzionale: `tsc --noEmit` solo su pre-push (non su commit)
+- [x] Configurare `pre-push` con quality gate minimo (`lint` + `tsc` + build veloce se sostenibile).
 
-### 3) Better Auth data layer
-- [ ] Validare naming e campi dei modelli auth rispetto all’adapter Better Auth usato.
-- [ ] Definire gestione `id` (UUID default vs valore assegnato dall’adapter) e applicarla in modo coerente.
-- [ ] Verificare vincoli chiave: `email` unique, token/session unique, provider/account unique.
-- [ ] Verificare cascading corretto: delete user => delete session/account.
+## 4) Auto-resolve e auto-fix errori
 
-### 4) Dominio CMS
-- [ ] Validare enum `UserRole` e `ArticleStatus` per workflow editoriale.
-- [ ] Confermare relazione `Article -> Issue/Category/Author` con `onDelete: Restrict`.
-- [ ] Confermare unique slug (`Issue.slug`, `Category.slug`, `Tag.slug`, `Article(issueId, slug)`).
-- [ ] Confermare pivot `ArticleTag` con PK composta e indice su `tagId`.
-- [ ] Validare campi media/contenuto (`contentRich`, `audioChunks`) e nullable policy.
+- [x] Definire policy: prima auto-fix (`lint:fix`, `format`), poi check bloccanti.
+- [x] Aggiungere script orchestrato `check:all` (lint, typecheck, prisma validate, build).
+- [x] Aggiungere script `fix:all` (format + lint:fix) per recovery rapido.
+- [x] Documentare flusso standard: `fix:all` -> `check:all` -> commit.
 
-### 5) Migrazioni e qualità
-- [ ] Eseguire `pnpm exec prisma format`.
-- [ ] Creare prima migration (`pnpm exec prisma migrate dev --name init_db`).
-- [ ] Generare client (`pnpm exec prisma generate`).
-- [ ] Verificare drift/schema (`pnpm exec prisma migrate status`).
-- [ ] Eseguire check repository: `pnpm lint` + `pnpm exec tsc --noEmit`.
+## 5) VS Code professional config
 
-### 6) Documentazione tecnica minima
-- [ ] Aggiornare `README.md` con setup DB locale e comandi Prisma.
-- [ ] Documentare convenzioni naming (singolare/plurale, snake/camel, mapping `@@map`).
-- [ ] Aggiungere nota su come introdurre nuove tabelle senza rompere compatibilità.
+- [x] Creare `.vscode/settings.json` con:
+- [x] - `editor.formatOnSave: true`
+- [x] - `editor.codeActionsOnSave` (`source.fixAll.eslint`, `source.organizeImports`)
+- [x] - formatter predefinito coerente con il repo
+- [x] - validazione ESLint su TS/TSX
+- [x] Creare `.vscode/extensions.json` con estensioni raccomandate (ESLint, Prettier, Prisma).
+- [x] Creare `.vscode/tasks.json` per shortcut (`lint`, `typecheck`, `prisma:validate`).
 
-## Definition of Done (DoD)
-- [ ] Schema Prisma valido e formattato.
-- [ ] Migration iniziale applicata con successo su Postgres locale.
-- [ ] Prisma Client generato e importabile dal progetto.
-- [ ] Better Auth pronto lato data layer (modelli + vincoli verificati).
-- [ ] README aggiornato con setup e comandi minimi.
-- [ ] Lint e typecheck verdi.
+## 6) CI Quality Gate
 
-## Decision log (da compilare durante lo sprint)
-- [ ] ID strategy auth models:
-- [ ] Stati editoriali finali:
-- [ ] Regola slug finale (globale vs per issue):
-- [ ] Strategia per future migration breaking:
+- [x] Aggiungere workflow GitHub Actions (`.github/workflows/ci.yml`).
+- [x] Eseguire in CI: install, lint, typecheck, prisma validate, build.
+- [x] Bloccare merge in caso di warning/error se policy strict.
+- [x] Cache pnpm e dipendenze per build ripetibili e veloci.
+
+## 7) Convenzioni operative team
+
+- [x] Definire naming policy commit e branch.
+- [x] Definire checklist PR minima (schema change, migration, docs, rollback note).
+- [x] Definire policy su migration Prisma in produzione (`migrate deploy` in CI/CD).
+- [x] Documentare tutto in `README.md` e/o `AGENTS.md`.
+
+## Definition of Done
+
+- [x] Ogni salvataggio file applica format + fix lint automatici.
+- [x] Ogni commit passa hook locale senza interventi manuali ripetitivi.
+- [x] CI blocca codice non conforme.
+- [x] Setup editor e quality tooling replicabile da zero in <10 minuti.

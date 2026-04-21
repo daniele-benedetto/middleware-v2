@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "lint",
+      "type": "shell",
+      "command": "pnpm lint",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "typecheck",
+      "type": "shell",
+      "command": "pnpm typecheck",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "prisma:validate",
+      "type": "shell",
+      "command": "pnpm prisma:validate",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "check:all",
+      "type": "shell",
+      "command": "pnpm check:all",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}
