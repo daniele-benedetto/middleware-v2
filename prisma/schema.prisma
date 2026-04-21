@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String?
+  role          UserRole @default(EDITOR)
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions         Session[]
+  accounts         Account[]
+  authoredArticles Article[] @relation("ArticleAuthor")
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Issue {
+  id          String    @id @default(uuid())
+  title       String
+  slug        String    @unique
+  description String?
+  coverUrl    String?
+  color       String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  articles Article[]
+
+  @@index([isActive, sortOrder])
+  @@index([publishedAt])
+  @@map("issues")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  articles Article[]
+
+  @@index([isActive])
+  @@map("categories")
+}
+
+model Tag {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  articles ArticleTag[]
+
+  @@index([isActive])
+  @@map("tags")
+}
+
+model Article {
+  id          String        @id @default(uuid())
+  issueId     String
+  categoryId  String
+  authorId    String
+  status      ArticleStatus @default(DRAFT)
+  isFeatured  Boolean       @default(false)
+  position    Int           @default(0)
+  publishedAt DateTime?
+
+  title       String
+  slug        String
+  excerpt     String?
+  contentRich Json
+
+  imageUrl    String?
+  audioUrl    String?
+  audioChunks Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  issue    Issue        @relation(fields: [issueId], references: [id], onDelete: Restrict)
+  category Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  author   User         @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  tags     ArticleTag[]
+
+  @@unique([issueId, slug])
+  @@index([slug])
+  @@index([issueId, position])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([status, publishedAt])
+  @@index([status, isFeatured])
+  @@map("articles")
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+  createdAt DateTime @default(now())
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@index([tagId])
+  @@map("article_tags")
+}
