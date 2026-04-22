@@ -3,8 +3,12 @@ import { USER_ROLES } from "@/lib/server/auth/roles";
 import { noContent, ok } from "@/lib/server/http/api-response";
 import { getIdParam } from "@/lib/server/http/params";
 import { withRoute } from "@/lib/server/http/route";
-import { categoriesService } from "@/lib/server/modules/categories";
-import { updateCategoryInputSchema } from "@/lib/server/modules/categories/schema";
+import {
+  categoriesService,
+  categoryDtoSchema,
+  updateCategoryInputSchema,
+} from "@/lib/server/modules/categories";
+import { parseOutput } from "@/lib/server/validation/output";
 import { parseJsonBody } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
@@ -20,7 +24,7 @@ export async function GET(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
-    const data = await categoriesService.getById(id);
+    const data = parseOutput(await categoriesService.getById(id), categoryDtoSchema);
 
     return ok(data);
   });
@@ -31,7 +35,7 @@ export async function PATCH(request: Request, context: RouteParams) {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
     const input = await parseJsonBody(request, updateCategoryInputSchema);
-    const data = await categoriesService.update(id, input);
+    const data = parseOutput(await categoriesService.update(id, input), categoryDtoSchema);
 
     return ok(data);
   });

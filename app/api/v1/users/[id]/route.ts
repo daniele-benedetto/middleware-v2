@@ -3,8 +3,13 @@ import { USER_ROLES } from "@/lib/server/auth/roles";
 import { noContent, ok } from "@/lib/server/http/api-response";
 import { getIdParam } from "@/lib/server/http/params";
 import { withRoute } from "@/lib/server/http/route";
-import { usersService } from "@/lib/server/modules/users";
-import { updateUserInputSchema } from "@/lib/server/modules/users/schema";
+import {
+  updateUserInputSchema,
+  userDetailDtoSchema,
+  userListItemDtoSchema,
+  usersService,
+} from "@/lib/server/modules/users";
+import { parseOutput } from "@/lib/server/validation/output";
 import { parseJsonBody } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
@@ -18,7 +23,7 @@ export async function GET(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, [USER_ROLES.ADMIN]);
     const id = await getIdParam(context.params);
-    const data = await usersService.getById(id);
+    const data = parseOutput(await usersService.getById(id), userDetailDtoSchema);
 
     return ok(data);
   });
@@ -29,7 +34,7 @@ export async function PATCH(request: Request, context: RouteParams) {
     await requireRole(request, [USER_ROLES.ADMIN]);
     const id = await getIdParam(context.params);
     const input = await parseJsonBody(request, updateUserInputSchema);
-    const data = await usersService.update(id, input);
+    const data = parseOutput(await usersService.update(id, input), userListItemDtoSchema);
 
     return ok(data);
   });

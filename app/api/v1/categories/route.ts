@@ -3,8 +3,13 @@ import { USER_ROLES } from "@/lib/server/auth/roles";
 import { created, ok } from "@/lib/server/http/api-response";
 import { parsePagination } from "@/lib/server/http/pagination";
 import { withRoute } from "@/lib/server/http/route";
-import { categoriesService } from "@/lib/server/modules/categories";
-import { createCategoryInputSchema } from "@/lib/server/modules/categories/schema";
+import {
+  categoriesListDtoSchema,
+  categoriesService,
+  categoryDtoSchema,
+  createCategoryInputSchema,
+} from "@/lib/server/modules/categories";
+import { parseOutput } from "@/lib/server/validation/output";
 import { parseJsonBody } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
@@ -16,7 +21,7 @@ export async function GET(request: Request) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const pagination = parsePagination(new URL(request.url).searchParams);
-    const data = await categoriesService.list();
+    const data = parseOutput(await categoriesService.list(), categoriesListDtoSchema);
 
     return ok(data, {
       pagination: {
@@ -32,7 +37,7 @@ export async function POST(request: Request) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const input = await parseJsonBody(request, createCategoryInputSchema);
-    const data = await categoriesService.create(input);
+    const data = parseOutput(await categoriesService.create(input), categoryDtoSchema);
 
     return created(data);
   });

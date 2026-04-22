@@ -82,7 +82,7 @@ Decisioni gia fissate:
 ## 7) Validazione e integrita applicativa
 
 - [x] Definire e integrare schemi Zod di input in tutti gli endpoint write (`POST`/`PATCH`/`PUT`).
-- [ ] Definire schemi Zod di output per risposte API principali.
+- [x] Definire e integrare schemi Zod di output per risposte API principali.
 - [ ] Enforce invarianti nel service layer:
 - [ ] - `publishedAt` valorizzato solo con `status = PUBLISHED`
 - [ ] - slug sempre normalizzato prima del write

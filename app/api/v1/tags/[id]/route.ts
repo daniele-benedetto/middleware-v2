@@ -3,8 +3,8 @@ import { USER_ROLES } from "@/lib/server/auth/roles";
 import { noContent, ok } from "@/lib/server/http/api-response";
 import { getIdParam } from "@/lib/server/http/params";
 import { withRoute } from "@/lib/server/http/route";
-import { tagsService } from "@/lib/server/modules/tags";
-import { updateTagInputSchema } from "@/lib/server/modules/tags/schema";
+import { tagDtoSchema, tagsService, updateTagInputSchema } from "@/lib/server/modules/tags";
+import { parseOutput } from "@/lib/server/validation/output";
 import { parseJsonBody } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ export async function GET(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
-    const data = await tagsService.getById(id);
+    const data = parseOutput(await tagsService.getById(id), tagDtoSchema);
 
     return ok(data);
   });
@@ -31,7 +31,7 @@ export async function PATCH(request: Request, context: RouteParams) {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
     const input = await parseJsonBody(request, updateTagInputSchema);
-    const data = await tagsService.update(id, input);
+    const data = parseOutput(await tagsService.update(id, input), tagDtoSchema);
 
     return ok(data);
   });

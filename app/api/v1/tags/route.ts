@@ -3,8 +3,13 @@ import { USER_ROLES } from "@/lib/server/auth/roles";
 import { created, ok } from "@/lib/server/http/api-response";
 import { parsePagination } from "@/lib/server/http/pagination";
 import { withRoute } from "@/lib/server/http/route";
-import { tagsService } from "@/lib/server/modules/tags";
-import { createTagInputSchema } from "@/lib/server/modules/tags/schema";
+import {
+  createTagInputSchema,
+  tagDtoSchema,
+  tagsListDtoSchema,
+  tagsService,
+} from "@/lib/server/modules/tags";
+import { parseOutput } from "@/lib/server/validation/output";
 import { parseJsonBody } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
@@ -16,7 +21,7 @@ export async function GET(request: Request) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const pagination = parsePagination(new URL(request.url).searchParams);
-    const data = await tagsService.list();
+    const data = parseOutput(await tagsService.list(), tagsListDtoSchema);
 
     return ok(data, {
       pagination: {
@@ -32,7 +37,7 @@ export async function POST(request: Request) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const input = await parseJsonBody(request, createTagInputSchema);
-    const data = await tagsService.create(input);
+    const data = parseOutput(await tagsService.create(input), tagDtoSchema);
 
     return created(data);
   });

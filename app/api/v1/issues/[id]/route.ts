@@ -3,8 +3,8 @@ import { USER_ROLES } from "@/lib/server/auth/roles";
 import { noContent, ok } from "@/lib/server/http/api-response";
 import { getIdParam } from "@/lib/server/http/params";
 import { withRoute } from "@/lib/server/http/route";
-import { issuesService } from "@/lib/server/modules/issues";
-import { updateIssueInputSchema } from "@/lib/server/modules/issues/schema";
+import { issueDtoSchema, issuesService, updateIssueInputSchema } from "@/lib/server/modules/issues";
+import { parseOutput } from "@/lib/server/validation/output";
 import { parseJsonBody } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ export async function GET(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
-    const data = await issuesService.getById(id);
+    const data = parseOutput(await issuesService.getById(id), issueDtoSchema);
 
     return ok(data);
   });
@@ -31,7 +31,7 @@ export async function PATCH(request: Request, context: RouteParams) {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
     const input = await parseJsonBody(request, updateIssueInputSchema);
-    const data = await issuesService.update(id, input);
+    const data = parseOutput(await issuesService.update(id, input), issueDtoSchema);
 
     return ok(data);
   });

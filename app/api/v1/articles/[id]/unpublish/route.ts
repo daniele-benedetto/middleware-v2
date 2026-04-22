@@ -3,7 +3,8 @@ import { USER_ROLES } from "@/lib/server/auth/roles";
 import { ok } from "@/lib/server/http/api-response";
 import { getIdParam } from "@/lib/server/http/params";
 import { withRoute } from "@/lib/server/http/route";
-import { articlesService } from "@/lib/server/modules/articles";
+import { articleDtoSchema, articlesService } from "@/lib/server/modules/articles";
+import { parseOutput } from "@/lib/server/validation/output";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export async function POST(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
-    const data = await articlesService.unpublish(id);
+    const data = parseOutput(await articlesService.unpublish(id), articleDtoSchema);
 
     return ok(data);
   });
