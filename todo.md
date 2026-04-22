@@ -14,7 +14,7 @@ Decisioni gia fissate:
 
 ## 3) AuthN/AuthZ (ruoli)
 
-- [ ] Collegare il ruolo reale utente in sessione Better Auth e applicare enforcement completo delle policy.
+- [x] Collegare il ruolo reale utente in sessione Better Auth e applicare enforcement completo delle policy.
 - [ ] Definire auditing minimo API: `actorId`, `role`, `action`, `resource`, `resourceId`, `timestamp`.
 
 ## 4) Gestione utenti (solo ADMIN)

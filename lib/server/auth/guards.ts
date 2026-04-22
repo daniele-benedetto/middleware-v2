@@ -19,9 +19,8 @@ export async function requireRole(
   allowedRoles: UserRole[],
 ): Promise<AuthSession> {
   const session = await requireSession(request);
-  const role = session.user.role;
 
-  if (!role || !allowedRoles.includes(role)) {
+  if (!allowedRoles.includes(session.user.role)) {
     throw new ApiError(403, "FORBIDDEN", "Insufficient permissions");
   }
 
