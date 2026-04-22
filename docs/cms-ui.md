@@ -133,6 +133,11 @@ PR requirement:
 - `CmsBodyText`: editorial/body text (`size=md|lg`, `tone=foreground|muted|accent`)
 - `CmsSurface`: reusable panel surface (`border=default|strong`, `spacing=none|md|lg`)
 - `CmsActionButton`: standard CMS action states and tones (`primary|secondary|danger`)
+- `CmsDataTableShell` + `cmsTableClasses`: wrap shadcn `Table` con parity SG sezione 08
+  - Default table: `headerRow` (bg ink, border 2px), `headerCell` (mono 10px crema, divisori cream/15)
+  - Sortable: `sortableHeaderRow` (bg crema-dk) + `sortableHeaderCell` + `sortableHeaderCellActive` (testo accent) + icona `<CmsSortIcon direction="asc|desc|null" />`
+  - Body: `bodyRow` (alt bianco/crema-dk, hover bg accent + testo bianco), `bodyRowArchived` (bg crema-dk)
+  - Cells: `bodyCellTitle` (Newsreader 15), `bodyCellMeta` (mono 11 ink-60), `bodyCellNumeric` (right-aligned mono), `bodyCellBadge` (host per `CmsBadge variant="status-*"`), variante `*Archived` con testo ink-30 italic
 
 Rule:
 

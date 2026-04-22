@@ -8,7 +8,7 @@ const cmsSurfaceVariants = cva("bg-background", {
   variants: {
     border: {
       default: "border border-foreground",
-      strong: "border-[3px] border-foreground",
+      strong: "border-[1px] border-foreground",
       none: "",
     },
     spacing: {

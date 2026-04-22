@@ -8,9 +8,10 @@ import {
 } from "@/components/cms/common";
 import {
   CmsActionButton,
+  CmsBadge,
   CmsDataTableShell,
-  CmsEyebrow,
   CmsPageHeader,
+  cmsTableClasses,
 } from "@/components/cms/primitives";
 import {
   Table,
@@ -57,31 +58,21 @@ export function CmsResourcePage({ title, subtitle }: CmsResourcePageProps) {
           />
         }
         table={
-          <Table>
+          <Table className={cmsTableClasses.table}>
             <TableHeader>
-              <TableRow className="border-b-foreground hover:bg-transparent">
-                <TableHead>
-                  <CmsEyebrow>{text.tableName}</CmsEyebrow>
-                </TableHead>
-                <TableHead>
-                  <CmsEyebrow>{text.tableStatus}</CmsEyebrow>
-                </TableHead>
-                <TableHead>
-                  <CmsEyebrow>{text.tableUpdated}</CmsEyebrow>
-                </TableHead>
+              <TableRow className={cmsTableClasses.headerRow}>
+                <TableHead className={cmsTableClasses.headerCell}>{text.tableName}</TableHead>
+                <TableHead className={cmsTableClasses.headerCell}>{text.tableStatus}</TableHead>
+                <TableHead className={cmsTableClasses.headerCell}>{text.tableUpdated}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow className="border-b-foreground hover:bg-secondary">
-                <TableCell className="text-[16px] leading-[1.55] text-foreground">
-                  {text.sampleRow}
+              <TableRow className={cmsTableClasses.bodyRow}>
+                <TableCell className={cmsTableClasses.bodyCellTitle}>{text.sampleRow}</TableCell>
+                <TableCell className={cmsTableClasses.bodyCellBadge}>
+                  <CmsBadge variant="status-draft">{text.draft}</CmsBadge>
                 </TableCell>
-                <TableCell>
-                  <CmsEyebrow tone="accent">{text.draft}</CmsEyebrow>
-                </TableCell>
-                <TableCell>
-                  <CmsEyebrow>{text.today}</CmsEyebrow>
-                </TableCell>
+                <TableCell className={cmsTableClasses.bodyCellMeta}>{text.today}</TableCell>
               </TableRow>
             </TableBody>
           </Table>

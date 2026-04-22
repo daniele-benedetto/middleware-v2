@@ -18,26 +18,13 @@ Approccio: refactor incrementale per singolo componente/aspetto con verifica pun
 
 Checklist componenti ancora da implementare/refactorare (ordine consigliato):
 
-- [ ] Tabella (SG 08): tabella dati default, tabella con header ordinabile + hover riga accent
-- [ ] Overlay & Accordion (SG 09): modal/dialog, accordion sezioni espandibili
 - [ ] Layout visivo (SG 01-03): masthead, footer
 - [ ] Composite form: full subscription form (composizione di primitive gia pronte)
 - [ ] Voice & tone blocks (SG 10): rule-grid content components
 
 Riferimento puntuale per il dettaglio completo: `docs/style-guide-component-catalog.md`
 
-### Step 1 - Tabella (SG sezione 08)
-
-- [ ] Aggiornare `cmsTableClasses` o creare `CmsDataTable` con header bg ink + testo cream, righe alternate bianco/crema-dk, riga archiviata italic ink-30.
-- [ ] Implementare sorting header (↕/↓) e hover row bg accent + testo bianco.
-- [ ] Integrare stato badge (gia disponibile in `CmsBadge variant="status-*"`).
-
-### Step 2 - Overlay & Accordion (SG sezione 09)
-
-- [ ] Refactor `CmsConfirmDialog` per parity SG: overlay `rgba(10,10,10,0.45)`, bordo 2px nero, header bg nero + `×` bianco, footer info mono opzionale.
-- [ ] Introdurre `CmsAccordion` (wrap shadcn Accordion) con item aperto bg nero + testo bianco, chiuso bg crema, numerazione mono rosso.
-
-### Step 3 - Governance e quality gate per componente
+### Step 1 - Governance e quality gate per componente
 
 - [ ] Per ogni componente refactorato: checklist parity compilata in PR.
 - [ ] Aggiornare `docs/cms-ui.md` con API/usage di ogni primitive nuova.
