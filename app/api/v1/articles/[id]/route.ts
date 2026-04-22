@@ -4,8 +4,8 @@ import { noContent, ok } from "@/lib/server/http/api-response";
 import { getIdParam } from "@/lib/server/http/params";
 import { withRoute } from "@/lib/server/http/route";
 import { articlesService } from "@/lib/server/modules/articles";
-
-import type { UpdateArticleInput } from "@/lib/server/modules/articles";
+import { updateArticleInputSchema } from "@/lib/server/modules/articles/schema";
+import { parseJsonBody } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,7 +30,7 @@ export async function PATCH(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
-    const input = (await request.json()) as UpdateArticleInput;
+    const input = await parseJsonBody(request, updateArticleInputSchema);
     const data = await articlesService.update(id, input);
 
     return ok(data);

@@ -4,8 +4,8 @@ import { created, ok } from "@/lib/server/http/api-response";
 import { parsePagination } from "@/lib/server/http/pagination";
 import { withRoute } from "@/lib/server/http/route";
 import { tagsService } from "@/lib/server/modules/tags";
-
-import type { CreateTagInput } from "@/lib/server/modules/tags";
+import { createTagInputSchema } from "@/lib/server/modules/tags/schema";
+import { parseJsonBody } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
-    const input = (await request.json()) as CreateTagInput;
+    const input = await parseJsonBody(request, createTagInputSchema);
     const data = await tagsService.create(input);
 
     return created(data);

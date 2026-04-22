@@ -4,8 +4,8 @@ import { created, ok } from "@/lib/server/http/api-response";
 import { parsePagination } from "@/lib/server/http/pagination";
 import { withRoute } from "@/lib/server/http/route";
 import { articlesService } from "@/lib/server/modules/articles";
-
-import type { CreateArticleInput } from "@/lib/server/modules/articles";
+import { createArticleInputSchema } from "@/lib/server/modules/articles/schema";
+import { parseJsonBody } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
-    const input = (await request.json()) as CreateArticleInput;
+    const input = await parseJsonBody(request, createArticleInputSchema);
     const data = await articlesService.create(input);
 
     return created(data);

@@ -8,10 +8,6 @@ Decisioni gia fissate:
 - `ADMIN` puo gestire utenti e assegnare ruoli.
 - `EDITOR` puo gestire tutto il resto (dominio editoriale), ma non utenti.
 
-## 0) Base da completare
-
-- [ ] Definire schemi Zod in `lib/server/validation/*` (input/output) e integrarli in tutti gli handler.
-
 ## 2) Contratto API e convenzioni
 
 - [ ] Definire standard endpoint (`/api/v1/...`) e naming risorse.
@@ -85,7 +81,8 @@ Decisioni gia fissate:
 
 ## 7) Validazione e integrita applicativa
 
-- [ ] Definire schemi Zod per input/output per ogni endpoint.
+- [x] Definire e integrare schemi Zod di input in tutti gli endpoint write (`POST`/`PATCH`/`PUT`).
+- [ ] Definire schemi Zod di output per risposte API principali.
 - [ ] Enforce invarianti nel service layer:
 - [ ] - `publishedAt` valorizzato solo con `status = PUBLISHED`
 - [ ] - slug sempre normalizzato prima del write

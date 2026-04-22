@@ -4,8 +4,8 @@ import { ok } from "@/lib/server/http/api-response";
 import { getIdParam } from "@/lib/server/http/params";
 import { withRoute } from "@/lib/server/http/route";
 import { articlesService } from "@/lib/server/modules/articles";
-
-import type { SyncArticleTagsInput } from "@/lib/server/modules/articles";
+import { syncArticleTagsInputSchema } from "@/lib/server/modules/articles/schema";
+import { parseJsonBody } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export async function PUT(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
-    const input = (await request.json()) as SyncArticleTagsInput;
+    const input = await parseJsonBody(request, syncArticleTagsInputSchema);
     const data = await articlesService.syncTags(id, input);
 
     return ok(data);

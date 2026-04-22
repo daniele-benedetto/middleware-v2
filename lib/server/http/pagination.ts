@@ -1,3 +1,7 @@
+import { z } from "zod";
+
+import { parseWithZod } from "@/lib/server/validation/parse";
+
 export type PaginationParams = {
   page: number;
   pageSize: number;
@@ -7,15 +11,19 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
 
+const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(DEFAULT_PAGE),
+  pageSize: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
+});
+
 export function parsePagination(searchParams: URLSearchParams): PaginationParams {
-  const rawPage = Number(searchParams.get("page") ?? DEFAULT_PAGE);
-  const rawPageSize = Number(searchParams.get("pageSize") ?? DEFAULT_PAGE_SIZE);
+  const result = parseWithZod(
+    {
+      page: searchParams.get("page") ?? undefined,
+      pageSize: searchParams.get("pageSize") ?? undefined,
+    },
+    paginationSchema,
+  );
 
-  const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.trunc(rawPage) : DEFAULT_PAGE;
-  const pageSize =
-    Number.isFinite(rawPageSize) && rawPageSize > 0
-      ? Math.min(Math.trunc(rawPageSize), MAX_PAGE_SIZE)
-      : DEFAULT_PAGE_SIZE;
-
-  return { page, pageSize };
+  return { page: result.page, pageSize: result.pageSize };
 }

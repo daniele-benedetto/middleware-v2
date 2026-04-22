@@ -1,30 +1,42 @@
+import { z } from "zod";
+
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 
-export type CreateArticleInput = {
-  issueId: string;
-  categoryId: string;
-  authorId: string;
-  title: string;
-  slug: string;
-  excerpt?: string;
-  contentRich: unknown;
-  imageUrl?: string;
-  audioUrl?: string;
-  audioChunks?: unknown;
-};
+export const createArticleInputSchema = z.object({
+  issueId: z.string().uuid(),
+  categoryId: z.string().uuid(),
+  authorId: z.string().uuid(),
+  title: z.string().trim().min(1),
+  slug: z.string().trim().min(1),
+  excerpt: z.string().trim().optional(),
+  contentRich: z.unknown(),
+  imageUrl: z.string().trim().url().optional(),
+  audioUrl: z.string().trim().url().optional(),
+  audioChunks: z.unknown().optional(),
+});
 
-export type UpdateArticleInput = Partial<CreateArticleInput> & {
-  status?: ArticleStatus;
-  publishedAt?: Date | null;
-  isFeatured?: boolean;
-  position?: number;
-};
+export const updateArticleInputSchema = createArticleInputSchema
+  .partial()
+  .extend({
+    status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"] satisfies ArticleStatus[]).optional(),
+    publishedAt: z.coerce.date().nullable().optional(),
+    isFeatured: z.boolean().optional(),
+    position: z.number().int().min(0).optional(),
+  })
+  .refine((input) => Object.keys(input).length > 0, {
+    message: "At least one field is required",
+  });
 
-export type SyncArticleTagsInput = {
-  tagIds: string[];
-};
+export const syncArticleTagsInputSchema = z.object({
+  tagIds: z.array(z.string().uuid()),
+});
 
-export type ReorderArticlesInput = {
-  issueId: string;
-  orderedArticleIds: string[];
-};
+export const reorderArticlesInputSchema = z.object({
+  issueId: z.string().uuid(),
+  orderedArticleIds: z.array(z.string().uuid()),
+});
+
+export type CreateArticleInput = z.infer<typeof createArticleInputSchema>;
+export type UpdateArticleInput = z.infer<typeof updateArticleInputSchema>;
+export type SyncArticleTagsInput = z.infer<typeof syncArticleTagsInputSchema>;
+export type ReorderArticlesInput = z.infer<typeof reorderArticlesInputSchema>;
