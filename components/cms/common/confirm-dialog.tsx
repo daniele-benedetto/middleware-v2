@@ -35,10 +35,10 @@ export function CmsConfirmDialog({
       </DialogTrigger>
       <DialogContent className="rounded-none border-[3px] border-foreground bg-background">
         <DialogHeader>
-          <DialogTitle className="font-display text-[24px] uppercase tracking-[-0.03em]">
+          <DialogTitle className="font-display text-[length:var(--text-display-h2)] uppercase leading-[var(--lh-xl)] tracking-[-0.025em]">
             {title}
           </DialogTitle>
-          <DialogDescription className="text-[16px] leading-[1.55] text-foreground">
+          <DialogDescription className="font-editorial text-[16px] leading-[var(--lh-md)] text-foreground">
             {description}
           </DialogDescription>
         </DialogHeader>

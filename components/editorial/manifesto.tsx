@@ -1,0 +1,40 @@
+import { cn } from "@/lib/utils";
+
+type EditorialManifestoProps = {
+  quote: string;
+  source?: string;
+  tone?: "ink" | "accent";
+  className?: string;
+};
+
+export function EditorialManifesto({
+  quote,
+  source,
+  tone = "ink",
+  className,
+}: EditorialManifestoProps) {
+  const isAccent = tone === "accent";
+
+  return (
+    <section
+      className={cn(
+        "text-center",
+        "px-[clamp(18px,4vw,56px)] py-[clamp(28px,4vw,52px)]",
+        isAccent ? "bg-accent" : "bg-foreground",
+        className,
+      )}
+    >
+      <p
+        className={cn(
+          "mx-auto max-w-[760px] font-display italic uppercase text-white",
+          "text-[length:clamp(18px,2.8vw,32px)] leading-[var(--lh-display-quote)] tracking-[-0.02em]",
+        )}
+      >
+        {quote}
+      </p>
+      {source ? (
+        <p className="mt-[12px] font-ui text-[length:var(--text-meta)] text-white/45">— {source}</p>
+      ) : null}
+    </section>
+  );
+}

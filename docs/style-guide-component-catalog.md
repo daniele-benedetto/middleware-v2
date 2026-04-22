@@ -4,36 +4,32 @@ Source: `docs/Middleware Style Guide.html`
 
 Purpose: canonical inventory for deep UI refactor, with one-by-one parity tracking.
 
-## A) Foundations and layout
+## A) Layout residual
+
+Token fondazionali (palette, alpha, filetti, spacing, type scale, griglie) gia allineati in `app/globals.css` — vedi `docs/cms-ui.md` (sezione _Foundation freeze_).
+
+Componenti visivi ancora da realizzare:
 
 1. Masthead/header editoriale
-2. Palette swatches (main)
-3. Alpha variants display
-4. Spacing scale display
-5. Borders/filetti system (thin/strong/accent/dashed)
-6. Grid recipes (home/list/article/filters/covers/max width)
-7. Footer signature block
-
-## B) Typography specimens
-
-1. Archivo Black display set (hero/h1/h2/pull quote/section label)
-2. Newsreader editorial set (body/epigraph/blockquote/hairline/footnote)
-3. IBM Plex Mono meta set (category/meta/tagline/paragraph-number/section-number)
-
-## C) Editorial blocks
-
-1. Article Card (default + hover)
-2. Cover Story Block (accent + neutral)
-3. CTA styles (primary/outline/text/link-inline)
-4. Manifesto block
-5. Audio player
-6. Cover System (6 variants + rules)
+2. Footer signature block
 
 ## E) Remaining from tags/badges/buttons/feedback
 
 1. Full form example (subscription form) — composition task (all primitives already parity_done)
 
-## F) Voice and tone content blocks
+## H) Tabella (SG sezione 08)
+
+1. Tabella dati default (header bg nero + testo crema, righe alternate bianco/crema-dk, stato badge integrati, riga archiviata testo ink-30 italic)
+2. Tabella — header ordinabile + riga hover (freccia ↕ ink-30 / ↓ accent attiva, hover riga bg accent + testo bianco)
+
+## I) Overlay & Accordion (SG sezione 09)
+
+1. Modal/Dialog (overlay `rgba(10,10,10,0.45)`, bordo 2px nero, header bg nero + `×` bianco, CTA primaria accent, footer info mono 10px ink-60)
+2. Accordion — item aperto (header bg nero + testo bianco + `−` bianco/60)
+3. Accordion — item chiuso (header bg crema + `+` ink-30)
+4. Accordion numerazione sezione mono rosso (I. II. III. …)
+
+## F) Voice and tone content blocks (SG sezione 10)
 
 1. Voice & Tone rule grid (registro/titoli/occhielli/metadati/categorie/bilingue)
 
@@ -41,6 +37,7 @@ Purpose: canonical inventory for deep UI refactor, with one-by-one parity tracki
 
 - Existing CMS primitives to evolve: `components/cms/primitives/*`
 - Composite domain blocks: `features/cms/*/screens/*` and `components/cms/common/*`
+- Editorial/public-site primitives: `components/editorial/*`
 
 ## Refactor rule
 

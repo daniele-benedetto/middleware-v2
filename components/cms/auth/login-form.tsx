@@ -3,7 +3,13 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-import { CmsActionButton, CmsFormLabel, CmsTextInput } from "@/components/cms/primitives";
+import {
+  CmsActionButton,
+  CmsDisplay,
+  CmsFormLabel,
+  CmsMetaText,
+  CmsTextInput,
+} from "@/components/cms/primitives";
 import { authClient } from "@/lib/auth-client";
 import { i18n } from "@/lib/i18n";
 
@@ -49,10 +55,12 @@ export function CmsLoginForm() {
   return (
     <form className="border border-foreground bg-white" onSubmit={onSubmit}>
       <div className="flex items-center justify-between bg-foreground px-[18px] py-[14px]">
-        <span className="font-display text-[15px] text-white">LOGIN CMS</span>
-        <span className="font-ui text-[10px] uppercase tracking-[0.06em] text-white/50">
+        <CmsDisplay size="label" tone="onAccent">
+          LOGIN CMS
+        </CmsDisplay>
+        <CmsMetaText variant="tiny" className="!text-white/50">
           ACCESSO RISERVATO
-        </span>
+        </CmsMetaText>
       </div>
 
       <div className="flex flex-col gap-4 border-b border-border px-[18px] py-5">
@@ -92,7 +100,9 @@ export function CmsLoginForm() {
         </div>
 
         {error ? (
-          <p className="font-ui text-[10px] uppercase tracking-[0.06em] text-accent">{error}</p>
+          <CmsMetaText variant="tiny" as="p" className="!text-accent">
+            {error}
+          </CmsMetaText>
         ) : null}
       </div>
 

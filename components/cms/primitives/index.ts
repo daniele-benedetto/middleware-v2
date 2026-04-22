@@ -4,7 +4,7 @@ export { CmsPagination, CmsStepper } from "@/components/cms/primitives/paginatio
 export { CmsSearchBar, CmsSearchResultItem } from "@/components/cms/primitives/search-bar";
 export { cmsToast } from "@/components/cms/primitives/toast";
 export { CmsTooltip } from "@/components/cms/primitives/tooltip";
-export { CmsDataTableShell } from "@/components/cms/primitives/data-table-shell";
+export { CmsDataTableShell, cmsTableClasses } from "@/components/cms/primitives/data-table-shell";
 export { CmsEditorialCard } from "@/components/cms/primitives/editorial-card";
 export {
   CmsCheckbox,
@@ -21,4 +21,17 @@ export { CmsMetaRow } from "@/components/cms/primitives/meta-row";
 export { CmsPageHeader } from "@/components/cms/primitives/page-header";
 export { CmsSectionDivider } from "@/components/cms/primitives/section-divider";
 export { CmsSurface } from "@/components/cms/primitives/surface";
-export { CmsBodyText, CmsEyebrow, CmsHeading } from "@/components/cms/primitives/typography";
+export {
+  CmsBlockquote,
+  CmsBody,
+  CmsBodyText,
+  CmsDisplay,
+  CmsEpigraph,
+  CmsEyebrow,
+  CmsHairline,
+  CmsHeading,
+  CmsMetaText,
+  CmsNote,
+  CmsParagraphNumber,
+  CmsSectionNumber,
+} from "@/components/cms/primitives/typography";

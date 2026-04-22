@@ -14,61 +14,32 @@ Decisioni gia fissate:
 
 Riferimento unico: `docs/Middleware Style Guide.html`
 
-Approccio: prima catalogo completo dei componenti presenti nella style guide, poi refactor incrementale per singolo componente/aspetto con verifica puntuale.
+Approccio: refactor incrementale per singolo componente/aspetto con verifica puntuale.
 
-Checklist componenti da implementare/refactorare (ordine consigliato):
+Checklist componenti ancora da implementare/refactorare (ordine consigliato):
 
-- [ ] Fondazioni/layout: masthead, palette+alpha, filetti, scale spacing, griglie, footer
-- [ ] Typography set: Archivo/Newsreader/IBM Plex mono specimens
-- [ ] Editorial blocks: article card, cover story block, CTA/link inline, manifesto, audio player, cover system
-- [ ] Form controls: input (5 stati), textarea, select (3 stati), checkbox (4 stati), radio (3 stati), toggle (3 stati)
-- [ ] Tags/badges/buttons: category badge, removable tag, status badge, button sets/sizes
-- [ ] Search and form composites: search default+results, full subscription form
-- [ ] Navigation/feedback helpers: pagination strip, stepper strip, toast set, tooltip set
-- [ ] Voice & tone blocks: rule-grid content components
+- [ ] Tabella (SG 08): tabella dati default, tabella con header ordinabile + hover riga accent
+- [ ] Overlay & Accordion (SG 09): modal/dialog, accordion sezioni espandibili
+- [ ] Layout visivo (SG 01-03): masthead, footer
+- [ ] Composite form: full subscription form (composizione di primitive gia pronte)
+- [ ] Voice & tone blocks (SG 10): rule-grid content components
 
 Riferimento puntuale per il dettaglio completo: `docs/style-guide-component-catalog.md`
 
-### Step 1 - Fondazioni visuali globali
+### Step 1 - Tabella (SG sezione 08)
 
-- [ ] Verifica e allineamento finale di palette/alpha/filetti/spacing/global type scale in `app/globals.css`.
-- [ ] Aggiungere token mancanti richiesti dalla style guide aggiornata.
-- [ ] Freeze regole fondazionali (nessuna classe raw fuori token dove evitabile).
+- [ ] Aggiornare `cmsTableClasses` o creare `CmsDataTable` con header bg ink + testo cream, righe alternate bianco/crema-dk, riga archiviata italic ink-30.
+- [ ] Implementare sorting header (↕/↓) e hover row bg accent + testo bianco.
+- [ ] Integrare stato badge (gia disponibile in `CmsBadge variant="status-*"`).
 
-### Step 2 - Tipografia (sistema completo)
+### Step 2 - Overlay & Accordion (SG sezione 09)
 
-- [ ] Allineare primitive tipografiche a tutti i casi della style guide (display, heading, body, meta, note, quote, hairline).
-- [ ] Introdurre eventuali primitive mancanti (es. `CmsMetaText`, `CmsQuote`, `CmsNote`).
-- [ ] Refactor totale dei testi CMS per usare primitive e non classi duplicate inline.
+- [ ] Refactor `CmsConfirmDialog` per parity SG: overlay `rgba(10,10,10,0.45)`, bordo 2px nero, header bg nero + `×` bianco, footer info mono opzionale.
+- [ ] Introdurre `CmsAccordion` (wrap shadcn Accordion) con item aperto bg nero + testo bianco, chiuso bg crema, numerazione mono rosso.
 
-### Step 3 - Form & input system (blocco prioritario)
-
-- [x] `TextInput` parity completa (default/focus/filled/error/disabled).
-- [ ] `Textarea` parity completa (label/helper/counter/stati).
-- [ ] `Select/Dropdown` parity completa (trigger/selected/open/item attivo).
-- [ ] `Checkbox` parity completa.
-- [ ] `Radio` parity completa.
-- [ ] Uniformare messaggistica errore/hint con pattern style guide.
-
-### Step 4 - Core CMS building blocks
-
-- [ ] Card system (default/hover/accent editorial variants).
-- [ ] CTA system (outline, accent, inline-link editorial).
-- [ ] Table/list shell (header row, metadata rows, hover, separators).
-- [ ] Empty/loading/error/forbidden states allineati al linguaggio visivo guida.
-- [ ] Toolbar/pagination/metarow/breadcrumb/topbar/sidebar parity.
-
-### Step 5 - Componenti editoriali avanzati dalla style guide
-
-- [ ] Cover system (varianti copertina, regole costanti, metadata, tagline).
-- [ ] Manifesto block.
-- [ ] Audio player.
-- [ ] Altri componenti presenti nella style guide aggiornata e non ancora implementati.
-
-### Step 6 - Governance e quality gate per componente
+### Step 3 - Governance e quality gate per componente
 
 - [ ] Per ogni componente refactorato: checklist parity compilata in PR.
-- [ ] Aggiungere mini matrice "component -> stato implementazione" nel catalogo.
 - [ ] Aggiornare `docs/cms-ui.md` con API/usage di ogni primitive nuova.
 - [ ] Nessuna chiusura step senza `pnpm lint`, `pnpm typecheck`, `pnpm build` verdi.
 

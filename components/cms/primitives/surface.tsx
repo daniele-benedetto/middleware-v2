@@ -4,16 +4,19 @@ import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
 
-const cmsSurfaceVariants = cva("ui-surface border bg-background", {
+const cmsSurfaceVariants = cva("bg-background", {
   variants: {
     border: {
-      default: "border-foreground",
+      default: "border border-foreground",
       strong: "border-[3px] border-foreground",
+      none: "",
     },
     spacing: {
       none: "",
-      md: "p-4",
-      lg: "p-6",
+      sm: "p-[14px]",
+      md: "p-[16px]",
+      lg: "p-[20px]",
+      xl: "p-[24px]",
     },
   },
   defaultVariants: {
@@ -25,10 +28,15 @@ const cmsSurfaceVariants = cva("ui-surface border bg-background", {
 type CmsSurfaceProps = {
   children: ReactNode;
   className?: string;
+  as?: "section" | "div" | "article" | "aside";
 } & VariantProps<typeof cmsSurfaceVariants>;
 
-export function CmsSurface({ children, className, border, spacing }: CmsSurfaceProps) {
-  return (
-    <section className={cn(cmsSurfaceVariants({ border, spacing }), className)}>{children}</section>
-  );
+export function CmsSurface({
+  children,
+  className,
+  border,
+  spacing,
+  as: Tag = "section",
+}: CmsSurfaceProps) {
+  return <Tag className={cn(cmsSurfaceVariants({ border, spacing }), className)}>{children}</Tag>;
 }

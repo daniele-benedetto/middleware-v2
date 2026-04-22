@@ -11,6 +11,7 @@
   --accent: #c8001a;
   --white: #ffffff;
 
+  --ink-70: rgba(10, 10, 10, 0.7);
   --ink-60: rgba(10, 10, 10, 0.6);
   --ink-50: rgba(10, 10, 10, 0.5);
   --ink-30: rgba(10, 10, 10, 0.3);
@@ -32,8 +33,10 @@
   --line-grid: 1px solid var(--ink);
   --line-accent: 4px solid var(--accent);
   --line-reading: 3px solid var(--accent);
+  --line-dashed: 1px dashed var(--ink-30);
+  --line-menu-accent: 4px solid var(--accent);
 
-  --grid-home-left: clamp(180px, 28%, 300px);
+  --grid-home-left: clamp(180px, 28%, 320px);
   --grid-home-right: 1fr;
   --grid-listing-equal: repeat(2, 1fr);
   --grid-listing-asym: 3fr 2fr;
@@ -43,6 +46,8 @@
   --grid-filters: repeat(auto-fit, minmax(220px, 1fr));
   --grid-covers: repeat(auto-fill, minmax(200px, 1fr));
   --article-max-width: 860px;
+  --article-padding-y: 40px;
+  --article-padding-x: clamp(16px, 4vw, 48px);
 
   --ui-background: var(--bg-main);
   --ui-foreground: var(--ink);
@@ -65,9 +70,23 @@
   --text-xs: 11px;
   --text-sm: 14px;
   --text-md: 16px;
+  --text-ml: 15px;
   --text-lg: 19px;
   --text-xl: 24px;
   --text-2xl: 36px;
+
+  --text-display-hero: clamp(48px, 7vw, 96px);
+  --text-display-h1: clamp(28px, 4vw, 48px);
+  --text-display-h2: clamp(18px, 2.5vw, 28px);
+  --text-display-quote: clamp(20px, 3vw, 32px);
+  --text-display-label: 15px;
+  --text-editorial-body: 19px;
+  --text-editorial-epigraph: 16px;
+  --text-editorial-blockquote: 17px;
+  --text-editorial-hairline: 15px;
+  --text-editorial-note: 14px;
+  --text-meta: 11px;
+  --text-section-number: 12px;
 
   --lh-xs: 1.4;
   --lh-sm: 1.5;
@@ -75,6 +94,9 @@
   --lh-lg: 1.67;
   --lh-xl: 1.08;
   --lh-2xl: 0.9;
+  --lh-display-h1: 1.05;
+  --lh-display-quote: 1.2;
+  --lh-editorial: 1.6;
 
   --fw-regular: 400;
   --fw-medium: 500;

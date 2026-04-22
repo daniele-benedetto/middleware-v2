@@ -16,9 +16,10 @@
 
 Approved alpha variants:
 
-- `--ink-60`: `rgba(10,10,10,0.6)`
-- `--ink-50`: `rgba(10,10,10,0.5)`
-- `--ink-30`: `rgba(10,10,10,0.3)`
+- `--ink-70`: `rgba(10,10,10,0.7)` (hairline/occhiello)
+- `--ink-60`: `rgba(10,10,10,0.6)` (testo secondario)
+- `--ink-50`: `rgba(10,10,10,0.5)` (metadati, numeri paragrafo)
+- `--ink-30`: `rgba(10,10,10,0.3)` (filetti, placeholder, disabled)
 
 ## Semantic tokens
 
@@ -38,11 +39,22 @@ CMS feedback visuals are allowed and standardized:
 - Editorial long text: `Newsreader`
 - UI/meta/labels: `IBM Plex Mono`
 
-Type scale and line-height tokens:
+Type scale (base):
 
-- `--text-xs`, `--text-sm`, `--text-md`, `--text-lg`, `--text-xl`, `--text-2xl`
-- `--lh-xs`, `--lh-sm`, `--lh-md`, `--lh-lg`, `--lh-xl`, `--lh-2xl`
-- weights: `--fw-regular`, `--fw-medium`, `--fw-semibold`
+- `--text-xs` (11), `--text-sm` (14), `--text-ml` (15), `--text-md` (16), `--text-lg` (19), `--text-xl` (24), `--text-2xl` (36)
+
+Editorial type scale (SG parity):
+
+- Display: `--text-display-hero` (clamp 48–96), `--text-display-h1` (clamp 28–48), `--text-display-h2` (clamp 18–28), `--text-display-quote` (clamp 20–32), `--text-display-label` (15)
+- Editorial: `--text-editorial-body` (19), `--text-editorial-epigraph` (16), `--text-editorial-blockquote` (17), `--text-editorial-hairline` (15), `--text-editorial-note` (14)
+- Meta: `--text-meta` (11), `--text-section-number` (12)
+
+Line-heights:
+
+- base: `--lh-xs` (1.4), `--lh-sm` (1.5), `--lh-md` (1.55), `--lh-lg` (1.67), `--lh-xl` (1.08), `--lh-2xl` (0.9)
+- editorial (SG): `--lh-display-h1` (1.05), `--lh-display-quote` (1.2), `--lh-editorial` (1.6)
+
+Weights: `--fw-regular`, `--fw-medium`, `--fw-semibold`
 
 ## Surfaces and separators
 
@@ -50,8 +62,10 @@ Type scale and line-height tokens:
 - Shadows: `none`
 - Main separator: `--line-strong` (`3px` ink)
 - Internal grid line: `--line-grid` (`1px` ink)
-- Semantic accent line: `--line-accent` (`4px` accent)
+- Semantic accent line: `--line-accent` (`4px` accent, blockquote)
+- Menu accent line: `--line-menu-accent` (`4px` accent, bordo sinistro menu attivo)
 - Reading bar: `--line-reading` (`3px` accent)
+- Dashed separator: `--line-dashed` (`1px dashed` ink-30, slot vuoti archivio)
 
 ## Spacing and grid
 
@@ -64,7 +78,7 @@ Grid primitives:
 - article body: `--grid-article-number`, `--grid-article-gap`, `--grid-article-content`
 - filters: `--grid-filters`
 - covers: `--grid-covers`
-- article max width: `--article-max-width`
+- article max width: `--article-max-width` + padding `--article-padding-y` / `--article-padding-x`
 
 Responsive rule:
 
@@ -132,6 +146,10 @@ Rule:
 - success feedback
 - keyboard accessibility
 - responsive behavior
+
+## Foundation freeze
+
+Tokens fondazionali (palette, alpha, filetti, spacing, type scale, line-heights, griglie) allineati a `docs/Middleware Style Guide.html`. Aggiungere nuovi token solo dietro riferimento esplicito nella style guide. Per valori non tokenizzati preferire Tailwind arbitrary values locali al componente.
 
 ## Source of truth
 

@@ -1,68 +1,38 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import Link from "next/link";
 
-import { CmsEyebrow, CmsHeading } from "@/components/cms/primitives/typography";
+import { CmsDisplay, CmsMetaText } from "@/components/cms/primitives/typography";
 import { cn } from "@/lib/utils";
 
 const editorialCardVariants = cva(
-  "ui-surface block border-[3px] p-4 transition-colors focus-visible:outline-none",
+  "group block border border-foreground transition-colors focus-visible:outline-none",
   {
     variants: {
       tone: {
-        default: "border-foreground bg-background hover:bg-secondary",
-        accent: "border-foreground bg-accent text-primary-foreground hover:bg-accent/90",
+        default: "bg-background hover:bg-[color:var(--bg-hover)]",
+        accent: "border-accent bg-accent text-white hover:brightness-[0.93]",
+      },
+      density: {
+        compact: "px-[16px] py-[14px]",
+        comfortable: "px-[20px] py-[18px]",
       },
     },
-    defaultVariants: {
-      tone: "default",
-    },
+    defaultVariants: { tone: "default", density: "comfortable" },
   },
 );
 
-const editorialLabelVariants = cva("", {
-  variants: {
-    tone: {
-      default: "text-accent",
-      accent: "text-primary-foreground/75",
-    },
-  },
-  defaultVariants: {
-    tone: "default",
-  },
-});
-
-const editorialTitleVariants = cva("mt-2", {
-  variants: {
-    tone: {
-      default: "text-foreground",
-      accent: "text-primary-foreground",
-    },
-  },
-  defaultVariants: {
-    tone: "default",
-  },
-});
-
-const editorialCtaVariants = cva(
-  "mt-4 inline-flex border px-2.5 py-1 font-ui text-[11px] uppercase tracking-[0.08em]",
-  {
-    variants: {
-      tone: {
-        default: "border-foreground text-foreground",
-        accent: "border-primary-foreground text-primary-foreground",
-      },
-    },
-    defaultVariants: {
-      tone: "default",
-    },
-  },
-);
+const cardTitleToneMap = {
+  default: "foreground" as const,
+  accent: "onAccent" as const,
+};
 
 type CmsEditorialCardProps = {
   href: string;
   label: string;
   title: string;
   ctaLabel?: string;
+  meta?: string;
+  className?: string;
 } & VariantProps<typeof editorialCardVariants>;
 
 export function CmsEditorialCard({
@@ -70,24 +40,55 @@ export function CmsEditorialCard({
   label,
   title,
   ctaLabel = "Apri sezione",
+  meta,
   tone = "default",
+  density,
+  className,
 }: CmsEditorialCardProps) {
+  const resolvedTone = tone ?? "default";
+  const isAccent = resolvedTone === "accent";
+
   return (
-    <Link href={href} className={cn(editorialCardVariants({ tone }))}>
-      <CmsEyebrow
-        className={cn(editorialLabelVariants({ tone }))}
-        tone={tone === "accent" ? "onAccent" : "accent"}
+    <Link
+      href={href}
+      className={cn(editorialCardVariants({ tone: resolvedTone, density }), className)}
+    >
+      <CmsMetaText
+        variant="category"
+        className={cn("block mb-[7px]", isAccent && "!text-white/80")}
       >
         {label}
-      </CmsEyebrow>
-      <CmsHeading
-        className={cn(editorialTitleVariants({ tone }))}
-        size="section"
-        tone={tone === "accent" ? "onAccent" : "foreground"}
+      </CmsMetaText>
+
+      <CmsDisplay
+        as="h3"
+        size="h2"
+        tone={cardTitleToneMap[resolvedTone]}
+        className={cn(
+          "!text-[18px] !leading-[1.1] !tracking-[-0.02em] mb-[9px]",
+          "group-hover:underline group-hover:decoration-accent group-hover:underline-offset-[4px]",
+          isAccent && "group-hover:decoration-white",
+        )}
       >
         {title}
-      </CmsHeading>
-      <span className={cn(editorialCtaVariants({ tone }))}>{ctaLabel}</span>
+      </CmsDisplay>
+
+      {meta ? (
+        <CmsMetaText variant="meta" className={cn("block", isAccent && "!text-white/70")}>
+          {meta}
+        </CmsMetaText>
+      ) : null}
+
+      <span
+        className={cn(
+          "mt-[14px] inline-flex border px-[12px] py-[7px] font-ui text-[12px] uppercase tracking-[0.04em]",
+          isAccent
+            ? "border-white text-white"
+            : "border-foreground text-foreground group-hover:border-accent group-hover:text-accent",
+        )}
+      >
+        → {ctaLabel}
+      </span>
     </Link>
   );
 }
