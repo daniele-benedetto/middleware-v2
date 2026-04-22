@@ -34,7 +34,7 @@ export function EditorialCoverStory({
       className={cn(
         "flex min-h-55 flex-col gap-3 px-5.5 py-5",
         isAccent ? "bg-accent text-white" : "bg-card-hover text-foreground",
-        "transition-[filter] duration-[var(--motion-base)] ease-[cubic-bezier(0.2,0,0,1)] hover:brightness-[0.93]",
+        "transition-[filter] duration-(--motion-base) ease-[cubic-bezier(0.2,0,0,1)] hover:brightness-[0.93]",
         className,
       )}
     >
@@ -62,7 +62,7 @@ export function EditorialCoverStory({
       <h2
         className={cn(
           "flex-1 font-display uppercase",
-          "text-[length:clamp(15px,2vw,22px)] leading-[var(--lh-xl)] tracking-[-0.025em]",
+          "text-[clamp(15px,2vw,22px)] leading-(--lh-xl) tracking-tight",
           isAccent ? "text-white" : "text-foreground",
         )}
       >
@@ -77,7 +77,7 @@ export function EditorialCoverStory({
           "self-start border px-3 py-1.75 font-ui text-[11px] uppercase tracking-[0.04em]",
           isAccent
             ? "border-white text-white hover:bg-white hover:text-accent"
-            : "border-foreground text-foreground hover:bg-foreground hover:text-[color:var(--bg-main)]",
+            : "border-foreground text-foreground hover:bg-foreground hover:text-(--bg-main)",
         )}
       >
         → {ctaLabel}

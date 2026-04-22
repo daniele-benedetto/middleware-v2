@@ -62,7 +62,7 @@ export function EditorialAudioPlayer({
 
         <div className="relative h-0.75 flex-1 bg-[rgba(10,10,10,0.2)]">
           <div
-            className="h-full bg-accent transition-[width] duration-[var(--motion-base)] ease-[cubic-bezier(0.2,0,0,1)]"
+            className="h-full bg-accent transition-[width] duration-(--motion-base) ease-[cubic-bezier(0.2,0,0,1)]"
             style={{ width: `${progress}%` }}
           />
         </div>

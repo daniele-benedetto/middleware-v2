@@ -120,7 +120,7 @@ export function EditorialCover({
         <span className={cn("font-display text-[11px] uppercase tracking-[-0.02em]", palette.mw)}>
           MIDDLEWARE
         </span>
-        <div className={cn("text-right font-ui text-[7px] leading-[1.5]", palette.meta)}>
+        <div className={cn("text-right font-ui text-[7px] leading-normal", palette.meta)}>
           <div>{issueNumber}</div>
           <div>{season}</div>
         </div>
