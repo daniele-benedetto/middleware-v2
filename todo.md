@@ -10,19 +10,11 @@ Decisioni gia fissate:
 
 ## 2) Contratto API e convenzioni
 
-- [ ] Definire standard endpoint (`/api/v1/...`) e naming risorse.
-- [ ] Definire shape risposta comune (`data`, `error`, `meta`, `pagination`).
-- [ ] Definire catalogo errori stabili (`VALIDATION_ERROR`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`).
-- [ ] Definire paginazione unica (cursor o page-based) e mantenerla identica in tutte le list.
 - [ ] Definire sorting/filter contract supportato per ogni risorsa.
 
 ## 3) AuthN/AuthZ (ruoli)
 
-- [ ] Implementare middleware/guard server-side per autenticazione.
-- [ ] Implementare policy ruolo centralizzata (`ADMIN`, `EDITOR`).
-- [ ] Formalizzare matrice permessi:
-- [ ] - `ADMIN`: gestione utenti + tutto il dominio editoriale
-- [ ] - `EDITOR`: tutto il dominio editoriale, nessuna gestione utenti
+- [ ] Collegare il ruolo reale utente in sessione Better Auth e applicare enforcement completo delle policy.
 - [ ] Definire auditing minimo API: `actorId`, `role`, `action`, `resource`, `resourceId`, `timestamp`.
 
 ## 4) Gestione utenti (solo ADMIN)
@@ -81,8 +73,6 @@ Decisioni gia fissate:
 
 ## 7) Validazione e integrita applicativa
 
-- [x] Definire e integrare schemi Zod di input in tutti gli endpoint write (`POST`/`PATCH`/`PUT`).
-- [x] Definire e integrare schemi Zod di output per risposte API principali.
 - [ ] Enforce invarianti nel service layer:
 - [ ] - `publishedAt` valorizzato solo con `status = PUBLISHED`
 - [ ] - slug sempre normalizzato prima del write
