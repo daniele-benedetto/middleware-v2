@@ -8,31 +8,9 @@ Decisioni gia fissate:
 - `ADMIN` puo gestire utenti e assegnare ruoli.
 - `EDITOR` puo gestire tutto il resto (dominio editoriale), ma non utenti.
 
-## 0) Architettura target cartelle (single responsibility)
+## 0) Base da completare
 
-- [ ] Definire e bloccare la struttura server-side API:
-- [ ] - `app/api/v1/.../route.ts` -> solo transport HTTP (parse request, call use-case, map response)
-- [ ] - `lib/server/auth/*` -> sessione + guardie ruolo
-- [ ] - `lib/server/http/*` -> response helpers, error mapping, pagination helpers
-- [ ] - `lib/server/validation/*` -> schemi input/output (Zod)
-- [ ] - `lib/server/modules/users/*`
-- [ ] - `lib/server/modules/issues/*`
-- [ ] - `lib/server/modules/categories/*`
-- [ ] - `lib/server/modules/tags/*`
-- [ ] - `lib/server/modules/articles/*`
-- [ ] - ogni modulo con sottocartelle: `repository`, `service`, `dto`, `schema`, `policy`
-- [ ] Definire regola forte: handler `route.ts` sottili, logica business solo nei service layer.
-- [ ] Marcare moduli server con `import "server-only"` dove opportuno.
-
-## 1) Best practices Next.js 16 per Route Handlers
-
-- [ ] Standardizzare route handlers su Web `Request/Response` + `Response.json(...)`.
-- [ ] Usare typing Next 16 per params dinamici (`params` Promise / `RouteContext<'/api/...'>`).
-- [ ] Impostare esplicitamente segment config per API CMS:
-- [ ] - `export const runtime = "nodejs"`
-- [ ] - `export const dynamic = "force-dynamic"` per endpoint CMS non cacheabili
-- [ ] Definire policy unica CORS/headers (se necessari client esterni).
-- [ ] Definire policy unica per `OPTIONS` e metodi non consentiti (Allow header coerente).
+- [ ] Definire schemi Zod in `lib/server/validation/*` (input/output) e integrarli in tutti gli handler.
 
 ## 2) Contratto API e convenzioni
 
