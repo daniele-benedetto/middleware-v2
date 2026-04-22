@@ -10,33 +10,67 @@ Decisioni gia fissate:
 - Invariante dominio: `publishedAt` solo con `status = PUBLISHED` (gia lato API).
 - Slug normalizzato lato API e univocita rispettata lato DB.
 
-## Stato completato
+## 2.8) Deep UI Refactor vs Style Guide (componente per componente)
 
-- [x] Audit architettura CMS (2.5) completato.
-- [x] Audit UI vs Style Guide (2.6) completato.
-- [x] Refactor milestone A/B/C + U1/U2/U3 completati.
-- [x] Report e checklist pubblicati:
-  - [x] `docs/cms-architecture-audit.md`
-  - [x] `docs/cms-ui-audit.md`
-  - [x] `docs/cms-smoke-checklist.md`
+Riferimento unico: `docs/Middleware Style Guide.html`
 
-## 2.7) UI systematization e componenti riusabili
+Approccio: prima catalogo completo dei componenti presenti nella style guide, poi refactor incrementale per singolo componente/aspetto con verifica puntuale.
 
-- [ ] Estrarre stile tipografico ripetuto in primitive riusabili:
-  - [x] `CmsEyebrow` (label mono uppercase accent)
-  - [x] `CmsHeading` (display/title per livelli)
-  - [x] `CmsBodyText` (corpo/editorial + varianti muted)
-  - [x] sostituire i blocchi tipografici duplicati nelle pagine CMS.
-- [ ] Estrarre pattern layout ricorrenti in componenti shared:
-  - [x] `CmsSectionSurface` (implementato come `CmsSurface`) (border/background/padding standard).
-  - [x] `CmsSectionDivider` (linee 1px/3px) con varianti semantiche.
-  - [x] `CmsStatRow`/`CmsMetaRow` per righe metadati ripetute.
-- [ ] Consolidare varianti action/form già introdotte:
-  - [x] usare `lib/cms/ui/variants.ts` in tutte le azioni CMS.
-  - [ ] estendere a select/textarea reali appena entrano nei CRUD.
-- [ ] Definire guardrail anti-duplicazione:
-  - [x] lint/checklist PR: no nuove classi tipografiche duplicate senza primitive.
-  - [x] linee guida in `docs/cms-ui.md` con tabella "quando usare primitive vs inline class".
+Checklist componenti da implementare/refactorare (ordine consigliato):
+
+- [ ] Fondazioni/layout: masthead, palette+alpha, filetti, scale spacing, griglie, footer
+- [ ] Typography set: Archivo/Newsreader/IBM Plex mono specimens
+- [ ] Editorial blocks: article card, cover story block, CTA/link inline, manifesto, audio player, cover system
+- [ ] Form controls: input (5 stati), textarea, select (3 stati), checkbox (4 stati), radio (3 stati), toggle (3 stati)
+- [ ] Tags/badges/buttons: category badge, removable tag, status badge, button sets/sizes
+- [ ] Search and form composites: search default+results, full subscription form
+- [ ] Navigation/feedback helpers: pagination strip, stepper strip, toast set, tooltip set
+- [ ] Voice & tone blocks: rule-grid content components
+
+Riferimento puntuale per il dettaglio completo: `docs/style-guide-component-catalog.md`
+
+### Step 1 - Fondazioni visuali globali
+
+- [ ] Verifica e allineamento finale di palette/alpha/filetti/spacing/global type scale in `app/globals.css`.
+- [ ] Aggiungere token mancanti richiesti dalla style guide aggiornata.
+- [ ] Freeze regole fondazionali (nessuna classe raw fuori token dove evitabile).
+
+### Step 2 - Tipografia (sistema completo)
+
+- [ ] Allineare primitive tipografiche a tutti i casi della style guide (display, heading, body, meta, note, quote, hairline).
+- [ ] Introdurre eventuali primitive mancanti (es. `CmsMetaText`, `CmsQuote`, `CmsNote`).
+- [ ] Refactor totale dei testi CMS per usare primitive e non classi duplicate inline.
+
+### Step 3 - Form & input system (blocco prioritario)
+
+- [x] `TextInput` parity completa (default/focus/filled/error/disabled).
+- [ ] `Textarea` parity completa (label/helper/counter/stati).
+- [ ] `Select/Dropdown` parity completa (trigger/selected/open/item attivo).
+- [ ] `Checkbox` parity completa.
+- [ ] `Radio` parity completa.
+- [ ] Uniformare messaggistica errore/hint con pattern style guide.
+
+### Step 4 - Core CMS building blocks
+
+- [ ] Card system (default/hover/accent editorial variants).
+- [ ] CTA system (outline, accent, inline-link editorial).
+- [ ] Table/list shell (header row, metadata rows, hover, separators).
+- [ ] Empty/loading/error/forbidden states allineati al linguaggio visivo guida.
+- [ ] Toolbar/pagination/metarow/breadcrumb/topbar/sidebar parity.
+
+### Step 5 - Componenti editoriali avanzati dalla style guide
+
+- [ ] Cover system (varianti copertina, regole costanti, metadata, tagline).
+- [ ] Manifesto block.
+- [ ] Audio player.
+- [ ] Altri componenti presenti nella style guide aggiornata e non ancora implementati.
+
+### Step 6 - Governance e quality gate per componente
+
+- [ ] Per ogni componente refactorato: checklist parity compilata in PR.
+- [ ] Aggiungere mini matrice "component -> stato implementazione" nel catalogo.
+- [ ] Aggiornare `docs/cms-ui.md` con API/usage di ogni primitive nuova.
+- [ ] Nessuna chiusura step senza `pnpm lint`, `pnpm typecheck`, `pnpm build` verdi.
 
 ## 3) Integrazione tRPC client lato UI
 

@@ -1,6 +1,15 @@
 export { CmsActionButton } from "@/components/cms/primitives/action-button";
 export { CmsDataTableShell } from "@/components/cms/primitives/data-table-shell";
 export { CmsEditorialCard } from "@/components/cms/primitives/editorial-card";
+export {
+  CmsCheckbox,
+  CmsFormLabel,
+  CmsRadio,
+  CmsSelect,
+  CmsTextarea,
+  CmsTextInput,
+  CmsToggle,
+} from "@/components/cms/primitives/form-controls";
 export { CmsFormField } from "@/components/cms/primitives/form-field";
 export { CmsLayoutShell } from "@/components/cms/primitives/layout-shell";
 export { CmsMetaRow } from "@/components/cms/primitives/meta-row";

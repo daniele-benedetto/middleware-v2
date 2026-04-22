@@ -3,10 +3,8 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-import { CmsActionButton } from "@/components/cms/primitives";
-import { Input } from "@/components/ui/input";
+import { CmsActionButton, CmsFormLabel, CmsTextInput } from "@/components/cms/primitives";
 import { authClient } from "@/lib/auth-client";
-import { cmsFieldLabelClass, cmsInputClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 
 export function CmsLoginForm() {
@@ -49,42 +47,62 @@ export function CmsLoginForm() {
   };
 
   return (
-    <form className="space-y-4" onSubmit={onSubmit}>
-      <div className="space-y-2">
-        <label className={cmsFieldLabelClass} htmlFor="email">
-          {text.emailLabel}
-        </label>
-        <Input
-          id="email"
-          autoComplete="email"
-          className={cmsInputClass}
-          inputMode="email"
-          onChange={(event) => setEmail(event.target.value)}
-          required
-          type="email"
-          value={email}
-        />
+    <form className="border border-foreground bg-white" onSubmit={onSubmit}>
+      <div className="flex items-center justify-between bg-foreground px-[18px] py-[14px]">
+        <span className="font-display text-[15px] text-white">LOGIN CMS</span>
+        <span className="font-ui text-[10px] uppercase tracking-[0.06em] text-white/50">
+          ACCESSO RISERVATO
+        </span>
       </div>
 
-      <div className="space-y-2">
-        <label className={cmsFieldLabelClass} htmlFor="password">
-          {text.passwordLabel}
-        </label>
-        <Input
-          id="password"
-          autoComplete="current-password"
-          className={cmsInputClass}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-          type="password"
-          value={password}
-        />
+      <div className="flex flex-col gap-4 border-b border-border px-[18px] py-5">
+        <div className="space-y-1.5">
+          <CmsFormLabel htmlFor="email" state={error ? "error" : "default"}>
+            {text.emailLabel}
+          </CmsFormLabel>
+          <CmsTextInput
+            id="email"
+            autoComplete="email"
+            state={error ? "error" : email ? "filled" : "default"}
+            tone="mono"
+            inputMode="email"
+            onChange={(event) => setEmail(event.target.value)}
+            required
+            type="email"
+            value={email}
+            placeholder="nome@dominio.it"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <CmsFormLabel htmlFor="password" state={error ? "error" : "default"}>
+            {text.passwordLabel}
+          </CmsFormLabel>
+          <CmsTextInput
+            id="password"
+            autoComplete="current-password"
+            state={error ? "error" : password ? "filled" : "default"}
+            tone="mono"
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            type="password"
+            value={password}
+            placeholder="••••••••"
+          />
+        </div>
+
+        {error ? (
+          <p className="font-ui text-[10px] uppercase tracking-[0.06em] text-accent">{error}</p>
+        ) : null}
       </div>
 
-      {error ? <p className="text-sm text-accent">{error}</p> : null}
-
-      <CmsActionButton className="w-full" isLoading={isSubmitting} tone="primary" type="submit">
-        {isSubmitting ? text.signingInCta : text.signInCta}
+      <CmsActionButton
+        className="h-[50px] w-full justify-start border-0 bg-accent px-[18px] text-[12px] text-primary-foreground hover:bg-accent/90"
+        isLoading={isSubmitting}
+        tone="danger"
+        type="submit"
+      >
+        {isSubmitting ? `→ ${text.signingInCta}` : `→ ${text.signInCta}`}
       </CmsActionButton>
     </form>
   );

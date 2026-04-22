@@ -60,6 +60,7 @@
   --ui-row-hover: var(--bg-hover);
   --ui-row-selected: rgba(200, 0, 26, 0.12);
   --ui-disabled: rgba(10, 10, 10, 0.3);
+  --ui-error-bg: #fff8f8;
 
   --text-xs: 11px;
   --text-sm: 14px;
