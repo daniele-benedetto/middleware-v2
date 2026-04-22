@@ -1,40 +1,156 @@
 import "server-only";
 
+import { Prisma } from "@/lib/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
+
+import type {
+  CreateArticleInput,
+  ReorderArticlesInput,
+  SyncArticleTagsInput,
+  UpdateArticleInput,
+} from "@/lib/server/modules/articles/schema";
+
 export const articlesRepository = {
   async list() {
-    throw new Error("Not implemented");
+    return prisma.article.findMany({
+      orderBy: { createdAt: "desc" },
+    });
   },
-  async getById(_id: string) {
-    throw new Error("Not implemented");
+  async getById(id: string) {
+    return prisma.article.findUnique({
+      where: { id },
+    });
   },
-  async create(_input: unknown) {
-    throw new Error("Not implemented");
+  async create(input: CreateArticleInput) {
+    const data: Prisma.ArticleUncheckedCreateInput = {
+      issueId: input.issueId,
+      categoryId: input.categoryId,
+      authorId: input.authorId,
+      title: input.title,
+      slug: input.slug,
+      excerpt: input.excerpt,
+      contentRich: input.contentRich as Prisma.InputJsonValue,
+      imageUrl: input.imageUrl,
+      audioUrl: input.audioUrl,
+      audioChunks: input.audioChunks as Prisma.InputJsonValue | undefined,
+    };
+
+    return prisma.article.create({
+      data,
+    });
   },
-  async update(_id: string, _input: unknown) {
-    throw new Error("Not implemented");
+  async update(id: string, input: UpdateArticleInput) {
+    const data: Prisma.ArticleUncheckedUpdateInput = {
+      issueId: input.issueId,
+      categoryId: input.categoryId,
+      authorId: input.authorId,
+      title: input.title,
+      slug: input.slug,
+      excerpt: input.excerpt,
+      contentRich:
+        input.contentRich === undefined ? undefined : (input.contentRich as Prisma.InputJsonValue),
+      imageUrl: input.imageUrl,
+      audioUrl: input.audioUrl,
+      audioChunks:
+        input.audioChunks === undefined
+          ? undefined
+          : input.audioChunks === null
+            ? Prisma.JsonNull
+            : (input.audioChunks as Prisma.InputJsonValue),
+      status: input.status,
+      publishedAt: input.publishedAt,
+      isFeatured: input.isFeatured,
+      position: input.position,
+    };
+
+    return prisma.article.update({
+      where: { id },
+      data,
+    });
   },
-  async hardDelete(_id: string) {
-    throw new Error("Not implemented");
+  async hardDelete(id: string) {
+    return prisma.article.delete({
+      where: { id },
+    });
   },
-  async syncTags(_id: string, _tagIds: string[]) {
-    throw new Error("Not implemented");
+  async syncTags(id: string, input: SyncArticleTagsInput) {
+    const tagIds = Array.from(new Set(input.tagIds));
+
+    return prisma.$transaction(async (tx) => {
+      await tx.articleTag.deleteMany({
+        where: { articleId: id },
+      });
+
+      if (tagIds.length > 0) {
+        await tx.articleTag.createMany({
+          data: tagIds.map((tagId) => ({ articleId: id, tagId })),
+        });
+      }
+
+      return tx.article.findUnique({
+        where: { id },
+      });
+    });
   },
-  async publish(_id: string) {
-    throw new Error("Not implemented");
+  async publish(id: string) {
+    return prisma.article.update({
+      where: { id },
+      data: {
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+      },
+    });
   },
-  async unpublish(_id: string) {
-    throw new Error("Not implemented");
+  async unpublish(id: string) {
+    return prisma.article.update({
+      where: { id },
+      data: {
+        status: "DRAFT",
+        publishedAt: null,
+      },
+    });
   },
-  async archive(_id: string) {
-    throw new Error("Not implemented");
+  async archive(id: string) {
+    return prisma.article.update({
+      where: { id },
+      data: {
+        status: "ARCHIVED",
+        publishedAt: null,
+      },
+    });
   },
-  async feature(_id: string) {
-    throw new Error("Not implemented");
+  async feature(id: string) {
+    return prisma.article.update({
+      where: { id },
+      data: {
+        isFeatured: true,
+      },
+    });
   },
-  async unfeature(_id: string) {
-    throw new Error("Not implemented");
+  async unfeature(id: string) {
+    return prisma.article.update({
+      where: { id },
+      data: {
+        isFeatured: false,
+      },
+    });
   },
-  async reorder(_input: unknown) {
-    throw new Error("Not implemented");
+  async reorder(input: ReorderArticlesInput) {
+    return prisma.$transaction(async (tx) => {
+      for (const [index, articleId] of input.orderedArticleIds.entries()) {
+        await tx.article.update({
+          where: { id: articleId },
+          data: {
+            issueId: input.issueId,
+            position: index,
+          },
+        });
+      }
+
+      return tx.article.findMany({
+        where: { issueId: input.issueId },
+        orderBy: { position: "asc" },
+      });
+    });
   },
 };

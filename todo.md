@@ -73,11 +73,11 @@ Decisioni gia fissate:
 
 ## 7) Validazione e integrita applicativa
 
-- [ ] Enforce invarianti nel service layer:
-- [ ] - `publishedAt` valorizzato solo con `status = PUBLISHED`
-- [ ] - slug sempre normalizzato prima del write
-- [ ] - unicita slug per issue con gestione conflict pulita
-- [ ] Usare transazioni Prisma per update composti (`article + tags + status`).
+- [x] Enforce invarianti nel service layer (modulo articoli):
+- [x] - `publishedAt` valorizzato solo con `status = PUBLISHED`
+- [x] - slug sempre normalizzato prima del write
+- [x] - unicita slug per issue con gestione conflict pulita
+- [x] Usare transazioni Prisma per update composti (`article + tags + status`) nel modulo articoli.
 
 ## 8) Performance, sicurezza, operativita
 
