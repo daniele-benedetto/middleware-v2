@@ -90,35 +90,24 @@ Naming conventions used in schema:
 - `Article.publishedAt` is an API-layer invariant: set only when status is `PUBLISHED`.
 - `contentRich` and `audioChunks` are JSON payloads and should be evolved with backward-compatible versioned structures.
 
-## API list contract (`/api/v1`)
+## API architecture (tRPC-only)
 
-All list endpoints return `meta.pagination` and validate query params with Zod.
+- API entrypoint: `app/api/trpc/[trpc]/route.ts`.
+- Server tRPC core: `lib/server/trpc/*` (`init`, `context`, `procedures`, `middlewares`, `routers`).
+- Domain logic remains in `lib/server/modules/<resource>/*` (schema/service/repository/dto/policy).
+- Frontend client/provider: `lib/trpc/react.ts` and `lib/trpc/provider.tsx`.
 
-Common params:
+Procedures by domain:
 
-- `page` (default `1`, min `1`)
-- `pageSize` (default `20`, min `1`, max `100`)
-- `sortOrder` (`asc` or `desc`, default `desc`)
+- `users`: `list`, `getById`, `create`, `update`, `updateRole`, `delete`
+- `issues`: `list`, `getById`, `create`, `update`, `delete`
+- `categories`: `list`, `getById`, `create`, `update`, `delete`
+- `tags`: `list`, `getById`, `create`, `update`, `delete`
+- `articles`: `list`, `getById`, `create`, `update`, `delete`, `syncTags`, `publish`, `unpublish`, `archive`, `feature`, `unfeature`, `reorder`
 
-Resource-specific filters and sorting:
+List procedures validate input with Zod and return typed payload:
 
-- `GET /api/v1/users`
-  - filters: `role`, `q`
-  - sortBy: `createdAt`, `email`
-- `GET /api/v1/issues`
-  - filters: `isActive`, `published`, `q`
-  - sortBy: `createdAt`, `sortOrder`, `publishedAt`
-- `GET /api/v1/categories`
-  - filters: `isActive`, `q`
-  - sortBy: `createdAt`, `name`, `slug`
-- `GET /api/v1/tags`
-  - filters: `isActive`, `q`
-  - sortBy: `createdAt`, `name`, `slug`
-- `GET /api/v1/articles`
-  - filters: `status`, `issueId`, `categoryId`, `authorId`, `featured`, `q`
-  - sortBy: `createdAt`, `publishedAt`, `position`
-
-Invalid query params return `400` with `VALIDATION_ERROR`.
+- `{ items, pagination: { page, pageSize, total } }`
 
 ## API operational baseline
 
@@ -129,11 +118,11 @@ Invalid query params return `400` with `VALIDATION_ERROR`.
   - `publish`: `30` req/min
   - `reorder`: `15` req/min
 - Idempotence baseline:
-  - `POST /api/v1/articles/:id/publish` is idempotent when already published (no state rewrite).
-  - `POST /api/v1/articles/reorder` is idempotent when order is unchanged (no updates executed).
+  - `articles.publish` is idempotent when already published (no state rewrite).
+  - `articles.reorder` is idempotent when order is unchanged (no updates executed).
 - Error policy:
   - client never receives internal stack traces
-  - detailed `error.details` is returned only for `VALIDATION_ERROR`
+  - detailed validation metadata is exposed only on bad request errors
   - server logs unexpected/internal errors via `console.error`
 
 ### Query/index verification snapshot

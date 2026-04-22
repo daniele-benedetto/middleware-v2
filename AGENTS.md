@@ -40,21 +40,21 @@
 
 ## API Architecture Rules
 
-- Route handlers live under `app/api/v1/**/route.ts` and must stay thin: parse/authorize/call service/map response only.
+- API surface is tRPC-only through `app/api/trpc/[trpc]/route.ts`.
 - Server code is split by responsibility:
   - `lib/server/auth/*` for auth/session/role guards
-  - `lib/server/http/*` for response envelope, error mapping, pagination, route wrappers
+  - `lib/server/http/*` for shared error/rate-limit/audit utilities
+  - `lib/server/trpc/*` for context, procedures, middleware, routers
   - `lib/server/validation/*` for shared validation helpers
   - `lib/server/modules/<resource>/*` with `repository`, `service`, `dto`, `schema`, `policy`
 - Mark server-only modules with `import "server-only"` where applicable.
-- For CMS APIs, set route segment config explicitly: `export const runtime = "nodejs"` and `export const dynamic = "force-dynamic"`.
-- API response envelope is standardized as `{ data, error, meta }`.
-- Validate write input with Zod (`parseJsonBody`) and validate output DTOs with Zod (`parseOutput`) before returning responses.
+- For CMS APIs, keep route segment config explicit on tRPC handler: `runtime = "nodejs"`, `dynamic = "force-dynamic"`.
+- Validate procedure input with Zod and validate service output DTOs with `parseOutput` before returning.
 
 ## Clean Code Rules (Required)
 
 - Single responsibility everywhere: one file/module should have one clear purpose.
-- Keep route handlers orchestration-only; business rules belong to service layer, data access to repository layer.
+- Keep tRPC routers orchestration-only; business rules belong to service layer, data access to repository layer.
 - Prefer small, composable functions with explicit names; avoid multi-purpose "god" functions.
 - No hidden side effects in helpers; keep validation/mapping/normalization deterministic and testable.
 - Keep DTO/schema/policy/repository/service separated; do not collapse layers for convenience.
