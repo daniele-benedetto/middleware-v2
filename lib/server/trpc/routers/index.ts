@@ -1,3 +1,5 @@
+import "server-only";
+
 import { router } from "@/lib/server/trpc/init";
 import { articlesRouter } from "@/lib/server/trpc/routers/articles";
 import { categoriesRouter } from "@/lib/server/trpc/routers/categories";

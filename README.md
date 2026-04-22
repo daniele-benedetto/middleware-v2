@@ -96,6 +96,8 @@ Naming conventions used in schema:
 - Server tRPC core: `lib/server/trpc/*` (`init`, `context`, `procedures`, `middlewares`, `routers`).
 - Domain logic remains in `lib/server/modules/<resource>/*` (schema/service/repository/dto/policy).
 - Frontend client/provider: `lib/trpc/react.ts` and `lib/trpc/provider.tsx`.
+- Role authorization is policy-driven via `lib/server/modules/*/policy` and applied in tRPC router middleware.
+- Legacy REST routes under `app/api/v1/**` were removed after the switch.
 
 Procedures by domain:
 

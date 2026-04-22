@@ -1,3 +1,5 @@
+import "server-only";
+
 import { enforceRateLimit } from "@/lib/server/http/rate-limit";
 import { trpc } from "@/lib/server/trpc/init";
 

@@ -1,3 +1,5 @@
+import "server-only";
+
 import { auditAction } from "@/lib/server/http/audit";
 import { trpc } from "@/lib/server/trpc/init";
 
@@ -7,15 +9,11 @@ type AuditPayload = {
   resourceId?: string;
 };
 
-type BuildAuditPayloadArgs = {
-  input: unknown;
-};
+type BuildAuditPayload<TInput> = (input: TInput) => AuditPayload;
 
-type BuildAuditPayload = (args: BuildAuditPayloadArgs) => AuditPayload;
-
-export function auditMiddleware(buildPayload: BuildAuditPayload) {
+export function auditMiddleware<TInput>(buildPayload: BuildAuditPayload<TInput>) {
   return trpc.middleware(async ({ ctx, input, next }) => {
-    await auditAction(ctx.request, buildPayload({ input }));
+    await auditAction(ctx.request, buildPayload(input as TInput));
     return next();
   });
 }

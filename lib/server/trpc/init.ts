@@ -34,5 +34,4 @@ const mapApiErrorMiddleware = t.middleware(async ({ next }) => {
 
 export const trpc = t;
 export const router = t.router;
-export const mergeRouters = t.mergeRouters;
 export const publicProcedure = t.procedure.use(mapApiErrorMiddleware);

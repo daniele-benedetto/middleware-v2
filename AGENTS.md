@@ -42,7 +42,7 @@
 
 - API surface is tRPC-only through `app/api/trpc/[trpc]/route.ts`.
 - Server code is split by responsibility:
-  - `lib/server/auth/*` for auth/session/role guards
+  - `lib/server/auth/*` for session + role types
   - `lib/server/http/*` for shared error/rate-limit/audit utilities
   - `lib/server/trpc/*` for context, procedures, middleware, routers
   - `lib/server/validation/*` for shared validation helpers
@@ -50,6 +50,7 @@
 - Mark server-only modules with `import "server-only"` where applicable.
 - For CMS APIs, keep route segment config explicit on tRPC handler: `runtime = "nodejs"`, `dynamic = "force-dynamic"`.
 - Validate procedure input with Zod and validate service output DTOs with `parseOutput` before returning.
+- Keep role authorization policy-driven: use `modules/*/policy` in router middleware, avoid hardcoded role arrays in procedures.
 
 ## Clean Code Rules (Required)
 

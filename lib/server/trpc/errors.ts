@@ -1,3 +1,5 @@
+import "server-only";
+
 import { TRPCError } from "@trpc/server";
 
 import { ApiError } from "@/lib/server/http/api-error";

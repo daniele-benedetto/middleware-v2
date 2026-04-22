@@ -1,8 +1,11 @@
+import "server-only";
+
 import { z } from "zod";
 
 import {
   articleDtoSchema,
   articlesListDtoSchema,
+  articlesPolicy,
   articlesService,
   createArticleInputSchema,
   listArticlesQuerySchema,
@@ -12,11 +15,12 @@ import {
 } from "@/lib/server/modules/articles";
 import { router } from "@/lib/server/trpc/init";
 import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
+import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import {
-  editorialProcedure,
-  editorialPublishProcedure,
-  editorialReorderProcedure,
-  editorialWriteProcedure,
+  protectedProcedure,
+  publishProcedure,
+  reorderProcedure,
+  writeProcedure,
 } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
 import { parseOutput } from "@/lib/server/validation/output";
@@ -30,49 +34,58 @@ const articlesListInputSchema = paginationInputSchema.extend({
 });
 
 export const articlesRouter = router({
-  list: editorialProcedure.input(articlesListInputSchema).query(async ({ input }) => {
-    const query = listArticlesQuerySchema.parse(input.query ?? {});
-    const result = await articlesService.list(query, {
-      page: input.page,
-      pageSize: input.pageSize,
-    });
-
-    return {
-      items: parseOutput(result.items, articlesListDtoSchema),
-      pagination: {
+  list: protectedProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
+    .input(articlesListInputSchema)
+    .query(async ({ input }) => {
+      const query = listArticlesQuerySchema.parse(input.query ?? {});
+      const result = await articlesService.list(query, {
         page: input.page,
         pageSize: input.pageSize,
-        total: result.total,
-      },
-    };
-  }),
-  getById: editorialProcedure.input(articleIdInputSchema).query(async ({ input }) => {
-    return parseOutput(await articlesService.getById(input.id), articleDtoSchema);
-  }),
-  create: editorialWriteProcedure
+      });
+
+      return {
+        items: parseOutput(result.items, articlesListDtoSchema),
+        pagination: {
+          page: input.page,
+          pageSize: input.pageSize,
+          total: result.total,
+        },
+      };
+    }),
+  getById: protectedProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
+    .input(articleIdInputSchema)
+    .query(async ({ input }) => {
+      return parseOutput(await articlesService.getById(input.id), articleDtoSchema);
+    }),
+  create: writeProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .use(auditMiddleware(() => ({ action: "create", resource: "articles" })))
     .input(createArticleInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.create(input), articleDtoSchema);
     }),
-  update: editorialWriteProcedure
+  update: writeProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .use(
-      auditMiddleware(({ input }) => ({
+      auditMiddleware<{ id: string; data: z.infer<typeof updateArticleInputSchema> }>((input) => ({
         action: "update",
         resource: "articles",
-        resourceId: (input as { id: string }).id,
+        resourceId: input.id,
       })),
     )
     .input(articleIdInputSchema.extend({ data: updateArticleInputSchema }))
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.update(input.id, input.data), articleDtoSchema);
     }),
-  delete: editorialWriteProcedure
+  delete: writeProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .use(
-      auditMiddleware(({ input }) => ({
+      auditMiddleware<{ id: string }>((input) => ({
         action: "delete",
         resource: "articles",
-        resourceId: (input as { id: string }).id,
+        resourceId: input.id,
       })),
     )
     .input(articleIdInputSchema)
@@ -80,79 +93,88 @@ export const articlesRouter = router({
       await articlesService.hardDelete(input.id);
       return { success: true };
     }),
-  syncTags: editorialWriteProcedure
+  syncTags: writeProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .use(
-      auditMiddleware(({ input }) => ({
-        action: "sync-tags",
-        resource: "articles",
-        resourceId: (input as { id: string }).id,
-      })),
+      auditMiddleware<{ id: string; data: z.infer<typeof syncArticleTagsInputSchema> }>(
+        (input) => ({
+          action: "sync-tags",
+          resource: "articles",
+          resourceId: input.id,
+        }),
+      ),
     )
     .input(articleIdInputSchema.extend({ data: syncArticleTagsInputSchema }))
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.syncTags(input.id, input.data), articleDtoSchema);
     }),
-  publish: editorialPublishProcedure
+  publish: publishProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .use(
-      auditMiddleware(({ input }) => ({
+      auditMiddleware<{ id: string }>((input) => ({
         action: "publish",
         resource: "articles",
-        resourceId: (input as { id: string }).id,
+        resourceId: input.id,
       })),
     )
     .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.publish(input.id), articleDtoSchema);
     }),
-  unpublish: editorialWriteProcedure
+  unpublish: writeProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .use(
-      auditMiddleware(({ input }) => ({
+      auditMiddleware<{ id: string }>((input) => ({
         action: "unpublish",
         resource: "articles",
-        resourceId: (input as { id: string }).id,
+        resourceId: input.id,
       })),
     )
     .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.unpublish(input.id), articleDtoSchema);
     }),
-  archive: editorialWriteProcedure
+  archive: writeProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .use(
-      auditMiddleware(({ input }) => ({
+      auditMiddleware<{ id: string }>((input) => ({
         action: "archive",
         resource: "articles",
-        resourceId: (input as { id: string }).id,
+        resourceId: input.id,
       })),
     )
     .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.archive(input.id), articleDtoSchema);
     }),
-  feature: editorialWriteProcedure
+  feature: writeProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .use(
-      auditMiddleware(({ input }) => ({
+      auditMiddleware<{ id: string }>((input) => ({
         action: "feature",
         resource: "articles",
-        resourceId: (input as { id: string }).id,
+        resourceId: input.id,
       })),
     )
     .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.feature(input.id), articleDtoSchema);
     }),
-  unfeature: editorialWriteProcedure
+  unfeature: writeProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .use(
-      auditMiddleware(({ input }) => ({
+      auditMiddleware<{ id: string }>((input) => ({
         action: "unfeature",
         resource: "articles",
-        resourceId: (input as { id: string }).id,
+        resourceId: input.id,
       })),
     )
     .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.unfeature(input.id), articleDtoSchema);
     }),
-  reorder: editorialReorderProcedure
+  reorder: reorderProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .use(auditMiddleware(() => ({ action: "reorder", resource: "articles" })))
     .input(reorderArticlesInputSchema)
     .mutation(async ({ input }) => {
