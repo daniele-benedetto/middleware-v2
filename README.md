@@ -99,6 +99,15 @@ Naming conventions used in schema:
 - Role authorization is policy-driven via `lib/server/modules/*/policy` and applied in tRPC router middleware.
 - Legacy REST routes under `app/api/v1/**` were removed after the switch.
 
+Current API folder map:
+
+- `app/api/trpc/[trpc]/route.ts` - single tRPC transport handler
+- `lib/server/trpc/init.ts` - initTRPC + error formatting
+- `lib/server/trpc/context.ts` - request context + Better Auth session
+- `lib/server/trpc/procedures.ts` - base procedure builders (`protected`, `write`, `sensitiveWrite`, `publish`, `reorder`)
+- `lib/server/trpc/middlewares/*` - `require-role`, `require-session`, `rate-limit`, `audit`
+- `lib/server/trpc/routers/*` - resource routers + `appRouter`
+
 Procedures by domain:
 
 - `users`: `list`, `getById`, `create`, `update`, `updateRole`, `delete`
@@ -110,6 +119,98 @@ Procedures by domain:
 List procedures validate input with Zod and return typed payload:
 
 - `{ items, pagination: { page, pageSize, total } }`
+
+## Role matrix (procedures)
+
+- `users.*`: `ADMIN` only
+- `issues.*`: `ADMIN`, `EDITOR`
+- `categories.*`: `ADMIN`, `EDITOR`
+- `tags.*`: `ADMIN`, `EDITOR`
+- `articles.*`: `ADMIN`, `EDITOR`
+
+Authorization is enforced in tRPC router middleware using `lib/server/modules/*/policy` as source of truth.
+
+## Request/response payloads (CMS real use)
+
+### List pattern
+
+Input (example `articles.list`):
+
+```ts
+{
+  page?: number;
+  pageSize?: number;
+  query?: {
+    status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+    issueId?: string;
+    categoryId?: string;
+    authorId?: string;
+    featured?: boolean;
+    q?: string;
+    sortBy?: "createdAt" | "publishedAt" | "position";
+    sortOrder?: "asc" | "desc";
+  };
+}
+```
+
+Output:
+
+```ts
+{
+  items: ArticleDto[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+  };
+}
+```
+
+### Mutation pattern
+
+Input envelope for update-by-id procedures:
+
+```ts
+{
+  id: string; // uuid
+  data: UpdateInput;
+}
+```
+
+Representative outputs:
+
+- `users.delete`, `issues.delete`, `categories.delete`, `tags.delete`, `articles.delete` -> `{ success: true }`
+- all other mutations -> validated DTO (`UserListItemDto`, `IssueDto`, `CategoryDto`, `TagDto`, `ArticleDto`)
+
+### Representative procedure inputs
+
+- `users.updateRole`
+
+```ts
+{
+  id: string;
+  data: {
+    role: "ADMIN" | "EDITOR";
+  }
+}
+```
+
+- `articles.publish`
+
+```ts
+{
+  id: string;
+}
+```
+
+- `articles.reorder`
+
+```ts
+{
+  issueId: string;
+  orderedArticleIds: string[]; // unique, min 1
+}
+```
 
 ## API operational baseline
 
@@ -126,6 +227,23 @@ List procedures validate input with Zod and return typed payload:
   - client never receives internal stack traces
   - detailed validation metadata is exposed only on bad request errors
   - server logs unexpected/internal errors via `console.error`
+
+## Error model (tRPC)
+
+Domain/runtime errors are normalized to `TRPCError`.
+
+- Validation -> `BAD_REQUEST`
+- Unauthorized -> `UNAUTHORIZED`
+- Forbidden -> `FORBIDDEN`
+- Rate limit -> `TOO_MANY_REQUESTS`
+- Not found -> `NOT_FOUND`
+- Conflict -> `CONFLICT`
+- Internal -> `INTERNAL_SERVER_ERROR`
+
+Notes:
+
+- Validation details are attached to `error.data.details` when available.
+- Non-validation/internal details are not leaked to clients.
 
 ### Query/index verification snapshot
 
