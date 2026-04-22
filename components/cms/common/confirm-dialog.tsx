@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { i18n } from "@/lib/i18n";
 
 import type { ReactNode } from "react";
 
@@ -18,6 +19,8 @@ type CmsConfirmDialogProps = {
 };
 
 export function CmsConfirmDialog({ trigger, title, description }: CmsConfirmDialogProps) {
+  const text = i18n.cms.resource;
+
   return (
     <Dialog>
       <DialogTrigger>{trigger}</DialogTrigger>
@@ -35,13 +38,13 @@ export function CmsConfirmDialog({ trigger, title, description }: CmsConfirmDial
             variant="outline"
             className="rounded-none border-[#0A0A0A] bg-[#F0E8D8] text-[#0A0A0A]"
           >
-            Cancel
+            {text.cancel}
           </Button>
           <Button
             variant="destructive"
             className="rounded-none border border-[#0A0A0A] bg-[#C8001A] text-white"
           >
-            Confirm
+            {text.confirm}
           </Button>
         </DialogFooter>
       </DialogContent>

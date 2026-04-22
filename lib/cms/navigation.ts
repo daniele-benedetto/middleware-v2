@@ -1,3 +1,5 @@
+import { i18n } from "@/lib/i18n";
+
 export type CmsNavItem = {
   label: string;
   href: string;
@@ -5,10 +7,10 @@ export type CmsNavItem = {
 };
 
 export const cmsNavigation: CmsNavItem[] = [
-  { label: "Dashboard", href: "/cms" },
-  { label: "Issues", href: "/cms/issues" },
-  { label: "Categories", href: "/cms/categories" },
-  { label: "Tags", href: "/cms/tags" },
-  { label: "Articles", href: "/cms/articles" },
-  { label: "Users", href: "/cms/users", adminOnly: true },
+  { label: i18n.cms.navigation.dashboard, href: "/cms" },
+  { label: i18n.cms.navigation.issues, href: "/cms/issues" },
+  { label: i18n.cms.navigation.categories, href: "/cms/categories" },
+  { label: i18n.cms.navigation.tags, href: "/cms/tags" },
+  { label: i18n.cms.navigation.articles, href: "/cms/articles" },
+  { label: i18n.cms.navigation.users, href: "/cms/users", adminOnly: true },
 ];

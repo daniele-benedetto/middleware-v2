@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { i18n } from "@/lib/i18n";
 
 type CmsResourcePageProps = {
   title: string;
@@ -23,6 +24,8 @@ type CmsResourcePageProps = {
 };
 
 export function CmsResourcePage({ title, subtitle }: CmsResourcePageProps) {
+  const text = i18n.cms.resource;
+
   return (
     <div className="space-y-6">
       <CmsPageHeader
@@ -31,7 +34,7 @@ export function CmsResourcePage({ title, subtitle }: CmsResourcePageProps) {
         actions={
           <Button className="rounded-none border border-[#0A0A0A] bg-[#0A0A0A] text-[#FFFFFF] hover:bg-[#0A0A0A]/90">
             <Plus className="size-3" />
-            New
+            {text.new}
           </Button>
         }
       />
@@ -46,11 +49,11 @@ export function CmsResourcePage({ title, subtitle }: CmsResourcePageProps) {
                     variant="outline"
                     className="rounded-none border-[#0A0A0A] bg-[#F0E8D8] text-[#0A0A0A]"
                   >
-                    Delete selected
+                    {text.deleteSelected}
                   </Button>
                 }
-                title="Confirm hard delete"
-                description="This action permanently deletes selected records."
+                title={text.confirmTitle}
+                description={text.confirmDescription}
               />
             }
           />
@@ -60,26 +63,26 @@ export function CmsResourcePage({ title, subtitle }: CmsResourcePageProps) {
             <TableHeader>
               <TableRow className="border-b-[#0A0A0A] hover:bg-transparent">
                 <TableHead className="font-ui text-[11px] uppercase tracking-[0.08em] text-[#0A0A0A]">
-                  Name
+                  {text.tableName}
                 </TableHead>
                 <TableHead className="font-ui text-[11px] uppercase tracking-[0.08em] text-[#0A0A0A]">
-                  Status
+                  {text.tableStatus}
                 </TableHead>
                 <TableHead className="font-ui text-[11px] uppercase tracking-[0.08em] text-[#0A0A0A]">
-                  Updated
+                  {text.tableUpdated}
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow className="border-b-[#0A0A0A] hover:bg-[#E5D9C5]">
                 <TableCell className="text-[16px] leading-[1.55] text-[#0A0A0A]">
-                  Sample row
+                  {text.sampleRow}
                 </TableCell>
                 <TableCell className="font-ui text-[11px] uppercase tracking-[0.08em] text-[#C8001A]">
-                  Draft
+                  {text.draft}
                 </TableCell>
                 <TableCell className="font-ui text-[11px] uppercase tracking-[0.08em] text-[rgba(10,10,10,0.6)]">
-                  Today
+                  {text.today}
                 </TableCell>
               </TableRow>
             </TableBody>
@@ -88,10 +91,7 @@ export function CmsResourcePage({ title, subtitle }: CmsResourcePageProps) {
         pagination={<CmsPaginationFooter />}
       />
 
-      <CmsEmptyState
-        title={`No ${title.toLowerCase()} yet`}
-        description="Data will appear here after the first create action."
-      />
+      <CmsEmptyState title={text.emptyTitle(title)} description={text.emptyDescription} />
     </div>
   );
 }

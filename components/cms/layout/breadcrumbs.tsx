@@ -10,10 +10,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { i18n } from "@/lib/i18n";
 
 const formatSegment = (segment: string) => {
-  if (segment.length === 0) {
-    return "Dashboard";
+  const routeLabels = i18n.cms.routeLabels as Record<string, string>;
+
+  if (routeLabels[segment]) {
+    return routeLabels[segment];
   }
 
   return segment.charAt(0).toUpperCase() + segment.slice(1);
@@ -31,7 +34,7 @@ export function CmsBreadcrumbs() {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink href="/cms" className="font-ui text-[11px] uppercase tracking-[0.08em]">
-            CMS
+            {i18n.cms.breadcrumbs.root}
           </BreadcrumbLink>
         </BreadcrumbItem>
         {segments.map((segment, index) => {

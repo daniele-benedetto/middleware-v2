@@ -1,10 +1,8 @@
 import { CmsResourcePage } from "@/components/cms/pages";
+import { i18n } from "@/lib/i18n";
 
 export default function CmsCategoriesPage() {
-  return (
-    <CmsResourcePage
-      title="Categories"
-      subtitle="List baseline with filters, table, pagination and destructive action confirmation."
-    />
-  );
+  const text = i18n.cms;
+
+  return <CmsResourcePage title={text.navigation.categories} subtitle={text.resource.subtitle} />;
 }

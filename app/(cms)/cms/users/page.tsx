@@ -1,10 +1,8 @@
 import { CmsResourcePage } from "@/components/cms/pages";
+import { i18n } from "@/lib/i18n";
 
 export default function CmsUsersPage() {
-  return (
-    <CmsResourcePage
-      title="Users"
-      subtitle="Admin-only section placeholder. Role gate implementation is tracked in activity 2."
-    />
-  );
+  const text = i18n.cms;
+
+  return <CmsResourcePage title={text.navigation.users} subtitle={text.resource.usersSubtitle} />;
 }

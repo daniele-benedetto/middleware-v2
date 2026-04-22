@@ -1,0 +1,64 @@
+export const cmsIt = {
+  home: {
+    brand: "Middleware CMS",
+    title: "Frontend in configurazione",
+    description:
+      "Design system e integrazione tRPC sono pronti. Prossimo passo: shell CMS e moduli operativi.",
+  },
+  navigation: {
+    brand: "Middleware",
+    app: "CMS",
+    dashboard: "Dashboard",
+    issues: "Issues",
+    categories: "Categorie",
+    tags: "Tag",
+    articles: "Articoli",
+    users: "Utenti",
+    adminSuffix: "(Admin)",
+  },
+  topbar: {
+    label: "Pannello editoriale",
+    theme: "Modalita light",
+  },
+  breadcrumbs: {
+    root: "CMS",
+  },
+  routeLabels: {
+    cms: "Dashboard",
+    issues: "Issues",
+    categories: "Categorie",
+    tags: "Tag",
+    articles: "Articoli",
+    users: "Utenti",
+  },
+  dashboard: {
+    title: "Dashboard",
+    subtitle: "Shell CMS e navigazione base pronte.",
+    section: "Sezione",
+  },
+  resource: {
+    subtitle: "Lista base con filtri, tabella, paginazione e conferma per azioni distruttive.",
+    new: "Nuovo",
+    deleteSelected: "Elimina selezionati",
+    confirmTitle: "Conferma hard delete",
+    confirmDescription: "Questa azione elimina definitivamente i record selezionati.",
+    cancel: "Annulla",
+    confirm: "Conferma",
+    tableName: "Nome",
+    tableStatus: "Stato",
+    tableUpdated: "Aggiornato",
+    sampleRow: "Riga di esempio",
+    draft: "Bozza",
+    today: "Oggi",
+    emptyDescription: "I dati compariranno qui dopo la prima creazione.",
+    usersSubtitle: "Placeholder sezione Admin. Il gate ruolo e tracciato in attivita 2.",
+    emptyTitle: (value: string) => `Nessun elemento in ${value.toLowerCase()}`,
+  },
+  listToolbar: {
+    searchPlaceholder: "Cerca...",
+  },
+  pagination: {
+    page: "Pagina 1 di 1",
+    perPage: "20 per pagina",
+  },
+} as const;

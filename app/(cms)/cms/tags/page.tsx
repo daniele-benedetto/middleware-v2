@@ -1,10 +1,8 @@
 import { CmsResourcePage } from "@/components/cms/pages";
+import { i18n } from "@/lib/i18n";
 
 export default function CmsTagsPage() {
-  return (
-    <CmsResourcePage
-      title="Tags"
-      subtitle="List baseline with filters, table, pagination and destructive action confirmation."
-    />
-  );
+  const text = i18n.cms;
+
+  return <CmsResourcePage title={text.navigation.tags} subtitle={text.resource.subtitle} />;
 }
