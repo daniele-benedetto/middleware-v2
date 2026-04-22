@@ -3,6 +3,7 @@ import { USER_ROLES } from "@/lib/server/auth/roles";
 import { created, ok } from "@/lib/server/http/api-response";
 import { auditAction } from "@/lib/server/http/audit";
 import { parsePagination } from "@/lib/server/http/pagination";
+import { enforceRateLimit, rateLimitPolicies } from "@/lib/server/http/rate-limit";
 import { withRoute } from "@/lib/server/http/route";
 import {
   createTagInputSchema,
@@ -49,6 +50,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
+    enforceRateLimit(request, rateLimitPolicies.write);
     await auditAction(request, { action: "create", resource: "tags" });
     const input = await parseJsonBody(request, createTagInputSchema);
     const data = parseOutput(await tagsService.create(input), tagDtoSchema);

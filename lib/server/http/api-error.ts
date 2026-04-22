@@ -2,6 +2,7 @@ export type ApiErrorCode =
   | "VALIDATION_ERROR"
   | "UNAUTHORIZED"
   | "FORBIDDEN"
+  | "RATE_LIMITED"
   | "NOT_FOUND"
   | "CONFLICT"
   | "METHOD_NOT_ALLOWED"
@@ -23,19 +24,31 @@ export class ApiError extends Error {
 
 export function toErrorResponse(error: unknown): Response {
   if (error instanceof ApiError) {
+    if (error.status >= 500) {
+      console.error("API_ERROR", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+      });
+    }
+
+    const safeDetails = error.code === "VALIDATION_ERROR" ? error.details : undefined;
+
     return Response.json(
       {
         data: null,
         error: {
           code: error.code,
           message: error.message,
-          details: error.details,
+          details: safeDetails,
         },
         meta: null,
       },
       { status: error.status },
     );
   }
+
+  console.error("UNEXPECTED_API_ERROR", error);
 
   return Response.json(
     {

@@ -33,7 +33,12 @@ export const syncArticleTagsInputSchema = z.object({
 
 export const reorderArticlesInputSchema = z.object({
   issueId: z.string().uuid(),
-  orderedArticleIds: z.array(z.string().uuid()),
+  orderedArticleIds: z
+    .array(z.string().uuid())
+    .min(1)
+    .refine((ids) => new Set(ids).size === ids.length, {
+      message: "orderedArticleIds must be unique",
+    }),
 });
 
 const featuredQuerySchema = z.enum(["true", "false"]).transform((value) => value === "true");

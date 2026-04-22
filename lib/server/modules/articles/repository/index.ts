@@ -171,6 +171,24 @@ export const articlesRepository = {
   },
   async reorder(input: ReorderArticlesInput) {
     return prisma.$transaction(async (tx) => {
+      const currentIssueArticles = await tx.article.findMany({
+        where: { issueId: input.issueId },
+        select: { id: true },
+        orderBy: { position: "asc" },
+      });
+
+      const currentOrder = currentIssueArticles.map((article) => article.id);
+      const isSameOrder =
+        currentOrder.length === input.orderedArticleIds.length &&
+        currentOrder.every((articleId, index) => articleId === input.orderedArticleIds[index]);
+
+      if (isSameOrder) {
+        return tx.article.findMany({
+          where: { issueId: input.issueId },
+          orderBy: { position: "asc" },
+        });
+      }
+
       for (const [index, articleId] of input.orderedArticleIds.entries()) {
         await tx.article.update({
           where: { id: articleId },

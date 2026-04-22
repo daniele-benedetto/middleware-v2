@@ -14,11 +14,11 @@ Decisioni gia fissate:
 
 ## 8) Performance, sicurezza, operativita
 
-- [ ] Definire limite massimo `pageSize` e default robusti.
-- [ ] Definire rate-limit baseline per endpoint write/sensibili.
-- [ ] Verificare query principali rispetto agli indici attuali.
-- [ ] Definire idempotenza minima per endpoint critici (publish/reorder se richiesto).
-- [ ] Definire policy log errori (no leak di dettagli sensibili verso client).
+- [x] Definire limite massimo `pageSize` e default robusti.
+- [x] Definire rate-limit baseline per endpoint write/sensibili.
+- [x] Verificare query principali rispetto agli indici attuali.
+- [x] Definire idempotenza minima per endpoint critici (publish/reorder se richiesto).
+- [x] Definire policy log errori (no leak di dettagli sensibili verso client).
 
 ## 9) Testing API
 

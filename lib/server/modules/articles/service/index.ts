@@ -144,6 +144,16 @@ export const articlesService = {
     return toArticleDto(article);
   },
   async publish(id: string) {
+    const current = await articlesRepository.getById(id);
+
+    if (!current) {
+      throw new ApiError(404, "NOT_FOUND", "Article not found");
+    }
+
+    if (current.status === "PUBLISHED" && current.publishedAt) {
+      return toArticleDto(current);
+    }
+
     try {
       const article = await articlesRepository.publish(id);
       return toArticleDto(article);

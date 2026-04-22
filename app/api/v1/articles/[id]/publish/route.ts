@@ -3,6 +3,7 @@ import { USER_ROLES } from "@/lib/server/auth/roles";
 import { ok } from "@/lib/server/http/api-response";
 import { auditAction } from "@/lib/server/http/audit";
 import { getIdParam } from "@/lib/server/http/params";
+import { enforceRateLimit, rateLimitPolicies } from "@/lib/server/http/rate-limit";
 import { withRoute } from "@/lib/server/http/route";
 import { articleDtoSchema, articlesService } from "@/lib/server/modules/articles";
 import { parseOutput } from "@/lib/server/validation/output";
@@ -19,6 +20,7 @@ type RouteParams = {
 export async function POST(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
+    enforceRateLimit(request, rateLimitPolicies.publish);
     const id = await getIdParam(context.params);
     await auditAction(request, { action: "publish", resource: "articles", resourceId: id });
     const data = parseOutput(await articlesService.publish(id), articleDtoSchema);

@@ -120,6 +120,29 @@ Resource-specific filters and sorting:
 
 Invalid query params return `400` with `VALIDATION_ERROR`.
 
+## API operational baseline
+
+- Pagination baseline: `page` default `1`, `pageSize` default `20`, `pageSize` max `100`.
+- Rate-limit baseline (in-memory, per IP + method + path, 60s window):
+  - `write`: `60` req/min
+  - `sensitive-write` (users management): `20` req/min
+  - `publish`: `30` req/min
+  - `reorder`: `15` req/min
+- Idempotence baseline:
+  - `POST /api/v1/articles/:id/publish` is idempotent when already published (no state rewrite).
+  - `POST /api/v1/articles/reorder` is idempotent when order is unchanged (no updates executed).
+- Error policy:
+  - client never receives internal stack traces
+  - detailed `error.details` is returned only for `VALIDATION_ERROR`
+  - server logs unexpected/internal errors via `console.error`
+
+### Query/index verification snapshot
+
+- `articles` list filters/sort are covered by existing indexes (`issueId+position`, `status+publishedAt`, `status+isFeatured`, `categoryId`, `authorId`, `slug`).
+- `issues` list is partially covered (`isActive+sortOrder`, `publishedAt`), while `createdAt` sorting has no dedicated index.
+- `categories` and `tags` rely on unique `slug` and `isActive` index; `createdAt` and `name` sorting/filtering are currently not indexed.
+- `users` has unique `email`; `role` + `createdAt` listing is currently not indexed.
+
 ## Definition of Ready (next phase: API)
 
 Before starting API implementation, keep these conditions true:

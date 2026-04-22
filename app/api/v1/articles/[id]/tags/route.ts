@@ -3,6 +3,7 @@ import { USER_ROLES } from "@/lib/server/auth/roles";
 import { ok } from "@/lib/server/http/api-response";
 import { auditAction } from "@/lib/server/http/audit";
 import { getIdParam } from "@/lib/server/http/params";
+import { enforceRateLimit, rateLimitPolicies } from "@/lib/server/http/rate-limit";
 import { withRoute } from "@/lib/server/http/route";
 import {
   articleDtoSchema,
@@ -24,6 +25,7 @@ type RouteParams = {
 export async function PUT(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
+    enforceRateLimit(request, rateLimitPolicies.write);
     const id = await getIdParam(context.params);
     await auditAction(request, { action: "sync-tags", resource: "articles", resourceId: id });
     const input = await parseJsonBody(request, syncArticleTagsInputSchema);
