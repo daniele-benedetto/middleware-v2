@@ -1,17 +1,28 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo_Black, Geist, IBM_Plex_Mono, Newsreader } from "next/font/google";
 
 import { TrpcProvider } from "@/lib/trpc/provider";
+import { cn } from "@/lib/utils";
 
 import type { Metadata } from "next";
+
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
+
+const archivoBlack = Archivo_Black({
+  variable: "--font-archivo-black",
+  weight: "400",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ibm-plex-mono",
+  weight: ["300", "400", "500", "600"],
   subsets: ["latin"],
 });
 
@@ -26,7 +37,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="it"
+      className={cn(
+        "h-full",
+        "antialiased",
+        archivoBlack.variable,
+        newsreader.variable,
+        ibmPlexMono.variable,
+        "font-sans",
+        geist.variable,
+      )}
+    >
       <body className="min-h-full flex flex-col">
         <TrpcProvider>{children}</TrpcProvider>
       </body>

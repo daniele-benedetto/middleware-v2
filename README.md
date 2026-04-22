@@ -245,6 +245,28 @@ Notes:
 - Validation details are attached to `error.data.details` when available.
 - Non-validation/internal details are not leaked to clients.
 
+## CMS visual system (v1)
+
+Design direction: editorial, high contrast, no decorative effects.
+
+- Palette (fixed): `#F0E8D8`, `#E5D9C5`, `#0A0A0A`, `#C8001A`, `#FFFFFF`
+- Ink alpha variants (no gray ramp): `ink-60`, `ink-50`, `ink-30`
+- Typography roles:
+  - display/headings: `Archivo Black`
+  - long-form content: `Newsreader`
+  - UI labels/metadata: `IBM Plex Mono`
+- Surfaces: `border-radius: 0`, `box-shadow: none`
+- Strokes: `3px` primary separators, `1px` grid lines, `4px` semantic accent, `3px` reading bar
+- Spacing scale: `4, 8, 12, 16, 20, 24, 32, 48, 72`
+- Selection: background `#C8001A`, text `#FFFFFF`
+- Theme policy: light-only for current phase
+
+Implementation reference:
+
+- Global tokens and grid primitives: `app/globals.css`
+- Font variables injection: `app/layout.tsx`
+- Extended UI guide and governance: `docs/cms-ui.md`
+
 ### Query/index verification snapshot
 
 - `articles` list filters/sort are covered by existing indexes (`issueId+position`, `status+publishedAt`, `status+isFeatured`, `categoryId`, `authorId`, `slug`).

@@ -14,78 +14,73 @@ Decisioni gia fissate:
 
 Vincoli visivi approvati (source of truth):
 
-- [ ] Applicare palette fissa a 5 token (senza gradienti):
-  - [ ] `--bg-main: #F0E8D8`
-  - [ ] `--bg-hover: #E5D9C5`
-  - [ ] `--ink: #0A0A0A`
-  - [ ] `--accent: #C8001A`
-  - [ ] `--white: #FFFFFF`
-- [ ] Applicare varianti alpha ufficiali del nero (no grigi intermedi):
-  - [ ] `ink-60: rgba(10,10,10,0.6)`
-  - [ ] `ink-50: rgba(10,10,10,0.5)`
-  - [ ] `ink-30: rgba(10,10,10,0.3)`
-- [ ] Impostare tipografia con ruoli fissi:
-  - [ ] `Archivo Black` per titoli/CTA/sezioni (uppercase, tracking negativo dedicato)
-  - [ ] `Newsreader` per contenuti editoriali lunghi
-  - [ ] `IBM Plex Mono` per metadati/UI label/categorie
-- [ ] Impostare regole hard su superfici:
-  - [ ] `border-radius: 0` ovunque
-  - [ ] `box-shadow: none` ovunque
-  - [ ] nessun effetto decorativo gratuito
-- [ ] Standardizzare filetti:
-  - [ ] `3px solid #0A0A0A` separatori principali
-  - [ ] `1px solid #0A0A0A` griglie interne/card
-  - [ ] `4px solid #C8001A` accenti semantici
-  - [ ] barra lettura articolo fissa `3px` rossa
-- [ ] Impostare text selection globale: `background #C8001A`, `color #FFFFFF`.
-- [ ] Applicare scala spacing ufficiale: `4, 8, 12, 16, 20, 24, 32, 48, 72`.
-- [ ] Applicare regole di griglia editoriale asimmetrica (home, listing, articolo, esplora, cover).
-- [ ] Definire breakpoint operativo: sotto `768px` collasso a colonna singola (cover in 2 colonne).
-- [ ] Definire principio guida di UI review: ogni elemento deve avere funzione informativa/operativa.
+- [x] Applicare palette fissa a 5 token (senza gradienti):
+  - [x] `--bg-main: #F0E8D8`
+  - [x] `--bg-hover: #E5D9C5`
+  - [x] `--ink: #0A0A0A`
+  - [x] `--accent: #C8001A`
+  - [x] `--white: #FFFFFF`
+- [x] Applicare varianti alpha ufficiali del nero (no grigi intermedi):
+  - [x] `ink-60: rgba(10,10,10,0.6)`
+  - [x] `ink-50: rgba(10,10,10,0.5)`
+  - [x] `ink-30: rgba(10,10,10,0.3)`
+- [x] Impostare tipografia con ruoli fissi:
+  - [x] `Archivo Black` per titoli/CTA/sezioni (uppercase, tracking negativo dedicato)
+  - [x] `Newsreader` per contenuti editoriali lunghi
+  - [x] `IBM Plex Mono` per metadati/UI label/categorie
+- [x] Impostare regole hard su superfici:
+  - [x] `border-radius: 0` ovunque
+  - [x] `box-shadow: none` ovunque
+  - [x] nessun effetto decorativo gratuito
+- [x] Standardizzare filetti:
+  - [x] `3px solid #0A0A0A` separatori principali
+  - [x] `1px solid #0A0A0A` griglie interne/card
+  - [x] `4px solid #C8001A` accenti semantici
+  - [x] barra lettura articolo fissa `3px` rossa
+- [x] Impostare text selection globale: `background #C8001A`, `color #FFFFFF`.
+- [x] Applicare scala spacing ufficiale: `4, 8, 12, 16, 20, 24, 32, 48, 72`.
+- [x] Applicare regole di griglia editoriale asimmetrica (home, listing, articolo, esplora, cover).
+- [x] Definire breakpoint operativo: sotto `768px` collasso a colonna singola (cover in 2 colonne).
 
-- [ ] Definire direzione visiva CMS (moodboard breve + principi: sobrio editoriale, leggibilita alta, gerarchia chiara).
-- [ ] Definire palette centralizzata (semantic colors):
-  - [ ] `background`, `foreground`, `muted`, `border`, `ring`
-  - [ ] `primary`, `secondary`, `accent`, `destructive`, `success`, `warning`
-  - [ ] stati tabella/card (hover, selected, disabled)
-- [ ] Definire tipografia centralizzata:
-  - [ ] font family titoli/testo/codice
-  - [ ] scala font-size (`xs` -> `2xl`) e line-height
-  - [ ] pesi tipografici standard (regular/medium/semibold)
-- [ ] Definire scala spaziature e raggi (`spacing`, `radius`) e regole di composizione layout.
-- [ ] Definire ombre/elevation e regole uso superfici (card, panel, modal, popover).
-- [ ] Definire set icone unico e regole naming/uso.
-- [ ] Definire regole motion:
-  - [ ] durate/transizioni standard
-  - [ ] riduzione motion per accessibilita (`prefers-reduced-motion`)
-- [ ] Definire griglia e breakpoints responsive per CMS (desktop-first + tablet/mobile fallback).
-- [ ] Definire standard accessibilita minimi UI (focus visibile, contrasto, aria labels, keyboard nav).
-- [ ] Definire policy tema:
-  - [ ] decidere se supportare dark mode ora o posticipare
-  - [x] se posticipata, esplicitare solo tema light ufficiale
+- [x] Definire palette centralizzata (semantic colors):
+  - [x] `background`, `foreground`, `muted`, `border`, `ring`
+  - [x] `primary`, `secondary`, `accent`, `destructive`, `success`, `warning`
+  - [x] stati tabella/card (hover, selected, disabled)
+- [x] Definire tipografia centralizzata:
+  - [x] font family titoli/testo/codice
+  - [x] scala font-size (`xs` -> `2xl`) e line-height
+  - [x] pesi tipografici standard (regular/medium/semibold)
+- [x] Definire scala spaziature e raggi (`spacing`, `radius`) e regole di composizione layout.
+- [x] Definire ombre/elevation e regole uso superfici (card, panel, modal, popover).
+- [x] Definire set icone unico e regole naming/uso.
+- [x] Definire regole motion:
+  - [x] durate/transizioni standard
+  - [x] riduzione motion per accessibilita (`prefers-reduced-motion`)
+- [x] Definire griglia e breakpoints responsive per CMS (desktop-first + tablet/mobile fallback).
+- [x] Definire standard accessibilita minimi UI (focus visibile, contrasto, aria labels, keyboard nav).
 
 Regola componenti (obbligatoria):
 
-- [ ] Prima di creare componenti custom, verificare sempre se esiste un componente `shadcn/ui` adatto.
-- [ ] Usare `shadcn/ui` come base primaria per componenti atomici/compositi.
-- [ ] Consentire componenti custom solo quando:
-  - [ ] il componente non esiste in `shadcn/ui`, oppure
-  - [ ] servono varianti dominio-specifiche non ottenibili con composition pulita.
-- [ ] Documentare in PR la motivazione quando si introduce un componente custom al posto di `shadcn/ui`.
+- [x] Prima di creare componenti custom, verificare sempre se esiste un componente `shadcn/ui` adatto.
+- [x] Usare `shadcn/ui` come base primaria per componenti atomici/compositi.
+- [x] Consentire componenti custom solo quando:
+  - [x] il componente non esiste in `shadcn/ui`, oppure
+  - [x] servono varianti dominio-specifiche non ottenibili con composition pulita.
+- [x] Documentare in PR la motivazione quando si introduce un componente custom al posto di `shadcn/ui`.
 
 Governance componenti:
 
-- [ ] Definire cartelle UI condivise (`components/ui` per shadcn, `components/cms` per composition dominio).
-- [ ] Definire convenzione props (`variant`, `size`, `state`) coerente su componenti shared.
-- [ ] Definire pattern form standard (field wrapper, error message, help text, submit state).
-- [ ] Definire pattern table/list standard (toolbar, filtri, sort header, row actions, bulk actions se servono).
-- [ ] Definire checklist “UI done” per ogni pagina (loading/empty/error/success/a11y/responsive).
+- [x] Definire cartelle UI condivise (`components/ui` per shadcn, `components/cms` per composition dominio).
+- [x] Definire convenzione props (`variant`, `size`, `state`) coerente su componenti shared.
+- [x] Definire pattern form standard (field wrapper, error message, help text, submit state).
+- [x] Definire pattern table/list standard (toolbar, filtri, sort header, row actions, bulk actions se servono).
+- [x] Definire checklist “UI done” per ogni pagina (loading/empty/error/success/a11y/responsive).
 
 Output richiesti della fase 0:
 
-- [ ] Guida stile sintetica in `README.md` (o file dedicato `docs/cms-ui.md`).
-- [ ] Token CSS/Tailwind applicati globalmente (`app/globals.css` + variabili).
-- [ ] Libreria base componenti CMS pronta (layout primitives + form primitives + table primitives).
+- [x] Guida stile sintetica in `README.md` (o file dedicato `docs/cms-ui.md`).
+- [x] Token CSS/Tailwind applicati globalmente (`app/globals.css` + variabili).
+- [x] Libreria base componenti CMS pronta (layout primitives + form primitives + table primitives).
 
 ## 1) Fondazioni frontend CMS
 
