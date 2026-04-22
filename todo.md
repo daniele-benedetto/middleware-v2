@@ -84,17 +84,17 @@ Output richiesti della fase 0:
 
 ## 1) Fondazioni frontend CMS
 
-- [ ] Definire struttura cartelle CMS (`app/(cms)/*`, `components/cms/*`, `lib/cms/*`) con responsabilita chiare.
-- [ ] Definire shell CMS: layout, sidebar, topbar, breadcrumb, area contenuto.
-- [ ] Definire navigation map iniziale:
-  - [ ] Dashboard
-  - [ ] Issues
-  - [ ] Categories
-  - [ ] Tags
-  - [ ] Articles
-  - [ ] Users (solo ADMIN)
-- [ ] Definire standard UI comuni: tabella, toolbar filtri, pagination footer, modale conferma delete, empty state, loading state.
-- [ ] Definire design tokens/base styles CMS coerenti con il progetto.
+- [x] Definire struttura cartelle CMS (`app/(cms)/*`, `components/cms/*`, `lib/cms/*`) con responsabilita chiare.
+- [x] Definire shell CMS: layout, sidebar, topbar, breadcrumb, area contenuto.
+- [x] Definire navigation map iniziale:
+  - [x] Dashboard
+  - [x] Issues
+  - [x] Categories
+  - [x] Tags
+  - [x] Articles
+  - [x] Users (solo ADMIN)
+- [x] Definire standard UI comuni: tabella, toolbar filtri, pagination footer, modale conferma delete, empty state, loading state.
+- [x] Definire design tokens/base styles CMS coerenti con il progetto.
 
 ## 2) Auth, sessione e autorizzazioni UI
 
