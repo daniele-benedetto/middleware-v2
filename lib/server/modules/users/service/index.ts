@@ -4,9 +4,11 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
 import { usersRepository } from "@/lib/server/modules/users/repository";
 
+import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { UserDetailDto, UserListItemDto } from "@/lib/server/modules/users/dto";
 import type {
   CreateUserInput,
+  ListUsersQuery,
   UpdateUserInput,
   UpdateUserRoleInput,
 } from "@/lib/server/modules/users/schema";
@@ -28,9 +30,16 @@ const toUserDto = (user: {
 };
 
 export const usersService = {
-  async list() {
-    const users = await usersRepository.list();
-    return users.map(toUserDto);
+  async list(query: ListUsersQuery, pagination: PaginationParams) {
+    const [users, total] = await Promise.all([
+      usersRepository.list(query, pagination),
+      usersRepository.count(query),
+    ]);
+
+    return {
+      items: users.map(toUserDto),
+      total,
+    };
   },
   async getById(id: string) {
     const user = await usersRepository.getById(id);

@@ -6,12 +6,13 @@ import { parsePagination } from "@/lib/server/http/pagination";
 import { withRoute } from "@/lib/server/http/route";
 import {
   createTagInputSchema,
+  listTagsQuerySchema,
   tagDtoSchema,
   tagsListDtoSchema,
   tagsService,
 } from "@/lib/server/modules/tags";
 import { parseOutput } from "@/lib/server/validation/output";
-import { parseJsonBody } from "@/lib/server/validation/parse";
+import { parseJsonBody, parseWithZod } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,14 +22,25 @@ const EDITORIAL_ROLES = [USER_ROLES.ADMIN, USER_ROLES.EDITOR];
 export async function GET(request: Request) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
-    const pagination = parsePagination(new URL(request.url).searchParams);
-    const data = parseOutput(await tagsService.list(), tagsListDtoSchema);
+    const searchParams = new URL(request.url).searchParams;
+    const pagination = parsePagination(searchParams);
+    const query = parseWithZod(
+      {
+        isActive: searchParams.get("isActive") ?? undefined,
+        q: searchParams.get("q") ?? undefined,
+        sortBy: searchParams.get("sortBy") ?? undefined,
+        sortOrder: searchParams.get("sortOrder") ?? undefined,
+      },
+      listTagsQuerySchema,
+    );
+    const result = await tagsService.list(query, pagination);
+    const data = parseOutput(result.items, tagsListDtoSchema);
 
     return ok(data, {
       pagination: {
         page: pagination.page,
         pageSize: pagination.pageSize,
-        total: 0,
+        total: result.total,
       },
     });
   });

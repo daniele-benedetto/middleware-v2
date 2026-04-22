@@ -90,6 +90,36 @@ Naming conventions used in schema:
 - `Article.publishedAt` is an API-layer invariant: set only when status is `PUBLISHED`.
 - `contentRich` and `audioChunks` are JSON payloads and should be evolved with backward-compatible versioned structures.
 
+## API list contract (`/api/v1`)
+
+All list endpoints return `meta.pagination` and validate query params with Zod.
+
+Common params:
+
+- `page` (default `1`, min `1`)
+- `pageSize` (default `20`, min `1`, max `100`)
+- `sortOrder` (`asc` or `desc`, default `desc`)
+
+Resource-specific filters and sorting:
+
+- `GET /api/v1/users`
+  - filters: `role`, `q`
+  - sortBy: `createdAt`, `email`
+- `GET /api/v1/issues`
+  - filters: `isActive`, `published`, `q`
+  - sortBy: `createdAt`, `sortOrder`, `publishedAt`
+- `GET /api/v1/categories`
+  - filters: `isActive`, `q`
+  - sortBy: `createdAt`, `name`, `slug`
+- `GET /api/v1/tags`
+  - filters: `isActive`, `q`
+  - sortBy: `createdAt`, `name`, `slug`
+- `GET /api/v1/articles`
+  - filters: `status`, `issueId`, `categoryId`, `authorId`, `featured`, `q`
+  - sortBy: `createdAt`, `publishedAt`, `position`
+
+Invalid query params return `400` with `VALIDATION_ERROR`.
+
 ## Definition of Ready (next phase: API)
 
 Before starting API implementation, keep these conditions true:

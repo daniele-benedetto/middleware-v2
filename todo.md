@@ -10,7 +10,7 @@ Decisioni gia fissate:
 
 ## 2) Contratto API e convenzioni
 
-- [ ] Definire sorting/filter contract supportato per ogni risorsa.
+- [x] Definire sorting/filter contract supportato per ogni risorsa.
 
 ## 8) Performance, sicurezza, operativita
 

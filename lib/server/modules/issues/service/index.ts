@@ -5,8 +5,13 @@ import { ApiError } from "@/lib/server/http/api-error";
 import { issuesRepository } from "@/lib/server/modules/issues/repository";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
+import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { IssueDto } from "@/lib/server/modules/issues/dto";
-import type { CreateIssueInput, UpdateIssueInput } from "@/lib/server/modules/issues/schema";
+import type {
+  CreateIssueInput,
+  ListIssuesQuery,
+  UpdateIssueInput,
+} from "@/lib/server/modules/issues/schema";
 
 const toIssueDto = (issue: { id: string; title: string; slug: string }): IssueDto => {
   return {
@@ -27,9 +32,16 @@ const ensureSlug = (value: string): string => {
 };
 
 export const issuesService = {
-  async list() {
-    const issues = await issuesRepository.list();
-    return issues.map(toIssueDto);
+  async list(query: ListIssuesQuery, pagination: PaginationParams) {
+    const [issues, total] = await Promise.all([
+      issuesRepository.list(query, pagination),
+      issuesRepository.count(query),
+    ]);
+
+    return {
+      items: issues.map(toIssueDto),
+      total,
+    };
   },
   async getById(id: string) {
     const issue = await issuesRepository.getById(id);

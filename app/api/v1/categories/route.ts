@@ -9,9 +9,10 @@ import {
   categoriesService,
   categoryDtoSchema,
   createCategoryInputSchema,
+  listCategoriesQuerySchema,
 } from "@/lib/server/modules/categories";
 import { parseOutput } from "@/lib/server/validation/output";
-import { parseJsonBody } from "@/lib/server/validation/parse";
+import { parseJsonBody, parseWithZod } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,14 +22,25 @@ const EDITORIAL_ROLES = [USER_ROLES.ADMIN, USER_ROLES.EDITOR];
 export async function GET(request: Request) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
-    const pagination = parsePagination(new URL(request.url).searchParams);
-    const data = parseOutput(await categoriesService.list(), categoriesListDtoSchema);
+    const searchParams = new URL(request.url).searchParams;
+    const pagination = parsePagination(searchParams);
+    const query = parseWithZod(
+      {
+        isActive: searchParams.get("isActive") ?? undefined,
+        q: searchParams.get("q") ?? undefined,
+        sortBy: searchParams.get("sortBy") ?? undefined,
+        sortOrder: searchParams.get("sortOrder") ?? undefined,
+      },
+      listCategoriesQuerySchema,
+    );
+    const result = await categoriesService.list(query, pagination);
+    const data = parseOutput(result.items, categoriesListDtoSchema);
 
     return ok(data, {
       pagination: {
         page: pagination.page,
         pageSize: pagination.pageSize,
-        total: 0,
+        total: result.total,
       },
     });
   });

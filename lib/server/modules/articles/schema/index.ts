@@ -37,13 +37,17 @@ export const reorderArticlesInputSchema = z.object({
 });
 
 const featuredQuerySchema = z.enum(["true", "false"]).transform((value) => value === "true");
+const sortOrderSchema = z.enum(["asc", "desc"]);
 
 export const listArticlesQuerySchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"] satisfies ArticleStatus[]).optional(),
   issueId: z.string().uuid().optional(),
   categoryId: z.string().uuid().optional(),
+  authorId: z.string().uuid().optional(),
   featured: featuredQuerySchema.optional(),
   q: z.string().trim().min(1).optional(),
+  sortBy: z.enum(["createdAt", "publishedAt", "position"]).default("createdAt"),
+  sortOrder: sortOrderSchema.default("desc"),
 });
 
 export type CreateArticleInput = z.infer<typeof createArticleInputSchema>;

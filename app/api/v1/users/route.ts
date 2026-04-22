@@ -6,12 +6,13 @@ import { parsePagination } from "@/lib/server/http/pagination";
 import { withRoute } from "@/lib/server/http/route";
 import {
   createUserInputSchema,
+  listUsersQuerySchema,
   userListDtoSchema,
   userListItemDtoSchema,
   usersService,
 } from "@/lib/server/modules/users";
 import { parseOutput } from "@/lib/server/validation/output";
-import { parseJsonBody } from "@/lib/server/validation/parse";
+import { parseJsonBody, parseWithZod } from "@/lib/server/validation/parse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,14 +20,25 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   return withRoute(async () => {
     await requireRole(request, [USER_ROLES.ADMIN]);
-    const pagination = parsePagination(new URL(request.url).searchParams);
-    const data = parseOutput(await usersService.list(), userListDtoSchema);
+    const searchParams = new URL(request.url).searchParams;
+    const pagination = parsePagination(searchParams);
+    const query = parseWithZod(
+      {
+        role: searchParams.get("role") ?? undefined,
+        q: searchParams.get("q") ?? undefined,
+        sortBy: searchParams.get("sortBy") ?? undefined,
+        sortOrder: searchParams.get("sortOrder") ?? undefined,
+      },
+      listUsersQuerySchema,
+    );
+    const result = await usersService.list(query, pagination);
+    const data = parseOutput(result.items, userListDtoSchema);
 
     return ok(data, {
       pagination: {
         page: pagination.page,
         pageSize: pagination.pageSize,
-        total: 0,
+        total: result.total,
       },
     });
   });

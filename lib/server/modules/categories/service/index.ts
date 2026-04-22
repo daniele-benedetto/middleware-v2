@@ -5,9 +5,11 @@ import { ApiError } from "@/lib/server/http/api-error";
 import { categoriesRepository } from "@/lib/server/modules/categories/repository";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
+import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { CategoryDto } from "@/lib/server/modules/categories/dto";
 import type {
   CreateCategoryInput,
+  ListCategoriesQuery,
   UpdateCategoryInput,
 } from "@/lib/server/modules/categories/schema";
 
@@ -30,9 +32,16 @@ const ensureSlug = (value: string): string => {
 };
 
 export const categoriesService = {
-  async list() {
-    const categories = await categoriesRepository.list();
-    return categories.map(toCategoryDto);
+  async list(query: ListCategoriesQuery, pagination: PaginationParams) {
+    const [categories, total] = await Promise.all([
+      categoriesRepository.list(query, pagination),
+      categoriesRepository.count(query),
+    ]);
+
+    return {
+      items: categories.map(toCategoryDto),
+      total,
+    };
   },
   async getById(id: string) {
     const category = await categoriesRepository.getById(id);

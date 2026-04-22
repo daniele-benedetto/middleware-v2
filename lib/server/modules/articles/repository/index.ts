@@ -17,6 +17,7 @@ const toArticleWhereInput = (query: ListArticlesQuery): Prisma.ArticleWhereInput
     status: query.status,
     issueId: query.issueId,
     categoryId: query.categoryId,
+    authorId: query.authorId,
     isFeatured: query.featured,
     OR: query.q
       ? [
@@ -27,13 +28,20 @@ const toArticleWhereInput = (query: ListArticlesQuery): Prisma.ArticleWhereInput
   };
 };
 
+const toArticleOrderByInput = (
+  query: ListArticlesQuery,
+): Prisma.ArticleOrderByWithRelationInput => {
+  return { [query.sortBy]: query.sortOrder };
+};
+
 export const articlesRepository = {
   async list(query: ListArticlesQuery, pagination: PaginationParams) {
     const where = toArticleWhereInput(query);
+    const orderBy = toArticleOrderByInput(query);
 
     return prisma.article.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip: (pagination.page - 1) * pagination.pageSize,
       take: pagination.pageSize,
     });

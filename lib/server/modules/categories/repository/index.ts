@@ -1,17 +1,48 @@
 import "server-only";
 
+import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
+import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
   CreateCategoryInput,
+  ListCategoriesQuery,
   UpdateCategoryInput,
 } from "@/lib/server/modules/categories/schema";
 
+const toCategoryWhereInput = (query: ListCategoriesQuery): Prisma.CategoryWhereInput => {
+  return {
+    isActive: query.isActive,
+    OR: query.q
+      ? [
+          { name: { contains: query.q, mode: "insensitive" } },
+          { slug: { contains: query.q, mode: "insensitive" } },
+        ]
+      : undefined,
+  };
+};
+
+const toCategoryOrderByInput = (
+  query: ListCategoriesQuery,
+): Prisma.CategoryOrderByWithRelationInput => {
+  return { [query.sortBy]: query.sortOrder };
+};
+
 export const categoriesRepository = {
-  async list() {
+  async list(query: ListCategoriesQuery, pagination: PaginationParams) {
+    const where = toCategoryWhereInput(query);
+    const orderBy = toCategoryOrderByInput(query);
+
     return prisma.category.findMany({
-      orderBy: { createdAt: "desc" },
+      where,
+      orderBy,
+      skip: (pagination.page - 1) * pagination.pageSize,
+      take: pagination.pageSize,
     });
+  },
+  async count(query: ListCategoriesQuery) {
+    const where = toCategoryWhereInput(query);
+    return prisma.category.count({ where });
   },
   async getById(id: string) {
     return prisma.category.findUnique({

@@ -29,8 +29,11 @@ export async function GET(request: Request) {
         status: searchParams.get("status") ?? undefined,
         issueId: searchParams.get("issueId") ?? undefined,
         categoryId: searchParams.get("categoryId") ?? undefined,
+        authorId: searchParams.get("authorId") ?? undefined,
         featured: searchParams.get("featured") ?? undefined,
         q: searchParams.get("q") ?? undefined,
+        sortBy: searchParams.get("sortBy") ?? undefined,
+        sortOrder: searchParams.get("sortOrder") ?? undefined,
       },
       listArticlesQuerySchema,
     );

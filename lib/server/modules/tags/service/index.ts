@@ -5,8 +5,13 @@ import { ApiError } from "@/lib/server/http/api-error";
 import { tagsRepository } from "@/lib/server/modules/tags/repository";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
+import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { TagDto } from "@/lib/server/modules/tags/dto";
-import type { CreateTagInput, UpdateTagInput } from "@/lib/server/modules/tags/schema";
+import type {
+  CreateTagInput,
+  ListTagsQuery,
+  UpdateTagInput,
+} from "@/lib/server/modules/tags/schema";
 
 const toTagDto = (tag: { id: string; name: string; slug: string }): TagDto => {
   return {
@@ -27,9 +32,16 @@ const ensureSlug = (value: string): string => {
 };
 
 export const tagsService = {
-  async list() {
-    const tags = await tagsRepository.list();
-    return tags.map(toTagDto);
+  async list(query: ListTagsQuery, pagination: PaginationParams) {
+    const [tags, total] = await Promise.all([
+      tagsRepository.list(query, pagination),
+      tagsRepository.count(query),
+    ]);
+
+    return {
+      items: tags.map(toTagDto),
+      total,
+    };
   },
   async getById(id: string) {
     const tag = await tagsRepository.getById(id);

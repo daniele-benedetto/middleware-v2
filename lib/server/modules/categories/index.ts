@@ -3,10 +3,12 @@ export { categoriesPolicy } from "@/lib/server/modules/categories/policy";
 export { categoriesRepository } from "@/lib/server/modules/categories/repository";
 export {
   createCategoryInputSchema,
+  listCategoriesQuerySchema,
   updateCategoryInputSchema,
 } from "@/lib/server/modules/categories/schema";
 export type {
   CreateCategoryInput,
+  ListCategoriesQuery,
   UpdateCategoryInput,
 } from "@/lib/server/modules/categories/schema";
 export type { CategoryDto } from "@/lib/server/modules/categories/dto";
