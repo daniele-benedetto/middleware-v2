@@ -33,13 +33,8 @@ export function EditorialAudioPlayer({
   const progress = totalSeconds > 0 ? Math.min(100, (currentSeconds / totalSeconds) * 100) : 0;
 
   return (
-    <div
-      className={cn(
-        "max-w-[480px] border-2 border-foreground bg-white px-[18px] py-[14px]",
-        className,
-      )}
-    >
-      <div className="mb-[10px] flex items-center justify-between gap-[12px]">
+    <div className={cn("max-w-120 border-2 border-foreground bg-white px-4.5 py-3.5", className)}>
+      <div className="mb-2.5 flex items-center justify-between gap-3">
         <span className="font-ui text-[11px] uppercase tracking-[0.06em] text-foreground">
           {label}
         </span>
@@ -48,31 +43,31 @@ export function EditorialAudioPlayer({
             type="button"
             onClick={onClose}
             aria-label="Chiudi"
-            className="font-ui text-[12px] text-[color:var(--ink-60)] hover:text-foreground"
+            className="font-ui text-[12px] text-muted-foreground hover:text-foreground"
           >
             ✕
           </button>
         ) : null}
       </div>
 
-      <div className="flex items-center gap-[14px]">
+      <div className="flex items-center gap-3.5">
         <button
           type="button"
           onClick={onToggle}
           aria-label={isPlaying ? "Pausa" : "Riproduci"}
-          className="flex size-[36px] shrink-0 items-center justify-center bg-foreground text-white hover:brightness-[0.88]"
+          className="flex size-9 shrink-0 items-center justify-center bg-foreground text-white hover:brightness-[0.88]"
         >
-          {isPlaying ? <PauseIcon className="size-[14px]" /> : <PlayIcon className="size-[14px]" />}
+          {isPlaying ? <PauseIcon className="size-3.5" /> : <PlayIcon className="size-3.5" />}
         </button>
 
-        <div className="relative h-[3px] flex-1 bg-[rgba(10,10,10,0.2)]">
+        <div className="relative h-0.75 flex-1 bg-[rgba(10,10,10,0.2)]">
           <div
             className="h-full bg-accent transition-[width] duration-[var(--motion-base)] ease-[cubic-bezier(0.2,0,0,1)]"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <span className="shrink-0 font-ui text-[11px] text-[color:var(--ink-60)]">
+        <span className="shrink-0 font-ui text-[11px] text-muted-foreground">
           {formatTime(currentSeconds)} / {formatTime(totalSeconds)}
         </span>
       </div>

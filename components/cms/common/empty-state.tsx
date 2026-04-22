@@ -14,7 +14,7 @@ export function CmsEmptyState({ title, description, eyebrow, action }: CmsEmptyS
     <CmsSurface
       border="default"
       spacing="xl"
-      className="flex flex-col items-center gap-[12px] text-center"
+      className="flex flex-col items-center gap-3 text-center"
     >
       {eyebrow ? (
         <CmsMetaText variant="category" className="block">
@@ -24,10 +24,10 @@ export function CmsEmptyState({ title, description, eyebrow, action }: CmsEmptyS
       <CmsDisplay as="h2" size="h2">
         {title}
       </CmsDisplay>
-      <CmsBody size="md" tone="muted" className="max-w-[480px]">
+      <CmsBody size="md" tone="muted" className="max-w-120">
         {description}
       </CmsBody>
-      {action ? <div className="mt-[6px]">{action}</div> : null}
+      {action ? <div className="mt-1.5">{action}</div> : null}
     </CmsSurface>
   );
 }

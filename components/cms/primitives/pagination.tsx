@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 
 const cellBase =
-  "inline-flex items-center justify-center rounded-none font-ui text-[11px] tracking-[0.04em] uppercase py-[8px] transition-none";
+  "inline-flex items-center justify-center rounded-none font-ui text-[11px] tracking-[0.04em] uppercase py-2 transition-none";
 
 type CmsPaginationProps = {
   currentPage: number;
@@ -47,10 +47,10 @@ export function CmsPagination({
         onClick={() => onPageChange?.(currentPage - 1)}
         className={cn(
           cellBase,
-          "border px-[14px]",
+          "border px-3.5",
           prevDisabled
-            ? "cursor-not-allowed border-[color:var(--ink-30)] text-[color:var(--ink-30)]"
-            : "border-foreground text-foreground hover:bg-[color:var(--bg-hover)]",
+            ? "cursor-not-allowed border-border text-border"
+            : "border-foreground text-foreground hover:bg-card-hover",
         )}
       >
         {prevLabel}
@@ -61,10 +61,7 @@ export function CmsPagination({
           return (
             <span
               key={`ellipsis-${idx}`}
-              className={cn(
-                cellBase,
-                "border border-l-0 border-[color:var(--ink-30)] px-[12px] text-[color:var(--ink-60)]",
-              )}
+              className={cn(cellBase, "border border-l-0 border-border px-3 text-muted-foreground")}
             >
               …
             </span>
@@ -79,10 +76,10 @@ export function CmsPagination({
             onClick={() => onPageChange?.(item)}
             className={cn(
               cellBase,
-              "border border-l-0 px-[12px]",
+              "border border-l-0 px-3",
               active
                 ? "border-accent bg-accent text-white"
-                : "border-foreground text-foreground hover:bg-[color:var(--bg-hover)]",
+                : "border-foreground text-foreground hover:bg-card-hover",
             )}
           >
             {String(item).padStart(2, "0")}
@@ -96,10 +93,10 @@ export function CmsPagination({
         onClick={() => onPageChange?.(currentPage + 1)}
         className={cn(
           cellBase,
-          "border border-l-0 px-[14px]",
+          "border border-l-0 px-3.5",
           nextDisabled
-            ? "cursor-not-allowed border-[color:var(--ink-30)] text-[color:var(--ink-30)]"
-            : "border-foreground text-foreground hover:bg-[color:var(--bg-hover)]",
+            ? "cursor-not-allowed border-border text-border"
+            : "border-foreground text-foreground hover:bg-card-hover",
         )}
       >
         {nextLabel}
@@ -123,26 +120,26 @@ export function CmsStepper({ steps, currentIndex, className }: CmsStepperProps) 
           const current = idx === currentIndex;
           const connectorLeft =
             idx === 0 ? null : past || current ? (
-              <div key={`c-${idx}`} className="h-[3px] flex-1 bg-accent" />
+              <div key={`c-${idx}`} className="h-0.75 flex-1 bg-accent" />
             ) : (
-              <div key={`c-${idx}`} className="h-[1px] flex-1 bg-[color:var(--ink-30)]" />
+              <div key={`c-${idx}`} className="h-px flex-1 bg-border" />
             );
 
           const dotClass = past
             ? "bg-accent border-2 border-accent"
             : current
               ? "bg-white border-2 border-accent"
-              : "bg-white border-2 border-[color:var(--ink-30)]";
+              : "bg-white border-2 border-border";
 
           return (
             <div key={idx} className="flex flex-1 items-center last:flex-none">
               {connectorLeft}
-              <div className={cn("size-[12px] shrink-0 rounded-none", dotClass)} />
+              <div className={cn("size-3 shrink-0 rounded-none", dotClass)} />
             </div>
           );
         })}
       </div>
-      <div className="mt-[6px] flex justify-between font-ui text-[9px] uppercase tracking-[0.05em] text-[color:var(--ink-60)]">
+      <div className="mt-1.5 flex justify-between font-ui text-[9px] uppercase tracking-[0.05em] text-muted-foreground">
         {steps.map((step, idx) => (
           <span key={`label-${idx}`} className={idx === currentIndex ? "text-accent" : undefined}>
             {step.label}

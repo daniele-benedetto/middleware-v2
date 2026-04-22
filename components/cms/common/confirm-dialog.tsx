@@ -42,9 +42,9 @@ export function CmsConfirmDialog({
     <Dialog>
       <DialogTrigger
         className={cn(
-          "inline-flex h-auto items-center gap-[6px] rounded-none border border-foreground bg-background px-[14px] py-[7px]",
+          "inline-flex h-auto items-center gap-1.5 rounded-none border border-foreground bg-background px-3.5 py-1.75",
           "font-ui text-[11px] uppercase tracking-[0.08em] text-foreground transition-colors",
-          "hover:bg-[color:var(--bg-hover)] focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2",
+          "hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2",
         )}
       >
         {triggerIcon}
@@ -53,10 +53,10 @@ export function CmsConfirmDialog({
       <DialogContent
         showCloseButton={false}
         className={cn(
-          "w-full max-w-[400px] sm:max-w-[400px] gap-0 rounded-none border-2 border-foreground bg-[color:var(--bg-main)] p-0 ring-0",
+          "w-full max-w-100 sm:max-w-100 gap-0 rounded-none border-2 border-foreground bg-[color:var(--bg-main)] p-0 ring-0",
         )}
       >
-        <div className="flex items-center justify-between bg-foreground px-[18px] py-[14px]">
+        <div className="flex items-center justify-between bg-foreground px-4.5 py-3.5">
           <DialogTitle className="font-display text-[14px] uppercase leading-none tracking-[-0.02em] text-white">
             {title}
           </DialogTitle>
@@ -67,11 +67,11 @@ export function CmsConfirmDialog({
             ×
           </DialogClose>
         </div>
-        <div className="px-[18px] pt-[20px] pb-[16px]">
-          <DialogDescription className="mb-[16px] font-editorial text-[15px] leading-[1.55] text-foreground">
+        <div className="px-4.5 pt-5 pb-4">
+          <DialogDescription className="mb-4 font-editorial text-[15px] leading-[1.55] text-foreground">
             {description}
           </DialogDescription>
-          <div className="flex flex-wrap gap-[10px]">
+          <div className="flex flex-wrap gap-2.5">
             <CmsActionButton
               variant={confirmVariant}
               size="md"
@@ -90,7 +90,7 @@ export function CmsConfirmDialog({
           </div>
         </div>
         {footerInfo ? (
-          <div className="border-t border-[color:var(--ink-30)] px-[18px] py-[10px] font-ui text-[10px] uppercase leading-none tracking-[0.04em] text-[color:var(--ink-60)]">
+          <div className="border-t border-border px-4.5 py-2.5 font-ui text-[10px] uppercase leading-none tracking-[0.04em] text-muted-foreground">
             {footerInfo}
           </div>
         ) : null}

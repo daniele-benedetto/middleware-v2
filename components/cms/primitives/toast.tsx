@@ -15,7 +15,7 @@ type CmsToastRenderProps = {
 
 function CmsToastCard({ id, label, body, variant }: CmsToastRenderProps) {
   const containerClass = cn(
-    "flex w-full min-w-[320px] max-w-[480px] items-stretch",
+    "flex w-full min-w-80 max-w-120 items-stretch",
     variant === "error"
       ? "bg-foreground text-white"
       : variant === "breaking"
@@ -24,17 +24,17 @@ function CmsToastCard({ id, label, body, variant }: CmsToastRenderProps) {
   );
 
   const barClass = cn(
-    "w-[4px] shrink-0",
+    "w-1 shrink-0",
     variant === "error" ? "bg-accent" : variant === "breaking" ? "bg-accent" : "bg-foreground",
   );
 
   const labelClass = cn(
-    "mb-[4px] font-ui text-[10px] uppercase tracking-[0.08em]",
+    "mb-1 font-ui text-[10px] uppercase tracking-[0.08em]",
     variant === "error"
       ? "text-white/50"
       : variant === "breaking"
         ? "text-accent"
-        : "text-[color:var(--ink-60)]",
+        : "text-muted-foreground",
   );
 
   const bodyClass = cn(
@@ -43,16 +43,14 @@ function CmsToastCard({ id, label, body, variant }: CmsToastRenderProps) {
   );
 
   const closeClass = cn(
-    "flex items-center px-[12px] py-[10px] font-ui text-[12px] cursor-pointer",
-    variant === "error"
-      ? "text-white/30 hover:text-white/60"
-      : "text-[color:var(--ink-30)] hover:text-foreground",
+    "flex items-center px-3 py-2.5 font-ui text-[12px] cursor-pointer",
+    variant === "error" ? "text-white/30 hover:text-white/60" : "text-border hover:text-foreground",
   );
 
   return (
     <div className={containerClass}>
       <div className={barClass} />
-      <div className="flex-1 px-[14px] py-[10px]">
+      <div className="flex-1 px-3.5 py-2.5">
         <div className={labelClass}>{label}</div>
         <div className={bodyClass}>{body}</div>
       </div>

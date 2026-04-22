@@ -34,20 +34,20 @@ export function CmsSearchBar({
       <div className="flex">
         <div
           className={cn(
-            "flex items-center px-[14px] py-[10px]",
-            accent ? "border-r border-[color:var(--ink-30)]" : "border-r border-foreground",
+            "flex items-center px-3.5 py-2.5",
+            accent ? "border-r border-border" : "border-r border-foreground",
           )}
         >
-          <SearchIcon className={cn("size-[14px]", accent ? "text-accent" : "text-foreground")} />
+          <SearchIcon className={cn("size-3.5", accent ? "text-accent" : "text-foreground")} />
         </div>
         <input
           type="search"
           value={value}
           placeholder={placeholder}
           className={cn(
-            "flex-1 rounded-none border-0 bg-transparent px-[12px] py-[10px] outline-none",
+            "flex-1 rounded-none border-0 bg-transparent px-3 py-2.5 outline-none",
             "font-ui text-[12px] uppercase tracking-[0.04em] appearance-none",
-            "placeholder:text-[color:var(--ink-30)]",
+            "placeholder:text-border",
             accent ? "text-accent" : "text-foreground",
           )}
           {...props}
@@ -78,19 +78,16 @@ export function CmsSearchResultItem({
       type="button"
       onClick={onSelect}
       className={cn(
-        "block w-full px-[14px] py-[7px] text-left transition-none",
+        "block w-full px-3.5 py-1.75 text-left transition-none",
         "font-ui text-[11px] uppercase tracking-[0.04em] text-foreground",
-        "border-b border-[color:var(--bg-hover)] last:border-b-0",
-        active ? "bg-[color:var(--bg-hover)]" : "bg-white hover:bg-[color:var(--bg-hover)]",
+        "border-b border-card-hover last:border-b-0",
+        active ? "bg-card-hover" : "bg-white hover:bg-card-hover",
       )}
     >
       {title}
       {meta ? (
         <span
-          className={cn(
-            "ml-[8px] text-[10px]",
-            metaAccent ? "text-accent" : "text-[color:var(--ink-60)]",
-          )}
+          className={cn("ml-2 text-[10px]", metaAccent ? "text-accent" : "text-muted-foreground")}
         >
           {meta}
         </span>

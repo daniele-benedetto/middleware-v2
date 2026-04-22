@@ -25,15 +25,15 @@ export function CmsSidebar({ role }: CmsSidebarProps) {
   };
 
   return (
-    <div className="h-full bg-background p-[20px]">
+    <div className="h-full bg-background p-5">
       <CmsMetaText variant="category" className="block">
         {text.brand}
       </CmsMetaText>
-      <CmsDisplay as="h2" size="h2" className="mt-[8px]">
+      <CmsDisplay as="h2" size="h2" className="mt-2">
         {text.app}
       </CmsDisplay>
 
-      <nav className="mt-[24px] flex flex-col gap-[4px]">
+      <nav className="mt-6 flex flex-col gap-1">
         {visibleNavigation.map((item) => {
           const active = isActive(item.href);
           return (
@@ -42,16 +42,16 @@ export function CmsSidebar({ role }: CmsSidebarProps) {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "relative block pl-[14px] pr-[12px] py-[10px]",
+                "relative block pl-3.5 pr-3 py-2.5",
                 "font-ui text-[11px] uppercase tracking-[0.08em] transition-colors",
                 active
-                  ? "bg-[color:var(--bg-hover)] text-accent border-l-[4px] border-accent"
-                  : "text-foreground border-l-[4px] border-transparent hover:bg-[color:var(--bg-hover)] hover:border-foreground",
+                  ? "bg-card-hover text-accent border-l-[4px] border-accent"
+                  : "text-foreground border-l-[4px] border-transparent hover:bg-card-hover hover:border-foreground",
               )}
             >
               {item.label}
               {item.adminOnly ? (
-                <span className="ml-[6px] text-[color:var(--ink-60)]">{text.adminSuffix}</span>
+                <span className="ml-1.5 text-muted-foreground">{text.adminSuffix}</span>
               ) : null}
             </Link>
           );

@@ -24,16 +24,16 @@ import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "rea
 
 type CmsControlState = "default" | "focus" | "filled" | "error" | "disabled";
 
-const labelBase = "block font-ui text-[10px] uppercase tracking-[0.08em] mb-[6px]";
+const labelBase = "block font-ui text-[10px] uppercase tracking-[0.08em] mb-1.5";
 
 const cmsFormLabelVariants = cva(labelBase, {
   variants: {
     state: {
-      default: "text-[color:var(--ink-60)]",
+      default: "text-muted-foreground",
       focus: "text-accent",
-      filled: "text-[color:var(--ink-60)]",
-      error: "text-[color:var(--ink-60)]",
-      disabled: "text-[color:var(--ink-30)]",
+      filled: "text-muted-foreground",
+      error: "text-muted-foreground",
+      disabled: "text-border",
     },
   },
   defaultVariants: { state: "default" },
@@ -41,11 +41,11 @@ const cmsFormLabelVariants = cva(labelBase, {
 
 const inputBaseReset =
   "w-full rounded-none bg-white shadow-none outline-none transition-none appearance-none " +
-  "placeholder:text-[color:var(--ink-30)] " +
+  "placeholder:text-border " +
   "focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent " +
   "aria-invalid:ring-0 aria-invalid:border-accent";
 
-const cmsTextInputVariants = cva(`${inputBaseReset} h-[44px]`, {
+const cmsTextInputVariants = cva(`${inputBaseReset} h-11`, {
   variants: {
     tone: {
       editorial: "font-editorial text-[16px] leading-[1.4] text-foreground",
@@ -53,28 +53,26 @@ const cmsTextInputVariants = cva(`${inputBaseReset} h-[44px]`, {
       mono: "font-ui text-[13px] tracking-[0.02em] text-foreground",
     },
     state: {
-      default: "border border-foreground bg-white px-[12px]",
-      focus: "border-2 border-accent bg-white px-[11px]",
-      filled: "border border-foreground bg-[color:var(--bg-main)] px-[12px]",
-      error: "border-2 border-accent bg-[color:var(--ui-error-bg)] px-[11px]",
-      disabled:
-        "border border-[color:var(--ink-30)] bg-[color:var(--bg-hover)] text-[color:var(--ink-30)] cursor-not-allowed px-[12px]",
+      default: "border border-foreground bg-white px-3",
+      focus: "border-2 border-accent bg-white px-2.75",
+      filled: "border border-foreground bg-[color:var(--bg-main)] px-3",
+      error: "border-2 border-accent bg-[color:var(--ui-error-bg)] px-2.75",
+      disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3",
     },
   },
   defaultVariants: { tone: "editorial", state: "default" },
 });
 
 const cmsTextareaVariants = cva(
-  `${inputBaseReset} font-editorial text-[16px] leading-[1.6] min-h-[108px] resize-y`,
+  `${inputBaseReset} font-editorial text-[16px] leading-[1.6] min-h-27 resize-y`,
   {
     variants: {
       state: {
-        default: "border border-foreground bg-white px-[12px] py-[10px]",
-        focus: "border-2 border-accent bg-white px-[11px] py-[9px]",
-        filled: "border border-foreground bg-[color:var(--bg-main)] px-[12px] py-[10px]",
-        error: "border-2 border-accent bg-[color:var(--ui-error-bg)] px-[11px] py-[9px]",
-        disabled:
-          "border border-[color:var(--ink-30)] bg-[color:var(--bg-hover)] text-[color:var(--ink-30)] cursor-not-allowed px-[12px] py-[10px]",
+        default: "border border-foreground bg-white px-3 py-2.5",
+        focus: "border-2 border-accent bg-white px-2.75 py-2.25",
+        filled: "border border-foreground bg-[color:var(--bg-main)] px-3 py-2.5",
+        error: "border-2 border-accent bg-[color:var(--ui-error-bg)] px-2.75 py-2.25",
+        disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3 py-2.5",
       },
     },
     defaultVariants: { state: "default" },
@@ -83,21 +81,19 @@ const cmsTextareaVariants = cva(
 
 const cmsSelectTriggerVariants = cva(
   "w-full rounded-none bg-white shadow-none outline-none transition-none " +
-    "h-[44px] font-ui text-[12px] uppercase tracking-[0.04em] text-foreground " +
-    "data-placeholder:text-[color:var(--ink-30)] " +
+    "h-11 font-ui text-[12px] uppercase tracking-[0.04em] text-foreground " +
+    "data-placeholder:text-border " +
     "focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent " +
-    "justify-between gap-[12px] " +
-    "[&>svg]:!size-[12px] [&>svg]:!text-foreground",
+    "justify-between gap-3 " +
+    "[&>svg]:size-3! [&>svg]:text-foreground!",
   {
     variants: {
       state: {
-        default: "border border-foreground bg-white px-[12px]",
-        focus: "border-2 border-accent bg-white px-[11px]",
-        filled: "border-2 border-accent bg-[color:var(--bg-main)] px-[11px] [&>svg]:!text-accent",
-        error:
-          "border-2 border-accent bg-[color:var(--ui-error-bg)] px-[11px] [&>svg]:!text-accent",
-        disabled:
-          "border border-[color:var(--ink-30)] bg-[color:var(--bg-hover)] text-[color:var(--ink-30)] cursor-not-allowed px-[12px]",
+        default: "border border-foreground bg-white px-3",
+        focus: "border-2 border-accent bg-white px-2.75",
+        filled: "border-2 border-accent bg-[color:var(--bg-main)] px-2.75 [&>svg]:text-accent!",
+        error: "border-2 border-accent bg-[color:var(--ui-error-bg)] px-2.75 [&>svg]:text-accent!",
+        disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3",
       },
     },
     defaultVariants: { state: "default" },
@@ -166,7 +162,7 @@ export function CmsTextarea({
         {...props}
       />
       {showCounter ? (
-        <div className="mt-[5px] text-right font-ui text-[10px] uppercase tracking-[0.04em] text-[color:var(--ink-30)]">
+        <div className="mt-1.25 text-right font-ui text-[10px] uppercase tracking-[0.04em] text-border">
           {currentLength}
           {maxLength ? ` / ${maxLength} CAR.` : " CAR."}
         </div>
@@ -216,8 +212,8 @@ export function CmsSelect({
             key={option.value}
             value={option.value}
             className={cn(
-              "cursor-pointer rounded-none border-0 py-[8px] pr-[36px] pl-[12px]",
-              "font-ui text-[11px] uppercase tracking-[0.04em] text-[color:var(--ink-60)]",
+              "cursor-pointer rounded-none border-0 py-2 pr-9 pl-3",
+              "font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground",
               "focus:bg-accent focus:text-white data-highlighted:bg-accent data-highlighted:text-white",
               "data-[selected=true]:text-foreground",
             )}
@@ -246,26 +242,26 @@ export function CmsCheckbox({
   onChange,
 }: CmsCheckboxProps) {
   const labelColor = disabled
-    ? "text-[color:var(--ink-30)]"
+    ? "text-border"
     : accent && checked
       ? "text-accent"
       : "text-foreground";
 
   const boxClass = cn(
-    "size-[20px] shrink-0 rounded-none border shadow-none ring-0",
-    "[&_[data-slot=checkbox-indicator]>svg]:!size-[12px]",
+    "size-5 shrink-0 rounded-none border shadow-none ring-0",
+    "[&_[data-slot=checkbox-indicator]>svg]:size-3!",
     disabled
-      ? "border-[color:var(--ink-30)] !bg-[color:var(--bg-hover)] cursor-not-allowed"
+      ? "border-border bg-card-hover! cursor-not-allowed"
       : accent
-        ? "border-foreground bg-white data-checked:!border-accent data-checked:!bg-accent [&[data-checked]_[data-slot=checkbox-indicator]]:text-white"
-        : "border-foreground bg-white data-checked:!bg-foreground [&[data-checked]_[data-slot=checkbox-indicator]]:text-[color:var(--bg-main)]",
+        ? "border-foreground bg-white data-checked:border-accent! data-checked:bg-accent! [&[data-checked]_[data-slot=checkbox-indicator]]:text-white"
+        : "border-foreground bg-white data-checked:bg-foreground! [&[data-checked]_[data-slot=checkbox-indicator]]:text-[color:var(--bg-main)]",
     "focus-visible:ring-0 focus-visible:border-accent",
   );
 
   return (
     <label
       className={cn(
-        "inline-flex items-center gap-[12px] font-ui text-[12px] uppercase tracking-[0.04em]",
+        "inline-flex items-center gap-3 font-ui text-[12px] uppercase tracking-[0.04em]",
         disabled ? "cursor-not-allowed" : "cursor-pointer",
         labelColor,
       )}
@@ -298,12 +294,12 @@ export function CmsRadio({
   value,
   onChange,
 }: CmsRadioProps) {
-  const labelColor = disabled ? "text-[color:var(--ink-30)]" : "text-foreground";
+  const labelColor = disabled ? "text-border" : "text-foreground";
 
   return (
     <label
       className={cn(
-        "inline-flex items-center gap-[12px] font-ui text-[12px] uppercase tracking-[0.04em]",
+        "inline-flex items-center gap-3 font-ui text-[12px] uppercase tracking-[0.04em]",
         disabled ? "cursor-not-allowed" : "cursor-pointer",
         labelColor,
       )}
@@ -318,12 +314,12 @@ export function CmsRadio({
           value={value}
           disabled={disabled}
           className={cn(
-            "size-[20px] shrink-0 rounded-full shadow-none ring-0",
+            "size-5 shrink-0 rounded-full shadow-none ring-0",
             disabled
-              ? "!border !border-[color:var(--ink-30)] !bg-[color:var(--bg-hover)]"
-              : "!border !border-[color:var(--ink-30)] !bg-white data-checked:!border-[2px] data-checked:!border-accent data-checked:!bg-white",
+              ? "!border border-border! bg-card-hover!"
+              : "!border border-border! bg-white! data-checked:border-[2px]! data-checked:border-accent! data-checked:bg-white!",
             "focus-visible:ring-0",
-            "[&_[data-slot=radio-group-indicator]>span]:!size-[8px] [&_[data-slot=radio-group-indicator]>span]:!bg-accent",
+            "[&_[data-slot=radio-group-indicator]>span]:size-2! [&_[data-slot=radio-group-indicator]>span]:bg-accent!",
           )}
         />
       </ShadcnRadioGroup>
@@ -351,29 +347,25 @@ export function CmsToggle({
     ? accent
       ? "text-accent"
       : "text-foreground"
-    : "text-[color:var(--ink-60)]";
+    : "text-muted-foreground";
 
   const trackBase =
-    "relative inline-flex h-[24px] w-[44px] shrink-0 items-center !rounded-none shadow-none ring-0 transition-none after:content-none";
+    "relative inline-flex h-6 w-11 shrink-0 items-center rounded-none! shadow-none ring-0 transition-none after:content-none";
   const trackState = checked
     ? accent
-      ? "!border !border-accent !bg-accent data-checked:!bg-accent"
-      : "!border !border-foreground !bg-foreground data-checked:!bg-foreground"
-    : "!border !border-[color:var(--ink-30)] !bg-[color:var(--bg-hover)] data-unchecked:!bg-[color:var(--bg-hover)]";
+      ? "!border border-accent! bg-accent! data-checked:bg-accent!"
+      : "!border border-foreground! bg-foreground! data-checked:bg-foreground!"
+    : "!border border-border! bg-card-hover! data-unchecked:bg-card-hover!";
 
-  const thumbColor = checked
-    ? accent
-      ? "!bg-white"
-      : "!bg-[color:var(--bg-main)]"
-    : "!bg-[color:var(--ink-30)]";
-  const thumbTransform = checked ? "!translate-x-[22px]" : "!translate-x-[2px]";
+  const thumbColor = checked ? (accent ? "bg-white!" : "!bg-[color:var(--bg-main)]") : "bg-border!";
+  const thumbTransform = checked ? "translate-x-5.5!" : "translate-x-0.5!";
 
   const trackClass = cn(
     trackBase,
     trackState,
     disabled && "opacity-50 cursor-not-allowed",
-    "focus-visible:ring-0 focus-visible:!border-accent",
-    `[&_[data-slot=switch-thumb]]:!size-[18px] [&_[data-slot=switch-thumb]]:!rounded-none ${[
+    "focus-visible:ring-0 focus-visible:border-accent!",
+    `[&_[data-slot=switch-thumb]]:size-4.5! [&_[data-slot=switch-thumb]]:rounded-none! ${[
       ...thumbColor.split(" "),
       ...thumbTransform.split(" "),
     ]
@@ -384,7 +376,7 @@ export function CmsToggle({
   return (
     <label
       className={cn(
-        "inline-flex items-center gap-[12px] font-ui text-[11px] uppercase tracking-[0.06em]",
+        "inline-flex items-center gap-3 font-ui text-[11px] uppercase tracking-[0.06em]",
         disabled ? "cursor-not-allowed" : "cursor-pointer",
         labelColor,
       )}

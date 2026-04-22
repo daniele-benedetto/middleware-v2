@@ -13,10 +13,10 @@ const cmsSurfaceVariants = cva("bg-background", {
     },
     spacing: {
       none: "",
-      sm: "p-[14px]",
-      md: "p-[16px]",
-      lg: "p-[20px]",
-      xl: "p-[24px]",
+      sm: "p-3.5",
+      md: "p-4",
+      lg: "p-5",
+      xl: "p-6",
     },
   },
   defaultVariants: {

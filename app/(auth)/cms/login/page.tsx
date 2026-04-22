@@ -14,7 +14,7 @@ export default async function CmsLoginPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-[520px] flex-1 flex-col px-6 py-12">
+    <main className="mx-auto flex w-full max-w-130 flex-1 flex-col px-6 py-12">
       <CmsEyebrow tone="accent">{i18n.cms.home.brand}</CmsEyebrow>
       <CmsHeading size="page" className="mt-3">
         {text.loginTitle}

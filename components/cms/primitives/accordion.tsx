@@ -59,13 +59,13 @@ export function CmsAccordion({ items, defaultValue, className }: CmsAccordionPro
           <AccordionPrimitive.Header className="flex">
             <AccordionPrimitive.Trigger
               className={cn(
-                "group flex flex-1 cursor-pointer items-center justify-between px-[18px] py-[14px] text-left",
+                "group flex flex-1 cursor-pointer items-center justify-between px-4.5 py-3.5 text-left",
                 "bg-[color:var(--bg-main)] text-foreground transition-colors outline-none",
                 "aria-expanded:bg-foreground aria-expanded:text-white",
                 "focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2",
               )}
             >
-              <span className="flex items-baseline gap-[10px]">
+              <span className="flex items-baseline gap-2.5">
                 <span className="font-ui text-[11px] leading-none text-accent">
                   {resolveNumeral(item, index)}
                 </span>
@@ -76,8 +76,8 @@ export function CmsAccordion({ items, defaultValue, className }: CmsAccordionPro
               <span
                 aria-hidden
                 className={cn(
-                  "ml-[12px] shrink-0 font-ui text-[14px] leading-none",
-                  "text-[color:var(--ink-30)] group-aria-expanded:text-white/60",
+                  "ml-3 shrink-0 font-ui text-[14px] leading-none",
+                  "text-border group-aria-expanded:text-white/60",
                 )}
               >
                 <span className="group-aria-expanded:hidden">+</span>
@@ -94,7 +94,7 @@ export function CmsAccordion({ items, defaultValue, className }: CmsAccordionPro
             <div
               className={cn(
                 "h-(--accordion-panel-height) data-ending-style:h-0 data-starting-style:h-0",
-                "border-t border-foreground bg-background px-[18px] py-[16px]",
+                "border-t border-foreground bg-background px-4.5 py-4",
                 "font-editorial text-[16px] leading-[1.65] text-foreground",
               )}
             >

@@ -93,14 +93,14 @@ export function CmsEpigraph({ children, author, className }: CmsEpigraphProps) {
   return (
     <p
       className={cn(
-        "ml-auto max-w-[380px] text-right",
+        "ml-auto max-w-95 text-right",
         "font-editorial text-[length:var(--text-editorial-epigraph)] leading-[var(--lh-editorial)] italic text-foreground",
         className,
       )}
     >
       {children}
       {author ? (
-        <span className="mt-[6px] block font-ui text-[var(--text-meta)] not-italic text-[color:var(--ink-60)]">
+        <span className="mt-1.5 block font-ui text-[var(--text-meta)] not-italic text-muted-foreground">
           {author}
         </span>
       ) : null}
@@ -112,16 +112,12 @@ type CmsBlockquoteProps = { children: ReactNode; source?: ReactNode; className?:
 
 export function CmsBlockquote({ children, source, className }: CmsBlockquoteProps) {
   return (
-    <blockquote
-      className={cn("max-w-[520px] border-l-4 border-accent py-[4px] pl-[20px]", className)}
-    >
+    <blockquote className={cn("max-w-130 border-l-4 border-accent py-1 pl-5", className)}>
       <p className="font-editorial text-[length:var(--text-editorial-blockquote)] leading-[var(--lh-editorial)] italic text-foreground">
         {children}
       </p>
       {source ? (
-        <div className="mt-[8px] font-ui text-[var(--text-meta)] text-[color:var(--ink-60)]">
-          {source}
-        </div>
+        <div className="mt-2 font-ui text-[var(--text-meta)] text-muted-foreground">{source}</div>
       ) : null}
     </blockquote>
   );
@@ -133,7 +129,7 @@ export function CmsHairline({ children, className }: CmsHairlineProps) {
   return (
     <p
       className={cn(
-        "max-w-[500px] font-editorial italic font-light",
+        "max-w-125 font-editorial italic font-light",
         "text-[length:var(--text-editorial-hairline)] leading-[var(--lh-md)] text-[color:var(--ink-70)]",
         className,
       )}
@@ -147,7 +143,7 @@ type CmsNoteProps = { number: ReactNode; children: ReactNode; className?: string
 
 export function CmsNote({ number, children, className }: CmsNoteProps) {
   return (
-    <div className={cn("flex max-w-[560px] items-baseline gap-[10px]", className)}>
+    <div className={cn("flex max-w-140 items-baseline gap-2.5", className)}>
       <span className="shrink-0 font-ui text-[length:var(--text-meta)] text-accent">{number}</span>
       <span className="font-editorial text-[length:var(--text-editorial-note)] leading-[var(--lh-sm)] text-foreground">
         {children}
@@ -165,9 +161,9 @@ const cmsMetaTextVariants = cva("font-ui uppercase", {
   variants: {
     variant: {
       category: "text-[length:var(--text-meta)] tracking-[0.08em] text-accent",
-      meta: "text-[length:var(--text-meta)] tracking-normal normal-case text-[color:var(--ink-60)]",
+      meta: "text-[length:var(--text-meta)] tracking-normal normal-case text-muted-foreground",
       tagline: "text-[length:var(--text-meta)] tracking-[0.06em] text-foreground",
-      tiny: "text-[10px] tracking-[0.08em] text-[color:var(--ink-60)]",
+      tiny: "text-[10px] tracking-[0.08em] text-muted-foreground",
     },
   },
   defaultVariants: { variant: "meta" },
@@ -189,7 +185,7 @@ export function CmsParagraphNumber({ children, className }: CmsParagraphNumberPr
   return (
     <span
       className={cn(
-        "block pt-[3px] text-right font-ui text-[length:var(--text-meta)] text-[color:var(--ink-50)]",
+        "block pt-0.75 text-right font-ui text-[length:var(--text-meta)] text-[color:var(--ink-50)]",
         className,
       )}
     >
@@ -206,7 +202,7 @@ type CmsSectionNumberProps = {
 
 export function CmsSectionNumber({ number, label, className }: CmsSectionNumberProps) {
   return (
-    <div className={cn("flex items-baseline gap-[10px]", className)}>
+    <div className={cn("flex items-baseline gap-2.5", className)}>
       <span className="font-ui text-[length:var(--text-section-number)] text-accent">{number}</span>
       <span className="font-display uppercase text-[length:var(--text-display-label)] tracking-[0.04em] text-foreground">
         {label}
@@ -226,7 +222,7 @@ const cmsEyebrowVariants = cva(
       tone: {
         foreground: "text-foreground",
         accent: "text-accent",
-        muted: "text-[color:var(--ink-60)]",
+        muted: "text-muted-foreground",
         onAccent: "text-primary-foreground/75",
       },
     },
@@ -276,7 +272,7 @@ const cmsBodyTextVariants = cva("font-editorial", {
     },
     tone: {
       foreground: "text-foreground",
-      muted: "text-[color:var(--ink-60)]",
+      muted: "text-muted-foreground",
       accent: "text-accent",
     },
   },

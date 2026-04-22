@@ -4,7 +4,7 @@ export default function Home() {
   const text = i18n.cms.home;
 
   return (
-    <main className="mx-auto flex w-full max-w-[860px] flex-1 flex-col px-6 py-12">
+    <main className="mx-auto flex w-full max-w-215 flex-1 flex-col px-6 py-12">
       <section className="ui-surface border-[3px] border-[#0A0A0A] bg-[#F0E8D8] p-6">
         <p className="font-ui text-[11px] uppercase tracking-[0.08em] text-[#C8001A]">
           {text.brand}

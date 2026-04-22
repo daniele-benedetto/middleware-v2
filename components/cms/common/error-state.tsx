@@ -11,18 +11,18 @@ type CmsErrorStateProps = {
 
 export function CmsErrorState({ title, description, retryLabel, onRetry }: CmsErrorStateProps) {
   return (
-    <CmsSurface border="default" spacing="xl" className="flex flex-col items-start gap-[12px]">
+    <CmsSurface border="default" spacing="xl" className="flex flex-col items-start gap-3">
       <CmsMetaText variant="category" className="block">
         ERRORE
       </CmsMetaText>
       <CmsDisplay as="h2" size="h2">
         {title}
       </CmsDisplay>
-      <CmsBody size="md" tone="foreground" className="max-w-[520px]">
+      <CmsBody size="md" tone="foreground" className="max-w-130">
         {description}
       </CmsBody>
       {onRetry ? (
-        <CmsActionButton variant="outline-accent" size="md" onClick={onRetry} className="mt-[6px]">
+        <CmsActionButton variant="outline-accent" size="md" onClick={onRetry} className="mt-1.5">
           → {retryLabel ?? "Riprova"}
         </CmsActionButton>
       ) : null}

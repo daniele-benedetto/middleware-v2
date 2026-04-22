@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "fix:all": "pnpm format && pnpm lint:fix",
+    "fix:tailwind-vars": "node scripts/fix-tailwind-color-vars.mjs",
+    "fix:tailwind-vars:check": "node scripts/fix-tailwind-color-vars.mjs --check",
+    "fix:all": "pnpm fix:tailwind-vars && pnpm format && pnpm lint:fix",
     "check:all": "pnpm lint && pnpm typecheck && pnpm prisma:validate && pnpm build",
     "prisma:format": "prisma format",
     "prisma:validate": "prisma validate",
@@ -23,6 +25,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "node scripts/fix-tailwind-color-vars.mjs",
       "eslint --fix --max-warnings=0",
       "prettier --write"
     ],
@@ -68,6 +71,7 @@
     "eslint-config-next": "16.2.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-tailwindcss": "^3.18.3",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.3",

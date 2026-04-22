@@ -18,9 +18,9 @@ export function CmsDataTableShell({
 }: CmsDataTableShellProps) {
   return (
     <CmsSurface spacing="none" className={cn("divide-y divide-foreground", className)}>
-      <div className="px-[20px] py-[16px]">{toolbar}</div>
+      <div className="px-5 py-4">{toolbar}</div>
       <div className="overflow-x-auto">{table}</div>
-      <div className="px-[20px] py-[12px]">{pagination}</div>
+      <div className="px-5 py-3">{pagination}</div>
     </CmsSurface>
   );
 }
@@ -37,51 +37,48 @@ export const cmsTableClasses = {
     "bg-foreground border-b-[2px] border-foreground hover:bg-foreground data-[state=selected]:bg-foreground",
   headerCell: cn(
     headerCellBase,
-    "px-[14px] py-[10px] text-[color:var(--bg-main)] border-r border-[color:rgba(240,232,216,0.15)] last:border-r-0",
+    "px-3.5 py-2.5 text-[color:var(--bg-main)] border-r border-[color:rgba(240,232,216,0.15)] last:border-r-0",
   ),
 
   sortableHeaderRow:
-    "bg-[color:var(--bg-hover)] border-b-[2px] border-foreground hover:bg-[color:var(--bg-hover)] data-[state=selected]:bg-[color:var(--bg-hover)]",
+    "bg-card-hover border-b-[2px] border-foreground hover:bg-card-hover data-[state=selected]:bg-card-hover",
   sortableHeaderCell: cn(
     headerCellBase,
-    "px-[14px] py-[9px] text-[color:var(--ink-60)] border-r border-foreground last:border-r-0 cursor-pointer select-none",
+    "px-3.5 py-2.25 text-muted-foreground border-r border-foreground last:border-r-0 cursor-pointer select-none",
   ),
   sortableHeaderCellActive: "text-accent",
 
   bodyRow: cn(
     "border-b border-foreground last:border-b-0",
-    "odd:bg-background even:bg-[color:var(--bg-hover)]",
-    "hover:bg-accent [&:hover_td]:!text-white [&:hover_td]:border-r-[color:rgba(255,255,255,0.2)]",
-    "data-[state=selected]:bg-[color:var(--bg-hover)]",
+    "odd:bg-background even:bg-card-hover",
+    "hover:bg-accent [&:hover_td]:text-white! [&:hover_td]:border-r-[color:rgba(255,255,255,0.2)]",
+    "data-[state=selected]:bg-card-hover",
   ),
   bodyRowArchived: cn(
-    "border-b border-foreground last:border-b-0 bg-[color:var(--bg-hover)]",
-    "hover:bg-accent [&:hover_td]:!text-white [&:hover_td]:border-r-[color:rgba(255,255,255,0.2)]",
+    "border-b border-foreground last:border-b-0 bg-card-hover",
+    "hover:bg-accent [&:hover_td]:text-white! [&:hover_td]:border-r-[color:rgba(255,255,255,0.2)]",
   ),
 
   bodyCellTitle: cn(
     bodyCellBase,
-    "px-[14px] py-[11px] font-editorial text-[15px] leading-[1.3] text-foreground border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
+    "px-3.5 py-2.75 font-editorial text-[15px] leading-[1.3] text-foreground border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
   ),
   bodyCellTitleArchived: cn(
     bodyCellBase,
-    "px-[14px] py-[11px] font-editorial text-[15px] leading-[1.3] italic text-[color:var(--ink-30)] border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
+    "px-3.5 py-2.75 font-editorial text-[15px] leading-[1.3] italic text-border border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
   ),
   bodyCellMeta: cn(
     bodyCellBase,
-    "px-[14px] py-[11px] font-ui text-[11px] text-[color:var(--ink-60)] border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
+    "px-3.5 py-2.75 font-ui text-[11px] text-muted-foreground border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
   ),
   bodyCellMetaArchived: cn(
     bodyCellBase,
-    "px-[14px] py-[11px] font-ui text-[11px] text-[color:var(--ink-30)] border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
+    "px-3.5 py-2.75 font-ui text-[11px] text-border border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
   ),
-  bodyCellNumeric: cn(
-    bodyCellBase,
-    "px-[14px] py-[10px] font-ui text-[11px] text-foreground text-right",
-  ),
+  bodyCellNumeric: cn(bodyCellBase, "px-3.5 py-2.5 font-ui text-[11px] text-foreground text-right"),
   bodyCellBadge: cn(
     bodyCellBase,
-    "px-[14px] py-[11px] border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
+    "px-3.5 py-2.75 border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
   ),
 } as const;
 

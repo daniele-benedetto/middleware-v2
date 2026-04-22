@@ -13,7 +13,7 @@ import type { ReactNode } from "react";
  */
 
 const coverVariants = cva(
-  "relative flex aspect-[3/4] flex-col overflow-hidden px-[11px] pt-[13px] pb-[10px]",
+  "relative flex aspect-[3/4] flex-col overflow-hidden px-2.75 pt-3.25 pb-2.5",
   {
     variants: {
       tone: {
@@ -126,7 +126,7 @@ export function EditorialCover({
         </div>
       </div>
 
-      <div className={cn("my-[7px] h-[2px] shrink-0", palette.rule)} />
+      <div className={cn("my-1.75 h-0.5 shrink-0", palette.rule)} />
 
       <h2
         className={cn(
@@ -137,12 +137,12 @@ export function EditorialCover({
         {title}
       </h2>
 
-      <div className="min-h-[6px] flex-1" />
+      <div className="min-h-1.5 flex-1" />
 
       {tagline ? (
         <p
           className={cn(
-            "mb-[6px] shrink-0 font-editorial text-[7.5px] italic font-light leading-[1.35]",
+            "mb-1.5 shrink-0 font-editorial text-[7.5px] italic font-light leading-[1.35]",
             palette.tagline,
           )}
         >
@@ -150,7 +150,7 @@ export function EditorialCover({
         </p>
       ) : null}
 
-      {photoSlot ? <div className="mb-[7px] shrink-0">{photoSlot}</div> : null}
+      {photoSlot ? <div className="mb-1.75 shrink-0">{photoSlot}</div> : null}
 
       <div className={cn("shrink-0 font-ui text-[6px] uppercase tracking-[0.04em]", palette.foot)}>
         {footer}

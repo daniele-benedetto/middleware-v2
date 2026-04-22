@@ -3,6 +3,7 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import eslintConfigPrettier from "eslint-config-prettier";
 import importPlugin from "eslint-plugin-import";
+import tailwindcss from "eslint-plugin-tailwindcss";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -10,6 +11,13 @@ const eslintConfig = defineConfig([
   {
     plugins: {
       import: importPlugin,
+      tailwindcss,
+    },
+    settings: {
+      tailwindcss: {
+        config: {},
+        cssFiles: ["app/**/*.css", "components/**/*.css"],
+      },
     },
     rules: {
       "@typescript-eslint/no-unused-vars": [
@@ -39,6 +47,12 @@ const eslintConfig = defineConfig([
             "object",
             "type",
           ],
+        },
+      ],
+      "tailwindcss/no-unnecessary-arbitrary-value": [
+        "error",
+        {
+          callees: ["cn", "classnames", "clsx", "ctl", "cva", "tv"],
         },
       ],
     },

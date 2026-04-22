@@ -27,12 +27,12 @@ export function CmsFormField({
       </CmsFormLabel>
       {children}
       {error ? (
-        <p className="mt-[5px] font-ui text-[10px] uppercase tracking-[0.04em] text-accent">
+        <p className="mt-1.25 font-ui text-[10px] uppercase tracking-[0.04em] text-accent">
           {"\u2691 "}
           {error}
         </p>
       ) : hint ? (
-        <p className="mt-[5px] font-ui text-[10px] uppercase tracking-[0.04em] text-[color:var(--ink-60)]">
+        <p className="mt-1.25 font-ui text-[10px] uppercase tracking-[0.04em] text-muted-foreground">
           {hint}
         </p>
       ) : null}

@@ -12,13 +12,13 @@ import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
 
-const cmsTooltipVariants = cva("!rounded-none px-[10px] py-[6px] max-w-[220px]", {
+const cmsTooltipVariants = cva("rounded-none! px-2.5 py-1.5 max-w-55", {
   variants: {
     variant: {
       "short-dark":
         "bg-foreground text-[color:var(--bg-main)] font-ui text-[10px] uppercase tracking-[0.04em]",
       "long-accent":
-        "bg-accent text-white font-editorial italic text-[13px] leading-[1.4] py-[8px] px-[12px]",
+        "bg-accent text-white font-editorial italic text-[13px] leading-[1.4] py-2 px-3",
     },
   },
   defaultVariants: { variant: "short-dark" },

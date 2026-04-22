@@ -5,14 +5,14 @@ export function CmsForbiddenState() {
   const text = i18n.cms.auth;
 
   return (
-    <CmsSurface border="strong" spacing="xl" className="flex flex-col items-start gap-[12px]">
+    <CmsSurface border="strong" spacing="xl" className="flex flex-col items-start gap-3">
       <CmsMetaText variant="category" className="block">
         403
       </CmsMetaText>
       <CmsDisplay as="h1" size="h1">
         {text.forbiddenTitle}
       </CmsDisplay>
-      <CmsBody size="md" tone="foreground" className="max-w-[520px]">
+      <CmsBody size="md" tone="foreground" className="max-w-130">
         {text.forbiddenDescription}
       </CmsBody>
     </CmsSurface>

@@ -26,14 +26,14 @@ export function EditorialManifesto({
     >
       <p
         className={cn(
-          "mx-auto max-w-[760px] font-display italic uppercase text-white",
+          "mx-auto max-w-190 font-display italic uppercase text-white",
           "text-[length:clamp(18px,2.8vw,32px)] leading-[var(--lh-display-quote)] tracking-[-0.02em]",
         )}
       >
         {quote}
       </p>
       {source ? (
-        <p className="mt-[12px] font-ui text-[length:var(--text-meta)] text-white/45">— {source}</p>
+        <p className="mt-3 font-ui text-[length:var(--text-meta)] text-white/45">— {source}</p>
       ) : null}
     </section>
   );
