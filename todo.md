@@ -10,18 +10,6 @@ Decisioni gia fissate:
 - Invariante dominio: `publishedAt` solo con `status = PUBLISHED` (gia lato API).
 - Slug normalizzato lato API e univocita rispettata lato DB.
 
-## 2.8) Deep UI Refactor vs Style Guide (componente per componente)
-
-Riferimento unico: `docs/Middleware Style Guide.html`
-
-Approccio: refactor incrementale per singolo componente/aspetto con verifica puntuale.
-
-Checklist componenti ancora da implementare/refactorare (ordine consigliato):
-
-- [ ] Layout visivo (SG 01-03): masthead, footer
-- [ ] Composite form: full subscription form (composizione di primitive gia pronte)
-- [ ] Voice & tone blocks (SG 10): rule-grid content components
-
 Riferimento puntuale per il dettaglio completo: `docs/style-guide-component-catalog.md`
 
 ### Step 1 - Governance e quality gate per componente
