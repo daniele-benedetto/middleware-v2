@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
+import { cmsEyebrowClassName } from "@/components/cms/primitives/typography";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -33,7 +34,7 @@ export function CmsBreadcrumbs() {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/cms" className="font-ui text-[11px] uppercase tracking-[0.08em]">
+          <BreadcrumbLink href="/cms" className={cmsEyebrowClassName}>
             {i18n.cms.breadcrumbs.root}
           </BreadcrumbLink>
         </BreadcrumbItem>
@@ -46,14 +47,11 @@ export function CmsBreadcrumbs() {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 {isLast ? (
-                  <BreadcrumbPage className="font-ui text-[11px] uppercase tracking-[0.08em]">
+                  <BreadcrumbPage className={cmsEyebrowClassName}>
                     {formatSegment(segment)}
                   </BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink
-                    href={href}
-                    className="font-ui text-[11px] uppercase tracking-[0.08em]"
-                  >
+                  <BreadcrumbLink href={href} className={cmsEyebrowClassName}>
                     {formatSegment(segment)}
                   </BreadcrumbLink>
                 )}

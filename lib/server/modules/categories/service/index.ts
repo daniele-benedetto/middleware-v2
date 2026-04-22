@@ -90,9 +90,9 @@ export const categoriesService = {
       throw error;
     }
   },
-  async hardDelete(id: string) {
+  async delete(id: string) {
     try {
-      await categoriesRepository.hardDelete(id);
+      await categoriesRepository.delete(id);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
         throw new ApiError(404, "NOT_FOUND", "Category not found");

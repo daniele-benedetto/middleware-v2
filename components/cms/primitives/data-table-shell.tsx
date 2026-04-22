@@ -1,3 +1,6 @@
+import { CmsSectionDivider } from "@/components/cms/primitives/section-divider";
+import { CmsSurface } from "@/components/cms/primitives/surface";
+
 import type { ReactNode } from "react";
 
 type CmsDataTableShellProps = {
@@ -8,10 +11,12 @@ type CmsDataTableShellProps = {
 
 export function CmsDataTableShell({ toolbar, table, pagination }: CmsDataTableShellProps) {
   return (
-    <section className="ui-surface border-[3px] border-[#0A0A0A] bg-[#F0E8D8]">
-      <div className="border-b border-[#0A0A0A] p-4">{toolbar}</div>
+    <CmsSurface spacing="none">
+      <div className="p-4">{toolbar}</div>
+      <CmsSectionDivider />
       <div className="overflow-x-auto">{table}</div>
-      <div className="border-t border-[#0A0A0A] p-4">{pagination}</div>
-    </section>
+      <CmsSectionDivider />
+      <div className="p-4">{pagination}</div>
+    </CmsSurface>
   );
 }

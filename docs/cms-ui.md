@@ -112,6 +112,18 @@ PR requirement:
 - Form contract: field wrapper + label + help text + error message + submit state
 - Table contract: toolbar + filters + sortable headers + row actions + pagination footer
 
+### Primitive usage map
+
+- `CmsEyebrow`: mono uppercase UI labels (breadcrumbs, table headers, badges, section labels)
+- `CmsHeading`: display and section headings (`size=page|section`)
+- `CmsBodyText`: editorial/body text (`size=md|lg`, `tone=foreground|muted|accent`)
+- `CmsSurface`: reusable panel surface (`border=default|strong`, `spacing=none|md|lg`)
+- `CmsActionButton`: standard CMS action states and tones (`primary|secondary|danger`)
+
+Rule:
+
+- Prefer these primitives over repeating inline typography/surface/action classes.
+
 ## UI done checklist (per page)
 
 - loading state
@@ -125,3 +137,6 @@ PR requirement:
 
 - Canonical document: `docs/cms-ui.md`
 - Summary and onboarding context: `README.md`
+- CMS architecture audit and milestones: `docs/cms-architecture-audit.md`
+- CMS UI audit and milestones: `docs/cms-ui-audit.md`
+- CMS guard/permission smoke checklist: `docs/cms-smoke-checklist.md`

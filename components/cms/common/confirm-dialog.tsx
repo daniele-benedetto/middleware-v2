@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { CmsActionButton } from "@/components/cms/primitives";
 import {
   Dialog,
   DialogContent,
@@ -13,39 +13,42 @@ import { i18n } from "@/lib/i18n";
 import type { ReactNode } from "react";
 
 type CmsConfirmDialogProps = {
-  trigger: ReactNode;
+  triggerLabel: string;
+  triggerIcon?: ReactNode;
   title: string;
   description: string;
 };
 
-export function CmsConfirmDialog({ trigger, title, description }: CmsConfirmDialogProps) {
+export function CmsConfirmDialog({
+  triggerLabel,
+  triggerIcon,
+  title,
+  description,
+}: CmsConfirmDialogProps) {
   const text = i18n.cms.resource;
 
   return (
     <Dialog>
-      <DialogTrigger>{trigger}</DialogTrigger>
-      <DialogContent className="rounded-none border-[3px] border-[#0A0A0A] bg-[#F0E8D8]">
+      <DialogTrigger className="inline-flex h-8 items-center gap-1.5 rounded-none border border-foreground bg-background px-2.5 font-ui text-[11px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-secondary">
+        {triggerIcon}
+        {triggerLabel}
+      </DialogTrigger>
+      <DialogContent className="rounded-none border-[3px] border-foreground bg-background">
         <DialogHeader>
           <DialogTitle className="font-display text-[24px] uppercase tracking-[-0.03em]">
             {title}
           </DialogTitle>
-          <DialogDescription className="text-[16px] leading-[1.55] text-[rgba(10,10,10,0.6)]">
+          <DialogDescription className="text-[16px] leading-[1.55] text-foreground">
             {description}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button
-            variant="outline"
-            className="rounded-none border-[#0A0A0A] bg-[#F0E8D8] text-[#0A0A0A]"
-          >
+          <CmsActionButton className="px-2.5" tone="secondary">
             {text.cancel}
-          </Button>
-          <Button
-            variant="destructive"
-            className="rounded-none border border-[#0A0A0A] bg-[#C8001A] text-white"
-          >
+          </CmsActionButton>
+          <CmsActionButton className="px-2.5" tone="danger">
             {text.confirm}
-          </Button>
+          </CmsActionButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

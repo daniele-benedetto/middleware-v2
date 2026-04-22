@@ -83,7 +83,7 @@ export const issuesRouter = router({
     )
     .input(issueIdInputSchema)
     .mutation(async ({ input }) => {
-      await issuesService.hardDelete(input.id);
+      await issuesService.delete(input.id);
       return { success: true };
     }),
 });

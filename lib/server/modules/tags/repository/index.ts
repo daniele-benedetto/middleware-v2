@@ -58,7 +58,7 @@ export const tagsRepository = {
       data: input,
     });
   },
-  async hardDelete(id: string) {
+  async delete(id: string) {
     return prisma.tag.delete({
       where: { id },
     });

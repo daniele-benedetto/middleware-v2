@@ -102,7 +102,7 @@ export const articlesRepository = {
       data,
     });
   },
-  async hardDelete(id: string) {
+  async delete(id: string) {
     return prisma.article.delete({
       where: { id },
     });

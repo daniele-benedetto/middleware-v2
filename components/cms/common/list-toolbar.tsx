@@ -1,5 +1,7 @@
 import { Input } from "@/components/ui/input";
+import { cmsInputClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
 
@@ -12,10 +14,7 @@ export function CmsListToolbar({ rightSlot }: CmsListToolbarProps) {
 
   return (
     <div className="flex items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
-      <Input
-        placeholder={text.searchPlaceholder}
-        className="h-9 border-[#0A0A0A] bg-[#F0E8D8] font-ui text-[11px] uppercase tracking-[0.08em]"
-      />
+      <Input placeholder={text.searchPlaceholder} className={cn(cmsInputClass, "w-full")} />
       <div className="flex items-center gap-2">{rightSlot}</div>
     </div>
   );

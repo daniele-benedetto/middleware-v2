@@ -90,7 +90,7 @@ export const articlesRouter = router({
     )
     .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
-      await articlesService.hardDelete(input.id);
+      await articlesService.delete(input.id);
       return { success: true };
     }),
   syncTags: writeProcedure

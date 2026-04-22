@@ -83,7 +83,7 @@ export const tagsRouter = router({
     )
     .input(tagIdInputSchema)
     .mutation(async ({ input }) => {
-      await tagsService.hardDelete(input.id);
+      await tagsService.delete(input.id);
       return { success: true };
     }),
 });

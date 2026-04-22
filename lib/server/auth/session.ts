@@ -6,9 +6,9 @@ import { prisma } from "@/lib/prisma";
 import type { UserRole } from "@/lib/server/auth/roles";
 import type { AuthSession } from "@/lib/server/auth/types";
 
-export async function getAuthSession(request: Request): Promise<AuthSession | null> {
+async function resolveSession(headers: Headers): Promise<AuthSession | null> {
   const session = await auth.api.getSession({
-    headers: request.headers,
+    headers,
   });
 
   if (!session?.user) {
@@ -32,4 +32,12 @@ export async function getAuthSession(request: Request): Promise<AuthSession | nu
       role: dbUser.role as UserRole,
     },
   };
+}
+
+export async function getAuthSession(request: Request): Promise<AuthSession | null> {
+  return resolveSession(request.headers);
+}
+
+export async function getAuthSessionFromHeaders(headers: Headers): Promise<AuthSession | null> {
+  return resolveSession(headers);
 }

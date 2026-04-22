@@ -46,6 +46,7 @@ Current setup runs with a single database as source of truth (Vercel auto-deploy
 - `pnpm check:all` - run lint + typecheck + prisma validate + build
 - `pnpm build` - production build check
 - `pnpm prisma:studio` - inspect DB with Prisma Studio
+- `pnpm seed:admin` - upsert bootstrap admin user
 
 ## Quality automation
 
@@ -57,6 +58,14 @@ Current setup runs with a single database as source of truth (Vercel auto-deploy
 - Recommended local flow before commit:
   - `pnpm fix:all`
   - `pnpm check:all`
+
+CMS governance addendum:
+
+- PR architecture checks are enforced in `.github/pull_request_template.md`.
+- CMS architecture audit baseline: `docs/cms-architecture-audit.md`.
+- CMS UI audit baseline: `docs/cms-ui-audit.md`.
+- CMS guard/role smoke checklist: `docs/cms-smoke-checklist.md`.
+- Required local gates for CMS changes: `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 
 ## Prisma conventions
 

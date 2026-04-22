@@ -10,13 +10,33 @@ Decisioni gia fissate:
 - Invariante dominio: `publishedAt` solo con `status = PUBLISHED` (gia lato API).
 - Slug normalizzato lato API e univocita rispettata lato DB.
 
-## 2) Auth, sessione e autorizzazioni UI
+## Stato completato
 
-- [ ] Implementare guard route-level per accesso CMS autenticato.
-- [ ] Implementare gate ruolo `ADMIN` per sezione Users.
-- [ ] Implementare fallback UI per `FORBIDDEN` (pagina/section lock).
-- [ ] Implementare redirect robusto su sessione assente/scaduta.
-- [ ] Mostrare indicatori ruolo in UI (es. badge in header) per contesto operativo.
+- [x] Audit architettura CMS (2.5) completato.
+- [x] Audit UI vs Style Guide (2.6) completato.
+- [x] Refactor milestone A/B/C + U1/U2/U3 completati.
+- [x] Report e checklist pubblicati:
+  - [x] `docs/cms-architecture-audit.md`
+  - [x] `docs/cms-ui-audit.md`
+  - [x] `docs/cms-smoke-checklist.md`
+
+## 2.7) UI systematization e componenti riusabili
+
+- [ ] Estrarre stile tipografico ripetuto in primitive riusabili:
+  - [x] `CmsEyebrow` (label mono uppercase accent)
+  - [x] `CmsHeading` (display/title per livelli)
+  - [x] `CmsBodyText` (corpo/editorial + varianti muted)
+  - [x] sostituire i blocchi tipografici duplicati nelle pagine CMS.
+- [ ] Estrarre pattern layout ricorrenti in componenti shared:
+  - [x] `CmsSectionSurface` (implementato come `CmsSurface`) (border/background/padding standard).
+  - [x] `CmsSectionDivider` (linee 1px/3px) con varianti semantiche.
+  - [x] `CmsStatRow`/`CmsMetaRow` per righe metadati ripetute.
+- [ ] Consolidare varianti action/form già introdotte:
+  - [x] usare `lib/cms/ui/variants.ts` in tutte le azioni CMS.
+  - [ ] estendere a select/textarea reali appena entrano nei CRUD.
+- [ ] Definire guardrail anti-duplicazione:
+  - [x] lint/checklist PR: no nuove classi tipografiche duplicate senza primitive.
+  - [x] linee guida in `docs/cms-ui.md` con tabella "quando usare primitive vs inline class".
 
 ## 3) Integrazione tRPC client lato UI
 

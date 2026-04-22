@@ -62,7 +62,7 @@ export const issuesRepository = {
       data: input,
     });
   },
-  async hardDelete(id: string) {
+  async delete(id: string) {
     return prisma.issue.delete({
       where: { id },
     });

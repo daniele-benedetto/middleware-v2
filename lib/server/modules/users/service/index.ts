@@ -86,9 +86,9 @@ export const usersService = {
       throw error;
     }
   },
-  async hardDelete(id: string) {
+  async delete(id: string) {
     try {
-      await usersRepository.hardDelete(id);
+      await usersRepository.delete(id);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
         throw new ApiError(404, "NOT_FOUND", "User not found");

@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 import {
   CmsConfirmDialog,
@@ -6,8 +6,12 @@ import {
   CmsListToolbar,
   CmsPaginationFooter,
 } from "@/components/cms/common";
-import { CmsDataTableShell, CmsPageHeader } from "@/components/cms/primitives";
-import { Button } from "@/components/ui/button";
+import {
+  CmsActionButton,
+  CmsDataTableShell,
+  CmsEyebrow,
+  CmsPageHeader,
+} from "@/components/cms/primitives";
 import {
   Table,
   TableBody,
@@ -32,10 +36,10 @@ export function CmsResourcePage({ title, subtitle }: CmsResourcePageProps) {
         title={title}
         subtitle={subtitle}
         actions={
-          <Button className="rounded-none border border-[#0A0A0A] bg-[#0A0A0A] text-[#FFFFFF] hover:bg-[#0A0A0A]/90">
+          <CmsActionButton className="px-2.5" tone="primary">
             <Plus className="size-3" />
             {text.new}
-          </Button>
+          </CmsActionButton>
         }
       />
 
@@ -44,14 +48,8 @@ export function CmsResourcePage({ title, subtitle }: CmsResourcePageProps) {
           <CmsListToolbar
             rightSlot={
               <CmsConfirmDialog
-                trigger={
-                  <Button
-                    variant="outline"
-                    className="rounded-none border-[#0A0A0A] bg-[#F0E8D8] text-[#0A0A0A]"
-                  >
-                    {text.deleteSelected}
-                  </Button>
-                }
+                triggerLabel={text.deleteSelected}
+                triggerIcon={<Trash2 className="size-3" />}
                 title={text.confirmTitle}
                 description={text.confirmDescription}
               />
@@ -61,28 +59,28 @@ export function CmsResourcePage({ title, subtitle }: CmsResourcePageProps) {
         table={
           <Table>
             <TableHeader>
-              <TableRow className="border-b-[#0A0A0A] hover:bg-transparent">
-                <TableHead className="font-ui text-[11px] uppercase tracking-[0.08em] text-[#0A0A0A]">
-                  {text.tableName}
+              <TableRow className="border-b-foreground hover:bg-transparent">
+                <TableHead>
+                  <CmsEyebrow>{text.tableName}</CmsEyebrow>
                 </TableHead>
-                <TableHead className="font-ui text-[11px] uppercase tracking-[0.08em] text-[#0A0A0A]">
-                  {text.tableStatus}
+                <TableHead>
+                  <CmsEyebrow>{text.tableStatus}</CmsEyebrow>
                 </TableHead>
-                <TableHead className="font-ui text-[11px] uppercase tracking-[0.08em] text-[#0A0A0A]">
-                  {text.tableUpdated}
+                <TableHead>
+                  <CmsEyebrow>{text.tableUpdated}</CmsEyebrow>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow className="border-b-[#0A0A0A] hover:bg-[#E5D9C5]">
-                <TableCell className="text-[16px] leading-[1.55] text-[#0A0A0A]">
+              <TableRow className="border-b-foreground hover:bg-secondary">
+                <TableCell className="text-[16px] leading-[1.55] text-foreground">
                   {text.sampleRow}
                 </TableCell>
-                <TableCell className="font-ui text-[11px] uppercase tracking-[0.08em] text-[#C8001A]">
-                  {text.draft}
+                <TableCell>
+                  <CmsEyebrow tone="accent">{text.draft}</CmsEyebrow>
                 </TableCell>
-                <TableCell className="font-ui text-[11px] uppercase tracking-[0.08em] text-[rgba(10,10,10,0.6)]">
-                  {text.today}
+                <TableCell>
+                  <CmsEyebrow>{text.today}</CmsEyebrow>
                 </TableCell>
               </TableRow>
             </TableBody>

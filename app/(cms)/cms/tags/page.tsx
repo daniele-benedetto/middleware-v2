@@ -1,8 +1,5 @@
-import { CmsResourcePage } from "@/components/cms/pages";
-import { i18n } from "@/lib/i18n";
+import { CmsResourceScreen } from "@/features/cms/resources/screens/resource-screen";
 
 export default function CmsTagsPage() {
-  const text = i18n.cms;
-
-  return <CmsResourcePage title={text.navigation.tags} subtitle={text.resource.subtitle} />;
+  return <CmsResourceScreen resource="tags" />;
 }

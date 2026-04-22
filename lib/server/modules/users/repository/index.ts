@@ -74,7 +74,7 @@ export const usersRepository = {
       },
     });
   },
-  async hardDelete(id: string) {
+  async delete(id: string) {
     return prisma.user.delete({
       where: { id },
     });

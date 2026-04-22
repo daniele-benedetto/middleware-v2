@@ -18,7 +18,9 @@ export const cmsIt = {
   },
   topbar: {
     label: "Pannello editoriale",
-    theme: "Modalita light",
+    rolePrefix: "Ruolo",
+    roleAdmin: "Admin",
+    roleEditor: "Editor",
   },
   breadcrumbs: {
     root: "CMS",
@@ -40,7 +42,7 @@ export const cmsIt = {
     subtitle: "Lista base con filtri, tabella, paginazione e conferma per azioni distruttive.",
     new: "Nuovo",
     deleteSelected: "Elimina selezionati",
-    confirmTitle: "Conferma hard delete",
+    confirmTitle: "Conferma eliminazione",
     confirmDescription: "Questa azione elimina definitivamente i record selezionati.",
     cancel: "Annulla",
     confirm: "Conferma",
@@ -60,5 +62,18 @@ export const cmsIt = {
   pagination: {
     page: "Pagina 1 di 1",
     perPage: "20 per pagina",
+  },
+  auth: {
+    forbiddenTitle: "Accesso non consentito",
+    forbiddenDescription:
+      "Non hai i permessi necessari per visualizzare questa sezione. Contatta un amministratore se pensi sia un errore.",
+    signInRequired: "Sessione richiesta",
+    loginTitle: "Accedi al CMS",
+    loginDescription: "Inserisci email e password per entrare nel pannello editoriale.",
+    emailLabel: "Email",
+    passwordLabel: "Password",
+    signInCta: "Accedi",
+    signingInCta: "Accesso in corso...",
+    invalidCredentials: "Credenziali non valide. Riprova.",
   },
 } as const;

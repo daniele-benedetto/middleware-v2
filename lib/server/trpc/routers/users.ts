@@ -101,7 +101,7 @@ export const usersRouter = router({
     )
     .input(usersIdInputSchema)
     .mutation(async ({ input }) => {
-      await usersService.hardDelete(input.id);
+      await usersService.delete(input.id);
       return { success: true };
     }),
 });

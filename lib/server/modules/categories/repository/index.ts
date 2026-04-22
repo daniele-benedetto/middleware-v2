@@ -60,7 +60,7 @@ export const categoriesRepository = {
       data: input,
     });
   },
-  async hardDelete(id: string) {
+  async delete(id: string) {
     return prisma.category.delete({
       where: { id },
     });

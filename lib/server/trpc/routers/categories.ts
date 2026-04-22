@@ -83,7 +83,7 @@ export const categoriesRouter = router({
     )
     .input(categoryIdInputSchema)
     .mutation(async ({ input }) => {
-      await categoriesService.hardDelete(input.id);
+      await categoriesService.delete(input.id);
       return { success: true };
     }),
 });

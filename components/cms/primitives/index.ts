@@ -1,4 +1,10 @@
+export { CmsActionButton } from "@/components/cms/primitives/action-button";
 export { CmsDataTableShell } from "@/components/cms/primitives/data-table-shell";
+export { CmsEditorialCard } from "@/components/cms/primitives/editorial-card";
 export { CmsFormField } from "@/components/cms/primitives/form-field";
 export { CmsLayoutShell } from "@/components/cms/primitives/layout-shell";
+export { CmsMetaRow } from "@/components/cms/primitives/meta-row";
 export { CmsPageHeader } from "@/components/cms/primitives/page-header";
+export { CmsSectionDivider } from "@/components/cms/primitives/section-divider";
+export { CmsSurface } from "@/components/cms/primitives/surface";
+export { CmsBodyText, CmsEyebrow, CmsHeading } from "@/components/cms/primitives/typography";

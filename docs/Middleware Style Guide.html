@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Middleware — Style Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --crema:    #F0E8D8;
+  --crema-dk: #E5D9C5;
+  --nero:     #0A0A0A;
+  --rosso:    #C8001A;
+  --bianco:   #FFFFFF;
+  --nero-60:  rgba(10,10,10,0.6);
+  --nero-30:  rgba(10,10,10,0.3);
+  --filetto:  1px solid #0A0A0A;
+  --filetto-spesso: 3px solid #0A0A0A;
+}
+html { background: var(--crema); color: var(--nero); font-size: 16px; -webkit-font-smoothing: antialiased; }
+::selection { background: var(--rosso); color: var(--bianco); }
+
+.sg-wrap { max-width: 1100px; margin: 0 auto; padding: 0 clamp(16px,4vw,48px) 120px; }
+
+.sg-section { margin-top: 80px; padding-top: 20px; border-top: var(--filetto-spesso); }
+.sg-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rosso); margin-bottom: 32px; }
+
+.mono { font-family: 'IBM Plex Mono', monospace; }
+.mono-s { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--nero-60); }
+.mono-xs { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--nero-60); }
+.mono-val { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--nero); }
+
+.row { display: flex; flex-wrap: wrap; gap: 0; }
+.card { padding: 20px 24px; background: var(--bianco); border: 1px solid rgba(10,10,10,0.12); }
+.card + .card { border-top: none; }
+
+.rule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); border: var(--filetto); }
+.rule-cell { padding: 14px 18px; border-bottom: var(--filetto); border-right: var(--filetto); }
+.rule-cell:nth-child(even) { border-right: none; }
+.rule-cell:last-child { border-bottom: none; }
+.rule-cell:nth-last-child(2):nth-child(odd) { border-bottom: none; }
+
+hr.thin  { border: none; border-top: var(--filetto); margin: 16px 0; }
+hr.thick { border: none; border-top: var(--filetto-spesso); }
+
+.cover-card {
+  aspect-ratio: 3/4; padding: 13px 11px 10px;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.cover-mw { font-family: 'Archivo Black', sans-serif; font-size: 11px; color: inherit; text-transform: uppercase; letter-spacing: -0.02em; }
+.cover-rule { height: 2px; margin: 6px 0 8px; flex-shrink: 0; }
+.cover-title { font-family: 'Archivo Black', sans-serif; font-size: 17px; text-transform: uppercase; letter-spacing: -0.03em; line-height: 0.95; flex-shrink: 0; }
+.cover-spacer { flex: 1; min-height: 6px; }
+.cover-tagline { font-family: 'Newsreader', Georgia, serif; font-size: 7.5px; font-style: italic; line-height: 1.35; font-weight: 300; margin-bottom: 6px; flex-shrink: 0; }
+.cover-foot { font-family: 'IBM Plex Mono', monospace; font-size: 6px; text-transform: uppercase; flex-shrink: 0; }
+.cover-meta { font-family: 'IBM Plex Mono', monospace; font-size: 7px; text-align: right; line-height: 1.5; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="sg-wrap">
+
+<!-- ══ MASTHEAD ══ -->
+<header style="padding:48px 0 20px; border-bottom:var(--filetto-spesso); display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;">
+  <div>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--rosso); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px;">MIDDLEWARE / LABORATORIO DI CONRICERCA</div>
+    <h1 style="font-family:'Archivo Black',sans-serif; font-size:clamp(40px,6vw,72px); text-transform:uppercase; letter-spacing:-0.04em; line-height:0.95; color:var(--nero);">STYLE<br>GUIDE</h1>
+  </div>
+  <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero-60); line-height:1.8; text-align:right;">
+    <div>VERSIONE 1.0</div>
+    <div>APRILE 2026</div>
+    <div>USO INTERNO</div>
+  </div>
+</header>
+
+<!-- ══ 01 · PALETTE ══ -->
+<section class="sg-section">
+  <div class="sg-label">01 · PALETTE</div>
+
+  <!-- Main swatches -->
+  <div class="row" style="margin-bottom:32px;">
+    <div style="flex:1; min-width:90px; background:#F0E8D8; padding:20px 14px 14px; border:1px solid rgba(10,10,10,0.1);">
+      <div style="height:60px;"></div>
+      <div class="mono-s" style="margin-top:10px;">CREMA</div>
+      <div class="mono-val">#F0E8D8</div>
+      <div class="mono-xs" style="margin-top:3px;">Sfondo primario</div>
+    </div>
+    <div style="flex:1; min-width:90px; background:#E5D9C5; padding:20px 14px 14px; border:1px solid rgba(10,10,10,0.1); border-left:none;">
+      <div style="height:60px;"></div>
+      <div class="mono-s" style="margin-top:10px;">CREMA SCURA</div>
+      <div class="mono-val">#E5D9C5</div>
+      <div class="mono-xs" style="margin-top:3px;">Hover, card attive</div>
+    </div>
+    <div style="flex:1; min-width:90px; background:#C8001A; padding:20px 14px 14px; border-left:none;">
+      <div style="height:60px;"></div>
+      <div class="mono-s" style="margin-top:10px; color:rgba(255,255,255,0.6);">ROSSO</div>
+      <div class="mono-val" style="color:#fff;">#C8001A</div>
+      <div class="mono-xs" style="margin-top:3px; color:rgba(255,255,255,0.55);">Accento, categoria, link</div>
+    </div>
+    <div style="flex:1; min-width:90px; background:#0A0A0A; padding:20px 14px 14px; border-left:none;">
+      <div style="height:60px;"></div>
+      <div class="mono-s" style="margin-top:10px; color:rgba(240,232,216,0.55);">NERO</div>
+      <div class="mono-val" style="color:#F0E8D8;">#0A0A0A</div>
+      <div class="mono-xs" style="margin-top:3px; color:rgba(240,232,216,0.45);">Testo, bordi, footer</div>
+    </div>
+    <div style="flex:1; min-width:90px; background:#FFFFFF; padding:20px 14px 14px; border:1px solid rgba(10,10,10,0.1); border-left:none;">
+      <div style="height:60px;"></div>
+      <div class="mono-s" style="margin-top:10px;">BIANCO</div>
+      <div class="mono-val">#FFFFFF</div>
+      <div class="mono-xs" style="margin-top:3px;">Solo su rosso/nero</div>
+    </div>
+  </div>
+
+  <!-- Alpha variants -->
+  <div class="mono-s" style="margin-bottom:14px;">VARIANTI ALFA — NERO</div>
+  <div style="display:flex; flex-wrap:wrap; gap:8px;">
+    <div style="display:flex; align-items:center; gap:12px; padding:8px 14px; border:1px solid rgba(10,10,10,0.12); background:var(--bianco);">
+      <div style="width:32px; height:32px; background:rgba(10,10,10,0.6); border:1px solid rgba(10,10,10,0.1); flex-shrink:0;"></div>
+      <div>
+        <div class="mono-val">--nero-60</div>
+        <div class="mono-xs">rgba(10,10,10,0.6) · Testo secondario</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px; padding:8px 14px; border:1px solid rgba(10,10,10,0.12); background:var(--bianco);">
+      <div style="width:32px; height:32px; background:rgba(10,10,10,0.5); border:1px solid rgba(10,10,10,0.1); flex-shrink:0;"></div>
+      <div>
+        <div class="mono-val">--nero-50</div>
+        <div class="mono-xs">rgba(10,10,10,0.5) · Metadati, para num</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px; padding:8px 14px; border:1px solid rgba(10,10,10,0.12); background:var(--bianco);">
+      <div style="width:32px; height:32px; background:rgba(10,10,10,0.3); border:1px solid rgba(10,10,10,0.1); flex-shrink:0;"></div>
+      <div>
+        <div class="mono-val">--nero-30</div>
+        <div class="mono-xs">rgba(10,10,10,0.3) · Filetti, placeholder</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 02 · TIPOGRAFIA ══ -->
+<section class="sg-section">
+  <div class="sg-label">02 · TIPOGRAFIA</div>
+
+  <!-- Archivo Black -->
+  <div class="card" style="margin-bottom:0;">
+    <div class="mono-s" style="margin-bottom:18px;">ARCHIVO BLACK — DISPLAY, TITOLI, TESTATA, PULL QUOTE</div>
+
+    <div class="mono-s" style="margin-bottom:6px;">HERO / TESTATA — 72–120PX / TRACKING -0.04EM / LH 0.9</div>
+    <div style="font-family:'Archivo Black',sans-serif; font-size:clamp(48px,7vw,96px); text-transform:uppercase; letter-spacing:-0.04em; line-height:0.9; color:var(--nero);">MIDDLEWARE</div>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">H1 ARTICOLO — 36–48PX / TRACKING -0.03EM / LH 1.05</div>
+    <div style="font-family:'Archivo Black',sans-serif; font-size:clamp(28px,4vw,48px); text-transform:uppercase; letter-spacing:-0.03em; line-height:1.05; color:var(--nero);">COMPOSIZIONE E CONTRADDIZIONE</div>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">H2 CARD — 20–34PX / TRACKING -0.025EM / LH 1.08</div>
+    <div style="font-family:'Archivo Black',sans-serif; font-size:clamp(18px,2.5vw,28px); text-transform:uppercase; letter-spacing:-0.025em; line-height:1.08; color:var(--nero);">COVER STORY — TITOLO CARD</div>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">PULL QUOTE — 24–36PX / TRACKING -0.02EM / LH 1.2 / ROSSO / ITALIC</div>
+    <div style="font-family:'Archivo Black',sans-serif; font-size:clamp(20px,3vw,32px); text-transform:uppercase; letter-spacing:-0.02em; line-height:1.2; color:var(--rosso); font-style:italic;">&#x201C;IL MAGAZZINO LOGISTICO È LA FABBRICA DEL NOSTRO TEMPO&#x201D;</div>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">LABEL SEZIONE — 14–15PX / TRACKING +0.04EM / MAIUSCOLO</div>
+    <div style="font-family:'Archivo Black',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:0.04em; color:var(--nero);">I. IL METODO COME POSIZIONE POLITICA</div>
+  </div>
+
+  <!-- Newsreader -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:18px;">NEWSREADER — CORPO TESTO, EPIGRAFI, CITAZIONI, HAIRLINE</div>
+
+    <div class="mono-s" style="margin-bottom:6px;">CORPO — 17–22PX / LH 1.67 / OPT SIZE AUTO</div>
+    <p style="font-family:'Newsreader',Georgia,serif; font-size:19px; line-height:1.67; color:var(--nero); font-optical-sizing:auto; max-width:580px;">
+      La conricerca non è un metodo tra gli altri. È una posizione politica travestita da metodologia — e questa è la sua forza, non il suo limite. Chi pretende di leggere la composizione di classe da una posizione neutrale non la legge affatto: la fantastica.
+    </p>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">EPIGRAFE — 16PX / CORSIVO / ALLINEAMENTO DESTRA</div>
+    <p style="font-family:'Newsreader',Georgia,serif; font-size:16px; line-height:1.6; font-style:italic; color:var(--nero); text-align:right; max-width:380px; margin-left:auto;">
+      Il militante non descrive la classe: la attraversa, la contamina, ne è contaminato.
+      <span style="display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero-60); margin-top:6px; font-style:normal;">— Romano Alquati, 1975</span>
+    </p>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">BLOCKQUOTE — 17PX / CORSIVO / BORDO SINISTRO ROSSO 4PX</div>
+    <div style="border-left:4px solid var(--rosso); padding:4px 0 4px 20px; max-width:520px;">
+      <p style="font-family:'Newsreader',Georgia,serif; font-size:17px; line-height:1.6; font-style:italic; color:var(--nero);">
+        "La classe operaia non è un dato, è una costruzione. Si costruisce nella lotta — e in altro modo non si costruisce."
+      </p>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero-60); margin-top:8px;">— Mario Tronti, Operai e capitale, 1966</div>
+    </div>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">HAIRLINE / OCCHIELLO — 15PX / CORSIVO / PESO 300</div>
+    <p style="font-family:'Newsreader',Georgia,serif; font-size:15px; line-height:1.55; font-style:italic; font-weight:300; color:rgba(10,10,10,0.7); max-width:500px;">
+      Il concetto di composizione di classe non è un residuo storico — è lo strumento analitico più preciso per leggere la crisi presente.
+    </p>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">NOTA A PIÈ DI PAGINA — 14PX + NUMERO MONO ROSSO 11PX</div>
+    <div style="display:flex; gap:10px; align-items:baseline; max-width:560px;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--rosso); flex-shrink:0;">1.</span>
+      <span style="font-family:'Newsreader',Georgia,serif; font-size:14px; line-height:1.5; color:var(--nero);">Sul concetto di composizione tecnica in Alquati, si veda S. Wright, <em>Storming Heaven</em> (2002), cap. 3. Per una lettura aggiornata al ciclo logistico, cfr. A. Alimahomed-Wilson & E. Ness (eds.), <em>Choke Points</em> (2018).</span>
+    </div>
+  </div>
+
+  <!-- IBM Plex Mono -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:18px;">IBM PLEX MONO — METADATI, CATEGORIE, UI, NUMERI PARAGRAFO</div>
+
+    <div class="mono-s" style="margin-bottom:6px;">CATEGORIA — 11PX / #C8001A / TRACKING +0.08EM</div>
+    <div style="display:flex; gap:24px; flex-wrap:wrap; margin-bottom:4px;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso);">TEORIA</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso);">INCHIESTA</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso);">AZIONE</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso);">CRITICA</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso);">SAGGIO VISIVO</span>
+    </div>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">METADATI ARTICOLO — 11PX / NERO-60</div>
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero-60);">Marco Ferretti &nbsp;·&nbsp; 18 MIN &nbsp;·&nbsp; [AUDIO]</span>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">TAGLINE MANIFESTO — 11PX / TRACKING +0.06EM / UPPERCASE</div>
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--nero);">TRA INPUT E OUTPUT, UN LABORATORIO DI CONRICERCA</span>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">NUMERI PARAGRAFO — 11PX / NERO-50 / MARGINE SINISTRO 52PX</div>
+    <div style="display:grid; grid-template-columns:52px 1fr; gap:0 20px; max-width:480px;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:rgba(10,10,10,0.5); text-align:right; padding-top:3px;">01</span>
+      <p style="font-family:'Newsreader',Georgia,serif; font-size:17px; line-height:1.6; color:var(--nero);">La conricerca non è un metodo tra gli altri. È una posizione politica travestita da metodologia.</p>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:rgba(10,10,10,0.5); text-align:right; padding-top:3px;">02</span>
+      <p style="font-family:'Newsreader',Georgia,serif; font-size:17px; line-height:1.6; color:var(--nero);">Quella scelta ha conseguenze epistemologiche precise. Il sapere che si produce è situato, parziale.</p>
+    </div>
+
+    <hr class="thin"/>
+    <div class="mono-s" style="margin-bottom:6px;">NUMERO SEZIONE — 12PX / ROSSO + TESTO 15PX UPPERCASE</div>
+    <div style="display:flex; align-items:baseline; gap:10px;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--rosso);">I.</span>
+      <span style="font-family:'Archivo Black',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:0.04em;">IL METODO COME POSIZIONE POLITICA</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 03 · SPAZIATURE & BORDI ══ -->
+<section class="sg-section">
+  <div class="sg-label">03 · SPAZIATURE, BORDI, GRIGLIE</div>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:0;">
+
+    <!-- Filetti -->
+    <div class="card" style="border-right:none;">
+      <div class="mono-s" style="margin-bottom:20px;">FILETTI</div>
+      <div style="display:flex; flex-direction:column; gap:22px;">
+        <div>
+          <div class="mono-s" style="margin-bottom:8px;">SPESSO — 3PX NERO — SEPARATORI PRINCIPALI</div>
+          <div style="height:3px; background:var(--nero);"></div>
+        </div>
+        <div>
+          <div class="mono-s" style="margin-bottom:8px;">SOTTILE — 1PX NERO — GRIGLIE INTERNE</div>
+          <div style="height:1px; background:var(--nero);"></div>
+        </div>
+        <div>
+          <div class="mono-s" style="margin-bottom:8px;">ROSSO 4PX — ACCENTO BLOCKQUOTE / MENU</div>
+          <div style="height:4px; background:var(--rosso);"></div>
+        </div>
+        <div>
+          <div class="mono-s" style="margin-bottom:8px;">ROSSO 3PX — BARRA DI LETTURA (FIXED TOP)</div>
+          <div style="height:3px; background:var(--rosso); width:55%;"></div>
+        </div>
+        <div>
+          <div class="mono-s" style="margin-bottom:8px;">TRATTEGGIATO 1PX — SLOT VUOTI ARCHIVIO</div>
+          <div style="height:1px; border-top:1px dashed var(--nero-30);"></div>
+        </div>
+        <div>
+          <div class="mono-s" style="margin-bottom:8px;">BORDO MENU — 4PX ROSSO SINISTRO</div>
+          <div style="height:40px; border-left:4px solid var(--rosso); background:var(--crema-dk);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spacing scale -->
+    <div class="card">
+      <div class="mono-s" style="margin-bottom:20px;">SCALA SPAZIATURE</div>
+      <div style="display:flex; flex-direction:column; gap:9px;">
+        <div style="display:flex; align-items:center; gap:12px;"><div style="background:var(--rosso); height:9px; width:7px; flex-shrink:0;"></div><span class="mono-val" style="min-width:34px;">4px</span><span class="mono-xs">Micro: gap badge/tag</span></div>
+        <div style="display:flex; align-items:center; gap:12px;"><div style="background:var(--rosso); height:9px; width:14px; flex-shrink:0;"></div><span class="mono-val" style="min-width:34px;">8px</span><span class="mono-xs">XS: gap elementi inline</span></div>
+        <div style="display:flex; align-items:center; gap:12px;"><div style="background:var(--rosso); height:9px; width:22px; flex-shrink:0;"></div><span class="mono-val" style="min-width:34px;">12px</span><span class="mono-xs">S: padding compact card</span></div>
+        <div style="display:flex; align-items:center; gap:12px;"><div style="background:var(--rosso); height:9px; width:29px; flex-shrink:0;"></div><span class="mono-val" style="min-width:34px;">16px</span><span class="mono-xs">M: padding base</span></div>
+        <div style="display:flex; align-items:center; gap:12px;"><div style="background:var(--rosso); height:9px; width:36px; flex-shrink:0;"></div><span class="mono-val" style="min-width:34px;">20px</span><span class="mono-xs">L: padding card</span></div>
+        <div style="display:flex; align-items:center; gap:12px;"><div style="background:var(--rosso); height:9px; width:43px; flex-shrink:0;"></div><span class="mono-val" style="min-width:34px;">24px</span><span class="mono-xs">XL: padding sezione mobile</span></div>
+        <div style="display:flex; align-items:center; gap:12px;"><div style="background:var(--rosso); height:9px; width:57px; flex-shrink:0;"></div><span class="mono-val" style="min-width:34px;">32px</span><span class="mono-xs">2XL: gap griglia</span></div>
+        <div style="display:flex; align-items:center; gap:12px;"><div style="background:var(--rosso); height:9px; width:86px; flex-shrink:0;"></div><span class="mono-val" style="min-width:34px;">48px</span><span class="mono-xs">3XL: padding sezione desktop</span></div>
+        <div style="display:flex; align-items:center; gap:12px;"><div style="background:var(--rosso); height:9px; width:130px; flex-shrink:0;"></div><span class="mono-val" style="min-width:34px;">72px</span><span class="mono-xs">4XL: padding hero</span></div>
+      </div>
+    </div>
+
+    <!-- Griglie -->
+    <div class="card" style="border-top:none; grid-column:1 / -1;">
+      <div class="mono-s" style="margin-bottom:16px;">GRIGLIE</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px;">
+        <div style="padding:12px 14px; border:1px solid rgba(10,10,10,0.12);">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--rosso); margin-bottom:4px;">HOME · EDITORIALE + COVER</div>
+          <div class="mono-val">clamp(180px,28%,320px) + 1fr</div>
+          <div class="mono-xs">→ 1 col. sotto 768px</div>
+        </div>
+        <div style="padding:12px 14px; border:1px solid rgba(10,10,10,0.12);">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--rosso); margin-bottom:4px;">HOME · GRIGLIA ARTICOLI</div>
+          <div class="mono-val">repeat(2, 1fr)</div>
+          <div class="mono-xs">→ 1 col. sotto 768px</div>
+        </div>
+        <div style="padding:12px 14px; border:1px solid rgba(10,10,10,0.12);">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--rosso); margin-bottom:4px;">ARTICOLO · PARAGRAFO + NUMERO</div>
+          <div class="mono-val">52px + 1fr · gap 20px</div>
+          <div class="mono-xs">→ block sotto 768px</div>
+        </div>
+        <div style="padding:12px 14px; border:1px solid rgba(10,10,10,0.12);">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--rosso); margin-bottom:4px;">ESPLORA · FILTRI</div>
+          <div class="mono-val">repeat(auto-fit, minmax(220px,1fr))</div>
+          <div class="mono-xs">→ 1 col. su mobile</div>
+        </div>
+        <div style="padding:12px 14px; border:1px solid rgba(10,10,10,0.12);">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--rosso); margin-bottom:4px;">COPERTINE</div>
+          <div class="mono-val">repeat(auto-fill, minmax(200px,1fr))</div>
+          <div class="mono-xs">→ 2 col. su mobile</div>
+        </div>
+        <div style="padding:12px 14px; border:1px solid rgba(10,10,10,0.12);">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--rosso); margin-bottom:4px;">MAX-WIDTH ARTICOLO</div>
+          <div class="mono-val">860px centrato</div>
+          <div class="mono-xs">padding: 40px clamp(16px,4vw,48px)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 04 · COMPONENTI ══ -->
+<section class="sg-section">
+  <div class="sg-label">04 · COMPONENTI</div>
+
+  <!-- Article card -->
+  <div class="card" style="margin-bottom:0;">
+    <div class="mono-s" style="margin-bottom:14px;">ARTICLE CARD — DEFAULT (SX) / HOVER (DX)</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; max-width:680px; border:1px solid var(--nero);">
+      <div style="padding:16px 18px; border-right:1px solid var(--nero);">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso); display:block; margin-bottom:7px;">INCHIESTA</span>
+        <h3 style="font-family:'Archivo Black',sans-serif; font-size:18px; text-transform:uppercase; line-height:1.1; letter-spacing:-0.02em; color:var(--nero); margin-bottom:9px;">L'ALGORITMO DEL CONTROLLO SOCIALE</h3>
+        <div style="display:flex; gap:14px; flex-wrap:wrap;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero-60);">Sara Conti & Luca Neri</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero-60);">14 MIN</span>
+        </div>
+      </div>
+      <div style="padding:16px 18px; background:var(--crema-dk);">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso); display:block; margin-bottom:7px;">AZIONE</span>
+        <h3 style="font-family:'Archivo Black',sans-serif; font-size:18px; text-transform:uppercase; line-height:1.1; letter-spacing:-0.02em; color:var(--nero); margin-bottom:9px; text-decoration:underline; text-decoration-color:var(--rosso);">TERRITORIO COME CAMPO DI LOTTA</h3>
+        <div style="display:flex; gap:14px; flex-wrap:wrap;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero-60);">Collettivo Autonomo</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--rosso);">[AUDIO]</span>
+        </div>
+      </div>
+    </div>
+    <div class="mono-xs" style="margin-top:10px; line-height:1.7;">Default bg: crema &nbsp;·&nbsp; Hover bg: crema-dk &nbsp;·&nbsp; Titolo hover: underline rosso &nbsp;·&nbsp; Padding 18px 20px (std) / 14px 16px (compact)</div>
+  </div>
+
+  <!-- Cover story block -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:14px;">COVER STORY BLOCK — ROSSO (SX) / CREMA (DX)</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; max-width:680px;">
+      <div style="background:var(--rosso); padding:20px 22px; display:flex; flex-direction:column; gap:12px; min-height:220px;">
+        <div style="display:flex; justify-content:space-between;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fff; text-transform:uppercase; letter-spacing:0.06em;">COVER STORY</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:rgba(255,255,255,0.7);">18 MIN · [AUDIO]</span>
+        </div>
+        <h2 style="font-family:'Archivo Black',sans-serif; font-size:clamp(15px,2vw,22px); text-transform:uppercase; line-height:1.08; letter-spacing:-0.025em; color:#fff; flex:1;">COMPOSIZIONE E CONTRADDIZIONE</h2>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fff; border:1px solid #fff; padding:7px 12px; align-self:flex-start; letter-spacing:0.04em;">→ LEGGI L'ANALISI</div>
+      </div>
+      <div style="background:var(--crema-dk); padding:20px 22px; display:flex; flex-direction:column; gap:12px; min-height:220px;">
+        <div style="display:flex; justify-content:space-between;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero); text-transform:uppercase; letter-spacing:0.06em;">COVER STORY</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero-60);">18 MIN</span>
+        </div>
+        <h2 style="font-family:'Archivo Black',sans-serif; font-size:clamp(15px,2vw,22px); text-transform:uppercase; line-height:1.08; letter-spacing:-0.025em; color:var(--nero); flex:1;">COMPOSIZIONE E CONTRADDIZIONE</h2>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero); border:1px solid var(--nero); padding:7px 12px; align-self:flex-start; letter-spacing:0.04em;">→ LEGGI L'ANALISI</div>
+      </div>
+    </div>
+    <div class="mono-xs" style="margin-top:10px; line-height:1.7;">Tweakable via pannello Tweaks &nbsp;·&nbsp; Hover: filter brightness(0.93)</div>
+  </div>
+
+  <!-- CTA -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:14px;">CTA / LINK — STILI</div>
+    <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--nero); border:1px solid var(--nero); padding:8px 14px; letter-spacing:0.04em;">→ LEGGI L'ANALISI COMPLETA</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#fff; border:1px solid #fff; padding:8px 14px; letter-spacing:0.04em; background:var(--rosso);">→ LEGGI L'ANALISI COMPLETA</div>
+      <span style="font-family:'Newsreader',Georgia,serif; font-size:17px; color:var(--rosso); border-bottom:1px solid var(--rosso);">link inline articolo</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero-60);">[ASCOLTA] &nbsp; [AUDIO] &nbsp; × RIMUOVI</span>
+    </div>
+    <div class="mono-xs" style="margin-top:12px; line-height:1.7;">CTA: bordo 1px · IBM Plex Mono 12px · tracking +0.04em · uppercase &nbsp;·&nbsp; Link inline: Newsreader + underline rosso</div>
+  </div>
+
+  <!-- Manifesto -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:14px;">MANIFESTO BLOCK — NERO / ROSSO (TWEAKABLE)</div>
+    <div style="background:var(--nero); padding:clamp(28px,4vw,52px) clamp(18px,4vw,56px); text-align:center; margin-bottom:12px;">
+      <div style="font-family:'Archivo Black',sans-serif; font-size:clamp(18px,2.8vw,32px); text-transform:uppercase; letter-spacing:-0.02em; line-height:1.2; color:#fff; font-style:italic; max-width:760px; margin:0 auto 12px;">
+        &#x201C;NON LEGGIAMO LA COMPOSIZIONE: LA SCRIVIAMO. NON INTERPRETIAMO LA CRISI: LA ATTRAVERSIAMO.&#x201D;
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:rgba(255,255,255,0.45);">— editoriale N°04</div>
+    </div>
+    <div class="mono-xs" style="line-height:1.7;">Sfondo: nero #0A0A0A o rosso #C8001A &nbsp;·&nbsp; Testo: Archivo Black italic bianco &nbsp;·&nbsp; Tweakable via pannello</div>
+  </div>
+
+  <!-- Audio player -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:14px;">AUDIO PLAYER</div>
+    <div style="border:2px solid var(--nero); padding:14px 18px; max-width:480px; margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.06em;">ASCOLTA L'ARTICOLO</span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--nero-60);">✕</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div style="background:var(--nero); color:#fff; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0;">▶</div>
+        <div style="flex:1; height:3px; background:rgba(10,10,10,0.2); position:relative;">
+          <div style="width:34%; height:100%; background:var(--rosso);"></div>
+        </div>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero-60); flex-shrink:0;">06:07 / 18:00</span>
+      </div>
+    </div>
+    <div class="mono-xs" style="line-height:1.7;">Bordo: 2px nero &nbsp;·&nbsp; Play: bg nero 36×36px &nbsp;·&nbsp; Progress bar: 3px, riempimento rosso &nbsp;·&nbsp; Testo: IBM Plex Mono 11px</div>
+  </div>
+</section>
+
+<!-- ══ 05 · SISTEMA COPERTINE ══ -->
+<section class="sg-section">
+  <div class="sg-label">05 · SISTEMA COPERTINE — 6 VARIANTI</div>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px; margin-bottom:28px;">
+
+    <!-- N°04 crema/nero + foto -->
+    <div class="cover-card" style="background:#F0E8D8; border:1px solid rgba(10,10,10,0.1);">
+      <div style="display:flex; justify-content:space-between; flex-shrink:0;">
+        <span class="cover-mw" style="color:#0A0A0A;">MIDDLEWARE</span>
+        <div class="cover-meta" style="color:rgba(10,10,10,0.5);"><div>N°04</div><div>AUT 2026</div></div>
+      </div>
+      <div class="cover-rule" style="background:#0A0A0A;"></div>
+      <div class="cover-title" style="color:#0A0A0A;">LA<br>RESISTENZA<br>DEI CORPI</div>
+      <div class="cover-spacer"></div>
+      <div class="cover-tagline" style="color:#C8001A;">non si misura nei decibel</div>
+      <div style="background:#2a2a2a; height:32px; width:52%; margin-bottom:7px; flex-shrink:0;"></div>
+      <div class="cover-foot" style="color:#C8001A;">TRA INPUT E OUTPUT</div>
+    </div>
+
+    <!-- N°03 rosso/bianco -->
+    <div class="cover-card" style="background:#C8001A;">
+      <div style="display:flex; justify-content:space-between; flex-shrink:0;">
+        <span class="cover-mw" style="color:#fff;">MIDDLEWARE</span>
+        <div class="cover-meta" style="color:rgba(255,255,255,0.6);"><div>N°03</div><div>EST 2026</div></div>
+      </div>
+      <div class="cover-rule" style="background:#fff;"></div>
+      <div class="cover-title" style="color:#fff;">SALARIO<br>INVISIBILE</div>
+      <div class="cover-spacer"></div>
+      <div class="cover-tagline" style="color:rgba(255,255,255,0.85);">il tempo non pagato è il segreto del profitto</div>
+      <div class="cover-foot" style="color:rgba(255,255,255,0.5);">TRA INPUT E OUTPUT</div>
+    </div>
+
+    <!-- N°02 crema/rosso + foto -->
+    <div class="cover-card" style="background:#F0E8D8; border:1px solid rgba(10,10,10,0.1);">
+      <div style="display:flex; justify-content:space-between; flex-shrink:0;">
+        <span class="cover-mw" style="color:#C8001A;">MIDDLEWARE</span>
+        <div class="cover-meta" style="color:rgba(10,10,10,0.5);"><div>N°02</div><div>PRI 2026</div></div>
+      </div>
+      <div class="cover-rule" style="background:#C8001A;"></div>
+      <div class="cover-title" style="color:#C8001A;">CONTRO<br>L'ALGO-<br>RITMO</div>
+      <div class="cover-spacer"></div>
+      <div style="background:#2a2a2a; height:32px; width:52%; margin-bottom:7px; flex-shrink:0;"></div>
+      <div class="cover-foot" style="color:#C8001A;">TRA INPUT E OUTPUT</div>
+    </div>
+
+    <!-- N°01 nero/crema -->
+    <div class="cover-card" style="background:#0A0A0A;">
+      <div style="display:flex; justify-content:space-between; flex-shrink:0;">
+        <span class="cover-mw" style="color:#F0E8D8;">MIDDLEWARE</span>
+        <div class="cover-meta" style="color:rgba(240,232,216,0.5);"><div>N°01</div><div>INV 2025</div></div>
+      </div>
+      <div class="cover-rule" style="background:#F0E8D8;"></div>
+      <div class="cover-title" style="color:#F0E8D8;">LA<br>FABBRICA<br>SENZA<br>MURI</div>
+      <div class="cover-spacer"></div>
+      <div class="cover-tagline" style="color:#C8001A;">il lavoro si è disperso — il capitale è rimasto insieme</div>
+      <div class="cover-foot" style="color:rgba(240,232,216,0.4);">TRA INPUT E OUTPUT</div>
+    </div>
+
+    <!-- N°05 rosso/bianco sperimentale -->
+    <div class="cover-card" style="background:#C8001A;">
+      <div style="display:flex; justify-content:space-between; flex-shrink:0;">
+        <span class="cover-mw" style="color:#fff;">MIDDLEWARE</span>
+        <div class="cover-meta" style="color:rgba(255,255,255,0.6);"><div>N°05</div><div>INV 2026</div></div>
+      </div>
+      <div class="cover-rule" style="background:#fff;"></div>
+      <div class="cover-title" style="color:#fff;">OPERAIO<br>MASSA<br>2.0</div>
+      <div class="cover-spacer"></div>
+      <div class="cover-foot" style="color:rgba(255,255,255,0.5);">TRA INPUT E OUTPUT</div>
+    </div>
+
+    <!-- N°00 prototipo crema/nero -->
+    <div class="cover-card" style="background:#F0E8D8; border:1px solid rgba(10,10,10,0.1);">
+      <div style="display:flex; justify-content:space-between; flex-shrink:0;">
+        <span class="cover-mw" style="color:#0A0A0A;">MIDDLEWARE</span>
+        <div class="cover-meta" style="color:rgba(10,10,10,0.5);"><div>N°00</div><div>PROTO</div></div>
+      </div>
+      <div class="cover-rule" style="background:#0A0A0A;"></div>
+      <div class="cover-title" style="color:#0A0A0A;">MIDDLE-<br>WARE</div>
+      <div class="cover-spacer"></div>
+      <div class="cover-tagline" style="color:#C8001A;">tra input e output, un laboratorio di conricerca</div>
+      <div class="cover-foot" style="color:#C8001A;">TRA INPUT E OUTPUT</div>
+    </div>
+  </div>
+
+  <!-- Rules -->
+  <div class="rule-grid">
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">COSTANTI</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero); line-height:1.7;">Testata · filetto 2px · metadati N°/stagione · tagline mono 6px in basso</div>
+    </div>
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">SFONDI</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero); line-height:1.7;">crema #F0E8D8 &nbsp;·&nbsp; rosso #C8001A &nbsp;·&nbsp; nero #0A0A0A &nbsp;·&nbsp; bianco #FFFFFF</div>
+    </div>
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">COLORI TITOLO</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero); line-height:1.7;">nero · bianco · rosso · crema — sempre in contrasto con lo sfondo</div>
+    </div>
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">FOTO</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero); line-height:1.7;">B&amp;N documentaria opzionale · placeholder SVG in assenza di materiale</div>
+    </div>
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">TAGLINE</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero); line-height:1.7;">Newsreader italic opzionale · mai su sfondo nero (usa rosso) · max 120 car.</div>
+    </div>
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">TIPOGRAFIA COPERTINA</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero); line-height:1.7;">Solo Archivo Black + IBM Plex Mono. Newsreader solo per tagline opzionale.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 06 · FORM & INPUT COMPONENTS ══ -->
+<section class="sg-section">
+  <div class="sg-label">06 · FORM &amp; INPUT COMPONENTS</div>
+
+  <!-- Text inputs -->
+  <div class="card" style="margin-bottom:0;">
+    <div class="mono-s" style="margin-bottom:20px;">TEXT INPUT — STATI</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:24px; max-width:860px;">
+
+      <!-- Default -->
+      <div>
+        <div class="mono-xs" style="margin-bottom:8px;">DEFAULT</div>
+        <div style="position:relative;">
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-60); margin-bottom:6px;">NOME</label>
+          <input type="text" placeholder="Es. Marco Ferretti" style="width:100%; font-family:'Newsreader',Georgia,serif; font-size:16px; color:var(--nero); background:var(--bianco); border:1px solid var(--nero); padding:10px 12px; outline:none; appearance:none; -webkit-appearance:none;">
+        </div>
+      </div>
+
+      <!-- Focus -->
+      <div>
+        <div class="mono-xs" style="margin-bottom:8px;">FOCUS</div>
+        <div>
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso); margin-bottom:6px;">NOME</label>
+          <input type="text" value="Marco Ferretti" style="width:100%; font-family:'Newsreader',Georgia,serif; font-size:16px; color:var(--nero); background:var(--bianco); border:2px solid var(--rosso); padding:9px 12px; outline:none; appearance:none;">
+        </div>
+      </div>
+
+      <!-- Filled -->
+      <div>
+        <div class="mono-xs" style="margin-bottom:8px;">FILLED</div>
+        <div>
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-60); margin-bottom:6px;">NOME</label>
+          <input type="text" value="Marco Ferretti" style="width:100%; font-family:'Newsreader',Georgia,serif; font-size:16px; color:var(--nero); background:var(--crema); border:1px solid var(--nero); padding:10px 12px; outline:none; appearance:none;">
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div>
+        <div class="mono-xs" style="margin-bottom:8px;">ERRORE</div>
+        <div>
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-60); margin-bottom:6px;">NOME</label>
+          <input type="text" value="M@rco!!!" style="width:100%; font-family:'Newsreader',Georgia,serif; font-size:16px; color:var(--nero); background:#fff8f8; border:2px solid var(--rosso); padding:9px 12px; outline:none; appearance:none;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--rosso); margin-top:5px; letter-spacing:0.04em;">⚑ CARATTERI NON CONSENTITI</div>
+        </div>
+      </div>
+
+      <!-- Disabled -->
+      <div>
+        <div class="mono-xs" style="margin-bottom:8px;">DISABILITATO</div>
+        <div>
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-30); margin-bottom:6px;">NOME</label>
+          <input type="text" value="Non modificabile" disabled style="width:100%; font-family:'Newsreader',Georgia,serif; font-size:16px; color:var(--nero-30); background:var(--crema-dk); border:1px solid var(--nero-30); padding:10px 12px; outline:none; appearance:none; cursor:not-allowed;">
+        </div>
+      </div>
+
+    </div>
+    <div class="mono-xs" style="margin-top:16px; line-height:1.8;">Bordo default: 1px nero &nbsp;·&nbsp; Focus: 2px rosso &nbsp;·&nbsp; Label: IBM Plex Mono 10px uppercase · Valore: Newsreader 16px &nbsp;·&nbsp; Filled bg: crema</div>
+  </div>
+
+  <!-- Textarea -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:16px;">TEXTAREA</div>
+    <div style="max-width:520px;">
+      <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-60); margin-bottom:6px;">ANNOTAZIONE</label>
+      <textarea rows="4" placeholder="Scrivi una nota di ricerca…" style="width:100%; font-family:'Newsreader',Georgia,serif; font-size:16px; line-height:1.6; color:var(--nero); background:var(--bianco); border:1px solid var(--nero); padding:10px 12px; outline:none; resize:vertical; appearance:none;"></textarea>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--nero-30); margin-top:5px; text-align:right; letter-spacing:0.04em;">0 / 400 CAR.</div>
+    </div>
+  </div>
+
+  <!-- Select -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:16px;">SELECT / DROPDOWN</div>
+    <div style="display:flex; flex-wrap:wrap; gap:28px; align-items:flex-end; max-width:760px;">
+
+      <!-- Custom select default -->
+      <div style="min-width:200px;">
+        <div class="mono-xs" style="margin-bottom:8px;">DEFAULT</div>
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-60); margin-bottom:6px;">CATEGORIA</label>
+        <div style="position:relative;">
+          <select style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero); background:var(--bianco); border:1px solid var(--nero); padding:10px 36px 10px 12px; outline:none; appearance:none; -webkit-appearance:none; cursor:pointer;">
+            <option value="">— SELEZIONA —</option>
+            <option>TEORIA</option>
+            <option>INCHIESTA</option>
+            <option>AZIONE</option>
+            <option>CRITICA</option>
+            <option>SAGGIO VISIVO</option>
+          </select>
+          <div style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:10px; color:var(--nero);">▾</div>
+        </div>
+      </div>
+
+      <!-- Select filled -->
+      <div style="min-width:200px;">
+        <div class="mono-xs" style="margin-bottom:8px;">SELECTED</div>
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso); margin-bottom:6px;">CATEGORIA</label>
+        <div style="position:relative;">
+          <select style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero); background:var(--crema); border:2px solid var(--rosso); padding:9px 36px 9px 12px; outline:none; appearance:none; cursor:pointer;">
+            <option>INCHIESTA</option>
+          </select>
+          <div style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:10px; color:var(--rosso);">▾</div>
+        </div>
+      </div>
+
+      <!-- Dropdown aperto simulato -->
+      <div style="min-width:200px;">
+        <div class="mono-xs" style="margin-bottom:8px;">DROPDOWN APERTO</div>
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso); margin-bottom:6px;">CATEGORIA</label>
+        <div style="border:2px solid var(--rosso); background:var(--bianco); position:relative;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; padding:10px 36px 10px 12px; color:var(--nero); border-bottom:1px solid var(--nero-30); display:flex; justify-content:space-between; align-items:center;">INCHIESTA <span style="font-size:10px;">▴</span></div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; text-transform:uppercase; padding:8px 12px; color:var(--nero-60);">TEORIA</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; text-transform:uppercase; padding:8px 12px; color:var(--bianco); background:var(--rosso);">INCHIESTA</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; text-transform:uppercase; padding:8px 12px; color:var(--nero-60);">AZIONE</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; text-transform:uppercase; padding:8px 12px; color:var(--nero-60);">CRITICA</div>
+        </div>
+      </div>
+    </div>
+    <div class="mono-xs" style="margin-top:14px; line-height:1.8;">Chevron custom ▾ &nbsp;·&nbsp; Voce attiva: bg rosso + testo bianco &nbsp;·&nbsp; Font: IBM Plex Mono 12px uppercase tracking +0.04em</div>
+  </div>
+
+  <!-- Checkbox & Radio -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:16px;">CHECKBOX &amp; RADIO</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:32px; max-width:680px;">
+
+      <!-- Checkboxes -->
+      <div>
+        <div class="mono-xs" style="margin-bottom:14px;">CHECKBOX</div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Unchecked -->
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero);">
+            <span style="width:20px; height:20px; border:1px solid var(--nero); background:var(--bianco); flex-shrink:0; display:inline-block;"></span>
+            TEORIA
+          </label>
+          <!-- Checked -->
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero);">
+            <span style="width:20px; height:20px; border:1px solid var(--nero); background:var(--nero); flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;">
+              <svg width="12" height="9" viewBox="0 0 12 9" fill="none"><polyline points="1,4.5 4.5,8 11,1" stroke="#F0E8D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            INCHIESTA
+          </label>
+          <!-- Checked rosso -->
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--rosso);">
+            <span style="width:20px; height:20px; border:1px solid var(--rosso); background:var(--rosso); flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;">
+              <svg width="12" height="9" viewBox="0 0 12 9" fill="none"><polyline points="1,4.5 4.5,8 11,1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            AZIONE
+          </label>
+          <!-- Disabled -->
+          <label style="display:flex; align-items:center; gap:12px; cursor:not-allowed; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero-30);">
+            <span style="width:20px; height:20px; border:1px solid var(--nero-30); background:var(--crema-dk); flex-shrink:0; display:inline-block;"></span>
+            CRITICA <span style="font-size:9px; margin-left:4px;">(disab.)</span>
+          </label>
+        </div>
+        <div class="mono-xs" style="margin-top:12px; line-height:1.7;">Dimensione: 20×20px &nbsp;·&nbsp; Checked: bg nero (o rosso) + ✓ crema &nbsp;·&nbsp; Bordo 1px</div>
+      </div>
+
+      <!-- Radio buttons -->
+      <div>
+        <div class="mono-xs" style="margin-bottom:14px;">RADIO</div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero);">
+            <span style="width:20px; height:20px; border:1px solid var(--nero-30); border-radius:50%; background:var(--bianco); flex-shrink:0;"></span>
+            MENSILE
+          </label>
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero);">
+            <span style="width:20px; height:20px; border:2px solid var(--rosso); border-radius:50%; background:var(--bianco); flex-shrink:0; display:inline-flex; align-items:center; justify-content:center;">
+              <span style="width:8px; height:8px; background:var(--rosso); border-radius:50%;"></span>
+            </span>
+            TRIMESTRALE
+          </label>
+          <label style="display:flex; align-items:center; gap:12px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero);">
+            <span style="width:20px; height:20px; border:1px solid var(--nero-30); border-radius:50%; background:var(--bianco); flex-shrink:0;"></span>
+            ANNUALE
+          </label>
+          <label style="display:flex; align-items:center; gap:12px; cursor:not-allowed; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero-30);">
+            <span style="width:20px; height:20px; border:1px solid var(--nero-30); border-radius:50%; background:var(--crema-dk); flex-shrink:0;"></span>
+            N.D. <span style="font-size:9px; margin-left:4px;">(disab.)</span>
+          </label>
+        </div>
+        <div class="mono-xs" style="margin-top:12px; line-height:1.7;">Cerchio 20px &nbsp;·&nbsp; Selezionato: anello 2px rosso + dot 8px rosso</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toggle -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:16px;">TOGGLE SWITCH</div>
+    <div style="display:flex; flex-wrap:wrap; gap:28px; align-items:center;">
+
+      <!-- Off -->
+      <label style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+        <span style="width:44px; height:24px; background:var(--crema-dk); border:1px solid var(--nero-30); border-radius:0; position:relative; display:inline-block; transition:background 0.2s; flex-shrink:0;">
+          <span style="position:absolute; top:2px; left:2px; width:18px; height:18px; background:var(--nero-30); display:block;"></span>
+        </span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--nero-60);">NOTIFICHE — OFF</span>
+      </label>
+
+      <!-- On nero -->
+      <label style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+        <span style="width:44px; height:24px; background:var(--nero); border:1px solid var(--nero); border-radius:0; position:relative; display:inline-block; flex-shrink:0;">
+          <span style="position:absolute; top:2px; right:2px; width:18px; height:18px; background:var(--crema); display:block;"></span>
+        </span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--nero);">NOTIFICHE — ON</span>
+      </label>
+
+      <!-- On rosso -->
+      <label style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+        <span style="width:44px; height:24px; background:var(--rosso); border:1px solid var(--rosso); border-radius:0; position:relative; display:inline-block; flex-shrink:0;">
+          <span style="position:absolute; top:2px; right:2px; width:18px; height:18px; background:#fff; display:block;"></span>
+        </span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--rosso);">BREAKING — ON</span>
+      </label>
+    </div>
+    <div class="mono-xs" style="margin-top:12px; line-height:1.8;">44×24px senza border-radius (coerente con aesthetic editoriale) &nbsp;·&nbsp; Off: bg crema-dk + thumb nero-30 &nbsp;·&nbsp; On: bg nero + thumb crema</div>
+  </div>
+
+  <!-- Badge & Tag -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:16px;">BADGE &amp; TAG</div>
+
+    <div class="mono-xs" style="margin-bottom:10px;">BADGE CATEGORIA</div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso); border:1px solid var(--rosso); padding:3px 8px;">TEORIA</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso); border:1px solid var(--rosso); padding:3px 8px;">INCHIESTA</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso); border:1px solid var(--rosso); padding:3px 8px;">AZIONE</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--bianco); background:var(--rosso); padding:3px 8px;">CRITICA</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero); border:1px solid var(--nero); padding:3px 8px;">SAGGIO VISIVO</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--bianco); background:var(--nero); padding:3px 8px;">ARCHIVIO</span>
+    </div>
+
+    <div class="mono-xs" style="margin-bottom:10px;">TAG RIMOVIBILI (FILTRO)</div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--bianco); background:var(--rosso); padding:4px 8px 4px 10px; display:inline-flex; align-items:center; gap:8px;">LOGISTICA <span style="opacity:0.7; font-size:12px; line-height:1; cursor:pointer;">×</span></span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--nero); background:var(--crema-dk); border:1px solid var(--nero-30); padding:4px 8px 4px 10px; display:inline-flex; align-items:center; gap:8px;">2024 <span style="opacity:0.5; font-size:12px; line-height:1; cursor:pointer;">×</span></span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--nero); background:var(--crema-dk); border:1px solid var(--nero-30); padding:4px 8px 4px 10px; display:inline-flex; align-items:center; gap:8px;">AUDIO <span style="opacity:0.5; font-size:12px; line-height:1; cursor:pointer;">×</span></span>
+    </div>
+
+    <div class="mono-xs" style="margin-bottom:10px;">BADGE STATO / NOTIFICA</div>
+    <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:var(--bianco); background:var(--rosso); padding:2px 6px;">NUOVO</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero); background:var(--crema-dk); border:1px solid var(--nero-30); padding:2px 6px;">BOZZA</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:var(--bianco); background:var(--nero); padding:2px 6px;">PUBBLICATO</span>
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-60); border:1px solid var(--nero-30); padding:2px 6px;">ARCHIVIATO</span>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="width:8px; height:8px; background:var(--rosso); display:inline-block; border-radius:50%;"></span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--rosso); letter-spacing:0.06em; text-transform:uppercase;">BREAKING</span>
+      </div>
+    </div>
+    <div class="mono-xs" style="margin-top:12px; line-height:1.8;">Badge: IBM Plex Mono 9–10px · no border-radius · padding 2–4px 6–10px &nbsp;·&nbsp; Tag rimovibile: "×" a 0.7 opacity</div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:16px;">BOTTONI</div>
+
+    <div class="mono-xs" style="margin-bottom:10px;">PRIMARIO</div>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; align-items:center;">
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--bianco); background:var(--nero); border:none; padding:11px 20px; cursor:pointer;">→ CONFERMA</button>
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--bianco); background:var(--rosso); border:none; padding:11px 20px; cursor:pointer;">→ PUBBLICA</button>
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-30); background:var(--crema-dk); border:none; padding:11px 20px; cursor:not-allowed;">→ DISABILITATO</button>
+    </div>
+
+    <div class="mono-xs" style="margin-bottom:10px;">SECONDARIO (OUTLINE)</div>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; align-items:center;">
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero); background:transparent; border:1px solid var(--nero); padding:10px 20px; cursor:pointer;">→ LEGGI L'ANALISI</button>
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso); background:transparent; border:1px solid var(--rosso); padding:10px 20px; cursor:pointer;">→ ABBONATI</button>
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-30); background:transparent; border:1px solid var(--nero-30); padding:10px 20px; cursor:not-allowed;">→ DISABILITATO</button>
+    </div>
+
+    <div class="mono-xs" style="margin-bottom:10px;">GHOST / TESTO</div>
+    <div style="display:flex; flex-wrap:wrap; gap:16px; margin-bottom:20px; align-items:center;">
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:var(--nero); background:transparent; border:none; padding:0; cursor:pointer; border-bottom:1px solid var(--nero);">SCOPRI DI PIÙ</button>
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:var(--rosso); background:transparent; border:none; padding:0; cursor:pointer; border-bottom:1px solid var(--rosso);">LEGGI TUTTO →</button>
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:var(--nero-30); background:transparent; border:none; padding:0; cursor:not-allowed; border-bottom:1px dashed var(--nero-30);">NON DISPONIBILE</button>
+    </div>
+
+    <div class="mono-xs" style="margin-bottom:10px;">DIMENSIONI</div>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--bianco); background:var(--nero); border:none; padding:7px 14px; cursor:pointer;">XS → COMPATTO</button>
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--bianco); background:var(--nero); border:none; padding:11px 20px; cursor:pointer;">MD → DEFAULT</button>
+      <button style="font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:var(--bianco); background:var(--nero); border:none; padding:14px 28px; cursor:pointer;">LG → HERO</button>
+      <button style="width:100%; max-width:320px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--bianco); background:var(--rosso); border:none; padding:14px 20px; cursor:pointer; text-align:left;">→ FULL-WIDTH CTA</button>
+    </div>
+    <div class="mono-xs" style="margin-top:14px; line-height:1.8;">Nessun border-radius &nbsp;·&nbsp; Font IBM Plex Mono uppercase &nbsp;·&nbsp; Prefisso freccia → &nbsp;·&nbsp; Hover: filter brightness(0.88) o bg crema-dk per outline &nbsp;·&nbsp; Full-width: text-align left</div>
+  </div>
+
+  <!-- Search bar -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:16px;">SEARCH BAR</div>
+    <div style="display:flex; flex-direction:column; gap:16px; max-width:540px;">
+
+      <!-- Default -->
+      <div>
+        <div class="mono-xs" style="margin-bottom:8px;">DEFAULT</div>
+        <div style="display:flex; border:1px solid var(--nero); background:var(--bianco);">
+          <div style="padding:10px 14px; border-right:1px solid var(--nero); display:flex; align-items:center;">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="#0A0A0A" stroke-width="1.2"/><line x1="9" y1="9" x2="13" y2="13" stroke="#0A0A0A" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <input type="search" placeholder="CERCA UN ARTICOLO..." style="flex:1; border:none; background:transparent; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero); padding:10px 12px; outline:none; appearance:none; -webkit-appearance:none;">
+        </div>
+      </div>
+
+      <!-- Con risultati -->
+      <div>
+        <div class="mono-xs" style="margin-bottom:8px;">CON RISULTATI</div>
+        <div style="border:2px solid var(--rosso); background:var(--bianco);">
+          <div style="display:flex; border-bottom:1px solid var(--nero-30);">
+            <div style="padding:10px 14px; border-right:1px solid var(--nero-30); display:flex; align-items:center;">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="#C8001A" stroke-width="1.2"/><line x1="9" y1="9" x2="13" y2="13" stroke="#C8001A" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+            <input type="search" value="LOGISTICA" style="flex:1; border:none; background:transparent; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; text-transform:uppercase; color:var(--rosso); padding:10px 12px; outline:none; appearance:none;">
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; padding:7px 14px; color:var(--nero); letter-spacing:0.04em; border-bottom:1px solid var(--crema-dk);">L'ALGORITMO DEL CONTROLLO SOCIALE <span style="color:var(--nero-60); font-size:10px; margin-left:8px;">INCHIESTA</span></div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; padding:7px 14px; color:var(--nero); letter-spacing:0.04em; background:var(--crema-dk); border-bottom:1px solid var(--crema-dk);">TERRITORIO COME CAMPO DI LOTTA <span style="color:var(--rosso); font-size:10px; margin-left:8px;">AZIONE</span></div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; padding:7px 14px; color:var(--nero); letter-spacing:0.04em;">SALARIO INVISIBILE <span style="color:var(--nero-60); font-size:10px; margin-left:8px;">TEORIA</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="mono-xs" style="margin-top:12px; line-height:1.8;">Icona lente: SVG 14×14px &nbsp;·&nbsp; Input: IBM Plex Mono 12px uppercase &nbsp;·&nbsp; Focus: bordo 2px rosso &nbsp;·&nbsp; Risultato hover: bg crema-dk</div>
+  </div>
+
+  <!-- Form completo -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:16px;">FORM COMPLETO — ESEMPIO ABBONAMENTO</div>
+    <form style="max-width:480px; display:flex; flex-direction:column; gap:0; border:1px solid var(--nero);" onsubmit="return false;">
+      <div style="background:var(--nero); padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-family:'Archivo Black',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:-0.02em; color:#fff;">ABBONATI</span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:0.06em;">ACCESSO LIBERO</span>
+      </div>
+      <div style="padding:20px 18px; border-bottom:1px solid var(--nero-30); display:flex; flex-direction:column; gap:16px;">
+        <div>
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-60); margin-bottom:6px;">NOME E COGNOME</label>
+          <input type="text" placeholder="Es. Sara Conti" style="width:100%; font-family:'Newsreader',Georgia,serif; font-size:15px; color:var(--nero); background:var(--bianco); border:1px solid var(--nero); padding:9px 12px; outline:none; appearance:none;">
+        </div>
+        <div>
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-60); margin-bottom:6px;">EMAIL</label>
+          <input type="email" placeholder="nome@dominio.it" style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--nero); background:var(--bianco); border:1px solid var(--nero); padding:9px 12px; outline:none; appearance:none;">
+        </div>
+        <div>
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-60); margin-bottom:6px;">RUBRICA DI INTERESSE</label>
+          <div style="position:relative;">
+            <select style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero); background:var(--bianco); border:1px solid var(--nero); padding:9px 32px 9px 12px; outline:none; appearance:none; cursor:pointer;">
+              <option value="">— TUTTE —</option><option>TEORIA</option><option>INCHIESTA</option><option>AZIONE</option><option>CRITICA</option>
+            </select>
+            <div style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:10px;">▾</div>
+          </div>
+        </div>
+        <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;">
+          <span style="width:18px; height:18px; border:1px solid var(--nero); background:var(--bianco); flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; margin-top:2px;">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><polyline points="1,4 3.5,7 9,1" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span style="font-family:'Newsreader',Georgia,serif; font-size:14px; line-height:1.5; color:var(--nero);">Accetto la <em>privacy policy</em> e il trattamento dei dati per l'invio della newsletter.</span>
+        </label>
+      </div>
+      <button type="submit" style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--bianco); background:var(--rosso); border:none; padding:14px 18px; cursor:pointer; text-align:left;">→ CONFERMA ISCRIZIONE</button>
+    </form>
+    <div class="mono-xs" style="margin-top:12px; line-height:1.8;">Header form: bg nero + titolo Archivo Black bianco &nbsp;·&nbsp; CTA: bg rosso full-width &nbsp;·&nbsp; Checkbox privacy: Newsreader 14px corpo</div>
+  </div>
+
+  <!-- Stepper / Pagination -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:16px;">PAGINAZIONE &amp; STEPPER</div>
+
+    <div class="mono-xs" style="margin-bottom:10px;">PAGINAZIONE ARCHIVIO</div>
+    <div style="display:flex; align-items:center; gap:0; margin-bottom:20px; flex-wrap:wrap;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero-30); border:1px solid var(--nero-30); padding:8px 14px;">← PREC.</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero); border:1px solid var(--nero); border-left:none; padding:8px 12px;">01</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--bianco); background:var(--rosso); border:1px solid var(--rosso); border-left:none; padding:8px 12px;">02</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero); border:1px solid var(--nero); border-left:none; padding:8px 12px;">03</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero-60); border:1px solid var(--nero-30); border-left:none; padding:8px 12px;">…</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--nero); border:1px solid var(--nero); border-left:none; padding:8px 12px;">12</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; text-transform:uppercase; color:var(--nero); border:1px solid var(--nero); border-left:none; padding:8px 14px;">SUCC. →</div>
+    </div>
+
+    <div class="mono-xs" style="margin-bottom:10px;">STEPPER ARTICOLO LUNGO (SEZIONI)</div>
+    <div style="display:flex; align-items:center; gap:0; max-width:480px;">
+      <div style="flex:1; height:3px; background:var(--rosso);"></div>
+      <div style="width:12px; height:12px; background:var(--rosso); border:2px solid var(--rosso); flex-shrink:0;"></div>
+      <div style="flex:1; height:3px; background:var(--rosso);"></div>
+      <div style="width:12px; height:12px; background:var(--rosso); border:2px solid var(--rosso); flex-shrink:0;"></div>
+      <div style="flex:1; height:3px; background:var(--rosso);"></div>
+      <div style="width:12px; height:12px; background:var(--bianco); border:2px solid var(--rosso); flex-shrink:0;"></div>
+      <div style="flex:1; height:1px; background:var(--nero-30);"></div>
+      <div style="width:12px; height:12px; background:var(--bianco); border:2px solid var(--nero-30); flex-shrink:0;"></div>
+      <div style="flex:1; height:1px; background:var(--nero-30);"></div>
+    </div>
+    <div style="display:flex; justify-content:space-between; max-width:480px; margin-top:6px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--nero-60); text-transform:uppercase; letter-spacing:0.05em;">
+      <span>I.</span><span>II.</span><span style="color:var(--rosso);">III. ←</span><span>IV.</span><span>V.</span>
+    </div>
+    <div class="mono-xs" style="margin-top:12px; line-height:1.8;">Pagina corrente: bg rosso &nbsp;·&nbsp; Pagine adiacenti: bordo nero &nbsp;·&nbsp; Disabilitato: bordo nero-30 &nbsp;·&nbsp; Stepper: dot 12px quadrato</div>
+  </div>
+
+  <!-- Toast / Notification -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:16px;">TOAST &amp; NOTIFICHE</div>
+    <div style="display:flex; flex-direction:column; gap:10px; max-width:480px;">
+
+      <div style="display:flex; align-items:stretch; border:1px solid var(--nero); background:var(--bianco);">
+        <div style="width:4px; background:var(--nero); flex-shrink:0;"></div>
+        <div style="padding:10px 14px; flex:1;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--nero-60); margin-bottom:4px;">INFO</div>
+          <div style="font-family:'Newsreader',Georgia,serif; font-size:14px; line-height:1.45; color:var(--nero);">Il numero N°04 è disponibile. Buona lettura.</div>
+        </div>
+        <div style="padding:10px 12px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--nero-30); cursor:pointer; display:flex; align-items:center;">×</div>
+      </div>
+
+      <div style="display:flex; align-items:stretch; border:1px solid var(--rosso); background:var(--bianco);">
+        <div style="width:4px; background:var(--rosso); flex-shrink:0;"></div>
+        <div style="padding:10px 14px; flex:1;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--rosso); margin-bottom:4px;">BREAKING</div>
+          <div style="font-family:'Newsreader',Georgia,serif; font-size:14px; line-height:1.45; color:var(--nero);">Nuovo articolo pubblicato: "Composizione e contraddizione".</div>
+        </div>
+        <div style="padding:10px 12px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--nero-30); cursor:pointer; display:flex; align-items:center;">×</div>
+      </div>
+
+      <div style="display:flex; align-items:stretch; background:var(--nero);">
+        <div style="width:4px; background:var(--rosso); flex-shrink:0;"></div>
+        <div style="padding:10px 14px; flex:1;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:4px;">ERRORE</div>
+          <div style="font-family:'Newsreader',Georgia,serif; font-size:14px; line-height:1.45; color:#fff;">Impossibile caricare il documento. Riprova.</div>
+        </div>
+        <div style="padding:10px 12px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:rgba(255,255,255,0.3); cursor:pointer; display:flex; align-items:center;">×</div>
+      </div>
+    </div>
+    <div class="mono-xs" style="margin-top:12px; line-height:1.8;">Barra sinistra 4px colorata &nbsp;·&nbsp; Label: IBM Plex Mono 10px uppercase &nbsp;·&nbsp; Body: Newsreader 14px &nbsp;·&nbsp; Chiudi: × nero-30</div>
+  </div>
+
+  <!-- Tooltip -->
+  <div class="card">
+    <div class="mono-s" style="margin-bottom:16px;">TOOLTIP</div>
+    <div style="display:flex; flex-wrap:wrap; gap:40px; align-items:flex-end; padding:20px 0;">
+
+      <div style="position:relative; display:inline-block;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--rosso); border-bottom:1px dashed var(--rosso); cursor:help;">CONRICERCA</span>
+        <div style="position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); background:var(--nero); color:var(--crema); font-family:'IBM Plex Mono',monospace; font-size:10px; padding:6px 10px; white-space:nowrap; letter-spacing:0.04em; pointer-events:none;">
+          METODOLOGIA DI RICERCA MILITANTE
+          <div style="position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:var(--nero);"></div>
+        </div>
+      </div>
+
+      <div style="position:relative; display:inline-block;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--rosso); border-bottom:1px dashed var(--rosso); cursor:help;">COMPOSIZIONE DI CLASSE</span>
+        <div style="position:absolute; bottom:calc(100% + 8px); left:0; background:var(--rosso); color:#fff; font-family:'Newsreader',Georgia,serif; font-size:13px; padding:8px 12px; max-width:200px; line-height:1.4; pointer-events:none; font-style:italic;">
+          Rapporto tra composizione tecnica e politica della classe lavoratrice.
+          <div style="position:absolute; top:100%; left:16px; border:5px solid transparent; border-top-color:var(--rosso);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="mono-xs" style="line-height:1.8;">Trigger: testo con underline tratteggiato rosso &nbsp;·&nbsp; Tooltip breve: bg nero + IBM Plex Mono 10px &nbsp;·&nbsp; Tooltip lungo: bg rosso + Newsreader italic 13px</div>
+  </div>
+
+</section>
+
+<!-- ══ 07 · VOCE E TONO ══ -->
+<section class="sg-section">
+  <div class="sg-label">06 · VOCE E TONO</div>
+  <div class="rule-grid">
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">REGISTRO</div>
+      <div style="font-family:'Newsreader',Georgia,serif; font-size:15px; color:var(--nero); line-height:1.55;">Analitico, diretto, mai accademico. La frase è strumento, non ornamento.</div>
+    </div>
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">TITOLI</div>
+      <div style="font-family:'Newsreader',Georgia,serif; font-size:15px; color:var(--nero); line-height:1.55;">Maiuscolo, nominale, assertivo. Evitare domande retoriche.</div>
+    </div>
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">OCCHIELLI</div>
+      <div style="font-family:'Newsreader',Georgia,serif; font-size:15px; color:var(--nero); line-height:1.55;">Corsivo, ellittico, provocatorio. Max 180 caratteri.</div>
+    </div>
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">METADATI</div>
+      <div style="font-family:'Newsreader',Georgia,serif; font-size:15px; color:var(--nero); line-height:1.55;">Maiuscolo, conciso. Autore · minuti · [AUDIO]. Nessuna punteggiatura finale.</div>
+    </div>
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">CATEGORIE</div>
+      <div style="font-family:'Newsreader',Georgia,serif; font-size:15px; color:var(--nero); line-height:1.55;">4 rubriche fisse: TEORIA · INCHIESTA · AZIONE · CRITICA + SAGGIO VISIVO eccezionale.</div>
+    </div>
+    <div class="rule-cell">
+      <div class="mono-s" style="margin-bottom:6px;">BILINGUE</div>
+      <div style="font-family:'Newsreader',Georgia,serif; font-size:15px; color:var(--nero); line-height:1.55;">IT principale, EN per navigazione e footer. Mai mescolare nella stessa stringa.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer style="margin-top:80px; padding:20px 0; border-top:var(--filetto-spesso); display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
+  <span style="font-family:'Archivo Black',sans-serif; font-size:18px; text-transform:uppercase; letter-spacing:-0.03em; color:var(--nero);">MIDDLEWARE STYLE GUIDE v1.0</span>
+  <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--nero-60); line-height:1.8; text-align:right;">
+    <div>APRILE 2026 — USO INTERNO</div>
+    <div>FONT: ARCHIVO BLACK · NEWSREADER · IBM PLEX MONO</div>
+  </div>
+</footer>
+
+</div>
+</body>
+</html>

@@ -123,9 +123,9 @@ export const articlesService = {
       throw error;
     }
   },
-  async hardDelete(id: string) {
+  async delete(id: string) {
     try {
-      await articlesRepository.hardDelete(id);
+      await articlesRepository.delete(id);
     } catch (error) {
       if (isNotFoundError(error)) {
         throw new ApiError(404, "NOT_FOUND", "Article not found");
