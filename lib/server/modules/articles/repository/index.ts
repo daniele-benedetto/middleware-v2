@@ -3,18 +3,44 @@ import "server-only";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
+import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
   CreateArticleInput,
+  ListArticlesQuery,
   ReorderArticlesInput,
   SyncArticleTagsInput,
   UpdateArticleInput,
 } from "@/lib/server/modules/articles/schema";
 
+const toArticleWhereInput = (query: ListArticlesQuery): Prisma.ArticleWhereInput => {
+  return {
+    status: query.status,
+    issueId: query.issueId,
+    categoryId: query.categoryId,
+    isFeatured: query.featured,
+    OR: query.q
+      ? [
+          { title: { contains: query.q, mode: "insensitive" } },
+          { excerpt: { contains: query.q, mode: "insensitive" } },
+        ]
+      : undefined,
+  };
+};
+
 export const articlesRepository = {
-  async list() {
+  async list(query: ListArticlesQuery, pagination: PaginationParams) {
+    const where = toArticleWhereInput(query);
+
     return prisma.article.findMany({
+      where,
       orderBy: { createdAt: "desc" },
+      skip: (pagination.page - 1) * pagination.pageSize,
+      take: pagination.pageSize,
     });
+  },
+  async count(query: ListArticlesQuery) {
+    const where = toArticleWhereInput(query);
+    return prisma.article.count({ where });
   },
   async getById(id: string) {
     return prisma.article.findUnique({

@@ -1,19 +1,34 @@
 import "server-only";
 
+import { prisma } from "@/lib/prisma";
+
+import type { CreateIssueInput, UpdateIssueInput } from "@/lib/server/modules/issues/schema";
+
 export const issuesRepository = {
   async list() {
-    throw new Error("Not implemented");
+    return prisma.issue.findMany({
+      orderBy: { createdAt: "desc" },
+    });
   },
-  async getById(_id: string) {
-    throw new Error("Not implemented");
+  async getById(id: string) {
+    return prisma.issue.findUnique({
+      where: { id },
+    });
   },
-  async create(_input: unknown) {
-    throw new Error("Not implemented");
+  async create(input: CreateIssueInput) {
+    return prisma.issue.create({
+      data: input,
+    });
   },
-  async update(_id: string, _input: unknown) {
-    throw new Error("Not implemented");
+  async update(id: string, input: UpdateIssueInput) {
+    return prisma.issue.update({
+      where: { id },
+      data: input,
+    });
   },
-  async hardDelete(_id: string) {
-    throw new Error("Not implemented");
+  async hardDelete(id: string) {
+    return prisma.issue.delete({
+      where: { id },
+    });
   },
 };

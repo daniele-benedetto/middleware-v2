@@ -3,12 +3,14 @@ export { articlesPolicy } from "@/lib/server/modules/articles/policy";
 export { articlesRepository } from "@/lib/server/modules/articles/repository";
 export {
   createArticleInputSchema,
+  listArticlesQuerySchema,
   reorderArticlesInputSchema,
   syncArticleTagsInputSchema,
   updateArticleInputSchema,
 } from "@/lib/server/modules/articles/schema";
 export type {
   CreateArticleInput,
+  ListArticlesQuery,
   ReorderArticlesInput,
   SyncArticleTagsInput,
   UpdateArticleInput,

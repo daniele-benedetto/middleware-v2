@@ -36,7 +36,18 @@ export const reorderArticlesInputSchema = z.object({
   orderedArticleIds: z.array(z.string().uuid()),
 });
 
+const featuredQuerySchema = z.enum(["true", "false"]).transform((value) => value === "true");
+
+export const listArticlesQuerySchema = z.object({
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"] satisfies ArticleStatus[]).optional(),
+  issueId: z.string().uuid().optional(),
+  categoryId: z.string().uuid().optional(),
+  featured: featuredQuerySchema.optional(),
+  q: z.string().trim().min(1).optional(),
+});
+
 export type CreateArticleInput = z.infer<typeof createArticleInputSchema>;
 export type UpdateArticleInput = z.infer<typeof updateArticleInputSchema>;
 export type SyncArticleTagsInput = z.infer<typeof syncArticleTagsInputSchema>;
 export type ReorderArticlesInput = z.infer<typeof reorderArticlesInputSchema>;
+export type ListArticlesQuery = z.infer<typeof listArticlesQuerySchema>;

@@ -7,9 +7,11 @@ import { assertPublishedAtConsistency } from "@/lib/server/validation/published"
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
 import type { Article } from "@/lib/generated/prisma/client";
+import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { ArticleDto } from "@/lib/server/modules/articles/dto";
 import type {
   CreateArticleInput,
+  ListArticlesQuery,
   ReorderArticlesInput,
   SyncArticleTagsInput,
   UpdateArticleInput,
@@ -51,10 +53,16 @@ const isUniqueError = (error: unknown): boolean => {
 };
 
 export const articlesService = {
-  async list() {
-    const articles = await articlesRepository.list();
+  async list(query: ListArticlesQuery, pagination: PaginationParams) {
+    const [articles, total] = await Promise.all([
+      articlesRepository.list(query, pagination),
+      articlesRepository.count(query),
+    ]);
 
-    return toArticlesDto(articles);
+    return {
+      items: toArticlesDto(articles),
+      total,
+    };
   },
   async getById(id: string) {
     const article = await articlesRepository.getById(id);

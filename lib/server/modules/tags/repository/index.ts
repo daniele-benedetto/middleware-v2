@@ -1,19 +1,34 @@
 import "server-only";
 
+import { prisma } from "@/lib/prisma";
+
+import type { CreateTagInput, UpdateTagInput } from "@/lib/server/modules/tags/schema";
+
 export const tagsRepository = {
   async list() {
-    throw new Error("Not implemented");
+    return prisma.tag.findMany({
+      orderBy: { createdAt: "desc" },
+    });
   },
-  async getById(_id: string) {
-    throw new Error("Not implemented");
+  async getById(id: string) {
+    return prisma.tag.findUnique({
+      where: { id },
+    });
   },
-  async create(_input: unknown) {
-    throw new Error("Not implemented");
+  async create(input: CreateTagInput) {
+    return prisma.tag.create({
+      data: input,
+    });
   },
-  async update(_id: string, _input: unknown) {
-    throw new Error("Not implemented");
+  async update(id: string, input: UpdateTagInput) {
+    return prisma.tag.update({
+      where: { id },
+      data: input,
+    });
   },
-  async hardDelete(_id: string) {
-    throw new Error("Not implemented");
+  async hardDelete(id: string) {
+    return prisma.tag.delete({
+      where: { id },
+    });
   },
 };

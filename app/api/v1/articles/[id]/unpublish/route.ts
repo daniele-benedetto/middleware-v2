@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/server/auth/guards";
 import { USER_ROLES } from "@/lib/server/auth/roles";
 import { ok } from "@/lib/server/http/api-response";
+import { auditAction } from "@/lib/server/http/audit";
 import { getIdParam } from "@/lib/server/http/params";
 import { withRoute } from "@/lib/server/http/route";
 import { articleDtoSchema, articlesService } from "@/lib/server/modules/articles";
@@ -19,6 +20,7 @@ export async function POST(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
+    await auditAction(request, { action: "unpublish", resource: "articles", resourceId: id });
     const data = parseOutput(await articlesService.unpublish(id), articleDtoSchema);
 
     return ok(data);

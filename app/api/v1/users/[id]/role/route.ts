@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/server/auth/guards";
 import { USER_ROLES } from "@/lib/server/auth/roles";
 import { ok } from "@/lib/server/http/api-response";
+import { auditAction } from "@/lib/server/http/audit";
 import { getIdParam } from "@/lib/server/http/params";
 import { withRoute } from "@/lib/server/http/route";
 import {
@@ -22,6 +23,7 @@ export async function PATCH(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, [USER_ROLES.ADMIN]);
     const id = await getIdParam(context.params);
+    await auditAction(request, { action: "assign-role", resource: "users", resourceId: id });
     const input = await parseJsonBody(request, updateUserRoleInputSchema);
     const data = parseOutput(await usersService.updateRole(id, input), userListItemDtoSchema);
 

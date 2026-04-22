@@ -1,22 +1,53 @@
 import "server-only";
 
+import { prisma } from "@/lib/prisma";
+
+import type {
+  CreateUserInput,
+  UpdateUserInput,
+  UpdateUserRoleInput,
+} from "@/lib/server/modules/users/schema";
+
 export const usersRepository = {
   async list() {
-    throw new Error("Not implemented");
+    return prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+    });
   },
-  async getById(_id: string) {
-    throw new Error("Not implemented");
+  async getById(id: string) {
+    return prisma.user.findUnique({
+      where: { id },
+    });
   },
-  async create(_input: unknown) {
-    throw new Error("Not implemented");
+  async create(input: CreateUserInput) {
+    return prisma.user.create({
+      data: {
+        email: input.email,
+        name: input.name,
+        role: input.role,
+      },
+    });
   },
-  async update(_id: string, _input: unknown) {
-    throw new Error("Not implemented");
+  async update(id: string, input: UpdateUserInput) {
+    return prisma.user.update({
+      where: { id },
+      data: {
+        name: input.name,
+        image: input.image,
+      },
+    });
   },
-  async updateRole(_id: string, _input: unknown) {
-    throw new Error("Not implemented");
+  async updateRole(id: string, input: UpdateUserRoleInput) {
+    return prisma.user.update({
+      where: { id },
+      data: {
+        role: input.role,
+      },
+    });
   },
-  async hardDelete(_id: string) {
-    throw new Error("Not implemented");
+  async hardDelete(id: string) {
+    return prisma.user.delete({
+      where: { id },
+    });
   },
 };

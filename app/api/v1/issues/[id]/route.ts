@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/server/auth/guards";
 import { USER_ROLES } from "@/lib/server/auth/roles";
 import { noContent, ok } from "@/lib/server/http/api-response";
+import { auditAction } from "@/lib/server/http/audit";
 import { getIdParam } from "@/lib/server/http/params";
 import { withRoute } from "@/lib/server/http/route";
 import { issueDtoSchema, issuesService, updateIssueInputSchema } from "@/lib/server/modules/issues";
@@ -30,6 +31,7 @@ export async function PATCH(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
+    await auditAction(request, { action: "update", resource: "issues", resourceId: id });
     const input = await parseJsonBody(request, updateIssueInputSchema);
     const data = parseOutput(await issuesService.update(id, input), issueDtoSchema);
 
@@ -41,6 +43,7 @@ export async function DELETE(request: Request, context: RouteParams) {
   return withRoute(async () => {
     await requireRole(request, EDITORIAL_ROLES);
     const id = await getIdParam(context.params);
+    await auditAction(request, { action: "delete", resource: "issues", resourceId: id });
     await issuesService.hardDelete(id);
 
     return noContent();

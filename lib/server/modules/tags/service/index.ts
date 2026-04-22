@@ -1,23 +1,96 @@
 import "server-only";
 
+import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
+import { tagsRepository } from "@/lib/server/modules/tags/repository";
+import { normalizeSlug } from "@/lib/server/validation/slug";
 
+import type { TagDto } from "@/lib/server/modules/tags/dto";
 import type { CreateTagInput, UpdateTagInput } from "@/lib/server/modules/tags/schema";
+
+const toTagDto = (tag: { id: string; name: string; slug: string }): TagDto => {
+  return {
+    id: tag.id,
+    name: tag.name,
+    slug: tag.slug,
+  };
+};
+
+const ensureSlug = (value: string): string => {
+  const slug = normalizeSlug(value);
+
+  if (!slug) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Slug is required");
+  }
+
+  return slug;
+};
 
 export const tagsService = {
   async list() {
-    throw new ApiError(501, "NOT_IMPLEMENTED", "Tags list is not implemented yet");
+    const tags = await tagsRepository.list();
+    return tags.map(toTagDto);
   },
-  async getById(_id: string) {
-    throw new ApiError(501, "NOT_IMPLEMENTED", "Tags detail is not implemented yet");
+  async getById(id: string) {
+    const tag = await tagsRepository.getById(id);
+
+    if (!tag) {
+      throw new ApiError(404, "NOT_FOUND", "Tag not found");
+    }
+
+    return toTagDto(tag);
   },
-  async create(_input: CreateTagInput) {
-    throw new ApiError(501, "NOT_IMPLEMENTED", "Tags create is not implemented yet");
+  async create(input: CreateTagInput) {
+    const normalizedInput = {
+      ...input,
+      slug: ensureSlug(input.slug),
+    };
+
+    try {
+      const tag = await tagsRepository.create(normalizedInput);
+      return toTagDto(tag);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new ApiError(409, "CONFLICT", "Tag slug already exists");
+      }
+
+      throw error;
+    }
   },
-  async update(_id: string, _input: UpdateTagInput) {
-    throw new ApiError(501, "NOT_IMPLEMENTED", "Tags update is not implemented yet");
+  async update(id: string, input: UpdateTagInput) {
+    const normalizedInput: UpdateTagInput = {
+      ...input,
+      slug: input.slug ? ensureSlug(input.slug) : undefined,
+    };
+
+    try {
+      const tag = await tagsRepository.update(id, normalizedInput);
+      return toTagDto(tag);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+        throw new ApiError(404, "NOT_FOUND", "Tag not found");
+      }
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new ApiError(409, "CONFLICT", "Tag slug already exists");
+      }
+
+      throw error;
+    }
   },
-  async hardDelete(_id: string) {
-    throw new ApiError(501, "NOT_IMPLEMENTED", "Tags hard delete is not implemented yet");
+  async hardDelete(id: string) {
+    try {
+      await tagsRepository.hardDelete(id);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+        throw new ApiError(404, "NOT_FOUND", "Tag not found");
+      }
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+        throw new ApiError(409, "CONFLICT", "Tag cannot be deleted due to related records");
+      }
+
+      throw error;
+    }
   },
 };

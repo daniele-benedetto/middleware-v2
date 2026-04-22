@@ -19,6 +19,16 @@ export const updateUserRoleInputSchema = z.object({
   role: z.enum(["ADMIN", "EDITOR"]),
 });
 
+const sortOrderSchema = z.enum(["asc", "desc"]);
+
+export const listUsersQuerySchema = z.object({
+  role: z.enum(["ADMIN", "EDITOR"]).optional(),
+  q: z.string().trim().min(1).optional(),
+  sortBy: z.enum(["createdAt", "email"]).default("createdAt"),
+  sortOrder: sortOrderSchema.default("desc"),
+});
+
 export type CreateUserInput = z.infer<typeof createUserInputSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserInputSchema>;
 export type UpdateUserRoleInput = z.infer<typeof updateUserRoleInputSchema>;
+export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
