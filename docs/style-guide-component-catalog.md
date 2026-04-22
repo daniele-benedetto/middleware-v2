@@ -89,8 +89,16 @@ Purpose: canonical inventory for deep UI refactor, with one-by-one parity tracki
 
 ## Implementation matrix (current)
 
-- Text Input (5 states): `parity_done` via `components/cms/primitives/form-controls.tsx`
-- Textarea: `in_progress` via `components/cms/primitives/form-controls.tsx`
-- Select/Dropdown: `in_progress` via `components/cms/primitives/form-controls.tsx`
-- Checkbox/Radio/Toggle: `in_progress` via `components/cms/primitives/form-controls.tsx`
-- Form error/hint harmonization: `in_progress` via `components/cms/primitives/form-field.tsx`
+### Form & controls (section D)
+
+- Text Input (5 states: default/focus/filled/error/disabled): `parity_done` — `components/cms/primitives/form-controls.tsx` wrapping shadcn `Input`
+- Textarea (+ optional counter): `parity_done` — wrapping shadcn `Textarea`, `showCounter` prop mirrors SG `0 / N CAR.`
+- Select (trigger / selected / open with highlighted accent item): `parity_done` — wrapping shadcn `Select*` (base-ui primitive), 2px accent border on open, selected item bg accent + text white
+- Checkbox (4 states: unchecked / checked-ink / checked-accent / disabled): `parity_done` — wrapping shadcn `Checkbox`, 20x20, check 12px
+- Radio (3 states: unchecked / checked / disabled): `parity_done` — wrapping shadcn `RadioGroup`, 20px circle, 2px accent ring + 8px dot when checked
+- Toggle (3 states: off / on-ink / on-accent): `parity_done` — wrapping shadcn `Switch`, 44x24 no border-radius, 18x18 square thumb
+- Form field error/hint harmonization: `parity_done` — `components/cms/primitives/form-field.tsx`, error uses `⚑` + mono 10px accent, hint mono 10px ink-60
+
+### Foundations, editorial blocks, tags/buttons/feedback, typography, voice & tone
+
+- Still `not_started` — handled in subsequent phases.

@@ -1,5 +1,4 @@
 import { CmsFormLabel } from "@/components/cms/primitives/form-controls";
-import { cmsFieldErrorClass, cmsFieldHintClass } from "@/lib/cms/ui/variants";
 
 import type { ReactNode } from "react";
 
@@ -21,16 +20,21 @@ export function CmsFormField({
   children,
 }: CmsFormFieldProps) {
   return (
-    <div className="space-y-2">
+    <div>
       <CmsFormLabel htmlFor={htmlFor} state={error ? "error" : "default"}>
         {label}
         {required ? " *" : ""}
       </CmsFormLabel>
-      <div className="ui-surface border border-border bg-background p-3">{children}</div>
+      {children}
       {error ? (
-        <p className={cmsFieldErrorClass}>{error}</p>
+        <p className="mt-[5px] font-ui text-[10px] uppercase tracking-[0.04em] text-accent">
+          {"\u2691 "}
+          {error}
+        </p>
       ) : hint ? (
-        <p className={cmsFieldHintClass}>{hint}</p>
+        <p className="mt-[5px] font-ui text-[10px] uppercase tracking-[0.04em] text-[color:var(--ink-60)]">
+          {hint}
+        </p>
       ) : null}
     </div>
   );
