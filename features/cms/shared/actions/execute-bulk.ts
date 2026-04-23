@@ -1,6 +1,12 @@
+export type BulkExecutionFailure = {
+  id: string;
+  error: unknown;
+};
+
 export type BulkExecutionResult = {
   success: number;
   failed: number;
+  failures: BulkExecutionFailure[];
 };
 
 export async function executeBulk(ids: string[], runner: (id: string) => Promise<unknown>) {
@@ -8,6 +14,17 @@ export async function executeBulk(ids: string[], runner: (id: string) => Promise
 
   const success = results.filter((result) => result.status === "fulfilled").length;
   const failed = results.length - success;
+  const failures = results.reduce<BulkExecutionFailure[]>((acc, result, index) => {
+    if (result.status === "rejected") {
+      const id = ids[index];
 
-  return { success, failed } satisfies BulkExecutionResult;
+      if (id) {
+        acc.push({ id, error: result.reason });
+      }
+    }
+
+    return acc;
+  }, []);
+
+  return { success, failed, failures } satisfies BulkExecutionResult;
 }

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   CmsBulkActionBar,
+  CmsConfirmDialog,
   CmsEmptyState,
   CmsErrorState,
   CmsLoadingState,
@@ -29,11 +30,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { executeBulk } from "@/features/cms/shared/actions";
+import {
+  executeBulk,
+  mapBulkQuickActionError,
+  mapQuickActionError,
+  resolveQuickActions,
+  type CmsQuickAction,
+} from "@/features/cms/shared/actions";
 import { useListSelection } from "@/features/cms/shared/hooks";
 import { useArticlesListQuery } from "@/features/cms/shared/hooks";
 import { parseArticlesListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
-import { mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
+import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 
@@ -45,6 +52,65 @@ function formatDate(value: string | null) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
 }
+
+type ArticleQuickAction = "publish" | "unpublish" | "archive" | "feature" | "unfeature" | "delete";
+
+type ArticleSingleActionContext = {
+  selectedCount: number;
+  isPending: boolean;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  isFeatured: boolean;
+};
+
+const articleSingleActionConfig: CmsQuickAction<ArticleSingleActionContext>[] = [
+  {
+    id: "publish",
+    label: "Publish",
+    scope: "single",
+    isVisible: (context) => context.status !== "PUBLISHED",
+    isEnabled: (context) => !context.isPending,
+  },
+  {
+    id: "unpublish",
+    label: "Unpublish",
+    scope: "single",
+    isVisible: (context) => context.status === "PUBLISHED",
+    isEnabled: (context) => !context.isPending,
+  },
+  {
+    id: "feature",
+    label: "Feature",
+    scope: "single",
+    isVisible: (context) => !context.isFeatured,
+    isEnabled: (context) => !context.isPending,
+  },
+  {
+    id: "unfeature",
+    label: "Unfeature",
+    scope: "single",
+    isVisible: (context) => context.isFeatured,
+    isEnabled: (context) => !context.isPending,
+  },
+  {
+    id: "archive",
+    label: "Archive",
+    scope: "single",
+    isVisible: (context) => context.status !== "ARCHIVED",
+    isEnabled: (context) => !context.isPending,
+  },
+  {
+    id: "delete",
+    label: "Delete",
+    scope: "single",
+    tone: "danger",
+    requiresConfirm: true,
+    confirm: {
+      title: "Conferma eliminazione",
+      description: "Eliminerai definitivamente questo articolo.",
+    },
+    isEnabled: (context) => !context.isPending,
+  },
+];
 
 export function CmsArticlesListScreen() {
   const router = useRouter();
@@ -185,45 +251,71 @@ export function CmsArticlesListScreen() {
     pageArticleIds.length > 0 &&
     pageArticleIds.every((articleId) => selection.isSelected(articleId));
 
-  const runSingleAction = async (
-    action: "publish" | "unpublish" | "archive" | "feature" | "unfeature" | "delete",
-    id: string,
-  ) => {
-    try {
-      if (action === "publish") await publishMutation.mutateAsync({ id });
-      if (action === "unpublish") await unpublishMutation.mutateAsync({ id });
-      if (action === "archive") await archiveMutation.mutateAsync({ id });
-      if (action === "feature") await featureMutation.mutateAsync({ id });
-      if (action === "unfeature") await unfeatureMutation.mutateAsync({ id });
-      if (action === "delete") await deleteMutation.mutateAsync({ id });
+  const runMutationByAction = (action: ArticleQuickAction, id: string) => {
+    if (action === "publish") {
+      return publishMutation.mutateAsync({ id });
+    }
 
-      await trpcUtils.articles.list.invalidate();
-      await trpcUtils.articles.getById.invalidate({ id });
+    if (action === "unpublish") {
+      return unpublishMutation.mutateAsync({ id });
+    }
+
+    if (action === "archive") {
+      return archiveMutation.mutateAsync({ id });
+    }
+
+    if (action === "feature") {
+      return featureMutation.mutateAsync({ id });
+    }
+
+    if (action === "unfeature") {
+      return unfeatureMutation.mutateAsync({ id });
+    }
+
+    return deleteMutation.mutateAsync({ id });
+  };
+
+  const mutationNameByAction: Record<
+    ArticleQuickAction,
+    | "articles.publish"
+    | "articles.unpublish"
+    | "articles.archive"
+    | "articles.feature"
+    | "articles.unfeature"
+    | "articles.delete"
+  > = {
+    publish: "articles.publish",
+    unpublish: "articles.unpublish",
+    archive: "articles.archive",
+    feature: "articles.feature",
+    unfeature: "articles.unfeature",
+    delete: "articles.delete",
+  };
+
+  const runSingleAction = async (action: ArticleQuickAction, id: string) => {
+    try {
+      await runMutationByAction(action, id);
+      await invalidateAfterCmsMutation(trpcUtils, mutationNameByAction[action], { id });
       selection.clearSelection();
       cmsToast.info("Azione completata.");
     } catch (error) {
-      const mapped = mapTrpcErrorToCmsUiMessage(error);
+      const mapped = mapQuickActionError(error);
       cmsToast.error(mapped.description, mapped.title);
     }
   };
 
-  const runBulkAction = async (
-    action: "publish" | "unpublish" | "archive" | "feature" | "unfeature" | "delete",
-  ) => {
+  const runBulkAction = async (action: ArticleQuickAction) => {
     if (!selection.hasSelection) {
       return;
     }
 
-    const result = await executeBulk(selection.selectedIds, async (id) => {
-      if (action === "publish") return publishMutation.mutateAsync({ id });
-      if (action === "unpublish") return unpublishMutation.mutateAsync({ id });
-      if (action === "archive") return archiveMutation.mutateAsync({ id });
-      if (action === "feature") return featureMutation.mutateAsync({ id });
-      if (action === "unfeature") return unfeatureMutation.mutateAsync({ id });
-      return deleteMutation.mutateAsync({ id });
-    });
+    const result = await executeBulk(selection.selectedIds, (id) =>
+      runMutationByAction(action, id),
+    );
 
-    await trpcUtils.articles.list.invalidate();
+    await invalidateAfterCmsMutation(trpcUtils, mutationNameByAction[action], {
+      ids: selection.selectedIds,
+    });
     selection.clearSelection();
 
     if (result.failed === 0) {
@@ -231,11 +323,65 @@ export function CmsArticlesListScreen() {
       return;
     }
 
-    cmsToast.error(
-      `Completato: ${result.success}, falliti: ${result.failed}.`,
-      "Esecuzione parziale",
-    );
+    const mappedError = mapBulkQuickActionError(result);
+
+    if (mappedError) {
+      cmsToast.error(mappedError.description, mappedError.title);
+    }
   };
+
+  const bulkActionConfig: CmsQuickAction[] = [
+    {
+      id: "bulk-publish",
+      label: "Publish",
+      scope: "bulk",
+      isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
+    },
+    {
+      id: "bulk-unpublish",
+      label: "Unpublish",
+      scope: "bulk",
+      isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
+    },
+    {
+      id: "bulk-feature",
+      label: "Feature",
+      scope: "bulk",
+      isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
+    },
+    {
+      id: "bulk-unfeature",
+      label: "Unfeature",
+      scope: "bulk",
+      isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
+    },
+    {
+      id: "bulk-archive",
+      label: "Archive",
+      scope: "bulk",
+      isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
+    },
+    {
+      id: "bulk-delete",
+      label: "Delete",
+      scope: "bulk",
+      tone: "danger",
+      requiresConfirm: ({ selectedCount }) => selectedCount > 0,
+      confirm: ({ selectedCount }) => ({
+        title: "Conferma eliminazione",
+        description:
+          selectedCount === 1
+            ? "Eliminerai definitivamente l'articolo selezionato."
+            : `Eliminerai definitivamente ${selectedCount} articoli selezionati.`,
+      }),
+      isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
+    },
+  ];
+
+  const resolvedBulkActions = resolveQuickActions(bulkActionConfig, {
+    selectedCount: selection.selectedCount,
+    isPending: isActionPending,
+  });
 
   return (
     <div className="space-y-6">
@@ -249,60 +395,13 @@ export function CmsArticlesListScreen() {
           <div className="space-y-3">
             <CmsBulkActionBar
               selectedCount={selection.selectedCount}
-              actions={[
-                {
-                  id: "bulk-publish",
-                  label: "Publish",
-                  disabled: isActionPending,
-                  onExecute: () => {
-                    void runBulkAction("publish");
-                  },
+              actions={resolvedBulkActions.map((action) => ({
+                ...action,
+                onExecute: () => {
+                  const bulkAction = action.id.replace("bulk-", "") as ArticleQuickAction;
+                  void runBulkAction(bulkAction);
                 },
-                {
-                  id: "bulk-unpublish",
-                  label: "Unpublish",
-                  disabled: isActionPending,
-                  onExecute: () => {
-                    void runBulkAction("unpublish");
-                  },
-                },
-                {
-                  id: "bulk-feature",
-                  label: "Feature",
-                  disabled: isActionPending,
-                  onExecute: () => {
-                    void runBulkAction("feature");
-                  },
-                },
-                {
-                  id: "bulk-unfeature",
-                  label: "Unfeature",
-                  disabled: isActionPending,
-                  onExecute: () => {
-                    void runBulkAction("unfeature");
-                  },
-                },
-                {
-                  id: "bulk-archive",
-                  label: "Archive",
-                  disabled: isActionPending,
-                  onExecute: () => {
-                    void runBulkAction("archive");
-                  },
-                },
-                {
-                  id: "bulk-delete",
-                  label: "Delete",
-                  tone: "danger",
-                  disabled: isActionPending,
-                  requiresConfirm: true,
-                  confirmTitle: "Conferma eliminazione",
-                  confirmDescription: "Eliminerai definitivamente gli articoli selezionati.",
-                  onExecute: () => {
-                    void runBulkAction("delete");
-                  },
-                },
-              ]}
+              }))}
             />
 
             <div className="grid gap-3 lg:grid-cols-4">
@@ -460,75 +559,40 @@ export function CmsArticlesListScreen() {
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <div className="flex flex-wrap items-center gap-1.5">
-                        {article.status !== "PUBLISHED" ? (
-                          <CmsActionButton
-                            variant="outline"
-                            size="xs"
-                            disabled={isActionPending}
-                            onClick={() => {
-                              void runSingleAction("publish", article.id);
-                            }}
-                          >
-                            Publish
-                          </CmsActionButton>
-                        ) : (
-                          <CmsActionButton
-                            variant="outline"
-                            size="xs"
-                            disabled={isActionPending}
-                            onClick={() => {
-                              void runSingleAction("unpublish", article.id);
-                            }}
-                          >
-                            Unpublish
-                          </CmsActionButton>
+                        {resolveQuickActions(articleSingleActionConfig, {
+                          selectedCount: 1,
+                          isPending: isActionPending,
+                          status: article.status,
+                          isFeatured: article.isFeatured,
+                        }).map((action) =>
+                          action.confirm ? (
+                            <CmsConfirmDialog
+                              key={`${article.id}-${action.id}`}
+                              triggerLabel={action.label}
+                              triggerDisabled={action.disabled}
+                              title={action.confirm.title}
+                              description={action.confirm.description}
+                              confirmLabel={action.confirm.confirmLabel}
+                              cancelLabel={action.confirm.cancelLabel}
+                              tone={action.tone === "danger" ? "danger" : "default"}
+                              onConfirm={() => {
+                                void runSingleAction(action.id as ArticleQuickAction, article.id);
+                              }}
+                            />
+                          ) : (
+                            <CmsActionButton
+                              key={`${article.id}-${action.id}`}
+                              variant={action.tone === "danger" ? "primary-accent" : "outline"}
+                              size="xs"
+                              disabled={action.disabled}
+                              onClick={() => {
+                                void runSingleAction(action.id as ArticleQuickAction, article.id);
+                              }}
+                            >
+                              {action.label}
+                            </CmsActionButton>
+                          ),
                         )}
-
-                        {article.isFeatured ? (
-                          <CmsActionButton
-                            variant="outline"
-                            size="xs"
-                            disabled={isActionPending}
-                            onClick={() => {
-                              void runSingleAction("unfeature", article.id);
-                            }}
-                          >
-                            Unfeature
-                          </CmsActionButton>
-                        ) : (
-                          <CmsActionButton
-                            variant="outline"
-                            size="xs"
-                            disabled={isActionPending}
-                            onClick={() => {
-                              void runSingleAction("feature", article.id);
-                            }}
-                          >
-                            Feature
-                          </CmsActionButton>
-                        )}
-
-                        <CmsActionButton
-                          variant="outline"
-                          size="xs"
-                          disabled={isActionPending}
-                          onClick={() => {
-                            void runSingleAction("archive", article.id);
-                          }}
-                        >
-                          Archive
-                        </CmsActionButton>
-
-                        <CmsActionButton
-                          variant="primary-accent"
-                          size="xs"
-                          disabled={isActionPending}
-                          onClick={() => {
-                            void runSingleAction("delete", article.id);
-                          }}
-                        >
-                          Delete
-                        </CmsActionButton>
                       </div>
                     </TableCell>
                   </TableRow>

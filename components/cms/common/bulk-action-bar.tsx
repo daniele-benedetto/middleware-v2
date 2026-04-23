@@ -3,15 +3,10 @@
 import { CmsConfirmDialog } from "@/components/cms/common/confirm-dialog";
 import { CmsActionButton } from "@/components/cms/primitives";
 
-type CmsBulkAction = {
-  id: string;
-  label: string;
-  disabled?: boolean;
+import type { CmsResolvedQuickAction } from "@/features/cms/shared/actions";
+
+type CmsBulkAction = CmsResolvedQuickAction & {
   isLoading?: boolean;
-  tone?: "default" | "danger";
-  requiresConfirm?: boolean;
-  confirmTitle?: string;
-  confirmDescription?: string;
   onExecute: () => void;
 };
 
@@ -33,16 +28,16 @@ export function CmsBulkActionBar({ selectedCount, actions }: CmsBulkActionBarPro
 
       <div className="flex items-center gap-2 max-sm:flex-wrap">
         {actions.map((action) => {
-          if (action.requiresConfirm) {
+          if (action.confirm) {
             return (
               <CmsConfirmDialog
                 key={action.id}
                 triggerLabel={action.label}
-                title={action.confirmTitle ?? "Conferma azione"}
-                description={
-                  action.confirmDescription ??
-                  "Questa azione verra applicata agli elementi selezionati."
-                }
+                triggerDisabled={action.disabled || action.isLoading}
+                title={action.confirm.title}
+                description={action.confirm.description}
+                confirmLabel={action.confirm.confirmLabel}
+                cancelLabel={action.confirm.cancelLabel}
                 tone={action.tone === "danger" ? "danger" : "default"}
                 onConfirm={action.onExecute}
               />
@@ -54,7 +49,7 @@ export function CmsBulkActionBar({ selectedCount, actions }: CmsBulkActionBarPro
               key={action.id}
               variant={action.tone === "danger" ? "primary-accent" : "outline"}
               size="xs"
-              disabled={action.disabled}
+              disabled={action.disabled || action.isLoading}
               isLoading={action.isLoading}
               onClick={action.onExecute}
             >
