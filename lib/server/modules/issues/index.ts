@@ -4,11 +4,13 @@ export { issuesRepository } from "@/lib/server/modules/issues/repository";
 export {
   createIssueInputSchema,
   listIssuesQuerySchema,
+  reorderIssuesInputSchema,
   updateIssueInputSchema,
 } from "@/lib/server/modules/issues/schema";
 export type {
   CreateIssueInput,
   ListIssuesQuery,
+  ReorderIssuesInput,
   UpdateIssueInput,
 } from "@/lib/server/modules/issues/schema";
 export type { IssueDto } from "@/lib/server/modules/issues/dto";

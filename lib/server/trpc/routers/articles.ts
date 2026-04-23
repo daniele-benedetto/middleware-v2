@@ -30,7 +30,10 @@ const articleIdInputSchema = z.object({
 });
 
 const articlesListInputSchema = paginationInputSchema.extend({
-  query: listArticlesQuerySchema.optional(),
+  query: listArticlesQuerySchema.default({
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  }),
 });
 
 export const articlesRouter = router({
@@ -38,8 +41,7 @@ export const articlesRouter = router({
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .input(articlesListInputSchema)
     .query(async ({ input }) => {
-      const query = listArticlesQuerySchema.parse(input.query ?? {});
-      const result = await articlesService.list(query, {
+      const result = await articlesService.list(input.query, {
         page: input.page,
         pageSize: input.pageSize,
       });

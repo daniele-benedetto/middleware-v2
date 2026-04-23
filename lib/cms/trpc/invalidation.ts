@@ -8,6 +8,7 @@ export type CmsMutationName =
   | "issues.create"
   | "issues.update"
   | "issues.delete"
+  | "issues.reorder"
   | "categories.create"
   | "categories.update"
   | "categories.delete"

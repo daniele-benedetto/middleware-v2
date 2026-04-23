@@ -7,6 +7,7 @@ import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
   CreateIssueInput,
   ListIssuesQuery,
+  ReorderIssuesInput,
   UpdateIssueInput,
 } from "@/lib/server/modules/issues/schema";
 
@@ -40,6 +41,24 @@ export const issuesRepository = {
       orderBy,
       skip: (pagination.page - 1) * pagination.pageSize,
       take: pagination.pageSize,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        coverUrl: true,
+        color: true,
+        isActive: true,
+        sortOrder: true,
+        publishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            articles: true,
+          },
+        },
+      },
     });
   },
   async count(query: ListIssuesQuery) {
@@ -49,6 +68,24 @@ export const issuesRepository = {
   async getById(id: string) {
     return prisma.issue.findUnique({
       where: { id },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        coverUrl: true,
+        color: true,
+        isActive: true,
+        sortOrder: true,
+        publishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            articles: true,
+          },
+        },
+      },
     });
   },
   async create(input: CreateIssueInput) {
@@ -65,6 +102,48 @@ export const issuesRepository = {
   async delete(id: string) {
     return prisma.issue.delete({
       where: { id },
+    });
+  },
+  async listIdsOrderedBySortOrder() {
+    return prisma.issue.findMany({
+      select: {
+        id: true,
+      },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    });
+  },
+  async reorder(input: ReorderIssuesInput) {
+    return prisma.$transaction(async (tx) => {
+      for (const [index, issueId] of input.orderedIssueIds.entries()) {
+        await tx.issue.update({
+          where: { id: issueId },
+          data: {
+            sortOrder: index,
+          },
+        });
+      }
+
+      return tx.issue.findMany({
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          description: true,
+          coverUrl: true,
+          color: true,
+          isActive: true,
+          sortOrder: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: {
+              articles: true,
+            },
+          },
+        },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      });
     });
   },
 };

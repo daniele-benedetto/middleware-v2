@@ -9,12 +9,13 @@ import {
   issuesPolicy,
   issuesService,
   listIssuesQuerySchema,
+  reorderIssuesInputSchema,
   updateIssueInputSchema,
 } from "@/lib/server/modules/issues";
 import { router } from "@/lib/server/trpc/init";
 import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
-import { protectedProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
+import { protectedProcedure, reorderProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
 import { parseOutput } from "@/lib/server/validation/output";
 
@@ -23,7 +24,10 @@ const issueIdInputSchema = z.object({
 });
 
 const issuesListInputSchema = paginationInputSchema.extend({
-  query: listIssuesQuerySchema.optional(),
+  query: listIssuesQuerySchema.default({
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  }),
 });
 
 export const issuesRouter = router({
@@ -31,8 +35,7 @@ export const issuesRouter = router({
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
     .input(issuesListInputSchema)
     .query(async ({ input }) => {
-      const query = listIssuesQuerySchema.parse(input.query ?? {});
-      const result = await issuesService.list(query, {
+      const result = await issuesService.list(input.query, {
         page: input.page,
         pageSize: input.pageSize,
       });
@@ -85,5 +88,12 @@ export const issuesRouter = router({
     .mutation(async ({ input }) => {
       await issuesService.delete(input.id);
       return { success: true };
+    }),
+  reorder: reorderProcedure
+    .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
+    .use(auditMiddleware(() => ({ action: "reorder", resource: "issues" })))
+    .input(reorderIssuesInputSchema)
+    .mutation(async ({ input }) => {
+      return parseOutput(await issuesService.reorder(input), issuesListDtoSchema);
     }),
 });

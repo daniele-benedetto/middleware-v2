@@ -10,14 +10,39 @@ import type { IssueDto } from "@/lib/server/modules/issues/dto";
 import type {
   CreateIssueInput,
   ListIssuesQuery,
+  ReorderIssuesInput,
   UpdateIssueInput,
 } from "@/lib/server/modules/issues/schema";
 
-const toIssueDto = (issue: { id: string; title: string; slug: string }): IssueDto => {
+type IssueRecord = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  coverUrl: string | null;
+  color: string | null;
+  isActive: boolean;
+  sortOrder: number;
+  publishedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  _count?: { articles: number };
+};
+
+const toIssueDto = (issue: IssueRecord): IssueDto => {
   return {
     id: issue.id,
     title: issue.title,
     slug: issue.slug,
+    description: issue.description,
+    coverUrl: issue.coverUrl,
+    color: issue.color,
+    isActive: issue.isActive,
+    sortOrder: issue.sortOrder,
+    publishedAt: issue.publishedAt?.toISOString() ?? null,
+    createdAt: issue.createdAt.toISOString(),
+    updatedAt: issue.updatedAt.toISOString(),
+    articlesCount: issue._count?.articles ?? 0,
   };
 };
 
@@ -60,7 +85,13 @@ export const issuesService = {
 
     try {
       const issue = await issuesRepository.create(normalizedInput);
-      return toIssueDto(issue);
+      const issueWithCount = await issuesRepository.getById(issue.id);
+
+      if (!issueWithCount) {
+        throw new ApiError(404, "NOT_FOUND", "Issue not found");
+      }
+
+      return toIssueDto(issueWithCount);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw new ApiError(409, "CONFLICT", "Issue slug already exists");
@@ -76,7 +107,13 @@ export const issuesService = {
     };
 
     try {
-      const issue = await issuesRepository.update(id, normalizedInput);
+      await issuesRepository.update(id, normalizedInput);
+      const issue = await issuesRepository.getById(id);
+
+      if (!issue) {
+        throw new ApiError(404, "NOT_FOUND", "Issue not found");
+      }
+
       return toIssueDto(issue);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
@@ -104,5 +141,34 @@ export const issuesService = {
 
       throw error;
     }
+  },
+  async reorder(input: ReorderIssuesInput) {
+    const current = await issuesRepository.listIdsOrderedBySortOrder();
+
+    if (current.length === 0) {
+      throw new ApiError(404, "NOT_FOUND", "No issues found for reorder");
+    }
+
+    const currentIds = current.map((issue) => issue.id);
+    const expected = new Set(currentIds);
+    const received = new Set(input.orderedIssueIds);
+
+    const sameLength = input.orderedIssueIds.length === currentIds.length;
+    const sameElements =
+      sameLength &&
+      currentIds.every((id) => received.has(id)) &&
+      input.orderedIssueIds.every((id) => expected.has(id));
+
+    if (!sameElements) {
+      throw new ApiError(
+        400,
+        "VALIDATION_ERROR",
+        "orderedIssueIds must include all and only existing issues",
+      );
+    }
+
+    const reordered = await issuesRepository.reorder(input);
+
+    return reordered.map(toIssueDto);
   },
 };

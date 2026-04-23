@@ -12,6 +12,15 @@ export const updateIssueInputSchema = createIssueInputSchema
     message: "At least one field is required",
   });
 
+export const reorderIssuesInputSchema = z.object({
+  orderedIssueIds: z
+    .array(z.string().uuid())
+    .min(1)
+    .refine((ids) => new Set(ids).size === ids.length, {
+      message: "orderedIssueIds must be unique",
+    }),
+});
+
 const sortOrderSchema = z.enum(["asc", "desc"]);
 const booleanQuerySchema = z.enum(["true", "false"]).transform((value) => value === "true");
 
@@ -25,4 +34,5 @@ export const listIssuesQuerySchema = z.object({
 
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
 export type UpdateIssueInput = z.infer<typeof updateIssueInputSchema>;
+export type ReorderIssuesInput = z.infer<typeof reorderIssuesInputSchema>;
 export type ListIssuesQuery = z.infer<typeof listIssuesQuerySchema>;
