@@ -23,6 +23,10 @@ Procedure API disponibili: `issues.list`, `issues.getById`, `issues.create`, `is
 - [ ] Implementare edit Issue.
 - [ ] Implementare delete Issue con conferma hard delete.
 - [ ] Gestire errori conflitto slug (`CONFLICT`) con messaggio specifico.
+- [ ] Implementare azioni rapide lista/dettaglio (single + bulk):
+  - [ ] delete single con conferma.
+  - [ ] delete bulk con selezione multipla + conferma.
+  - [ ] barra azioni bulk con contatore selezione.
 
 ## 6) Modulo Categories
 
@@ -36,6 +40,10 @@ Procedure API disponibili: `categories.list`, `categories.getById`, `categories.
 - [ ] Implementare edit Category.
 - [ ] Implementare delete Category con conferma.
 - [ ] Gestire conflitto slug (`CONFLICT`) in UX.
+- [ ] Implementare azioni rapide lista/dettaglio (single + bulk):
+  - [ ] delete single con conferma.
+  - [ ] delete bulk con selezione multipla + conferma.
+  - [ ] barra azioni bulk con contatore selezione.
 
 ## 7) Modulo Tags
 
@@ -49,6 +57,10 @@ Procedure API disponibili: `tags.list`, `tags.getById`, `tags.create`, `tags.upd
 - [ ] Implementare edit Tag.
 - [ ] Implementare delete Tag con conferma.
 - [ ] Gestire conflitto slug (`CONFLICT`) in UX.
+- [ ] Implementare azioni rapide lista/dettaglio (single + bulk):
+  - [ ] delete single con conferma.
+  - [ ] delete bulk con selezione multipla + conferma.
+  - [ ] barra azioni bulk con contatore selezione.
 
 ## 8) Modulo Articles
 
@@ -68,6 +80,7 @@ Procedure API disponibili: `articles.list`, `articles.getById`, `articles.create
   - [ ] archive
   - [ ] feature
   - [ ] unfeature
+  - [ ] supporto single + bulk per azioni editoriali (dove semanticamente valido).
 - [ ] Implementare reorder articoli per issue (UI drag-and-drop o controllo posizionale equivalente).
 - [ ] Gestire errori dominio in UX:
   - [ ] conflitto slug per issue (`CONFLICT`)
@@ -86,16 +99,40 @@ Procedure API disponibili: `users.list`, `users.getById`, `users.create`, `users
 - [ ] Implementare edit User (campi consentiti).
 - [ ] Implementare update role (`users.updateRole`) con UX chiara e conferma.
 - [ ] Implementare delete User con conferma.
-- [ ] Bloccare completamente accesso UI Users per `EDITOR`.
+- [x] Bloccare completamente accesso UI Users per `EDITOR`.
+- [ ] Implementare azioni rapide lista (single + bulk admin-only):
+  - [ ] update role single.
+  - [ ] update role bulk.
+  - [ ] delete single e bulk con conferma forte.
 
 ## 10) Stato UI, UX e resilienza
 
-- [ ] Uniformare pattern loading/skeleton su tutte le pagine CMS.
-- [ ] Uniformare empty states con CTA contestuali.
-- [ ] Uniformare error states con retry action.
+- [x] Uniformare pattern loading/skeleton su tutte le pagine CMS (liste attive).
+- [x] Uniformare empty states con CTA contestuali (liste attive).
+- [x] Uniformare error states con retry action (liste attive).
 - [ ] Gestire optimistic update dove utile e sicuro (feature/unfeature, publish/unpublish).
-- [ ] Gestire debounce su ricerca `q` nelle liste.
-- [ ] Persistenza filtri/sort/pagination in URL.
+- [x] Gestire debounce su ricerca `q` nelle liste.
+- [x] Persistenza filtri/sort/pagination in URL.
+
+### 10.1) Framework azioni rapide (globale)
+
+- [ ] Definire action model condiviso per tutte le risorse:
+  - [ ] `id`, `label`, `scope` (`single`/`bulk`/`both`).
+  - [ ] `requiresConfirm`, copy conferma, regole `isVisible`/`isEnabled`.
+  - [ ] mapping centralizzato errori per azioni rapide (single/bulk).
+- [ ] Implementare gestione selezione multipla condivisa:
+  - [ ] checkbox riga + select-all pagina.
+  - [ ] reset selezione su cambio filtri/sort/pagina.
+  - [ ] stato selezione centralizzato riusabile per modulo.
+- [ ] Implementare `BulkActionBar` condivisa:
+  - [ ] contatore selezionati.
+  - [ ] CTA dinamiche per modulo/ruolo.
+  - [ ] conferma azioni distruttive.
+- [ ] Definire policy di esecuzione bulk:
+  - [ ] endpoint bulk dedicato dove presente; fallback orchestrato client dove assente.
+  - [ ] report esito (successi/fallimenti parziali) con toast coerenti.
+  - [ ] invalidation query centralizzata post-azione.
+- [ ] Definire pattern reorder come "mode" dedicato (non azione bulk generica).
 
 ## 11) Testing CMS frontend
 
@@ -118,6 +155,6 @@ Procedure API disponibili: `users.list`, `users.getById`, `users.create`, `users
 - [ ] CRUD completo operativo per `Issue`, `Category`, `Tag`, `Article`, `User`.
 - [ ] Azioni editoriali (`publish/unpublish/archive/feature/unfeature/reorder`) operative da UI.
 - [ ] Permessi ruolo rispettati in tutte le sezioni (Users ADMIN-only).
-- [ ] Filtri/sort/pagination funzionanti e persistenti in URL su tutte le liste.
+- [x] Filtri/sort/pagination funzionanti e persistenti in URL su tutte le liste.
 - [ ] Error handling coerente e comprensibile per utente editoriale.
 - [ ] Build/lint/typecheck verdi.
