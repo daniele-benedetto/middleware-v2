@@ -6,7 +6,7 @@ import { articlesRepository } from "@/lib/server/modules/articles/repository";
 import { assertPublishedAtConsistency } from "@/lib/server/validation/published";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
-import type { Article } from "@/lib/generated/prisma/client";
+import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { ArticleDto } from "@/lib/server/modules/articles/dto";
 import type {
@@ -27,7 +27,26 @@ const ensureSlug = (value: string): string => {
   return slug;
 };
 
-const toArticleDto = (article: Article): ArticleDto => {
+type ArticleRecord = {
+  id: string;
+  issueId: string;
+  categoryId: string;
+  authorId: string;
+  title: string;
+  slug: string;
+  status: ArticleStatus;
+  publishedAt: Date | null;
+  isFeatured: boolean;
+  position: number;
+  createdAt: Date;
+  updatedAt: Date;
+  issue?: { title: string } | null;
+  category?: { name: string } | null;
+  author?: { name: string | null; email: string } | null;
+  _count?: { tags: number };
+};
+
+const toArticleDto = (article: ArticleRecord): ArticleDto => {
   return {
     id: article.id,
     issueId: article.issueId,
@@ -37,10 +56,19 @@ const toArticleDto = (article: Article): ArticleDto => {
     slug: article.slug,
     status: article.status,
     publishedAt: article.publishedAt?.toISOString() ?? null,
+    isFeatured: article.isFeatured,
+    position: article.position,
+    createdAt: article.createdAt.toISOString(),
+    updatedAt: article.updatedAt.toISOString(),
+    issueTitle: article.issue?.title ?? null,
+    categoryName: article.category?.name ?? null,
+    authorName: article.author?.name ?? null,
+    authorEmail: article.author?.email ?? null,
+    tagsCount: article._count?.tags ?? 0,
   };
 };
 
-const toArticlesDto = (articles: Article[]): ArticleDto[] => {
+const toArticlesDto = (articles: ArticleRecord[]): ArticleDto[] => {
   return articles.map(toArticleDto);
 };
 
@@ -81,7 +109,13 @@ export const articlesService = {
 
     try {
       const article = await articlesRepository.create(normalizedInput);
-      return toArticleDto(article);
+      const withRelations = await articlesRepository.getById(article.id);
+
+      if (!withRelations) {
+        throw new ApiError(404, "NOT_FOUND", "Article not found");
+      }
+
+      return toArticleDto(withRelations);
     } catch (error) {
       if (isUniqueError(error)) {
         throw new ApiError(409, "CONFLICT", "Article slug already exists for this issue");
@@ -109,7 +143,13 @@ export const articlesService = {
     assertPublishedAtConsistency(nextStatus, nextPublishedAt ?? null);
 
     try {
-      const article = await articlesRepository.update(id, normalizedInput);
+      await articlesRepository.update(id, normalizedInput);
+      const article = await articlesRepository.getById(id);
+
+      if (!article) {
+        throw new ApiError(404, "NOT_FOUND", "Article not found");
+      }
+
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {
@@ -141,7 +181,13 @@ export const articlesService = {
       throw new ApiError(404, "NOT_FOUND", "Article not found");
     }
 
-    return toArticleDto(article);
+    const withRelations = await articlesRepository.getById(article.id);
+
+    if (!withRelations) {
+      throw new ApiError(404, "NOT_FOUND", "Article not found");
+    }
+
+    return toArticleDto(withRelations);
   },
   async publish(id: string) {
     const current = await articlesRepository.getById(id);
@@ -155,7 +201,13 @@ export const articlesService = {
     }
 
     try {
-      const article = await articlesRepository.publish(id);
+      await articlesRepository.publish(id);
+      const article = await articlesRepository.getById(id);
+
+      if (!article) {
+        throw new ApiError(404, "NOT_FOUND", "Article not found");
+      }
+
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {
@@ -167,7 +219,13 @@ export const articlesService = {
   },
   async unpublish(id: string) {
     try {
-      const article = await articlesRepository.unpublish(id);
+      await articlesRepository.unpublish(id);
+      const article = await articlesRepository.getById(id);
+
+      if (!article) {
+        throw new ApiError(404, "NOT_FOUND", "Article not found");
+      }
+
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {
@@ -179,7 +237,13 @@ export const articlesService = {
   },
   async archive(id: string) {
     try {
-      const article = await articlesRepository.archive(id);
+      await articlesRepository.archive(id);
+      const article = await articlesRepository.getById(id);
+
+      if (!article) {
+        throw new ApiError(404, "NOT_FOUND", "Article not found");
+      }
+
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {
@@ -191,7 +255,13 @@ export const articlesService = {
   },
   async feature(id: string) {
     try {
-      const article = await articlesRepository.feature(id);
+      await articlesRepository.feature(id);
+      const article = await articlesRepository.getById(id);
+
+      if (!article) {
+        throw new ApiError(404, "NOT_FOUND", "Article not found");
+      }
+
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {
@@ -203,7 +273,13 @@ export const articlesService = {
   },
   async unfeature(id: string) {
     try {
-      const article = await articlesRepository.unfeature(id);
+      await articlesRepository.unfeature(id);
+      const article = await articlesRepository.getById(id);
+
+      if (!article) {
+        throw new ApiError(404, "NOT_FOUND", "Article not found");
+      }
+
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {

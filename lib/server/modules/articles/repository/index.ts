@@ -44,6 +44,41 @@ export const articlesRepository = {
       orderBy,
       skip: (pagination.page - 1) * pagination.pageSize,
       take: pagination.pageSize,
+      select: {
+        id: true,
+        issueId: true,
+        categoryId: true,
+        authorId: true,
+        title: true,
+        slug: true,
+        status: true,
+        publishedAt: true,
+        isFeatured: true,
+        position: true,
+        createdAt: true,
+        updatedAt: true,
+        issue: {
+          select: {
+            title: true,
+          },
+        },
+        category: {
+          select: {
+            name: true,
+          },
+        },
+        author: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        _count: {
+          select: {
+            tags: true,
+          },
+        },
+      },
     });
   },
   async count(query: ListArticlesQuery) {
@@ -53,6 +88,41 @@ export const articlesRepository = {
   async getById(id: string) {
     return prisma.article.findUnique({
       where: { id },
+      select: {
+        id: true,
+        issueId: true,
+        categoryId: true,
+        authorId: true,
+        title: true,
+        slug: true,
+        status: true,
+        publishedAt: true,
+        isFeatured: true,
+        position: true,
+        createdAt: true,
+        updatedAt: true,
+        issue: {
+          select: {
+            title: true,
+          },
+        },
+        category: {
+          select: {
+            name: true,
+          },
+        },
+        author: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        _count: {
+          select: {
+            tags: true,
+          },
+        },
+      },
     });
   },
   async create(input: CreateArticleInput) {

@@ -54,10 +54,10 @@ Procedure API disponibili: `tags.list`, `tags.getById`, `tags.create`, `tags.upd
 
 Procedure API disponibili: `articles.list`, `articles.getById`, `articles.create`, `articles.update`, `articles.delete`, `articles.syncTags`, `articles.publish`, `articles.unpublish`, `articles.archive`, `articles.feature`, `articles.unfeature`, `articles.reorder`.
 
-- [ ] Implementare lista Articles con:
-  - [ ] filtri: `status`, `issueId`, `categoryId`, `authorId`, `featured`, `q`
-  - [ ] sort: `createdAt`, `publishedAt`, `position` + `sortOrder`
-  - [ ] pagination: `page`, `pageSize`
+- [x] Implementare lista Articles con:
+  - [x] filtri: `status`, `issueId`, `categoryId`, `authorId`, `featured`, `q`
+  - [x] sort: `createdAt`, `publishedAt`, `position` + `sortOrder`
+  - [x] pagination: `page`, `pageSize`
 - [ ] Implementare create Article (campi minimi + campi opzionali media).
 - [ ] Implementare edit Article.
 - [ ] Implementare delete Article con conferma.

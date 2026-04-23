@@ -9,6 +9,15 @@ export const articleDtoSchema = z.object({
   slug: z.string(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
   publishedAt: z.string().nullable(),
+  isFeatured: z.boolean(),
+  position: z.number().int(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  issueTitle: z.string().nullable(),
+  categoryName: z.string().nullable(),
+  authorName: z.string().nullable(),
+  authorEmail: z.string().nullable(),
+  tagsCount: z.number().int(),
 });
 
 export const articlesListDtoSchema = z.array(articleDtoSchema);
