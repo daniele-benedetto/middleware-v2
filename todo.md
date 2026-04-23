@@ -75,12 +75,12 @@ Procedure API disponibili: `articles.list`, `articles.getById`, `articles.create
 - [ ] Implementare delete Article con conferma.
 - [ ] Implementare sync tags articolo (`articles.syncTags`) con selector multi-tag.
 - [ ] Implementare azioni editoriali rapide da lista/dettaglio:
-  - [ ] publish
-  - [ ] unpublish
-  - [ ] archive
-  - [ ] feature
-  - [ ] unfeature
-  - [ ] supporto single + bulk per azioni editoriali (dove semanticamente valido).
+  - [x] publish
+  - [x] unpublish
+  - [x] archive
+  - [x] feature
+  - [x] unfeature
+  - [x] supporto single + bulk per azioni editoriali (dove semanticamente valido).
 - [ ] Implementare reorder articoli per issue (UI drag-and-drop o controllo posizionale equivalente).
 - [ ] Gestire errori dominio in UX:
   - [ ] conflitto slug per issue (`CONFLICT`)
@@ -117,20 +117,20 @@ Procedure API disponibili: `users.list`, `users.getById`, `users.create`, `users
 ### 10.1) Framework azioni rapide (globale)
 
 - [ ] Definire action model condiviso per tutte le risorse:
-  - [ ] `id`, `label`, `scope` (`single`/`bulk`/`both`).
+  - [x] `id`, `label`, `scope` (`single`/`bulk`/`both`).
   - [ ] `requiresConfirm`, copy conferma, regole `isVisible`/`isEnabled`.
   - [ ] mapping centralizzato errori per azioni rapide (single/bulk).
-- [ ] Implementare gestione selezione multipla condivisa:
-  - [ ] checkbox riga + select-all pagina.
-  - [ ] reset selezione su cambio filtri/sort/pagina.
-  - [ ] stato selezione centralizzato riusabile per modulo.
-- [ ] Implementare `BulkActionBar` condivisa:
-  - [ ] contatore selezionati.
-  - [ ] CTA dinamiche per modulo/ruolo.
-  - [ ] conferma azioni distruttive.
+- [x] Implementare gestione selezione multipla condivisa:
+  - [x] checkbox riga + select-all pagina.
+  - [x] reset selezione su cambio filtri/sort/pagina.
+  - [x] stato selezione centralizzato riusabile per modulo.
+- [x] Implementare `BulkActionBar` condivisa:
+  - [x] contatore selezionati.
+  - [x] CTA dinamiche per modulo/ruolo.
+  - [x] conferma azioni distruttive.
 - [ ] Definire policy di esecuzione bulk:
-  - [ ] endpoint bulk dedicato dove presente; fallback orchestrato client dove assente.
-  - [ ] report esito (successi/fallimenti parziali) con toast coerenti.
+  - [x] endpoint bulk dedicato dove presente; fallback orchestrato client dove assente.
+  - [x] report esito (successi/fallimenti parziali) con toast coerenti.
   - [ ] invalidation query centralizzata post-azione.
 - [ ] Definire pattern reorder come "mode" dedicato (non azione bulk generica).
 

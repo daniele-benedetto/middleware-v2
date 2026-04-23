@@ -1,3 +1,4 @@
+export { CmsBulkActionBar } from "@/components/cms/common/bulk-action-bar";
 export { CmsConfirmDialog } from "@/components/cms/common/confirm-dialog";
 export { CmsEmptyState } from "@/components/cms/common/empty-state";
 export { CmsErrorState } from "@/components/cms/common/error-state";
