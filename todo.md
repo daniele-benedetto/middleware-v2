@@ -10,12 +10,9 @@ Decisioni gia fissate:
 - Invariante dominio: `publishedAt` solo con `status = PUBLISHED` (gia lato API).
 - Slug normalizzato lato API e univocita rispettata lato DB.
 
-Riferimento puntuale per il dettaglio completo: `docs/style-guide-component-catalog.md`
-
 ### Step 1 - Governance e quality gate per componente
 
 - [ ] Per ogni componente refactorato: checklist parity compilata in PR.
-- [ ] Aggiornare `docs/cms-ui.md` con API/usage di ogni primitive nuova.
 - [ ] Nessuna chiusura step senza `pnpm lint`, `pnpm typecheck`, `pnpm build` verdi.
 
 ## 3) Integrazione tRPC client lato UI

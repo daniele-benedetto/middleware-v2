@@ -60,8 +60,9 @@ export const cmsIt = {
     searchPlaceholder: "Cerca...",
   },
   pagination: {
-    page: "Pagina 1 di 1",
-    perPage: "20 per pagina",
+    perPage: "Per pagina",
+    prev: "← PREC.",
+    next: "SUCC. →",
   },
   auth: {
     forbiddenTitle: "Accesso non consentito",

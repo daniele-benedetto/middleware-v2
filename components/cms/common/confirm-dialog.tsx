@@ -44,7 +44,7 @@ export function CmsConfirmDialog({
         className={cn(
           "inline-flex h-auto items-center gap-1.5 rounded-none border border-foreground bg-background px-3.5 py-1.75",
           "font-ui text-[11px] uppercase tracking-[0.08em] text-foreground transition-colors",
-          "hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2",
+          "hover:bg-card-hover focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2",
         )}
       >
         {triggerIcon}
@@ -62,7 +62,7 @@ export function CmsConfirmDialog({
           </DialogTitle>
           <DialogClose
             aria-label={text.cancel}
-            className="cursor-pointer font-ui text-[16px] leading-none text-white/50 transition-colors hover:text-white outline-none focus-visible:text-white"
+            className="cursor-pointer font-ui text-[16px] leading-none text-white/50 transition-colors hover:text-white focus-visible:text-white"
           >
             ×
           </DialogClose>

@@ -6,7 +6,7 @@ import { useState } from "react";
 import {
   CmsActionButton,
   CmsDisplay,
-  CmsFormLabel,
+  CmsFormField,
   CmsMetaText,
   CmsTextInput,
 } from "@/components/cms/primitives";
@@ -64,10 +64,7 @@ export function CmsLoginForm() {
       </div>
 
       <div className="flex flex-col gap-4 border-b border-border px-4.5 py-5">
-        <div className="space-y-1.5">
-          <CmsFormLabel htmlFor="email" state={error ? "error" : "default"}>
-            {text.emailLabel}
-          </CmsFormLabel>
+        <CmsFormField label={text.emailLabel} htmlFor="email">
           <CmsTextInput
             id="email"
             autoComplete="email"
@@ -80,12 +77,9 @@ export function CmsLoginForm() {
             value={email}
             placeholder="nome@dominio.it"
           />
-        </div>
+        </CmsFormField>
 
-        <div className="space-y-1.5">
-          <CmsFormLabel htmlFor="password" state={error ? "error" : "default"}>
-            {text.passwordLabel}
-          </CmsFormLabel>
+        <CmsFormField label={text.passwordLabel} htmlFor="password">
           <CmsTextInput
             id="password"
             autoComplete="current-password"
@@ -97,10 +91,11 @@ export function CmsLoginForm() {
             value={password}
             placeholder="••••••••"
           />
-        </div>
+        </CmsFormField>
 
         {error ? (
           <CmsMetaText variant="tiny" as="p" className="text-accent!">
+            {"⚑ "}
             {error}
           </CmsMetaText>
         ) : null}

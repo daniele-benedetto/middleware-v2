@@ -55,7 +55,7 @@ const cmsTextInputVariants = cva(`${inputBaseReset} h-11`, {
     state: {
       default: "border border-foreground bg-white px-3",
       focus: "border-2 border-accent bg-white px-2.75",
-      filled: "border border-foreground bg-(--bg-main) px-3",
+      filled: "border border-foreground bg-white px-3",
       error: "border-2 border-accent bg-(--ui-error-bg) px-2.75",
       disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3",
     },
@@ -70,7 +70,7 @@ const cmsTextareaVariants = cva(
       state: {
         default: "border border-foreground bg-white px-3 py-2.5",
         focus: "border-2 border-accent bg-white px-2.75 py-2.25",
-        filled: "border border-foreground bg-(--bg-main) px-3 py-2.5",
+        filled: "border border-foreground bg-white px-3 py-2.5",
         error: "border-2 border-accent bg-(--ui-error-bg) px-2.75 py-2.25",
         disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3 py-2.5",
       },

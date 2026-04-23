@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
 const cmsButtonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-none font-ui uppercase transition-all outline-none " +
-    "focus-visible:ring-0 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 " +
+  "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-none font-ui uppercase transition-all " +
+    "focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 " +
     "disabled:pointer-events-none data-[loading=true]:cursor-progress data-[loading=true]:opacity-80",
   {
     variants: {

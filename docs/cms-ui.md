@@ -89,7 +89,11 @@ Responsive rule:
 - Motion tokens: `--motion-fast`, `--motion-base`, `--motion-slow`, `--easing-standard`
 - Standard timings: `120ms`, `180ms`, `260ms`
 - Reduced motion respected via `prefers-reduced-motion`.
-- Focus visible ring is mandatory (`3px` accent).
+- Focus visible treatment per component type (both mandatory):
+  - Text input / textarea / select trigger: **border swap** — default `border 1px ink` → focus `border 2px accent`, `outline: none`. No outer ring.
+  - Bottoni, link, accordion, dialog trigger, checkbox, radio, toggle, generic focusable: **outer outline** — `outline: 3px solid accent` con `outline-offset: 2px`.
+- Global rule `*:focus-visible` in `app/globals.css` è in `@layer base` così le utility `outline-none` delle primitive shadcn (usate da input/textarea/select) vincono e non si ha doppio focus.
+- Dark mode: **non supportato**. Nessuna utility `dark:*` nei componenti CMS; `color-scheme: light` forzato in `:root`.
 - Text selection: accent background + white text.
 - Accessibility target: WCAG AA minimum.
 
@@ -110,6 +114,19 @@ Custom component allowed only when:
 - no equivalent exists in shadcn/ui, or
 - domain behavior cannot be achieved by composition cleanly.
 
+**Do not render raw shadcn primitives directly in CMS modules.** The following primitives MUST pass through their CMS wrapper:
+
+- `<Input>` → `CmsTextInput` (wrapped by `CmsFormField`)
+- `<Textarea>` → `CmsTextarea` (wrapped by `CmsFormField`)
+- `<Select*>` → `CmsSelect`
+- `<Checkbox>` → `CmsCheckbox`
+- `<RadioGroup*>` → `CmsRadio`
+- `<Switch>` → `CmsToggle`
+- `<Button>` → `CmsActionButton`
+- `<Badge>` → `CmsBadge`
+
+Reason: shadcn defaults (`bg-transparent`, `border-input` = ink-30, `rounded-lg`) deviano dalla SG. I wrapper CMS garantiscono parity (bg bianco, border ink pieno, radius 0, stati default/focus/filled/error/disabled) e centralizzano eventuali fix futuri.
+
 PR requirement:
 
 - explain why custom was needed instead of a shadcn primitive.
@@ -128,20 +145,66 @@ PR requirement:
 
 ### Primitive usage map
 
+Typography / surface:
+
 - `CmsEyebrow`: mono uppercase UI labels (breadcrumbs, table headers, badges, section labels)
 - `CmsHeading`: display and section headings (`size=page|section`)
-- `CmsBodyText`: editorial/body text (`size=md|lg`, `tone=foreground|muted|accent`)
-- `CmsSurface`: reusable panel surface (`border=default|strong`, `spacing=none|md|lg`)
-- `CmsActionButton`: standard CMS action states and tones (`primary|secondary|danger`)
-- `CmsDataTableShell` + `cmsTableClasses`: wrap shadcn `Table` con parity SG sezione 08
+- `CmsBody` / `CmsBodyText`: editorial/body text (`size=md|lg`, `tone=foreground|muted|accent`)
+- `CmsDisplay`: display typography (`size=hero|h1|h2|quote|label`, `tone=foreground|accent|onAccent`)
+- `CmsMetaText`: meta labels (`variant=category|tiny|number|paragraph`)
+- `CmsBlockquote` / `CmsEpigraph` / `CmsHairline` / `CmsNote` / `CmsParagraphNumber` / `CmsSectionNumber`: editorial variants per SG sezione tipografica
+- `CmsSurface`: panel surface (`border=default|strong`, `spacing=none|md|lg|xl`)
+- `CmsSectionDivider`: separator line (`tone=strong|grid|accent|dashed`)
+- `CmsPageHeader`: page title + subtitle + actions + strong divider
+
+Actions:
+
+- `CmsActionButton`: primary | primary-accent | outline | outline-accent | ghost | ghost-accent, sizes `xs|md|lg|full`. Legacy `tone=primary|secondary|danger` mantenuto per backcompat.
+
+Form controls (always wrap in `CmsFormField`):
+
+- `CmsFormField`: unico wrapper consentito. Gestisce label, hint, error state con prefisso `⚑` (U+2691) e testo `IBM Plex Mono 10px accent`.
+- `CmsFormLabel`: label mono 10px (`state=default|focus|filled|error|disabled`)
+- `CmsTextInput`: text input (`tone=editorial|ui|mono`, `state` auto se `disabled`). Default/filled bianco, focus bordo 2px accent, error bg `--ui-error-bg`.
+- `CmsTextarea`: textarea editorial, supporta `showCounter` + `maxLength`.
+- `CmsSelect`: dropdown con opzioni `{value,label}[]`, placeholder default `— SELEZIONA —`.
+- `CmsCheckbox` / `CmsRadio`: 20×20 ink, checked crema checkmark; variante `accent=true` per bg/bordo rosso.
+- `CmsToggle`: switch on/off, variante `accent` per tracciato rosso.
+
+Feedback / overlay:
+
+- `CmsBadge`: `category-outline-{accent|ink}`, `category-solid-{accent|ink}`, `status-{new|draft|published|archived}`
+- `CmsRemovableTag`: tag con `×` per selector multi-tag.
+- `CmsBreakingDot`: pallino rosso + label accent uppercase.
+- `CmsTooltip`: variante `short-dark` (bg ink, mono 10px) o `long-accent` (bg rosso, editorial italic 13px). Trigger = termine inline con underline-dashed-accent.
+- `cmsToast.{info|breaking|error}(body, label?)`: toast persistente SG-compliant. Richiede `<Toaster />` montato (già in `app/layout.tsx`).
+- `CmsConfirmDialog` (in `components/cms/common`): modale conferma hard-delete, header ink, corpo editorial 15px, footer opzionale.
+
+Data / navigation:
+
+- `CmsDataTableShell` + `cmsTableClasses`: wrap shadcn `Table` con parity SG sezione 08.
   - Default table: `headerRow` (bg ink, border 2px), `headerCell` (mono 10px crema, divisori cream/15)
   - Sortable: `sortableHeaderRow` (bg crema-dk) + `sortableHeaderCell` + `sortableHeaderCellActive` (testo accent) + icona `<CmsSortIcon direction="asc|desc|null" />`
   - Body: `bodyRow` (alt bianco/crema-dk, hover bg accent + testo bianco), `bodyRowArchived` (bg crema-dk)
   - Cells: `bodyCellTitle` (Newsreader 15), `bodyCellMeta` (mono 11 ink-60), `bodyCellNumeric` (right-aligned mono), `bodyCellBadge` (host per `CmsBadge variant="status-*"`), variante `*Archived` con testo ink-30 italic
+- `CmsPagination`: numerata zero-pad, bordo accent sull'attivo, `← PREC.` / `SUCC. →`, ellipsis `…`.
+- `CmsStepper`: dot size-3 per step, connettori accent/grigio.
+- `CmsSearchBar` + `CmsSearchResultItem`: barra ricerca con icona, stato `active` (bordo accent).
+- `CmsLayoutShell`: shell sidebar + topbar + content del CMS.
+- `CmsMetaRow`: coppia label/valore in `CmsEyebrow` mono.
+- `CmsEditorialCard`: card editoriale con CTA per dashboard/link.
+
+Stati pagina (in `components/cms/common`):
+
+- `CmsLoadingState`: skeleton 4 blocchi border/bg.
+- `CmsEmptyState`: surface con eyebrow + title + body + CTA opzionale.
+- `CmsErrorState`: surface con eyebrow "ERRORE" + title + body + `outline-accent` retry button opzionale.
+- `CmsForbiddenState`: 403 con title + body editoriale.
 
 Rule:
 
 - Prefer these primitives over repeating inline typography/surface/action classes.
+- Ogni pagina lista CMS deve coprire tutti gli stati: loading → empty → data → error → forbidden.
 
 ## UI done checklist (per page)
 
