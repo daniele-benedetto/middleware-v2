@@ -60,7 +60,7 @@ export function CmsAccordion({ items, defaultValue, className }: CmsAccordionPro
             <AccordionPrimitive.Trigger
               className={cn(
                 "group flex flex-1 cursor-pointer items-center justify-between px-4.5 py-3.5 text-left",
-                "bg-[color:var(--bg-main)] text-foreground transition-colors outline-none",
+                "bg-(--bg-main) text-foreground transition-colors outline-none",
                 "aria-expanded:bg-foreground aria-expanded:text-white",
                 "focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2",
               )}

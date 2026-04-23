@@ -55,8 +55,8 @@ const cmsTextInputVariants = cva(`${inputBaseReset} h-11`, {
     state: {
       default: "border border-foreground bg-white px-3",
       focus: "border-2 border-accent bg-white px-2.75",
-      filled: "border border-foreground bg-[color:var(--bg-main)] px-3",
-      error: "border-2 border-accent bg-[color:var(--ui-error-bg)] px-2.75",
+      filled: "border border-foreground bg-(--bg-main) px-3",
+      error: "border-2 border-accent bg-(--ui-error-bg) px-2.75",
       disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3",
     },
   },
@@ -70,8 +70,8 @@ const cmsTextareaVariants = cva(
       state: {
         default: "border border-foreground bg-white px-3 py-2.5",
         focus: "border-2 border-accent bg-white px-2.75 py-2.25",
-        filled: "border border-foreground bg-[color:var(--bg-main)] px-3 py-2.5",
-        error: "border-2 border-accent bg-[color:var(--ui-error-bg)] px-2.75 py-2.25",
+        filled: "border border-foreground bg-(--bg-main) px-3 py-2.5",
+        error: "border-2 border-accent bg-(--ui-error-bg) px-2.75 py-2.25",
         disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3 py-2.5",
       },
     },
@@ -91,8 +91,8 @@ const cmsSelectTriggerVariants = cva(
       state: {
         default: "border border-foreground bg-white px-3",
         focus: "border-2 border-accent bg-white px-2.75",
-        filled: "border-2 border-accent bg-[color:var(--bg-main)] px-2.75 [&>svg]:text-accent!",
-        error: "border-2 border-accent bg-[color:var(--ui-error-bg)] px-2.75 [&>svg]:text-accent!",
+        filled: "border-2 border-accent bg-(--bg-main) px-2.75 [&>svg]:text-accent!",
+        error: "border-2 border-accent bg-(--ui-error-bg) px-2.75 [&>svg]:text-accent!",
         disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3",
       },
     },
@@ -254,7 +254,7 @@ export function CmsCheckbox({
       ? "border-border bg-card-hover! cursor-not-allowed"
       : accent
         ? "border-foreground bg-white data-checked:border-accent! data-checked:bg-accent! [&[data-checked]_[data-slot=checkbox-indicator]]:text-white"
-        : "border-foreground bg-white data-checked:bg-foreground! [&[data-checked]_[data-slot=checkbox-indicator]]:text-[color:var(--bg-main)]",
+        : "border-foreground bg-white data-checked:bg-foreground! [&[data-checked]_[data-slot=checkbox-indicator]]:text-(--bg-main)",
     "focus-visible:ring-0 focus-visible:border-accent",
   );
 
@@ -357,7 +357,7 @@ export function CmsToggle({
       : "!border border-foreground! bg-foreground! data-checked:bg-foreground!"
     : "!border border-border! bg-card-hover! data-unchecked:bg-card-hover!";
 
-  const thumbColor = checked ? (accent ? "bg-white!" : "!bg-[color:var(--bg-main)]") : "bg-border!";
+  const thumbColor = checked ? (accent ? "bg-white!" : "bg-(--bg-main)!") : "bg-border!";
   const thumbTransform = checked ? "translate-x-5.5!" : "translate-x-0.5!";
 
   const trackClass = cn(

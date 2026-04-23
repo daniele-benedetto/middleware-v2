@@ -16,7 +16,7 @@ const cmsTooltipVariants = cva("rounded-none! px-2.5 py-1.5 max-w-55", {
   variants: {
     variant: {
       "short-dark":
-        "bg-foreground text-[color:var(--bg-main)] font-ui text-[10px] uppercase tracking-[0.04em]",
+        "bg-foreground text-(--bg-main) font-ui text-[10px] uppercase tracking-[0.04em]",
       "long-accent":
         "bg-accent text-white font-editorial italic text-[13px] leading-[1.4] py-2 px-3",
     },

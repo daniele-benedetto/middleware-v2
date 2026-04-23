@@ -12,12 +12,12 @@ import type { ElementType, ReactNode } from "react";
 const cmsDisplayVariants = cva("font-display uppercase text-foreground", {
   variants: {
     size: {
-      hero: "text-[length:var(--text-display-hero)] leading-[var(--lh-2xl)] tracking-[-0.04em]",
-      h1: "text-[length:var(--text-display-h1)] leading-[var(--lh-display-h1)] tracking-[-0.03em]",
-      h2: "text-[length:var(--text-display-h2)] leading-[var(--lh-xl)] tracking-[-0.025em]",
+      hero: "text-(length:--text-display-hero) leading-(--lh-2xl) tracking-[-0.04em]",
+      h1: "text-(length:--text-display-h1) leading-(--lh-display-h1) tracking-[-0.03em]",
+      h2: "text-(length:--text-display-h2) leading-(--lh-xl) tracking-[-0.025em]",
       quote:
-        "text-[length:var(--text-display-quote)] leading-[var(--lh-display-quote)] tracking-[-0.02em] italic",
-      label: "text-[length:var(--text-display-label)] tracking-[0.04em]",
+        "text-(length:--text-display-quote) leading-(--lh-display-quote) tracking-[-0.02em] italic",
+      label: "text-(length:--text-display-label) tracking-[0.04em]",
     },
     tone: {
       foreground: "text-foreground",
@@ -64,9 +64,9 @@ function defaultTagFor(size: CmsDisplayProps["size"]): ElementType {
 const cmsBodyVariants = cva("font-editorial", {
   variants: {
     size: {
-      sm: "text-[16px] leading-[var(--lh-md)]",
-      md: "text-[17px] leading-[var(--lh-editorial)]",
-      lg: "text-[length:var(--text-editorial-body)] leading-[var(--lh-lg)]",
+      sm: "text-[16px] leading-(--lh-md)",
+      md: "text-[17px] leading-(--lh-editorial)",
+      lg: "text-(length:--text-editorial-body) leading-(--lh-lg)",
     },
     tone: {
       foreground: "text-foreground",
@@ -94,13 +94,13 @@ export function CmsEpigraph({ children, author, className }: CmsEpigraphProps) {
     <p
       className={cn(
         "ml-auto max-w-95 text-right",
-        "font-editorial text-[length:var(--text-editorial-epigraph)] leading-[var(--lh-editorial)] italic text-foreground",
+        "font-editorial text-(length:--text-editorial-epigraph) leading-(--lh-editorial) italic text-foreground",
         className,
       )}
     >
       {children}
       {author ? (
-        <span className="mt-1.5 block font-ui text-[var(--text-meta)] not-italic text-muted-foreground">
+        <span className="mt-1.5 block font-ui text-(length:--text-meta) not-italic text-muted-foreground">
           {author}
         </span>
       ) : null}
@@ -113,11 +113,11 @@ type CmsBlockquoteProps = { children: ReactNode; source?: ReactNode; className?:
 export function CmsBlockquote({ children, source, className }: CmsBlockquoteProps) {
   return (
     <blockquote className={cn("max-w-130 border-l-4 border-accent py-1 pl-5", className)}>
-      <p className="font-editorial text-[length:var(--text-editorial-blockquote)] leading-[var(--lh-editorial)] italic text-foreground">
+      <p className="font-editorial text-(length:--text-editorial-blockquote) leading-(--lh-editorial) italic text-foreground">
         {children}
       </p>
       {source ? (
-        <div className="mt-2 font-ui text-[var(--text-meta)] text-muted-foreground">{source}</div>
+        <div className="mt-2 font-ui text-(length:--text-meta) text-muted-foreground">{source}</div>
       ) : null}
     </blockquote>
   );
@@ -130,7 +130,7 @@ export function CmsHairline({ children, className }: CmsHairlineProps) {
     <p
       className={cn(
         "max-w-125 font-editorial italic font-light",
-        "text-[length:var(--text-editorial-hairline)] leading-[var(--lh-md)] text-[color:var(--ink-70)]",
+        "text-(length:--text-editorial-hairline) leading-(--lh-md) text-(--ink-70)",
         className,
       )}
     >
@@ -144,8 +144,8 @@ type CmsNoteProps = { number: ReactNode; children: ReactNode; className?: string
 export function CmsNote({ number, children, className }: CmsNoteProps) {
   return (
     <div className={cn("flex max-w-140 items-baseline gap-2.5", className)}>
-      <span className="shrink-0 font-ui text-[length:var(--text-meta)] text-accent">{number}</span>
-      <span className="font-editorial text-[length:var(--text-editorial-note)] leading-[var(--lh-sm)] text-foreground">
+      <span className="shrink-0 font-ui text-(length:--text-meta) text-accent">{number}</span>
+      <span className="font-editorial text-(length:--text-editorial-note) leading-(--lh-sm) text-foreground">
         {children}
       </span>
     </div>
@@ -160,9 +160,9 @@ export function CmsNote({ number, children, className }: CmsNoteProps) {
 const cmsMetaTextVariants = cva("font-ui uppercase", {
   variants: {
     variant: {
-      category: "text-[length:var(--text-meta)] tracking-[0.08em] text-accent",
-      meta: "text-[length:var(--text-meta)] tracking-normal normal-case text-muted-foreground",
-      tagline: "text-[length:var(--text-meta)] tracking-[0.06em] text-foreground",
+      category: "text-(length:--text-meta) tracking-[0.08em] text-accent",
+      meta: "text-(length:--text-meta) tracking-normal normal-case text-muted-foreground",
+      tagline: "text-(length:--text-meta) tracking-[0.06em] text-foreground",
       tiny: "text-[10px] tracking-[0.08em] text-muted-foreground",
     },
   },
@@ -185,7 +185,7 @@ export function CmsParagraphNumber({ children, className }: CmsParagraphNumberPr
   return (
     <span
       className={cn(
-        "block pt-0.75 text-right font-ui text-[length:var(--text-meta)] text-[color:var(--ink-50)]",
+        "block pt-0.75 text-right font-ui text-(length:--text-meta) text-(--ink-50)",
         className,
       )}
     >
@@ -203,8 +203,8 @@ type CmsSectionNumberProps = {
 export function CmsSectionNumber({ number, label, className }: CmsSectionNumberProps) {
   return (
     <div className={cn("flex items-baseline gap-2.5", className)}>
-      <span className="font-ui text-[length:var(--text-section-number)] text-accent">{number}</span>
-      <span className="font-display uppercase text-[length:var(--text-display-label)] tracking-[0.04em] text-foreground">
+      <span className="font-ui text-(length:--text-section-number) text-accent">{number}</span>
+      <span className="font-display uppercase text-(length:--text-display-label) tracking-[0.04em] text-foreground">
         {label}
       </span>
     </div>
@@ -215,20 +215,17 @@ export function CmsSectionNumber({ number, label, className }: CmsSectionNumberP
  * BACK-COMPAT: CmsEyebrow / CmsHeading / CmsBodyText
  * ============================================================= */
 
-const cmsEyebrowVariants = cva(
-  "font-ui text-[length:var(--text-meta)] uppercase tracking-[0.08em]",
-  {
-    variants: {
-      tone: {
-        foreground: "text-foreground",
-        accent: "text-accent",
-        muted: "text-muted-foreground",
-        onAccent: "text-primary-foreground/75",
-      },
+const cmsEyebrowVariants = cva("font-ui text-(length:--text-meta) uppercase tracking-[0.08em]", {
+  variants: {
+    tone: {
+      foreground: "text-foreground",
+      accent: "text-accent",
+      muted: "text-muted-foreground",
+      onAccent: "text-primary-foreground/75",
     },
-    defaultVariants: { tone: "foreground" },
   },
-);
+  defaultVariants: { tone: "foreground" },
+});
 
 export const cmsEyebrowClassName = cmsEyebrowVariants({});
 
@@ -244,8 +241,8 @@ export function CmsEyebrow({ children, className, tone }: CmsEyebrowProps) {
 const cmsHeadingVariants = cva("font-display uppercase", {
   variants: {
     size: {
-      page: "text-[length:var(--text-display-h1)] leading-[var(--lh-display-h1)] tracking-[-0.03em]",
-      section: "text-[length:var(--text-display-h2)] leading-[var(--lh-xl)] tracking-[-0.025em]",
+      page: "text-(length:--text-display-h1) leading-(--lh-display-h1) tracking-[-0.03em]",
+      section: "text-(length:--text-display-h2) leading-(--lh-xl) tracking-[-0.025em]",
     },
     tone: {
       foreground: "text-foreground",
@@ -267,8 +264,8 @@ export function CmsHeading({ children, className, size, tone }: CmsHeadingProps)
 const cmsBodyTextVariants = cva("font-editorial", {
   variants: {
     size: {
-      md: "text-[16px] leading-[var(--lh-md)]",
-      lg: "text-[length:var(--text-editorial-body)] leading-[var(--lh-lg)]",
+      md: "text-[16px] leading-(--lh-md)",
+      lg: "text-(length:--text-editorial-body) leading-(--lh-lg)",
     },
     tone: {
       foreground: "text-foreground",

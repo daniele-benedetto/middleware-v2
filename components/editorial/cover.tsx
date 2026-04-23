@@ -17,12 +17,12 @@ const coverVariants = cva(
   {
     variants: {
       tone: {
-        "cream-ink": "bg-[color:var(--bg-main)] border border-[rgba(10,10,10,0.1)]",
-        "cream-accent": "bg-[color:var(--bg-main)] border border-[rgba(10,10,10,0.1)]",
+        "cream-ink": "bg-(--bg-main) border border-[rgba(10,10,10,0.1)]",
+        "cream-accent": "bg-(--bg-main) border border-[rgba(10,10,10,0.1)]",
         "ink-cream": "bg-foreground",
         "accent-white": "bg-accent",
         "accent-white-minimal": "bg-accent",
-        "cream-proto": "bg-[color:var(--bg-main)] border border-[rgba(10,10,10,0.1)]",
+        "cream-proto": "bg-(--bg-main) border border-[rgba(10,10,10,0.1)]",
       },
     },
     defaultVariants: { tone: "cream-ink" },
@@ -58,10 +58,10 @@ const palettes: Record<CoverTone, TonePalette> = {
     foot: "text-accent",
   },
   "ink-cream": {
-    mw: "text-[color:var(--bg-main)]",
+    mw: "text-(--bg-main)",
     meta: "text-[rgba(240,232,216,0.5)]",
-    rule: "bg-[color:var(--bg-main)]",
-    title: "text-[color:var(--bg-main)]",
+    rule: "bg-(--bg-main)",
+    title: "text-(--bg-main)",
     tagline: "text-accent",
     foot: "text-[rgba(240,232,216,0.4)]",
   },

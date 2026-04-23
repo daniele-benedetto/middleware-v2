@@ -37,7 +37,7 @@ export const cmsTableClasses = {
     "bg-foreground border-b-[2px] border-foreground hover:bg-foreground data-[state=selected]:bg-foreground",
   headerCell: cn(
     headerCellBase,
-    "px-3.5 py-2.5 text-[color:var(--bg-main)] border-r border-[color:rgba(240,232,216,0.15)] last:border-r-0",
+    "px-3.5 py-2.5 text-(--bg-main) border-r border-[color:rgba(240,232,216,0.15)] last:border-r-0",
   ),
 
   sortableHeaderRow:

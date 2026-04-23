@@ -53,7 +53,7 @@ export function CmsConfirmDialog({
       <DialogContent
         showCloseButton={false}
         className={cn(
-          "w-full max-w-100 sm:max-w-100 gap-0 rounded-none border-2 border-foreground bg-[color:var(--bg-main)] p-0 ring-0",
+          "w-full max-w-100 sm:max-w-100 gap-0 rounded-none border-2 border-foreground bg-(--bg-main) p-0 ring-0",
         )}
       >
         <div className="flex items-center justify-between bg-foreground px-4.5 py-3.5">

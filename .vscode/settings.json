@@ -4,7 +4,14 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": "always",
     "source.fixAll.eslint": "always",
+    "source.fixAll.tailwindcss": "always",
     "source.organizeImports": "explicit"
+  },
+  "tailwindCSS.codeActions": true,
+  "tailwindCSS.validate": true,
+  "tailwindCSS.lint.suggestCanonicalClasses": "warning",
+  "tailwindCSS.experimental.configFile": {
+    "app/globals.css": "**/*"
   },
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "files.eol": "\n"

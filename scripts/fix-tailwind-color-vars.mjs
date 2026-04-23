@@ -85,6 +85,8 @@ const NEGATIVE_SAFE_UTILITIES = new Set([
   "scroll-ml",
 ]);
 
+const GENERIC_VAR_SHORTHAND_UTILITIES = new Set(["leading"]);
+
 function buildColorTokenMap(cssSource) {
   const colorTokenByVar = new Map();
   const matcher = /--color-([a-z0-9-]+)\s*:\s*var\(--([a-z0-9-]+)\)\s*;/gi;
@@ -144,6 +146,81 @@ function replaceArbitraryColorVarClasses(source, colorTokenByVar) {
   });
 }
 
+function replaceArbitraryCssVarShorthand(source) {
+  const classPattern =
+    /((?:[a-z-]+:)*)(!?)(bg|text|border|fill|stroke)-\[(?:(color|length):)?var\(--([a-z0-9-]+)\)\](!?)/gi;
+
+  return source.replace(
+    classPattern,
+    (_fullMatch, variants, importantPrefix, utility, valueHint, variableName, importantSuffix) => {
+      const important = importantPrefix === "!" || importantSuffix === "!" ? "!" : "";
+      const explicitHint = valueHint ? `${valueHint}:` : "";
+      const inferredHint =
+        !valueHint && utility === "text" && variableName.startsWith("text-") ? "length:" : "";
+      const normalizedHint = explicitHint || inferredHint;
+      return `${variants}${utility}-(${normalizedHint}--${variableName})${important}`;
+    },
+  );
+}
+
+function replaceGenericVarShorthand(source) {
+  const classPattern =
+    /((?:[a-z-]+:)*)(!?)([a-z][a-z0-9-]*)-\[(?:length:)?var\(--([a-z0-9-]+)\)\](!?)/gi;
+
+  return source.replace(
+    classPattern,
+    (_fullMatch, variants, importantPrefix, utility, variableName, importantSuffix) => {
+      const normalizedUtility = utility.toLowerCase();
+      if (!GENERIC_VAR_SHORTHAND_UTILITIES.has(normalizedUtility)) {
+        return _fullMatch;
+      }
+
+      const important = importantPrefix === "!" || importantSuffix === "!" ? "!" : "";
+      return `${variants}${normalizedUtility}-(--${variableName})${important}`;
+    },
+  );
+}
+
+function normalizeTailwindVarShorthand(classToken) {
+  const important = classToken.endsWith("!") ? "!" : "";
+  const withoutImportant = important ? classToken.slice(0, -1) : classToken;
+
+  const { variants, utility: utilityPart } = splitVariantPrefix(withoutImportant);
+
+  const match = utilityPart.match(/^([a-z-]+)-\[(?:color:)?var\(--([a-z0-9-]+)\)\]$/i);
+  if (!match) {
+    return classToken;
+  }
+
+  const utility = match[1];
+  const variableName = match[2];
+  const supportsVarShorthand =
+    utility === "bg" ||
+    utility === "text" ||
+    utility === "border" ||
+    utility === "fill" ||
+    utility === "stroke";
+
+  if (!supportsVarShorthand) {
+    return classToken;
+  }
+
+  return `${variants}${utility}-(--${variableName})${important}`;
+}
+
+function normalizeTextLengthVarShorthand(classToken) {
+  const important = classToken.endsWith("!") ? "!" : "";
+  const withoutImportant = important ? classToken.slice(0, -1) : classToken;
+  const { variants, utility } = splitVariantPrefix(withoutImportant);
+
+  const lengthMatch = utility.match(/^text-\(--(text-[a-z0-9-]+)\)$/i);
+  if (!lengthMatch) {
+    return classToken;
+  }
+
+  return `${variants}text-(length:--${lengthMatch[1]})${important}`;
+}
+
 function formatScaleValue(value) {
   const rounded = Math.round(value * 1000) / 1000;
   return `${rounded}`.replace(/\.0+$/, "").replace(/(\.\d*?)0+$/, "$1");
@@ -163,14 +240,41 @@ function toSpacingScaleToken(pxValueRaw) {
   return formatScaleValue(scale);
 }
 
+function splitVariantPrefix(classToken) {
+  let bracketDepth = 0;
+  let parenDepth = 0;
+  let braceDepth = 0;
+  let lastSeparator = -1;
+
+  for (let i = 0; i < classToken.length; i += 1) {
+    const char = classToken[i];
+    if (char === "[") bracketDepth += 1;
+    else if (char === "]") bracketDepth = Math.max(0, bracketDepth - 1);
+    else if (char === "(") parenDepth += 1;
+    else if (char === ")") parenDepth = Math.max(0, parenDepth - 1);
+    else if (char === "{") braceDepth += 1;
+    else if (char === "}") braceDepth = Math.max(0, braceDepth - 1);
+    else if (char === ":" && bracketDepth === 0 && parenDepth === 0 && braceDepth === 0) {
+      lastSeparator = i;
+    }
+  }
+
+  if (lastSeparator < 0) {
+    return { variants: "", utility: classToken };
+  }
+
+  return {
+    variants: classToken.slice(0, lastSeparator + 1),
+    utility: classToken.slice(lastSeparator + 1),
+  };
+}
+
 function normalizeImportantModifier(classToken) {
   if (!classToken.includes("!")) {
     return classToken;
   }
 
-  const lastColon = classToken.lastIndexOf(":");
-  const variants = lastColon >= 0 ? classToken.slice(0, lastColon + 1) : "";
-  const utility = lastColon >= 0 ? classToken.slice(lastColon + 1) : classToken;
+  const { variants, utility } = splitVariantPrefix(classToken);
 
   if (!utility.startsWith("!") || utility.endsWith("!")) {
     return classToken;
@@ -195,9 +299,7 @@ function normalizePxClass(classToken) {
   const important = classToken.endsWith("!") ? "!" : "";
   const withoutImportant = important ? classToken.slice(0, -1) : classToken;
 
-  const lastColon = withoutImportant.lastIndexOf(":");
-  const variants = lastColon >= 0 ? withoutImportant.slice(0, lastColon + 1) : "";
-  const utilityPart = lastColon >= 0 ? withoutImportant.slice(lastColon + 1) : withoutImportant;
+  const { variants, utility: utilityPart } = splitVariantPrefix(withoutImportant);
 
   const negativePrefix = utilityPart.startsWith("-") ? "-" : "";
   const unsigned = negativePrefix ? utilityPart.slice(1) : utilityPart;
@@ -231,6 +333,8 @@ function normalizeClassTokens(source) {
   return source.replace(/[^\s"'`]+/g, (token) => {
     let normalized = token;
     normalized = normalizeImportantModifier(normalized);
+    normalized = normalizeTextLengthVarShorthand(normalized);
+    normalized = normalizeTailwindVarShorthand(normalized);
     normalized = normalizePxClass(normalized);
     return normalized;
   });
@@ -288,6 +392,8 @@ async function main() {
     if (colorTokenByVar.size > 0) {
       updated = replaceArbitraryColorVarClasses(updated, colorTokenByVar);
     }
+    updated = replaceArbitraryCssVarShorthand(updated);
+    updated = replaceGenericVarShorthand(updated);
     updated = normalizeClassTokens(updated);
 
     if (updated === original) {
