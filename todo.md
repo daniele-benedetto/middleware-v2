@@ -118,8 +118,8 @@ Procedure API disponibili: `users.list`, `users.getById`, `users.create`, `users
 
 - [ ] Definire action model condiviso per tutte le risorse:
   - [x] `id`, `label`, `scope` (`single`/`bulk`/`both`).
-  - [ ] `requiresConfirm`, copy conferma, regole `isVisible`/`isEnabled`.
-  - [ ] mapping centralizzato errori per azioni rapide (single/bulk).
+  - [x] `requiresConfirm`, copy conferma, regole `isVisible`/`isEnabled`.
+  - [x] mapping centralizzato errori per azioni rapide (single/bulk).
 - [x] Implementare gestione selezione multipla condivisa:
   - [x] checkbox riga + select-all pagina.
   - [x] reset selezione su cambio filtri/sort/pagina.
@@ -131,7 +131,7 @@ Procedure API disponibili: `users.list`, `users.getById`, `users.create`, `users
 - [ ] Definire policy di esecuzione bulk:
   - [x] endpoint bulk dedicato dove presente; fallback orchestrato client dove assente.
   - [x] report esito (successi/fallimenti parziali) con toast coerenti.
-  - [ ] invalidation query centralizzata post-azione.
+  - [x] invalidation query centralizzata post-azione.
 - [ ] Definire pattern reorder come "mode" dedicato (non azione bulk generica).
 
 ## 11) Testing CMS frontend
