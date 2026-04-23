@@ -37,6 +37,20 @@ export const usersRepository = {
       orderBy,
       skip: (pagination.page - 1) * pagination.pageSize,
       take: pagination.pageSize,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        emailVerified: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            authoredArticles: true,
+          },
+        },
+      },
     });
   },
   async count(query: ListUsersQuery) {
@@ -46,6 +60,20 @@ export const usersRepository = {
   async getById(id: string) {
     return prisma.user.findUnique({
       where: { id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        emailVerified: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            authoredArticles: true,
+          },
+        },
+      },
     });
   },
   async create(input: CreateUserInput) {

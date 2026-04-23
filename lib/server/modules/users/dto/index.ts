@@ -5,7 +5,10 @@ export const userListItemDtoSchema = z.object({
   email: z.string().email(),
   name: z.string().nullable(),
   role: z.enum(["ADMIN", "EDITOR"]),
+  emailVerified: z.boolean(),
   createdAt: z.string(),
+  updatedAt: z.string(),
+  authoredArticlesCount: z.number().int(),
 });
 
 export const userDetailDtoSchema = userListItemDtoSchema;

@@ -18,14 +18,22 @@ const toUserDto = (user: {
   email: string;
   name: string | null;
   role: "ADMIN" | "EDITOR";
+  emailVerified: boolean;
   createdAt: Date;
+  updatedAt: Date;
+  _count?: {
+    authoredArticles: number;
+  };
 }): UserListItemDto => {
   return {
     id: user.id,
     email: user.email,
     name: user.name,
     role: user.role,
+    emailVerified: user.emailVerified,
     createdAt: user.createdAt.toISOString(),
+    updatedAt: user.updatedAt.toISOString(),
+    authoredArticlesCount: user._count?.authoredArticles ?? 0,
   };
 };
 
@@ -53,7 +61,13 @@ export const usersService = {
   async create(input: CreateUserInput) {
     try {
       const user = await usersRepository.create(input);
-      return toUserDto(user);
+      const userWithRelations = await usersRepository.getById(user.id);
+
+      if (!userWithRelations) {
+        throw new ApiError(404, "NOT_FOUND", "User not found");
+      }
+
+      return toUserDto(userWithRelations);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw new ApiError(409, "CONFLICT", "User email already exists");
@@ -64,7 +78,13 @@ export const usersService = {
   },
   async update(id: string, input: UpdateUserInput) {
     try {
-      const user = await usersRepository.update(id, input);
+      await usersRepository.update(id, input);
+      const user = await usersRepository.getById(id);
+
+      if (!user) {
+        throw new ApiError(404, "NOT_FOUND", "User not found");
+      }
+
       return toUserDto(user);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
@@ -76,7 +96,13 @@ export const usersService = {
   },
   async updateRole(id: string, input: UpdateUserRoleInput) {
     try {
-      const user = await usersRepository.updateRole(id, input);
+      await usersRepository.updateRole(id, input);
+      const user = await usersRepository.getById(id);
+
+      if (!user) {
+        throw new ApiError(404, "NOT_FOUND", "User not found");
+      }
+
       return toUserDto(user);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {

@@ -78,10 +78,10 @@ Procedure API disponibili: `articles.list`, `articles.getById`, `articles.create
 
 Procedure API disponibili: `users.list`, `users.getById`, `users.create`, `users.update`, `users.updateRole`, `users.delete`.
 
-- [ ] Implementare lista Users con:
-  - [ ] filtri: `role`, `q`
-  - [ ] sort: `createdAt`, `email` + `sortOrder`
-  - [ ] pagination: `page`, `pageSize`
+- [x] Implementare lista Users con:
+  - [x] filtri: `role`, `q`
+  - [x] sort: `createdAt`, `email` + `sortOrder`
+  - [x] pagination: `page`, `pageSize`
 - [ ] Implementare create User.
 - [ ] Implementare edit User (campi consentiti).
 - [ ] Implementare update role (`users.updateRole`) con UX chiara e conferma.
