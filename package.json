@@ -21,7 +21,10 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
-    "seed:admin": "pnpm dlx tsx scripts/seed-admin.ts"
+    "seed:admin": "pnpm dlx tsx scripts/seed-admin.ts",
+    "reset:cms": "pnpm dlx tsx scripts/reset-cms.ts",
+    "seed:cms:lists": "pnpm dlx tsx scripts/seed-cms-lists.ts",
+    "refresh:cms:lists": "pnpm run reset:cms && pnpm run seed:cms:lists"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [

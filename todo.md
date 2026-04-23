@@ -10,27 +10,11 @@ Decisioni gia fissate:
 - Invariante dominio: `publishedAt` solo con `status = PUBLISHED` (gia lato API).
 - Slug normalizzato lato API e univocita rispettata lato DB.
 
-### Step 1 - Governance e quality gate per componente
-
-- [ ] Per ogni componente refactorato: checklist parity compilata in PR.
-- [ ] Nessuna chiusura step senza `pnpm lint`, `pnpm typecheck`, `pnpm build` verdi.
-
-## 3) Integrazione tRPC client lato UI
-
-- [ ] Definire query key strategy per domini (`users`, `issues`, `categories`, `tags`, `articles`).
-- [ ] Definire invalidation policy post-mutation per ogni procedura.
-- [ ] Definire helper shared per mapping errori tRPC -> messaggi UI.
-- [ ] Definire helper shared per parsing filtri/sort/pagination da URL search params.
-- [ ] Definire pattern unificato di hook per list page:
-  - [ ] input `{ page, pageSize, query }`
-  - [ ] output `{ items, pagination }`
-- [ ] Gestire stati errore `UNAUTHORIZED`, `FORBIDDEN`, `CONFLICT`, `NOT_FOUND`, `TOO_MANY_REQUESTS`, `BAD_REQUEST`.
-
 ## 4) Dashboard CMS
 
-- [ ] Implementare pagina dashboard iniziale con quick links alle sezioni.
-- [ ] Aggiungere blocco stato editoriale (conteggi base da liste paginabili o query dedicate se introdotte).
-- [ ] Aggiungere blocco attivita recente (placeholder realistico se non presente sorgente audit query).
+- [x] Implementare pagina dashboard iniziale con quick links alle sezioni.
+- [x] Aggiungere blocco stato editoriale (conteggi base da liste paginabili o query dedicate se introdotte).
+- [x] Aggiungere blocco attivita recente (placeholder realistico se non presente sorgente audit query).
 
 ## 5) Modulo Issues
 
