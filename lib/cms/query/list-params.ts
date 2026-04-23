@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import { paginationDefaults } from "@/lib/server/http/pagination";
 
+import type { RouterInputs } from "@/lib/trpc/types";
+
 type CmsSearchParamValue = string | string[] | undefined;
 
 export type CmsSearchParamsInput = URLSearchParams | Record<string, CmsSearchParamValue>;
@@ -20,6 +22,19 @@ export type CmsListSearchParams = {
   sortOrder: "asc" | "desc";
 };
 
+type CmsSerializableParam = string | number | boolean | null | undefined;
+type CmsSerializableSearchParams = Record<string, CmsSerializableParam>;
+
+const uuidSchema = z.string().uuid();
+
+const articleStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
+const roleValues = ["ADMIN", "EDITOR"] as const;
+const issuesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
+const categoriesSortByValues = ["createdAt", "name", "slug"] as const;
+const tagsSortByValues = ["createdAt", "name", "slug"] as const;
+const articlesSortByValues = ["createdAt", "publishedAt", "position"] as const;
+const usersSortByValues = ["createdAt", "email"] as const;
+
 function readParam(input: CmsSearchParamsInput, key: string) {
   if (input instanceof URLSearchParams) {
     return input.get(key) ?? undefined;
@@ -32,6 +47,55 @@ function readParam(input: CmsSearchParamsInput, key: string) {
   }
 
   return value;
+}
+
+function cleanString(value: string | undefined) {
+  const result = value?.trim();
+
+  if (!result || result.length === 0) {
+    return undefined;
+  }
+
+  return result;
+}
+
+function parseBooleanQueryParam(value: string | undefined): "true" | "false" | undefined {
+  if (value === "true" || value === "false") {
+    return value;
+  }
+
+  return undefined;
+}
+
+function parseEnumQueryParam<const T extends readonly string[]>(
+  value: string | undefined,
+  values: T,
+): T[number] | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return values.includes(value as T[number]) ? (value as T[number]) : undefined;
+}
+
+function parseUuidQueryParam(value: string | undefined) {
+  if (!value) {
+    return undefined;
+  }
+
+  return uuidSchema.safeParse(value).success ? value : undefined;
+}
+
+function compactObject<T extends Record<string, unknown>>(input: T) {
+  const output: Record<string, unknown> = {};
+
+  Object.entries(input).forEach(([key, value]) => {
+    if (value !== undefined) {
+      output[key] = value;
+    }
+  });
+
+  return output as T;
 }
 
 export function parseCmsListSearchParams(
@@ -83,5 +147,130 @@ export function parseCmsListSearchParams(
     q: parsed.q,
     sortOrder: parsed.sortOrder,
     sortBy,
+  };
+}
+
+export function serializeCmsSearchParams(input: CmsSerializableSearchParams) {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(input).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") {
+      return;
+    }
+
+    searchParams.set(key, String(value));
+  });
+
+  return searchParams;
+}
+
+type IssuesListInput = RouterInputs["issues"]["list"];
+type CategoriesListInput = RouterInputs["categories"]["list"];
+type TagsListInput = RouterInputs["tags"]["list"];
+type ArticlesListInput = RouterInputs["articles"]["list"];
+type UsersListInput = RouterInputs["users"]["list"];
+
+export function parseIssuesListSearchParams(input: CmsSearchParamsInput): IssuesListInput {
+  const base = parseCmsListSearchParams(input, {
+    allowedSortBy: issuesSortByValues,
+    defaultSortBy: "createdAt",
+    defaultSortOrder: "desc",
+  });
+  const sortBy = parseEnumQueryParam(base.sortBy, issuesSortByValues) ?? "createdAt";
+
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      isActive: parseBooleanQueryParam(readParam(input, "isActive")),
+      published: parseBooleanQueryParam(readParam(input, "published")),
+      q: base.q,
+      sortBy,
+      sortOrder: base.sortOrder,
+    }),
+  };
+}
+
+export function parseCategoriesListSearchParams(input: CmsSearchParamsInput): CategoriesListInput {
+  const base = parseCmsListSearchParams(input, {
+    allowedSortBy: categoriesSortByValues,
+    defaultSortBy: "createdAt",
+    defaultSortOrder: "desc",
+  });
+  const sortBy = parseEnumQueryParam(base.sortBy, categoriesSortByValues) ?? "createdAt";
+
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      isActive: parseBooleanQueryParam(readParam(input, "isActive")),
+      q: base.q,
+      sortBy,
+      sortOrder: base.sortOrder,
+    }),
+  };
+}
+
+export function parseTagsListSearchParams(input: CmsSearchParamsInput): TagsListInput {
+  const base = parseCmsListSearchParams(input, {
+    allowedSortBy: tagsSortByValues,
+    defaultSortBy: "createdAt",
+    defaultSortOrder: "desc",
+  });
+  const sortBy = parseEnumQueryParam(base.sortBy, tagsSortByValues) ?? "createdAt";
+
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      isActive: parseBooleanQueryParam(readParam(input, "isActive")),
+      q: base.q,
+      sortBy,
+      sortOrder: base.sortOrder,
+    }),
+  };
+}
+
+export function parseArticlesListSearchParams(input: CmsSearchParamsInput): ArticlesListInput {
+  const base = parseCmsListSearchParams(input, {
+    allowedSortBy: articlesSortByValues,
+    defaultSortBy: "createdAt",
+    defaultSortOrder: "desc",
+  });
+  const sortBy = parseEnumQueryParam(base.sortBy, articlesSortByValues) ?? "createdAt";
+
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      status: parseEnumQueryParam(cleanString(readParam(input, "status")), articleStatusValues),
+      issueId: parseUuidQueryParam(readParam(input, "issueId")),
+      categoryId: parseUuidQueryParam(readParam(input, "categoryId")),
+      authorId: parseUuidQueryParam(readParam(input, "authorId")),
+      featured: parseBooleanQueryParam(readParam(input, "featured")),
+      q: base.q,
+      sortBy,
+      sortOrder: base.sortOrder,
+    }),
+  };
+}
+
+export function parseUsersListSearchParams(input: CmsSearchParamsInput): UsersListInput {
+  const base = parseCmsListSearchParams(input, {
+    allowedSortBy: usersSortByValues,
+    defaultSortBy: "createdAt",
+    defaultSortOrder: "desc",
+  });
+  const sortBy = parseEnumQueryParam(base.sortBy, usersSortByValues) ?? "createdAt";
+
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      role: parseEnumQueryParam(cleanString(readParam(input, "role")), roleValues),
+      q: base.q,
+      sortBy,
+      sortOrder: base.sortOrder,
+    }),
   };
 }

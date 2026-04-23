@@ -1,5 +1,5 @@
-import { CmsResourceScreen } from "@/features/cms/resources/screens/resource-screen";
+import { CmsIssuesListScreen } from "@/features/cms/issues/screens/issues-list-screen";
 
 export default function CmsIssuesPage() {
-  return <CmsResourceScreen resource="issues" />;
+  return <CmsIssuesListScreen />;
 }
