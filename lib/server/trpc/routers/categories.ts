@@ -23,7 +23,10 @@ const categoryIdInputSchema = z.object({
 });
 
 const categoriesListInputSchema = paginationInputSchema.extend({
-  query: listCategoriesQuerySchema.optional(),
+  query: listCategoriesQuerySchema.default({
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  }),
 });
 
 export const categoriesRouter = router({
@@ -31,8 +34,7 @@ export const categoriesRouter = router({
     .use(requireRoleMiddleware(categoriesPolicy.allowedRoles))
     .input(categoriesListInputSchema)
     .query(async ({ input }) => {
-      const query = listCategoriesQuerySchema.parse(input.query ?? {});
-      const result = await categoriesService.list(query, {
+      const result = await categoriesService.list(input.query, {
         page: input.page,
         pageSize: input.pageSize,
       });

@@ -13,11 +13,27 @@ import type {
   UpdateCategoryInput,
 } from "@/lib/server/modules/categories/schema";
 
-const toCategoryDto = (category: { id: string; name: string; slug: string }): CategoryDto => {
+type CategoryRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  _count?: { articles: number };
+};
+
+const toCategoryDto = (category: CategoryRecord): CategoryDto => {
   return {
     id: category.id,
     name: category.name,
     slug: category.slug,
+    description: category.description,
+    isActive: category.isActive,
+    createdAt: category.createdAt.toISOString(),
+    updatedAt: category.updatedAt.toISOString(),
+    articlesCount: category._count?.articles ?? 0,
   };
 };
 
@@ -60,7 +76,13 @@ export const categoriesService = {
 
     try {
       const category = await categoriesRepository.create(normalizedInput);
-      return toCategoryDto(category);
+      const categoryWithCount = await categoriesRepository.getById(category.id);
+
+      if (!categoryWithCount) {
+        throw new ApiError(404, "NOT_FOUND", "Category not found");
+      }
+
+      return toCategoryDto(categoryWithCount);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw new ApiError(409, "CONFLICT", "Category slug already exists");
@@ -76,7 +98,13 @@ export const categoriesService = {
     };
 
     try {
-      const category = await categoriesRepository.update(id, normalizedInput);
+      await categoriesRepository.update(id, normalizedInput);
+      const category = await categoriesRepository.getById(id);
+
+      if (!category) {
+        throw new ApiError(404, "NOT_FOUND", "Category not found");
+      }
+
       return toCategoryDto(category);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {

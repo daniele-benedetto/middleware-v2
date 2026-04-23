@@ -38,6 +38,20 @@ export const categoriesRepository = {
       orderBy,
       skip: (pagination.page - 1) * pagination.pageSize,
       take: pagination.pageSize,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            articles: true,
+          },
+        },
+      },
     });
   },
   async count(query: ListCategoriesQuery) {
@@ -47,6 +61,20 @@ export const categoriesRepository = {
   async getById(id: string) {
     return prisma.category.findUnique({
       where: { id },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            articles: true,
+          },
+        },
+      },
     });
   },
   async create(input: CreateCategoryInput) {

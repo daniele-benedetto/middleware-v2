@@ -1,5 +1,5 @@
-import { CmsResourceScreen } from "@/features/cms/resources/screens/resource-screen";
+import { CmsCategoriesListScreen } from "@/features/cms/categories/screens/categories-list-screen";
 
 export default function CmsCategoriesPage() {
-  return <CmsResourceScreen resource="categories" />;
+  return <CmsCategoriesListScreen />;
 }

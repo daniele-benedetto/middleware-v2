@@ -25,7 +25,10 @@ const usersIdInputSchema = z.object({
 });
 
 const usersListInputSchema = paginationInputSchema.extend({
-  query: listUsersQuerySchema.optional(),
+  query: listUsersQuerySchema.default({
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  }),
 });
 
 export const usersRouter = router({
@@ -33,8 +36,7 @@ export const usersRouter = router({
     .use(requireRoleMiddleware(usersPolicy.listAllowedRoles))
     .input(usersListInputSchema)
     .query(async ({ input }) => {
-      const query = listUsersQuerySchema.parse(input.query ?? {});
-      const result = await usersService.list(query, {
+      const result = await usersService.list(input.query, {
         page: input.page,
         pageSize: input.pageSize,
       });

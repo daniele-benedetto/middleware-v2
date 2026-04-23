@@ -23,7 +23,10 @@ const tagIdInputSchema = z.object({
 });
 
 const tagsListInputSchema = paginationInputSchema.extend({
-  query: listTagsQuerySchema.optional(),
+  query: listTagsQuerySchema.default({
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  }),
 });
 
 export const tagsRouter = router({
@@ -31,8 +34,7 @@ export const tagsRouter = router({
     .use(requireRoleMiddleware(tagsPolicy.allowedRoles))
     .input(tagsListInputSchema)
     .query(async ({ input }) => {
-      const query = listTagsQuerySchema.parse(input.query ?? {});
-      const result = await tagsService.list(query, {
+      const result = await tagsService.list(input.query, {
         page: input.page,
         pageSize: input.pageSize,
       });

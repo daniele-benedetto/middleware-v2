@@ -10,20 +10,15 @@ Decisioni gia fissate:
 - Invariante dominio: `publishedAt` solo con `status = PUBLISHED` (gia lato API).
 - Slug normalizzato lato API e univocita rispettata lato DB.
 
-## 4) Dashboard CMS
-
-- [x] Implementare pagina dashboard iniziale con quick links alle sezioni.
-- [x] Aggiungere blocco stato editoriale (conteggi base da liste paginabili o query dedicate se introdotte).
-- [x] Aggiungere blocco attivita recente (placeholder realistico se non presente sorgente audit query).
-
 ## 5) Modulo Issues
 
-Procedure API disponibili: `issues.list`, `issues.getById`, `issues.create`, `issues.update`, `issues.delete`.
+Procedure API disponibili: `issues.list`, `issues.getById`, `issues.create`, `issues.update`, `issues.delete`, `issues.reorder`.
 
-- [ ] Implementare lista Issues con:
-  - [ ] filtri: `isActive`, `published`, `q`
-  - [ ] sort: `createdAt`, `sortOrder`, `publishedAt` + `sortOrder`
-  - [ ] pagination: `page`, `pageSize`
+- [x] Implementare lista Issues con:
+  - [x] filtri: `isActive`, `published`, `q`
+  - [x] sort: `createdAt`, `sortOrder`, `publishedAt` + `sortOrder`
+  - [x] pagination: `page`, `pageSize`
+  - [x] reorder integrato su `sortOrder` (con procedura dedicata `issues.reorder`).
 - [ ] Implementare create Issue (form con validazione client coerente a schema).
 - [ ] Implementare edit Issue.
 - [ ] Implementare delete Issue con conferma hard delete.
@@ -33,10 +28,10 @@ Procedure API disponibili: `issues.list`, `issues.getById`, `issues.create`, `is
 
 Procedure API disponibili: `categories.list`, `categories.getById`, `categories.create`, `categories.update`, `categories.delete`.
 
-- [ ] Implementare lista Categories con:
-  - [ ] filtri: `isActive`, `q`
-  - [ ] sort: `createdAt`, `name`, `slug` + `sortOrder`
-  - [ ] pagination: `page`, `pageSize`
+- [x] Implementare lista Categories con:
+  - [x] filtri: `isActive`, `q`
+  - [x] sort: `createdAt`, `name`, `slug` + `sortOrder`
+  - [x] pagination: `page`, `pageSize`
 - [ ] Implementare create Category.
 - [ ] Implementare edit Category.
 - [ ] Implementare delete Category con conferma.
