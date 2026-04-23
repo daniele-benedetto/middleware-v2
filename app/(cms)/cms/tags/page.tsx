@@ -1,5 +1,5 @@
-import { CmsResourceScreen } from "@/features/cms/resources/screens/resource-screen";
+import { CmsTagsListScreen } from "@/features/cms/tags/screens/tags-list-screen";
 
 export default function CmsTagsPage() {
-  return <CmsResourceScreen resource="tags" />;
+  return <CmsTagsListScreen />;
 }

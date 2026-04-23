@@ -13,11 +13,27 @@ import type {
   UpdateTagInput,
 } from "@/lib/server/modules/tags/schema";
 
-const toTagDto = (tag: { id: string; name: string; slug: string }): TagDto => {
+type TagRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  _count?: { articles: number };
+};
+
+const toTagDto = (tag: TagRecord): TagDto => {
   return {
     id: tag.id,
     name: tag.name,
     slug: tag.slug,
+    description: tag.description,
+    isActive: tag.isActive,
+    createdAt: tag.createdAt.toISOString(),
+    updatedAt: tag.updatedAt.toISOString(),
+    articlesCount: tag._count?.articles ?? 0,
   };
 };
 
@@ -60,7 +76,13 @@ export const tagsService = {
 
     try {
       const tag = await tagsRepository.create(normalizedInput);
-      return toTagDto(tag);
+      const tagWithCount = await tagsRepository.getById(tag.id);
+
+      if (!tagWithCount) {
+        throw new ApiError(404, "NOT_FOUND", "Tag not found");
+      }
+
+      return toTagDto(tagWithCount);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw new ApiError(409, "CONFLICT", "Tag slug already exists");
@@ -76,7 +98,13 @@ export const tagsService = {
     };
 
     try {
-      const tag = await tagsRepository.update(id, normalizedInput);
+      await tagsRepository.update(id, normalizedInput);
+      const tag = await tagsRepository.getById(id);
+
+      if (!tag) {
+        throw new ApiError(404, "NOT_FOUND", "Tag not found");
+      }
+
       return toTagDto(tag);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {

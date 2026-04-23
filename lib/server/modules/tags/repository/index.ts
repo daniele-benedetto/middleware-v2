@@ -36,6 +36,20 @@ export const tagsRepository = {
       orderBy,
       skip: (pagination.page - 1) * pagination.pageSize,
       take: pagination.pageSize,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            articles: true,
+          },
+        },
+      },
     });
   },
   async count(query: ListTagsQuery) {
@@ -45,6 +59,20 @@ export const tagsRepository = {
   async getById(id: string) {
     return prisma.tag.findUnique({
       where: { id },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            articles: true,
+          },
+        },
+      },
     });
   },
   async create(input: CreateTagInput) {

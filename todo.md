@@ -41,10 +41,10 @@ Procedure API disponibili: `categories.list`, `categories.getById`, `categories.
 
 Procedure API disponibili: `tags.list`, `tags.getById`, `tags.create`, `tags.update`, `tags.delete`.
 
-- [ ] Implementare lista Tags con:
-  - [ ] filtri: `isActive`, `q`
-  - [ ] sort: `createdAt`, `name`, `slug` + `sortOrder`
-  - [ ] pagination: `page`, `pageSize`
+- [x] Implementare lista Tags con:
+  - [x] filtri: `isActive`, `q`
+  - [x] sort: `createdAt`, `name`, `slug` + `sortOrder`
+  - [x] pagination: `page`, `pageSize`
 - [ ] Implementare create Tag.
 - [ ] Implementare edit Tag.
 - [ ] Implementare delete Tag con conferma.
