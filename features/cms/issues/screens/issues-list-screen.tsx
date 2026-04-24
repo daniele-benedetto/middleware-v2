@@ -1,25 +1,28 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Save } from "lucide-react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
+  CmsBulkActionBar,
+  CmsConfirmDialog,
   CmsEmptyState,
   CmsErrorState,
   CmsLoadingState,
   CmsPaginationFooter,
+  CmsReorderModeBar,
 } from "@/components/cms/common";
 import {
   CmsActionButton,
   CmsDataTableShell,
-  CmsMetaText,
   CmsPageHeader,
   CmsSelect,
   CmsTextInput,
   cmsTableClasses,
   cmsToast,
 } from "@/components/cms/primitives";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -28,9 +31,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useIssuesListQuery } from "@/features/cms/shared/hooks";
+import {
+  executeBulk,
+  mapBulkQuickActionError,
+  mapQuickActionError,
+  resolveQuickActions,
+  type CmsQuickAction,
+} from "@/features/cms/shared/actions";
+import { useIssuesListQuery, useListSelection, useReorderMode } from "@/features/cms/shared/hooks";
 import { parseIssuesListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
-import { mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
+import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 
@@ -43,13 +53,7 @@ function formatDate(value: string | null) {
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
 }
 
-function areSameOrder(left: string[], right: string[]) {
-  if (left.length !== right.length) {
-    return false;
-  }
-
-  return left.every((value, index) => value === right[index]);
-}
+type IssueQuickAction = "delete";
 
 export function CmsIssuesListScreen() {
   const router = useRouter();
@@ -59,11 +63,13 @@ export function CmsIssuesListScreen() {
 
   const input = parseIssuesListSearchParams(searchParams);
   const listQuery = useIssuesListQuery(input);
+  const trpcUtils = trpc.useUtils();
+  const selection = useListSelection();
 
   const [searchValue, setSearchValue] = useState(() => input.query?.q ?? "");
-  const [orderedIssueIds, setOrderedIssueIds] = useState<string[]>([]);
 
   const reorderMutation = trpc.issues.reorder.useMutation();
+  const deleteMutation = trpc.issues.delete.useMutation();
 
   const updateSearchParams = useCallback(
     (patch: Record<string, string | number | undefined>) => {
@@ -79,6 +85,7 @@ export function CmsIssuesListScreen() {
       });
 
       const next = nextParams.toString();
+      selection.clearSelection();
       router.replace(next ? `${pathname}?${next}` : pathname);
     },
     [
@@ -91,6 +98,7 @@ export function CmsIssuesListScreen() {
       input.query?.sortOrder,
       pathname,
       router,
+      selection,
     ],
   );
 
@@ -113,32 +121,19 @@ export function CmsIssuesListScreen() {
     input.query.isActive === undefined &&
     input.query.published === undefined &&
     listQuery.pagination.total === listQuery.items.length;
+  const reorder = useReorderMode(listQuery.items);
 
-  const issuesById = useMemo(
-    () => new Map(listQuery.items.map((issue) => [issue.id, issue])),
-    [listQuery.items],
-  );
+  const displayedIssues = reorder.isReorderMode ? reorder.displayedItems : listQuery.items;
+  const hasOrderChanges = canReorder && reorder.hasChanges;
 
-  const serverOrder = listQuery.items.map((issue) => issue.id);
+  const unavailableReorderMessage =
+    "Reorder disponibile con `sortBy=sortOrder`, `sortOrder=asc`, senza filtri e con una sola pagina.";
 
-  const normalizedOrder = useMemo(() => {
-    const sameLength = orderedIssueIds.length === serverOrder.length;
-    const knownIds = sameLength && orderedIssueIds.every((id) => issuesById.has(id));
-
-    return sameLength && knownIds ? orderedIssueIds : serverOrder;
-  }, [issuesById, orderedIssueIds, serverOrder]);
-
-  const displayedIssues = useMemo(() => {
-    if (!canReorder) {
-      return listQuery.items;
+  useEffect(() => {
+    if (!canReorder && reorder.isReorderMode) {
+      reorder.cancel();
     }
-
-    return normalizedOrder
-      .map((issueId) => issuesById.get(issueId))
-      .filter((issue): issue is NonNullable<typeof issue> => Boolean(issue));
-  }, [canReorder, issuesById, listQuery.items, normalizedOrder]);
-
-  const hasOrderChanges = canReorder && !areSameOrder(normalizedOrder, serverOrder);
+  }, [canReorder, reorder]);
 
   if (listQuery.isPending) {
     return <CmsLoadingState />;
@@ -156,6 +151,81 @@ export function CmsIssuesListScreen() {
     );
   }
 
+  const isActionPending = reorderMutation.isPending || deleteMutation.isPending;
+
+  const pageIssueIds = displayedIssues.map((issue) => issue.id);
+  const allSelectedOnPage =
+    pageIssueIds.length > 0 && pageIssueIds.every((issueId) => selection.isSelected(issueId));
+
+  const runSingleAction = async (action: IssueQuickAction, id: string) => {
+    try {
+      if (action === "delete") {
+        await deleteMutation.mutateAsync({ id });
+      }
+
+      await invalidateAfterCmsMutation(trpcUtils, "issues.delete", { id });
+      selection.clearSelection();
+      cmsToast.info("Azione completata.");
+    } catch (error) {
+      const mapped = mapQuickActionError(error);
+      cmsToast.error(mapped.description, mapped.title);
+    }
+  };
+
+  const runBulkAction = async (action: IssueQuickAction) => {
+    if (!selection.hasSelection) {
+      return;
+    }
+
+    const selectedIds = [...selection.selectedIds];
+
+    const result = await executeBulk(selectedIds, (id) => {
+      if (action === "delete") {
+        return deleteMutation.mutateAsync({ id });
+      }
+
+      return Promise.resolve();
+    });
+
+    await invalidateAfterCmsMutation(trpcUtils, "issues.delete", { ids: selectedIds });
+    selection.clearSelection();
+
+    if (result.failed === 0) {
+      cmsToast.info(`Azione completata su ${result.success} record.`);
+      return;
+    }
+
+    const mapped = mapBulkQuickActionError(result);
+
+    if (mapped) {
+      cmsToast.error(mapped.description, mapped.title);
+    }
+  };
+
+  const bulkActions = resolveQuickActions(
+    [
+      {
+        id: "bulk-delete",
+        label: "Delete",
+        scope: "bulk",
+        tone: "danger",
+        requiresConfirm: ({ selectedCount }) => selectedCount > 0,
+        confirm: ({ selectedCount }) => ({
+          title: "Conferma eliminazione",
+          description:
+            selectedCount === 1
+              ? "Eliminerai definitivamente l'issue selezionata."
+              : `Eliminerai definitivamente ${selectedCount} issues selezionate.`,
+        }),
+        isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
+      } satisfies CmsQuickAction,
+    ],
+    {
+      selectedCount: selection.selectedCount,
+      isPending: isActionPending || reorder.isReorderMode,
+    },
+  );
+
   return (
     <div className="space-y-6">
       <CmsPageHeader
@@ -166,6 +236,16 @@ export function CmsIssuesListScreen() {
       <CmsDataTableShell
         toolbar={
           <div className="space-y-3">
+            <CmsBulkActionBar
+              selectedCount={selection.selectedCount}
+              actions={bulkActions.map((action) => ({
+                ...action,
+                onExecute: () => {
+                  void runBulkAction("delete");
+                },
+              }))}
+            />
+
             <div className="grid gap-3 lg:grid-cols-4">
               <CmsTextInput
                 placeholder={text.listToolbar.searchPlaceholder}
@@ -223,41 +303,43 @@ export function CmsIssuesListScreen() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
-              <CmsMetaText variant="tiny" className="block">
-                Reorder disponibile con `sortBy=sortOrder`, `sortOrder=asc`, senza filtri e con una
-                sola pagina.
-              </CmsMetaText>
+            <CmsReorderModeBar
+              isAvailable={canReorder}
+              isReorderMode={reorder.isReorderMode}
+              hasChanges={hasOrderChanges}
+              isSaving={reorderMutation.isPending}
+              helpText="Modalita reorder attiva: usa le frecce per riordinare e salva per applicare le modifiche."
+              unavailableText={unavailableReorderMessage}
+              onStart={() => {
+                selection.clearSelection();
+                reorder.start();
+              }}
+              onCancel={() => {
+                reorder.cancel();
+              }}
+              onSave={() => {
+                if (!hasOrderChanges) {
+                  return;
+                }
 
-              <CmsActionButton
-                variant="outline-accent"
-                size="xs"
-                disabled={!hasOrderChanges || reorderMutation.isPending}
-                isLoading={reorderMutation.isPending}
-                onClick={() => {
-                  if (!hasOrderChanges) {
-                    return;
-                  }
-
-                  reorderMutation.mutate(
-                    { orderedIssueIds: normalizedOrder },
-                    {
-                      onSuccess: async () => {
-                        cmsToast.info("Ordine issues aggiornato con successo.");
-                        listQuery.retry();
-                      },
-                      onError: (error) => {
-                        const mapped = mapTrpcErrorToCmsUiMessage(error);
-                        cmsToast.error(mapped.description, mapped.title);
-                      },
+                reorderMutation.mutate(
+                  { orderedIssueIds: reorder.normalizedOrder },
+                  {
+                    onSuccess: async () => {
+                      await invalidateAfterCmsMutation(trpcUtils, "issues.reorder", {
+                        ids: reorder.normalizedOrder,
+                      });
+                      reorder.commit();
+                      cmsToast.info("Ordine issues aggiornato con successo.");
                     },
-                  );
-                }}
-              >
-                <Save className="size-3" />
-                Salva ordine
-              </CmsActionButton>
-            </div>
+                    onError: (error) => {
+                      const mapped = mapTrpcErrorToCmsUiMessage(error);
+                      cmsToast.error(mapped.description, mapped.title);
+                    },
+                  },
+                );
+              }}
+            />
           </div>
         }
         table={
@@ -265,6 +347,16 @@ export function CmsIssuesListScreen() {
             <Table className={cmsTableClasses.table}>
               <TableHeader>
                 <TableRow className={cmsTableClasses.headerRow}>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    <Checkbox
+                      checked={allSelectedOnPage}
+                      disabled={reorder.isReorderMode}
+                      onCheckedChange={() => {
+                        selection.toggleSelectAll(pageIssueIds);
+                      }}
+                      aria-label="Seleziona tutti"
+                    />
+                  </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Titolo</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Slug</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Stato</TableHead>
@@ -273,12 +365,23 @@ export function CmsIssuesListScreen() {
                   <TableHead className={cmsTableClasses.headerCell}>Articoli</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Creata</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Aggiornata</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>Azioni</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Reorder</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {displayedIssues.map((issue, index) => (
                   <TableRow key={issue.id} className={cmsTableClasses.bodyRow}>
+                    <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      <Checkbox
+                        checked={selection.isSelected(issue.id)}
+                        disabled={reorder.isReorderMode}
+                        onCheckedChange={() => {
+                          selection.toggleSelection(issue.id);
+                        }}
+                        aria-label={`Seleziona ${issue.title}`}
+                      />
+                    </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellTitle}>{issue.title}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>{issue.slug}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
@@ -300,21 +403,30 @@ export function CmsIssuesListScreen() {
                       {formatDate(issue.updatedAt)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      <CmsConfirmDialog
+                        triggerLabel="Delete"
+                        triggerDisabled={isActionPending || reorder.isReorderMode}
+                        title="Conferma eliminazione"
+                        description="Eliminerai definitivamente questa issue."
+                        tone="danger"
+                        onConfirm={() => {
+                          void runSingleAction("delete", issue.id);
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <div className="flex items-center gap-1">
                         <CmsActionButton
                           variant="outline"
                           size="xs"
-                          disabled={!canReorder || index === 0 || reorderMutation.isPending}
+                          disabled={
+                            !canReorder ||
+                            !reorder.isReorderMode ||
+                            index === 0 ||
+                            reorderMutation.isPending
+                          }
                           onClick={() => {
-                            setOrderedIssueIds((current) => {
-                              const base =
-                                current.length === serverOrder.length ? current : serverOrder;
-                              const next = [...base];
-                              const temp = next[index - 1];
-                              next[index - 1] = next[index] ?? "";
-                              next[index] = temp ?? "";
-                              return next;
-                            });
+                            reorder.moveUp(index);
                           }}
                         >
                           <ArrowUp className="size-3" />
@@ -325,19 +437,12 @@ export function CmsIssuesListScreen() {
                           size="xs"
                           disabled={
                             !canReorder ||
+                            !reorder.isReorderMode ||
                             index === displayedIssues.length - 1 ||
                             reorderMutation.isPending
                           }
                           onClick={() => {
-                            setOrderedIssueIds((current) => {
-                              const base =
-                                current.length === serverOrder.length ? current : serverOrder;
-                              const next = [...base];
-                              const temp = next[index + 1];
-                              next[index + 1] = next[index] ?? "";
-                              next[index] = temp ?? "";
-                              return next;
-                            });
+                            reorder.moveDown(index);
                           }}
                         >
                           <ArrowDown className="size-3" />

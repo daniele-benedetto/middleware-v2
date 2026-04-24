@@ -4,12 +4,15 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import {
+  CmsBulkActionBar,
+  CmsConfirmDialog,
   CmsEmptyState,
   CmsErrorState,
   CmsLoadingState,
   CmsPaginationFooter,
 } from "@/components/cms/common";
 import {
+  cmsToast,
   CmsDataTableShell,
   CmsMetaText,
   CmsPageHeader,
@@ -17,6 +20,7 @@ import {
   CmsTextInput,
   cmsTableClasses,
 } from "@/components/cms/primitives";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -25,15 +29,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useUsersListQuery } from "@/features/cms/shared/hooks";
+import {
+  executeBulk,
+  mapBulkQuickActionError,
+  mapQuickActionError,
+  resolveQuickActions,
+  type CmsQuickAction,
+} from "@/features/cms/shared/actions";
+import { useListSelection, useUsersListQuery } from "@/features/cms/shared/hooks";
 import { parseUsersListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
-import { mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
+import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
+import { trpc } from "@/lib/trpc/react";
 
 function formatDate(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
 }
+
+type UserQuickAction = "delete";
 
 export function CmsUsersListScreen() {
   const router = useRouter();
@@ -43,8 +57,11 @@ export function CmsUsersListScreen() {
 
   const input = parseUsersListSearchParams(searchParams);
   const listQuery = useUsersListQuery(input);
+  const trpcUtils = trpc.useUtils();
+  const selection = useListSelection();
 
   const [searchValue, setSearchValue] = useState(() => input.query?.q ?? "");
+  const deleteMutation = trpc.users.delete.useMutation();
 
   const updateSearchParams = useCallback(
     (patch: Record<string, string | number | undefined>) => {
@@ -59,6 +76,7 @@ export function CmsUsersListScreen() {
       });
 
       const next = nextParams.toString();
+      selection.clearSelection();
       router.replace(next ? `${pathname}?${next}` : pathname);
     },
     [
@@ -70,6 +88,7 @@ export function CmsUsersListScreen() {
       input.query?.sortOrder,
       pathname,
       router,
+      selection,
     ],
   );
 
@@ -101,6 +120,79 @@ export function CmsUsersListScreen() {
     );
   }
 
+  const pageUserIds = listQuery.items.map((user) => user.id);
+  const allSelectedOnPage =
+    pageUserIds.length > 0 && pageUserIds.every((userId) => selection.isSelected(userId));
+
+  const runSingleAction = async (action: UserQuickAction, id: string) => {
+    try {
+      if (action === "delete") {
+        await deleteMutation.mutateAsync({ id });
+      }
+
+      await invalidateAfterCmsMutation(trpcUtils, "users.delete", { id });
+      selection.clearSelection();
+      cmsToast.info("Azione completata.");
+    } catch (error) {
+      const mapped = mapQuickActionError(error);
+      cmsToast.error(mapped.description, mapped.title);
+    }
+  };
+
+  const runBulkAction = async (action: UserQuickAction) => {
+    if (!selection.hasSelection) {
+      return;
+    }
+
+    const selectedIds = [...selection.selectedIds];
+
+    const result = await executeBulk(selectedIds, (id) => {
+      if (action === "delete") {
+        return deleteMutation.mutateAsync({ id });
+      }
+
+      return Promise.resolve();
+    });
+
+    await invalidateAfterCmsMutation(trpcUtils, "users.delete", { ids: selectedIds });
+    selection.clearSelection();
+
+    if (result.failed === 0) {
+      cmsToast.info(`Azione completata su ${result.success} record.`);
+      return;
+    }
+
+    const mapped = mapBulkQuickActionError(result);
+
+    if (mapped) {
+      cmsToast.error(mapped.description, mapped.title);
+    }
+  };
+
+  const bulkActions = resolveQuickActions(
+    [
+      {
+        id: "bulk-delete",
+        label: "Delete",
+        scope: "bulk",
+        tone: "danger",
+        requiresConfirm: ({ selectedCount }) => selectedCount > 0,
+        confirm: ({ selectedCount }) => ({
+          title: "Conferma eliminazione",
+          description:
+            selectedCount === 1
+              ? "Eliminerai definitivamente l'utente selezionato."
+              : `Eliminerai definitivamente ${selectedCount} utenti selezionati.`,
+        }),
+        isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
+      } satisfies CmsQuickAction,
+    ],
+    {
+      selectedCount: selection.selectedCount,
+      isPending: deleteMutation.isPending,
+    },
+  );
+
   return (
     <div className="space-y-6">
       <CmsPageHeader
@@ -111,6 +203,16 @@ export function CmsUsersListScreen() {
       <CmsDataTableShell
         toolbar={
           <div className="space-y-3">
+            <CmsBulkActionBar
+              selectedCount={selection.selectedCount}
+              actions={bulkActions.map((action) => ({
+                ...action,
+                onExecute: () => {
+                  void runBulkAction("delete");
+                },
+              }))}
+            />
+
             <div className="grid gap-3 lg:grid-cols-4">
               <CmsTextInput
                 placeholder={text.listToolbar.searchPlaceholder}
@@ -163,6 +265,15 @@ export function CmsUsersListScreen() {
             <Table className={cmsTableClasses.table}>
               <TableHeader>
                 <TableRow className={cmsTableClasses.headerRow}>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    <Checkbox
+                      checked={allSelectedOnPage}
+                      onCheckedChange={() => {
+                        selection.toggleSelectAll(pageUserIds);
+                      }}
+                      aria-label="Seleziona tutti"
+                    />
+                  </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Email</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Nome</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Ruolo</TableHead>
@@ -170,11 +281,21 @@ export function CmsUsersListScreen() {
                   <TableHead className={cmsTableClasses.headerCell}>Articoli</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Creata</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Aggiornata</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>Azioni</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {listQuery.items.map((user) => (
                   <TableRow key={user.id} className={cmsTableClasses.bodyRow}>
+                    <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      <Checkbox
+                        checked={selection.isSelected(user.id)}
+                        onCheckedChange={() => {
+                          selection.toggleSelection(user.id);
+                        }}
+                        aria-label={`Seleziona ${user.email}`}
+                      />
+                    </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellTitle}>{user.email}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       {user.name ?? "-"}
@@ -191,6 +312,18 @@ export function CmsUsersListScreen() {
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       {formatDate(user.updatedAt)}
+                    </TableCell>
+                    <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      <CmsConfirmDialog
+                        triggerLabel="Delete"
+                        triggerDisabled={deleteMutation.isPending}
+                        title="Conferma eliminazione"
+                        description="Eliminerai definitivamente questo utente."
+                        tone="danger"
+                        onConfirm={() => {
+                          void runSingleAction("delete", user.id);
+                        }}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

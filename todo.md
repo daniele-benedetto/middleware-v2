@@ -21,12 +21,12 @@ Procedure API disponibili: `issues.list`, `issues.getById`, `issues.create`, `is
   - [x] reorder integrato su `sortOrder` (con procedura dedicata `issues.reorder`).
 - [ ] Implementare create Issue (form con validazione client coerente a schema).
 - [ ] Implementare edit Issue.
-- [ ] Implementare delete Issue con conferma hard delete.
+- [x] Implementare delete Issue con conferma hard delete.
 - [ ] Gestire errori conflitto slug (`CONFLICT`) con messaggio specifico.
 - [ ] Implementare azioni rapide lista/dettaglio (single + bulk):
-  - [ ] delete single con conferma.
-  - [ ] delete bulk con selezione multipla + conferma.
-  - [ ] barra azioni bulk con contatore selezione.
+  - [x] delete single con conferma.
+  - [x] delete bulk con selezione multipla + conferma.
+  - [x] barra azioni bulk con contatore selezione.
 
 ## 6) Modulo Categories
 
@@ -38,12 +38,12 @@ Procedure API disponibili: `categories.list`, `categories.getById`, `categories.
   - [x] pagination: `page`, `pageSize`
 - [ ] Implementare create Category.
 - [ ] Implementare edit Category.
-- [ ] Implementare delete Category con conferma.
+- [x] Implementare delete Category con conferma.
 - [ ] Gestire conflitto slug (`CONFLICT`) in UX.
 - [ ] Implementare azioni rapide lista/dettaglio (single + bulk):
-  - [ ] delete single con conferma.
-  - [ ] delete bulk con selezione multipla + conferma.
-  - [ ] barra azioni bulk con contatore selezione.
+  - [x] delete single con conferma.
+  - [x] delete bulk con selezione multipla + conferma.
+  - [x] barra azioni bulk con contatore selezione.
 
 ## 7) Modulo Tags
 
@@ -55,12 +55,12 @@ Procedure API disponibili: `tags.list`, `tags.getById`, `tags.create`, `tags.upd
   - [x] pagination: `page`, `pageSize`
 - [ ] Implementare create Tag.
 - [ ] Implementare edit Tag.
-- [ ] Implementare delete Tag con conferma.
+- [x] Implementare delete Tag con conferma.
 - [ ] Gestire conflitto slug (`CONFLICT`) in UX.
 - [ ] Implementare azioni rapide lista/dettaglio (single + bulk):
-  - [ ] delete single con conferma.
-  - [ ] delete bulk con selezione multipla + conferma.
-  - [ ] barra azioni bulk con contatore selezione.
+  - [x] delete single con conferma.
+  - [x] delete bulk con selezione multipla + conferma.
+  - [x] barra azioni bulk con contatore selezione.
 
 ## 8) Modulo Articles
 
@@ -81,7 +81,7 @@ Procedure API disponibili: `articles.list`, `articles.getById`, `articles.create
   - [x] feature
   - [x] unfeature
   - [x] supporto single + bulk per azioni editoriali (dove semanticamente valido).
-- [ ] Implementare reorder articoli per issue (UI drag-and-drop o controllo posizionale equivalente).
+- [x] Implementare reorder articoli per issue (UI drag-and-drop o controllo posizionale equivalente).
 - [ ] Gestire errori dominio in UX:
   - [ ] conflitto slug per issue (`CONFLICT`)
   - [ ] validazione payload (`BAD_REQUEST`)
@@ -98,12 +98,12 @@ Procedure API disponibili: `users.list`, `users.getById`, `users.create`, `users
 - [ ] Implementare create User.
 - [ ] Implementare edit User (campi consentiti).
 - [ ] Implementare update role (`users.updateRole`) con UX chiara e conferma.
-- [ ] Implementare delete User con conferma.
+- [x] Implementare delete User con conferma.
 - [x] Bloccare completamente accesso UI Users per `EDITOR`.
 - [ ] Implementare azioni rapide lista (single + bulk admin-only):
   - [ ] update role single.
   - [ ] update role bulk.
-  - [ ] delete single e bulk con conferma forte.
+  - [x] delete single e bulk con conferma forte.
 
 ## 10) Stato UI, UX e resilienza
 
@@ -132,7 +132,7 @@ Procedure API disponibili: `users.list`, `users.getById`, `users.create`, `users
   - [x] endpoint bulk dedicato dove presente; fallback orchestrato client dove assente.
   - [x] report esito (successi/fallimenti parziali) con toast coerenti.
   - [x] invalidation query centralizzata post-azione.
-- [ ] Definire pattern reorder come "mode" dedicato (non azione bulk generica).
+- [x] Definire pattern reorder come "mode" dedicato (non azione bulk generica).
 
 ## 11) Testing CMS frontend
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -10,6 +11,7 @@ import {
   CmsErrorState,
   CmsLoadingState,
   CmsPaginationFooter,
+  CmsReorderModeBar,
 } from "@/components/cms/common";
 import {
   CmsActionButton,
@@ -37,8 +39,11 @@ import {
   resolveQuickActions,
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
-import { useListSelection } from "@/features/cms/shared/hooks";
-import { useArticlesListQuery } from "@/features/cms/shared/hooks";
+import {
+  useArticlesListQuery,
+  useListSelection,
+  useReorderMode,
+} from "@/features/cms/shared/hooks";
 import { parseArticlesListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -132,6 +137,7 @@ export function CmsArticlesListScreen() {
   const featureMutation = trpc.articles.feature.useMutation();
   const unfeatureMutation = trpc.articles.unfeature.useMutation();
   const deleteMutation = trpc.articles.delete.useMutation();
+  const reorderMutation = trpc.articles.reorder.useMutation();
 
   const isActionPending =
     publishMutation.isPending ||
@@ -139,7 +145,8 @@ export function CmsArticlesListScreen() {
     archiveMutation.isPending ||
     featureMutation.isPending ||
     unfeatureMutation.isPending ||
-    deleteMutation.isPending;
+    deleteMutation.isPending ||
+    reorderMutation.isPending;
 
   const issuesOptionsQuery = trpc.issues.list.useQuery(
     {
@@ -230,6 +237,30 @@ export function CmsArticlesListScreen() {
     };
   }, [input.query?.q, searchValue, updateSearchParams]);
 
+  const canReorder =
+    input.query?.sortBy === "position" &&
+    input.query.sortOrder === "asc" &&
+    Boolean(input.query.issueId) &&
+    !input.query.q &&
+    input.query.status === undefined &&
+    input.query.categoryId === undefined &&
+    input.query.authorId === undefined &&
+    input.query.featured === undefined &&
+    listQuery.pagination.total === listQuery.items.length;
+
+  const reorder = useReorderMode(listQuery.items);
+
+  const displayedArticles = reorder.isReorderMode ? reorder.displayedItems : listQuery.items;
+
+  useEffect(() => {
+    if (!canReorder && reorder.isReorderMode) {
+      reorder.cancel();
+    }
+  }, [canReorder, reorder]);
+
+  const reorderUnavailableText =
+    "Reorder disponibile con `issueId` valorizzato, `sortBy=position`, `sortOrder=asc`, senza altri filtri e con una sola pagina.";
+
   if (listQuery.isPending) {
     return <CmsLoadingState />;
   }
@@ -246,7 +277,7 @@ export function CmsArticlesListScreen() {
     );
   }
 
-  const pageArticleIds = listQuery.items.map((article) => article.id);
+  const pageArticleIds = displayedArticles.map((article) => article.id);
   const allSelectedOnPage =
     pageArticleIds.length > 0 &&
     pageArticleIds.every((articleId) => selection.isSelected(articleId));
@@ -380,7 +411,7 @@ export function CmsArticlesListScreen() {
 
   const resolvedBulkActions = resolveQuickActions(bulkActionConfig, {
     selectedCount: selection.selectedCount,
-    isPending: isActionPending,
+    isPending: isActionPending || reorder.isReorderMode,
   });
 
   return (
@@ -486,6 +517,47 @@ export function CmsArticlesListScreen() {
               />
             </div>
 
+            <CmsReorderModeBar
+              isAvailable={canReorder}
+              isReorderMode={reorder.isReorderMode}
+              hasChanges={canReorder && reorder.hasChanges}
+              isSaving={reorderMutation.isPending}
+              helpText="Modalita reorder attiva: usa le frecce per riordinare gli articoli dell'issue selezionata."
+              unavailableText={reorderUnavailableText}
+              onStart={() => {
+                selection.clearSelection();
+                reorder.start();
+              }}
+              onCancel={reorder.cancel}
+              onSave={() => {
+                const issueId = input.query?.issueId;
+
+                if (!issueId || !canReorder || !reorder.hasChanges) {
+                  return;
+                }
+
+                reorderMutation.mutate(
+                  {
+                    issueId,
+                    orderedArticleIds: reorder.normalizedOrder,
+                  },
+                  {
+                    onSuccess: async () => {
+                      await invalidateAfterCmsMutation(trpcUtils, "articles.reorder", {
+                        ids: reorder.normalizedOrder,
+                      });
+                      reorder.commit();
+                      cmsToast.info("Ordine articoli aggiornato con successo.");
+                    },
+                    onError: (error) => {
+                      const mapped = mapTrpcErrorToCmsUiMessage(error);
+                      cmsToast.error(mapped.description, mapped.title);
+                    },
+                  },
+                );
+              }}
+            />
+
             <CmsMetaText variant="tiny" className="block">
               Contratto lista: `status`, `issueId`, `categoryId`, `authorId`, `featured`, `q`,
               `sortBy`, `sortOrder`, `page`, `pageSize`.
@@ -493,13 +565,14 @@ export function CmsArticlesListScreen() {
           </div>
         }
         table={
-          listQuery.items.length > 0 ? (
+          displayedArticles.length > 0 ? (
             <Table className={cmsTableClasses.table}>
               <TableHeader>
                 <TableRow className={cmsTableClasses.headerRow}>
                   <TableHead className={cmsTableClasses.headerCell}>
                     <Checkbox
                       checked={allSelectedOnPage}
+                      disabled={reorder.isReorderMode}
                       onCheckedChange={() => {
                         selection.toggleSelectAll(pageArticleIds);
                       }}
@@ -517,14 +590,16 @@ export function CmsArticlesListScreen() {
                   <TableHead className={cmsTableClasses.headerCell}>Pubblicata</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Creata</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Azioni</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>Reorder</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {listQuery.items.map((article) => (
+                {displayedArticles.map((article, index) => (
                   <TableRow key={article.id} className={cmsTableClasses.bodyRow}>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <Checkbox
                         checked={selection.isSelected(article.id)}
+                        disabled={reorder.isReorderMode}
                         onCheckedChange={() => {
                           selection.toggleSelection(article.id);
                         }}
@@ -561,7 +636,7 @@ export function CmsArticlesListScreen() {
                       <div className="flex flex-wrap items-center gap-1.5">
                         {resolveQuickActions(articleSingleActionConfig, {
                           selectedCount: 1,
-                          isPending: isActionPending,
+                          isPending: isActionPending || reorder.isReorderMode,
                           status: article.status,
                           isFeatured: article.isFeatured,
                         }).map((action) =>
@@ -593,6 +668,40 @@ export function CmsArticlesListScreen() {
                             </CmsActionButton>
                           ),
                         )}
+                      </div>
+                    </TableCell>
+                    <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      <div className="flex items-center gap-1">
+                        <CmsActionButton
+                          variant="outline"
+                          size="xs"
+                          disabled={
+                            !canReorder ||
+                            !reorder.isReorderMode ||
+                            index === 0 ||
+                            reorderMutation.isPending
+                          }
+                          onClick={() => {
+                            reorder.moveUp(index);
+                          }}
+                        >
+                          <ArrowUp className="size-3" />
+                        </CmsActionButton>
+                        <CmsActionButton
+                          variant="outline"
+                          size="xs"
+                          disabled={
+                            !canReorder ||
+                            !reorder.isReorderMode ||
+                            index === displayedArticles.length - 1 ||
+                            reorderMutation.isPending
+                          }
+                          onClick={() => {
+                            reorder.moveDown(index);
+                          }}
+                        >
+                          <ArrowDown className="size-3" />
+                        </CmsActionButton>
                       </div>
                     </TableCell>
                   </TableRow>

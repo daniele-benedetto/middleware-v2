@@ -6,3 +6,4 @@ export { CmsForbiddenState } from "@/components/cms/common/forbidden-state";
 export { CmsListToolbar } from "@/components/cms/common/list-toolbar";
 export { CmsLoadingState } from "@/components/cms/common/loading-state";
 export { CmsPaginationFooter } from "@/components/cms/common/pagination-footer";
+export { CmsReorderModeBar } from "@/components/cms/common/reorder-mode-bar";
