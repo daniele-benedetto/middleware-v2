@@ -12,22 +12,6 @@ Decisioni gia fissate:
 
 Approccio scelto: prima fondamenta UX/performance (P0/P1), poi CRUD moduli.
 
-## 2) Advanced Next 16 (P2, dopo benchmark)
-
-Obiettivo: abilitare ottimizzazioni avanzate solo dopo aver consolidato P0/P1.
-
-- [ ] Valutare adozione `cacheComponents` in `next.config.ts` con piano di migrazione controllato.
-- [ ] Dove appropriato, applicare `"use cache"` + `cacheLife` a funzioni/componenti server idonei.
-- [ ] Inserire boundary `Suspense` piu granulari su sezioni lente per streaming progressivo.
-- [ ] Valutare `unstable_instant` sui segmenti critici di navigazione (solo se `cacheComponents` attivo).
-- [ ] Valutare tuning `experimental.staleTimes` (solo se necessario e con misure).
-
-## 4) Accessibilita e robustezza UX
-
-- [ ] Pass accessibilita su navigazione, dialog, focus management, keyboard interactions.
-- [ ] Verificare contrasto/stati hover/focus nelle componenti cliccabili CMS.
-- [ ] Uniformare aria-label e naming semantico per componenti tabellari e azioni rapide.
-
 ## 5) Modulo Issues
 
 Procedure API disponibili: `issues.list`, `issues.getById`, `issues.create`, `issues.update`, `issues.delete`, `issues.reorder`.

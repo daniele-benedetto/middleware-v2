@@ -63,6 +63,7 @@ export const tagsRouter = router({
     }),
   update: writeProcedure
     .use(requireRoleMiddleware(tagsPolicy.allowedRoles))
+    .input(tagIdInputSchema.extend({ data: updateTagInputSchema }))
     .use(
       auditMiddleware<{ id: string; data: z.infer<typeof updateTagInputSchema> }>((input) => ({
         action: "update",
@@ -70,12 +71,12 @@ export const tagsRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(tagIdInputSchema.extend({ data: updateTagInputSchema }))
     .mutation(async ({ input }) => {
       return parseOutput(await tagsService.update(input.id, input.data), tagDtoSchema);
     }),
   delete: writeProcedure
     .use(requireRoleMiddleware(tagsPolicy.allowedRoles))
+    .input(tagIdInputSchema)
     .use(
       auditMiddleware<{ id: string }>((input) => ({
         action: "delete",
@@ -83,7 +84,6 @@ export const tagsRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(tagIdInputSchema)
     .mutation(async ({ input }) => {
       await tagsService.delete(input.id);
       return { success: true };

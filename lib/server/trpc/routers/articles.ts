@@ -70,6 +70,7 @@ export const articlesRouter = router({
     }),
   update: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
+    .input(articleIdInputSchema.extend({ data: updateArticleInputSchema }))
     .use(
       auditMiddleware<{ id: string; data: z.infer<typeof updateArticleInputSchema> }>((input) => ({
         action: "update",
@@ -77,12 +78,12 @@ export const articlesRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(articleIdInputSchema.extend({ data: updateArticleInputSchema }))
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.update(input.id, input.data), articleDtoSchema);
     }),
   delete: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
+    .input(articleIdInputSchema)
     .use(
       auditMiddleware<{ id: string }>((input) => ({
         action: "delete",
@@ -90,13 +91,13 @@ export const articlesRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
       await articlesService.delete(input.id);
       return { success: true };
     }),
   syncTags: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
+    .input(articleIdInputSchema.extend({ data: syncArticleTagsInputSchema }))
     .use(
       auditMiddleware<{ id: string; data: z.infer<typeof syncArticleTagsInputSchema> }>(
         (input) => ({
@@ -106,12 +107,12 @@ export const articlesRouter = router({
         }),
       ),
     )
-    .input(articleIdInputSchema.extend({ data: syncArticleTagsInputSchema }))
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.syncTags(input.id, input.data), articleDtoSchema);
     }),
   publish: publishProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
+    .input(articleIdInputSchema)
     .use(
       auditMiddleware<{ id: string }>((input) => ({
         action: "publish",
@@ -119,12 +120,12 @@ export const articlesRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.publish(input.id), articleDtoSchema);
     }),
   unpublish: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
+    .input(articleIdInputSchema)
     .use(
       auditMiddleware<{ id: string }>((input) => ({
         action: "unpublish",
@@ -132,12 +133,12 @@ export const articlesRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.unpublish(input.id), articleDtoSchema);
     }),
   archive: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
+    .input(articleIdInputSchema)
     .use(
       auditMiddleware<{ id: string }>((input) => ({
         action: "archive",
@@ -145,12 +146,12 @@ export const articlesRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.archive(input.id), articleDtoSchema);
     }),
   feature: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
+    .input(articleIdInputSchema)
     .use(
       auditMiddleware<{ id: string }>((input) => ({
         action: "feature",
@@ -158,12 +159,12 @@ export const articlesRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.feature(input.id), articleDtoSchema);
     }),
   unfeature: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
+    .input(articleIdInputSchema)
     .use(
       auditMiddleware<{ id: string }>((input) => ({
         action: "unfeature",
@@ -171,7 +172,6 @@ export const articlesRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(articleIdInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.unfeature(input.id), articleDtoSchema);
     }),

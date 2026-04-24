@@ -101,7 +101,7 @@ export const cmsIt = {
     logoutPending: "Logout...",
     openMenu: "Apri menu",
     closeMenu: "Chiudi menu",
-    menuTitle: "Menu CMS",
+    menuTitle: "Menu",
     menuDescription: "Navigazione del pannello CMS e accesso al profilo.",
     close: "Chiudi",
     open: "Apri",

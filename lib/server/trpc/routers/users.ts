@@ -65,6 +65,7 @@ export const usersRouter = router({
     }),
   update: sensitiveWriteProcedure
     .use(requireRoleMiddleware(usersPolicy.updateAllowedRoles))
+    .input(usersIdInputSchema.extend({ data: updateUserInputSchema }))
     .use(
       auditMiddleware<{ id: string; data: z.infer<typeof updateUserInputSchema> }>((input) => ({
         action: "update",
@@ -72,12 +73,12 @@ export const usersRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(usersIdInputSchema.extend({ data: updateUserInputSchema }))
     .mutation(async ({ input }) => {
       return parseOutput(await usersService.update(input.id, input.data), userListItemDtoSchema);
     }),
   updateRole: sensitiveWriteProcedure
     .use(requireRoleMiddleware(usersPolicy.updateRoleAllowedRoles))
+    .input(usersIdInputSchema.extend({ data: updateUserRoleInputSchema }))
     .use(
       auditMiddleware<{ id: string; data: z.infer<typeof updateUserRoleInputSchema> }>((input) => ({
         action: "assign-role",
@@ -85,7 +86,6 @@ export const usersRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(usersIdInputSchema.extend({ data: updateUserRoleInputSchema }))
     .mutation(async ({ input }) => {
       return parseOutput(
         await usersService.updateRole(input.id, input.data),
@@ -94,6 +94,7 @@ export const usersRouter = router({
     }),
   delete: sensitiveWriteProcedure
     .use(requireRoleMiddleware(usersPolicy.deleteAllowedRoles))
+    .input(usersIdInputSchema)
     .use(
       auditMiddleware<{ id: string }>((input) => ({
         action: "delete",
@@ -101,7 +102,6 @@ export const usersRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(usersIdInputSchema)
     .mutation(async ({ input }) => {
       await usersService.delete(input.id);
       return { success: true };

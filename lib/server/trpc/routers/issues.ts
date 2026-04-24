@@ -64,6 +64,7 @@ export const issuesRouter = router({
     }),
   update: writeProcedure
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
+    .input(issueIdInputSchema.extend({ data: updateIssueInputSchema }))
     .use(
       auditMiddleware<{ id: string; data: z.infer<typeof updateIssueInputSchema> }>((input) => ({
         action: "update",
@@ -71,12 +72,12 @@ export const issuesRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(issueIdInputSchema.extend({ data: updateIssueInputSchema }))
     .mutation(async ({ input }) => {
       return parseOutput(await issuesService.update(input.id, input.data), issueDtoSchema);
     }),
   delete: writeProcedure
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
+    .input(issueIdInputSchema)
     .use(
       auditMiddleware<{ id: string }>((input) => ({
         action: "delete",
@@ -84,7 +85,6 @@ export const issuesRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(issueIdInputSchema)
     .mutation(async ({ input }) => {
       await issuesService.delete(input.id);
       return { success: true };

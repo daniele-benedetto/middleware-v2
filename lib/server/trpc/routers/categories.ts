@@ -63,6 +63,7 @@ export const categoriesRouter = router({
     }),
   update: writeProcedure
     .use(requireRoleMiddleware(categoriesPolicy.allowedRoles))
+    .input(categoryIdInputSchema.extend({ data: updateCategoryInputSchema }))
     .use(
       auditMiddleware<{ id: string; data: z.infer<typeof updateCategoryInputSchema> }>((input) => ({
         action: "update",
@@ -70,12 +71,12 @@ export const categoriesRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(categoryIdInputSchema.extend({ data: updateCategoryInputSchema }))
     .mutation(async ({ input }) => {
       return parseOutput(await categoriesService.update(input.id, input.data), categoryDtoSchema);
     }),
   delete: writeProcedure
     .use(requireRoleMiddleware(categoriesPolicy.allowedRoles))
+    .input(categoryIdInputSchema)
     .use(
       auditMiddleware<{ id: string }>((input) => ({
         action: "delete",
@@ -83,7 +84,6 @@ export const categoriesRouter = router({
         resourceId: input.id,
       })),
     )
-    .input(categoryIdInputSchema)
     .mutation(async ({ input }) => {
       await categoriesService.delete(input.id);
       return { success: true };
