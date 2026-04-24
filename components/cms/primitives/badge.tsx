@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { Badge as ShadcnBadge } from "@/components/ui/badge";
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
@@ -58,6 +59,7 @@ export function CmsRemovableTag({
   onRemove,
   className,
 }: CmsRemovableTagProps) {
+  const text = i18n.cms.badge;
   const toneClass = accent
     ? "border-0 bg-accent text-white"
     : "border border-border bg-card-hover text-foreground";
@@ -82,7 +84,7 @@ export function CmsRemovableTag({
             closeOpacity,
             "hover:opacity-100",
           )}
-          aria-label="Rimuovi"
+          aria-label={text.remove}
         >
           ×
         </button>

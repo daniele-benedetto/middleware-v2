@@ -2,6 +2,7 @@
 
 import { CmsConfirmDialog } from "@/components/cms/common/confirm-dialog";
 import { CmsActionButton } from "@/components/cms/primitives";
+import { i18n } from "@/lib/i18n";
 
 import type { CmsResolvedQuickAction } from "@/features/cms/shared/actions";
 
@@ -16,6 +17,8 @@ type CmsBulkActionBarProps = {
 };
 
 export function CmsBulkActionBar({ selectedCount, actions }: CmsBulkActionBarProps) {
+  const text = i18n.cms.common;
+
   if (selectedCount <= 0) {
     return null;
   }
@@ -23,7 +26,7 @@ export function CmsBulkActionBar({ selectedCount, actions }: CmsBulkActionBarPro
   return (
     <div className="flex items-center justify-between gap-3 border border-accent px-3 py-2 max-sm:flex-col max-sm:items-stretch">
       <span className="font-ui text-[11px] uppercase tracking-[0.06em] text-accent">
-        {selectedCount} selezionati
+        {text.selectedCount(selectedCount)}
       </span>
 
       <div className="flex items-center gap-2 max-sm:flex-wrap">

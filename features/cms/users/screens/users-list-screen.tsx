@@ -54,6 +54,10 @@ export function CmsUsersListScreen() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const text = i18n.cms;
+  const listText = text.lists.users;
+  const commonText = text.common;
+  const quickText = text.quickActions;
+  const optionsText = text.listOptions;
 
   const input = parseUsersListSearchParams(searchParams);
   const listQuery = useUsersListQuery(input);
@@ -143,7 +147,7 @@ export function CmsUsersListScreen() {
 
       await invalidateAfterCmsMutation(trpcUtils, mutationName, { id });
       selection.clearSelection();
-      cmsToast.info("Azione completata.");
+      cmsToast.info(commonText.actionCompleted);
     } catch (error) {
       const mapped = mapQuickActionError(error);
       cmsToast.error(mapped.description, mapped.title);
@@ -179,7 +183,7 @@ export function CmsUsersListScreen() {
     selection.clearSelection();
 
     if (result.failed === 0) {
-      cmsToast.info(`Azione completata su ${result.success} record.`);
+      cmsToast.info(commonText.actionCompletedOnRecords(result.success));
       return;
     }
 
@@ -194,44 +198,44 @@ export function CmsUsersListScreen() {
     [
       {
         id: "bulk-role-admin",
-        label: "Set ADMIN",
+        label: quickText.setAdmin,
         scope: "bulk",
         requiresConfirm: ({ selectedCount }) => selectedCount > 0,
         confirm: ({ selectedCount }) => ({
-          title: "Conferma cambio ruolo",
+          title: quickText.confirmRoleTitle,
           description:
             selectedCount === 1
-              ? "Imposterai il ruolo ADMIN per l'utente selezionato."
-              : `Imposterai il ruolo ADMIN per ${selectedCount} utenti selezionati.`,
+              ? quickText.confirmRoleAdminBulkSingle
+              : quickText.confirmRoleAdminBulk(selectedCount),
         }),
         isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
       } satisfies CmsQuickAction,
       {
         id: "bulk-role-editor",
-        label: "Set EDITOR",
+        label: quickText.setEditor,
         scope: "bulk",
         requiresConfirm: ({ selectedCount }) => selectedCount > 0,
         confirm: ({ selectedCount }) => ({
-          title: "Conferma cambio ruolo",
+          title: quickText.confirmRoleTitle,
           description:
             selectedCount === 1
-              ? "Imposterai il ruolo EDITOR per l'utente selezionato."
-              : `Imposterai il ruolo EDITOR per ${selectedCount} utenti selezionati.`,
+              ? quickText.confirmRoleEditorBulkSingle
+              : quickText.confirmRoleEditorBulk(selectedCount),
         }),
         isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
       } satisfies CmsQuickAction,
       {
         id: "bulk-delete",
-        label: "Delete",
+        label: quickText.delete,
         scope: "bulk",
         tone: "danger",
         requiresConfirm: ({ selectedCount }) => selectedCount > 0,
         confirm: ({ selectedCount }) => ({
-          title: "Conferma eliminazione",
+          title: quickText.confirmDeleteTitle,
           description:
             selectedCount === 1
-              ? "Eliminerai definitivamente l'utente selezionato."
-              : `Eliminerai definitivamente ${selectedCount} utenti selezionati.`,
+              ? quickText.confirmDeleteUserSingle
+              : quickText.confirmDeleteUserBulk(selectedCount),
         }),
         isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
       } satisfies CmsQuickAction,
@@ -244,10 +248,7 @@ export function CmsUsersListScreen() {
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader
-        title={text.navigation.users}
-        subtitle="Lista utenti admin-only con filtri, ricerca, ordinamento e paginazione."
-      />
+      <CmsPageHeader title={text.navigation.users} subtitle={listText.subtitle} />
 
       <CmsDataTableShell
         toolbar={
@@ -285,9 +286,9 @@ export function CmsUsersListScreen() {
                   updateSearchParams({ role: value === "all" ? undefined : value, page: 1 });
                 }}
                 options={[
-                  { value: "all", label: "Ruolo: tutti" },
-                  { value: "ADMIN", label: "Solo admin" },
-                  { value: "EDITOR", label: "Solo editor" },
+                  { value: "all", label: optionsText.roleAll },
+                  { value: "ADMIN", label: optionsText.roleAdminOnly },
+                  { value: "EDITOR", label: optionsText.roleEditorOnly },
                 ]}
               />
 
@@ -297,8 +298,8 @@ export function CmsUsersListScreen() {
                   updateSearchParams({ sortBy: value, page: 1 });
                 }}
                 options={[
-                  { value: "createdAt", label: "Sort: creazione" },
-                  { value: "email", label: "Sort: email" },
+                  { value: "createdAt", label: optionsText.sortCreatedAt },
+                  { value: "email", label: optionsText.sortEmail },
                 ]}
               />
 
@@ -308,14 +309,14 @@ export function CmsUsersListScreen() {
                   updateSearchParams({ sortOrder: value, page: 1 });
                 }}
                 options={[
-                  { value: "desc", label: "DESC" },
-                  { value: "asc", label: "ASC" },
+                  { value: "desc", label: optionsText.desc },
+                  { value: "asc", label: optionsText.asc },
                 ]}
               />
             </div>
 
             <CmsMetaText variant="tiny" className="block">
-              Contratto lista: `role`, `q`, `sortBy`, `sortOrder`, `page`, `pageSize`.
+              {commonText.contractPrefix} {listText.contract}
             </CmsMetaText>
           </div>
         }
@@ -330,17 +331,33 @@ export function CmsUsersListScreen() {
                       onCheckedChange={() => {
                         selection.toggleSelectAll(pageUserIds);
                       }}
-                      aria-label="Seleziona tutti"
+                      aria-label={commonText.selectAll}
                     />
                   </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Email</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Nome</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Ruolo</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Verificata</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Articoli</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Creata</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Aggiornata</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Azioni</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.email}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.name}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.role}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.verified}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.articles}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.createdAt}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.updatedAt}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.actions}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -352,7 +369,7 @@ export function CmsUsersListScreen() {
                         onCheckedChange={() => {
                           selection.toggleSelection(user.id);
                         }}
-                        aria-label={`Seleziona ${user.email}`}
+                        aria-label={listText.selectItemByEmail(user.email)}
                       />
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellTitle}>{user.email}</TableCell>
@@ -361,7 +378,7 @@ export function CmsUsersListScreen() {
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>{user.role}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {user.emailVerified ? "Si" : "No"}
+                      {user.emailVerified ? commonText.yes : commonText.no}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       {String(user.authoredArticlesCount)}
@@ -378,37 +395,37 @@ export function CmsUsersListScreen() {
                           [
                             {
                               id: "single-role-admin",
-                              label: "Set ADMIN",
+                              label: quickText.setAdmin,
                               scope: "single",
                               requiresConfirm: true,
                               confirm: {
-                                title: "Conferma cambio ruolo",
-                                description: "Imposterai il ruolo ADMIN per questo utente.",
+                                title: quickText.confirmRoleTitle,
+                                description: quickText.confirmRoleAdminSingle,
                               },
                               isVisible: () => user.role !== "ADMIN",
                               isEnabled: ({ isPending }) => !isPending,
                             },
                             {
                               id: "single-role-editor",
-                              label: "Set EDITOR",
+                              label: quickText.setEditor,
                               scope: "single",
                               requiresConfirm: true,
                               confirm: {
-                                title: "Conferma cambio ruolo",
-                                description: "Imposterai il ruolo EDITOR per questo utente.",
+                                title: quickText.confirmRoleTitle,
+                                description: quickText.confirmRoleEditorSingle,
                               },
                               isVisible: () => user.role !== "EDITOR",
                               isEnabled: ({ isPending }) => !isPending,
                             },
                             {
                               id: "single-delete",
-                              label: "Delete",
+                              label: quickText.delete,
                               scope: "single",
                               tone: "danger",
                               requiresConfirm: true,
                               confirm: {
-                                title: "Conferma eliminazione",
-                                description: "Eliminerai definitivamente questo utente.",
+                                title: quickText.confirmDeleteTitle,
+                                description: quickText.confirmDeleteSingleUser,
                               },
                               isEnabled: ({ isPending }) => !isPending,
                             },
@@ -422,10 +439,9 @@ export function CmsUsersListScreen() {
                             key={`${user.id}-${action.id}`}
                             triggerLabel={action.label}
                             triggerDisabled={action.disabled}
-                            title={action.confirm?.title ?? "Conferma azione"}
+                            title={action.confirm?.title ?? commonText.defaultConfirmTitle}
                             description={
-                              action.confirm?.description ??
-                              "Questa azione verra applicata all'utente selezionato."
+                              action.confirm?.description ?? commonText.defaultUserActionDescription
                             }
                             confirmLabel={action.confirm?.confirmLabel}
                             cancelLabel={action.confirm?.cancelLabel}
@@ -454,7 +470,7 @@ export function CmsUsersListScreen() {
           ) : (
             <div className="px-5 py-4">
               <CmsEmptyState
-                eyebrow="Utenti"
+                eyebrow={listText.eyebrow}
                 title={text.resource.emptyTitle(text.navigation.users)}
                 description={text.resource.emptyDescription}
               />
@@ -480,7 +496,7 @@ export function CmsUsersListScreen() {
       />
 
       <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
-        Totale: {listQuery.pagination.total} record
+        {commonText.totalRecords(listQuery.pagination.total)}
       </div>
     </div>
   );

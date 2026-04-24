@@ -2,6 +2,7 @@
 
 import { PauseIcon, PlayIcon } from "lucide-react";
 
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 type EditorialAudioPlayerProps = {
@@ -22,7 +23,7 @@ function formatTime(seconds: number) {
 }
 
 export function EditorialAudioPlayer({
-  label = "ASCOLTA L'ARTICOLO",
+  label,
   currentSeconds,
   totalSeconds,
   isPlaying = false,
@@ -30,19 +31,21 @@ export function EditorialAudioPlayer({
   onClose,
   className,
 }: EditorialAudioPlayerProps) {
+  const text = i18n.editorial.audioPlayer;
+  const resolvedLabel = label ?? text.defaultLabel;
   const progress = totalSeconds > 0 ? Math.min(100, (currentSeconds / totalSeconds) * 100) : 0;
 
   return (
     <div className={cn("max-w-120 border-2 border-foreground bg-white px-4.5 py-3.5", className)}>
       <div className="mb-2.5 flex items-center justify-between gap-3">
         <span className="font-ui text-[11px] uppercase tracking-[0.06em] text-foreground">
-          {label}
+          {resolvedLabel}
         </span>
         {onClose ? (
           <button
             type="button"
             onClick={onClose}
-            aria-label="Chiudi"
+            aria-label={text.closeAriaLabel}
             className="font-ui text-[12px] text-muted-foreground hover:text-foreground"
           >
             ✕
@@ -54,7 +57,7 @@ export function EditorialAudioPlayer({
         <button
           type="button"
           onClick={onToggle}
-          aria-label={isPlaying ? "Pausa" : "Riproduci"}
+          aria-label={isPlaying ? text.pauseAriaLabel : text.playAriaLabel}
           className="flex size-9 shrink-0 items-center justify-center bg-foreground text-white hover:brightness-[0.88]"
         >
           {isPlaying ? <PauseIcon className="size-3.5" /> : <PlayIcon className="size-3.5" />}

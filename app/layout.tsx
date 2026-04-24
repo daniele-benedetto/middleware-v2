@@ -1,6 +1,7 @@
 import { Archivo_Black, Geist, IBM_Plex_Mono, Newsreader } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
+import { i18n } from "@/lib/i18n";
 import { TrpcProvider } from "@/lib/trpc/provider";
 import { cn } from "@/lib/utils";
 
@@ -28,8 +29,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Middleware CMS",
-  description: "Backoffice editoriale Middleware",
+  title: i18n.cms.app.metadataTitle,
+  description: i18n.cms.app.metadataDescription,
 };
 
 export default function RootLayout({

@@ -54,6 +54,10 @@ export function CmsTagsListScreen() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const text = i18n.cms;
+  const listText = text.lists.tags;
+  const commonText = text.common;
+  const quickText = text.quickActions;
+  const optionsText = text.listOptions;
 
   const input = parseTagsListSearchParams(searchParams);
   const listQuery = useTagsListQuery(input);
@@ -132,7 +136,7 @@ export function CmsTagsListScreen() {
 
       await invalidateAfterCmsMutation(trpcUtils, "tags.delete", { id });
       selection.clearSelection();
-      cmsToast.info("Azione completata.");
+      cmsToast.info(commonText.actionCompleted);
     } catch (error) {
       const mapped = mapQuickActionError(error);
       cmsToast.error(mapped.description, mapped.title);
@@ -158,7 +162,7 @@ export function CmsTagsListScreen() {
     selection.clearSelection();
 
     if (result.failed === 0) {
-      cmsToast.info(`Azione completata su ${result.success} record.`);
+      cmsToast.info(commonText.actionCompletedOnRecords(result.success));
       return;
     }
 
@@ -173,16 +177,16 @@ export function CmsTagsListScreen() {
     [
       {
         id: "bulk-delete",
-        label: "Delete",
+        label: quickText.delete,
         scope: "bulk",
         tone: "danger",
         requiresConfirm: ({ selectedCount }) => selectedCount > 0,
         confirm: ({ selectedCount }) => ({
-          title: "Conferma eliminazione",
+          title: quickText.confirmDeleteTitle,
           description:
             selectedCount === 1
-              ? "Eliminerai definitivamente il tag selezionato."
-              : `Eliminerai definitivamente ${selectedCount} tag selezionati.`,
+              ? quickText.confirmDeleteTagSingle
+              : quickText.confirmDeleteTagBulk(selectedCount),
         }),
         isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
       } satisfies CmsQuickAction,
@@ -195,10 +199,7 @@ export function CmsTagsListScreen() {
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader
-        title={text.navigation.tags}
-        subtitle="Filtri, ricerca, ordinamento e paginazione integrati via tRPC."
-      />
+      <CmsPageHeader title={text.navigation.tags} subtitle={listText.subtitle} />
 
       <CmsDataTableShell
         toolbar={
@@ -226,9 +227,9 @@ export function CmsTagsListScreen() {
                   updateSearchParams({ isActive: value === "all" ? undefined : value, page: 1 });
                 }}
                 options={[
-                  { value: "all", label: "Stato: tutti" },
-                  { value: "true", label: "Solo attivi" },
-                  { value: "false", label: "Solo non attivi" },
+                  { value: "all", label: optionsText.statusAllMasculine },
+                  { value: "true", label: optionsText.activeOnlyMasculine },
+                  { value: "false", label: optionsText.inactiveOnlyMasculine },
                 ]}
               />
 
@@ -238,9 +239,9 @@ export function CmsTagsListScreen() {
                   updateSearchParams({ sortBy: value, page: 1 });
                 }}
                 options={[
-                  { value: "createdAt", label: "Sort: creazione" },
-                  { value: "name", label: "Sort: nome" },
-                  { value: "slug", label: "Sort: slug" },
+                  { value: "createdAt", label: optionsText.sortCreatedAt },
+                  { value: "name", label: optionsText.sortName },
+                  { value: "slug", label: optionsText.sortSlug },
                 ]}
               />
 
@@ -250,14 +251,14 @@ export function CmsTagsListScreen() {
                   updateSearchParams({ sortOrder: value, page: 1 });
                 }}
                 options={[
-                  { value: "desc", label: "DESC" },
-                  { value: "asc", label: "ASC" },
+                  { value: "desc", label: optionsText.desc },
+                  { value: "asc", label: optionsText.asc },
                 ]}
               />
             </div>
 
             <CmsMetaText variant="tiny" className="block">
-              Contratto lista: `isActive`, `q`, `sortBy`, `sortOrder`, `page`, `pageSize`.
+              {commonText.contractPrefix} {listText.contract}
             </CmsMetaText>
           </div>
         }
@@ -272,16 +273,30 @@ export function CmsTagsListScreen() {
                       onCheckedChange={() => {
                         selection.toggleSelectAll(pageTagIds);
                       }}
-                      aria-label="Seleziona tutti"
+                      aria-label={commonText.selectAll}
                     />
                   </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Nome</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Slug</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Stato</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Articoli</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Creata</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Aggiornata</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Azioni</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.name}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.slug}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.status}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.articles}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.createdAt}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.updatedAt}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.actions}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -293,13 +308,13 @@ export function CmsTagsListScreen() {
                         onCheckedChange={() => {
                           selection.toggleSelection(tag.id);
                         }}
-                        aria-label={`Seleziona ${tag.name}`}
+                        aria-label={listText.selectItem(tag.name)}
                       />
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellTitle}>{tag.name}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>{tag.slug}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {tag.isActive ? "Attivo" : "Non attivo"}
+                      {tag.isActive ? listText.active : listText.inactive}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       {String(tag.articlesCount)}
@@ -312,10 +327,10 @@ export function CmsTagsListScreen() {
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <CmsConfirmDialog
-                        triggerLabel="Delete"
+                        triggerLabel={quickText.delete}
                         triggerDisabled={deleteMutation.isPending}
-                        title="Conferma eliminazione"
-                        description="Eliminerai definitivamente questo tag."
+                        title={quickText.confirmDeleteTitle}
+                        description={quickText.confirmDeleteSingleTag}
                         tone="danger"
                         onConfirm={() => {
                           void runSingleAction("delete", tag.id);
@@ -329,7 +344,7 @@ export function CmsTagsListScreen() {
           ) : (
             <div className="px-5 py-4">
               <CmsEmptyState
-                eyebrow="Tag"
+                eyebrow={listText.eyebrow}
                 title={text.resource.emptyTitle(text.navigation.tags)}
                 description={text.resource.emptyDescription}
               />
@@ -355,7 +370,7 @@ export function CmsTagsListScreen() {
       />
 
       <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
-        Totale: {listQuery.pagination.total} record
+        {commonText.totalRecords(listQuery.pagination.total)}
       </div>
     </div>
   );

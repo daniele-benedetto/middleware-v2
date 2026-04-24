@@ -1,4 +1,4 @@
-import { CmsBreadcrumbs, CmsSidebar, CmsTopbar } from "@/components/cms/layout";
+import { CmsBreadcrumbs, CmsSidebar } from "@/components/cms/layout";
 import { CmsLayoutShell } from "@/components/cms/primitives";
 import { requireCmsSession } from "@/lib/cms/auth";
 
@@ -20,8 +20,7 @@ export default async function CmsLayout({ children }: CmsLayoutProps) {
       }
       topbar={
         <div className="space-y-2">
-          <CmsTopbar role={role} />
-          <div className="px-5 pb-3">
+          <div className="px-5 p-3">
             <CmsBreadcrumbs />
           </div>
         </div>

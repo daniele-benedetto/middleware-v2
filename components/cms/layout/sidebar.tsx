@@ -36,6 +36,7 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const text = i18n.cms.navigation;
+  const commonText = i18n.cms.common;
   const visibleNavigation = useVisibleNavigation(role);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -60,7 +61,9 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
     }
   };
 
-  const brandBlock = <CmsBrand size="sm" priority wordmarkAs="h3" />;
+  const brandBlock = (
+    <CmsBrand size="sm" priority wordmarkAs="h3" to="/cms" onClick={() => setIsMenuOpen(false)} />
+  );
 
   const navigationLinks = (onNavigate?: () => void) => (
     <nav className="flex flex-col gap-1">
@@ -101,7 +104,7 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
       >
         <div className="min-w-0 flex-1">
           <div className="truncate font-ui text-[12px] uppercase tracking-[0.08em] text-foreground">
-            {userName?.trim() || "Utente"}
+            {userName?.trim() || commonText.userFallback}
           </div>
           <div className="truncate font-ui text-[10px] tracking-[0.04em] text-muted-foreground">
             {userEmail}
@@ -126,7 +129,7 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
             void handleSignOut();
           }}
         >
-          {isSigningOut ? "Logout..." : "Logout"}
+          {isSigningOut ? commonText.logoutPending : commonText.logout}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -149,23 +152,21 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
           variant="outline"
           size="xs"
           onClick={() => setIsMenuOpen(true)}
-          aria-label="Apri menu"
+          aria-label={commonText.openMenu}
         >
           <Menu className="size-3.5" />
-          Menu
+          {commonText.menuTitle}
         </CmsActionButton>
       </div>
 
       <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
         <SheetContent ref={mobileSheetRef} side="left" className="w-full max-w-80">
           <div className="flex items-center justify-between gap-4 border-b-[3px] border-foreground p-5">
-            <SheetTitle className="sr-only">Menu CMS</SheetTitle>
-            <SheetDescription className="sr-only">
-              Navigazione del pannello CMS e accesso al profilo.
-            </SheetDescription>
+            <SheetTitle className="sr-only">{commonText.menuTitle}</SheetTitle>
+            <SheetDescription className="sr-only">{commonText.menuDescription}</SheetDescription>
             {brandBlock}
             <SheetClose
-              aria-label="Chiudi menu"
+              aria-label={commonText.closeMenu}
               className={cn(
                 "inline-flex size-8 shrink-0 items-center justify-center border border-foreground bg-transparent",
                 "transition-colors hover:bg-card-hover",

@@ -2,6 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import Link from "next/link";
 
 import { CmsDisplay, CmsMetaText } from "@/components/cms/primitives/typography";
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const editorialCardVariants = cva(
@@ -39,14 +40,16 @@ export function CmsEditorialCard({
   href,
   label,
   title,
-  ctaLabel = "Apri sezione",
+  ctaLabel,
   meta,
   tone = "default",
   density,
   className,
 }: CmsEditorialCardProps) {
+  const text = i18n.cms.common;
   const resolvedTone = tone ?? "default";
   const isAccent = resolvedTone === "accent";
+  const resolvedCtaLabel = ctaLabel ?? text.openSection;
 
   return (
     <Link
@@ -84,7 +87,7 @@ export function CmsEditorialCard({
             : "border-foreground text-foreground group-hover:border-accent group-hover:text-accent",
         )}
       >
-        → {ctaLabel}
+        → {resolvedCtaLabel}
       </span>
     </Link>
   );

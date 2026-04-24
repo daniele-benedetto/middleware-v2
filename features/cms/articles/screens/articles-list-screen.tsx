@@ -78,48 +78,48 @@ type ArticleSingleActionContext = {
 const articleSingleActionConfig: CmsQuickAction<ArticleSingleActionContext>[] = [
   {
     id: "publish",
-    label: "Publish",
+    label: i18n.cms.quickActions.publish,
     scope: "single",
     isVisible: (context) => context.status !== "PUBLISHED",
     isEnabled: (context) => !context.isPending,
   },
   {
     id: "unpublish",
-    label: "Unpublish",
+    label: i18n.cms.quickActions.unpublish,
     scope: "single",
     isVisible: (context) => context.status === "PUBLISHED",
     isEnabled: (context) => !context.isPending,
   },
   {
     id: "feature",
-    label: "Feature",
+    label: i18n.cms.quickActions.feature,
     scope: "single",
     isVisible: (context) => !context.isFeatured,
     isEnabled: (context) => !context.isPending,
   },
   {
     id: "unfeature",
-    label: "Unfeature",
+    label: i18n.cms.quickActions.unfeature,
     scope: "single",
     isVisible: (context) => context.isFeatured,
     isEnabled: (context) => !context.isPending,
   },
   {
     id: "archive",
-    label: "Archive",
+    label: i18n.cms.quickActions.archive,
     scope: "single",
     isVisible: (context) => context.status !== "ARCHIVED",
     isEnabled: (context) => !context.isPending,
   },
   {
     id: "delete",
-    label: "Delete",
+    label: i18n.cms.quickActions.delete,
     scope: "single",
     tone: "danger",
     requiresConfirm: true,
     confirm: {
-      title: "Conferma eliminazione",
-      description: "Eliminerai definitivamente questo articolo.",
+      title: i18n.cms.quickActions.confirmDeleteTitle,
+      description: i18n.cms.quickActions.confirmDeleteSingleArticle,
     },
     isEnabled: (context) => !context.isPending,
   },
@@ -168,26 +168,28 @@ function patchArticleForOptimisticAction<
 }
 
 function mapArticleDomainError(uiError: CmsUiError): CmsUiError {
+  const text = i18n.cms.lists.articles.domainErrors;
+
   if (uiError.code === "CONFLICT") {
     return {
       ...uiError,
-      title: "Conflitto slug",
-      description: "Lo slug e gia usato in questa issue. Aggiorna lo slug e riprova.",
+      title: text.slugConflictTitle,
+      description: text.slugConflictDescription,
     };
   }
 
   if (uiError.code === "BAD_REQUEST") {
     return {
       ...uiError,
-      title: "Payload non valido",
+      title: text.invalidPayloadTitle,
     };
   }
 
   if (uiError.code === "TOO_MANY_REQUESTS") {
     return {
       ...uiError,
-      title: "Rate limit azioni editoriali",
-      description: "Troppe azioni critiche in poco tempo. Riprova tra poco.",
+      title: text.rateLimitTitle,
+      description: text.rateLimitDescription,
       retryable: true,
     };
   }
@@ -200,6 +202,10 @@ export function CmsArticlesListScreen() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const text = i18n.cms;
+  const listText = text.lists.articles;
+  const commonText = text.common;
+  const quickText = text.quickActions;
+  const optionsText = text.listOptions;
 
   const input = parseArticlesListSearchParams(searchParams);
   const listQuery = useArticlesListQuery(input);
@@ -253,18 +259,18 @@ export function CmsArticlesListScreen() {
   const issueOptions = useMemo(() => {
     const items = issuesOptionsQuery.data?.items ?? [];
     return [
-      { value: "all", label: "Issue: tutte" },
+      { value: "all", label: optionsText.issueAll },
       ...items.map((issue) => ({ value: issue.id, label: issue.title })),
     ];
-  }, [issuesOptionsQuery.data?.items]);
+  }, [issuesOptionsQuery.data?.items, optionsText.issueAll]);
 
   const categoryOptions = useMemo(() => {
     const items = categoriesOptionsQuery.data?.items ?? [];
     return [
-      { value: "all", label: "Categoria: tutte" },
+      { value: "all", label: optionsText.categoryAll },
       ...items.map((category) => ({ value: category.id, label: category.name })),
     ];
-  }, [categoriesOptionsQuery.data?.items]);
+  }, [categoriesOptionsQuery.data?.items, optionsText.categoryAll]);
 
   const updateSearchParams = useCallback(
     (patch: Record<string, string | number | undefined>) => {
@@ -336,8 +342,7 @@ export function CmsArticlesListScreen() {
     }
   }, [canReorder, reorder]);
 
-  const reorderUnavailableText =
-    "Reorder disponibile con `issueId` valorizzato, `sortBy=position`, `sortOrder=asc`, senza altri filtri e con una sola pagina.";
+  const reorderUnavailableText = listText.reorderUnavailable;
 
   if (listQuery.isPending) {
     return <CmsLoadingState />;
@@ -438,7 +443,7 @@ export function CmsArticlesListScreen() {
       await runMutationByAction(action, id);
       await invalidateAfterCmsMutation(trpcUtils, mutationNameByAction[action], { id });
       selection.clearSelection();
-      cmsToast.info("Azione completata.");
+      cmsToast.info(commonText.actionCompleted);
     } catch (error) {
       rollbackOptimistic?.();
 
@@ -469,7 +474,7 @@ export function CmsArticlesListScreen() {
     selection.clearSelection();
 
     if (result.failed === 0) {
-      cmsToast.info(`Azione completata su ${result.success} record.`);
+      cmsToast.info(commonText.actionCompletedOnRecords(result.success));
       return;
     }
 
@@ -484,46 +489,46 @@ export function CmsArticlesListScreen() {
   const bulkActionConfig: CmsQuickAction[] = [
     {
       id: "bulk-publish",
-      label: "Publish",
+      label: quickText.publish,
       scope: "bulk",
       isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
     },
     {
       id: "bulk-unpublish",
-      label: "Unpublish",
+      label: quickText.unpublish,
       scope: "bulk",
       isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
     },
     {
       id: "bulk-feature",
-      label: "Feature",
+      label: quickText.feature,
       scope: "bulk",
       isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
     },
     {
       id: "bulk-unfeature",
-      label: "Unfeature",
+      label: quickText.unfeature,
       scope: "bulk",
       isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
     },
     {
       id: "bulk-archive",
-      label: "Archive",
+      label: quickText.archive,
       scope: "bulk",
       isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
     },
     {
       id: "bulk-delete",
-      label: "Delete",
+      label: quickText.delete,
       scope: "bulk",
       tone: "danger",
       requiresConfirm: ({ selectedCount }) => selectedCount > 0,
       confirm: ({ selectedCount }) => ({
-        title: "Conferma eliminazione",
+        title: quickText.confirmDeleteTitle,
         description:
           selectedCount === 1
-            ? "Eliminerai definitivamente l'articolo selezionato."
-            : `Eliminerai definitivamente ${selectedCount} articoli selezionati.`,
+            ? quickText.confirmDeleteArticleSingle
+            : quickText.confirmDeleteArticleBulk(selectedCount),
       }),
       isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
     },
@@ -536,10 +541,7 @@ export function CmsArticlesListScreen() {
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader
-        title={text.navigation.articles}
-        subtitle="Filtri avanzati, ricerca, ordinamento e paginazione integrati via tRPC."
-      />
+      <CmsPageHeader title={text.navigation.articles} subtitle={listText.subtitle} />
 
       <CmsDataTableShell
         toolbar={
@@ -568,10 +570,10 @@ export function CmsArticlesListScreen() {
                   updateSearchParams({ status: value === "all" ? undefined : value, page: 1 });
                 }}
                 options={[
-                  { value: "all", label: "Stato: tutti" },
-                  { value: "DRAFT", label: "Bozza" },
-                  { value: "PUBLISHED", label: "Pubblicato" },
-                  { value: "ARCHIVED", label: "Archiviato" },
+                  { value: "all", label: optionsText.statusAllMasculine },
+                  { value: "DRAFT", label: listText.statusDraft },
+                  { value: "PUBLISHED", label: listText.statusPublished },
+                  { value: "ARCHIVED", label: listText.statusArchived },
                 ]}
               />
 
@@ -581,9 +583,9 @@ export function CmsArticlesListScreen() {
                   updateSearchParams({ featured: value === "all" ? undefined : value, page: 1 });
                 }}
                 options={[
-                  { value: "all", label: "Featured: tutti" },
-                  { value: "true", label: "Solo featured" },
-                  { value: "false", label: "Solo non featured" },
+                  { value: "all", label: optionsText.featuredAll },
+                  { value: "true", label: optionsText.featuredOnly },
+                  { value: "false", label: optionsText.notFeaturedOnly },
                 ]}
               />
 
@@ -610,7 +612,7 @@ export function CmsArticlesListScreen() {
                 onChange={(event) => {
                   updateSearchParams({ authorId: event.target.value || undefined, page: 1 });
                 }}
-                placeholder="Author ID (uuid)"
+                placeholder={commonText.authorIdPlaceholder}
               />
 
               <CmsSelect
@@ -619,9 +621,9 @@ export function CmsArticlesListScreen() {
                   updateSearchParams({ sortBy: value, page: 1 });
                 }}
                 options={[
-                  { value: "createdAt", label: "Sort: creazione" },
-                  { value: "publishedAt", label: "Sort: pubblicazione" },
-                  { value: "position", label: "Sort: posizione" },
+                  { value: "createdAt", label: optionsText.sortCreatedAt },
+                  { value: "publishedAt", label: optionsText.sortPublishedAt },
+                  { value: "position", label: optionsText.sortPosition },
                 ]}
               />
 
@@ -631,8 +633,8 @@ export function CmsArticlesListScreen() {
                   updateSearchParams({ sortOrder: value, page: 1 });
                 }}
                 options={[
-                  { value: "desc", label: "DESC" },
-                  { value: "asc", label: "ASC" },
+                  { value: "desc", label: optionsText.desc },
+                  { value: "asc", label: optionsText.asc },
                 ]}
               />
             </div>
@@ -642,7 +644,7 @@ export function CmsArticlesListScreen() {
               isReorderMode={reorder.isReorderMode}
               hasChanges={canReorder && reorder.hasChanges}
               isSaving={reorderMutation.isPending}
-              helpText="Modalita reorder attiva: usa le frecce per riordinare gli articoli dell'issue selezionata."
+              helpText={listText.reorderHelp}
               unavailableText={reorderUnavailableText}
               onStart={() => {
                 selection.clearSelection();
@@ -667,7 +669,7 @@ export function CmsArticlesListScreen() {
                         ids: reorder.normalizedOrder,
                       });
                       reorder.commit();
-                      cmsToast.info("Ordine articoli aggiornato con successo.");
+                      cmsToast.info(listText.reorderUpdated);
                     },
                     onError: (error) => {
                       const mapped = mapTrpcErrorToCmsUiMessage(error);
@@ -679,8 +681,7 @@ export function CmsArticlesListScreen() {
             />
 
             <CmsMetaText variant="tiny" className="block">
-              Contratto lista: `status`, `issueId`, `categoryId`, `authorId`, `featured`, `q`,
-              `sortBy`, `sortOrder`, `page`, `pageSize`.
+              {commonText.contractPrefix} {listText.contract}
             </CmsMetaText>
           </div>
         }
@@ -696,21 +697,45 @@ export function CmsArticlesListScreen() {
                       onCheckedChange={() => {
                         selection.toggleSelectAll(pageArticleIds);
                       }}
-                      aria-label="Seleziona tutti"
+                      aria-label={commonText.selectAll}
                     />
                   </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Titolo</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Issue</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Categoria</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Autore</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Stato</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Featured</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Posizione</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Tag</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Pubblicata</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Creata</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Azioni</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Reorder</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.title}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.issue}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.category}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.author}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.status}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.featured}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.position}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.tags}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.published}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.createdAt}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.actions}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.reorder}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -723,7 +748,7 @@ export function CmsArticlesListScreen() {
                         onCheckedChange={() => {
                           selection.toggleSelection(article.id);
                         }}
-                        aria-label={`Seleziona ${article.title}`}
+                        aria-label={listText.selectItem(article.title)}
                       />
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellTitle}>{article.title}</TableCell>
@@ -738,7 +763,7 @@ export function CmsArticlesListScreen() {
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>{article.status}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {article.isFeatured ? "Si" : "No"}
+                      {article.isFeatured ? commonText.yes : commonText.no}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       {String(article.position)}
@@ -831,7 +856,7 @@ export function CmsArticlesListScreen() {
           ) : (
             <div className="px-5 py-4">
               <CmsEmptyState
-                eyebrow="Articoli"
+                eyebrow={listText.eyebrow}
                 title={text.resource.emptyTitle(text.navigation.articles)}
                 description={text.resource.emptyDescription}
               />
@@ -857,7 +882,7 @@ export function CmsArticlesListScreen() {
       />
 
       <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
-        Totale: {listQuery.pagination.total} record
+        {commonText.totalRecords(listQuery.pagination.total)}
       </div>
     </div>
   );

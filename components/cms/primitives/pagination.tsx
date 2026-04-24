@@ -1,5 +1,6 @@
 "use client";
 
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const cellBase =
@@ -33,14 +34,18 @@ export function CmsPagination({
   className,
   labels,
 }: CmsPaginationProps) {
+  const text = i18n.cms;
   const items = buildWindow(currentPage, Math.max(1, totalPages));
-  const prevLabel = labels?.prev ?? "← PREC.";
-  const nextLabel = labels?.next ?? "SUCC. →";
+  const prevLabel = labels?.prev ?? text.pagination.prev;
+  const nextLabel = labels?.next ?? text.pagination.next;
   const prevDisabled = currentPage <= 1;
   const nextDisabled = currentPage >= totalPages;
 
   return (
-    <nav aria-label="Paginazione" className={cn("flex flex-wrap items-center", className)}>
+    <nav
+      aria-label={text.common.paginationAria}
+      className={cn("flex flex-wrap items-center", className)}
+    >
       <button
         type="button"
         disabled={prevDisabled}

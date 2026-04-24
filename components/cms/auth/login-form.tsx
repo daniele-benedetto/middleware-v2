@@ -65,7 +65,7 @@ export function CmsLoginForm() {
             required
             type="email"
             value={email}
-            placeholder="nome@dominio.it"
+            placeholder={text.emailPlaceholder}
           />
         </CmsFormField>
 
@@ -79,7 +79,7 @@ export function CmsLoginForm() {
             required
             type="password"
             value={password}
-            placeholder="••••••••"
+            placeholder={text.passwordPlaceholder}
           />
         </CmsFormField>
 

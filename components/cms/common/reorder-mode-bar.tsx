@@ -3,6 +3,7 @@
 import { Save, X } from "lucide-react";
 
 import { CmsActionButton, CmsMetaText } from "@/components/cms/primitives";
+import { i18n } from "@/lib/i18n";
 
 type CmsReorderModeBarProps = {
   isAvailable: boolean;
@@ -27,6 +28,8 @@ export function CmsReorderModeBar({
   onCancel,
   onSave,
 }: CmsReorderModeBarProps) {
+  const text = i18n.cms.common;
+
   return (
     <div className="flex items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
       <CmsMetaText variant="tiny" className="block">
@@ -43,7 +46,7 @@ export function CmsReorderModeBar({
             className="max-sm:flex-1"
           >
             <X className="size-3" />
-            Annulla
+            {text.cancel}
           </CmsActionButton>
           <CmsActionButton
             variant="outline-accent"
@@ -54,7 +57,7 @@ export function CmsReorderModeBar({
             className="max-sm:flex-1"
           >
             <Save className="size-3" />
-            Salva ordine
+            {text.saveOrder}
           </CmsActionButton>
         </div>
       ) : (
@@ -64,7 +67,7 @@ export function CmsReorderModeBar({
           disabled={!isAvailable || isSaving}
           onClick={onStart}
         >
-          Modalita reorder
+          {text.reorderMode}
         </CmsActionButton>
       )}
     </div>

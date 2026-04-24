@@ -1,3 +1,5 @@
+import { i18n } from "@/lib/i18n";
+
 type SupportedCmsErrorCode =
   | "UNAUTHORIZED"
   | "FORBIDDEN"
@@ -68,13 +70,14 @@ function readBadRequestDetails(error: unknown) {
 }
 
 export function mapTrpcErrorToCmsUiMessage(error: unknown): CmsUiError {
+  const text = i18n.cms.trpcErrors;
   const code = readTrpcCode(error) ?? "INTERNAL_SERVER_ERROR";
 
   if (code === "UNAUTHORIZED") {
     return {
       code,
-      title: "Sessione richiesta",
-      description: "Effettua di nuovo l'accesso per continuare.",
+      title: text.unauthorizedTitle,
+      description: text.unauthorizedDescription,
       retryable: false,
     };
   }
@@ -82,8 +85,8 @@ export function mapTrpcErrorToCmsUiMessage(error: unknown): CmsUiError {
   if (code === "FORBIDDEN") {
     return {
       code,
-      title: "Accesso non consentito",
-      description: "Non hai i permessi necessari per completare questa operazione.",
+      title: text.forbiddenTitle,
+      description: text.forbiddenDescription,
       retryable: false,
     };
   }
@@ -91,8 +94,8 @@ export function mapTrpcErrorToCmsUiMessage(error: unknown): CmsUiError {
   if (code === "CONFLICT") {
     return {
       code,
-      title: "Conflitto dati",
-      description: "Esiste gia una risorsa con gli stessi dati (es. slug duplicato).",
+      title: text.conflictTitle,
+      description: text.conflictDescription,
       retryable: false,
     };
   }
@@ -100,8 +103,8 @@ export function mapTrpcErrorToCmsUiMessage(error: unknown): CmsUiError {
   if (code === "NOT_FOUND") {
     return {
       code,
-      title: "Risorsa non trovata",
-      description: "La risorsa richiesta non esiste o e stata eliminata.",
+      title: text.notFoundTitle,
+      description: text.notFoundDescription,
       retryable: false,
     };
   }
@@ -109,8 +112,8 @@ export function mapTrpcErrorToCmsUiMessage(error: unknown): CmsUiError {
   if (code === "TOO_MANY_REQUESTS") {
     return {
       code,
-      title: "Troppi tentativi",
-      description: "Hai raggiunto il limite di richieste. Riprova tra poco.",
+      title: text.tooManyRequestsTitle,
+      description: text.tooManyRequestsDescription,
       retryable: true,
     };
   }
@@ -120,16 +123,16 @@ export function mapTrpcErrorToCmsUiMessage(error: unknown): CmsUiError {
 
     return {
       code,
-      title: "Dati non validi",
-      description: detail ?? "Controlla i dati inseriti e riprova.",
+      title: text.badRequestTitle,
+      description: detail ?? text.badRequestDescription,
       retryable: false,
     };
   }
 
   return {
     code: "INTERNAL_SERVER_ERROR",
-    title: "Errore imprevisto",
-    description: "Si e verificato un errore inatteso. Riprova.",
+    title: text.internalErrorTitle,
+    description: text.internalErrorDescription,
     retryable: true,
   };
 }

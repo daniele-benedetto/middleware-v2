@@ -7,7 +7,6 @@ export type CmsNavItem = {
 };
 
 export const cmsNavigation: CmsNavItem[] = [
-  { label: i18n.cms.navigation.dashboard, href: "/cms" },
   { label: i18n.cms.navigation.issues, href: "/cms/issues" },
   { label: i18n.cms.navigation.categories, href: "/cms/categories" },
   { label: i18n.cms.navigation.tags, href: "/cms/tags" },

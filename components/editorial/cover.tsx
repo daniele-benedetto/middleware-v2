@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
@@ -107,18 +108,20 @@ export function EditorialCover({
   season,
   title,
   tagline,
-  footer = "TRA INPUT E OUTPUT",
+  footer,
   tone = "cream-ink",
   photoSlot,
   className,
 }: EditorialCoverProps) {
+  const text = i18n.editorial.cover;
   const palette = palettes[tone];
+  const resolvedFooter = footer ?? text.defaultFooter;
 
   return (
     <article className={cn(coverVariants({ tone }), className)}>
       <div className="flex shrink-0 items-start justify-between">
         <span className={cn("font-display text-[11px] uppercase tracking-[-0.02em]", palette.mw)}>
-          MIDDLEWARE
+          {text.brandName}
         </span>
         <div className={cn("text-right font-ui text-[7px] leading-normal", palette.meta)}>
           <div>{issueNumber}</div>
@@ -153,7 +156,7 @@ export function EditorialCover({
       {photoSlot ? <div className="mb-1.75 shrink-0">{photoSlot}</div> : null}
 
       <div className={cn("shrink-0 font-ui text-[6px] uppercase tracking-[0.04em]", palette.foot)}>
-        {footer}
+        {resolvedFooter}
       </div>
     </article>
   );

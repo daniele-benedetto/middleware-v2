@@ -60,6 +60,10 @@ export function CmsIssuesListScreen() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const text = i18n.cms;
+  const listText = text.lists.issues;
+  const commonText = text.common;
+  const quickText = text.quickActions;
+  const optionsText = text.listOptions;
 
   const input = parseIssuesListSearchParams(searchParams);
   const listQuery = useIssuesListQuery(input);
@@ -126,8 +130,7 @@ export function CmsIssuesListScreen() {
   const displayedIssues = reorder.isReorderMode ? reorder.displayedItems : listQuery.items;
   const hasOrderChanges = canReorder && reorder.hasChanges;
 
-  const unavailableReorderMessage =
-    "Reorder disponibile con `sortBy=sortOrder`, `sortOrder=asc`, senza filtri e con una sola pagina.";
+  const unavailableReorderMessage = listText.reorderUnavailable;
 
   useEffect(() => {
     if (!canReorder && reorder.isReorderMode) {
@@ -165,7 +168,7 @@ export function CmsIssuesListScreen() {
 
       await invalidateAfterCmsMutation(trpcUtils, "issues.delete", { id });
       selection.clearSelection();
-      cmsToast.info("Azione completata.");
+      cmsToast.info(commonText.actionCompleted);
     } catch (error) {
       const mapped = mapQuickActionError(error);
       cmsToast.error(mapped.description, mapped.title);
@@ -191,7 +194,7 @@ export function CmsIssuesListScreen() {
     selection.clearSelection();
 
     if (result.failed === 0) {
-      cmsToast.info(`Azione completata su ${result.success} record.`);
+      cmsToast.info(commonText.actionCompletedOnRecords(result.success));
       return;
     }
 
@@ -206,16 +209,16 @@ export function CmsIssuesListScreen() {
     [
       {
         id: "bulk-delete",
-        label: "Delete",
+        label: quickText.delete,
         scope: "bulk",
         tone: "danger",
         requiresConfirm: ({ selectedCount }) => selectedCount > 0,
         confirm: ({ selectedCount }) => ({
-          title: "Conferma eliminazione",
+          title: quickText.confirmDeleteTitle,
           description:
             selectedCount === 1
-              ? "Eliminerai definitivamente l'issue selezionata."
-              : `Eliminerai definitivamente ${selectedCount} issues selezionate.`,
+              ? quickText.confirmDeleteIssueSingle
+              : quickText.confirmDeleteIssueBulk(selectedCount),
         }),
         isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
       } satisfies CmsQuickAction,
@@ -228,10 +231,7 @@ export function CmsIssuesListScreen() {
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader
-        title={text.navigation.issues}
-        subtitle="Filtri, ricerca, ordinamento, paginazione e riordino integrati via tRPC."
-      />
+      <CmsPageHeader title={text.navigation.issues} subtitle={listText.subtitle} />
 
       <CmsDataTableShell
         toolbar={
@@ -259,9 +259,9 @@ export function CmsIssuesListScreen() {
                   updateSearchParams({ isActive: value === "all" ? undefined : value, page: 1 });
                 }}
                 options={[
-                  { value: "all", label: "Stato: tutti" },
-                  { value: "true", label: "Solo attive" },
-                  { value: "false", label: "Solo non attive" },
+                  { value: "all", label: optionsText.statusAllMasculine },
+                  { value: "true", label: optionsText.activeOnlyFeminine },
+                  { value: "false", label: optionsText.inactiveOnlyFeminine },
                 ]}
               />
 
@@ -271,9 +271,9 @@ export function CmsIssuesListScreen() {
                   updateSearchParams({ published: value === "all" ? undefined : value, page: 1 });
                 }}
                 options={[
-                  { value: "all", label: "Pubblicazione: tutte" },
-                  { value: "true", label: "Solo pubblicate" },
-                  { value: "false", label: "Solo non pubblicate" },
+                  { value: "all", label: optionsText.publicationAll },
+                  { value: "true", label: optionsText.publicationOnly },
+                  { value: "false", label: optionsText.publicationNot },
                 ]}
               />
 
@@ -284,9 +284,9 @@ export function CmsIssuesListScreen() {
                     updateSearchParams({ sortBy: value, page: 1 });
                   }}
                   options={[
-                    { value: "createdAt", label: "Sort: creazione" },
-                    { value: "sortOrder", label: "Sort: ordine" },
-                    { value: "publishedAt", label: "Sort: pubblicazione" },
+                    { value: "createdAt", label: optionsText.sortCreatedAt },
+                    { value: "sortOrder", label: optionsText.sortOrder },
+                    { value: "publishedAt", label: optionsText.sortPublishedAt },
                   ]}
                 />
 
@@ -296,8 +296,8 @@ export function CmsIssuesListScreen() {
                     updateSearchParams({ sortOrder: value, page: 1 });
                   }}
                   options={[
-                    { value: "desc", label: "DESC" },
-                    { value: "asc", label: "ASC" },
+                    { value: "desc", label: optionsText.desc },
+                    { value: "asc", label: optionsText.asc },
                   ]}
                 />
               </div>
@@ -308,7 +308,7 @@ export function CmsIssuesListScreen() {
               isReorderMode={reorder.isReorderMode}
               hasChanges={hasOrderChanges}
               isSaving={reorderMutation.isPending}
-              helpText="Modalita reorder attiva: usa le frecce per riordinare e salva per applicare le modifiche."
+              helpText={listText.reorderHelp}
               unavailableText={unavailableReorderMessage}
               onStart={() => {
                 selection.clearSelection();
@@ -330,7 +330,7 @@ export function CmsIssuesListScreen() {
                         ids: reorder.normalizedOrder,
                       });
                       reorder.commit();
-                      cmsToast.info("Ordine issues aggiornato con successo.");
+                      cmsToast.info(listText.reorderUpdated);
                     },
                     onError: (error) => {
                       const mapped = mapTrpcErrorToCmsUiMessage(error);
@@ -354,19 +354,39 @@ export function CmsIssuesListScreen() {
                       onCheckedChange={() => {
                         selection.toggleSelectAll(pageIssueIds);
                       }}
-                      aria-label="Seleziona tutti"
+                      aria-label={commonText.selectAll}
                     />
                   </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Titolo</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Slug</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Stato</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Pubblicata</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Ordine</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Articoli</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Creata</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Aggiornata</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Azioni</TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>Reorder</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.title}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.slug}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.status}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.published}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.order}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.articles}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.createdAt}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.updatedAt}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.actions}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.reorder}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -379,16 +399,16 @@ export function CmsIssuesListScreen() {
                         onCheckedChange={() => {
                           selection.toggleSelection(issue.id);
                         }}
-                        aria-label={`Seleziona ${issue.title}`}
+                        aria-label={listText.selectItem(issue.title)}
                       />
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellTitle}>{issue.title}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>{issue.slug}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {issue.isActive ? "Attiva" : "Non attiva"}
+                      {issue.isActive ? listText.active : listText.inactive}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {issue.publishedAt ? "Si" : "No"}
+                      {issue.publishedAt ? commonText.yes : commonText.no}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       {String(issue.sortOrder)}
@@ -404,10 +424,10 @@ export function CmsIssuesListScreen() {
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <CmsConfirmDialog
-                        triggerLabel="Delete"
+                        triggerLabel={quickText.delete}
                         triggerDisabled={isActionPending || reorder.isReorderMode}
-                        title="Conferma eliminazione"
-                        description="Eliminerai definitivamente questa issue."
+                        title={quickText.confirmDeleteTitle}
+                        description={quickText.confirmDeleteSingleIssue}
                         tone="danger"
                         onConfirm={() => {
                           void runSingleAction("delete", issue.id);
@@ -456,7 +476,7 @@ export function CmsIssuesListScreen() {
           ) : (
             <div className="px-5 py-4">
               <CmsEmptyState
-                eyebrow="Issues"
+                eyebrow={listText.eyebrow}
                 title={text.resource.emptyTitle(text.navigation.issues)}
                 description={text.resource.emptyDescription}
               />
@@ -482,7 +502,7 @@ export function CmsIssuesListScreen() {
       />
 
       <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
-        Totale: {listQuery.pagination.total} record
+        {commonText.totalRecords(listQuery.pagination.total)}
       </div>
     </div>
   );

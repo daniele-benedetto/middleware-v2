@@ -2,6 +2,7 @@
 
 import { toast as sonnerToast } from "sonner";
 
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 type CmsToastVariant = "info" | "breaking" | "error";
@@ -14,6 +15,7 @@ type CmsToastRenderProps = {
 };
 
 function CmsToastCard({ id, label, body, variant }: CmsToastRenderProps) {
+  const text = i18n.cms.common;
   const containerClass = cn(
     "flex w-full min-w-80 max-w-120 items-stretch",
     variant === "error"
@@ -57,7 +59,7 @@ function CmsToastCard({ id, label, body, variant }: CmsToastRenderProps) {
       <button
         type="button"
         onClick={() => sonnerToast.dismiss(id)}
-        aria-label="Chiudi"
+        aria-label={text.close}
         className={closeClass}
       >
         ×
@@ -74,8 +76,9 @@ function showToast(variant: CmsToastVariant, defaultLabel: string, body: string,
 }
 
 export const cmsToast = {
-  info: (body: string, label?: string) => showToast("info", "INFO", body, label),
-  breaking: (body: string, label?: string) => showToast("breaking", "BREAKING", body, label),
-  error: (body: string, label?: string) => showToast("error", "ERRORE", body, label),
+  info: (body: string, label?: string) => showToast("info", i18n.cms.toast.info, body, label),
+  breaking: (body: string, label?: string) =>
+    showToast("breaking", i18n.cms.toast.breaking, body, label),
+  error: (body: string, label?: string) => showToast("error", i18n.cms.toast.error, body, label),
   dismiss: sonnerToast.dismiss,
 };
