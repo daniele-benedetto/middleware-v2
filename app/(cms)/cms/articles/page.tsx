@@ -21,6 +21,7 @@ export default async function CmsArticlesPage({ searchParams }: CmsArticlesPageP
 
   return (
     <CmsArticlesListScreen
+      initialInput={input}
       initialData={initialData.articles}
       initialIssuesOptionsData={initialData.issuesOptions}
       initialCategoriesOptionsData={initialData.categoriesOptions}

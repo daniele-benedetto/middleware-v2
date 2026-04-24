@@ -19,5 +19,5 @@ export default async function CmsIssuesPage({ searchParams }: CmsIssuesPageProps
   const input = parseIssuesListSearchParams(resolvedSearchParams);
   const initialData = await prefetchIssuesList(input);
 
-  return <CmsIssuesListScreen initialData={initialData} />;
+  return <CmsIssuesListScreen initialInput={input} initialData={initialData} />;
 }

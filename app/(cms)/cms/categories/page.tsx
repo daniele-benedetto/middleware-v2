@@ -19,5 +19,5 @@ export default async function CmsCategoriesPage({ searchParams }: CmsCategoriesP
   const input = parseCategoriesListSearchParams(resolvedSearchParams);
   const initialData = await prefetchCategoriesList(input);
 
-  return <CmsCategoriesListScreen initialData={initialData} />;
+  return <CmsCategoriesListScreen initialInput={input} initialData={initialData} />;
 }

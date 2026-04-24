@@ -16,39 +16,14 @@ Approccio scelto: prima fondamenta UX/performance (P0/P1), poi CRUD moduli.
 
 Obiettivo: ridurre waterfall e tempo al contenuto utile, mantenendo architettura tRPC-only.
 
-- [x] Identificare query seriali nelle screen CMS e parallelizzare dove possibile.
 - [ ] Introdurre prefetch server-side per dati critici del first paint (dashboard + liste principali).
   - Stato: completato su liste principali (`issues`, `categories`, `tags`, `articles`, `users`), dashboard ancora da coprire.
-- [x] Evitare roundtrip inutili server->HTTP interno quando i dati possono essere risolti direttamente lato server.
 - [ ] Ridurre boundary `"use client"` ai soli componenti interattivi, spostando il resto lato server.
 - [ ] Valutare lazy-loading (`next/dynamic`) per componenti client pesanti/non critici.
-- [x] Definire policy cache/query condivisa (stale time, invalidazione, placeholderData) documentata.
 
 ### Piano operativo dettagliato (file-by-file)
 
 Nota: eseguire in ordine. Prima vertical slice su `issues`, poi estensione agli altri moduli.
-
-#### Fase A - Fondamenta tRPC server prefetch (no HTTP interno)
-
-- [x] A1. Creare caller server tRPC riusabile per RSC.
-  - Nuovo file: `lib/server/trpc/caller.ts`
-  - Contenuto atteso:
-    - helper server-only che costruisce `createTrpcContext({ request })` in ambiente RSC.
-    - export funzione `getTrpcCaller()` che restituisce caller typed su `appRouter`.
-  - Vincolo: nessuna chiamata a `/api/trpc` da server components.
-
-- [x] A2. Definire util server per prefetch CMS liste.
-  - Nuovo file: `lib/cms/trpc/server-prefetch.ts`
-  - Contenuto atteso:
-    - funzioni per prefetch `issues.list`, `categories.list`, `tags.list`, `articles.list`, `users.list`.
-    - funzioni specifiche per filtri articoli (`issues.list` + `categories.list`) in parallelo.
-  - Vincolo: usare caller diretto (A1), non client hooks.
-
-- [x] A3. Definire contratto hydration iniziale per liste CMS.
-  - Nuovo file: `features/cms/shared/types/initial-data.ts`
-  - Contenuto atteso:
-    - tipi `InitialCmsListData<T>` e payload opzionali per dati prefetchati.
-    - shape coerente con output tRPC gia usato dai list hooks.
 
 #### Fase B - Vertical slice `issues` (pilota)
 
@@ -70,10 +45,11 @@ Nota: eseguire in ordine. Prima vertical slice su `issues`, poi estensione agli 
     - mantenere interattivita client.
     - usare `initialData` nella query (`initialData`/`placeholderData`) per evitare loading vuoto al mount.
 
-- [ ] B4. Misurare regressioni funzionali su `issues`.
+- [x] B4. Misurare regressioni funzionali su `issues`.
   - Verifiche:
     - filtri, sort, paginazione, reorder, bulk delete invariati.
     - nessuna regressione su `CmsLoadingState` per navigation successive.
+  - Nota implementativa: evitata regressione di hydration su query-key change applicando `initialData` solo quando `input` client coincide con `initialInput` server (matching nel layer hooks).
 
 #### Fase C - Estensione pattern alle altre liste
 
@@ -134,9 +110,9 @@ Nota: eseguire in ordine. Prima vertical slice su `issues`, poi estensione agli 
 
 #### Fase F - Quality gate e benchmark minimo
 
-- [ ] F1. Eseguire quality gates dopo ogni fase chiave.
+- [x] F1. Eseguire quality gates dopo ogni fase chiave.
   - Comandi: `pnpm lint`, `pnpm typecheck`, `pnpm build`.
-  - Stato ultimo run: `typecheck` ok; `lint` e `build` bloccati da errori preesistenti fuori scope task (`components/cms/common/system-screen.tsx`, `app/(cms)/cms/error.tsx`).
+  - Stato ultimo run: `lint` ok, `typecheck` ok, `build` ok.
 
 - [ ] F2. Benchmark minimo prima/dopo (issues + articles).
   - Metriche pratiche:

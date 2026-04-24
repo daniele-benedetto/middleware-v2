@@ -58,6 +58,9 @@ import type {
   CategoriesListInitialData,
   IssuesListInitialData,
 } from "@/features/cms/shared/types/initial-data";
+import type { RouterInputs } from "@/lib/trpc/types";
+
+type ArticlesListInput = RouterInputs["articles"]["list"];
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -204,12 +207,14 @@ function mapArticleDomainError(uiError: CmsUiError): CmsUiError {
 }
 
 type CmsArticlesListScreenProps = {
+  initialInput?: ArticlesListInput;
   initialData?: ArticlesListInitialData;
   initialIssuesOptionsData?: IssuesListInitialData;
   initialCategoriesOptionsData?: CategoriesListInitialData;
 };
 
 export function CmsArticlesListScreen({
+  initialInput,
   initialData,
   initialIssuesOptionsData,
   initialCategoriesOptionsData,
@@ -224,7 +229,10 @@ export function CmsArticlesListScreen({
   const optionsText = text.listOptions;
 
   const input = parseArticlesListSearchParams(searchParams);
-  const listQuery = useArticlesListQuery(input, { initialData });
+  const listQuery = useArticlesListQuery(input, {
+    initialDataInput: initialInput,
+    initialData,
+  });
   const trpcUtils = trpc.useUtils();
 
   const selection = useListSelection();

@@ -19,5 +19,5 @@ export default async function CmsTagsPage({ searchParams }: CmsTagsPageProps) {
   const input = parseTagsListSearchParams(resolvedSearchParams);
   const initialData = await prefetchTagsList(input);
 
-  return <CmsTagsListScreen initialData={initialData} />;
+  return <CmsTagsListScreen initialInput={input} initialData={initialData} />;
 }

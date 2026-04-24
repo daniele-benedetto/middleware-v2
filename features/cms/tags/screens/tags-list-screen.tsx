@@ -43,6 +43,9 @@ import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 
 import type { TagsListInitialData } from "@/features/cms/shared/types/initial-data";
+import type { RouterInputs } from "@/lib/trpc/types";
+
+type TagsListInput = RouterInputs["tags"]["list"];
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -52,10 +55,11 @@ function formatDate(value: string) {
 type TagQuickAction = "delete";
 
 type CmsTagsListScreenProps = {
+  initialInput?: TagsListInput;
   initialData?: TagsListInitialData;
 };
 
-export function CmsTagsListScreen({ initialData }: CmsTagsListScreenProps) {
+export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScreenProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -66,7 +70,7 @@ export function CmsTagsListScreen({ initialData }: CmsTagsListScreenProps) {
   const optionsText = text.listOptions;
 
   const input = parseTagsListSearchParams(searchParams);
-  const listQuery = useTagsListQuery(input, { initialData });
+  const listQuery = useTagsListQuery(input, { initialDataInput: initialInput, initialData });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
 

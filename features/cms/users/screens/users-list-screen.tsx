@@ -43,6 +43,9 @@ import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 
 import type { UsersListInitialData } from "@/features/cms/shared/types/initial-data";
+import type { RouterInputs } from "@/lib/trpc/types";
+
+type UsersListInput = RouterInputs["users"]["list"];
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -52,10 +55,11 @@ function formatDate(value: string) {
 type UserQuickAction = "role-admin" | "role-editor" | "delete";
 
 type CmsUsersListScreenProps = {
+  initialInput?: UsersListInput;
   initialData?: UsersListInitialData;
 };
 
-export function CmsUsersListScreen({ initialData }: CmsUsersListScreenProps) {
+export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListScreenProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -66,7 +70,7 @@ export function CmsUsersListScreen({ initialData }: CmsUsersListScreenProps) {
   const optionsText = text.listOptions;
 
   const input = parseUsersListSearchParams(searchParams);
-  const listQuery = useUsersListQuery(input, { initialData });
+  const listQuery = useUsersListQuery(input, { initialDataInput: initialInput, initialData });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
 

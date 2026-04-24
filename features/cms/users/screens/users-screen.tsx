@@ -20,5 +20,5 @@ export async function CmsUsersScreen({ searchParams }: CmsUsersScreenProps) {
   const input = parseUsersListSearchParams(searchParams);
   const initialData = await prefetchUsersList(input);
 
-  return <CmsUsersListScreen initialData={initialData} />;
+  return <CmsUsersListScreen initialInput={input} initialData={initialData} />;
 }

@@ -43,6 +43,9 @@ import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 
 import type { CategoriesListInitialData } from "@/features/cms/shared/types/initial-data";
+import type { RouterInputs } from "@/lib/trpc/types";
+
+type CategoriesListInput = RouterInputs["categories"]["list"];
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -52,10 +55,14 @@ function formatDate(value: string) {
 type CategoryQuickAction = "delete";
 
 type CmsCategoriesListScreenProps = {
+  initialInput?: CategoriesListInput;
   initialData?: CategoriesListInitialData;
 };
 
-export function CmsCategoriesListScreen({ initialData }: CmsCategoriesListScreenProps) {
+export function CmsCategoriesListScreen({
+  initialInput,
+  initialData,
+}: CmsCategoriesListScreenProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -66,7 +73,10 @@ export function CmsCategoriesListScreen({ initialData }: CmsCategoriesListScreen
   const optionsText = text.listOptions;
 
   const input = parseCategoriesListSearchParams(searchParams);
-  const listQuery = useCategoriesListQuery(input, { initialData });
+  const listQuery = useCategoriesListQuery(input, {
+    initialDataInput: initialInput,
+    initialData,
+  });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
 

@@ -45,6 +45,9 @@ import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 
 import type { IssuesListInitialData } from "@/features/cms/shared/types/initial-data";
+import type { RouterInputs } from "@/lib/trpc/types";
+
+type IssuesListInput = RouterInputs["issues"]["list"];
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -58,10 +61,11 @@ function formatDate(value: string | null) {
 type IssueQuickAction = "delete";
 
 type CmsIssuesListScreenProps = {
+  initialInput?: IssuesListInput;
   initialData?: IssuesListInitialData;
 };
 
-export function CmsIssuesListScreen({ initialData }: CmsIssuesListScreenProps) {
+export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesListScreenProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -72,7 +76,7 @@ export function CmsIssuesListScreen({ initialData }: CmsIssuesListScreenProps) {
   const optionsText = text.listOptions;
 
   const input = parseIssuesListSearchParams(searchParams);
-  const listQuery = useIssuesListQuery(input, { initialData });
+  const listQuery = useIssuesListQuery(input, { initialDataInput: initialInput, initialData });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
 
