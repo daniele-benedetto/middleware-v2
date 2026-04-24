@@ -15,7 +15,9 @@ export default async function CmsLayout({ children }: CmsLayoutProps) {
 
   return (
     <CmsLayoutShell
-      sidebar={<CmsSidebar role={role} />}
+      sidebar={
+        <CmsSidebar role={role} userName={session.user.name} userEmail={session.user.email} />
+      }
       topbar={
         <div className="space-y-2">
           <CmsTopbar role={role} />

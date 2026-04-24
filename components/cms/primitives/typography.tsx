@@ -6,7 +6,7 @@ import type { ElementType, ReactNode } from "react";
 
 /* =============================================================
  * DISPLAY (Archivo Black)
- * SG: hero / h1 / h2 / pull-quote / section-label
+ * SG: hero / h1 / h2 / h3 / pull-quote / section-label
  * ============================================================= */
 
 const cmsDisplayVariants = cva("font-display uppercase text-foreground", {
@@ -15,6 +15,7 @@ const cmsDisplayVariants = cva("font-display uppercase text-foreground", {
       hero: "text-(length:--text-display-hero) leading-(--lh-2xl) tracking-[-0.04em]",
       h1: "text-(length:--text-display-h1) leading-(--lh-display-h1) tracking-[-0.03em]",
       h2: "text-(length:--text-display-h2) leading-(--lh-xl) tracking-[-0.025em]",
+      h3: "text-(length:--text-display-h3) leading-(--lh-lg) tracking-[-0.02em]",
       quote:
         "text-(length:--text-display-quote) leading-(--lh-display-quote) tracking-[-0.02em] italic",
       label: "text-(length:--text-display-label) tracking-[0.04em]",
@@ -47,6 +48,8 @@ function defaultTagFor(size: CmsDisplayProps["size"]): ElementType {
       return "h1";
     case "h2":
       return "h2";
+    case "h3":
+      return "h3";
     case "quote":
       return "blockquote";
     case "label":

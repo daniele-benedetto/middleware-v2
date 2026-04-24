@@ -45,7 +45,7 @@ Type scale (base):
 
 Editorial type scale (SG parity):
 
-- Display: `--text-display-hero` (clamp 48–96), `--text-display-h1` (clamp 28–48), `--text-display-h2` (clamp 18–28), `--text-display-quote` (clamp 20–32), `--text-display-label` (15)
+- Display: `--text-display-hero` (clamp 48–96), `--text-display-h1` (clamp 28–48), `--text-display-h2` (clamp 18–28), `--text-display-h3`(clamp 16 28) `--text-display-quote` (clamp 20–32), `--text-display-label` (15)
 - Editorial: `--text-editorial-body` (19), `--text-editorial-epigraph` (16), `--text-editorial-blockquote` (17), `--text-editorial-hairline` (15), `--text-editorial-note` (14)
 - Meta: `--text-meta` (11), `--text-section-number` (12)
 
