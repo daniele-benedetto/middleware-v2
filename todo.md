@@ -10,6 +10,59 @@ Decisioni gia fissate:
 - Invariante dominio: `publishedAt` solo con `status = PUBLISHED` (gia lato API).
 - Slug normalizzato lato API e univocita rispettata lato DB.
 
+Approccio scelto: prima fondamenta UX/performance (P0/P1), poi CRUD moduli.
+
+## 0) Fondamenta UX + Performance (P0)
+
+Obiettivo: migliorare percezione di velocita, navigazione e affidabilita del CMS prima delle singole pagine CRUD.
+
+### 0.1) SEO-first metadata architecture (priorita immediata)
+
+Obiettivo: definire ora una struttura metadata robusta e centralizzata, pronta anche per future pagine articolo pubbliche.
+
+- [ ] Sostituire i fallback OG/Twitter con asset editoriali finali in `public/brand/`:
+  - [ ] `og-default-1200x630.png`
+  - [ ] `twitter-default-1200x630.png`
+- [ ] Aggiungere `loading.tsx` in `app/(cms)/cms` e nei segmenti lista principali.
+- [ ] Uniformare skeleton lista (header + toolbar + tabella + pagination), non solo placeholder generici.
+- [ ] Uniformare stati `loading/error/empty/retry` per tutte le viste CMS.
+- [ ] Preservare UX di navigazione (filtri/paginazione/query params consistenti su back/forward).
+
+## 1) Data fetching e rendering (P1)
+
+Obiettivo: ridurre waterfall e tempo al contenuto utile, mantenendo architettura tRPC-only.
+
+- [ ] Identificare query seriali nelle screen CMS e parallelizzare dove possibile.
+- [ ] Introdurre prefetch server-side per dati critici del first paint (dashboard + liste principali).
+- [ ] Evitare roundtrip inutili server->HTTP interno quando i dati possono essere risolti direttamente lato server.
+- [ ] Ridurre boundary `"use client"` ai soli componenti interattivi, spostando il resto lato server.
+- [ ] Valutare lazy-loading (`next/dynamic`) per componenti client pesanti/non critici.
+- [ ] Definire policy cache/query condivisa (stale time, invalidazione, placeholderData) documentata.
+
+## 2) Advanced Next 16 (P2, dopo benchmark)
+
+Obiettivo: abilitare ottimizzazioni avanzate solo dopo aver consolidato P0/P1.
+
+- [ ] Valutare adozione `cacheComponents` in `next.config.ts` con piano di migrazione controllato.
+- [ ] Dove appropriato, applicare `"use cache"` + `cacheLife` a funzioni/componenti server idonei.
+- [ ] Inserire boundary `Suspense` piu granulari su sezioni lente per streaming progressivo.
+- [ ] Valutare `unstable_instant` sui segmenti critici di navigazione (solo se `cacheComponents` attivo).
+- [ ] Valutare tuning `experimental.staleTimes` (solo se necessario e con misure).
+
+## 3) Osservabilita e quality gates
+
+- [ ] Aggiungere report Core Web Vitals (`useReportWebVitals`) verso endpoint/log interno.
+- [ ] Introdurre check periodico bundle size (`next experimental-analyze`) sulle route CMS.
+- [ ] Definire budget prestazionali minimi (LCP/INP/CLS target interni per area CMS).
+- [ ] Inserire checklist performance nel flusso PR (prima di chiudere milestone UI).
+
+## 4) Accessibilita e robustezza UX
+
+- [ ] Pass accessibilita su navigazione, dialog, focus management, keyboard interactions.
+- [ ] Verificare contrasto/stati hover/focus nelle componenti cliccabili CMS.
+- [ ] Uniformare aria-label e naming semantico per componenti tabellari e azioni rapide.
+- [ ] Definire fallback/error boundary globali (`error.tsx`, `global-error.tsx`) per CMS.
+
 ## 5) Modulo Issues
 
 Procedure API disponibili: `issues.list`, `issues.getById`, `issues.create`, `issues.update`, `issues.delete`, `issues.reorder`.
@@ -52,4 +105,6 @@ Procedure API disponibili: `users.list`, `users.getById`, `users.create`, `users
 ## Definition of Ready - CMS UI pronto
 
 - [ ] Shell CMS operativa con navigation completa.
+- [ ] Fondamenta UX/performance P0 completate e verificate.
 - [ ] CRUD completo operativo per `Issue`, `Category`, `Tag`, `Article`, `User`.
+- [ ] Baseline quality gates attivi (lint, typecheck, build, controllo performance minimo).

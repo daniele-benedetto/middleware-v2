@@ -1,4 +1,11 @@
 import { i18n } from "@/lib/i18n";
+import { buildPageMetadata } from "@/lib/seo";
+
+export const metadata = buildPageMetadata({
+  title: i18n.cms.home.title,
+  description: i18n.cms.home.description,
+  path: "/",
+});
 
 export default function Home() {
   const text = i18n.cms.home;

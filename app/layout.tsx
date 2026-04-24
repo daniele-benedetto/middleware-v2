@@ -1,11 +1,11 @@
 import { Archivo_Black, Geist, IBM_Plex_Mono, Newsreader } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
-import { i18n } from "@/lib/i18n";
+import { buildRootMetadata } from "@/lib/seo";
 import { TrpcProvider } from "@/lib/trpc/provider";
 import { cn } from "@/lib/utils";
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
 
@@ -28,9 +28,11 @@ const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: i18n.cms.app.metadataTitle,
-  description: i18n.cms.app.metadataDescription,
+export const metadata: Metadata = buildRootMetadata();
+
+export const viewport: Viewport = {
+  themeColor: "#0A0A0A",
+  colorScheme: "light",
 };
 
 export default function RootLayout({

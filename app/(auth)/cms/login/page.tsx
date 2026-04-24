@@ -3,6 +3,14 @@ import { redirect } from "next/navigation";
 import { CmsLoginForm } from "@/components/cms/auth/login-form";
 import { CmsBrand } from "@/components/cms/primitives";
 import { getCmsSession } from "@/lib/cms/auth";
+import { i18n } from "@/lib/i18n";
+import { buildCmsMetadata } from "@/lib/seo";
+
+export const metadata = buildCmsMetadata({
+  title: i18n.cms.auth.loginTitle,
+  description: i18n.cms.auth.loginDescription,
+  path: "/cms/login",
+});
 
 export default async function CmsLoginPage() {
   const session = await getCmsSession();
