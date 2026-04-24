@@ -1,12 +1,11 @@
 "use client";
 
 import { ChevronsUpDown, Menu, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
-import { CmsActionButton, CmsDisplay } from "@/components/cms/primitives";
+import { CmsActionButton, CmsBrand } from "@/components/cms/primitives";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,21 +60,7 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
     }
   };
 
-  const brandBlock = (
-    <div className="flex items-center gap-3">
-      <Image
-        src="/brand/middleware-logo.svg"
-        alt="Middleware logo"
-        width={34}
-        height={34}
-        className="size-8 shrink-0 object-contain"
-        priority
-      />
-      <CmsDisplay as="h3" size="h3" className="text-foreground">
-        Middleware
-      </CmsDisplay>
-    </div>
-  );
+  const brandBlock = <CmsBrand size="sm" priority wordmarkAs="h3" />;
 
   const navigationLinks = (onNavigate?: () => void) => (
     <nav className="flex flex-col gap-1">

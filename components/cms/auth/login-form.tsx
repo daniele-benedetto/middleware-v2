@@ -5,7 +5,6 @@ import { useState } from "react";
 
 import {
   CmsActionButton,
-  CmsDisplay,
   CmsFormField,
   CmsMetaText,
   CmsTextInput,
@@ -54,16 +53,7 @@ export function CmsLoginForm() {
 
   return (
     <form className="border border-foreground bg-white" onSubmit={onSubmit}>
-      <div className="flex items-center justify-between bg-foreground px-4.5 py-3.5">
-        <CmsDisplay size="label" tone="onAccent">
-          LOGIN CMS
-        </CmsDisplay>
-        <CmsMetaText variant="tiny" className="text-white/50!">
-          ACCESSO RISERVATO
-        </CmsMetaText>
-      </div>
-
-      <div className="flex flex-col gap-4 border-b border-border px-4.5 py-5">
+      <div className="flex flex-col gap-4 border-b border-border px-5 py-6">
         <CmsFormField label={text.emailLabel} htmlFor="email">
           <CmsTextInput
             id="email"
@@ -102,7 +92,7 @@ export function CmsLoginForm() {
       </div>
 
       <CmsActionButton
-        className="h-12.5 w-full justify-start border-0 bg-accent px-4.5 text-[12px] text-primary-foreground hover:bg-accent/90"
+        className="h-12.5 w-full justify-start border-0 bg-accent px-5 text-[12px] text-primary-foreground hover:bg-accent/90"
         isLoading={isSubmitting}
         tone="danger"
         type="submit"

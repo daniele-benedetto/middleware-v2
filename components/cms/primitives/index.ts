@@ -1,6 +1,12 @@
 export { CmsAccordion, type CmsAccordionItem } from "@/components/cms/primitives/accordion";
 export { CmsActionButton } from "@/components/cms/primitives/action-button";
 export { CmsBadge, CmsBreakingDot, CmsRemovableTag } from "@/components/cms/primitives/badge";
+export {
+  CmsBrand,
+  CmsLogo,
+  CmsWordmark,
+  type CmsBrandSize,
+} from "@/components/cms/primitives/brand";
 export { CmsPagination, CmsStepper } from "@/components/cms/primitives/pagination";
 export { CmsSearchBar, CmsSearchResultItem } from "@/components/cms/primitives/search-bar";
 export { cmsToast } from "@/components/cms/primitives/toast";
