@@ -8,10 +8,12 @@ type CmsDashboardScreenProps = {
   role?: UserRole | null;
 };
 
+const notInDashboardPage = true;
+
 export function CmsDashboardScreen({ role }: CmsDashboardScreenProps) {
   const text = i18n.cms.dashboard;
 
-  const visibleNavigation = toVisibleNavigation(role);
+  const visibleNavigation = toVisibleNavigation(role, notInDashboardPage);
 
   return (
     <div className="space-y-7">

@@ -12,67 +12,6 @@ Decisioni gia fissate:
 
 Approccio scelto: prima fondamenta UX/performance (P0/P1), poi CRUD moduli.
 
-## 1) Data fetching e rendering (P1)
-
-Obiettivo: ridurre waterfall e tempo al contenuto utile, mantenendo architettura tRPC-only.
-
-- [ ] Ridurre boundary `"use client"` ai soli componenti interattivi, spostando il resto lato server.
-- [ ] Valutare lazy-loading (`next/dynamic`) per componenti client pesanti/non critici.
-
-### Piano operativo dettagliato (file-by-file)
-
-Nota: eseguire in ordine. Prima vertical slice su `issues`, poi estensione agli altri moduli.
-
-#### Fase D - Riduzione boundary client e lazy loading mirato
-
-- [x] D1. Ridurre `"use client"` dove non serve stato/eventi.
-  - Candidati primari:
-    - `components/cms/layout/breadcrumbs.tsx` (valutare versione server se pathname disponibile via props)
-    - parti statiche delle toolbar liste (estrazione subcomponenti server-safe).
-  - Stato: rimosso hook client non necessario su navigation (`use-visible-navigation`), sostituito con mapper puro riusato direttamente.
-  - Stato: rimosso anche boundary client non necessario in `features/cms/shared/hooks/use-cms-list-query.ts` (modulo ora agnostico server/client).
-  - Stato: rimossi boundary client in componenti UI/presentational validi (`pagination`, `pagination-footer`, `search-bar`, `list-toolbar`, `bulk-action-bar`, `reorder-mode-bar`, `form-controls`, `accordion`, `tooltip`, `ui/table`, `ui/label`). `breadcrumbs` resta client per dipendenza diretta da `usePathname`.
-
-- [x] D2. Introdurre `next/dynamic` per blocchi client pesanti non critici.
-  - Candidati iniziali:
-    - action cluster avanzati in `features/cms/articles/screens/articles-list-screen.tsx`
-    - menu mobile/sidebar se impatta bundle iniziale.
-  - Vincolo: non degradare a11y/focus management.
-  - Stato: lazy loading applicato su `CmsConfirmDialog` in `articles-list-screen` tramite `next/dynamic` (`ssr: false`) per alleggerire il bundle iniziale delle azioni avanzate.
-
-#### Fase E - Policy cache/query condivisa e documentata
-
-- [ ] E1. Centralizzare policy query CMS.
-  - File: `features/cms/shared/hooks/use-cms-list-query.ts`
-  - Intervento:
-    - formalizzare default (`staleTime`, `placeholderData`, eventuale `gcTime`/`retry`).
-    - mantenere override espliciti solo dove motivati (`articles` options query).
-
-- [ ] E2. Allineare invalidazione mutation alla policy.
-  - File: `lib/cms/trpc/invalidation.ts`
-  - Intervento:
-    - verificare granularita list/detail invalidate per coerenza con stale policy.
-
-- [x] E3. Documentare policy in docs operative.
-  - Nuovo file: `docs/cms-query-cache-policy.md`
-  - Contenuto minimo:
-    - default query policy CMS.
-    - quando usare prefetch server.
-    - quando usare override per query specifiche.
-    - matrice invalidazione per mutation principali.
-
-#### Fase F - Quality gate e benchmark minimo
-
-- [x] F1. Eseguire quality gates dopo ogni fase chiave.
-  - Comandi: `pnpm lint`, `pnpm typecheck`, `pnpm build`.
-  - Stato ultimo run: `lint` ok, `typecheck` ok, `build` ok.
-
-- [ ] F2. Benchmark minimo prima/dopo (issues + articles).
-  - Metriche pratiche:
-    - tempo al primo contenuto utile lista.
-    - riduzione durata skeleton al first load.
-    - assenza regressioni in navigazione con filtri.
-
 ## 2) Advanced Next 16 (P2, dopo benchmark)
 
 Obiettivo: abilitare ottimizzazioni avanzate solo dopo aver consolidato P0/P1.

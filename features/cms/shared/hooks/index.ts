@@ -7,6 +7,8 @@ export {
 } from "@/features/cms/shared/hooks/use-cms-domain-list-hooks";
 export {
   cmsListQueryOptions,
+  cmsOptionsQueryOptions,
+  cmsQueryPolicy,
   type CmsListInput,
   type CmsListOutput,
   type CmsPagination,

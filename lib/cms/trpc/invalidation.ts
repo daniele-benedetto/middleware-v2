@@ -7,6 +7,9 @@ type MutationInput = {
   ids?: string[];
 };
 
+type InvalidateDetail = (input: { id: string }) => Promise<void>;
+type InvalidateList = () => Promise<void>;
+
 function resolveInvalidationIds(input?: MutationInput) {
   if (!input) {
     return [];
@@ -16,11 +19,18 @@ function resolveInvalidationIds(input?: MutationInput) {
   return [...new Set(ids)];
 }
 
-async function invalidateDetails(
-  ids: string[],
-  invalidator: (input: { id: string }) => Promise<void>,
+function toDetailInvalidations(ids: string[], invalidator: InvalidateDetail) {
+  return ids.map((id) => invalidator({ id }));
+}
+
+async function invalidateResource(
+  invalidateList: InvalidateList,
+  invalidateDetail: InvalidateDetail,
+  input?: MutationInput,
 ) {
-  await Promise.all(ids.map((id) => invalidator({ id })));
+  const ids = resolveInvalidationIds(input);
+
+  await Promise.all([invalidateList(), ...toDetailInvalidations(ids, invalidateDetail)]);
 }
 
 export type CmsMutationName =
@@ -50,28 +60,31 @@ export type CmsMutationName =
   | "articles.reorder";
 
 export async function invalidateIssuesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
-  await utils.issues.list.invalidate();
-  await invalidateDetails(resolveInvalidationIds(input), utils.issues.getById.invalidate);
+  await invalidateResource(utils.issues.list.invalidate, utils.issues.getById.invalidate, input);
 }
 
 export async function invalidateCategoriesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
-  await utils.categories.list.invalidate();
-  await invalidateDetails(resolveInvalidationIds(input), utils.categories.getById.invalidate);
+  await invalidateResource(
+    utils.categories.list.invalidate,
+    utils.categories.getById.invalidate,
+    input,
+  );
 }
 
 export async function invalidateTagsAfterMutation(utils: TrpcUtils, input?: MutationInput) {
-  await utils.tags.list.invalidate();
-  await invalidateDetails(resolveInvalidationIds(input), utils.tags.getById.invalidate);
+  await invalidateResource(utils.tags.list.invalidate, utils.tags.getById.invalidate, input);
 }
 
 export async function invalidateUsersAfterMutation(utils: TrpcUtils, input?: MutationInput) {
-  await utils.users.list.invalidate();
-  await invalidateDetails(resolveInvalidationIds(input), utils.users.getById.invalidate);
+  await invalidateResource(utils.users.list.invalidate, utils.users.getById.invalidate, input);
 }
 
 export async function invalidateArticlesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
-  await utils.articles.list.invalidate();
-  await invalidateDetails(resolveInvalidationIds(input), utils.articles.getById.invalidate);
+  await invalidateResource(
+    utils.articles.list.invalidate,
+    utils.articles.getById.invalidate,
+    input,
+  );
 }
 
 export async function invalidateAfterCmsMutation(

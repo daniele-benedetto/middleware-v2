@@ -4,9 +4,11 @@ export type CmsNavItem = {
   label: string;
   href: string;
   adminOnly?: boolean;
+  notInDashboardPage?: boolean;
 };
 
 export const cmsNavigation: CmsNavItem[] = [
+  { label: i18n.cms.navigation.dashboard, href: "/cms", notInDashboardPage: true },
   { label: i18n.cms.navigation.issues, href: "/cms/issues" },
   { label: i18n.cms.navigation.categories, href: "/cms/categories" },
   { label: i18n.cms.navigation.tags, href: "/cms/tags" },

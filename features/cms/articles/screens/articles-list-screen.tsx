@@ -40,6 +40,7 @@ import {
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
 import {
+  cmsOptionsQueryOptions,
   useArticlesListQuery,
   useListSelection,
   useReorderMode,
@@ -270,10 +271,7 @@ export function CmsArticlesListScreen({
         sortOrder: "asc",
       },
     },
-    {
-      staleTime: 60_000,
-      initialData: initialIssuesOptionsData,
-    },
+    { ...cmsOptionsQueryOptions, initialData: initialIssuesOptionsData },
   );
 
   const categoriesOptionsQuery = trpc.categories.list.useQuery(
@@ -285,10 +283,7 @@ export function CmsArticlesListScreen({
         sortOrder: "asc",
       },
     },
-    {
-      staleTime: 60_000,
-      initialData: initialCategoriesOptionsData,
-    },
+    { ...cmsOptionsQueryOptions, initialData: initialCategoriesOptionsData },
   );
 
   const issueOptions = useMemo(() => {

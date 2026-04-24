@@ -12,6 +12,8 @@ Scope:
 - Shared list query defaults are centralized in `features/cms/shared/hooks/use-cms-list-query.ts`.
 - Current defaults:
   - `staleTime: 30_000`
+  - `gcTime: 300_000`
+  - `retry: 1`
   - `placeholderData: keepPreviousData`
 - Goal:
   - keep current page data visible during pagination/filter transitions
@@ -38,7 +40,7 @@ Scope:
 - Keep shared defaults for most list queries.
 - Query-specific overrides are allowed only when justified by UX or query cost.
 - Current explicit override:
-  - article filter option queries in `features/cms/articles/screens/articles-list-screen.tsx` use `staleTime: 60_000`.
+  - article filter option queries in `features/cms/articles/screens/articles-list-screen.tsx` use shared `cmsOptionsQueryOptions` (`staleTime: 60_000`).
 
 ## 5) Invalidation matrix (after mutation)
 
@@ -46,6 +48,7 @@ Scope:
 - Strategy:
   - always invalidate corresponding list
   - invalidate detail queries for touched ids (`id` or `ids` payload)
+  - run list+detail invalidations in parallel per resource for faster post-mutation convergence
 - Resource mapping:
   - `issues.*` -> `issues.list` + touched `issues.getById`
   - `categories.*` -> `categories.list` + touched `categories.getById`
