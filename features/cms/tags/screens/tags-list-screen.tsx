@@ -12,6 +12,7 @@ import {
   CmsPaginationFooter,
 } from "@/components/cms/common";
 import {
+  CmsActionButton,
   CmsDataTableShell,
   CmsMetaText,
   CmsPageHeader,
@@ -37,6 +38,7 @@ import {
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
 import { useListSelection, useTagsListQuery } from "@/features/cms/shared/hooks";
+import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
 import { parseTagsListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -76,6 +78,15 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
 
   const [searchValue, setSearchValue] = useState(() => input.query?.q ?? "");
   const deleteMutation = trpc.tags.delete.useMutation();
+
+  const navigateToCrudRoute = (href: string) => {
+    if (!cmsCrudRoutesEnabled) {
+      cmsToast.info("Route CRUD non ancora attive.");
+      return;
+    }
+
+    router.push(href);
+  };
 
   const updateSearchParams = useCallback(
     (patch: Record<string, string | number | undefined>) => {
@@ -209,7 +220,19 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader title={text.navigation.tags} subtitle={listText.subtitle} />
+      <CmsPageHeader
+        title={text.navigation.tags}
+        subtitle={listText.subtitle}
+        actions={
+          <CmsActionButton
+            size="xs"
+            variant="outline"
+            onClick={() => navigateToCrudRoute(cmsCrudRoutes.tags.create)}
+          >
+            {text.resource.new}
+          </CmsActionButton>
+        }
+      />
 
       <CmsDataTableShell
         toolbar={
@@ -336,6 +359,14 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
                       {formatDate(tag.updatedAt)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      <CmsActionButton
+                        variant="outline"
+                        size="xs"
+                        onClick={() => navigateToCrudRoute(cmsCrudRoutes.tags.edit(tag.id))}
+                        disabled={deleteMutation.isPending}
+                      >
+                        Edit
+                      </CmsActionButton>
                       <CmsConfirmDialog
                         triggerLabel={quickText.delete}
                         triggerDisabled={deleteMutation.isPending}

@@ -39,6 +39,7 @@ import {
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
 import { useIssuesListQuery, useListSelection, useReorderMode } from "@/features/cms/shared/hooks";
+import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
 import { parseIssuesListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -81,6 +82,15 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
   const selection = useListSelection();
 
   const [searchValue, setSearchValue] = useState(() => input.query?.q ?? "");
+
+  const navigateToCrudRoute = (href: string) => {
+    if (!cmsCrudRoutesEnabled) {
+      cmsToast.info("Route CRUD non ancora attive.");
+      return;
+    }
+
+    router.push(href);
+  };
 
   const reorderMutation = trpc.issues.reorder.useMutation();
   const deleteMutation = trpc.issues.delete.useMutation();
@@ -241,7 +251,19 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader title={text.navigation.issues} subtitle={listText.subtitle} />
+      <CmsPageHeader
+        title={text.navigation.issues}
+        subtitle={listText.subtitle}
+        actions={
+          <CmsActionButton
+            size="xs"
+            variant="outline"
+            onClick={() => navigateToCrudRoute(cmsCrudRoutes.issues.create)}
+          >
+            {text.resource.new}
+          </CmsActionButton>
+        }
+      />
 
       <CmsDataTableShell
         toolbar={
@@ -433,6 +455,14 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                       {formatDate(issue.updatedAt)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      <CmsActionButton
+                        variant="outline"
+                        size="xs"
+                        onClick={() => navigateToCrudRoute(cmsCrudRoutes.issues.edit(issue.id))}
+                        disabled={isActionPending || reorder.isReorderMode}
+                      >
+                        Edit
+                      </CmsActionButton>
                       <CmsConfirmDialog
                         triggerLabel={quickText.delete}
                         triggerDisabled={isActionPending || reorder.isReorderMode}

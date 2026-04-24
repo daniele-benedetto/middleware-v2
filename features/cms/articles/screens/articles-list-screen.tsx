@@ -45,6 +45,7 @@ import {
   useListSelection,
   useReorderMode,
 } from "@/features/cms/shared/hooks";
+import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
 import { parseArticlesListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
 import {
   invalidateAfterCmsMutation,
@@ -244,6 +245,15 @@ export function CmsArticlesListScreen({
   const selection = useListSelection();
 
   const [searchValue, setSearchValue] = useState(() => input.query?.q ?? "");
+
+  const navigateToCrudRoute = (href: string) => {
+    if (!cmsCrudRoutesEnabled) {
+      cmsToast.info("Route CRUD non ancora attive.");
+      return;
+    }
+
+    router.push(href);
+  };
 
   const publishMutation = trpc.articles.publish.useMutation();
   const unpublishMutation = trpc.articles.unpublish.useMutation();
@@ -571,7 +581,19 @@ export function CmsArticlesListScreen({
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader title={text.navigation.articles} subtitle={listText.subtitle} />
+      <CmsPageHeader
+        title={text.navigation.articles}
+        subtitle={listText.subtitle}
+        actions={
+          <CmsActionButton
+            size="xs"
+            variant="outline"
+            onClick={() => navigateToCrudRoute(cmsCrudRoutes.articles.create)}
+          >
+            {text.resource.new}
+          </CmsActionButton>
+        }
+      />
 
       <CmsDataTableShell
         toolbar={
@@ -809,6 +831,16 @@ export function CmsArticlesListScreen({
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <div className="flex flex-wrap items-center gap-1.5">
+                        <CmsActionButton
+                          variant="outline"
+                          size="xs"
+                          disabled={isActionPending || reorder.isReorderMode}
+                          onClick={() =>
+                            navigateToCrudRoute(cmsCrudRoutes.articles.edit(article.id))
+                          }
+                        >
+                          Edit
+                        </CmsActionButton>
                         {resolveQuickActions(articleSingleActionConfig, {
                           selectedCount: 1,
                           isPending: isActionPending || reorder.isReorderMode,

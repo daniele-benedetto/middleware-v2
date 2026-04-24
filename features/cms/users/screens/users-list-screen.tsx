@@ -12,6 +12,7 @@ import {
   CmsPaginationFooter,
 } from "@/components/cms/common";
 import {
+  CmsActionButton,
   CmsDataTableShell,
   CmsMetaText,
   CmsPageHeader,
@@ -37,6 +38,7 @@ import {
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
 import { useListSelection, useUsersListQuery } from "@/features/cms/shared/hooks";
+import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
 import { parseUsersListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -77,6 +79,15 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
   const [searchValue, setSearchValue] = useState(() => input.query?.q ?? "");
   const updateRoleMutation = trpc.users.updateRole.useMutation();
   const deleteMutation = trpc.users.delete.useMutation();
+
+  const navigateToCrudRoute = (href: string) => {
+    if (!cmsCrudRoutesEnabled) {
+      cmsToast.info("Route CRUD non ancora attive.");
+      return;
+    }
+
+    router.push(href);
+  };
 
   const updateSearchParams = useCallback(
     (patch: Record<string, string | number | undefined>) => {
@@ -258,7 +269,19 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader title={text.navigation.users} subtitle={listText.subtitle} />
+      <CmsPageHeader
+        title={text.navigation.users}
+        subtitle={listText.subtitle}
+        actions={
+          <CmsActionButton
+            size="xs"
+            variant="outline"
+            onClick={() => navigateToCrudRoute(cmsCrudRoutes.users.create)}
+          >
+            {text.resource.new}
+          </CmsActionButton>
+        }
+      />
 
       <CmsDataTableShell
         toolbar={
@@ -401,6 +424,14 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <div className="flex flex-wrap items-center gap-1.5">
+                        <CmsActionButton
+                          variant="outline"
+                          size="xs"
+                          disabled={deleteMutation.isPending || updateRoleMutation.isPending}
+                          onClick={() => navigateToCrudRoute(cmsCrudRoutes.users.edit(user.id))}
+                        >
+                          Edit
+                        </CmsActionButton>
                         {resolveQuickActions(
                           [
                             {

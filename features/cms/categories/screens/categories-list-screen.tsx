@@ -12,6 +12,7 @@ import {
   CmsPaginationFooter,
 } from "@/components/cms/common";
 import {
+  CmsActionButton,
   CmsDataTableShell,
   CmsMetaText,
   CmsPageHeader,
@@ -37,6 +38,7 @@ import {
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
 import { useCategoriesListQuery, useListSelection } from "@/features/cms/shared/hooks";
+import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
 import { parseCategoriesListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -82,6 +84,15 @@ export function CmsCategoriesListScreen({
 
   const [searchValue, setSearchValue] = useState(() => input.query?.q ?? "");
   const deleteMutation = trpc.categories.delete.useMutation();
+
+  const navigateToCrudRoute = (href: string) => {
+    if (!cmsCrudRoutesEnabled) {
+      cmsToast.info("Route CRUD non ancora attive.");
+      return;
+    }
+
+    router.push(href);
+  };
 
   const updateSearchParams = useCallback(
     (patch: Record<string, string | number | undefined>) => {
@@ -216,7 +227,19 @@ export function CmsCategoriesListScreen({
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader title={text.navigation.categories} subtitle={listText.subtitle} />
+      <CmsPageHeader
+        title={text.navigation.categories}
+        subtitle={listText.subtitle}
+        actions={
+          <CmsActionButton
+            size="xs"
+            variant="outline"
+            onClick={() => navigateToCrudRoute(cmsCrudRoutes.categories.create)}
+          >
+            {text.resource.new}
+          </CmsActionButton>
+        }
+      />
 
       <CmsDataTableShell
         toolbar={
@@ -343,6 +366,16 @@ export function CmsCategoriesListScreen({
                       {formatDate(category.updatedAt)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      <CmsActionButton
+                        variant="outline"
+                        size="xs"
+                        onClick={() =>
+                          navigateToCrudRoute(cmsCrudRoutes.categories.edit(category.id))
+                        }
+                        disabled={deleteMutation.isPending}
+                      >
+                        Edit
+                      </CmsActionButton>
                       <CmsConfirmDialog
                         triggerLabel={quickText.delete}
                         triggerDisabled={deleteMutation.isPending}
