@@ -12,6 +12,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { i18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+
+const clickableBreadcrumbClassName = cn(cmsEyebrowClassName, "hover:text-accent");
 
 const formatSegment = (segment: string) => {
   const routeLabels = i18n.cms.routeLabels as Record<string, string>;
@@ -34,7 +37,7 @@ export function CmsBreadcrumbs() {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/cms" className={cmsEyebrowClassName}>
+          <BreadcrumbLink href="/cms" className={clickableBreadcrumbClassName}>
             {i18n.cms.breadcrumbs.root}
           </BreadcrumbLink>
         </BreadcrumbItem>
@@ -51,7 +54,7 @@ export function CmsBreadcrumbs() {
                     {formatSegment(segment)}
                   </BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink href={href} className={cmsEyebrowClassName}>
+                  <BreadcrumbLink href={href} className={clickableBreadcrumbClassName}>
                     {formatSegment(segment)}
                   </BreadcrumbLink>
                 )}
