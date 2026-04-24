@@ -12,13 +12,13 @@ import {
   CmsPaginationFooter,
 } from "@/components/cms/common";
 import {
-  cmsToast,
   CmsDataTableShell,
   CmsMetaText,
   CmsPageHeader,
   CmsSelect,
   CmsTextInput,
   cmsTableClasses,
+  cmsToast,
 } from "@/components/cms/primitives";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -47,7 +47,7 @@ function formatDate(value: string) {
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
 }
 
-type UserQuickAction = "delete";
+type UserQuickAction = "role-admin" | "role-editor" | "delete";
 
 export function CmsUsersListScreen() {
   const router = useRouter();
@@ -61,6 +61,7 @@ export function CmsUsersListScreen() {
   const selection = useListSelection();
 
   const [searchValue, setSearchValue] = useState(() => input.query?.q ?? "");
+  const updateRoleMutation = trpc.users.updateRole.useMutation();
   const deleteMutation = trpc.users.delete.useMutation();
 
   const updateSearchParams = useCallback(
@@ -126,11 +127,21 @@ export function CmsUsersListScreen() {
 
   const runSingleAction = async (action: UserQuickAction, id: string) => {
     try {
+      if (action === "role-admin") {
+        await updateRoleMutation.mutateAsync({ id, data: { role: "ADMIN" } });
+      }
+
+      if (action === "role-editor") {
+        await updateRoleMutation.mutateAsync({ id, data: { role: "EDITOR" } });
+      }
+
       if (action === "delete") {
         await deleteMutation.mutateAsync({ id });
       }
 
-      await invalidateAfterCmsMutation(trpcUtils, "users.delete", { id });
+      const mutationName = action === "delete" ? "users.delete" : ("users.updateRole" as const);
+
+      await invalidateAfterCmsMutation(trpcUtils, mutationName, { id });
       selection.clearSelection();
       cmsToast.info("Azione completata.");
     } catch (error) {
@@ -147,6 +158,14 @@ export function CmsUsersListScreen() {
     const selectedIds = [...selection.selectedIds];
 
     const result = await executeBulk(selectedIds, (id) => {
+      if (action === "role-admin") {
+        return updateRoleMutation.mutateAsync({ id, data: { role: "ADMIN" } });
+      }
+
+      if (action === "role-editor") {
+        return updateRoleMutation.mutateAsync({ id, data: { role: "EDITOR" } });
+      }
+
       if (action === "delete") {
         return deleteMutation.mutateAsync({ id });
       }
@@ -154,7 +173,9 @@ export function CmsUsersListScreen() {
       return Promise.resolve();
     });
 
-    await invalidateAfterCmsMutation(trpcUtils, "users.delete", { ids: selectedIds });
+    const mutationName = action === "delete" ? "users.delete" : ("users.updateRole" as const);
+
+    await invalidateAfterCmsMutation(trpcUtils, mutationName, { ids: selectedIds });
     selection.clearSelection();
 
     if (result.failed === 0) {
@@ -171,6 +192,34 @@ export function CmsUsersListScreen() {
 
   const bulkActions = resolveQuickActions(
     [
+      {
+        id: "bulk-role-admin",
+        label: "Set ADMIN",
+        scope: "bulk",
+        requiresConfirm: ({ selectedCount }) => selectedCount > 0,
+        confirm: ({ selectedCount }) => ({
+          title: "Conferma cambio ruolo",
+          description:
+            selectedCount === 1
+              ? "Imposterai il ruolo ADMIN per l'utente selezionato."
+              : `Imposterai il ruolo ADMIN per ${selectedCount} utenti selezionati.`,
+        }),
+        isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
+      } satisfies CmsQuickAction,
+      {
+        id: "bulk-role-editor",
+        label: "Set EDITOR",
+        scope: "bulk",
+        requiresConfirm: ({ selectedCount }) => selectedCount > 0,
+        confirm: ({ selectedCount }) => ({
+          title: "Conferma cambio ruolo",
+          description:
+            selectedCount === 1
+              ? "Imposterai il ruolo EDITOR per l'utente selezionato."
+              : `Imposterai il ruolo EDITOR per ${selectedCount} utenti selezionati.`,
+        }),
+        isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
+      } satisfies CmsQuickAction,
       {
         id: "bulk-delete",
         label: "Delete",
@@ -189,7 +238,7 @@ export function CmsUsersListScreen() {
     ],
     {
       selectedCount: selection.selectedCount,
-      isPending: deleteMutation.isPending,
+      isPending: deleteMutation.isPending || updateRoleMutation.isPending,
     },
   );
 
@@ -208,6 +257,16 @@ export function CmsUsersListScreen() {
               actions={bulkActions.map((action) => ({
                 ...action,
                 onExecute: () => {
+                  if (action.id === "bulk-role-admin") {
+                    void runBulkAction("role-admin");
+                    return;
+                  }
+
+                  if (action.id === "bulk-role-editor") {
+                    void runBulkAction("role-editor");
+                    return;
+                  }
+
                   void runBulkAction("delete");
                 },
               }))}
@@ -314,16 +373,79 @@ export function CmsUsersListScreen() {
                       {formatDate(user.updatedAt)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <CmsConfirmDialog
-                        triggerLabel="Delete"
-                        triggerDisabled={deleteMutation.isPending}
-                        title="Conferma eliminazione"
-                        description="Eliminerai definitivamente questo utente."
-                        tone="danger"
-                        onConfirm={() => {
-                          void runSingleAction("delete", user.id);
-                        }}
-                      />
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {resolveQuickActions(
+                          [
+                            {
+                              id: "single-role-admin",
+                              label: "Set ADMIN",
+                              scope: "single",
+                              requiresConfirm: true,
+                              confirm: {
+                                title: "Conferma cambio ruolo",
+                                description: "Imposterai il ruolo ADMIN per questo utente.",
+                              },
+                              isVisible: () => user.role !== "ADMIN",
+                              isEnabled: ({ isPending }) => !isPending,
+                            },
+                            {
+                              id: "single-role-editor",
+                              label: "Set EDITOR",
+                              scope: "single",
+                              requiresConfirm: true,
+                              confirm: {
+                                title: "Conferma cambio ruolo",
+                                description: "Imposterai il ruolo EDITOR per questo utente.",
+                              },
+                              isVisible: () => user.role !== "EDITOR",
+                              isEnabled: ({ isPending }) => !isPending,
+                            },
+                            {
+                              id: "single-delete",
+                              label: "Delete",
+                              scope: "single",
+                              tone: "danger",
+                              requiresConfirm: true,
+                              confirm: {
+                                title: "Conferma eliminazione",
+                                description: "Eliminerai definitivamente questo utente.",
+                              },
+                              isEnabled: ({ isPending }) => !isPending,
+                            },
+                          ] satisfies CmsQuickAction[],
+                          {
+                            selectedCount: 1,
+                            isPending: deleteMutation.isPending || updateRoleMutation.isPending,
+                          },
+                        ).map((action) => (
+                          <CmsConfirmDialog
+                            key={`${user.id}-${action.id}`}
+                            triggerLabel={action.label}
+                            triggerDisabled={action.disabled}
+                            title={action.confirm?.title ?? "Conferma azione"}
+                            description={
+                              action.confirm?.description ??
+                              "Questa azione verra applicata all'utente selezionato."
+                            }
+                            confirmLabel={action.confirm?.confirmLabel}
+                            cancelLabel={action.confirm?.cancelLabel}
+                            tone={action.tone === "danger" ? "danger" : "default"}
+                            onConfirm={() => {
+                              if (action.id === "single-role-admin") {
+                                void runSingleAction("role-admin", user.id);
+                                return;
+                              }
+
+                              if (action.id === "single-role-editor") {
+                                void runSingleAction("role-editor", user.id);
+                                return;
+                              }
+
+                              void runSingleAction("delete", user.id);
+                            }}
+                          />
+                        ))}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -65,7 +65,76 @@ CMS governance addendum:
 - CMS architecture audit baseline: `docs/cms-architecture-audit.md`.
 - CMS UI audit baseline: `docs/cms-ui-audit.md`.
 - CMS guard/role smoke checklist: `docs/cms-smoke-checklist.md`.
+- CMS lists smoke checklist: `docs/cms-lists-smoke-checklist.md`.
+- CMS lists verification report: `docs/cms-lists-verification-report.md`.
 - Required local gates for CMS changes: `pnpm lint`, `pnpm typecheck`, `pnpm build`.
+
+## CMS UI architecture (lists)
+
+Folder map:
+
+- Route shell: `app/(cms)/cms/layout.tsx` (auth gate + sidebar/topbar/breadcrumb wrapper)
+- Route entrypoints:
+  - `app/(cms)/cms/issues/page.tsx`
+  - `app/(cms)/cms/categories/page.tsx`
+  - `app/(cms)/cms/tags/page.tsx`
+  - `app/(cms)/cms/articles/page.tsx`
+  - `app/(cms)/cms/users/page.tsx`
+- Screen modules:
+  - `features/cms/issues/screens/issues-list-screen.tsx`
+  - `features/cms/categories/screens/categories-list-screen.tsx`
+  - `features/cms/tags/screens/tags-list-screen.tsx`
+  - `features/cms/articles/screens/articles-list-screen.tsx`
+  - `features/cms/users/screens/users-list-screen.tsx`
+- Shared list framework:
+  - query parsing/serialization: `lib/cms/query/list-params.ts`
+  - list hooks: `features/cms/shared/hooks/use-cms-domain-list-hooks.ts`
+  - selection + quick actions: `features/cms/shared/hooks/use-list-selection.ts`, `features/cms/shared/actions/*`
+  - shared UI: `components/cms/common/*` (`BulkActionBar`, `ReorderModeBar`, `ConfirmDialog`, loading/empty/error/pagination)
+
+Page responsibilities:
+
+- Route files are thin adapters (`page.tsx` -> screen component).
+- Screen files own list UX orchestration: filters/sort/pagination URL-sync, quick actions, reorder mode, and mutation invalidation.
+- Shared hooks/utilities own cross-module behavior (selection state, action resolution, error mapping, list query defaults).
+
+### Query params contract (lists)
+
+Common params on all lists:
+
+- `page` (int >= 1)
+- `pageSize` (int >= 1, max 100)
+- `q` (trimmed full-text query)
+- `sortBy`
+- `sortOrder` (`asc` | `desc`)
+
+Module-specific params:
+
+- `issues`: `isActive`, `published`
+- `categories`: `isActive`
+- `tags`: `isActive`
+- `articles`: `status`, `issueId`, `categoryId`, `authorId`, `featured`
+- `users`: `role`
+
+Normalization/parsing source of truth:
+
+- `parseIssuesListSearchParams`
+- `parseCategoriesListSearchParams`
+- `parseTagsListSearchParams`
+- `parseArticlesListSearchParams`
+- `parseUsersListSearchParams`
+
+All are defined in `lib/cms/query/list-params.ts`.
+
+### Error & permission handling guidelines
+
+- Error mapping is centralized in `lib/cms/trpc/error-messages.ts`.
+- Quick-action single/bulk errors are normalized in `features/cms/shared/actions/quick-action-errors.ts`.
+- List pages use uniform UX states (`CmsLoadingState`, `CmsEmptyState`, `CmsErrorState`) with retry where allowed.
+- Permission handling is defense-in-depth:
+  - UI-level gating (e.g. `features/cms/users/screens/users-screen.tsx`)
+  - tRPC policy middleware per resource (`lib/server/trpc/routers/*` + module policy files)
+  - forbidden states render with explicit messaging instead of silent failures.
 
 ## Prisma conventions
 

@@ -15,13 +15,13 @@ import {
 } from "@/components/cms/common";
 import {
   CmsActionButton,
-  cmsToast,
   CmsDataTableShell,
   CmsMetaText,
   CmsPageHeader,
   CmsSelect,
   CmsTextInput,
   cmsTableClasses,
+  cmsToast,
 } from "@/components/cms/primitives";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -45,7 +45,11 @@ import {
   useReorderMode,
 } from "@/features/cms/shared/hooks";
 import { parseArticlesListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
-import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
+import {
+  invalidateAfterCmsMutation,
+  mapTrpcErrorToCmsUiMessage,
+  type CmsUiError,
+} from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 
@@ -59,6 +63,10 @@ function formatDate(value: string | null) {
 }
 
 type ArticleQuickAction = "publish" | "unpublish" | "archive" | "feature" | "unfeature" | "delete";
+type ArticleOptimisticAction = Extract<
+  ArticleQuickAction,
+  "publish" | "unpublish" | "feature" | "unfeature"
+>;
 
 type ArticleSingleActionContext = {
   selectedCount: number;
@@ -116,6 +124,76 @@ const articleSingleActionConfig: CmsQuickAction<ArticleSingleActionContext>[] = 
     isEnabled: (context) => !context.isPending,
   },
 ];
+
+function isOptimisticArticleAction(action: ArticleQuickAction): action is ArticleOptimisticAction {
+  return (
+    action === "publish" || action === "unpublish" || action === "feature" || action === "unfeature"
+  );
+}
+
+function patchArticleForOptimisticAction<
+  TArticle extends {
+    status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+    publishedAt: string | null;
+    isFeatured: boolean;
+  },
+>(action: ArticleOptimisticAction, article: TArticle): TArticle {
+  if (action === "publish") {
+    return {
+      ...article,
+      status: "PUBLISHED" as const,
+      publishedAt: article.publishedAt ?? new Date().toISOString(),
+    };
+  }
+
+  if (action === "unpublish") {
+    return {
+      ...article,
+      status: "DRAFT" as const,
+      publishedAt: null,
+    };
+  }
+
+  if (action === "feature") {
+    return {
+      ...article,
+      isFeatured: true,
+    };
+  }
+
+  return {
+    ...article,
+    isFeatured: false,
+  };
+}
+
+function mapArticleDomainError(uiError: CmsUiError): CmsUiError {
+  if (uiError.code === "CONFLICT") {
+    return {
+      ...uiError,
+      title: "Conflitto slug",
+      description: "Lo slug e gia usato in questa issue. Aggiorna lo slug e riprova.",
+    };
+  }
+
+  if (uiError.code === "BAD_REQUEST") {
+    return {
+      ...uiError,
+      title: "Payload non valido",
+    };
+  }
+
+  if (uiError.code === "TOO_MANY_REQUESTS") {
+    return {
+      ...uiError,
+      title: "Rate limit azioni editoriali",
+      description: "Troppe azioni critiche in poco tempo. Riprova tra poco.",
+      retryable: true,
+    };
+  }
+
+  return uiError;
+}
 
 export function CmsArticlesListScreen() {
   const router = useRouter();
@@ -323,14 +401,48 @@ export function CmsArticlesListScreen() {
     delete: "articles.delete",
   };
 
+  const applyOptimisticArticleUpdates = (
+    action: ArticleOptimisticAction,
+    ids: string[],
+  ): (() => void) => {
+    const previousList = trpcUtils.articles.list.getData(input);
+
+    trpcUtils.articles.list.setData(input, (current) => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        items: current.items.map((item) => {
+          if (!ids.includes(item.id)) {
+            return item;
+          }
+
+          return patchArticleForOptimisticAction(action, item);
+        }),
+      };
+    });
+
+    return () => {
+      trpcUtils.articles.list.setData(input, previousList);
+    };
+  };
+
   const runSingleAction = async (action: ArticleQuickAction, id: string) => {
+    const rollbackOptimistic = isOptimisticArticleAction(action)
+      ? applyOptimisticArticleUpdates(action, [id])
+      : undefined;
+
     try {
       await runMutationByAction(action, id);
       await invalidateAfterCmsMutation(trpcUtils, mutationNameByAction[action], { id });
       selection.clearSelection();
       cmsToast.info("Azione completata.");
     } catch (error) {
-      const mapped = mapQuickActionError(error);
+      rollbackOptimistic?.();
+
+      const mapped = mapArticleDomainError(mapQuickActionError(error));
       cmsToast.error(mapped.description, mapped.title);
     }
   };
@@ -340,12 +452,19 @@ export function CmsArticlesListScreen() {
       return;
     }
 
-    const result = await executeBulk(selection.selectedIds, (id) =>
-      runMutationByAction(action, id),
-    );
+    const selectedIds = [...selection.selectedIds];
+    const rollbackOptimistic = isOptimisticArticleAction(action)
+      ? applyOptimisticArticleUpdates(action, selectedIds)
+      : undefined;
+
+    const result = await executeBulk(selectedIds, (id) => runMutationByAction(action, id));
+
+    if (result.failed > 0) {
+      rollbackOptimistic?.();
+    }
 
     await invalidateAfterCmsMutation(trpcUtils, mutationNameByAction[action], {
-      ids: selection.selectedIds,
+      ids: selectedIds,
     });
     selection.clearSelection();
 
@@ -357,7 +476,8 @@ export function CmsArticlesListScreen() {
     const mappedError = mapBulkQuickActionError(result);
 
     if (mappedError) {
-      cmsToast.error(mappedError.description, mappedError.title);
+      const domainError = mapArticleDomainError(mappedError);
+      cmsToast.error(domainError.description, domainError.title);
     }
   };
 
