@@ -350,15 +350,20 @@ export const cmsIt = {
     invalidCredentials: "Credenziali non valide. Riprova.",
   },
   system: {
+    mastheadBrand: "Middleware — Sistema",
+    notFoundSection: "Risorsa mancante",
     notFoundCode: "404",
     notFoundTitle: "Pagina non trovata",
     notFoundDescription:
       "La risorsa richiesta non esiste oppure e stata spostata. Torna alla dashboard CMS o alla home.",
+    errorSection: "Errore di sistema",
     errorCode: "500",
     errorTitle: "Errore inatteso",
     errorDescription:
       "Si e verificato un errore imprevisto durante il caricamento della pagina. Puoi riprovare o tornare al CMS.",
+    digestLabel: "Digest",
     goHome: "Vai alla home",
+    goCms: "Torna al CMS",
     retry: "Riprova",
   },
 } as const;

@@ -1,14 +1,18 @@
 "use client";
 
-import { CmsSystemActionButton, CmsSystemScreen } from "@/components/cms/common";
+import {
+  CmsSystemActionButton,
+  CmsSystemActionLink,
+  CmsSystemScreen,
+} from "@/components/cms/common";
 import { i18n } from "@/lib/i18n";
 
-type CmsErrorPageProps = {
+type ErrorPageProps = {
   error: Error & { digest?: string };
   reset: () => void;
 };
 
-export default function CmsErrorPage({ error, reset }: CmsErrorPageProps) {
+export default function ErrorPage({ error, reset }: ErrorPageProps) {
   const text = i18n.cms.system;
 
   return (
@@ -22,6 +26,9 @@ export default function CmsErrorPage({ error, reset }: CmsErrorPageProps) {
           <CmsSystemActionButton onClick={reset} tone="accent">
             {text.retry}
           </CmsSystemActionButton>
+          <CmsSystemActionLink href="/" tone="foreground">
+            {text.goHome}
+          </CmsSystemActionLink>
         </>
       }
     />

@@ -1,48 +1,69 @@
 "use client";
 
+import { Archivo_Black, IBM_Plex_Mono, Newsreader } from "next/font/google";
+
 import {
-  CmsBodyText,
-  CmsBrand,
-  CmsEyebrow,
-  CmsHeading,
-  CmsSurface,
-} from "@/components/cms/primitives";
+  CmsSystemActionButton,
+  CmsSystemActionLink,
+  CmsSystemScreen,
+} from "@/components/cms/common";
 import { i18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+
+import "./globals.css";
+
+const archivoBlack = Archivo_Black({
+  variable: "--font-archivo-black",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ibm-plex-mono",
+  weight: ["300", "400", "500", "600"],
+  subsets: ["latin"],
+});
 
 type GlobalErrorProps = {
   error: Error & { digest?: string };
   reset: () => void;
 };
 
-export default function GlobalError({ reset }: GlobalErrorProps) {
+export default function GlobalError({ error, reset }: GlobalErrorProps) {
   const text = i18n.cms.system;
 
   return (
-    <html lang="it">
-      <body className="min-h-svh bg-background">
-        <main className="mx-auto flex min-h-svh w-full max-w-215 items-center px-6 py-12">
-          <CmsSurface border="strong" spacing="xl" className="mx-auto w-full max-w-140 space-y-5">
-            <CmsBrand size="md" to="/cms" />
-
-            <div className="space-y-3">
-              <CmsEyebrow tone="accent">{text.errorCode}</CmsEyebrow>
-              <CmsHeading size="page">{text.errorTitle}</CmsHeading>
-              <CmsBodyText size="md" tone="muted" className="max-w-120">
-                {text.errorDescription}
-              </CmsBodyText>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2.5">
-              <button
-                type="button"
-                onClick={reset}
-                className="inline-flex border border-foreground px-4 py-2 font-ui text-[11px] uppercase tracking-[0.08em] hover:bg-card-hover"
-              >
+    <html
+      lang="it"
+      className={cn(
+        "h-full antialiased font-sans",
+        archivoBlack.variable,
+        newsreader.variable,
+        ibmPlexMono.variable,
+      )}
+    >
+      <body className="min-h-svh bg-background text-foreground">
+        <CmsSystemScreen
+          code={text.errorCode}
+          title={text.errorTitle}
+          description={text.errorDescription}
+          digest={error.digest}
+          actions={
+            <>
+              <CmsSystemActionButton onClick={reset} tone="accent">
                 {text.retry}
-              </button>
-            </div>
-          </CmsSurface>
-        </main>
+              </CmsSystemActionButton>
+              <CmsSystemActionLink href="/" tone="foreground">
+                {text.goHome}
+              </CmsSystemActionLink>
+            </>
+          }
+        />
       </body>
     </html>
   );
