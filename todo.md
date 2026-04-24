@@ -23,8 +23,6 @@ Obiettivo: definire ora una struttura metadata robusta e centralizzata, pronta a
 - [ ] Sostituire i fallback OG/Twitter con asset editoriali finali in `public/brand/`:
   - [ ] `og-default-1200x630.png`
   - [ ] `twitter-default-1200x630.png`
-- [ ] Aggiungere `loading.tsx` in `app/(cms)/cms` e nei segmenti lista principali.
-- [ ] Uniformare skeleton lista (header + toolbar + tabella + pagination), non solo placeholder generici.
 - [ ] Uniformare stati `loading/error/empty/retry` per tutte le viste CMS.
 - [ ] Preservare UX di navigazione (filtri/paginazione/query params consistenti su back/forward).
 
@@ -49,19 +47,11 @@ Obiettivo: abilitare ottimizzazioni avanzate solo dopo aver consolidato P0/P1.
 - [ ] Valutare `unstable_instant` sui segmenti critici di navigazione (solo se `cacheComponents` attivo).
 - [ ] Valutare tuning `experimental.staleTimes` (solo se necessario e con misure).
 
-## 3) Osservabilita e quality gates
-
-- [ ] Aggiungere report Core Web Vitals (`useReportWebVitals`) verso endpoint/log interno.
-- [ ] Introdurre check periodico bundle size (`next experimental-analyze`) sulle route CMS.
-- [ ] Definire budget prestazionali minimi (LCP/INP/CLS target interni per area CMS).
-- [ ] Inserire checklist performance nel flusso PR (prima di chiudere milestone UI).
-
 ## 4) Accessibilita e robustezza UX
 
 - [ ] Pass accessibilita su navigazione, dialog, focus management, keyboard interactions.
 - [ ] Verificare contrasto/stati hover/focus nelle componenti cliccabili CMS.
 - [ ] Uniformare aria-label e naming semantico per componenti tabellari e azioni rapide.
-- [ ] Definire fallback/error boundary globali (`error.tsx`, `global-error.tsx`) per CMS.
 
 ## 5) Modulo Issues
 

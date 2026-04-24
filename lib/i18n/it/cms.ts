@@ -349,4 +349,16 @@ export const cmsIt = {
     signingInCta: "Accesso in corso...",
     invalidCredentials: "Credenziali non valide. Riprova.",
   },
+  system: {
+    notFoundCode: "404",
+    notFoundTitle: "Pagina non trovata",
+    notFoundDescription:
+      "La risorsa richiesta non esiste oppure e stata spostata. Torna alla dashboard CMS o alla home.",
+    errorCode: "500",
+    errorTitle: "Errore inatteso",
+    errorDescription:
+      "Si e verificato un errore imprevisto durante il caricamento della pagina. Puoi riprovare o tornare al CMS.",
+    goHome: "Vai alla home",
+    retry: "Riprova",
+  },
 } as const;
