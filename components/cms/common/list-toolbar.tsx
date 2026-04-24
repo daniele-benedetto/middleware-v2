@@ -1,5 +1,3 @@
-"use client";
-
 import { CmsSearchBar } from "@/components/cms/primitives";
 import { i18n } from "@/lib/i18n";
 

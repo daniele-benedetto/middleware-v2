@@ -1,5 +1,3 @@
-"use client";
-
 import { CmsConfirmDialog } from "@/components/cms/common/confirm-dialog";
 import { CmsActionButton } from "@/components/cms/primitives";
 import { i18n } from "@/lib/i18n";

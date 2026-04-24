@@ -1,13 +1,17 @@
 import { CmsEditorialCard, CmsMetaText, CmsPageHeader } from "@/components/cms/primitives";
 import { toVisibleNavigation } from "@/features/cms/navigation/mappers/to-visible-navigation";
-import { getCmsSession } from "@/lib/cms/auth";
 import { i18n } from "@/lib/i18n";
 
-export async function CmsDashboardScreen() {
-  const session = await getCmsSession();
+import type { UserRole } from "@/lib/server/auth/roles";
+
+type CmsDashboardScreenProps = {
+  role?: UserRole | null;
+};
+
+export function CmsDashboardScreen({ role }: CmsDashboardScreenProps) {
   const text = i18n.cms.dashboard;
 
-  const visibleNavigation = toVisibleNavigation(session?.user.role);
+  const visibleNavigation = toVisibleNavigation(role);
 
   return (
     <div className="space-y-7">

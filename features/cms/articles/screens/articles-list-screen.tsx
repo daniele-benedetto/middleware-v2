@@ -1,12 +1,12 @@
 "use client";
 
 import { ArrowDown, ArrowUp } from "lucide-react";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   CmsBulkActionBar,
-  CmsConfirmDialog,
   CmsEmptyState,
   CmsErrorState,
   CmsLoadingState,
@@ -61,6 +61,11 @@ import type {
 import type { RouterInputs } from "@/lib/trpc/types";
 
 type ArticlesListInput = RouterInputs["articles"]["list"];
+
+const CmsConfirmDialog = dynamic(
+  () => import("@/components/cms/common/confirm-dialog").then((mod) => mod.CmsConfirmDialog),
+  { ssr: false },
+);
 
 function formatDate(value: string | null) {
   if (!value) {

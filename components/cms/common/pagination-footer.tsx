@@ -1,5 +1,3 @@
-"use client";
-
 import { CmsPagination } from "@/components/cms/primitives/pagination";
 import { CmsEyebrow } from "@/components/cms/primitives/typography";
 import { i18n } from "@/lib/i18n";

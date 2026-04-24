@@ -16,8 +16,6 @@ Approccio scelto: prima fondamenta UX/performance (P0/P1), poi CRUD moduli.
 
 Obiettivo: ridurre waterfall e tempo al contenuto utile, mantenendo architettura tRPC-only.
 
-- [ ] Introdurre prefetch server-side per dati critici del first paint (dashboard + liste principali).
-  - Stato: completato su liste principali (`issues`, `categories`, `tags`, `articles`, `users`), dashboard ancora da coprire.
 - [ ] Ridurre boundary `"use client"` ai soli componenti interattivi, spostando il resto lato server.
 - [ ] Valutare lazy-loading (`next/dynamic`) per componenti client pesanti/non critici.
 
@@ -25,67 +23,22 @@ Obiettivo: ridurre waterfall e tempo al contenuto utile, mantenendo architettura
 
 Nota: eseguire in ordine. Prima vertical slice su `issues`, poi estensione agli altri moduli.
 
-#### Fase B - Vertical slice `issues` (pilota)
-
-- [x] B1. Spostare parsing search params lato server per `issues` page.
-  - File: `app/(cms)/cms/issues/page.tsx`
-  - Intervento:
-    - leggere `searchParams` nel page server component.
-    - usare `parseIssuesListSearchParams` lato server.
-
-- [x] B2. Prefetch server della lista `issues` al first paint.
-  - File: `app/(cms)/cms/issues/page.tsx`
-  - Intervento:
-    - chiamare util di `lib/cms/trpc/server-prefetch.ts`.
-    - passare dati iniziali a `CmsIssuesListScreen` via props serializzabili.
-
-- [x] B3. Adattare `CmsIssuesListScreen` a `initialData` opzionale.
-  - File: `features/cms/issues/screens/issues-list-screen.tsx`
-  - Intervento:
-    - mantenere interattivita client.
-    - usare `initialData` nella query (`initialData`/`placeholderData`) per evitare loading vuoto al mount.
-
-- [x] B4. Misurare regressioni funzionali su `issues`.
-  - Verifiche:
-    - filtri, sort, paginazione, reorder, bulk delete invariati.
-    - nessuna regressione su `CmsLoadingState` per navigation successive.
-  - Nota implementativa: evitata regressione di hydration su query-key change applicando `initialData` solo quando `input` client coincide con `initialInput` server (matching nel layer hooks).
-
-#### Fase C - Estensione pattern alle altre liste
-
-- [x] C1. Applicare lo stesso schema a `categories`.
-  - File: `app/(cms)/cms/categories/page.tsx`
-  - File: `features/cms/categories/screens/categories-list-screen.tsx`
-
-- [x] C2. Applicare lo stesso schema a `tags`.
-  - File: `app/(cms)/cms/tags/page.tsx`
-  - File: `features/cms/tags/screens/tags-list-screen.tsx`
-
-- [x] C3. Applicare lo stesso schema a `users` (solo ADMIN).
-  - File: `app/(cms)/cms/users/page.tsx`
-  - File: `features/cms/users/screens/users-list-screen.tsx`
-  - Vincolo: mantenere gate ruolo in `features/cms/users/screens/users-screen.tsx`.
-
-- [x] C4. Applicare schema a `articles` + prefetch opzioni filtro.
-  - File: `app/(cms)/cms/articles/page.tsx`
-  - File: `features/cms/articles/screens/articles-list-screen.tsx`
-  - Prefetch parallelo richiesto:
-    - `articles.list`
-    - `issues.list` (options)
-    - `categories.list` (options)
-
 #### Fase D - Riduzione boundary client e lazy loading mirato
 
-- [ ] D1. Ridurre `"use client"` dove non serve stato/eventi.
+- [x] D1. Ridurre `"use client"` dove non serve stato/eventi.
   - Candidati primari:
     - `components/cms/layout/breadcrumbs.tsx` (valutare versione server se pathname disponibile via props)
     - parti statiche delle toolbar liste (estrazione subcomponenti server-safe).
+  - Stato: rimosso hook client non necessario su navigation (`use-visible-navigation`), sostituito con mapper puro riusato direttamente.
+  - Stato: rimosso anche boundary client non necessario in `features/cms/shared/hooks/use-cms-list-query.ts` (modulo ora agnostico server/client).
+  - Stato: rimossi boundary client in componenti UI/presentational validi (`pagination`, `pagination-footer`, `search-bar`, `list-toolbar`, `bulk-action-bar`, `reorder-mode-bar`, `form-controls`, `accordion`, `tooltip`, `ui/table`, `ui/label`). `breadcrumbs` resta client per dipendenza diretta da `usePathname`.
 
-- [ ] D2. Introdurre `next/dynamic` per blocchi client pesanti non critici.
+- [x] D2. Introdurre `next/dynamic` per blocchi client pesanti non critici.
   - Candidati iniziali:
     - action cluster avanzati in `features/cms/articles/screens/articles-list-screen.tsx`
     - menu mobile/sidebar se impatta bundle iniziale.
   - Vincolo: non degradare a11y/focus management.
+  - Stato: lazy loading applicato su `CmsConfirmDialog` in `articles-list-screen` tramite `next/dynamic` (`ssr: false`) per alleggerire il bundle iniziale delle azioni avanzate.
 
 #### Fase E - Policy cache/query condivisa e documentata
 

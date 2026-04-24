@@ -1,5 +1,3 @@
-"use client";
-
 import { keepPreviousData } from "@tanstack/react-query";
 
 export type CmsListInput<TQuery> = {

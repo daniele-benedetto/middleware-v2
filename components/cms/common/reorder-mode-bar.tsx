@@ -1,5 +1,3 @@
-"use client";
-
 import { Save, X } from "lucide-react";
 
 import { CmsActionButton, CmsMetaText } from "@/components/cms/primitives";

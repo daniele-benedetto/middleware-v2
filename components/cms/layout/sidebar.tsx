@@ -19,7 +19,7 @@ import {
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useVisibleNavigation } from "@/features/cms/navigation/hooks/use-visible-navigation";
+import { toVisibleNavigation } from "@/features/cms/navigation/mappers/to-visible-navigation";
 import { authClient } from "@/lib/auth-client";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,7 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
   const router = useRouter();
   const text = i18n.cms.navigation;
   const commonText = i18n.cms.common;
-  const visibleNavigation = useVisibleNavigation(role);
+  const visibleNavigation = toVisibleNavigation(role);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const mobileSheetRef = useRef<HTMLDivElement | null>(null);
