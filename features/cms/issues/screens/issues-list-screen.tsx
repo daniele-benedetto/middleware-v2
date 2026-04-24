@@ -44,6 +44,8 @@ import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cm
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 
+import type { IssuesListInitialData } from "@/features/cms/shared/types/initial-data";
+
 function formatDate(value: string | null) {
   if (!value) {
     return "-";
@@ -55,7 +57,11 @@ function formatDate(value: string | null) {
 
 type IssueQuickAction = "delete";
 
-export function CmsIssuesListScreen() {
+type CmsIssuesListScreenProps = {
+  initialData?: IssuesListInitialData;
+};
+
+export function CmsIssuesListScreen({ initialData }: CmsIssuesListScreenProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -66,7 +72,7 @@ export function CmsIssuesListScreen() {
   const optionsText = text.listOptions;
 
   const input = parseIssuesListSearchParams(searchParams);
-  const listQuery = useIssuesListQuery(input);
+  const listQuery = useIssuesListQuery(input, { initialData });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
 

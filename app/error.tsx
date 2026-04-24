@@ -8,11 +8,11 @@ import {
 import { i18n } from "@/lib/i18n";
 
 type ErrorPageProps = {
-  error: Error & { digest?: string };
+  error: Error;
   reset: () => void;
 };
 
-export default function ErrorPage({ error, reset }: ErrorPageProps) {
+export default function ErrorPage({ reset }: ErrorPageProps) {
   const text = i18n.cms.system;
 
   return (
@@ -20,7 +20,6 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
       code={text.errorCode}
       title={text.errorTitle}
       description={text.errorDescription}
-      digest={error.digest}
       actions={
         <>
           <CmsSystemActionButton onClick={reset} tone="accent">

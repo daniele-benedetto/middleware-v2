@@ -42,6 +42,8 @@ import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cm
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 
+import type { UsersListInitialData } from "@/features/cms/shared/types/initial-data";
+
 function formatDate(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
@@ -49,7 +51,11 @@ function formatDate(value: string) {
 
 type UserQuickAction = "role-admin" | "role-editor" | "delete";
 
-export function CmsUsersListScreen() {
+type CmsUsersListScreenProps = {
+  initialData?: UsersListInitialData;
+};
+
+export function CmsUsersListScreen({ initialData }: CmsUsersListScreenProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -60,7 +66,7 @@ export function CmsUsersListScreen() {
   const optionsText = text.listOptions;
 
   const input = parseUsersListSearchParams(searchParams);
-  const listQuery = useUsersListQuery(input);
+  const listQuery = useUsersListQuery(input, { initialData });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
 

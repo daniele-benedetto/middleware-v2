@@ -12,13 +12,13 @@ import {
   CmsPaginationFooter,
 } from "@/components/cms/common";
 import {
-  cmsToast,
   CmsDataTableShell,
   CmsMetaText,
   CmsPageHeader,
   CmsSelect,
   CmsTextInput,
   cmsTableClasses,
+  cmsToast,
 } from "@/components/cms/primitives";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -42,6 +42,8 @@ import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cm
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 
+import type { TagsListInitialData } from "@/features/cms/shared/types/initial-data";
+
 function formatDate(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
@@ -49,7 +51,11 @@ function formatDate(value: string) {
 
 type TagQuickAction = "delete";
 
-export function CmsTagsListScreen() {
+type CmsTagsListScreenProps = {
+  initialData?: TagsListInitialData;
+};
+
+export function CmsTagsListScreen({ initialData }: CmsTagsListScreenProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -60,7 +66,7 @@ export function CmsTagsListScreen() {
   const optionsText = text.listOptions;
 
   const input = parseTagsListSearchParams(searchParams);
-  const listQuery = useTagsListQuery(input);
+  const listQuery = useTagsListQuery(input, { initialData });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
 

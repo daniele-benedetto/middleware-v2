@@ -9,16 +9,9 @@ type CmsSystemScreenProps = {
   title: string;
   description: string;
   actions?: ReactNode;
-  digest?: string;
 };
 
-export function CmsSystemScreen({
-  code,
-  title,
-  description,
-  actions,
-  digest,
-}: CmsSystemScreenProps) {
+export function CmsSystemScreen({ code, title, description, actions }: CmsSystemScreenProps) {
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-275 flex-col px-(--article-padding-x) py-10">
       <div className="flex flex-1 items-center py-12">
@@ -39,7 +32,6 @@ export function CmsSystemScreen({
             <p className="mt-4 max-w-140 font-editorial italic text-[19px] leading-(--lh-editorial) text-foreground">
               {description}
             </p>
-            {digest && <p className="mt-4 text-sm text-muted-foreground">{digest}</p>}
             {actions ? (
               <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">{actions}</div>
             ) : null}

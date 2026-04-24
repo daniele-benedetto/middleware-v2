@@ -22,6 +22,10 @@ type CmsListQueryState<TItem> = {
   retry: () => void;
 };
 
+type CmsListQueryOptions<TOutput> = {
+  initialData?: TOutput;
+};
+
 function toListQueryState<TItem>(
   data:
     | { items: TItem[]; pagination: { page: number; pageSize: number; total: number } }
@@ -64,8 +68,12 @@ type UsersListOutput = RouterOutputs["users"]["list"];
 
 export function useIssuesListQuery(
   input: IssuesListInput,
+  options?: CmsListQueryOptions<IssuesListOutput>,
 ): CmsListQueryState<IssuesListOutput["items"][number]> {
-  const query = trpc.issues.list.useQuery(input, cmsListQueryOptions);
+  const query = trpc.issues.list.useQuery(input, {
+    ...cmsListQueryOptions,
+    initialData: options?.initialData,
+  });
   const paginationInput = { page: input.page ?? 1, pageSize: input.pageSize ?? 20 };
 
   return toListQueryState(query.data, paginationInput, {
@@ -79,8 +87,12 @@ export function useIssuesListQuery(
 
 export function useCategoriesListQuery(
   input: CategoriesListInput,
+  options?: CmsListQueryOptions<CategoriesListOutput>,
 ): CmsListQueryState<CategoriesListOutput["items"][number]> {
-  const query = trpc.categories.list.useQuery(input, cmsListQueryOptions);
+  const query = trpc.categories.list.useQuery(input, {
+    ...cmsListQueryOptions,
+    initialData: options?.initialData,
+  });
   const paginationInput = { page: input.page ?? 1, pageSize: input.pageSize ?? 20 };
 
   return toListQueryState(query.data, paginationInput, {
@@ -94,8 +106,12 @@ export function useCategoriesListQuery(
 
 export function useTagsListQuery(
   input: TagsListInput,
+  options?: CmsListQueryOptions<TagsListOutput>,
 ): CmsListQueryState<TagsListOutput["items"][number]> {
-  const query = trpc.tags.list.useQuery(input, cmsListQueryOptions);
+  const query = trpc.tags.list.useQuery(input, {
+    ...cmsListQueryOptions,
+    initialData: options?.initialData,
+  });
   const paginationInput = { page: input.page ?? 1, pageSize: input.pageSize ?? 20 };
 
   return toListQueryState(query.data, paginationInput, {
@@ -109,8 +125,12 @@ export function useTagsListQuery(
 
 export function useArticlesListQuery(
   input: ArticlesListInput,
+  options?: CmsListQueryOptions<ArticlesListOutput>,
 ): CmsListQueryState<ArticlesListOutput["items"][number]> {
-  const query = trpc.articles.list.useQuery(input, cmsListQueryOptions);
+  const query = trpc.articles.list.useQuery(input, {
+    ...cmsListQueryOptions,
+    initialData: options?.initialData,
+  });
   const paginationInput = { page: input.page ?? 1, pageSize: input.pageSize ?? 20 };
 
   return toListQueryState(query.data, paginationInput, {
@@ -124,8 +144,12 @@ export function useArticlesListQuery(
 
 export function useUsersListQuery(
   input: UsersListInput,
+  options?: CmsListQueryOptions<UsersListOutput>,
 ): CmsListQueryState<UsersListOutput["items"][number]> {
-  const query = trpc.users.list.useQuery(input, cmsListQueryOptions);
+  const query = trpc.users.list.useQuery(input, {
+    ...cmsListQueryOptions,
+    initialData: options?.initialData,
+  });
   const paginationInput = { page: input.page ?? 1, pageSize: input.pageSize ?? 20 };
 
   return toListQueryState(query.data, paginationInput, {

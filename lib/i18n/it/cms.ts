@@ -354,16 +354,13 @@ export const cmsIt = {
     notFoundSection: "Risorsa mancante",
     notFoundCode: "404",
     notFoundTitle: "Pagina non trovata",
-    notFoundDescription:
-      "La risorsa richiesta non esiste oppure e stata spostata. Torna alla dashboard CMS o alla home.",
+    notFoundDescription: "La risorsa richiesta non esiste oppure e stata spostata.",
     errorSection: "Errore di sistema",
     errorCode: "500",
     errorTitle: "Errore inatteso",
     errorDescription:
-      "Si e verificato un errore imprevisto durante il caricamento della pagina. Puoi riprovare o tornare al CMS.",
-    digestLabel: "Digest",
+      "Si e verificato un errore imprevisto durante il caricamento della pagina. Puoi riprovare o tornare alla home.",
     goHome: "Vai alla home",
-    goCms: "Torna al CMS",
     retry: "Riprova",
   },
 } as const;

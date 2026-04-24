@@ -30,11 +30,11 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 type GlobalErrorProps = {
-  error: Error & { digest?: string };
+  error: Error;
   reset: () => void;
 };
 
-export default function GlobalError({ error, reset }: GlobalErrorProps) {
+export default function GlobalError({ reset }: GlobalErrorProps) {
   const text = i18n.cms.system;
 
   return (
@@ -52,7 +52,6 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           code={text.errorCode}
           title={text.errorTitle}
           description={text.errorDescription}
-          digest={error.digest}
           actions={
             <>
               <CmsSystemActionButton onClick={reset} tone="accent">

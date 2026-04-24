@@ -8,6 +8,12 @@ export const metadata = buildCmsMetadata({
   path: "/cms/users",
 });
 
-export default async function CmsUsersPage() {
-  return <CmsUsersScreen />;
+type CmsUsersPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function CmsUsersPage({ searchParams }: CmsUsersPageProps) {
+  const resolvedSearchParams = await searchParams;
+
+  return <CmsUsersScreen searchParams={resolvedSearchParams} />;
 }

@@ -1,4 +1,6 @@
 import { CmsArticlesListScreen } from "@/features/cms/articles/screens/articles-list-screen";
+import { parseArticlesListSearchParams } from "@/lib/cms/query";
+import { prefetchArticlesListWithFilterOptions } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
 
@@ -8,6 +10,20 @@ export const metadata = buildCmsMetadata({
   path: "/cms/articles",
 });
 
-export default function CmsArticlesPage() {
-  return <CmsArticlesListScreen />;
+type CmsArticlesPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function CmsArticlesPage({ searchParams }: CmsArticlesPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const input = parseArticlesListSearchParams(resolvedSearchParams);
+  const initialData = await prefetchArticlesListWithFilterOptions(input);
+
+  return (
+    <CmsArticlesListScreen
+      initialData={initialData.articles}
+      initialIssuesOptionsData={initialData.issuesOptions}
+      initialCategoriesOptionsData={initialData.categoriesOptions}
+    />
+  );
 }

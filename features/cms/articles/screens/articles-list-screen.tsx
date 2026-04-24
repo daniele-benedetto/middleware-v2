@@ -53,6 +53,12 @@ import {
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 
+import type {
+  ArticlesListInitialData,
+  CategoriesListInitialData,
+  IssuesListInitialData,
+} from "@/features/cms/shared/types/initial-data";
+
 function formatDate(value: string | null) {
   if (!value) {
     return "-";
@@ -197,7 +203,17 @@ function mapArticleDomainError(uiError: CmsUiError): CmsUiError {
   return uiError;
 }
 
-export function CmsArticlesListScreen() {
+type CmsArticlesListScreenProps = {
+  initialData?: ArticlesListInitialData;
+  initialIssuesOptionsData?: IssuesListInitialData;
+  initialCategoriesOptionsData?: CategoriesListInitialData;
+};
+
+export function CmsArticlesListScreen({
+  initialData,
+  initialIssuesOptionsData,
+  initialCategoriesOptionsData,
+}: CmsArticlesListScreenProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -208,7 +224,7 @@ export function CmsArticlesListScreen() {
   const optionsText = text.listOptions;
 
   const input = parseArticlesListSearchParams(searchParams);
-  const listQuery = useArticlesListQuery(input);
+  const listQuery = useArticlesListQuery(input, { initialData });
   const trpcUtils = trpc.useUtils();
 
   const selection = useListSelection();
@@ -235,25 +251,31 @@ export function CmsArticlesListScreen() {
   const issuesOptionsQuery = trpc.issues.list.useQuery(
     {
       page: 1,
-      pageSize: 200,
+      pageSize: 100,
       query: {
         sortBy: "sortOrder",
         sortOrder: "asc",
       },
     },
-    { staleTime: 60_000 },
+    {
+      staleTime: 60_000,
+      initialData: initialIssuesOptionsData,
+    },
   );
 
   const categoriesOptionsQuery = trpc.categories.list.useQuery(
     {
       page: 1,
-      pageSize: 200,
+      pageSize: 100,
       query: {
         sortBy: "name",
         sortOrder: "asc",
       },
     },
-    { staleTime: 60_000 },
+    {
+      staleTime: 60_000,
+      initialData: initialCategoriesOptionsData,
+    },
   );
 
   const issueOptions = useMemo(() => {
