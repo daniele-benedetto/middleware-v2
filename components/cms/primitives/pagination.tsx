@@ -129,10 +129,10 @@ export function CmsStepper({ steps, currentIndex, className }: CmsStepperProps) 
             );
 
           const dotClass = past
-            ? "bg-accent border-2 border-accent"
+            ? "bg-accent border border-accent"
             : current
-              ? "bg-white border-2 border-accent"
-              : "bg-white border-2 border-border";
+              ? "bg-white border border-accent"
+              : "bg-white border border-border";
 
           return (
             <div key={idx} className="flex flex-1 items-center last:flex-none">

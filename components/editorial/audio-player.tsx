@@ -36,7 +36,7 @@ export function EditorialAudioPlayer({
   const progress = totalSeconds > 0 ? Math.min(100, (currentSeconds / totalSeconds) * 100) : 0;
 
   return (
-    <div className={cn("max-w-120 border-2 border-foreground bg-white px-4.5 py-3.5", className)}>
+    <div className={cn("max-w-120 border border-foreground bg-white px-4.5 py-3.5", className)}>
       <div className="mb-2.5 flex items-center justify-between gap-3">
         <span className="font-ui text-[11px] uppercase tracking-[0.06em] text-foreground">
           {resolvedLabel}

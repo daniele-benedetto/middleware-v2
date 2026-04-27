@@ -40,7 +40,7 @@ const cmsFormLabelVariants = cva(labelBase, {
 const inputBaseReset =
   "w-full rounded-none bg-white shadow-none outline-none transition-none appearance-none " +
   "placeholder:text-border " +
-  "focus-visible:outline-none focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent " +
+  "focus-visible:outline-none focus-visible:ring-0 focus-visible:border focus-visible:border-accent " +
   "aria-invalid:ring-0 aria-invalid:border-accent";
 
 const cmsTextInputVariants = cva(`${inputBaseReset} h-auto leading-[1.2]`, {
@@ -52,9 +52,9 @@ const cmsTextInputVariants = cva(`${inputBaseReset} h-auto leading-[1.2]`, {
     },
     state: {
       default: "border border-foreground bg-white px-3 py-2.5",
-      focus: "border-2 border-accent bg-white px-2.75 py-2.25",
+      focus: "border border-accent bg-white px-2.75 py-2.25",
       filled: "border border-foreground bg-white px-3 py-2.5",
-      error: "border-2 border-accent bg-(--ui-error-bg) px-2.75 py-2.25",
+      error: "border border-accent bg-(--ui-error-bg) px-2.75 py-2.25",
       disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3 py-2.5",
     },
   },
@@ -67,9 +67,9 @@ const cmsTextareaVariants = cva(
     variants: {
       state: {
         default: "border border-foreground bg-white px-3 py-2.5",
-        focus: "border-2 border-accent bg-white px-2.75 py-2.25",
+        focus: "border border-accent bg-white px-2.75 py-2.25",
         filled: "border border-foreground bg-white px-3 py-2.5",
-        error: "border-2 border-accent bg-(--ui-error-bg) px-2.75 py-2.25",
+        error: "border border-accent bg-(--ui-error-bg) px-2.75 py-2.25",
         disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3 py-2.5",
       },
     },
@@ -81,16 +81,16 @@ const cmsSelectTriggerVariants = cva(
   "w-full rounded-none bg-white shadow-none outline-none transition-none " +
     "h-auto data-[size=default]:h-auto leading-[1.2] font-ui text-[12px] uppercase tracking-[0.04em] text-foreground " +
     "data-placeholder:text-border " +
-    "focus-visible:outline-none focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent " +
+    "focus-visible:outline-none focus-visible:ring-0 focus-visible:border focus-visible:border-accent " +
     "justify-between gap-3 " +
     "[&>svg]:size-3! [&>svg]:text-foreground!",
   {
     variants: {
       state: {
         default: "border border-foreground bg-white px-3 py-2.5",
-        focus: "border-2 border-accent bg-white px-2.75 py-2.25",
-        filled: "border-2 border-accent bg-(--bg-main) px-2.75 py-2.25 [&>svg]:text-accent!",
-        error: "border-2 border-accent bg-(--ui-error-bg) px-2.75 py-2.25 [&>svg]:text-accent!",
+        focus: "border border-accent bg-white px-2.75 py-2.25",
+        filled: "border border-accent bg-(--bg-main) px-2.75 py-2.25 [&>svg]:text-accent!",
+        error: "border border-accent bg-(--ui-error-bg) px-2.75 py-2.25 [&>svg]:text-accent!",
         disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3 py-2.5",
       },
     },
@@ -209,7 +209,7 @@ export function CmsSelect({
         </ShadcnSelectValue>
       </ShadcnSelectTrigger>
       <ShadcnSelectContent
-        className="rounded-none border-2 border-accent bg-white p-0 shadow-none ring-0"
+        className="rounded-none border border-accent bg-white p-0 shadow-none ring-0"
         sideOffset={0}
       >
         {options.map((option) => (

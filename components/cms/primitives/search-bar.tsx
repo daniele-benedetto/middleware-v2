@@ -26,8 +26,8 @@ export function CmsSearchBar({
       className={cn(
         "bg-white",
         accent
-          ? "border-2 border-accent"
-          : "border border-foreground focus-within:border-2 focus-within:border-accent",
+          ? "border border-accent"
+          : "border border-foreground focus-within:border focus-within:border-accent",
         className,
       )}
     >
