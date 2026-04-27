@@ -17,10 +17,13 @@ export function CmsDataTableShell({
   className,
 }: CmsDataTableShellProps) {
   return (
-    <CmsSurface spacing="none" className={cn("divide-y divide-foreground", className)}>
-      <div className="px-5 py-4">{toolbar}</div>
-      <div className="overflow-x-auto">{table}</div>
-      <div className="px-5 py-3">{pagination}</div>
+    <CmsSurface
+      spacing="none"
+      className={cn("flex min-h-0 flex-1 flex-col divide-y divide-foreground", className)}
+    >
+      <div className="shrink-0 px-5 py-4">{toolbar}</div>
+      <div className="min-h-0 flex-1 overflow-auto">{table}</div>
+      <div className="shrink-0 px-5 py-3">{pagination}</div>
     </CmsSurface>
   );
 }

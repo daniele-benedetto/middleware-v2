@@ -15,8 +15,8 @@ import {
   CmsActionButton,
   CmsDataTableShell,
   CmsPageHeader,
+  CmsSearchBar,
   CmsSelect,
-  CmsTextInput,
   cmsTableClasses,
   cmsToast,
 } from "@/components/cms/primitives";
@@ -217,8 +217,11 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
     },
   );
 
+  const hasActiveFilters = Boolean(input.query?.q || input.query?.isActive !== undefined);
+  const isActionPending = deleteMutation.isPending;
+
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col">
       <CmsPageHeader
         title={text.navigation.tags}
         actions={
@@ -247,49 +250,57 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
                   void runBulkAction("delete");
                 },
               }))}
+              onSelectAll={
+                pageTagIds.length > 0 && !allSelectedOnPage
+                  ? () => selection.setSelection(pageTagIds)
+                  : undefined
+              }
+              selectAllDisabled={isActionPending}
             />
 
-            <div className="grid gap-3 lg:grid-cols-4">
-              <CmsTextInput
+            <div className="grid gap-3 lg:grid-cols-3">
+              <CmsSearchBar
                 placeholder={text.listToolbar.searchPlaceholder}
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
+                className="col-span-1 lg:col-span-1"
               />
+              <div className="grid grid-cols-3 gap-2 col-span-1 lg:col-span-2">
+                <CmsSelect
+                  value={input.query?.isActive ?? "all"}
+                  onValueChange={(value) => {
+                    updateSearchParams({ isActive: value === "all" ? undefined : value, page: 1 });
+                  }}
+                  options={[
+                    { value: "all", label: optionsText.statusAllMasculine },
+                    { value: "true", label: optionsText.activeOnlyMasculine },
+                    { value: "false", label: optionsText.inactiveOnlyMasculine },
+                  ]}
+                />
 
-              <CmsSelect
-                value={input.query?.isActive ?? "all"}
-                onValueChange={(value) => {
-                  updateSearchParams({ isActive: value === "all" ? undefined : value, page: 1 });
-                }}
-                options={[
-                  { value: "all", label: optionsText.statusAllMasculine },
-                  { value: "true", label: optionsText.activeOnlyMasculine },
-                  { value: "false", label: optionsText.inactiveOnlyMasculine },
-                ]}
-              />
+                <CmsSelect
+                  value={input.query?.sortBy ?? "createdAt"}
+                  onValueChange={(value) => {
+                    updateSearchParams({ sortBy: value, page: 1 });
+                  }}
+                  options={[
+                    { value: "createdAt", label: optionsText.sortCreatedAt },
+                    { value: "name", label: optionsText.sortName },
+                    { value: "slug", label: optionsText.sortSlug },
+                  ]}
+                />
 
-              <CmsSelect
-                value={input.query?.sortBy ?? "createdAt"}
-                onValueChange={(value) => {
-                  updateSearchParams({ sortBy: value, page: 1 });
-                }}
-                options={[
-                  { value: "createdAt", label: optionsText.sortCreatedAt },
-                  { value: "name", label: optionsText.sortName },
-                  { value: "slug", label: optionsText.sortSlug },
-                ]}
-              />
-
-              <CmsSelect
-                value={input.query?.sortOrder ?? "desc"}
-                onValueChange={(value) => {
-                  updateSearchParams({ sortOrder: value, page: 1 });
-                }}
-                options={[
-                  { value: "desc", label: optionsText.desc },
-                  { value: "asc", label: optionsText.asc },
-                ]}
-              />
+                <CmsSelect
+                  value={input.query?.sortOrder ?? "desc"}
+                  onValueChange={(value) => {
+                    updateSearchParams({ sortOrder: value, page: 1 });
+                  }}
+                  options={[
+                    { value: "desc", label: optionsText.desc },
+                    { value: "asc", label: optionsText.asc },
+                  ]}
+                />
+              </div>
             </div>
           </div>
         }
@@ -304,6 +315,7 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
                       onCheckedChange={() => {
                         selection.toggleSelectAll(pageTagIds);
                       }}
+                      className={cmsTableClasses.headerCheckbox}
                       aria-label={commonText.selectAll}
                     />
                   </TableHead>
@@ -357,24 +369,26 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
                       {formatDate(tag.updatedAt)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <CmsActionButton
-                        variant="outline"
-                        size="xs"
-                        onClick={() => navigateToCrudRoute(cmsCrudRoutes.tags.edit(tag.id))}
-                        disabled={deleteMutation.isPending}
-                      >
-                        Edit
-                      </CmsActionButton>
-                      <CmsConfirmDialog
-                        triggerLabel={quickText.delete}
-                        triggerDisabled={deleteMutation.isPending}
-                        title={quickText.confirmDeleteTitle}
-                        description={quickText.confirmDeleteSingleTag}
-                        tone="danger"
-                        onConfirm={() => {
-                          void runSingleAction("delete", tag.id);
-                        }}
-                      />
+                      <div className="flex items-center gap-2">
+                        <CmsActionButton
+                          variant="outline"
+                          size="xs"
+                          onClick={() => navigateToCrudRoute(cmsCrudRoutes.tags.edit(tag.id))}
+                          disabled={deleteMutation.isPending}
+                        >
+                          {quickText.edit}
+                        </CmsActionButton>
+                        <CmsConfirmDialog
+                          triggerLabel={quickText.delete}
+                          triggerDisabled={deleteMutation.isPending}
+                          title={quickText.confirmDeleteTitle}
+                          description={quickText.confirmDeleteSingleTag}
+                          tone="danger"
+                          onConfirm={() => {
+                            void runSingleAction("delete", tag.id);
+                          }}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -386,6 +400,8 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
                 eyebrow={listText.eyebrow}
                 title={text.resource.emptyTitle(text.navigation.tags)}
                 description={text.resource.emptyDescription}
+                descriptionFiltered={text.resource.emptyDescriptionFiltered}
+                hasActiveFilters={hasActiveFilters}
               />
             </div>
           )

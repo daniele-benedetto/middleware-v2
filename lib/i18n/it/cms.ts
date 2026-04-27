@@ -89,6 +89,8 @@ export const cmsIt = {
     draft: "Bozza",
     today: "Oggi",
     emptyDescription: "I dati compariranno qui dopo la prima creazione.",
+    emptyDescriptionFiltered:
+      "Nessun risultato per i filtri applicati. Riprova con altri filtri o senza filtri.",
     usersSubtitle: "Placeholder sezione Admin. Il gate ruolo e tracciato in attivita 2.",
     emptyTitle: (value: string) => `Nessun elemento in ${value.toLowerCase()}`,
   },

@@ -76,7 +76,7 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "relative block border-l-4 py-3 pl-4 pr-3",
+              "cursor-pointer relative block border-l-4 py-3 pl-4 pr-3",
               "font-ui text-[11px] uppercase tracking-[0.08em] transition-colors",
               active
                 ? "border-accent bg-card-hover text-accent"

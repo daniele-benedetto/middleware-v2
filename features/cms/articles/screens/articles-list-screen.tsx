@@ -17,6 +17,7 @@ import {
   CmsActionButton,
   CmsDataTableShell,
   CmsPageHeader,
+  CmsSearchBar,
   CmsSelect,
   CmsTextInput,
   cmsTableClasses,
@@ -578,8 +579,17 @@ export function CmsArticlesListScreen({
     isPending: isActionPending || reorder.isReorderMode,
   });
 
+  const hasActiveFilters = Boolean(
+    input.query?.q ||
+    input.query?.status !== undefined ||
+    input.query?.issueId !== undefined ||
+    input.query?.categoryId !== undefined ||
+    input.query?.authorId !== undefined ||
+    input.query?.featured !== undefined,
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col">
       <CmsPageHeader
         title={text.navigation.articles}
         actions={
@@ -608,47 +618,55 @@ export function CmsArticlesListScreen({
                   void runBulkAction(bulkAction);
                 },
               }))}
+              onSelectAll={
+                pageArticleIds.length > 0 && !allSelectedOnPage
+                  ? () => selection.setSelection(pageArticleIds)
+                  : undefined
+              }
+              selectAllDisabled={isActionPending || reorder.isReorderMode}
             />
 
-            <div className="grid gap-3 lg:grid-cols-4">
-              <CmsTextInput
+            <div className="grid gap-3 lg:grid-cols-3">
+              <CmsSearchBar
                 placeholder={text.listToolbar.searchPlaceholder}
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
+                className="col-span-1 lg:col-span-1"
               />
+              <div className="grid grid-cols-3 gap-2 col-span-1 lg:col-span-2">
+                <CmsSelect
+                  value={input.query?.status ?? "all"}
+                  onValueChange={(value) => {
+                    updateSearchParams({ status: value === "all" ? undefined : value, page: 1 });
+                  }}
+                  options={[
+                    { value: "all", label: optionsText.statusAllMasculine },
+                    { value: "DRAFT", label: listText.statusDraft },
+                    { value: "PUBLISHED", label: listText.statusPublished },
+                    { value: "ARCHIVED", label: listText.statusArchived },
+                  ]}
+                />
 
-              <CmsSelect
-                value={input.query?.status ?? "all"}
-                onValueChange={(value) => {
-                  updateSearchParams({ status: value === "all" ? undefined : value, page: 1 });
-                }}
-                options={[
-                  { value: "all", label: optionsText.statusAllMasculine },
-                  { value: "DRAFT", label: listText.statusDraft },
-                  { value: "PUBLISHED", label: listText.statusPublished },
-                  { value: "ARCHIVED", label: listText.statusArchived },
-                ]}
-              />
+                <CmsSelect
+                  value={input.query?.featured ?? "all"}
+                  onValueChange={(value) => {
+                    updateSearchParams({ featured: value === "all" ? undefined : value, page: 1 });
+                  }}
+                  options={[
+                    { value: "all", label: optionsText.featuredAll },
+                    { value: "true", label: optionsText.featuredOnly },
+                    { value: "false", label: optionsText.notFeaturedOnly },
+                  ]}
+                />
 
-              <CmsSelect
-                value={input.query?.featured ?? "all"}
-                onValueChange={(value) => {
-                  updateSearchParams({ featured: value === "all" ? undefined : value, page: 1 });
-                }}
-                options={[
-                  { value: "all", label: optionsText.featuredAll },
-                  { value: "true", label: optionsText.featuredOnly },
-                  { value: "false", label: optionsText.notFeaturedOnly },
-                ]}
-              />
-
-              <CmsSelect
-                value={input.query?.issueId ?? "all"}
-                onValueChange={(value) => {
-                  updateSearchParams({ issueId: value === "all" ? undefined : value, page: 1 });
-                }}
-                options={issueOptions}
-              />
+                <CmsSelect
+                  value={input.query?.issueId ?? "all"}
+                  onValueChange={(value) => {
+                    updateSearchParams({ issueId: value === "all" ? undefined : value, page: 1 });
+                  }}
+                  options={issueOptions}
+                />
+              </div>
             </div>
 
             <div className="grid gap-3 lg:grid-cols-4">
@@ -746,6 +764,7 @@ export function CmsArticlesListScreen({
                       onCheckedChange={() => {
                         selection.toggleSelectAll(pageArticleIds);
                       }}
+                      className={cmsTableClasses.headerCheckbox}
                       aria-label={commonText.selectAll}
                     />
                   </TableHead>
@@ -918,6 +937,8 @@ export function CmsArticlesListScreen({
                 eyebrow={listText.eyebrow}
                 title={text.resource.emptyTitle(text.navigation.articles)}
                 description={text.resource.emptyDescription}
+                descriptionFiltered={text.resource.emptyDescriptionFiltered}
+                hasActiveFilters={hasActiveFilters}
               />
             </div>
           )

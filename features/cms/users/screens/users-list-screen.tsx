@@ -15,8 +15,8 @@ import {
   CmsActionButton,
   CmsDataTableShell,
   CmsPageHeader,
+  CmsSearchBar,
   CmsSelect,
-  CmsTextInput,
   cmsTableClasses,
   cmsToast,
 } from "@/components/cms/primitives";
@@ -266,8 +266,11 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
     },
   );
 
+  const hasActiveFilters = Boolean(input.query?.q || input.query?.role !== undefined);
+  const isActionPending = deleteMutation.isPending || updateRoleMutation.isPending;
+
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col">
       <CmsPageHeader
         title={text.navigation.users}
         actions={
@@ -305,48 +308,56 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
                   void runBulkAction("delete");
                 },
               }))}
+              onSelectAll={
+                pageUserIds.length > 0 && !allSelectedOnPage
+                  ? () => selection.setSelection(pageUserIds)
+                  : undefined
+              }
+              selectAllDisabled={isActionPending}
             />
 
-            <div className="grid gap-3 lg:grid-cols-4">
-              <CmsTextInput
+            <div className="grid gap-3 lg:grid-cols-3">
+              <CmsSearchBar
                 placeholder={text.listToolbar.searchPlaceholder}
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
+                className="col-span-1 lg:col-span-1"
               />
+              <div className="grid grid-cols-3 gap-2 col-span-1 lg:col-span-2">
+                <CmsSelect
+                  value={input.query?.role ?? "all"}
+                  onValueChange={(value) => {
+                    updateSearchParams({ role: value === "all" ? undefined : value, page: 1 });
+                  }}
+                  options={[
+                    { value: "all", label: optionsText.roleAll },
+                    { value: "ADMIN", label: optionsText.roleAdminOnly },
+                    { value: "EDITOR", label: optionsText.roleEditorOnly },
+                  ]}
+                />
 
-              <CmsSelect
-                value={input.query?.role ?? "all"}
-                onValueChange={(value) => {
-                  updateSearchParams({ role: value === "all" ? undefined : value, page: 1 });
-                }}
-                options={[
-                  { value: "all", label: optionsText.roleAll },
-                  { value: "ADMIN", label: optionsText.roleAdminOnly },
-                  { value: "EDITOR", label: optionsText.roleEditorOnly },
-                ]}
-              />
+                <CmsSelect
+                  value={input.query?.sortBy ?? "createdAt"}
+                  onValueChange={(value) => {
+                    updateSearchParams({ sortBy: value, page: 1 });
+                  }}
+                  options={[
+                    { value: "createdAt", label: optionsText.sortCreatedAt },
+                    { value: "email", label: optionsText.sortEmail },
+                  ]}
+                />
 
-              <CmsSelect
-                value={input.query?.sortBy ?? "createdAt"}
-                onValueChange={(value) => {
-                  updateSearchParams({ sortBy: value, page: 1 });
-                }}
-                options={[
-                  { value: "createdAt", label: optionsText.sortCreatedAt },
-                  { value: "email", label: optionsText.sortEmail },
-                ]}
-              />
-
-              <CmsSelect
-                value={input.query?.sortOrder ?? "desc"}
-                onValueChange={(value) => {
-                  updateSearchParams({ sortOrder: value, page: 1 });
-                }}
-                options={[
-                  { value: "desc", label: optionsText.desc },
-                  { value: "asc", label: optionsText.asc },
-                ]}
-              />
+                <CmsSelect
+                  value={input.query?.sortOrder ?? "desc"}
+                  onValueChange={(value) => {
+                    updateSearchParams({ sortOrder: value, page: 1 });
+                  }}
+                  options={[
+                    { value: "desc", label: optionsText.desc },
+                    { value: "asc", label: optionsText.asc },
+                  ]}
+                />
+              </div>
             </div>
           </div>
         }
@@ -361,6 +372,7 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
                       onCheckedChange={() => {
                         selection.toggleSelectAll(pageUserIds);
                       }}
+                      className={cmsTableClasses.headerCheckbox}
                       aria-label={commonText.selectAll}
                     />
                   </TableHead>
@@ -511,6 +523,8 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
                 eyebrow={listText.eyebrow}
                 title={text.resource.emptyTitle(text.navigation.users)}
                 description={text.resource.emptyDescription}
+                descriptionFiltered={text.resource.emptyDescriptionFiltered}
+                hasActiveFilters={hasActiveFilters}
               />
             </div>
           )

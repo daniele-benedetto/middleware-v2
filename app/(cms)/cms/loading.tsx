@@ -1,5 +1,5 @@
-import { CmsPageLoadingState } from "@/components/cms/common";
+import { CmsDashboardLoadingState } from "@/components/cms/common";
 
 export default function CmsLoading() {
-  return <CmsPageLoadingState compact />;
+  return <CmsDashboardLoadingState />;
 }

@@ -31,7 +31,7 @@ export function CmsResourcePage({ title }: CmsResourcePageProps) {
   const text = i18n.cms.resource;
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col">
       <CmsPageHeader
         title={title}
         actions={
@@ -78,7 +78,11 @@ export function CmsResourcePage({ title }: CmsResourcePageProps) {
         pagination={<CmsPaginationFooter />}
       />
 
-      <CmsEmptyState title={text.emptyTitle(title)} description={text.emptyDescription} />
+      <CmsEmptyState
+        title={text.emptyTitle(title)}
+        description={text.emptyDescription}
+        descriptionFiltered={text.emptyDescriptionFiltered}
+      />
     </div>
   );
 }

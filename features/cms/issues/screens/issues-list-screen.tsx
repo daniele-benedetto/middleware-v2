@@ -228,8 +228,12 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
     },
   );
 
+  const hasActiveFilters = Boolean(
+    input.query?.q || input.query?.isActive !== undefined || input.query?.published !== undefined,
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col">
       <CmsPageHeader
         title={text.navigation.issues}
         actions={
@@ -424,6 +428,8 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                 eyebrow={listText.eyebrow}
                 title={text.resource.emptyTitle(text.navigation.issues)}
                 description={text.resource.emptyDescription}
+                descriptionFiltered={text.resource.emptyDescriptionFiltered}
+                hasActiveFilters={hasActiveFilters}
               />
             </div>
           )

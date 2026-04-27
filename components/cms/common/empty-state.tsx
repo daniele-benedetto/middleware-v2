@@ -5,11 +5,23 @@ import type { ReactNode } from "react";
 type CmsEmptyStateProps = {
   title: string;
   description: string;
+  descriptionFiltered?: string;
+  hasActiveFilters?: boolean;
   eyebrow?: string;
   action?: ReactNode;
 };
 
-export function CmsEmptyState({ title, description, eyebrow, action }: CmsEmptyStateProps) {
+export function CmsEmptyState({
+  title,
+  description,
+  descriptionFiltered,
+  hasActiveFilters = false,
+  eyebrow,
+  action,
+}: CmsEmptyStateProps) {
+  const resolvedDescription =
+    hasActiveFilters && descriptionFiltered ? descriptionFiltered : description;
+
   return (
     <CmsSurface
       border="default"
@@ -25,7 +37,7 @@ export function CmsEmptyState({ title, description, eyebrow, action }: CmsEmptyS
         {title}
       </CmsDisplay>
       <CmsBody size="md" tone="muted" className="max-w-120">
-        {description}
+        {resolvedDescription}
       </CmsBody>
       {action ? <div className="mt-1.5">{action}</div> : null}
     </CmsSurface>

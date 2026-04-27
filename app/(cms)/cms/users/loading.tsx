@@ -1,5 +1,5 @@
-import { CmsPageLoadingState } from "@/components/cms/common";
+import { CmsListLoadingState } from "@/components/cms/common";
 
 export default function CmsUsersLoading() {
-  return <CmsPageLoadingState />;
+  return <CmsListLoadingState columns={9} filterColumns={3} />;
 }
