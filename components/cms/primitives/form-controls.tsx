@@ -40,7 +40,7 @@ const cmsFormLabelVariants = cva(labelBase, {
 const inputBaseReset =
   "w-full rounded-none bg-white shadow-none outline-none transition-none appearance-none " +
   "placeholder:text-border " +
-  "focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent " +
+  "focus-visible:outline-none focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent " +
   "aria-invalid:ring-0 aria-invalid:border-accent";
 
 const cmsTextInputVariants = cva(`${inputBaseReset} h-auto leading-[1.2]`, {
@@ -81,7 +81,7 @@ const cmsSelectTriggerVariants = cva(
   "w-full rounded-none bg-white shadow-none outline-none transition-none " +
     "h-auto data-[size=default]:h-auto leading-[1.2] font-ui text-[12px] uppercase tracking-[0.04em] text-foreground " +
     "data-placeholder:text-border " +
-    "focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent " +
+    "focus-visible:outline-none focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent " +
     "justify-between gap-3 " +
     "[&>svg]:size-3! [&>svg]:text-foreground!",
   {
@@ -199,7 +199,14 @@ export function CmsSelect({
       }}
     >
       <ShadcnSelectTrigger className={cmsSelectTriggerVariants({ state: resolvedState })}>
-        <ShadcnSelectValue placeholder={placeholder} />
+        <ShadcnSelectValue placeholder={placeholder}>
+          {(currentValue: string | null) => {
+            if (currentValue == null || currentValue === "") {
+              return placeholder;
+            }
+            return options.find((option) => option.value === currentValue)?.label ?? currentValue;
+          }}
+        </ShadcnSelectValue>
       </ShadcnSelectTrigger>
       <ShadcnSelectContent
         className="rounded-none border-2 border-accent bg-white p-0 shadow-none ring-0"

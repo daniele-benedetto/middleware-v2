@@ -126,14 +126,15 @@ export const cmsIt = {
     defaultUserActionDescription: "Questa azione verra applicata all'utente selezionato.",
   },
   quickActions: {
-    delete: "Delete",
-    publish: "Publish",
-    unpublish: "Unpublish",
-    feature: "Feature",
-    unfeature: "Unfeature",
-    archive: "Archive",
-    setAdmin: "Set ADMIN",
-    setEditor: "Set EDITOR",
+    edit: "Modifica",
+    delete: "Elimina",
+    publish: "Pubblica",
+    unpublish: "Rimuovi pubblicazione",
+    feature: "Metti in evidenza",
+    unfeature: "Rimuovi dall'evidenza",
+    archive: "Archivia",
+    setAdmin: "Imposta ADMIN",
+    setEditor: "Imposta EDITOR",
     confirmDeleteTitle: "Conferma eliminazione",
     confirmRoleTitle: "Conferma cambio ruolo",
     confirmDeleteIssueSingle: "Eliminerai definitivamente l'issue selezionata.",
@@ -182,19 +183,19 @@ export const cmsIt = {
     featuredAll: "Featured: tutti",
     featuredOnly: "Solo featured",
     notFeaturedOnly: "Solo non featured",
-    sortCreatedAt: "Sort: creazione",
-    sortEmail: "Sort: email",
-    sortName: "Sort: nome",
-    sortSlug: "Sort: slug",
-    sortOrder: "Sort: ordine",
-    sortPublishedAt: "Sort: pubblicazione",
-    sortPosition: "Sort: posizione",
-    desc: "DESC",
-    asc: "ASC",
+    sortCreatedAt: "Ordine: creazione",
+    sortEmail: "Ordine: email",
+    sortName: "Ordine: nome",
+    sortSlug: "Ordine: slug",
+    sortOrder: "Ordine: ordine",
+    sortPublishedAt: "Ordine: pubblicazione",
+    sortPosition: "Ordine: posizione",
+    desc: "Ordine decrescente",
+    asc: "Ordine crescente",
   },
   lists: {
     issues: {
-      subtitle: "Filtri, ricerca, ordinamento, paginazione e riordino integrati via tRPC.",
+      subtitle: "Filtri, ricerca, ordinamento, paginazione e riordino.",
       reorderHelp:
         "Modalita reorder attiva: usa le frecce per riordinare e salva per applicare le modifiche.",
       reorderUnavailable:
@@ -219,7 +220,7 @@ export const cmsIt = {
       selectItem: (title: string) => `Seleziona ${title}`,
     },
     categories: {
-      subtitle: "Filtri, ricerca, ordinamento e paginazione integrati via tRPC.",
+      subtitle: "Filtri, ricerca, ordinamento e paginazione.",
       contract: "`isActive`, `q`, `sortBy`, `sortOrder`, `page`, `pageSize`.",
       table: {
         name: "Nome",
@@ -236,7 +237,7 @@ export const cmsIt = {
       selectItem: (name: string) => `Seleziona ${name}`,
     },
     tags: {
-      subtitle: "Filtri, ricerca, ordinamento e paginazione integrati via tRPC.",
+      subtitle: "Filtri, ricerca, ordinamento e paginazione.",
       contract: "`isActive`, `q`, `sortBy`, `sortOrder`, `page`, `pageSize`.",
       table: {
         name: "Nome",
@@ -253,7 +254,7 @@ export const cmsIt = {
       selectItem: (name: string) => `Seleziona ${name}`,
     },
     articles: {
-      subtitle: "Filtri avanzati, ricerca, ordinamento e paginazione integrati via tRPC.",
+      subtitle: "Filtri avanzati, ricerca, ordinamento e paginazione.",
       reorderHelp:
         "Modalita reorder attiva: usa le frecce per riordinare gli articoli dell'issue selezionata.",
       reorderUnavailable:

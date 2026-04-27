@@ -11,24 +11,6 @@ Decisioni gia fissate:
 - Slug normalizzato lato API e univocita rispettata lato DB.
 - Create/Edit devono avvenire su rotte dedicate per risorsa (no inline CRUD dentro list screen).
 
-## 3) CRUD route-based preparation (senza pagine dedicate per ora)
-
-Obiettivo: preparare tutto il necessario per create/edit su route specifiche, senza creare ancora i file `page.tsx` delle nuove route.
-
-- [x] Definire contratto route target per tutti i moduli:
-  - `issues`: `/cms/issues/new`, `/cms/issues/[id]/edit`
-  - `categories`: `/cms/categories/new`, `/cms/categories/[id]/edit`
-  - `tags`: `/cms/tags/new`, `/cms/tags/[id]/edit`
-  - `articles`: `/cms/articles/new`, `/cms/articles/[id]/edit`
-  - `users`: `/cms/users/new`, `/cms/users/[id]/edit`
-- [x] Preparare layer shared form route-based in `features/cms/shared/forms/*` (submit/cancel, dirty state, error mapping, toast).
-- [x] Preparare form screen modulari (create/edit) per `Issue`, `Category`, `Tag`, `Article`, `User` senza wiring pagina.
-- [x] Preparare hook dedicati per `create`, `update`, `getById` per ciascun modulo, con invalidazione coerente.
-- [x] Preparare mapping UX per errori `CONFLICT` su `issues`, `categories`, `tags`, `users` (articles gia coperto in parte).
-- [x] Aggiornare CTA list (`Nuovo`, `Modifica`) per puntare alle route dedicate, mantenendo fallback safe finche le pagine non sono create.
-
-Approccio scelto: prima fondamenta UX/performance (P0/P1), poi CRUD moduli.
-
 ## 5) Modulo Issues
 
 Procedure API disponibili: `issues.list`, `issues.getById`, `issues.create`, `issues.update`, `issues.delete`, `issues.reorder`.

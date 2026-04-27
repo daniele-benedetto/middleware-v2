@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowDown, ArrowUp } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -11,14 +10,13 @@ import {
   CmsErrorState,
   CmsLoadingState,
   CmsPaginationFooter,
-  CmsReorderModeBar,
 } from "@/components/cms/common";
 import {
   CmsActionButton,
   CmsDataTableShell,
   CmsPageHeader,
+  CmsSearchBar,
   CmsSelect,
-  CmsTextInput,
   cmsTableClasses,
   cmsToast,
 } from "@/components/cms/primitives";
@@ -38,7 +36,7 @@ import {
   resolveQuickActions,
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
-import { useIssuesListQuery, useListSelection, useReorderMode } from "@/features/cms/shared/hooks";
+import { useIssuesListQuery, useListSelection } from "@/features/cms/shared/hooks";
 import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
 import { parseIssuesListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
@@ -92,7 +90,6 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
     router.push(href);
   };
 
-  const reorderMutation = trpc.issues.reorder.useMutation();
   const deleteMutation = trpc.issues.delete.useMutation();
 
   const updateSearchParams = useCallback(
@@ -138,25 +135,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
     };
   }, [input.query?.q, searchValue, updateSearchParams]);
 
-  const canReorder =
-    input.query?.sortBy === "sortOrder" &&
-    input.query.sortOrder === "asc" &&
-    !input.query.q &&
-    input.query.isActive === undefined &&
-    input.query.published === undefined &&
-    listQuery.pagination.total === listQuery.items.length;
-  const reorder = useReorderMode(listQuery.items);
-
-  const displayedIssues = reorder.isReorderMode ? reorder.displayedItems : listQuery.items;
-  const hasOrderChanges = canReorder && reorder.hasChanges;
-
-  const unavailableReorderMessage = listText.reorderUnavailable;
-
-  useEffect(() => {
-    if (!canReorder && reorder.isReorderMode) {
-      reorder.cancel();
-    }
-  }, [canReorder, reorder]);
+  const displayedIssues = listQuery.items;
 
   if (listQuery.isPending) {
     return <CmsLoadingState />;
@@ -174,7 +153,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
     );
   }
 
-  const isActionPending = reorderMutation.isPending || deleteMutation.isPending;
+  const isActionPending = deleteMutation.isPending;
 
   const pageIssueIds = displayedIssues.map((issue) => issue.id);
   const allSelectedOnPage =
@@ -245,7 +224,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
     ],
     {
       selectedCount: selection.selectedCount,
-      isPending: isActionPending || reorder.isReorderMode,
+      isPending: isActionPending,
     },
   );
 
@@ -276,10 +255,16 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                   void runBulkAction("delete");
                 },
               }))}
+              onSelectAll={
+                pageIssueIds.length > 0 && !allSelectedOnPage
+                  ? () => selection.setSelection(pageIssueIds)
+                  : undefined
+              }
+              selectAllDisabled={isActionPending}
             />
 
             <div className="grid gap-3 lg:grid-cols-4">
-              <CmsTextInput
+              <CmsSearchBar
                 placeholder={text.listToolbar.searchPlaceholder}
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
@@ -317,7 +302,6 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                   }}
                   options={[
                     { value: "createdAt", label: optionsText.sortCreatedAt },
-                    { value: "sortOrder", label: optionsText.sortOrder },
                     { value: "publishedAt", label: optionsText.sortPublishedAt },
                   ]}
                 />
@@ -334,44 +318,6 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                 />
               </div>
             </div>
-
-            <CmsReorderModeBar
-              isAvailable={canReorder}
-              isReorderMode={reorder.isReorderMode}
-              hasChanges={hasOrderChanges}
-              isSaving={reorderMutation.isPending}
-              helpText={listText.reorderHelp}
-              unavailableText={unavailableReorderMessage}
-              onStart={() => {
-                selection.clearSelection();
-                reorder.start();
-              }}
-              onCancel={() => {
-                reorder.cancel();
-              }}
-              onSave={() => {
-                if (!hasOrderChanges) {
-                  return;
-                }
-
-                reorderMutation.mutate(
-                  { orderedIssueIds: reorder.normalizedOrder },
-                  {
-                    onSuccess: async () => {
-                      await invalidateAfterCmsMutation(trpcUtils, "issues.reorder", {
-                        ids: reorder.normalizedOrder,
-                      });
-                      reorder.commit();
-                      cmsToast.info(listText.reorderUpdated);
-                    },
-                    onError: (error) => {
-                      const mapped = mapTrpcErrorToCmsUiMessage(error);
-                      cmsToast.error(mapped.description, mapped.title);
-                    },
-                  },
-                );
-              }}
-            />
           </div>
         }
         table={
@@ -382,7 +328,6 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                   <TableHead className={cmsTableClasses.headerCell}>
                     <Checkbox
                       checked={allSelectedOnPage}
-                      disabled={reorder.isReorderMode}
                       onCheckedChange={() => {
                         selection.toggleSelectAll(pageIssueIds);
                       }}
@@ -402,9 +347,6 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                     {listText.table.published}
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.order}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
                     {listText.table.articles}
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
@@ -416,18 +358,14 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                   <TableHead className={cmsTableClasses.headerCell}>
                     {listText.table.actions}
                   </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.reorder}
-                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayedIssues.map((issue, index) => (
+                {displayedIssues.map((issue) => (
                   <TableRow key={issue.id} className={cmsTableClasses.bodyRow}>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <Checkbox
                         checked={selection.isSelected(issue.id)}
-                        disabled={reorder.isReorderMode}
                         onCheckedChange={() => {
                           selection.toggleSelection(issue.id);
                         }}
@@ -443,9 +381,6 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                       {issue.publishedAt ? commonText.yes : commonText.no}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {String(issue.sortOrder)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
                       {String(issue.articlesCount)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
@@ -455,58 +390,25 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                       {formatDate(issue.updatedAt)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <CmsActionButton
-                        variant="outline"
-                        size="xs"
-                        onClick={() => navigateToCrudRoute(cmsCrudRoutes.issues.edit(issue.id))}
-                        disabled={isActionPending || reorder.isReorderMode}
-                      >
-                        Edit
-                      </CmsActionButton>
-                      <CmsConfirmDialog
-                        triggerLabel={quickText.delete}
-                        triggerDisabled={isActionPending || reorder.isReorderMode}
-                        title={quickText.confirmDeleteTitle}
-                        description={quickText.confirmDeleteSingleIssue}
-                        tone="danger"
-                        onConfirm={() => {
-                          void runSingleAction("delete", issue.id);
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2">
                         <CmsActionButton
                           variant="outline"
                           size="xs"
-                          disabled={
-                            !canReorder ||
-                            !reorder.isReorderMode ||
-                            index === 0 ||
-                            reorderMutation.isPending
-                          }
-                          onClick={() => {
-                            reorder.moveUp(index);
-                          }}
+                          onClick={() => navigateToCrudRoute(cmsCrudRoutes.issues.edit(issue.id))}
+                          disabled={isActionPending}
                         >
-                          <ArrowUp className="size-3" />
+                          {quickText.edit}
                         </CmsActionButton>
-
-                        <CmsActionButton
-                          variant="outline"
-                          size="xs"
-                          disabled={
-                            !canReorder ||
-                            !reorder.isReorderMode ||
-                            index === displayedIssues.length - 1 ||
-                            reorderMutation.isPending
-                          }
-                          onClick={() => {
-                            reorder.moveDown(index);
+                        <CmsConfirmDialog
+                          triggerLabel={quickText.delete}
+                          triggerDisabled={isActionPending}
+                          title={quickText.confirmDeleteTitle}
+                          description={quickText.confirmDeleteSingleIssue}
+                          tone="danger"
+                          onConfirm={() => {
+                            void runSingleAction("delete", issue.id);
                           }}
-                        >
-                          <ArrowDown className="size-3" />
-                        </CmsActionButton>
+                        />
                       </div>
                     </TableCell>
                   </TableRow>

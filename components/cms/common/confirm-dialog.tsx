@@ -45,10 +45,13 @@ export function CmsConfirmDialog({
       <DialogTrigger
         disabled={triggerDisabled}
         className={cn(
-          "inline-flex h-auto items-center gap-1.5 rounded-none border border-foreground bg-background px-3.5 py-1.75",
-          "font-ui text-[11px] uppercase tracking-[0.08em] text-foreground transition-colors",
-          "hover:bg-card-hover focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2",
+          "inline-flex h-auto items-center gap-1.5 rounded-none border bg-background px-3.5 py-1.5",
+          "font-ui text-[10px] uppercase tracking-[0.08em] transition-colors",
+          "focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-background",
+          tone === "danger"
+            ? "border-accent text-accent hover:bg-card-hover"
+            : "border-foreground text-foreground hover:bg-card-hover",
         )}
       >
         {triggerIcon}

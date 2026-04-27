@@ -12,9 +12,16 @@ type CmsBulkAction = CmsResolvedQuickAction & {
 type CmsBulkActionBarProps = {
   selectedCount: number;
   actions: CmsBulkAction[];
+  onSelectAll?: () => void;
+  selectAllDisabled?: boolean;
 };
 
-export function CmsBulkActionBar({ selectedCount, actions }: CmsBulkActionBarProps) {
+export function CmsBulkActionBar({
+  selectedCount,
+  actions,
+  onSelectAll,
+  selectAllDisabled = false,
+}: CmsBulkActionBarProps) {
   const text = i18n.cms.common;
 
   if (selectedCount <= 0) {
@@ -28,6 +35,17 @@ export function CmsBulkActionBar({ selectedCount, actions }: CmsBulkActionBarPro
       </span>
 
       <div className="flex items-center gap-2 max-sm:flex-wrap">
+        {onSelectAll ? (
+          <CmsActionButton
+            variant="outline"
+            size="xs"
+            disabled={selectAllDisabled}
+            onClick={onSelectAll}
+          >
+            {text.selectAll}
+          </CmsActionButton>
+        ) : null}
+
         {actions.map((action) => {
           if (action.confirm) {
             return (
@@ -48,7 +66,7 @@ export function CmsBulkActionBar({ selectedCount, actions }: CmsBulkActionBarPro
           return (
             <CmsActionButton
               key={action.id}
-              variant={action.tone === "danger" ? "primary-accent" : "outline"}
+              variant={action.tone === "danger" ? "outline-accent" : "outline"}
               size="xs"
               disabled={action.disabled || action.isLoading}
               isLoading={action.isLoading}

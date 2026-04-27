@@ -25,7 +25,9 @@ export function CmsSearchBar({
     <div
       className={cn(
         "bg-white",
-        accent ? "border-2 border-accent" : "border border-foreground",
+        accent
+          ? "border-2 border-accent"
+          : "border border-foreground focus-within:border-2 focus-within:border-accent",
         className,
       )}
     >
@@ -44,6 +46,7 @@ export function CmsSearchBar({
           placeholder={placeholder}
           className={cn(
             "flex-1 rounded-none border-0 bg-transparent px-3 py-2.5 outline-none",
+            "focus-visible:outline-none focus-visible:ring-0",
             "font-ui text-[12px] uppercase tracking-[0.04em] appearance-none",
             "placeholder:text-border",
             accent ? "text-accent" : "text-foreground",
