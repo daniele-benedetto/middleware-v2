@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
 const cmsBadgeVariants = cva(
-  "inline-flex h-auto w-fit shrink-0 items-center gap-1.5 rounded-none! font-ui uppercase transition-none",
+  "inline-flex h-auto w-fit shrink-0 items-center gap-1.5 rounded-none! font-ui font-normal uppercase transition-none",
   {
     variants: {
       variant: {

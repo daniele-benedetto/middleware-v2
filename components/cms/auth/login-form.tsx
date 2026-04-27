@@ -53,7 +53,7 @@ export function CmsLoginForm() {
 
   return (
     <form className="border border-foreground bg-white" onSubmit={onSubmit}>
-      <div className="flex flex-col gap-4 border-b border-border px-5 py-6">
+      <div className="flex flex-col gap-4 border-b border-border px-4.5 py-5">
         <CmsFormField label={text.emailLabel} htmlFor="email">
           <CmsTextInput
             id="email"
@@ -91,12 +91,7 @@ export function CmsLoginForm() {
         ) : null}
       </div>
 
-      <CmsActionButton
-        className="h-12.5 w-full justify-start border-0 bg-accent px-5 text-[12px] text-primary-foreground hover:bg-accent/90"
-        isLoading={isSubmitting}
-        tone="danger"
-        type="submit"
-      >
+      <CmsActionButton isLoading={isSubmitting} tone="danger" size="full" type="submit">
         {isSubmitting ? `→ ${text.signingInCta}` : `→ ${text.signInCta}`}
       </CmsActionButton>
     </form>

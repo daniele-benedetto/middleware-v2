@@ -43,19 +43,19 @@ const inputBaseReset =
   "focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent " +
   "aria-invalid:ring-0 aria-invalid:border-accent";
 
-const cmsTextInputVariants = cva(`${inputBaseReset} h-11`, {
+const cmsTextInputVariants = cva(`${inputBaseReset} h-auto leading-[1.2]`, {
   variants: {
     tone: {
-      editorial: "font-editorial text-[16px] leading-[1.4] text-foreground",
+      editorial: "font-editorial text-[16px] text-foreground",
       ui: "font-ui text-[12px] uppercase tracking-[0.04em] text-foreground",
       mono: "font-ui text-[13px] tracking-[0.02em] text-foreground",
     },
     state: {
-      default: "border border-foreground bg-white px-3",
-      focus: "border-2 border-accent bg-white px-2.75",
-      filled: "border border-foreground bg-white px-3",
-      error: "border-2 border-accent bg-(--ui-error-bg) px-2.75",
-      disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3",
+      default: "border border-foreground bg-white px-3 py-2.5",
+      focus: "border-2 border-accent bg-white px-2.75 py-2.25",
+      filled: "border border-foreground bg-white px-3 py-2.5",
+      error: "border-2 border-accent bg-(--ui-error-bg) px-2.75 py-2.25",
+      disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3 py-2.5",
     },
   },
   defaultVariants: { tone: "editorial", state: "default" },
@@ -79,7 +79,7 @@ const cmsTextareaVariants = cva(
 
 const cmsSelectTriggerVariants = cva(
   "w-full rounded-none bg-white shadow-none outline-none transition-none " +
-    "h-11 font-ui text-[12px] uppercase tracking-[0.04em] text-foreground " +
+    "h-auto data-[size=default]:h-auto leading-[1.2] font-ui text-[12px] uppercase tracking-[0.04em] text-foreground " +
     "data-placeholder:text-border " +
     "focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent " +
     "justify-between gap-3 " +
@@ -87,11 +87,11 @@ const cmsSelectTriggerVariants = cva(
   {
     variants: {
       state: {
-        default: "border border-foreground bg-white px-3",
-        focus: "border-2 border-accent bg-white px-2.75",
-        filled: "border-2 border-accent bg-(--bg-main) px-2.75 [&>svg]:text-accent!",
-        error: "border-2 border-accent bg-(--ui-error-bg) px-2.75 [&>svg]:text-accent!",
-        disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3",
+        default: "border border-foreground bg-white px-3 py-2.5",
+        focus: "border-2 border-accent bg-white px-2.75 py-2.25",
+        filled: "border-2 border-accent bg-(--bg-main) px-2.75 py-2.25 [&>svg]:text-accent!",
+        error: "border-2 border-accent bg-(--ui-error-bg) px-2.75 py-2.25 [&>svg]:text-accent!",
+        disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3 py-2.5",
       },
     },
     defaultVariants: { state: "default" },
@@ -314,8 +314,8 @@ export function CmsRadio({
           className={cn(
             "size-5 shrink-0 rounded-full shadow-none ring-0",
             disabled
-              ? "!border border-border! bg-card-hover!"
-              : "!border border-border! bg-white! data-checked:border-[2px]! data-checked:border-accent! data-checked:bg-white!",
+              ? "border! border-border! bg-card-hover!"
+              : "border! border-border! bg-white! data-checked:border-2! data-checked:border-accent! data-checked:bg-white!",
             "focus-visible:ring-0",
             "[&_[data-slot=radio-group-indicator]>span]:size-2! [&_[data-slot=radio-group-indicator]>span]:bg-accent!",
           )}
@@ -348,7 +348,7 @@ export function CmsToggle({
     : "text-muted-foreground";
 
   const trackBase =
-    "relative inline-flex h-6 w-11 shrink-0 items-center rounded-none! shadow-none ring-0 transition-none after:content-none";
+    "relative inline-flex h-6! w-11! shrink-0 items-center rounded-none! shadow-none ring-0 transition-none after:content-none";
   const trackState = checked
     ? accent
       ? "!border border-accent! bg-accent! data-checked:bg-accent!"

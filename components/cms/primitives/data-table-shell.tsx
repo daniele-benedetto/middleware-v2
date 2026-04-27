@@ -50,7 +50,7 @@ export const cmsTableClasses = {
 
   bodyRow: cn(
     "border-b border-foreground last:border-b-0",
-    "odd:bg-background even:bg-card-hover",
+    "odd:bg-white even:bg-card-hover",
     "hover:bg-accent [&:hover_td]:text-white! [&:hover_td]:border-r-[color:rgba(255,255,255,0.2)]",
     "data-[state=selected]:bg-card-hover",
   ),

@@ -227,7 +227,6 @@ body {
 .font-display {
   font-family: var(--font-archivo-black), sans-serif;
   text-transform: uppercase;
-  letter-spacing: -0.02em;
 }
 
 .font-ui {

@@ -92,7 +92,7 @@ export function CmsAccordion({ items, defaultValue, className }: CmsAccordionPro
             <div
               className={cn(
                 "h-(--accordion-panel-height) data-ending-style:h-0 data-starting-style:h-0",
-                "border-t border-foreground bg-background px-4.5 py-4",
+                "border-t border-foreground bg-white px-4.5 py-4",
                 "font-editorial text-[16px] leading-[1.65] text-foreground",
               )}
             >

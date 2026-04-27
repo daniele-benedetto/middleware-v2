@@ -29,7 +29,7 @@ export function CmsSearchBar({
         className,
       )}
     >
-      <div className="flex">
+      <div className={cn("flex", hasResults && "border-b border-border")}>
         <div
           className={cn(
             "flex items-center px-3.5 py-2.5",

@@ -129,7 +129,7 @@ export function EditorialCover({
         </div>
       </div>
 
-      <div className={cn("my-1.75 h-0.5 shrink-0", palette.rule)} />
+      <div className={cn("mt-1.5 mb-2 h-0.5 shrink-0", palette.rule)} />
 
       <h2
         className={cn(

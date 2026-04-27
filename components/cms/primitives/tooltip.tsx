@@ -10,13 +10,14 @@ import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
 
-const cmsTooltipVariants = cva("rounded-none! px-2.5 py-1.5 max-w-55", {
+const cmsTooltipVariants = cva("rounded-none! px-2.5 py-1.5", {
   variants: {
     variant: {
       "short-dark":
-        "bg-foreground text-(--bg-main) font-ui text-[10px] uppercase tracking-[0.04em]",
+        "bg-foreground text-(--bg-main) font-ui text-[10px] uppercase tracking-[0.04em] whitespace-nowrap",
       "long-accent":
-        "bg-accent text-white font-editorial italic text-[13px] leading-[1.4] py-2 px-3",
+        "bg-accent text-white font-editorial italic text-[13px] leading-[1.4] py-2 px-3 max-w-50 " +
+        "[&_[data-slot=tooltip-arrow]]:bg-accent! [&_[data-slot=tooltip-arrow]]:fill-accent!",
     },
   },
   defaultVariants: { variant: "short-dark" },
@@ -44,7 +45,8 @@ export function CmsTooltip({ label, children, variant, side = "top" }: CmsToolti
         </ShadcnTooltipTrigger>
         <ShadcnTooltipContent
           side={side}
-          className={cn(cmsTooltipVariants({ variant }), "[&>[data-slot=tooltip-arrow]]:hidden")}
+          sideOffset={8}
+          className={cn(cmsTooltipVariants({ variant }))}
         >
           {label}
         </ShadcnTooltipContent>

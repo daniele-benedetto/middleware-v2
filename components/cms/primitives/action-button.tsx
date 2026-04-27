@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
 const cmsButtonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-none font-ui uppercase transition-all " +
+  "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-none font-ui font-normal uppercase transition-all " +
     "focus-visible:ring-0 focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 " +
-    "disabled:pointer-events-none data-[loading=true]:cursor-progress data-[loading=true]:opacity-80",
+    "disabled:pointer-events-none disabled:opacity-100 data-[loading=true]:cursor-progress data-[loading=true]:opacity-80",
   {
     variants: {
       variant: {
@@ -38,6 +38,12 @@ const cmsButtonVariants = cva(
         full: "h-auto w-full justify-start px-5 py-3.5 text-left text-[12px]",
       },
     },
+    compoundVariants: [
+      { variant: ["outline", "outline-accent"], size: "xs", class: "py-1.5" },
+      { variant: ["outline", "outline-accent"], size: "md", class: "py-2.5" },
+      { variant: ["outline", "outline-accent"], size: "lg", class: "py-3.25" },
+      { variant: ["outline", "outline-accent"], size: "full", class: "py-3.25" },
+    ],
     defaultVariants: { variant: "primary", size: "md" },
   },
 );
