@@ -48,7 +48,7 @@ export function CmsPaginationFooter({
                 type="button"
                 onClick={() => onPageSizeChange?.(size)}
                 className={cn(
-                  "border-r border-foreground px-2.5 py-1 font-ui text-[11px] uppercase tracking-[0.04em] last:border-r-0",
+                  "cursor-pointer border-r border-foreground px-2.5 py-1 font-ui text-[11px] uppercase tracking-[0.04em] last:border-r-0",
                   active ? "bg-accent text-white" : "text-foreground hover:bg-card-hover",
                 )}
               >

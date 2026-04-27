@@ -12,7 +12,11 @@ function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
 
 function DropdownMenuTrigger({ className, ...props }: MenuPrimitive.Trigger.Props) {
   return (
-    <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" className={cn(className)} {...props} />
+    <MenuPrimitive.Trigger
+      data-slot="dropdown-menu-trigger"
+      className={cn(className, "cursor-pointer")}
+      {...props}
+    />
   );
 }
 

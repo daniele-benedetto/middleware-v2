@@ -247,6 +247,9 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
       <CmsDataTableShell
         toolbar={
           <div className="space-y-3">
+            <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
+              {commonText.totalRecords(listQuery.pagination.total)}
+            </div>
             <CmsBulkActionBar
               selectedCount={selection.selectedCount}
               actions={bulkActions.map((action) => ({
@@ -263,38 +266,38 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
               selectAllDisabled={isActionPending}
             />
 
-            <div className="grid gap-3 lg:grid-cols-4">
+            <div className="grid gap-3 lg:grid-cols-3">
               <CmsSearchBar
                 placeholder={text.listToolbar.searchPlaceholder}
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
+                className="col-span-1 lg:col-span-1"
               />
+              <div className="grid grid-cols-4 gap-2 col-span-1 lg:col-span-2">
+                <CmsSelect
+                  value={input.query?.isActive ?? "all"}
+                  onValueChange={(value) => {
+                    updateSearchParams({ isActive: value === "all" ? undefined : value, page: 1 });
+                  }}
+                  options={[
+                    { value: "all", label: optionsText.statusAllMasculine },
+                    { value: "true", label: optionsText.activeOnlyFeminine },
+                    { value: "false", label: optionsText.inactiveOnlyFeminine },
+                  ]}
+                />
 
-              <CmsSelect
-                value={input.query?.isActive ?? "all"}
-                onValueChange={(value) => {
-                  updateSearchParams({ isActive: value === "all" ? undefined : value, page: 1 });
-                }}
-                options={[
-                  { value: "all", label: optionsText.statusAllMasculine },
-                  { value: "true", label: optionsText.activeOnlyFeminine },
-                  { value: "false", label: optionsText.inactiveOnlyFeminine },
-                ]}
-              />
+                <CmsSelect
+                  value={input.query?.published ?? "all"}
+                  onValueChange={(value) => {
+                    updateSearchParams({ published: value === "all" ? undefined : value, page: 1 });
+                  }}
+                  options={[
+                    { value: "all", label: optionsText.publicationAll },
+                    { value: "true", label: optionsText.publicationOnly },
+                    { value: "false", label: optionsText.publicationNot },
+                  ]}
+                />
 
-              <CmsSelect
-                value={input.query?.published ?? "all"}
-                onValueChange={(value) => {
-                  updateSearchParams({ published: value === "all" ? undefined : value, page: 1 });
-                }}
-                options={[
-                  { value: "all", label: optionsText.publicationAll },
-                  { value: "true", label: optionsText.publicationOnly },
-                  { value: "false", label: optionsText.publicationNot },
-                ]}
-              />
-
-              <div className="grid grid-cols-2 gap-2">
                 <CmsSelect
                   value={input.query?.sortBy ?? "createdAt"}
                   onValueChange={(value) => {
@@ -331,6 +334,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                       onCheckedChange={() => {
                         selection.toggleSelectAll(pageIssueIds);
                       }}
+                      className={cmsTableClasses.headerCheckbox}
                       aria-label={commonText.selectAll}
                     />
                   </TableHead>
@@ -442,10 +446,6 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
           />
         }
       />
-
-      <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
-        {commonText.totalRecords(listQuery.pagination.total)}
-      </div>
     </div>
   );
 }

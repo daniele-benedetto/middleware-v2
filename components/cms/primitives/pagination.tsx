@@ -2,7 +2,7 @@ import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const cellBase =
-  "inline-flex items-center justify-center rounded-none font-ui text-[11px] tracking-[0.04em] uppercase py-2 transition-none";
+  "cursor-pointer inline-flex items-center justify-center rounded-none font-ui text-[11px] tracking-[0.04em] uppercase py-2 transition-none";
 
 type CmsPaginationProps = {
   currentPage: number;
