@@ -121,7 +121,6 @@ export const cmsIt = {
     actionCompletedOnRecords: (count: number) => `Azione completata su ${count} record.`,
     selectedCount: (count: number) => `${count} selezionati`,
     totalRecords: (count: number) => `Totale: ${count} record`,
-    contractPrefix: "Contratto lista:",
     defaultConfirmTitle: "Conferma azione",
     defaultUserActionDescription: "Questa azione verra applicata all'utente selezionato.",
   },
@@ -200,7 +199,6 @@ export const cmsIt = {
         "Modalita reorder attiva: usa le frecce per riordinare e salva per applicare le modifiche.",
       reorderUnavailable:
         "Reorder disponibile con `sortBy=sortOrder`, `sortOrder=asc`, senza filtri e con una sola pagina.",
-      contract: "`isActive`, `q`, `sortBy`, `sortOrder`, `page`, `pageSize`.",
       table: {
         title: "Titolo",
         slug: "Slug",
@@ -221,7 +219,6 @@ export const cmsIt = {
     },
     categories: {
       subtitle: "Filtri, ricerca, ordinamento e paginazione.",
-      contract: "`isActive`, `q`, `sortBy`, `sortOrder`, `page`, `pageSize`.",
       table: {
         name: "Nome",
         slug: "Slug",
@@ -238,7 +235,6 @@ export const cmsIt = {
     },
     tags: {
       subtitle: "Filtri, ricerca, ordinamento e paginazione.",
-      contract: "`isActive`, `q`, `sortBy`, `sortOrder`, `page`, `pageSize`.",
       table: {
         name: "Nome",
         slug: "Slug",
@@ -259,8 +255,6 @@ export const cmsIt = {
         "Modalita reorder attiva: usa le frecce per riordinare gli articoli dell'issue selezionata.",
       reorderUnavailable:
         "Reorder disponibile con `issueId` valorizzato, `sortBy=position`, `sortOrder=asc`, senza altri filtri e con una sola pagina.",
-      contract:
-        "`status`, `issueId`, `categoryId`, `authorId`, `featured`, `q`, `sortBy`, `sortOrder`, `page`, `pageSize`.",
       table: {
         title: "Titolo",
         issue: "Issue",
@@ -291,7 +285,6 @@ export const cmsIt = {
     },
     users: {
       subtitle: "Lista utenti admin-only con filtri, ricerca, ordinamento e paginazione.",
-      contract: "`role`, `q`, `sortBy`, `sortOrder`, `page`, `pageSize`.",
       table: {
         email: "Email",
         name: "Nome",

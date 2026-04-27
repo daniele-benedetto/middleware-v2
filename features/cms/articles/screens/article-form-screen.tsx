@@ -185,10 +185,7 @@ export function CmsArticleFormScreen({ mode, articleId }: ArticleFormScreenProps
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader
-        title={mode === "create" ? "Nuovo Articolo" : "Modifica Articolo"}
-        subtitle="Preparazione CRUD route-based: form pronta per route dedicate."
-      />
+      <CmsPageHeader title={mode === "create" ? "Nuovo Articolo" : "Modifica Articolo"} />
 
       <div className="space-y-4 border border-foreground p-4">
         <div className="grid gap-4 md:grid-cols-3">

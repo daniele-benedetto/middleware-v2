@@ -93,10 +93,7 @@ export function CmsIssueFormScreen({ mode, issueId }: IssueFormScreenProps) {
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader
-        title={mode === "create" ? "Nuova Issue" : "Modifica Issue"}
-        subtitle="Preparazione CRUD route-based: form pronta per route dedicate."
-      />
+      <CmsPageHeader title={mode === "create" ? "Nuova Issue" : "Modifica Issue"} />
 
       <div className="space-y-4 border border-foreground p-4">
         <CmsFormField label="Titolo" htmlFor="issue-title" required>

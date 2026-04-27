@@ -10,5 +10,5 @@ type CmsResourceScreenProps = {
 export function CmsResourceScreen({ resource }: CmsResourceScreenProps) {
   const copy = toResourceCopy(resource);
 
-  return <CmsResourcePage title={copy.title} subtitle={copy.subtitle} />;
+  return <CmsResourcePage title={copy.title} />;
 }

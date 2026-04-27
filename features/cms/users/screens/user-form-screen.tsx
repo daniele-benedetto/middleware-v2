@@ -92,10 +92,7 @@ export function CmsUserFormScreen({ mode, userId }: UserFormScreenProps) {
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader
-        title={mode === "create" ? "Nuovo Utente" : "Modifica Utente"}
-        subtitle="Preparazione CRUD route-based: form pronta per route dedicate."
-      />
+      <CmsPageHeader title={mode === "create" ? "Nuovo Utente" : "Modifica Utente"} />
 
       <div className="space-y-4 border border-foreground p-4">
         {mode === "create" ? (

@@ -17,7 +17,7 @@ export function CmsDashboardScreen({ role }: CmsDashboardScreenProps) {
 
   return (
     <div className="space-y-7">
-      <CmsPageHeader title={text.title} subtitle={text.subtitle} />
+      <CmsPageHeader title={text.title} />
 
       <section className="space-y-3">
         <CmsMetaText variant="category">{text.quickLinksTitle}</CmsMetaText>

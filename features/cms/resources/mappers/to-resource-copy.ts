@@ -4,7 +4,6 @@ export type CmsResourceKey = "issues" | "categories" | "tags" | "articles";
 
 type ResourceCopy = {
   title: string;
-  subtitle: string;
 };
 
 const resourceTitleByKey: Record<CmsResourceKey, string> = {
@@ -17,6 +16,5 @@ const resourceTitleByKey: Record<CmsResourceKey, string> = {
 export function toResourceCopy(resource: CmsResourceKey): ResourceCopy {
   return {
     title: resourceTitleByKey[resource],
-    subtitle: i18n.cms.resource.subtitle,
   };
 }

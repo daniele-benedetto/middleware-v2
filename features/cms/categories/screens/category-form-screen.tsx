@@ -95,10 +95,7 @@ export function CmsCategoryFormScreen({ mode, categoryId }: CategoryFormScreenPr
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader
-        title={mode === "create" ? "Nuova Categoria" : "Modifica Categoria"}
-        subtitle="Preparazione CRUD route-based: form pronta per route dedicate."
-      />
+      <CmsPageHeader title={mode === "create" ? "Nuova Categoria" : "Modifica Categoria"} />
 
       <div className="space-y-4 border border-foreground p-4">
         <CmsFormField label="Nome" htmlFor="category-name" required>

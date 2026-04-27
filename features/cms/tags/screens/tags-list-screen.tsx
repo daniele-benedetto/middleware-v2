@@ -14,7 +14,6 @@ import {
 import {
   CmsActionButton,
   CmsDataTableShell,
-  CmsMetaText,
   CmsPageHeader,
   CmsSelect,
   CmsTextInput,
@@ -222,7 +221,6 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
     <div className="space-y-6">
       <CmsPageHeader
         title={text.navigation.tags}
-        subtitle={listText.subtitle}
         actions={
           <CmsActionButton
             size="xs"
@@ -237,6 +235,10 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
       <CmsDataTableShell
         toolbar={
           <div className="space-y-3">
+            <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
+              {commonText.totalRecords(listQuery.pagination.total)}
+            </div>
+
             <CmsBulkActionBar
               selectedCount={selection.selectedCount}
               actions={bulkActions.map((action) => ({
@@ -289,10 +291,6 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
                 ]}
               />
             </div>
-
-            <CmsMetaText variant="tiny" className="block">
-              {commonText.contractPrefix} {listText.contract}
-            </CmsMetaText>
           </div>
         }
         table={
@@ -409,10 +407,6 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
           />
         }
       />
-
-      <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
-        {commonText.totalRecords(listQuery.pagination.total)}
-      </div>
     </div>
   );
 }

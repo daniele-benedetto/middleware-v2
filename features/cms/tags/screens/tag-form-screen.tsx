@@ -89,10 +89,7 @@ export function CmsTagFormScreen({ mode, tagId }: TagFormScreenProps) {
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader
-        title={mode === "create" ? "Nuovo Tag" : "Modifica Tag"}
-        subtitle="Preparazione CRUD route-based: form pronta per route dedicate."
-      />
+      <CmsPageHeader title={mode === "create" ? "Nuovo Tag" : "Modifica Tag"} />
 
       <div className="space-y-4 border border-foreground p-4">
         <CmsFormField label="Nome" htmlFor="tag-name" required>

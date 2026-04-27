@@ -232,7 +232,6 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
     <div className="space-y-6">
       <CmsPageHeader
         title={text.navigation.issues}
-        subtitle={listText.subtitle}
         actions={
           <CmsActionButton
             size="xs"

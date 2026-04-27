@@ -25,17 +25,15 @@ import { i18n } from "@/lib/i18n";
 
 type CmsResourcePageProps = {
   title: string;
-  subtitle: string;
 };
 
-export function CmsResourcePage({ title, subtitle }: CmsResourcePageProps) {
+export function CmsResourcePage({ title }: CmsResourcePageProps) {
   const text = i18n.cms.resource;
 
   return (
     <div className="space-y-6">
       <CmsPageHeader
         title={title}
-        subtitle={subtitle}
         actions={
           <CmsActionButton className="px-2.5" tone="primary">
             <Plus className="size-3" />
