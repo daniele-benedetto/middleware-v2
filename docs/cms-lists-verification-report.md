@@ -8,7 +8,7 @@ Scope: verifica delle pagine lista CMS (`Issues`, `Categories`, `Tags`, `Article
 
 ### 1) Permessi ruolo in UI (`ADMIN` vs `EDITOR`)
 
-- `Users` e protetta lato server tramite `requireCmsSession` + `hasCmsRole("ADMIN")` in `features/cms/users/screens/users-screen.tsx`.
+- `Users` e protetta lato server tramite `requireCmsSession` + `hasCmsRole("ADMIN")` direttamente in `app/(cms)/cms/users/page.tsx`.
 - Le procedure `users.*` sono `ADMIN` only via policy router (`lib/server/trpc/routers/users.ts`).
 - La navigazione CMS filtra le voci in base al ruolo (sidebar/topbar wiring dal layout CMS).
 

@@ -49,7 +49,7 @@ import {
   useListSelection,
   useReorderMode,
 } from "@/features/cms/shared/hooks";
-import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
+import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { parseArticlesListSearchParams } from "@/lib/cms/query";
 import {
   invalidateAfterCmsMutation,
@@ -251,11 +251,6 @@ export function CmsArticlesListScreen({
   const selection = useListSelection();
 
   const navigateToCrudRoute = (href: string) => {
-    if (!cmsCrudRoutesEnabled) {
-      cmsToast.info("Route CRUD non ancora attive.");
-      return;
-    }
-
     router.push(href);
   };
 

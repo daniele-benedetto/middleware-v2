@@ -16,5 +16,5 @@ export default async function CmsUserNewPage() {
     return <CmsForbiddenState />;
   }
 
-  return <CmsUserFormScreen mode="create" />;
+  return <CmsUserFormScreen mode="create" currentUserId={session.user.id} />;
 }

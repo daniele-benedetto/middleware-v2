@@ -32,12 +32,6 @@ import { trpc } from "@/lib/trpc/react";
 
 import type { RouterInputs } from "@/lib/trpc/types";
 
-const tagFieldLabels = {
-  name: "Nome",
-  slug: "Slug",
-  description: "Descrizione",
-};
-
 type TagFormScreenProps = {
   mode: "create" | "edit";
   tagId?: string;
@@ -63,6 +57,8 @@ export function CmsTagFormScreen({ mode, tagId, initialData }: TagFormScreenProp
   const trpcUtils = trpc.useUtils();
   const { cancel, success } = useCmsFormNavigation("/cms/tags");
   const text = i18n.cms;
+  const formText = text.forms;
+  const tagFormText = formText.resources.tags;
   const tagQuery = useTagById(mode === "edit" ? tagId : undefined, { initialData });
   const createMutation = useTagCreate();
   const updateMutation = useTagUpdate();
@@ -70,7 +66,12 @@ export function CmsTagFormScreen({ mode, tagId, initialData }: TagFormScreenProp
   useSetCmsBreadcrumbLabel(mode === "edit" ? tagQuery.data?.name : null);
 
   if (mode === "edit" && !tagId) {
-    return <CmsErrorState title="Tag non valido" description="ID mancante per la modifica." />;
+    return (
+      <CmsErrorState
+        title={tagFormText.invalidTitle}
+        description={formText.invalidEditIdDescription}
+      />
+    );
   }
 
   if (mode === "edit" && tagQuery.isPending) {
@@ -93,12 +94,12 @@ export function CmsTagFormScreen({ mode, tagId, initialData }: TagFormScreenProp
       onCreate={async (payload) => {
         await createMutation.mutateAsync(payload);
         await invalidateAfterCmsMutation(trpcUtils, "tags.create");
-        success("Tag creato.");
+        success(tagFormText.created);
       }}
       onUpdate={async ({ id, data }) => {
         await updateMutation.mutateAsync({ id, data });
         await invalidateAfterCmsMutation(trpcUtils, "tags.update", { id });
-        success("Tag aggiornato.");
+        success(tagFormText.updated);
       }}
       onMutationError={(error) => {
         const mapped = mapCrudDomainError(error, "tags");
@@ -123,6 +124,14 @@ function TagFormContent({
   onValidationError,
 }: TagFormContentProps) {
   const text = i18n.cms;
+  const formText = text.forms;
+  const tagFormText = formText.resources.tags;
+  const fieldText = formText.fields;
+  const tagFieldLabels = {
+    name: fieldText.name,
+    slug: fieldText.slug,
+    description: fieldText.description,
+  };
   const [name, setName] = useState(tag?.name ?? "");
   const [slug, setSlug] = useState(tag?.slug ?? "");
   const [description, setDescription] = useState(tag?.description ?? "");
@@ -182,10 +191,10 @@ function TagFormContent({
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader title={mode === "create" ? "Nuovo Tag" : "Modifica Tag"} />
+      <CmsPageHeader title={mode === "create" ? tagFormText.createTitle : tagFormText.editTitle} />
 
       <div className="space-y-4 border border-foreground p-4">
-        <CmsFormField label="Nome" htmlFor="tag-name" required>
+        <CmsFormField label={fieldText.name} htmlFor="tag-name" required>
           <CmsTextInput
             id="tag-name"
             value={name}
@@ -194,10 +203,10 @@ function TagFormContent({
         </CmsFormField>
 
         <CmsFormField
-          label="Slug"
+          label={fieldText.slug}
           htmlFor="tag-slug"
           required={mode === "edit"}
-          hint={mode === "create" ? "Generato dal nome se vuoto" : undefined}
+          hint={mode === "create" ? formText.generatedFromNameHint : undefined}
         >
           <div className="flex items-center gap-2">
             <CmsTextInput
@@ -211,12 +220,12 @@ function TagFormContent({
               onClick={regenerateSlugFromName}
               className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
             >
-              Rigenera
+              {formText.regenerateSlug}
             </button>
           </div>
         </CmsFormField>
 
-        <CmsFormField label="Descrizione" htmlFor="tag-description">
+        <CmsFormField label={fieldText.description} htmlFor="tag-description">
           <CmsTextarea
             id="tag-description"
             value={description}
@@ -224,7 +233,7 @@ function TagFormContent({
           />
         </CmsFormField>
 
-        <CmsCheckbox label="Tag attivo" checked={isActive} onChange={setIsActive} />
+        <CmsCheckbox label={tagFormText.activeLabel} checked={isActive} onChange={setIsActive} />
 
         <div className="flex items-center gap-2">
           <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>

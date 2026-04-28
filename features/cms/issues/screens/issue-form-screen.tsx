@@ -38,15 +38,6 @@ import { createIssueInputSchema, updateIssueInputSchema } from "@/lib/server/mod
 import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
 
-const issueFieldLabels = {
-  title: "Titolo",
-  slug: "Slug",
-  description: "Descrizione",
-  coverUrl: "Cover URL",
-  color: "Colore",
-  publishedAt: "Data pubblicazione",
-};
-
 type IssueFormScreenProps = {
   mode: "create" | "edit";
   issueId?: string;
@@ -83,6 +74,8 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
   const trpcUtils = trpc.useUtils();
   const { cancel, success } = useCmsFormNavigation("/cms/issues");
   const text = i18n.cms;
+  const formText = text.forms;
+  const issueFormText = formText.resources.issues;
   const issueQuery = useIssueById(mode === "edit" ? issueId : undefined, { initialData });
   const createMutation = useIssueCreate();
   const updateMutation = useIssueUpdate();
@@ -91,7 +84,12 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
   useSetCmsBreadcrumbLabel(mode === "edit" ? issueQuery.data?.title : null);
 
   if (mode === "edit" && !issueId) {
-    return <CmsErrorState title="Issue non valida" description="ID mancante per la modifica." />;
+    return (
+      <CmsErrorState
+        title={issueFormText.invalidTitle}
+        description={formText.invalidEditIdDescription}
+      />
+    );
   }
 
   if (mode === "edit" && issueQuery.isPending) {
@@ -113,7 +111,7 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
       onCreate={async (payload) => {
         await createMutation.mutateAsync(payload);
         await invalidateAfterCmsMutation(trpcUtils, "issues.create");
-        success("Issue creata.");
+        success(issueFormText.created);
       }}
       onUpdate={async ({ id, data, orderedArticleIds }) => {
         await updateMutation.mutateAsync({ id, data });
@@ -126,10 +124,7 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
             });
           } catch (error) {
             const mapped = mapCrudDomainError(error, "articles");
-            cmsToast.error(
-              `Issue salvata, riordino articoli fallito: ${mapped.description}`,
-              mapped.title,
-            );
+            cmsToast.error(issueFormText.reorderArticlesFailed(mapped.description), mapped.title);
             await Promise.all([
               invalidateIssuesAfterMutation(trpcUtils, { id }),
               invalidateArticlesAfterMutation(trpcUtils, { ids: orderedArticleIds }),
@@ -144,7 +139,7 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
             ? invalidateArticlesAfterMutation(trpcUtils, { ids: orderedArticleIds })
             : Promise.resolve(),
         ]);
-        success("Issue aggiornata.");
+        success(issueFormText.updated);
       }}
       onMutationError={(error) => {
         const mapped = mapCrudDomainError(error, "issues");
@@ -181,6 +176,17 @@ function IssueFormContent({
   onValidationError,
 }: IssueFormContentProps) {
   const text = i18n.cms;
+  const formText = text.forms;
+  const issueFormText = formText.resources.issues;
+  const fieldText = formText.fields;
+  const issueFieldLabels = {
+    title: fieldText.title,
+    slug: fieldText.slug,
+    description: fieldText.description,
+    coverUrl: fieldText.coverUrl,
+    color: fieldText.color,
+    publishedAt: fieldText.publishedAt,
+  };
   const [title, setTitle] = useState(issue?.title ?? "");
   const [slug, setSlug] = useState(issue?.slug ?? "");
   const [description, setDescription] = useState(issue?.description ?? "");
@@ -207,7 +213,7 @@ function IssueFormContent({
     const normalizedPublishedAt = publishedAt ? new Date(publishedAt) : null;
 
     if (publishedAt && (!normalizedPublishedAt || Number.isNaN(normalizedPublishedAt.getTime()))) {
-      onValidationError("Data pubblicazione non valida.");
+      onValidationError(issueFormText.invalidPublishedAt);
       return;
     }
 
@@ -267,11 +273,13 @@ function IssueFormContent({
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader title={mode === "create" ? "Nuova Issue" : "Modifica Issue"} />
+      <CmsPageHeader
+        title={mode === "create" ? issueFormText.createTitle : issueFormText.editTitle}
+      />
 
       <div className={mode === "edit" ? "grid gap-6 lg:grid-cols-[1fr_360px]" : "grid gap-6"}>
         <div className="space-y-4 border border-foreground p-4">
-          <CmsFormField label="Titolo" htmlFor="issue-title" required>
+          <CmsFormField label={fieldText.title} htmlFor="issue-title" required>
             <CmsTextInput
               id="issue-title"
               value={title}
@@ -280,10 +288,10 @@ function IssueFormContent({
           </CmsFormField>
 
           <CmsFormField
-            label="Slug"
+            label={fieldText.slug}
             htmlFor="issue-slug"
             required={mode === "edit"}
-            hint={mode === "create" ? "Generato dal titolo se vuoto" : undefined}
+            hint={mode === "create" ? formText.generatedFromTitleHint : undefined}
           >
             <div className="flex items-center gap-2">
               <CmsTextInput
@@ -298,12 +306,12 @@ function IssueFormContent({
                 onClick={regenerateSlugFromTitle}
                 className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
               >
-                Rigenera
+                {formText.regenerateSlug}
               </button>
             </div>
           </CmsFormField>
 
-          <CmsFormField label="Descrizione" htmlFor="issue-description">
+          <CmsFormField label={fieldText.description} htmlFor="issue-description">
             <CmsTextarea
               id="issue-description"
               value={description}
@@ -312,7 +320,7 @@ function IssueFormContent({
           </CmsFormField>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <CmsFormField label="Cover URL" htmlFor="issue-cover-url">
+            <CmsFormField label={fieldText.coverUrl} htmlFor="issue-cover-url">
               <CmsTextInput
                 id="issue-cover-url"
                 type="url"
@@ -321,7 +329,7 @@ function IssueFormContent({
               />
             </CmsFormField>
 
-            <CmsFormField label="Colore" htmlFor="issue-color">
+            <CmsFormField label={fieldText.color} htmlFor="issue-color">
               <div className="flex items-center gap-2">
                 <CmsTextInput
                   id="issue-color"
@@ -340,7 +348,7 @@ function IssueFormContent({
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 md:items-end">
-            <CmsFormField label="Data pubblicazione" htmlFor="issue-published-at">
+            <CmsFormField label={fieldText.publishedAt} htmlFor="issue-published-at">
               <CmsTextInput
                 id="issue-published-at"
                 type="datetime-local"
@@ -349,7 +357,11 @@ function IssueFormContent({
               />
             </CmsFormField>
 
-            <CmsCheckbox label="Issue attiva" checked={isActive} onChange={setIsActive} />
+            <CmsCheckbox
+              label={issueFormText.activeLabel}
+              checked={isActive}
+              onChange={setIsActive}
+            />
           </div>
 
           <div className="flex items-center gap-2">
@@ -366,7 +378,7 @@ function IssueFormContent({
           <div className="space-y-3">
             {orderChanged ? (
               <div className="border border-accent px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-accent">
-                Riordino articoli non ancora salvato.
+                {issueFormText.dirtyArticleOrder}
               </div>
             ) : null}
             <IssueArticlesPanel

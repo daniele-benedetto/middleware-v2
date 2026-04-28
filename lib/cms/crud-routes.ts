@@ -1,5 +1,3 @@
-export const cmsCrudRoutesEnabled = true;
-
 export const cmsCrudRoutes = {
   issues: {
     create: "/cms/issues/new",

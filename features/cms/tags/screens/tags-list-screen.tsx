@@ -40,7 +40,7 @@ import {
   useListSelection,
   useTagsListQuery,
 } from "@/features/cms/shared/hooks";
-import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
+import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { parseTagsListSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -79,11 +79,6 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
   const deleteMutation = trpc.tags.delete.useMutation();
 
   const navigateToCrudRoute = (href: string) => {
-    if (!cmsCrudRoutesEnabled) {
-      cmsToast.info("Route CRUD non ancora attive.");
-      return;
-    }
-
     router.push(href);
   };
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 export const createUserInputSchema = z.object({
   email: z.string().email().trim().toLowerCase(),
   name: z.string().trim().min(1).optional(),
+  image: z.string().trim().url().optional(),
   role: z.enum(["ADMIN", "EDITOR"]),
 });
 

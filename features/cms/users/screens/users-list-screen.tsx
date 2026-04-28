@@ -40,7 +40,7 @@ import {
   useListSelection,
   useUsersListQuery,
 } from "@/features/cms/shared/hooks";
-import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
+import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { parseUsersListSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -61,9 +61,14 @@ type UserQuickAction = "role-admin" | "role-editor" | "delete";
 type CmsUsersListScreenProps = {
   initialInput?: UsersListInput;
   initialData?: UsersListInitialData;
+  currentUserId?: string;
 };
 
-export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListScreenProps) {
+export function CmsUsersListScreen({
+  initialInput,
+  initialData,
+  currentUserId,
+}: CmsUsersListScreenProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const text = i18n.cms;
@@ -80,11 +85,6 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
   const deleteMutation = trpc.users.delete.useMutation();
 
   const navigateToCrudRoute = (href: string) => {
-    if (!cmsCrudRoutesEnabled) {
-      cmsToast.info("Route CRUD non ancora attive.");
-      return;
-    }
-
     router.push(href);
   };
 
@@ -116,9 +116,12 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
     );
   }
 
-  const pageUserIds = listQuery.items.map((user) => user.id);
+  const pageActionableUserIds = listQuery.items
+    .filter((user) => user.id !== currentUserId)
+    .map((user) => user.id);
   const allSelectedOnPage =
-    pageUserIds.length > 0 && pageUserIds.every((userId) => selection.isSelected(userId));
+    pageActionableUserIds.length > 0 &&
+    pageActionableUserIds.every((userId) => selection.isSelected(userId));
 
   const runSingleAction = async (action: UserQuickAction, id: string) => {
     try {
@@ -280,8 +283,8 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
                 },
               }))}
               onSelectAll={
-                pageUserIds.length > 0 && !allSelectedOnPage
-                  ? () => selection.setSelection(pageUserIds)
+                pageActionableUserIds.length > 0 && !allSelectedOnPage
+                  ? () => selection.setSelection(pageActionableUserIds)
                   : undefined
               }
               selectAllDisabled={isActionPending}
@@ -344,7 +347,7 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
                     <Checkbox
                       checked={allSelectedOnPage}
                       onCheckedChange={() => {
-                        selection.toggleSelectAll(pageUserIds);
+                        selection.toggleSelectAll(pageActionableUserIds);
                       }}
                       className={cmsTableClasses.headerCheckbox}
                       aria-label={commonText.selectAll}
@@ -377,118 +380,125 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {listQuery.items.map((user) => (
-                  <TableRow key={user.id} className={cmsTableClasses.bodyRow}>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <Checkbox
-                        checked={selection.isSelected(user.id)}
-                        onCheckedChange={() => {
-                          selection.toggleSelection(user.id);
-                        }}
-                        aria-label={listText.selectItemByEmail(user.email)}
-                      />
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellTitle}>{user.email}</TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {user.name ?? "-"}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>{user.role}</TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {user.emailVerified ? commonText.yes : commonText.no}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {String(user.authoredArticlesCount)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {formatDate(user.createdAt)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {formatDate(user.updatedAt)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <CmsActionButton
-                          variant="outline"
-                          size="xs"
-                          disabled={deleteMutation.isPending || updateRoleMutation.isPending}
-                          onClick={() => navigateToCrudRoute(cmsCrudRoutes.users.edit(user.id))}
-                        >
-                          Edit
-                        </CmsActionButton>
-                        {resolveQuickActions(
-                          [
-                            {
-                              id: "single-role-admin",
-                              label: quickText.setAdmin,
-                              scope: "single",
-                              requiresConfirm: true,
-                              confirm: {
-                                title: quickText.confirmRoleTitle,
-                                description: quickText.confirmRoleAdminSingle,
-                              },
-                              isVisible: () => user.role !== "ADMIN",
-                              isEnabled: ({ isPending }) => !isPending,
-                            },
-                            {
-                              id: "single-role-editor",
-                              label: quickText.setEditor,
-                              scope: "single",
-                              requiresConfirm: true,
-                              confirm: {
-                                title: quickText.confirmRoleTitle,
-                                description: quickText.confirmRoleEditorSingle,
-                              },
-                              isVisible: () => user.role !== "EDITOR",
-                              isEnabled: ({ isPending }) => !isPending,
-                            },
-                            {
-                              id: "single-delete",
-                              label: quickText.delete,
-                              scope: "single",
-                              tone: "danger",
-                              requiresConfirm: true,
-                              confirm: {
-                                title: quickText.confirmDeleteTitle,
-                                description: quickText.confirmDeleteSingleUser,
-                              },
-                              isEnabled: ({ isPending }) => !isPending,
-                            },
-                          ] satisfies CmsQuickAction[],
-                          {
-                            selectedCount: 1,
-                            isPending: deleteMutation.isPending || updateRoleMutation.isPending,
-                          },
-                        ).map((action) => (
-                          <CmsConfirmDialog
-                            key={`${user.id}-${action.id}`}
-                            triggerLabel={action.label}
-                            triggerDisabled={action.disabled}
-                            title={action.confirm?.title ?? commonText.defaultConfirmTitle}
-                            description={
-                              action.confirm?.description ?? commonText.defaultUserActionDescription
-                            }
-                            confirmLabel={action.confirm?.confirmLabel}
-                            cancelLabel={action.confirm?.cancelLabel}
-                            tone={action.tone === "danger" ? "danger" : "default"}
-                            onConfirm={() => {
-                              if (action.id === "single-role-admin") {
-                                void runSingleAction("role-admin", user.id);
-                                return;
-                              }
+                {listQuery.items.map((user) => {
+                  const isCurrentUser = user.id === currentUserId;
 
-                              if (action.id === "single-role-editor") {
-                                void runSingleAction("role-editor", user.id);
-                                return;
+                  return (
+                    <TableRow key={user.id} className={cmsTableClasses.bodyRow}>
+                      <TableCell className={cmsTableClasses.bodyCellMeta}>
+                        <Checkbox
+                          checked={selection.isSelected(user.id)}
+                          disabled={isCurrentUser}
+                          onCheckedChange={() => {
+                            selection.toggleSelection(user.id);
+                          }}
+                          aria-label={listText.selectItemByEmail(user.email)}
+                        />
+                      </TableCell>
+                      <TableCell className={cmsTableClasses.bodyCellTitle}>{user.email}</TableCell>
+                      <TableCell className={cmsTableClasses.bodyCellMeta}>
+                        {user.name ?? "-"}
+                      </TableCell>
+                      <TableCell className={cmsTableClasses.bodyCellMeta}>{user.role}</TableCell>
+                      <TableCell className={cmsTableClasses.bodyCellMeta}>
+                        {user.emailVerified ? commonText.yes : commonText.no}
+                      </TableCell>
+                      <TableCell className={cmsTableClasses.bodyCellMeta}>
+                        {String(user.authoredArticlesCount)}
+                      </TableCell>
+                      <TableCell className={cmsTableClasses.bodyCellMeta}>
+                        {formatDate(user.createdAt)}
+                      </TableCell>
+                      <TableCell className={cmsTableClasses.bodyCellMeta}>
+                        {formatDate(user.updatedAt)}
+                      </TableCell>
+                      <TableCell className={cmsTableClasses.bodyCellMeta}>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <CmsActionButton
+                            variant="outline"
+                            size="xs"
+                            disabled={deleteMutation.isPending || updateRoleMutation.isPending}
+                            onClick={() => navigateToCrudRoute(cmsCrudRoutes.users.edit(user.id))}
+                          >
+                            {quickText.edit}
+                          </CmsActionButton>
+                          {resolveQuickActions(
+                            [
+                              {
+                                id: "single-role-admin",
+                                label: quickText.setAdmin,
+                                scope: "single",
+                                requiresConfirm: true,
+                                confirm: {
+                                  title: quickText.confirmRoleTitle,
+                                  description: quickText.confirmRoleAdminSingle,
+                                },
+                                isVisible: () => !isCurrentUser && user.role !== "ADMIN",
+                                isEnabled: ({ isPending }) => !isPending,
+                              },
+                              {
+                                id: "single-role-editor",
+                                label: quickText.setEditor,
+                                scope: "single",
+                                requiresConfirm: true,
+                                confirm: {
+                                  title: quickText.confirmRoleTitle,
+                                  description: quickText.confirmRoleEditorSingle,
+                                },
+                                isVisible: () => !isCurrentUser && user.role !== "EDITOR",
+                                isEnabled: ({ isPending }) => !isPending,
+                              },
+                              {
+                                id: "single-delete",
+                                label: quickText.delete,
+                                scope: "single",
+                                tone: "danger",
+                                requiresConfirm: true,
+                                confirm: {
+                                  title: quickText.confirmDeleteTitle,
+                                  description: quickText.confirmDeleteSingleUser,
+                                },
+                                isVisible: () => !isCurrentUser,
+                                isEnabled: ({ isPending }) => !isPending,
+                              },
+                            ] satisfies CmsQuickAction[],
+                            {
+                              selectedCount: 1,
+                              isPending: deleteMutation.isPending || updateRoleMutation.isPending,
+                            },
+                          ).map((action) => (
+                            <CmsConfirmDialog
+                              key={`${user.id}-${action.id}`}
+                              triggerLabel={action.label}
+                              triggerDisabled={action.disabled}
+                              title={action.confirm?.title ?? commonText.defaultConfirmTitle}
+                              description={
+                                action.confirm?.description ??
+                                commonText.defaultUserActionDescription
                               }
+                              confirmLabel={action.confirm?.confirmLabel}
+                              cancelLabel={action.confirm?.cancelLabel}
+                              tone={action.tone === "danger" ? "danger" : "default"}
+                              onConfirm={() => {
+                                if (action.id === "single-role-admin") {
+                                  void runSingleAction("role-admin", user.id);
+                                  return;
+                                }
 
-                              void runSingleAction("delete", user.id);
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                                if (action.id === "single-role-editor") {
+                                  void runSingleAction("role-editor", user.id);
+                                  return;
+                                }
+
+                                void runSingleAction("delete", user.id);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           ) : (

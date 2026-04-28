@@ -132,7 +132,7 @@ All are defined in `lib/cms/query/list-params.ts`.
 - Quick-action single/bulk errors are normalized in `features/cms/shared/actions/quick-action-errors.ts`.
 - List pages use uniform UX states (`CmsLoadingState`, `CmsEmptyState`, `CmsErrorState`) with retry where allowed.
 - Permission handling is defense-in-depth:
-  - UI-level gating (e.g. `features/cms/users/screens/users-screen.tsx`)
+  - Route-level server gating (e.g. `app/(cms)/cms/users/page.tsx`)
   - tRPC policy middleware per resource (`lib/server/trpc/routers/*` + module policy files)
   - forbidden states render with explicit messaging instead of silent failures.
 

@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 
+import { ApiError } from "@/lib/server/http/api-error";
 import {
   createUserInputSchema,
   listUserAuthorsQuerySchema,
@@ -110,7 +111,11 @@ export const usersRouter = router({
         resourceId: input.id,
       })),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.session?.user.id === input.id) {
+        throw new ApiError(403, "FORBIDDEN", "Administrators cannot change their own role");
+      }
+
       return parseOutput(
         await usersService.updateRole(input.id, input.data),
         userListItemDtoSchema,
@@ -126,7 +131,11 @@ export const usersRouter = router({
         resourceId: input.id,
       })),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.session?.user.id === input.id) {
+        throw new ApiError(403, "FORBIDDEN", "Administrators cannot delete their own account");
+      }
+
       await usersService.delete(input.id);
       return { success: true };
     }),

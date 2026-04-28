@@ -35,12 +35,6 @@ import { trpc } from "@/lib/trpc/react";
 
 import type { RouterInputs } from "@/lib/trpc/types";
 
-const categoryFieldLabels = {
-  name: "Nome",
-  slug: "Slug",
-  description: "Descrizione",
-};
-
 type CategoryFormScreenProps = {
   mode: "create" | "edit";
   categoryId?: string;
@@ -66,6 +60,8 @@ export function CmsCategoryFormScreen({ mode, categoryId, initialData }: Categor
   const trpcUtils = trpc.useUtils();
   const { cancel, success } = useCmsFormNavigation("/cms/categories");
   const text = i18n.cms;
+  const formText = text.forms;
+  const categoryFormText = formText.resources.categories;
   const categoryQuery = useCategoryById(mode === "edit" ? categoryId : undefined, {
     initialData,
   });
@@ -76,7 +72,10 @@ export function CmsCategoryFormScreen({ mode, categoryId, initialData }: Categor
 
   if (mode === "edit" && !categoryId) {
     return (
-      <CmsErrorState title="Categoria non valida" description="ID mancante per la modifica." />
+      <CmsErrorState
+        title={categoryFormText.invalidTitle}
+        description={formText.invalidEditIdDescription}
+      />
     );
   }
 
@@ -100,12 +99,12 @@ export function CmsCategoryFormScreen({ mode, categoryId, initialData }: Categor
       onCreate={async (payload) => {
         await createMutation.mutateAsync(payload);
         await invalidateAfterCmsMutation(trpcUtils, "categories.create");
-        success("Categoria creata.");
+        success(categoryFormText.created);
       }}
       onUpdate={async ({ id, data }) => {
         await updateMutation.mutateAsync({ id, data });
         await invalidateAfterCmsMutation(trpcUtils, "categories.update", { id });
-        success("Categoria aggiornata.");
+        success(categoryFormText.updated);
       }}
       onMutationError={(error) => {
         const mapped = mapCrudDomainError(error, "categories");
@@ -130,6 +129,14 @@ function CategoryFormContent({
   onValidationError,
 }: CategoryFormContentProps) {
   const text = i18n.cms;
+  const formText = text.forms;
+  const categoryFormText = formText.resources.categories;
+  const fieldText = formText.fields;
+  const categoryFieldLabels = {
+    name: fieldText.name,
+    slug: fieldText.slug,
+    description: fieldText.description,
+  };
   const [name, setName] = useState(category?.name ?? "");
   const [slug, setSlug] = useState(category?.slug ?? "");
   const [description, setDescription] = useState(category?.description ?? "");
@@ -189,10 +196,12 @@ function CategoryFormContent({
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader title={mode === "create" ? "Nuova Categoria" : "Modifica Categoria"} />
+      <CmsPageHeader
+        title={mode === "create" ? categoryFormText.createTitle : categoryFormText.editTitle}
+      />
 
       <div className="space-y-4 border border-foreground p-4">
-        <CmsFormField label="Nome" htmlFor="category-name" required>
+        <CmsFormField label={fieldText.name} htmlFor="category-name" required>
           <CmsTextInput
             id="category-name"
             value={name}
@@ -201,10 +210,10 @@ function CategoryFormContent({
         </CmsFormField>
 
         <CmsFormField
-          label="Slug"
+          label={fieldText.slug}
           htmlFor="category-slug"
           required={mode === "edit"}
-          hint={mode === "create" ? "Generato dal nome se vuoto" : undefined}
+          hint={mode === "create" ? formText.generatedFromNameHint : undefined}
         >
           <div className="flex items-center gap-2">
             <CmsTextInput
@@ -218,12 +227,12 @@ function CategoryFormContent({
               onClick={regenerateSlugFromName}
               className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
             >
-              Rigenera
+              {formText.regenerateSlug}
             </button>
           </div>
         </CmsFormField>
 
-        <CmsFormField label="Descrizione" htmlFor="category-description">
+        <CmsFormField label={fieldText.description} htmlFor="category-description">
           <CmsTextarea
             id="category-description"
             value={description}
@@ -231,7 +240,11 @@ function CategoryFormContent({
           />
         </CmsFormField>
 
-        <CmsCheckbox label="Categoria attiva" checked={isActive} onChange={setIsActive} />
+        <CmsCheckbox
+          label={categoryFormText.activeLabel}
+          checked={isActive}
+          onChange={setIsActive}
+        />
 
         <div className="flex items-center gap-2">
           <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>

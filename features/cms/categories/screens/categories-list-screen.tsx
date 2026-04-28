@@ -40,7 +40,7 @@ import {
   useCmsListUrlState,
   useListSelection,
 } from "@/features/cms/shared/hooks";
-import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
+import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { parseCategoriesListSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -85,11 +85,6 @@ export function CmsCategoriesListScreen({
   const deleteMutation = trpc.categories.delete.useMutation();
 
   const navigateToCrudRoute = (href: string) => {
-    if (!cmsCrudRoutesEnabled) {
-      cmsToast.info("Route CRUD non ancora attive.");
-      return;
-    }
-
     router.push(href);
   };
 

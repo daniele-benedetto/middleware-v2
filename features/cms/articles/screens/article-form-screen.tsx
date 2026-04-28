@@ -49,17 +49,6 @@ import type {
   UsersAuthorOptionsInitialData,
 } from "@/features/cms/shared/types/initial-data";
 
-const articleFieldLabels = {
-  issueId: "Issue",
-  categoryId: "Categoria",
-  authorId: "Autore",
-  title: "Titolo",
-  slug: "Slug",
-  excerpt: "Excerpt",
-  imageUrl: "Image URL",
-  audioUrl: "Audio URL",
-};
-
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
 
 type ArticleFormScreenProps = {
@@ -110,6 +99,8 @@ export function CmsArticleFormScreen({
   const trpcUtils = trpc.useUtils();
   const { cancel, success } = useCmsFormNavigation("/cms/articles");
   const text = i18n.cms;
+  const formText = text.forms;
+  const articleFormText = formText.resources.articles;
 
   const articleQuery = useArticleById(mode === "edit" ? articleId : undefined, { initialData });
   const tagOptionsQuery = useTagOptions({ initialData: initialOptionsData?.tagsOptions });
@@ -125,7 +116,12 @@ export function CmsArticleFormScreen({
   useSetCmsBreadcrumbLabel(mode === "edit" ? articleQuery.data?.title : null);
 
   if (mode === "edit" && !articleId) {
-    return <CmsErrorState title="Articolo non valido" description="ID mancante per la modifica." />;
+    return (
+      <CmsErrorState
+        title={articleFormText.invalidTitle}
+        description={formText.invalidEditIdDescription}
+      />
+    );
   }
 
   if (mode === "edit" && articleQuery.isPending) {
@@ -157,7 +153,7 @@ export function CmsArticleFormScreen({
       onCreate={async (payload) => {
         await createMutation.mutateAsync(payload);
         await invalidateAfterCmsMutation(trpcUtils, "articles.create");
-        success("Articolo creato.");
+        success(articleFormText.created);
       }}
       onUpdate={async ({ id, data, tagIds }) => {
         await updateMutation.mutateAsync({ id, data });
@@ -167,7 +163,7 @@ export function CmsArticleFormScreen({
         }
 
         await invalidateAfterCmsMutation(trpcUtils, "articles.update", { id });
-        success("Articolo aggiornato.");
+        success(articleFormText.updated);
       }}
       onMutationError={(error) => {
         const mapped = mapCrudDomainError(error, "articles");
@@ -226,6 +222,19 @@ function ArticleFormContent({
   onValidationError,
 }: ArticleFormContentProps) {
   const text = i18n.cms;
+  const formText = text.forms;
+  const articleFormText = formText.resources.articles;
+  const fieldText = formText.fields;
+  const articleFieldLabels = {
+    issueId: fieldText.issue,
+    categoryId: fieldText.category,
+    authorId: fieldText.author,
+    title: fieldText.title,
+    slug: fieldText.slug,
+    excerpt: fieldText.excerpt,
+    imageUrl: fieldText.imageUrl,
+    audioUrl: fieldText.audioUrl,
+  };
 
   const [issueId, setIssueId] = useState(article?.issueId ?? "");
   const [categoryId, setCategoryId] = useState(article?.categoryId ?? "");
@@ -269,7 +278,7 @@ function ArticleFormContent({
     const parsedAudioChunks = parseJsonOrUndefined(audioChunks);
 
     if (audioChunks.trim() && parsedAudioChunks == null) {
-      onValidationError("audioChunks deve essere JSON valido.");
+      onValidationError(articleFormText.invalidAudioChunks);
       return;
     }
 
@@ -336,11 +345,13 @@ function ArticleFormContent({
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader title={mode === "create" ? "Nuovo Articolo" : "Modifica Articolo"} />
+      <CmsPageHeader
+        title={mode === "create" ? articleFormText.createTitle : articleFormText.editTitle}
+      />
 
       <div className="space-y-4 border border-foreground p-4">
         <div className="grid gap-4 md:grid-cols-3">
-          <CmsFormField label="Issue" htmlFor="article-issue" required>
+          <CmsFormField label={fieldText.issue} htmlFor="article-issue" required>
             <CmsSelect
               value={issueId}
               onValueChange={setIssueId}
@@ -349,7 +360,7 @@ function ArticleFormContent({
             />
           </CmsFormField>
 
-          <CmsFormField label="Categoria" htmlFor="article-category" required>
+          <CmsFormField label={fieldText.category} htmlFor="article-category" required>
             <CmsSelect
               value={categoryId}
               onValueChange={setCategoryId}
@@ -358,7 +369,7 @@ function ArticleFormContent({
             />
           </CmsFormField>
 
-          <CmsFormField label="Autore" htmlFor="article-author" required>
+          <CmsFormField label={fieldText.author} htmlFor="article-author" required>
             <CmsSelect
               value={authorId}
               onValueChange={setAuthorId}
@@ -368,7 +379,7 @@ function ArticleFormContent({
           </CmsFormField>
         </div>
 
-        <CmsFormField label="Titolo" htmlFor="article-title" required>
+        <CmsFormField label={fieldText.title} htmlFor="article-title" required>
           <CmsTextInput
             id="article-title"
             value={title}
@@ -376,7 +387,7 @@ function ArticleFormContent({
           />
         </CmsFormField>
 
-        <CmsFormField label="Slug" htmlFor="article-slug" required>
+        <CmsFormField label={fieldText.slug} htmlFor="article-slug" required>
           <div className="flex items-center gap-2">
             <CmsTextInput
               id="article-slug"
@@ -389,12 +400,12 @@ function ArticleFormContent({
               onClick={regenerateSlugFromTitle}
               className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
             >
-              Rigenera
+              {formText.regenerateSlug}
             </button>
           </div>
         </CmsFormField>
 
-        <CmsFormField label="Excerpt" htmlFor="article-excerpt">
+        <CmsFormField label={fieldText.excerpt} htmlFor="article-excerpt">
           <CmsTextarea
             id="article-excerpt"
             value={excerpt}
@@ -402,7 +413,7 @@ function ArticleFormContent({
           />
         </CmsFormField>
 
-        <CmsFormField label="Contenuto" htmlFor="article-content-rich" required>
+        <CmsFormField label={fieldText.content} htmlFor="article-content-rich" required>
           <CmsRichTextEditor
             value={contentRich}
             onChange={setContentRich}
@@ -411,7 +422,7 @@ function ArticleFormContent({
         </CmsFormField>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <CmsFormField label="Image URL" htmlFor="article-image-url">
+          <CmsFormField label={fieldText.imageUrl} htmlFor="article-image-url">
             <CmsTextInput
               id="article-image-url"
               value={imageUrl}
@@ -419,7 +430,7 @@ function ArticleFormContent({
             />
           </CmsFormField>
 
-          <CmsFormField label="Audio URL" htmlFor="article-audio-url">
+          <CmsFormField label={fieldText.audioUrl} htmlFor="article-audio-url">
             <CmsTextInput
               id="article-audio-url"
               value={audioUrl}
@@ -428,7 +439,7 @@ function ArticleFormContent({
           </CmsFormField>
         </div>
 
-        <CmsFormField label="audioChunks (JSON)" htmlFor="article-audio-chunks">
+        <CmsFormField label={fieldText.audioChunksJson} htmlFor="article-audio-chunks">
           <CmsTextarea
             id="article-audio-chunks"
             value={audioChunks}
@@ -436,9 +447,9 @@ function ArticleFormContent({
           />
         </CmsFormField>
 
-        <CmsFormField label="Tag" htmlFor="article-tags">
+        <CmsFormField label={fieldText.tags} htmlFor="article-tags">
           <div id="article-tags" className="space-y-2">
-            {tagsLoading ? <p className="text-sm">Caricamento tag...</p> : null}
+            {tagsLoading ? <p className="text-sm">{articleFormText.tagsLoading}</p> : null}
             {tagsAvailable.map((tag) => {
               const checked = selectedTagIds.includes(tag.id);
 
@@ -453,7 +464,7 @@ function ArticleFormContent({
             })}
 
             {!tagsLoading && tagsAvailable.length === 0 ? (
-              <p className="text-sm">Nessun tag disponibile.</p>
+              <p className="text-sm">{articleFormText.noTagsAvailable}</p>
             ) : null}
           </div>
         </CmsFormField>

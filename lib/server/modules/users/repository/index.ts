@@ -114,6 +114,7 @@ export const usersRepository = {
       data: {
         email: input.email,
         name: input.name,
+        image: input.image,
         role: input.role,
       },
     });

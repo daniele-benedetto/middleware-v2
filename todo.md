@@ -22,12 +22,14 @@ Decisioni gia fissate:
 - [x] `articles` riallineata su prefetch opzioni, filtri editoriali e clearing corretto dei campi opzionali
 - [x] `categories` riallineata al model reale con `isActive` e slug flow piu editoriale
 - [x] `tags` riallineato al model reale con `isActive` e slug flow piu editoriale
+- [x] `users` riallineato su route layer, self-guard admin e parita create/edit per `image`
 - [x] reorder `issues` con UI reale in lista
 - [x] reorder `articles` messo in sicurezza lato server e riallineato lato UI
 - [x] invalidation corretta tra `issues` e `articles`
 - [x] bug search URL sync corretto nelle list screen tramite componente condiviso
 - [x] fix dei form semplici per distinguere campi svuotati vs non modificati
-- [x] cleanup iniziale dei pezzi non piu usati dopo il refactor
+- [x] cleanup shared iniziale dei pezzi non piu usati dopo i refactor
+- [x] pass copy/i18n su titoli form, label, hint, toast e pannelli CMS principali
 - [x] `pnpm lint`
 - [x] `pnpm typecheck`
 - [x] `pnpm build`
@@ -68,20 +70,20 @@ Decisioni gia fissate:
 
 ### 4. Users - quality pass admin-only
 
-- [ ] Rianalizzare `users` end-to-end
-- [ ] Verificare create/edit/list con focus su ruolo, image, guard admin-only e invalidation
-- [ ] Rendere il flusso coerente con il resto del CMS, ma senza sovra-astrarre se non serve
-- [ ] Ripassare bulk actions e quick actions lato UX e robustezza
-- [ ] Pulire codice ridondante o workaround ormai superati
+- [x] Rianalizzare `users` end-to-end
+- [x] Verificare create/edit/list con focus su ruolo, image, guard admin-only e invalidation
+- [x] Rendere il flusso coerente con il resto del CMS, ma senza sovra-astrarre se non serve
+- [x] Ripassare bulk actions e quick actions lato UX e robustezza
+- [x] Pulire codice ridondante o workaround ormai superati
 
 ### 5. Shared CMS cleanup dopo i pass per-risorsa
 
-- [ ] Riesaminare `app/(cms)` nel complesso dopo il pass su tutte le risorse
-- [ ] Estrarre solo le astrazioni che restano davvero stabili dopo i refactor per-risorsa
-- [ ] Evitare mini-framework interni: preferire helper piccoli e chiari
-- [ ] Uniformare pattern di loading, prefetch, invalidation, metadata e copy
-- [ ] Eliminare helper/componenti/shared hook non piu referenziati
-- [ ] Fare una passata finale per ridurre file troppo verbosi o con troppe responsabilita
+- [x] Riesaminare `app/(cms)` nel complesso dopo il pass su tutte le risorse
+- [x] Estrarre solo le astrazioni che restano davvero stabili dopo i refactor per-risorsa
+- [x] Evitare mini-framework interni: preferire helper piccoli e chiari
+- [x] Uniformare pattern di loading, prefetch, invalidation, metadata e copy
+- [x] Eliminare helper/componenti/shared hook non piu referenziati
+- [x] Fare una passata finale per ridurre file troppo verbosi o con troppe responsabilita
 
 ## Checklist di qualita da applicare a ogni risorsa
 
@@ -92,13 +94,15 @@ Decisioni gia fissate:
 - [ ] Router tRPC orchestration-only, logica dominio nel service, accesso dati nel repository
 - [ ] Nessun dead code, feature flag finto o fallback legacy non necessario
 - [ ] Nessuna duplicazione importante lasciata senza motivo dopo il refactor finale
+- [ ] L'architettura del codice è coerente e ben strutturata
+- [ ] Il codice è ottimizzato e segue tutte le best practices di Next16
 - [ ] Verifica finale sempre con `pnpm lint`, `pnpm typecheck`, `pnpm build`
 
 ## UI / Copy / i18n
 
-- [ ] Ripassare tutti i titoli hardcoded dei form e le copy di azione per portarli in un assetto coerente
-- [ ] Uniformare naming e microcopy tra list, form, confirm dialog e toast
-- [ ] Verificare che la terminologia editoriale sia consistente in tutto il CMS
+- [x] Ripassare tutti i titoli hardcoded dei form e le copy di azione per portarli in un assetto coerente
+- [x] Uniformare naming e microcopy tra list, form, confirm dialog e toast
+- [x] Verificare che la terminologia editoriale sia consistente in tutto il CMS
 
 ## Assets editoriali
 

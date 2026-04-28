@@ -24,5 +24,12 @@ export default async function CmsUserEditPage({ params }: CmsUserEditPageProps) 
 
   const initialData = await prefetchUserById(id).catch(() => undefined);
 
-  return <CmsUserFormScreen mode="edit" userId={id} initialData={initialData} />;
+  return (
+    <CmsUserFormScreen
+      mode="edit"
+      userId={id}
+      initialData={initialData}
+      currentUserId={session.user.id}
+    />
+  );
 }
