@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
+import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
   CmsFormField,
@@ -49,6 +50,10 @@ export function CmsUserFormScreen({ mode, userId, initialData }: UserFormScreenP
   const createMutation = useUserCreate();
   const updateMutation = useUserUpdate();
   const updateRoleMutation = useUserUpdateRole();
+
+  useSetCmsBreadcrumbLabel(
+    mode === "edit" ? (userQuery.data?.name ?? userQuery.data?.email ?? null) : null,
+  );
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");

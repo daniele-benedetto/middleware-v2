@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
+import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
   CmsFormField,
@@ -51,6 +52,8 @@ export function CmsCategoryFormScreen({ mode, categoryId, initialData }: Categor
   });
   const createMutation = useCategoryCreate();
   const updateMutation = useCategoryUpdate();
+
+  useSetCmsBreadcrumbLabel(mode === "edit" ? categoryQuery.data?.name : null);
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");

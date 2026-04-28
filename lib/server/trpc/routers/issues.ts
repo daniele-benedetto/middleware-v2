@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import {
   createIssueInputSchema,
+  issueDetailDtoSchema,
   issueDtoSchema,
   issuesListDtoSchema,
   issuesPolicy,
@@ -53,7 +54,7 @@ export const issuesRouter = router({
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
     .input(issueIdInputSchema)
     .query(async ({ input }) => {
-      return parseOutput(await issuesService.getById(input.id), issueDtoSchema);
+      return parseOutput(await issuesService.getById(input.id), issueDetailDtoSchema);
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))

@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
+import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
   CmsCheckbox,
@@ -97,6 +98,8 @@ export function CmsArticleFormScreen({ mode, articleId, initialData }: ArticleFo
   const createMutation = useArticleCreate();
   const updateMutation = useArticleUpdate();
   const syncTagsMutation = useArticleSyncTags();
+
+  useSetCmsBreadcrumbLabel(mode === "edit" ? articleQuery.data?.title : null);
 
   if (mode === "edit" && !articleId) {
     return <CmsErrorState title="Articolo non valido" description="ID mancante per la modifica." />;

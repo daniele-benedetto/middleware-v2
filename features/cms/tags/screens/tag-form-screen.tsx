@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
+import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
   CmsFormField,
@@ -46,6 +47,8 @@ export function CmsTagFormScreen({ mode, tagId, initialData }: TagFormScreenProp
   const tagQuery = useTagById(mode === "edit" ? tagId : undefined, { initialData });
   const createMutation = useTagCreate();
   const updateMutation = useTagUpdate();
+
+  useSetCmsBreadcrumbLabel(mode === "edit" ? tagQuery.data?.name : null);
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");

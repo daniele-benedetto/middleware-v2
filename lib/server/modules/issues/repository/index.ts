@@ -5,11 +5,16 @@ import { prisma } from "@/lib/prisma";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
-  CreateIssueInput,
   ListIssuesQuery,
   ReorderIssuesInput,
   UpdateIssueInput,
 } from "@/lib/server/modules/issues/schema";
+
+export type CreateIssuePersistInput = {
+  title: string;
+  slug: string;
+  description?: string;
+};
 
 const toIssueWhereInput = (query: ListIssuesQuery): Prisma.IssueWhereInput => {
   const publishedAtFilter =
@@ -80,6 +85,16 @@ export const issuesRepository = {
         publishedAt: true,
         createdAt: true,
         updatedAt: true,
+        articles: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            isFeatured: true,
+            position: true,
+          },
+          orderBy: { position: "asc" },
+        },
         _count: {
           select: {
             articles: true,
@@ -88,7 +103,7 @@ export const issuesRepository = {
       },
     });
   },
-  async create(input: CreateIssueInput) {
+  async create(input: CreateIssuePersistInput) {
     return prisma.issue.create({
       data: input,
     });

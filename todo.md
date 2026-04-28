@@ -30,6 +30,11 @@ Procedure API disponibili: `issues.list`, `issues.getById`, `issues.create`, `is
 - [x] Route create/edit dedicata.
 - [x] Validazione client basata su `createIssueInputSchema` / `updateIssueInputSchema` via helper condiviso `validateFormInput`.
 - [x] Conflitto slug (`CONFLICT`) gestito via `mapCrudDomainError("issues")`.
+- [x] Slug auto-generato dal titolo lato server con suffix `-1` / `-2` su collisione (max 100 tentativi); slug opzionale in `createIssueInputSchema`; bottone "Rigenera" in edit.
+- [x] Layout edit a due colonne (sinistra form, destra pannello articoli).
+- [x] Pannello articoli con drag-and-drop (`@dnd-kit/sortable`); riga: titolo + status badge + featured pin.
+- [x] Save unificato: `issues.update` + `articles.reorder` (solo se ordine cambiato).
+- [x] Breadcrumbs: provider context + filtro segmento `edit` + override label per UUID; `new` mappato a "Nuovo". Tutti e 5 i form screens cablati con `useSetCmsBreadcrumbLabel`.
 
 ## 6) Modulo Categories
 

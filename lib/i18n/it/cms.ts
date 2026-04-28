@@ -40,6 +40,7 @@ export const cmsIt = {
     tags: "Tag",
     articles: "Articoli",
     users: "Utenti",
+    new: "Nuovo",
   },
   dashboard: {
     title: "Dashboard",

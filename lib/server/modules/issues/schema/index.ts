@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createIssueInputSchema = z.object({
   title: z.string().trim().min(1),
-  slug: z.string().trim().min(1),
+  slug: z.string().trim().min(1).optional(),
   description: z.string().trim().optional(),
 });
 

@@ -1,4 +1,4 @@
-import { CmsBreadcrumbs, CmsSidebar } from "@/components/cms/layout";
+import { CmsBreadcrumbs, CmsBreadcrumbsProvider, CmsSidebar } from "@/components/cms/layout";
 import { CmsLayoutShell } from "@/components/cms/primitives";
 import { requireCmsSession } from "@/lib/cms/auth";
 import { i18n } from "@/lib/i18n";
@@ -22,19 +22,21 @@ export default async function CmsLayout({ children }: CmsLayoutProps) {
   const role = session.user.role;
 
   return (
-    <CmsLayoutShell
-      sidebar={
-        <CmsSidebar role={role} userName={session.user.name} userEmail={session.user.email} />
-      }
-      topbar={
-        <div className="space-y-2">
-          <div className="px-5 p-3">
-            <CmsBreadcrumbs />
+    <CmsBreadcrumbsProvider>
+      <CmsLayoutShell
+        sidebar={
+          <CmsSidebar role={role} userName={session.user.name} userEmail={session.user.email} />
+        }
+        topbar={
+          <div className="space-y-2">
+            <div className="px-5 p-3">
+              <CmsBreadcrumbs />
+            </div>
           </div>
-        </div>
-      }
-    >
-      {children}
-    </CmsLayoutShell>
+        }
+      >
+        {children}
+      </CmsLayoutShell>
+    </CmsBreadcrumbsProvider>
   );
 }
