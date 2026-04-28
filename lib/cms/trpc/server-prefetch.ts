@@ -1,5 +1,11 @@
 import "server-only";
 
+import {
+  articleAuthorOptionsInput,
+  articleCategoryOptionsInput,
+  articleIssueOptionsInput,
+  articleTagOptionsInput,
+} from "@/features/cms/articles/lib/article-option-inputs";
 import { getTrpcCaller } from "@/lib/server/trpc/caller";
 
 import type { RouterInputs, RouterOutputs } from "@/lib/trpc/types";
@@ -21,6 +27,7 @@ type CategoryDetailOutput = RouterOutputs["categories"]["getById"];
 type TagDetailOutput = RouterOutputs["tags"]["getById"];
 type UserDetailOutput = RouterOutputs["users"]["getById"];
 type ArticleDetailOutput = RouterOutputs["articles"]["getById"];
+type UsersAuthorOptionsOutput = RouterOutputs["users"]["listAuthors"];
 
 export async function prefetchIssuesList(input: IssuesListInput): Promise<IssuesListOutput> {
   const caller = await getTrpcCaller();
@@ -74,40 +81,48 @@ export async function prefetchArticleById(id: string): Promise<ArticleDetailOutp
   return caller.articles.getById({ id });
 }
 
+export async function prefetchArticleFormOptions(): Promise<{
+  tagsOptions: TagsListOutput;
+  issuesOptions: IssuesListOutput;
+  categoriesOptions: CategoriesListOutput;
+  authorsOptions: UsersAuthorOptionsOutput;
+}> {
+  const caller = await getTrpcCaller();
+
+  const [tagsOptions, issuesOptions, categoriesOptions, authorsOptions] = await Promise.all([
+    caller.tags.list(articleTagOptionsInput),
+    caller.issues.list(articleIssueOptionsInput),
+    caller.categories.list(articleCategoryOptionsInput),
+    caller.users.listAuthors(articleAuthorOptionsInput),
+  ]);
+
+  return {
+    tagsOptions,
+    issuesOptions,
+    categoriesOptions,
+    authorsOptions,
+  };
+}
+
 export async function prefetchArticlesListWithFilterOptions(input: ArticlesListInput): Promise<{
   articles: ArticlesListOutput;
   issuesOptions: IssuesListOutput;
   categoriesOptions: CategoriesListOutput;
+  authorsOptions: UsersAuthorOptionsOutput;
 }> {
   const caller = await getTrpcCaller();
 
-  const issuesOptionsInput: IssuesListInput = {
-    page: 1,
-    pageSize: 100,
-    query: {
-      sortBy: "sortOrder",
-      sortOrder: "asc",
-    },
-  };
-
-  const categoriesOptionsInput: CategoriesListInput = {
-    page: 1,
-    pageSize: 100,
-    query: {
-      sortBy: "name",
-      sortOrder: "asc",
-    },
-  };
-
-  const [articles, issuesOptions, categoriesOptions] = await Promise.all([
+  const [articles, issuesOptions, categoriesOptions, authorsOptions] = await Promise.all([
     caller.articles.list(input),
-    caller.issues.list(issuesOptionsInput),
-    caller.categories.list(categoriesOptionsInput),
+    caller.issues.list(articleIssueOptionsInput),
+    caller.categories.list(articleCategoryOptionsInput),
+    caller.users.listAuthors(articleAuthorOptionsInput),
   ]);
 
   return {
     articles,
     issuesOptions,
     categoriesOptions,
+    authorsOptions,
   };
 }

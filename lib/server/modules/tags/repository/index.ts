@@ -4,11 +4,14 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
-import type {
-  CreateTagInput,
-  ListTagsQuery,
-  UpdateTagInput,
-} from "@/lib/server/modules/tags/schema";
+import type { ListTagsQuery, UpdateTagInput } from "@/lib/server/modules/tags/schema";
+
+export type CreateTagPersistInput = {
+  name: string;
+  slug: string;
+  description?: string;
+  isActive?: boolean;
+};
 
 const toTagWhereInput = (query: ListTagsQuery): Prisma.TagWhereInput => {
   return {
@@ -75,7 +78,7 @@ export const tagsRepository = {
       },
     });
   },
-  async create(input: CreateTagInput) {
+  async create(input: CreateTagPersistInput) {
     return prisma.tag.create({
       data: input,
     });

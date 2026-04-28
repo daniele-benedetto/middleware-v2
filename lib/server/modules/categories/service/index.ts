@@ -71,7 +71,7 @@ export const categoriesService = {
   async create(input: CreateCategoryInput) {
     const normalizedInput = {
       ...input,
-      slug: ensureSlug(input.slug),
+      slug: ensureSlug(input.slug ?? input.name),
     };
 
     try {

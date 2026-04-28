@@ -18,6 +18,10 @@ export const createArticleInputSchema = z.object({
 export const updateArticleInputSchema = createArticleInputSchema
   .partial()
   .extend({
+    excerpt: z.string().trim().nullable().optional(),
+    imageUrl: z.string().trim().url().nullable().optional(),
+    audioUrl: z.string().trim().url().nullable().optional(),
+    audioChunks: z.unknown().nullable().optional(),
     status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"] satisfies ArticleStatus[]).optional(),
     publishedAt: z.coerce.date().nullable().optional(),
     isFeatured: z.boolean().optional(),

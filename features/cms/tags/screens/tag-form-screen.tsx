@@ -6,6 +6,7 @@ import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
+  CmsCheckbox,
   CmsFormField,
   CmsPageHeader,
   CmsTextInput,
@@ -26,6 +27,7 @@ import {
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { createTagInputSchema, updateTagInputSchema } from "@/lib/server/modules/tags/schema";
+import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
 
 import type { RouterInputs } from "@/lib/trpc/types";
@@ -124,6 +126,11 @@ function TagFormContent({
   const [name, setName] = useState(tag?.name ?? "");
   const [slug, setSlug] = useState(tag?.slug ?? "");
   const [description, setDescription] = useState(tag?.description ?? "");
+  const [isActive, setIsActive] = useState(tag?.isActive ?? true);
+
+  const regenerateSlugFromName = () => {
+    setSlug(normalizeSlug(name));
+  };
 
   const handleSubmit = async () => {
     try {
@@ -132,8 +139,9 @@ function TagFormContent({
           createTagInputSchema,
           {
             name,
-            slug,
+            slug: slug || undefined,
             description: description || undefined,
+            isActive,
           },
           tagFieldLabels,
         );
@@ -153,6 +161,7 @@ function TagFormContent({
           name,
           slug,
           description: description ? description : null,
+          isActive,
         },
         tagFieldLabels,
       );
@@ -184,12 +193,27 @@ function TagFormContent({
           />
         </CmsFormField>
 
-        <CmsFormField label="Slug" htmlFor="tag-slug" required>
-          <CmsTextInput
-            id="tag-slug"
-            value={slug}
-            onChange={(event) => setSlug(event.target.value)}
-          />
+        <CmsFormField
+          label="Slug"
+          htmlFor="tag-slug"
+          required={mode === "edit"}
+          hint={mode === "create" ? "Generato dal nome se vuoto" : undefined}
+        >
+          <div className="flex items-center gap-2">
+            <CmsTextInput
+              id="tag-slug"
+              className="flex-1"
+              value={slug}
+              onChange={(event) => setSlug(event.target.value)}
+            />
+            <button
+              type="button"
+              onClick={regenerateSlugFromName}
+              className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
+            >
+              Rigenera
+            </button>
+          </div>
         </CmsFormField>
 
         <CmsFormField label="Descrizione" htmlFor="tag-description">
@@ -199,6 +223,8 @@ function TagFormContent({
             onChange={(event) => setDescription(event.target.value)}
           />
         </CmsFormField>
+
+        <CmsCheckbox label="Tag attivo" checked={isActive} onChange={setIsActive} />
 
         <div className="flex items-center gap-2">
           <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>

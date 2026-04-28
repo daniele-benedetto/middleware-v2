@@ -2,8 +2,9 @@ import { z } from "zod";
 
 export const createTagInputSchema = z.object({
   name: z.string().trim().min(1),
-  slug: z.string().trim().min(1),
+  slug: z.string().trim().min(1).optional(),
   description: z.string().trim().optional(),
+  isActive: z.boolean().default(true),
 });
 
 export const updateTagInputSchema = createTagInputSchema

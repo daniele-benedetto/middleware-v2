@@ -6,6 +6,7 @@ import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
+  CmsCheckbox,
   CmsFormField,
   CmsPageHeader,
   CmsTextInput,
@@ -29,6 +30,7 @@ import {
   createCategoryInputSchema,
   updateCategoryInputSchema,
 } from "@/lib/server/modules/categories/schema";
+import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
 
 import type { RouterInputs } from "@/lib/trpc/types";
@@ -131,6 +133,11 @@ function CategoryFormContent({
   const [name, setName] = useState(category?.name ?? "");
   const [slug, setSlug] = useState(category?.slug ?? "");
   const [description, setDescription] = useState(category?.description ?? "");
+  const [isActive, setIsActive] = useState(category?.isActive ?? true);
+
+  const regenerateSlugFromName = () => {
+    setSlug(normalizeSlug(name));
+  };
 
   const handleSubmit = async () => {
     try {
@@ -139,8 +146,9 @@ function CategoryFormContent({
           createCategoryInputSchema,
           {
             name,
-            slug,
+            slug: slug || undefined,
             description: description || undefined,
+            isActive,
           },
           categoryFieldLabels,
         );
@@ -160,6 +168,7 @@ function CategoryFormContent({
           name,
           slug,
           description: description ? description : null,
+          isActive,
         },
         categoryFieldLabels,
       );
@@ -191,12 +200,27 @@ function CategoryFormContent({
           />
         </CmsFormField>
 
-        <CmsFormField label="Slug" htmlFor="category-slug" required>
-          <CmsTextInput
-            id="category-slug"
-            value={slug}
-            onChange={(event) => setSlug(event.target.value)}
-          />
+        <CmsFormField
+          label="Slug"
+          htmlFor="category-slug"
+          required={mode === "edit"}
+          hint={mode === "create" ? "Generato dal nome se vuoto" : undefined}
+        >
+          <div className="flex items-center gap-2">
+            <CmsTextInput
+              id="category-slug"
+              className="flex-1"
+              value={slug}
+              onChange={(event) => setSlug(event.target.value)}
+            />
+            <button
+              type="button"
+              onClick={regenerateSlugFromName}
+              className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
+            >
+              Rigenera
+            </button>
+          </div>
         </CmsFormField>
 
         <CmsFormField label="Descrizione" htmlFor="category-description">
@@ -206,6 +230,8 @@ function CategoryFormContent({
             onChange={(event) => setDescription(event.target.value)}
           />
         </CmsFormField>
+
+        <CmsCheckbox label="Categoria attiva" checked={isActive} onChange={setIsActive} />
 
         <div className="flex items-center gap-2">
           <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>

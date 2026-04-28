@@ -39,7 +39,15 @@ import {
   createArticleInputSchema,
   updateArticleInputSchema,
 } from "@/lib/server/modules/articles/schema";
+import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
+
+import type {
+  CategoriesListInitialData,
+  IssuesListInitialData,
+  TagsListInitialData,
+  UsersAuthorOptionsInitialData,
+} from "@/features/cms/shared/types/initial-data";
 
 const articleFieldLabels = {
   issueId: "Issue",
@@ -58,6 +66,14 @@ type ArticleFormScreenProps = {
   mode: "create" | "edit";
   articleId?: string;
   initialData?: ArticleDetail;
+  initialOptionsData?: ArticleFormOptionsInitialData;
+};
+
+type ArticleFormOptionsInitialData = {
+  tagsOptions: TagsListInitialData;
+  issuesOptions: IssuesListInitialData;
+  categoriesOptions: CategoriesListInitialData;
+  authorsOptions: UsersAuthorOptionsInitialData;
 };
 
 function stringifyAudioChunks(value: unknown): string {
@@ -85,16 +101,23 @@ function tagIdsEqual(a: string[], b: string[]): boolean {
   return sortedA.every((value, index) => value === sortedB[index]);
 }
 
-export function CmsArticleFormScreen({ mode, articleId, initialData }: ArticleFormScreenProps) {
+export function CmsArticleFormScreen({
+  mode,
+  articleId,
+  initialData,
+  initialOptionsData,
+}: ArticleFormScreenProps) {
   const trpcUtils = trpc.useUtils();
   const { cancel, success } = useCmsFormNavigation("/cms/articles");
   const text = i18n.cms;
 
   const articleQuery = useArticleById(mode === "edit" ? articleId : undefined, { initialData });
-  const tagOptionsQuery = useTagOptions();
-  const issueOptionsQuery = useIssueOptions();
-  const categoryOptionsQuery = useCategoryOptions();
-  const userOptionsQuery = useUserOptions();
+  const tagOptionsQuery = useTagOptions({ initialData: initialOptionsData?.tagsOptions });
+  const issueOptionsQuery = useIssueOptions({ initialData: initialOptionsData?.issuesOptions });
+  const categoryOptionsQuery = useCategoryOptions({
+    initialData: initialOptionsData?.categoriesOptions,
+  });
+  const userOptionsQuery = useUserOptions({ initialData: initialOptionsData?.authorsOptions });
   const createMutation = useArticleCreate();
   const updateMutation = useArticleUpdate();
   const syncTagsMutation = useArticleSyncTags();
@@ -123,6 +146,7 @@ export function CmsArticleFormScreen({ mode, articleId, initialData }: ArticleFo
       issuesAvailable={issueOptionsQuery.data?.items ?? []}
       categoriesAvailable={categoryOptionsQuery.data?.items ?? []}
       authorsAvailable={userOptionsQuery.data?.items ?? []}
+      tagsLoading={tagOptionsQuery.isPending}
       issuesLoading={issueOptionsQuery.isPending}
       categoriesLoading={categoryOptionsQuery.isPending}
       authorsLoading={userOptionsQuery.isPending}
@@ -164,6 +188,7 @@ type ArticleFormContentProps = {
   issuesAvailable: Array<{ id: string; title: string; slug: string }>;
   categoriesAvailable: Array<{ id: string; name: string }>;
   authorsAvailable: Array<{ id: string; name: string | null; email: string }>;
+  tagsLoading: boolean;
   issuesLoading: boolean;
   categoriesLoading: boolean;
   authorsLoading: boolean;
@@ -181,32 +206,6 @@ type ArticleUpdatePayload = {
   tagIds?: string[];
 };
 
-function buildPayload(input: {
-  issueId: string;
-  categoryId: string;
-  authorId: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  contentRich: unknown;
-  imageUrl: string;
-  audioUrl: string;
-  audioChunks: unknown;
-}) {
-  return {
-    issueId: input.issueId,
-    categoryId: input.categoryId,
-    authorId: input.authorId,
-    title: input.title,
-    slug: input.slug,
-    excerpt: input.excerpt || undefined,
-    contentRich: input.contentRich,
-    imageUrl: input.imageUrl || undefined,
-    audioUrl: input.audioUrl || undefined,
-    audioChunks: input.audioChunks ?? undefined,
-  };
-}
-
 function ArticleFormContent({
   mode,
   articleId,
@@ -215,6 +214,7 @@ function ArticleFormContent({
   issuesAvailable,
   categoriesAvailable,
   authorsAvailable,
+  tagsLoading,
   issuesLoading,
   categoriesLoading,
   authorsLoading,
@@ -261,6 +261,10 @@ function ArticleFormContent({
     label: user.name ? `${user.name} (${user.email})` : user.email,
   }));
 
+  const regenerateSlugFromTitle = () => {
+    setSlug(normalizeSlug(title));
+  };
+
   const handleSubmit = async () => {
     const parsedAudioChunks = parseJsonOrUndefined(audioChunks);
 
@@ -269,22 +273,28 @@ function ArticleFormContent({
       return;
     }
 
-    const payload = buildPayload({
+    const basePayload = {
       issueId,
       categoryId,
       authorId,
       title,
       slug,
-      excerpt,
       contentRich,
-      imageUrl,
-      audioUrl,
-      audioChunks: parsedAudioChunks,
-    });
+    };
 
     try {
       if (mode === "create") {
-        const validation = validateFormInput(createArticleInputSchema, payload, articleFieldLabels);
+        const validation = validateFormInput(
+          createArticleInputSchema,
+          {
+            ...basePayload,
+            excerpt: excerpt || undefined,
+            imageUrl: imageUrl || undefined,
+            audioUrl: audioUrl || undefined,
+            audioChunks: parsedAudioChunks ?? undefined,
+          },
+          articleFieldLabels,
+        );
 
         if (!validation.ok) {
           onValidationError(validation.message);
@@ -295,7 +305,17 @@ function ArticleFormContent({
         return;
       }
 
-      const validation = validateFormInput(updateArticleInputSchema, payload, articleFieldLabels);
+      const validation = validateFormInput(
+        updateArticleInputSchema,
+        {
+          ...basePayload,
+          excerpt: excerpt ? excerpt : null,
+          imageUrl: imageUrl ? imageUrl : null,
+          audioUrl: audioUrl ? audioUrl : null,
+          audioChunks: audioChunks.trim() ? parsedAudioChunks : null,
+        },
+        articleFieldLabels,
+      );
 
       if (!validation.ok) {
         onValidationError(validation.message);
@@ -357,11 +377,21 @@ function ArticleFormContent({
         </CmsFormField>
 
         <CmsFormField label="Slug" htmlFor="article-slug" required>
-          <CmsTextInput
-            id="article-slug"
-            value={slug}
-            onChange={(event) => setSlug(event.target.value)}
-          />
+          <div className="flex items-center gap-2">
+            <CmsTextInput
+              id="article-slug"
+              className="flex-1"
+              value={slug}
+              onChange={(event) => setSlug(event.target.value)}
+            />
+            <button
+              type="button"
+              onClick={regenerateSlugFromTitle}
+              className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
+            >
+              Rigenera
+            </button>
+          </div>
         </CmsFormField>
 
         <CmsFormField label="Excerpt" htmlFor="article-excerpt">
@@ -408,6 +438,7 @@ function ArticleFormContent({
 
         <CmsFormField label="Tag" htmlFor="article-tags">
           <div id="article-tags" className="space-y-2">
+            {tagsLoading ? <p className="text-sm">Caricamento tag...</p> : null}
             {tagsAvailable.map((tag) => {
               const checked = selectedTagIds.includes(tag.id);
 
@@ -421,7 +452,9 @@ function ArticleFormContent({
               );
             })}
 
-            {tagsAvailable.length === 0 ? <p className="text-sm">Nessun tag disponibile.</p> : null}
+            {!tagsLoading && tagsAvailable.length === 0 ? (
+              <p className="text-sm">Nessun tag disponibile.</p>
+            ) : null}
           </div>
         </CmsFormField>
 

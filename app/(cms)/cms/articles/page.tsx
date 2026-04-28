@@ -25,6 +25,7 @@ export default async function CmsArticlesPage({ searchParams }: CmsArticlesPageP
       initialData={initialData.articles}
       initialIssuesOptionsData={initialData.issuesOptions}
       initialCategoriesOptionsData={initialData.categoriesOptions}
+      initialAuthorsOptionsData={initialData.authorsOptions}
     />
   );
 }

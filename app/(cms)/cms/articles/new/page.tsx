@@ -1,4 +1,5 @@
 import { CmsArticleFormScreen } from "@/features/cms/articles/screens/article-form-screen";
+import { prefetchArticleFormOptions } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
 
@@ -7,6 +8,8 @@ export const metadata = buildCmsMetadata({
   path: "/cms/articles/new",
 });
 
-export default function CmsArticleNewPage() {
-  return <CmsArticleFormScreen mode="create" />;
+export default async function CmsArticleNewPage() {
+  const initialOptionsData = await prefetchArticleFormOptions();
+
+  return <CmsArticleFormScreen mode="create" initialOptionsData={initialOptionsData} />;
 }

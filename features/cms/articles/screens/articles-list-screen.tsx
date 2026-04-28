@@ -17,7 +17,6 @@ import {
   CmsDataTableShell,
   CmsPageHeader,
   CmsSelect,
-  CmsTextInput,
   cmsTableClasses,
   cmsToast,
 } from "@/components/cms/primitives";
@@ -30,6 +29,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  articleAuthorOptionsInput,
+  articleCategoryOptionsInput,
+  articleIssueOptionsInput,
+} from "@/features/cms/articles/lib/article-option-inputs";
 import {
   executeBulk,
   mapBulkQuickActionError,
@@ -59,6 +63,7 @@ import type {
   ArticlesListInitialData,
   CategoriesListInitialData,
   IssuesListInitialData,
+  UsersAuthorOptionsInitialData,
 } from "@/features/cms/shared/types/initial-data";
 import type { RouterInputs } from "@/lib/trpc/types";
 
@@ -218,6 +223,7 @@ type CmsArticlesListScreenProps = {
   initialData?: ArticlesListInitialData;
   initialIssuesOptionsData?: IssuesListInitialData;
   initialCategoriesOptionsData?: CategoriesListInitialData;
+  initialAuthorsOptionsData?: UsersAuthorOptionsInitialData;
 };
 
 export function CmsArticlesListScreen({
@@ -225,6 +231,7 @@ export function CmsArticlesListScreen({
   initialData,
   initialIssuesOptionsData,
   initialCategoriesOptionsData,
+  initialAuthorsOptionsData,
 }: CmsArticlesListScreenProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -269,29 +276,20 @@ export function CmsArticlesListScreen({
     deleteMutation.isPending ||
     reorderMutation.isPending;
 
-  const issuesOptionsQuery = trpc.issues.list.useQuery(
-    {
-      page: 1,
-      pageSize: 100,
-      query: {
-        sortBy: "sortOrder",
-        sortOrder: "asc",
-      },
-    },
-    { ...cmsOptionsQueryOptions, initialData: initialIssuesOptionsData },
-  );
+  const issuesOptionsQuery = trpc.issues.list.useQuery(articleIssueOptionsInput, {
+    ...cmsOptionsQueryOptions,
+    initialData: initialIssuesOptionsData,
+  });
 
-  const categoriesOptionsQuery = trpc.categories.list.useQuery(
-    {
-      page: 1,
-      pageSize: 100,
-      query: {
-        sortBy: "name",
-        sortOrder: "asc",
-      },
-    },
-    { ...cmsOptionsQueryOptions, initialData: initialCategoriesOptionsData },
-  );
+  const categoriesOptionsQuery = trpc.categories.list.useQuery(articleCategoryOptionsInput, {
+    ...cmsOptionsQueryOptions,
+    initialData: initialCategoriesOptionsData,
+  });
+
+  const authorsOptionsQuery = trpc.users.listAuthors.useQuery(articleAuthorOptionsInput, {
+    ...cmsOptionsQueryOptions,
+    initialData: initialAuthorsOptionsData,
+  });
 
   const issueOptions = useMemo(() => {
     const items = issuesOptionsQuery.data?.items ?? [];
@@ -308,6 +306,17 @@ export function CmsArticlesListScreen({
       ...items.map((category) => ({ value: category.id, label: category.name })),
     ];
   }, [categoriesOptionsQuery.data?.items, optionsText.categoryAll]);
+
+  const authorOptions = useMemo(() => {
+    const items = authorsOptionsQuery.data?.items ?? [];
+    return [
+      { value: "all", label: optionsText.authorAll },
+      ...items.map((author) => ({
+        value: author.id,
+        label: author.name ? `${author.name} (${author.email})` : author.email,
+      })),
+    ];
+  }, [authorsOptionsQuery.data?.items, optionsText.authorAll]);
 
   const { updateSearchParams } = useCmsListUrlState({
     baseParams: {
@@ -725,12 +734,12 @@ export function CmsArticlesListScreen({
                 options={categoryOptions}
               />
 
-              <CmsTextInput
-                value={input.query?.authorId ?? ""}
-                onChange={(event) => {
-                  updateSearchParams({ authorId: event.target.value || undefined, page: 1 });
+              <CmsSelect
+                value={input.query?.authorId ?? "all"}
+                onValueChange={(value) => {
+                  updateSearchParams({ authorId: value === "all" ? undefined : value, page: 1 });
                 }}
-                placeholder={commonText.authorIdPlaceholder}
+                options={authorOptions}
               />
 
               <CmsSelect
@@ -861,7 +870,7 @@ export function CmsArticlesListScreen({
                             navigateToCrudRoute(cmsCrudRoutes.articles.edit(article.id))
                           }
                         >
-                          Edit
+                          {quickText.edit}
                         </CmsActionButton>
                         {resolveQuickActions(articleSingleActionConfig, {
                           selectedCount: 1,

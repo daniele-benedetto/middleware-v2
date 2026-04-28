@@ -101,6 +101,10 @@ const isUniqueError = (error: unknown): boolean => {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 };
 
+const isRelationError = (error: unknown): boolean => {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003";
+};
+
 function containsSameIds(left: string[], right: string[]) {
   if (left.length !== right.length) {
     return false;
@@ -151,6 +155,10 @@ export const articlesService = {
         throw new ApiError(409, "CONFLICT", "Article slug already exists for this issue");
       }
 
+      if (isRelationError(error)) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Article references invalid related records");
+      }
+
       throw error;
     }
   },
@@ -190,6 +198,10 @@ export const articlesService = {
         throw new ApiError(409, "CONFLICT", "Article slug already exists for this issue");
       }
 
+      if (isRelationError(error)) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Article references invalid related records");
+      }
+
       throw error;
     }
   },
@@ -205,19 +217,31 @@ export const articlesService = {
     }
   },
   async syncTags(id: string, input: SyncArticleTagsInput) {
-    const article = await articlesRepository.syncTags(id, input);
+    try {
+      const article = await articlesRepository.syncTags(id, input);
 
-    if (!article) {
-      throw new ApiError(404, "NOT_FOUND", "Article not found");
+      if (!article) {
+        throw new ApiError(404, "NOT_FOUND", "Article not found");
+      }
+
+      const withRelations = await articlesRepository.getById(article.id);
+
+      if (!withRelations) {
+        throw new ApiError(404, "NOT_FOUND", "Article not found");
+      }
+
+      return toArticleDto(withRelations);
+    } catch (error) {
+      if (isNotFoundError(error)) {
+        throw new ApiError(404, "NOT_FOUND", "Article not found");
+      }
+
+      if (isRelationError(error)) {
+        throw new ApiError(400, "VALIDATION_ERROR", "One or more tags are invalid");
+      }
+
+      throw error;
     }
-
-    const withRelations = await articlesRepository.getById(article.id);
-
-    if (!withRelations) {
-      throw new ApiError(404, "NOT_FOUND", "Article not found");
-    }
-
-    return toArticleDto(withRelations);
   },
   async publish(id: string) {
     const current = await articlesRepository.getById(id);

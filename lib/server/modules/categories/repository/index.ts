@@ -5,10 +5,16 @@ import { prisma } from "@/lib/prisma";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
-  CreateCategoryInput,
   ListCategoriesQuery,
   UpdateCategoryInput,
 } from "@/lib/server/modules/categories/schema";
+
+export type CreateCategoryPersistInput = {
+  name: string;
+  slug: string;
+  description?: string;
+  isActive?: boolean;
+};
 
 const toCategoryWhereInput = (query: ListCategoriesQuery): Prisma.CategoryWhereInput => {
   return {
@@ -77,7 +83,7 @@ export const categoriesRepository = {
       },
     });
   },
-  async create(input: CreateCategoryInput) {
+  async create(input: CreateCategoryPersistInput) {
     return prisma.category.create({
       data: input,
     });

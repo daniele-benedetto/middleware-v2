@@ -71,7 +71,7 @@ export const tagsService = {
   async create(input: CreateTagInput) {
     const normalizedInput = {
       ...input,
-      slug: ensureSlug(input.slug),
+      slug: ensureSlug(input.slug ?? input.name),
     };
 
     try {
