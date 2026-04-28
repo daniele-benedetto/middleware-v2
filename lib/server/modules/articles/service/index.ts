@@ -139,6 +139,7 @@ export const articlesService = {
     const normalizedInput: CreateArticleInput = {
       ...input,
       slug: ensureSlug(input.slug),
+      tagIds: input.tagIds?.length ? Array.from(new Set(input.tagIds)) : undefined,
     };
 
     try {

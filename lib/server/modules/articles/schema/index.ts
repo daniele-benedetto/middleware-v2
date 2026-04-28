@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 
-export const createArticleInputSchema = z.object({
+const articleBaseInputSchema = z.object({
   issueId: z.string().uuid(),
   categoryId: z.string().uuid(),
   authorId: z.string().uuid(),
@@ -15,7 +15,11 @@ export const createArticleInputSchema = z.object({
   audioChunks: z.unknown().optional(),
 });
 
-export const updateArticleInputSchema = createArticleInputSchema
+export const createArticleInputSchema = articleBaseInputSchema.extend({
+  tagIds: z.array(z.string().uuid()).optional(),
+});
+
+export const updateArticleInputSchema = articleBaseInputSchema
   .partial()
   .extend({
     excerpt: z.string().trim().nullable().optional(),

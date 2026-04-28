@@ -5,7 +5,7 @@ import {
   articleCategoryOptionsInput,
   articleIssueOptionsInput,
   articleTagOptionsInput,
-} from "@/features/cms/articles/lib/article-option-inputs";
+} from "@/lib/cms/article-options";
 import { getTrpcCaller } from "@/lib/server/trpc/caller";
 
 import type { RouterInputs, RouterOutputs } from "@/lib/trpc/types";

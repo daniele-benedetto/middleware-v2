@@ -1,12 +1,12 @@
 "use client";
 
+import { cmsOptionsQueryOptions } from "@/features/cms/shared/hooks";
 import {
   articleAuthorOptionsInput,
   articleCategoryOptionsInput,
   articleIssueOptionsInput,
   articleTagOptionsInput,
-} from "@/features/cms/articles/lib/article-option-inputs";
-import { cmsOptionsQueryOptions } from "@/features/cms/shared/hooks";
+} from "@/lib/cms/article-options";
 import { trpc } from "@/lib/trpc/react";
 
 import type { RouterInputs, RouterOutputs } from "@/lib/trpc/types";

@@ -5,12 +5,25 @@ import { prisma } from "@/lib/prisma";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
-  CreateArticleInput,
   ListArticlesQuery,
   ReorderArticlesInput,
   SyncArticleTagsInput,
   UpdateArticleInput,
 } from "@/lib/server/modules/articles/schema";
+
+export type CreateArticlePersistInput = {
+  issueId: string;
+  categoryId: string;
+  authorId: string;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  contentRich: unknown;
+  imageUrl?: string;
+  audioUrl?: string;
+  audioChunks?: unknown;
+  tagIds?: string[];
+};
 
 const toArticleWhereInput = (query: ListArticlesQuery): Prisma.ArticleWhereInput => {
   return {
@@ -135,7 +148,7 @@ export const articlesRepository = {
       },
     });
   },
-  async create(input: CreateArticleInput) {
+  async create(input: CreateArticlePersistInput) {
     const data: Prisma.ArticleUncheckedCreateInput = {
       issueId: input.issueId,
       categoryId: input.categoryId,
@@ -149,8 +162,20 @@ export const articlesRepository = {
       audioChunks: input.audioChunks as Prisma.InputJsonValue | undefined,
     };
 
-    return prisma.article.create({
-      data,
+    const tagIds = Array.from(new Set(input.tagIds ?? []));
+
+    return prisma.$transaction(async (tx) => {
+      const article = await tx.article.create({
+        data,
+      });
+
+      if (tagIds.length > 0) {
+        await tx.articleTag.createMany({
+          data: tagIds.map((tagId) => ({ articleId: article.id, tagId })),
+        });
+      }
+
+      return article;
     });
   },
   async update(id: string, input: UpdateArticleInput) {

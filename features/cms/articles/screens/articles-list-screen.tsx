@@ -30,11 +30,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  articleAuthorOptionsInput,
-  articleCategoryOptionsInput,
-  articleIssueOptionsInput,
-} from "@/features/cms/articles/lib/article-option-inputs";
-import {
   executeBulk,
   mapBulkQuickActionError,
   mapQuickActionError,
@@ -49,6 +44,11 @@ import {
   useListSelection,
   useReorderMode,
 } from "@/features/cms/shared/hooks";
+import {
+  articleAuthorOptionsInput,
+  articleCategoryOptionsInput,
+  articleIssueOptionsInput,
+} from "@/lib/cms/article-options";
 import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { parseArticlesListSearchParams } from "@/lib/cms/query";
 import {
@@ -831,13 +831,13 @@ export function CmsArticlesListScreen({
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellTitle}>{article.title}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {article.issueTitle ?? article.issueId}
+                      {article.issueTitle ?? "-"}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {article.categoryName ?? article.categoryId}
+                      {article.categoryName ?? "-"}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {article.authorName ?? article.authorEmail ?? article.authorId}
+                      {article.authorName ?? article.authorEmail ?? "-"}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>{article.status}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>

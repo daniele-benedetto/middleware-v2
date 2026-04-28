@@ -73,6 +73,12 @@ const toUserDetailDto = (user: {
   };
 };
 
+function assertCanManageOtherUser(actorUserId: string, targetUserId: string, message: string) {
+  if (actorUserId === targetUserId) {
+    throw new ApiError(403, "FORBIDDEN", message);
+  }
+}
+
 export const usersService = {
   async list(query: ListUsersQuery, pagination: PaginationParams) {
     const [users, total] = await Promise.all([
@@ -141,7 +147,9 @@ export const usersService = {
       throw error;
     }
   },
-  async updateRole(id: string, input: UpdateUserRoleInput) {
+  async updateRole(actorUserId: string, id: string, input: UpdateUserRoleInput) {
+    assertCanManageOtherUser(actorUserId, id, "Administrators cannot change their own role");
+
     try {
       await usersRepository.updateRole(id, input);
       const user = await usersRepository.getById(id);
@@ -159,7 +167,9 @@ export const usersService = {
       throw error;
     }
   },
-  async delete(id: string) {
+  async delete(actorUserId: string, id: string) {
+    assertCanManageOtherUser(actorUserId, id, "Administrators cannot delete their own account");
+
     try {
       await usersRepository.delete(id);
     } catch (error) {

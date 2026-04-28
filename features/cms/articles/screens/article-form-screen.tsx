@@ -301,6 +301,7 @@ function ArticleFormContent({
             imageUrl: imageUrl || undefined,
             audioUrl: audioUrl || undefined,
             audioChunks: parsedAudioChunks ?? undefined,
+            tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
           },
           articleFieldLabels,
         );
