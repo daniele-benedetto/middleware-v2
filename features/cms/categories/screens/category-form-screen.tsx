@@ -31,6 +31,8 @@ import {
 } from "@/lib/server/modules/categories/schema";
 import { trpc } from "@/lib/trpc/react";
 
+import type { RouterInputs } from "@/lib/trpc/types";
+
 const categoryFieldLabels = {
   name: "Nome",
   slug: "Slug",
@@ -41,6 +43,21 @@ type CategoryFormScreenProps = {
   mode: "create" | "edit";
   categoryId?: string;
   initialData?: CategoryDetail;
+};
+
+type CategoryCreateInput = RouterInputs["categories"]["create"];
+type CategoryUpdateInput = RouterInputs["categories"]["update"]["data"];
+
+type CategoryFormContentProps = {
+  mode: "create" | "edit";
+  categoryId?: string;
+  category?: CategoryDetail;
+  isMutating: boolean;
+  onCancel: () => void;
+  onCreate: (payload: CategoryCreateInput) => Promise<void>;
+  onUpdate: (payload: { id: string; data: CategoryUpdateInput }) => Promise<void>;
+  onMutationError: (error: unknown) => void;
+  onValidationError: (message: string) => void;
 };
 
 export function CmsCategoryFormScreen({ mode, categoryId, initialData }: CategoryFormScreenProps) {
@@ -54,10 +71,6 @@ export function CmsCategoryFormScreen({ mode, categoryId, initialData }: Categor
   const updateMutation = useCategoryUpdate();
 
   useSetCmsBreadcrumbLabel(mode === "edit" ? categoryQuery.data?.name : null);
-
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [description, setDescription] = useState("");
 
   if (mode === "edit" && !categoryId) {
     return (
@@ -74,50 +87,94 @@ export function CmsCategoryFormScreen({ mode, categoryId, initialData }: Categor
     return <CmsErrorState title={mapped.title} description={mapped.description} />;
   }
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  return (
+    <CategoryFormContent
+      key={mode === "edit" ? (categoryQuery.data?.id ?? categoryId) : "create"}
+      mode={mode}
+      categoryId={categoryId}
+      category={categoryQuery.data}
+      isMutating={createMutation.isPending || updateMutation.isPending}
+      onCancel={cancel}
+      onCreate={async (payload) => {
+        await createMutation.mutateAsync(payload);
+        await invalidateAfterCmsMutation(trpcUtils, "categories.create");
+        success("Categoria creata.");
+      }}
+      onUpdate={async ({ id, data }) => {
+        await updateMutation.mutateAsync({ id, data });
+        await invalidateAfterCmsMutation(trpcUtils, "categories.update", { id });
+        success("Categoria aggiornata.");
+      }}
+      onMutationError={(error) => {
+        const mapped = mapCrudDomainError(error, "categories");
+        cmsToast.error(mapped.description, mapped.title);
+      }}
+      onValidationError={(message) => {
+        cmsToast.error(message, text.trpcErrors.badRequestTitle);
+      }}
+    />
+  );
+}
+
+function CategoryFormContent({
+  mode,
+  categoryId,
+  category,
+  isMutating,
+  onCancel,
+  onCreate,
+  onUpdate,
+  onMutationError,
+  onValidationError,
+}: CategoryFormContentProps) {
+  const text = i18n.cms;
+  const [name, setName] = useState(category?.name ?? "");
+  const [slug, setSlug] = useState(category?.slug ?? "");
+  const [description, setDescription] = useState(category?.description ?? "");
 
   const handleSubmit = async () => {
-    const payload = {
-      name: name || categoryQuery.data?.name || "",
-      slug: slug || categoryQuery.data?.slug || "",
-      description: description || categoryQuery.data?.description || "" || undefined,
-    };
-
     try {
       if (mode === "create") {
         const validation = validateFormInput(
           createCategoryInputSchema,
-          payload,
+          {
+            name,
+            slug,
+            description: description || undefined,
+          },
           categoryFieldLabels,
         );
 
         if (!validation.ok) {
-          cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+          onValidationError(validation.message);
           return;
         }
 
-        await createMutation.mutateAsync(validation.value);
-        await invalidateAfterCmsMutation(trpcUtils, "categories.create");
-        success("Categoria creata.");
+        await onCreate(validation.value);
         return;
       }
 
-      const validation = validateFormInput(updateCategoryInputSchema, payload, categoryFieldLabels);
+      const validation = validateFormInput(
+        updateCategoryInputSchema,
+        {
+          name,
+          slug,
+          description: description ? description : null,
+        },
+        categoryFieldLabels,
+      );
 
       if (!validation.ok) {
-        cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+        onValidationError(validation.message);
         return;
       }
 
-      await updateMutation.mutateAsync({
+      await onUpdate({
         id: categoryId!,
         data: validation.value,
       });
-      await invalidateAfterCmsMutation(trpcUtils, "categories.update", { id: categoryId });
-      success("Categoria aggiornata.");
     } catch (error) {
-      const mapped = mapCrudDomainError(error, "categories");
-      cmsToast.error(mapped.description, mapped.title);
+      onMutationError(error);
     }
   };
 
@@ -129,7 +186,7 @@ export function CmsCategoryFormScreen({ mode, categoryId, initialData }: Categor
         <CmsFormField label="Nome" htmlFor="category-name" required>
           <CmsTextInput
             id="category-name"
-            value={name || categoryQuery.data?.name || ""}
+            value={name}
             onChange={(event) => setName(event.target.value)}
           />
         </CmsFormField>
@@ -137,7 +194,7 @@ export function CmsCategoryFormScreen({ mode, categoryId, initialData }: Categor
         <CmsFormField label="Slug" htmlFor="category-slug" required>
           <CmsTextInput
             id="category-slug"
-            value={slug || categoryQuery.data?.slug || ""}
+            value={slug}
             onChange={(event) => setSlug(event.target.value)}
           />
         </CmsFormField>
@@ -145,16 +202,16 @@ export function CmsCategoryFormScreen({ mode, categoryId, initialData }: Categor
         <CmsFormField label="Descrizione" htmlFor="category-description">
           <CmsTextarea
             id="category-description"
-            value={description || categoryQuery.data?.description || ""}
+            value={description}
             onChange={(event) => setDescription(event.target.value)}
           />
         </CmsFormField>
 
         <div className="flex items-center gap-2">
-          <CmsActionButton variant="outline" onClick={cancel} disabled={isPending}>
+          <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
             {text.common.cancel}
           </CmsActionButton>
-          <CmsActionButton onClick={() => void handleSubmit()} isLoading={isPending}>
+          <CmsActionButton onClick={() => void handleSubmit()} isLoading={isMutating}>
             {mode === "create" ? text.forms.create : text.forms.save}
           </CmsActionButton>
         </div>

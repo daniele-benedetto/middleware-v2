@@ -54,6 +54,25 @@ const toUserDto = (user: {
   };
 };
 
+const toUserDetailDto = (user: {
+  id: string;
+  email: string;
+  name: string | null;
+  role: "ADMIN" | "EDITOR";
+  emailVerified: boolean;
+  image: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  _count?: {
+    authoredArticles: number;
+  };
+}): UserDetailDto => {
+  return {
+    ...toUserDto(user),
+    image: user.image,
+  };
+};
+
 export const usersService = {
   async list(query: ListUsersQuery, pagination: PaginationParams) {
     const [users, total] = await Promise.all([
@@ -84,7 +103,7 @@ export const usersService = {
       throw new ApiError(404, "NOT_FOUND", "User not found");
     }
 
-    return toUserDto(user) satisfies UserDetailDto;
+    return toUserDetailDto(user);
   },
   async create(input: CreateUserInput) {
     try {

@@ -11,7 +11,9 @@ export const userListItemDtoSchema = z.object({
   authoredArticlesCount: z.number().int(),
 });
 
-export const userDetailDtoSchema = userListItemDtoSchema;
+export const userDetailDtoSchema = userListItemDtoSchema.extend({
+  image: z.string().nullable(),
+});
 export const userListDtoSchema = z.array(userListItemDtoSchema);
 
 export const userAuthorOptionDtoSchema = z.object({

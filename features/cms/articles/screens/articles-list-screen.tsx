@@ -2,8 +2,8 @@
 
 import { ArrowDown, ArrowUp } from "lucide-react";
 import dynamic from "next/dynamic";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo } from "react";
 
 import {
   CmsBulkActionBar,
@@ -11,13 +11,11 @@ import {
   CmsErrorState,
   CmsLoadingState,
   CmsPaginationFooter,
-  CmsReorderModeBar,
 } from "@/components/cms/common";
 import {
   CmsActionButton,
   CmsDataTableShell,
   CmsPageHeader,
-  CmsSearchBar,
   CmsSelect,
   CmsTextInput,
   cmsTableClasses,
@@ -39,14 +37,16 @@ import {
   resolveQuickActions,
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
+import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import {
   cmsOptionsQueryOptions,
   useArticlesListQuery,
+  useCmsListUrlState,
   useListSelection,
   useReorderMode,
 } from "@/features/cms/shared/hooks";
 import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
-import { parseArticlesListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
+import { parseArticlesListSearchParams } from "@/lib/cms/query";
 import {
   invalidateAfterCmsMutation,
   mapTrpcErrorToCmsUiMessage,
@@ -227,7 +227,6 @@ export function CmsArticlesListScreen({
   initialCategoriesOptionsData,
 }: CmsArticlesListScreenProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const text = i18n.cms;
   const listText = text.lists.articles;
@@ -243,8 +242,6 @@ export function CmsArticlesListScreen({
   const trpcUtils = trpc.useUtils();
 
   const selection = useListSelection();
-
-  const [searchValue, setSearchValue] = useState(() => input.query?.q ?? "");
 
   const navigateToCrudRoute = (href: string) => {
     if (!cmsCrudRoutesEnabled) {
@@ -312,54 +309,21 @@ export function CmsArticlesListScreen({
     ];
   }, [categoriesOptionsQuery.data?.items, optionsText.categoryAll]);
 
-  const updateSearchParams = useCallback(
-    (patch: Record<string, string | number | undefined>) => {
-      const nextParams = serializeCmsSearchParams({
-        page: input.page,
-        pageSize: input.pageSize,
-        q: input.query?.q,
-        sortBy: input.query?.sortBy,
-        sortOrder: input.query?.sortOrder,
-        status: input.query?.status,
-        issueId: input.query?.issueId,
-        categoryId: input.query?.categoryId,
-        authorId: input.query?.authorId,
-        featured: input.query?.featured,
-        ...patch,
-      });
-
-      const next = nextParams.toString();
-      selection.clearSelection();
-      router.replace(next ? `${pathname}?${next}` : pathname);
+  const { updateSearchParams } = useCmsListUrlState({
+    baseParams: {
+      page: input.page,
+      pageSize: input.pageSize,
+      q: input.query?.q,
+      sortBy: input.query?.sortBy,
+      sortOrder: input.query?.sortOrder,
+      status: input.query?.status,
+      issueId: input.query?.issueId,
+      categoryId: input.query?.categoryId,
+      authorId: input.query?.authorId,
+      featured: input.query?.featured,
     },
-    [
-      input.page,
-      input.pageSize,
-      input.query?.authorId,
-      input.query?.categoryId,
-      input.query?.featured,
-      input.query?.issueId,
-      input.query?.q,
-      input.query?.sortBy,
-      input.query?.sortOrder,
-      input.query?.status,
-      pathname,
-      router,
-      selection,
-    ],
-  );
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      if (searchValue !== (input.query?.q ?? "")) {
-        updateSearchParams({ q: searchValue, page: 1 });
-      }
-    }, 300);
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [input.query?.q, searchValue, updateSearchParams]);
+    clearSelection: selection.clearSelection,
+  });
 
   const canReorder =
     input.query?.sortBy === "position" &&
@@ -381,8 +345,6 @@ export function CmsArticlesListScreen({
       reorder.cancel();
     }
   }, [canReorder, reorder]);
-
-  const reorderUnavailableText = listText.reorderUnavailable;
 
   if (listQuery.isPending) {
     return <CmsLoadingState />;
@@ -526,6 +488,46 @@ export function CmsArticlesListScreen({
     }
   };
 
+  const saveArticleOrder = async () => {
+    const issueId = input.query?.issueId;
+
+    if (!issueId) {
+      return;
+    }
+
+    if (!reorder.hasChanges) {
+      reorder.cancel();
+      return;
+    }
+
+    try {
+      const reorderedItems = await reorderMutation.mutateAsync({
+        issueId,
+        orderedArticleIds: reorder.normalizedOrder,
+      });
+
+      trpcUtils.articles.list.setData(input, (current) => {
+        if (!current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          items: reorderedItems,
+        };
+      });
+
+      reorder.commit();
+      await invalidateAfterCmsMutation(trpcUtils, "articles.reorder", {
+        ids: reorder.normalizedOrder,
+      });
+      cmsToast.info(listText.reorderUpdated);
+    } catch (error) {
+      const mapped = mapArticleDomainError(mapQuickActionError(error));
+      cmsToast.error(mapped.description, mapped.title);
+    }
+  };
+
   const bulkActionConfig: CmsQuickAction[] = [
     {
       id: "bulk-publish",
@@ -593,13 +595,50 @@ export function CmsArticlesListScreen({
       <CmsPageHeader
         title={text.navigation.articles}
         actions={
-          <CmsActionButton
-            size="xs"
-            variant="outline"
-            onClick={() => navigateToCrudRoute(cmsCrudRoutes.articles.create)}
-          >
-            {text.resource.new}
-          </CmsActionButton>
+          <div className="flex items-center gap-2">
+            {canReorder ? (
+              reorder.isReorderMode ? (
+                <>
+                  <CmsActionButton
+                    size="xs"
+                    variant="outline"
+                    onClick={reorder.cancel}
+                    disabled={reorderMutation.isPending}
+                  >
+                    {commonText.cancel}
+                  </CmsActionButton>
+                  <CmsActionButton
+                    size="xs"
+                    variant="outline"
+                    onClick={() => {
+                      void saveArticleOrder();
+                    }}
+                    disabled={!reorder.hasChanges || reorderMutation.isPending}
+                  >
+                    {commonText.saveOrder}
+                  </CmsActionButton>
+                </>
+              ) : (
+                <CmsActionButton
+                  size="xs"
+                  variant="outline"
+                  onClick={() => {
+                    selection.clearSelection();
+                    reorder.start();
+                  }}
+                >
+                  {commonText.reorderMode}
+                </CmsActionButton>
+              )
+            ) : null}
+            <CmsActionButton
+              size="xs"
+              variant="outline"
+              onClick={() => navigateToCrudRoute(cmsCrudRoutes.articles.create)}
+            >
+              {text.resource.new}
+            </CmsActionButton>
+          </div>
         }
       />
 
@@ -609,6 +648,11 @@ export function CmsArticlesListScreen({
             <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
               {commonText.totalRecords(listQuery.pagination.total)}
             </div>
+            {reorder.isReorderMode ? (
+              <div className="border border-accent px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-accent">
+                {listText.reorderHelp}
+              </div>
+            ) : null}
             <CmsBulkActionBar
               selectedCount={selection.selectedCount}
               actions={resolvedBulkActions.map((action) => ({
@@ -627,11 +671,14 @@ export function CmsArticlesListScreen({
             />
 
             <div className="grid gap-3 lg:grid-cols-3">
-              <CmsSearchBar
+              <CmsListSearchInput
+                key={input.query?.q ?? ""}
+                initialValue={input.query?.q ?? ""}
                 placeholder={text.listToolbar.searchPlaceholder}
-                value={searchValue}
-                onChange={(event) => setSearchValue(event.target.value)}
                 className="col-span-1 lg:col-span-1"
+                onSearchChange={(value) => {
+                  updateSearchParams({ q: value, page: 1 });
+                }}
               />
               <div className="grid grid-cols-3 gap-2 col-span-1 lg:col-span-2">
                 <CmsSelect
@@ -709,47 +756,6 @@ export function CmsArticlesListScreen({
                 ]}
               />
             </div>
-
-            <CmsReorderModeBar
-              isAvailable={canReorder}
-              isReorderMode={reorder.isReorderMode}
-              hasChanges={canReorder && reorder.hasChanges}
-              isSaving={reorderMutation.isPending}
-              helpText={listText.reorderHelp}
-              unavailableText={reorderUnavailableText}
-              onStart={() => {
-                selection.clearSelection();
-                reorder.start();
-              }}
-              onCancel={reorder.cancel}
-              onSave={() => {
-                const issueId = input.query?.issueId;
-
-                if (!issueId || !canReorder || !reorder.hasChanges) {
-                  return;
-                }
-
-                reorderMutation.mutate(
-                  {
-                    issueId,
-                    orderedArticleIds: reorder.normalizedOrder,
-                  },
-                  {
-                    onSuccess: async () => {
-                      await invalidateAfterCmsMutation(trpcUtils, "articles.reorder", {
-                        ids: reorder.normalizedOrder,
-                      });
-                      reorder.commit();
-                      cmsToast.info(listText.reorderUpdated);
-                    },
-                    onError: (error) => {
-                      const mapped = mapTrpcErrorToCmsUiMessage(error);
-                      cmsToast.error(mapped.description, mapped.title);
-                    },
-                  },
-                );
-              }}
-            />
           </div>
         }
         table={
@@ -846,7 +852,7 @@ export function CmsArticlesListScreen({
                       {formatDate(article.createdAt)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <div className="flex flex-wrap items-center gap-1.5">
+                      <div className="flex items-center gap-1.5">
                         <CmsActionButton
                           variant="outline"
                           size="xs"

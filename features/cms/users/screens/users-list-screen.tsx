@@ -1,7 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   CmsBulkActionBar,
@@ -15,7 +14,6 @@ import {
   CmsActionButton,
   CmsDataTableShell,
   CmsPageHeader,
-  CmsSearchBar,
   CmsSelect,
   cmsTableClasses,
   cmsToast,
@@ -36,9 +34,14 @@ import {
   resolveQuickActions,
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
-import { useListSelection, useUsersListQuery } from "@/features/cms/shared/hooks";
+import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
+import {
+  useCmsListUrlState,
+  useListSelection,
+  useUsersListQuery,
+} from "@/features/cms/shared/hooks";
 import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
-import { parseUsersListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
+import { parseUsersListSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
@@ -62,7 +65,6 @@ type CmsUsersListScreenProps = {
 
 export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListScreenProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const text = i18n.cms;
   const listText = text.lists.users;
@@ -74,8 +76,6 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
   const listQuery = useUsersListQuery(input, { initialDataInput: initialInput, initialData });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
-
-  const [searchValue, setSearchValue] = useState(() => input.query?.q ?? "");
   const updateRoleMutation = trpc.users.updateRole.useMutation();
   const deleteMutation = trpc.users.delete.useMutation();
 
@@ -88,46 +88,17 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
     router.push(href);
   };
 
-  const updateSearchParams = useCallback(
-    (patch: Record<string, string | number | undefined>) => {
-      const nextParams = serializeCmsSearchParams({
-        page: input.page,
-        pageSize: input.pageSize,
-        q: input.query?.q,
-        sortBy: input.query?.sortBy,
-        sortOrder: input.query?.sortOrder,
-        role: input.query?.role,
-        ...patch,
-      });
-
-      const next = nextParams.toString();
-      selection.clearSelection();
-      router.replace(next ? `${pathname}?${next}` : pathname);
+  const { updateSearchParams } = useCmsListUrlState({
+    baseParams: {
+      page: input.page,
+      pageSize: input.pageSize,
+      q: input.query?.q,
+      sortBy: input.query?.sortBy,
+      sortOrder: input.query?.sortOrder,
+      role: input.query?.role,
     },
-    [
-      input.page,
-      input.pageSize,
-      input.query?.q,
-      input.query?.role,
-      input.query?.sortBy,
-      input.query?.sortOrder,
-      pathname,
-      router,
-      selection,
-    ],
-  );
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      if (searchValue !== (input.query?.q ?? "")) {
-        updateSearchParams({ q: searchValue, page: 1 });
-      }
-    }, 300);
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [input.query?.q, searchValue, updateSearchParams]);
+    clearSelection: selection.clearSelection,
+  });
 
   if (listQuery.isPending) {
     return <CmsLoadingState />;
@@ -317,11 +288,14 @@ export function CmsUsersListScreen({ initialInput, initialData }: CmsUsersListSc
             />
 
             <div className="grid gap-3 lg:grid-cols-3">
-              <CmsSearchBar
+              <CmsListSearchInput
+                key={input.query?.q ?? ""}
+                initialValue={input.query?.q ?? ""}
                 placeholder={text.listToolbar.searchPlaceholder}
-                value={searchValue}
-                onChange={(event) => setSearchValue(event.target.value)}
                 className="col-span-1 lg:col-span-1"
+                onSearchChange={(value) => {
+                  updateSearchParams({ q: value, page: 1 });
+                }}
               />
               <div className="grid grid-cols-3 gap-2 col-span-1 lg:col-span-2">
                 <CmsSelect

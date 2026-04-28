@@ -204,8 +204,6 @@ export const cmsIt = {
       subtitle: "Filtri, ricerca, ordinamento, paginazione e riordino.",
       reorderHelp:
         "Modalita reorder attiva: usa le frecce per riordinare e salva per applicare le modifiche.",
-      reorderUnavailable:
-        "Reorder disponibile con `sortBy=sortOrder`, `sortOrder=asc`, senza filtri e con una sola pagina.",
       table: {
         title: "Titolo",
         slug: "Slug",
@@ -260,8 +258,6 @@ export const cmsIt = {
       subtitle: "Filtri avanzati, ricerca, ordinamento e paginazione.",
       reorderHelp:
         "Modalita reorder attiva: usa le frecce per riordinare gli articoli dell'issue selezionata.",
-      reorderUnavailable:
-        "Reorder disponibile con `issueId` valorizzato, `sortBy=position`, `sortOrder=asc`, senza altri filtri e con una sola pagina.",
       table: {
         title: "Titolo",
         issue: "Issue",

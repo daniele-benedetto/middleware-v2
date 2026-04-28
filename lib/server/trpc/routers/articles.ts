@@ -181,6 +181,6 @@ export const articlesRouter = router({
     .use(auditMiddleware(() => ({ action: "reorder", resource: "articles" })))
     .input(reorderArticlesInputSchema)
     .mutation(async ({ input }) => {
-      return parseOutput(await articlesService.reorder(input), articleDtoSchema);
+      return parseOutput(await articlesService.reorder(input), articlesListDtoSchema);
     }),
 });

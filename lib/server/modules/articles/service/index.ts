@@ -101,6 +101,15 @@ const isUniqueError = (error: unknown): boolean => {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 };
 
+function containsSameIds(left: string[], right: string[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  const expected = new Set(left);
+  return right.every((id) => expected.has(id));
+}
+
 export const articlesService = {
   async list(query: ListArticlesQuery, pagination: PaginationParams) {
     const [articles, total] = await Promise.all([
@@ -311,12 +320,28 @@ export const articlesService = {
     }
   },
   async reorder(input: ReorderArticlesInput) {
+    const currentIssueArticles = await articlesRepository.listIdsByIssue(input.issueId);
+
+    if (currentIssueArticles.length === 0) {
+      throw new ApiError(404, "NOT_FOUND", "No articles found for reorder");
+    }
+
+    const currentIds = currentIssueArticles.map((article) => article.id);
+
+    if (!containsSameIds(currentIds, input.orderedArticleIds)) {
+      throw new ApiError(
+        400,
+        "VALIDATION_ERROR",
+        "orderedArticleIds must include all and only articles from the target issue",
+      );
+    }
+
     const articles = await articlesRepository.reorder(input);
 
     if (articles.length === 0) {
       throw new ApiError(404, "NOT_FOUND", "No articles found for reorder");
     }
 
-    return toArticleDto(articles[0]);
+    return toArticlesDto(articles);
   },
 };

@@ -42,6 +42,22 @@ type UserFormScreenProps = {
   initialData?: UserDetail;
 };
 
+type UserFormContentProps = {
+  mode: "create" | "edit";
+  userId?: string;
+  user?: UserDetail;
+  isMutating: boolean;
+  onCancel: () => void;
+  onCreate: (payload: { email: string; name?: string; role: "ADMIN" | "EDITOR" }) => Promise<void>;
+  onUpdate: (payload: {
+    id: string;
+    data: { name?: string | null; image?: string | null };
+    nextRole?: "ADMIN" | "EDITOR";
+  }) => Promise<void>;
+  onMutationError: (error: unknown) => void;
+  onValidationError: (message: string) => void;
+};
+
 export function CmsUserFormScreen({ mode, userId, initialData }: UserFormScreenProps) {
   const trpcUtils = trpc.useUtils();
   const { cancel, success } = useCmsFormNavigation("/cms/users");
@@ -54,12 +70,6 @@ export function CmsUserFormScreen({ mode, userId, initialData }: UserFormScreenP
   useSetCmsBreadcrumbLabel(
     mode === "edit" ? (userQuery.data?.name ?? userQuery.data?.email ?? null) : null,
   );
-
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [image, setImage] = useState("");
-  const [role, setRole] = useState<"ADMIN" | "EDITOR">("EDITOR");
-  const [roleEdit, setRoleEdit] = useState<"" | "ADMIN" | "EDITOR">("");
 
   if (mode === "edit" && !userId) {
     return <CmsErrorState title="Utente non valido" description="ID mancante per la modifica." />;
@@ -74,70 +84,106 @@ export function CmsUserFormScreen({ mode, userId, initialData }: UserFormScreenP
     return <CmsErrorState title={mapped.title} description={mapped.description} />;
   }
 
-  const isPending =
-    createMutation.isPending || updateMutation.isPending || updateRoleMutation.isPending;
+  return (
+    <UserFormContent
+      key={mode === "edit" ? (userQuery.data?.id ?? userId) : "create"}
+      mode={mode}
+      userId={userId}
+      user={userQuery.data}
+      isMutating={
+        createMutation.isPending || updateMutation.isPending || updateRoleMutation.isPending
+      }
+      onCancel={cancel}
+      onCreate={async (payload) => {
+        await createMutation.mutateAsync(payload);
+        await invalidateAfterCmsMutation(trpcUtils, "users.create");
+        success("Utente creato.");
+      }}
+      onUpdate={async ({ id, data, nextRole }) => {
+        await updateMutation.mutateAsync({ id, data });
+
+        if (nextRole && userQuery.data?.role && nextRole !== userQuery.data.role) {
+          await updateRoleMutation.mutateAsync({
+            id,
+            data: { role: nextRole },
+          });
+        }
+
+        await invalidateAfterCmsMutation(trpcUtils, "users.update", { id });
+        success("Utente aggiornato.");
+      }}
+      onMutationError={(error) => {
+        const mapped = mapCrudDomainError(error, "users");
+        cmsToast.error(mapped.description, mapped.title);
+      }}
+      onValidationError={(message) => {
+        cmsToast.error(message, text.trpcErrors.badRequestTitle);
+      }}
+    />
+  );
+}
+
+function UserFormContent({
+  mode,
+  userId,
+  user,
+  isMutating,
+  onCancel,
+  onCreate,
+  onUpdate,
+  onMutationError,
+  onValidationError,
+}: UserFormContentProps) {
+  const text = i18n.cms;
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState(user?.name ?? "");
+  const [image, setImage] = useState(user?.image ?? "");
+  const [role, setRole] = useState<"ADMIN" | "EDITOR">("EDITOR");
+  const [roleEdit, setRoleEdit] = useState<"ADMIN" | "EDITOR">(user?.role ?? "EDITOR");
 
   const handleSubmit = async () => {
-    const resolvedName = name || userQuery.data?.name || "";
-    const resolvedImage = image || undefined;
-
     try {
       if (mode === "create") {
         const validation = validateFormInput(
           createUserInputSchema,
           {
             email,
-            name: resolvedName || undefined,
+            name: name || undefined,
             role,
           },
           userFieldLabels,
         );
 
         if (!validation.ok) {
-          cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+          onValidationError(validation.message);
           return;
         }
 
-        await createMutation.mutateAsync(validation.value);
-        await invalidateAfterCmsMutation(trpcUtils, "users.create");
-        success("Utente creato.");
+        await onCreate(validation.value);
         return;
       }
 
       const validation = validateFormInput(
         updateUserInputSchema,
         {
-          name: resolvedName || undefined,
-          image: resolvedImage,
+          name: name ? name : null,
+          image: image ? image : null,
         },
         userFieldLabels,
       );
 
       if (!validation.ok) {
-        cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+        onValidationError(validation.message);
         return;
       }
 
-      await updateMutation.mutateAsync({
+      await onUpdate({
         id: userId!,
         data: validation.value,
+        nextRole: roleEdit,
       });
-
-      const currentRole = userQuery.data?.role;
-      const nextRole = roleEdit || currentRole;
-
-      if (nextRole && currentRole && nextRole !== currentRole) {
-        await updateRoleMutation.mutateAsync({
-          id: userId!,
-          data: { role: nextRole },
-        });
-      }
-
-      await invalidateAfterCmsMutation(trpcUtils, "users.update", { id: userId });
-      success("Utente aggiornato.");
     } catch (error) {
-      const mapped = mapCrudDomainError(error, "users");
-      cmsToast.error(mapped.description, mapped.title);
+      onMutationError(error);
     }
   };
 
@@ -171,17 +217,12 @@ export function CmsUserFormScreen({ mode, userId, initialData }: UserFormScreenP
         ) : (
           <>
             <CmsFormField label="Email" htmlFor="user-email">
-              <CmsTextInput
-                id="user-email"
-                type="email"
-                value={userQuery.data?.email ?? ""}
-                disabled
-              />
+              <CmsTextInput id="user-email" type="email" value={user?.email ?? ""} disabled />
             </CmsFormField>
 
             <CmsFormField label="Ruolo" htmlFor="user-role" required>
               <CmsSelect
-                value={roleEdit || userQuery.data?.role || "EDITOR"}
+                value={roleEdit}
                 onValueChange={(value) => setRoleEdit(value as "ADMIN" | "EDITOR")}
                 options={[
                   { value: "EDITOR", label: "EDITOR" },
@@ -195,7 +236,7 @@ export function CmsUserFormScreen({ mode, userId, initialData }: UserFormScreenP
         <CmsFormField label="Nome" htmlFor="user-name">
           <CmsTextInput
             id="user-name"
-            value={name || userQuery.data?.name || ""}
+            value={name}
             onChange={(event) => setName(event.target.value)}
           />
         </CmsFormField>
@@ -211,10 +252,10 @@ export function CmsUserFormScreen({ mode, userId, initialData }: UserFormScreenP
         ) : null}
 
         <div className="flex items-center gap-2">
-          <CmsActionButton variant="outline" onClick={cancel} disabled={isPending}>
+          <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
             {text.common.cancel}
           </CmsActionButton>
-          <CmsActionButton onClick={() => void handleSubmit()} isLoading={isPending}>
+          <CmsActionButton onClick={() => void handleSubmit()} isLoading={isMutating}>
             {mode === "create" ? text.forms.create : text.forms.save}
           </CmsActionButton>
         </div>

@@ -1,7 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   CmsBulkActionBar,
@@ -15,7 +14,6 @@ import {
   CmsActionButton,
   CmsDataTableShell,
   CmsPageHeader,
-  CmsSearchBar,
   CmsSelect,
   cmsTableClasses,
   cmsToast,
@@ -36,9 +34,14 @@ import {
   resolveQuickActions,
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
-import { useCategoriesListQuery, useListSelection } from "@/features/cms/shared/hooks";
+import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
+import {
+  useCategoriesListQuery,
+  useCmsListUrlState,
+  useListSelection,
+} from "@/features/cms/shared/hooks";
 import { cmsCrudRoutes, cmsCrudRoutesEnabled } from "@/lib/cms/crud-routes";
-import { parseCategoriesListSearchParams, serializeCmsSearchParams } from "@/lib/cms/query";
+import { parseCategoriesListSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
@@ -65,7 +68,6 @@ export function CmsCategoriesListScreen({
   initialData,
 }: CmsCategoriesListScreenProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const text = i18n.cms;
   const listText = text.lists.categories;
@@ -80,8 +82,6 @@ export function CmsCategoriesListScreen({
   });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
-
-  const [searchValue, setSearchValue] = useState(() => input.query?.q ?? "");
   const deleteMutation = trpc.categories.delete.useMutation();
 
   const navigateToCrudRoute = (href: string) => {
@@ -93,46 +93,17 @@ export function CmsCategoriesListScreen({
     router.push(href);
   };
 
-  const updateSearchParams = useCallback(
-    (patch: Record<string, string | number | undefined>) => {
-      const nextParams = serializeCmsSearchParams({
-        page: input.page,
-        pageSize: input.pageSize,
-        q: input.query?.q,
-        sortBy: input.query?.sortBy,
-        sortOrder: input.query?.sortOrder,
-        isActive: input.query?.isActive,
-        ...patch,
-      });
-
-      const next = nextParams.toString();
-      selection.clearSelection();
-      router.replace(next ? `${pathname}?${next}` : pathname);
+  const { updateSearchParams } = useCmsListUrlState({
+    baseParams: {
+      page: input.page,
+      pageSize: input.pageSize,
+      q: input.query?.q,
+      sortBy: input.query?.sortBy,
+      sortOrder: input.query?.sortOrder,
+      isActive: input.query?.isActive,
     },
-    [
-      input.page,
-      input.pageSize,
-      input.query?.isActive,
-      input.query?.q,
-      input.query?.sortBy,
-      input.query?.sortOrder,
-      pathname,
-      router,
-      selection,
-    ],
-  );
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      if (searchValue !== (input.query?.q ?? "")) {
-        updateSearchParams({ q: searchValue, page: 1 });
-      }
-    }, 300);
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [input.query?.q, searchValue, updateSearchParams]);
+    clearSelection: selection.clearSelection,
+  });
 
   if (listQuery.isPending) {
     return <CmsLoadingState />;
@@ -265,11 +236,14 @@ export function CmsCategoriesListScreen({
             />
 
             <div className="grid gap-3 lg:grid-cols-3">
-              <CmsSearchBar
+              <CmsListSearchInput
+                key={input.query?.q ?? ""}
+                initialValue={input.query?.q ?? ""}
                 placeholder={text.listToolbar.searchPlaceholder}
-                value={searchValue}
-                onChange={(event) => setSearchValue(event.target.value)}
                 className="col-span-1 lg:col-span-1"
+                onSearchChange={(value) => {
+                  updateSearchParams({ q: value, page: 1 });
+                }}
               />
               <div className="grid grid-cols-3 gap-2 col-span-1 lg:col-span-2">
                 <CmsSelect

@@ -14,6 +14,10 @@ export type CreateIssuePersistInput = {
   title: string;
   slug: string;
   description?: string;
+  coverUrl?: string;
+  color?: string;
+  isActive?: boolean;
+  publishedAt?: Date | null;
 };
 
 const toIssueWhereInput = (query: ListIssuesQuery): Prisma.IssueWhereInput => {

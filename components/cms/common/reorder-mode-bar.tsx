@@ -1,6 +1,6 @@
 import { Save, X } from "lucide-react";
 
-import { CmsActionButton, CmsMetaText } from "@/components/cms/primitives";
+import { CmsActionButton } from "@/components/cms/primitives";
 import { i18n } from "@/lib/i18n";
 
 type CmsReorderModeBarProps = {
@@ -9,7 +9,6 @@ type CmsReorderModeBarProps = {
   hasChanges: boolean;
   isSaving: boolean;
   helpText: string;
-  unavailableText: string;
   onStart: () => void;
   onCancel: () => void;
   onSave: () => void;
@@ -20,8 +19,6 @@ export function CmsReorderModeBar({
   isReorderMode,
   hasChanges,
   isSaving,
-  helpText,
-  unavailableText,
   onStart,
   onCancel,
   onSave,
@@ -30,10 +27,6 @@ export function CmsReorderModeBar({
 
   return (
     <div className="flex items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
-      <CmsMetaText variant="tiny" className="block">
-        {isAvailable ? helpText : unavailableText}
-      </CmsMetaText>
-
       {isReorderMode ? (
         <div className="flex items-center gap-2 max-sm:w-full">
           <CmsActionButton

@@ -8,8 +8,8 @@ export const createUserInputSchema = z.object({
 
 export const updateUserInputSchema = z
   .object({
-    name: z.string().trim().min(1).optional(),
-    image: z.string().trim().url().optional(),
+    name: z.string().trim().min(1).nullable().optional(),
+    image: z.string().trim().url().nullable().optional(),
   })
   .refine((input) => Object.keys(input).length > 0, {
     message: "At least one field is required",

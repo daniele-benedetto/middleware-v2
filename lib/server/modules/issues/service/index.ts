@@ -117,6 +117,10 @@ export const issuesService = {
           title: input.title,
           slug: candidateSlug,
           description: input.description,
+          coverUrl: input.coverUrl,
+          color: input.color,
+          isActive: input.isActive,
+          publishedAt: input.publishedAt ?? null,
         });
         const issueWithCount = await issuesRepository.getById(issue.id);
 

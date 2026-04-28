@@ -27,4 +27,8 @@ export function useIssueUpdate() {
   return trpc.issues.update.useMutation();
 }
 
+export function useIssuesReorder() {
+  return trpc.issues.reorder.useMutation();
+}
+
 export type { CreateIssueInput, IssueDetail, UpdateIssueInput };

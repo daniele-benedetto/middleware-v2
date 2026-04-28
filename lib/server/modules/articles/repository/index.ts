@@ -187,6 +187,13 @@ export const articlesRepository = {
       where: { id },
     });
   },
+  async listIdsByIssue(issueId: string) {
+    return prisma.article.findMany({
+      where: { issueId },
+      select: { id: true },
+      orderBy: { position: "asc" },
+    });
+  },
   async syncTags(id: string, input: SyncArticleTagsInput) {
     const tagIds = Array.from(new Set(input.tagIds));
 
@@ -273,7 +280,6 @@ export const articlesRepository = {
         await tx.article.update({
           where: { id: articleId },
           data: {
-            issueId: input.issueId,
             position: index,
           },
         });

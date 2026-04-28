@@ -55,6 +55,7 @@ export const usersRepository = {
         name: true,
         role: true,
         emailVerified: true,
+        image: true,
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -97,6 +98,7 @@ export const usersRepository = {
         name: true,
         role: true,
         emailVerified: true,
+        image: true,
         createdAt: true,
         updatedAt: true,
         _count: {

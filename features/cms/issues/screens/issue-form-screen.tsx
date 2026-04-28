@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
+  CmsCheckbox,
   CmsFormField,
   CmsPageHeader,
   CmsTextInput,
@@ -18,14 +19,20 @@ import {
   useIssueById,
   useIssueCreate,
   useIssueUpdate,
+  type CreateIssueInput,
   type IssueDetail,
+  type UpdateIssueInput,
 } from "@/features/cms/issues/hooks/use-issue-crud";
 import {
   mapCrudDomainError,
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
-import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
+import {
+  invalidateAfterCmsMutation,
+  invalidateArticlesAfterMutation,
+  invalidateIssuesAfterMutation,
+} from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { createIssueInputSchema, updateIssueInputSchema } from "@/lib/server/modules/issues/schema";
 import { normalizeSlug } from "@/lib/server/validation/slug";
@@ -35,6 +42,9 @@ const issueFieldLabels = {
   title: "Titolo",
   slug: "Slug",
   description: "Descrizione",
+  coverUrl: "Cover URL",
+  color: "Colore",
+  publishedAt: "Data pubblicazione",
 };
 
 type IssueFormScreenProps = {
@@ -43,9 +53,30 @@ type IssueFormScreenProps = {
   initialData?: IssueDetail;
 };
 
-function orderedIdsEqual(a: string[], b: string[]): boolean {
+type IssueUpdatePayload = {
+  id: string;
+  data: UpdateIssueInput;
+  orderedArticleIds?: string[];
+};
+
+function orderedIdsEqual(a: string[], b: string[]) {
   if (a.length !== b.length) return false;
   return a.every((id, index) => id === b[index]);
+}
+
+function toDateTimeLocalValue(value: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return localDate.toISOString().slice(0, 16);
 }
 
 export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScreenProps) {
@@ -58,23 +89,6 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
   const reorderMutation = useArticlesReorder();
 
   useSetCmsBreadcrumbLabel(mode === "edit" ? issueQuery.data?.title : null);
-
-  const [title, setTitle] = useState(initialData?.title ?? "");
-  const [slug, setSlug] = useState(initialData?.slug ?? "");
-  const [description, setDescription] = useState(initialData?.description ?? "");
-  const [orderedArticleIds, setOrderedArticleIds] = useState<string[]>([]);
-  const initialOrderRef = useRef<string[]>([]);
-
-  useEffect(() => {
-    if (mode !== "edit") return;
-    const items = issueQuery.data?.articles ?? [];
-    if (!items) return;
-    const ids = items.map((article) => article.id);
-    if (orderedIdsEqual(ids, initialOrderRef.current)) return;
-
-    initialOrderRef.current = ids;
-    setOrderedArticleIds(ids);
-  }, [mode, issueQuery.data?.articles]);
 
   if (mode === "edit" && !issueId) {
     return <CmsErrorState title="Issue non valida" description="ID mancante per la modifica." />;
@@ -89,84 +103,165 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
     return <CmsErrorState title={mapped.title} description={mapped.description} />;
   }
 
-  const isPending =
-    createMutation.isPending || updateMutation.isPending || reorderMutation.isPending;
+  return (
+    <IssueFormContent
+      mode={mode}
+      issueId={issueId}
+      issue={issueQuery.data}
+      isMutating={createMutation.isPending || updateMutation.isPending || reorderMutation.isPending}
+      onCancel={cancel}
+      onCreate={async (payload) => {
+        await createMutation.mutateAsync(payload);
+        await invalidateAfterCmsMutation(trpcUtils, "issues.create");
+        success("Issue creata.");
+      }}
+      onUpdate={async ({ id, data, orderedArticleIds }) => {
+        await updateMutation.mutateAsync({ id, data });
 
-  const articlesById = new Map(
-    (issueQuery.data?.articles ?? []).map((article) => [article.id, article]),
+        if (orderedArticleIds && orderedArticleIds.length > 0) {
+          try {
+            await reorderMutation.mutateAsync({
+              issueId: id,
+              orderedArticleIds,
+            });
+          } catch (error) {
+            const mapped = mapCrudDomainError(error, "articles");
+            cmsToast.error(
+              `Issue salvata, riordino articoli fallito: ${mapped.description}`,
+              mapped.title,
+            );
+            await Promise.all([
+              invalidateIssuesAfterMutation(trpcUtils, { id }),
+              invalidateArticlesAfterMutation(trpcUtils, { ids: orderedArticleIds }),
+            ]);
+            return;
+          }
+        }
+
+        await Promise.all([
+          invalidateAfterCmsMutation(trpcUtils, "issues.update", { id }),
+          orderedArticleIds
+            ? invalidateArticlesAfterMutation(trpcUtils, { ids: orderedArticleIds })
+            : Promise.resolve(),
+        ]);
+        success("Issue aggiornata.");
+      }}
+      onMutationError={(error) => {
+        const mapped = mapCrudDomainError(error, "issues");
+        cmsToast.error(mapped.description, mapped.title);
+      }}
+      onValidationError={(message) => {
+        cmsToast.error(message, text.trpcErrors.badRequestTitle);
+      }}
+    />
   );
+}
+
+type IssueFormContentProps = {
+  mode: "create" | "edit";
+  issueId?: string;
+  issue?: IssueDetail;
+  isMutating: boolean;
+  onCancel: () => void;
+  onCreate: (payload: CreateIssueInput) => Promise<void>;
+  onUpdate: (payload: IssueUpdatePayload) => Promise<void>;
+  onMutationError: (error: unknown) => void;
+  onValidationError: (message: string) => void;
+};
+
+function IssueFormContent({
+  mode,
+  issueId,
+  issue,
+  isMutating,
+  onCancel,
+  onCreate,
+  onUpdate,
+  onMutationError,
+  onValidationError,
+}: IssueFormContentProps) {
+  const text = i18n.cms;
+  const [title, setTitle] = useState(issue?.title ?? "");
+  const [slug, setSlug] = useState(issue?.slug ?? "");
+  const [description, setDescription] = useState(issue?.description ?? "");
+  const [coverUrl, setCoverUrl] = useState(issue?.coverUrl ?? "");
+  const [color, setColor] = useState(issue?.color ?? "");
+  const [isActive, setIsActive] = useState(issue?.isActive ?? true);
+  const [publishedAt, setPublishedAt] = useState(toDateTimeLocalValue(issue?.publishedAt ?? null));
+  const [orderedArticleIds, setOrderedArticleIds] = useState<string[]>(
+    issue?.articles.map((article) => article.id) ?? [],
+  );
+
+  const articlesById = new Map((issue?.articles ?? []).map((article) => [article.id, article]));
   const orderedArticles = orderedArticleIds
     .map((id) => articlesById.get(id))
     .filter((article): article is NonNullable<typeof article> => Boolean(article));
+  const initialArticleOrder = issue?.articles.map((article) => article.id) ?? [];
+  const orderChanged = !orderedIdsEqual(orderedArticleIds, initialArticleOrder);
 
   const regenerateSlugFromTitle = () => {
-    const next = normalizeSlug(title || issueQuery.data?.title || "");
-    setSlug(next);
+    setSlug(normalizeSlug(title));
   };
 
   const handleSubmit = async () => {
-    const resolvedTitle = title || issueQuery.data?.title || "";
-    const resolvedSlug = slug || (mode === "create" ? undefined : issueQuery.data?.slug);
-    const resolvedDescription = description || issueQuery.data?.description || "";
+    const normalizedPublishedAt = publishedAt ? new Date(publishedAt) : null;
 
-    const payload = {
-      title: resolvedTitle,
-      slug: resolvedSlug || undefined,
-      description: resolvedDescription || undefined,
-    };
+    if (publishedAt && (!normalizedPublishedAt || Number.isNaN(normalizedPublishedAt.getTime()))) {
+      onValidationError("Data pubblicazione non valida.");
+      return;
+    }
 
     try {
       if (mode === "create") {
-        const validation = validateFormInput(createIssueInputSchema, payload, issueFieldLabels);
+        const validation = validateFormInput(
+          createIssueInputSchema,
+          {
+            title,
+            slug: slug || undefined,
+            description: description || undefined,
+            coverUrl: coverUrl || undefined,
+            color: color || undefined,
+            isActive,
+            publishedAt: normalizedPublishedAt || undefined,
+          },
+          issueFieldLabels,
+        );
 
         if (!validation.ok) {
-          cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+          onValidationError(validation.message);
           return;
         }
 
-        await createMutation.mutateAsync(validation.value);
-        await invalidateAfterCmsMutation(trpcUtils, "issues.create");
-        success("Issue creata.");
+        await onCreate(validation.value);
         return;
       }
 
-      const validation = validateFormInput(updateIssueInputSchema, payload, issueFieldLabels);
+      const validation = validateFormInput(
+        updateIssueInputSchema,
+        {
+          title,
+          slug,
+          description: description ? description : null,
+          coverUrl: coverUrl ? coverUrl : null,
+          color: color ? color : null,
+          isActive,
+          publishedAt: normalizedPublishedAt,
+        },
+        issueFieldLabels,
+      );
 
       if (!validation.ok) {
-        cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+        onValidationError(validation.message);
         return;
       }
 
-      await updateMutation.mutateAsync({
+      await onUpdate({
         id: issueId!,
         data: validation.value,
+        orderedArticleIds: orderChanged ? orderedArticleIds : undefined,
       });
-
-      const orderChanged = !orderedIdsEqual(orderedArticleIds, initialOrderRef.current);
-
-      if (orderChanged && orderedArticleIds.length > 0) {
-        try {
-          await reorderMutation.mutateAsync({
-            issueId: issueId!,
-            orderedArticleIds,
-          });
-          initialOrderRef.current = orderedArticleIds;
-        } catch (error) {
-          const mapped = mapCrudDomainError(error, "articles");
-          cmsToast.error(
-            `Issue salvata, riordino articoli fallito: ${mapped.description}`,
-            mapped.title,
-          );
-          await invalidateAfterCmsMutation(trpcUtils, "issues.update", { id: issueId });
-          return;
-        }
-      }
-
-      await invalidateAfterCmsMutation(trpcUtils, "issues.update", { id: issueId });
-      success("Issue aggiornata.");
     } catch (error) {
-      const mapped = mapCrudDomainError(error, "issues");
-      cmsToast.error(mapped.description, mapped.title);
+      onMutationError(error);
     }
   };
 
@@ -198,15 +293,13 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
                 placeholder={mode === "create" ? "auto da titolo" : undefined}
                 onChange={(event) => setSlug(event.target.value)}
               />
-              {mode === "edit" ? (
-                <button
-                  type="button"
-                  onClick={regenerateSlugFromTitle}
-                  className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
-                >
-                  Rigenera
-                </button>
-              ) : null}
+              <button
+                type="button"
+                onClick={regenerateSlugFromTitle}
+                className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
+              >
+                Rigenera
+              </button>
             </div>
           </CmsFormField>
 
@@ -218,22 +311,70 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
             />
           </CmsFormField>
 
+          <div className="grid gap-4 md:grid-cols-2">
+            <CmsFormField label="Cover URL" htmlFor="issue-cover-url">
+              <CmsTextInput
+                id="issue-cover-url"
+                type="url"
+                value={coverUrl}
+                onChange={(event) => setCoverUrl(event.target.value)}
+              />
+            </CmsFormField>
+
+            <CmsFormField label="Colore" htmlFor="issue-color">
+              <div className="flex items-center gap-2">
+                <CmsTextInput
+                  id="issue-color"
+                  type="color"
+                  className="h-11 w-16 p-1"
+                  value={color || "#111111"}
+                  onChange={(event) => setColor(event.target.value)}
+                />
+                <CmsTextInput
+                  value={color}
+                  placeholder="#111111"
+                  onChange={(event) => setColor(event.target.value)}
+                />
+              </div>
+            </CmsFormField>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 md:items-end">
+            <CmsFormField label="Data pubblicazione" htmlFor="issue-published-at">
+              <CmsTextInput
+                id="issue-published-at"
+                type="datetime-local"
+                value={publishedAt}
+                onChange={(event) => setPublishedAt(event.target.value)}
+              />
+            </CmsFormField>
+
+            <CmsCheckbox label="Issue attiva" checked={isActive} onChange={setIsActive} />
+          </div>
+
           <div className="flex items-center gap-2">
-            <CmsActionButton variant="outline" onClick={cancel} disabled={isPending}>
+            <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
               {text.common.cancel}
             </CmsActionButton>
-            <CmsActionButton onClick={() => void handleSubmit()} isLoading={isPending}>
+            <CmsActionButton onClick={() => void handleSubmit()} isLoading={isMutating}>
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
           </div>
         </div>
 
         {mode === "edit" ? (
-          <IssueArticlesPanel
-            articles={orderedArticles}
-            onReorder={setOrderedArticleIds}
-            disabled={isPending}
-          />
+          <div className="space-y-3">
+            {orderChanged ? (
+              <div className="border border-accent px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-accent">
+                Riordino articoli non ancora salvato.
+              </div>
+            ) : null}
+            <IssueArticlesPanel
+              articles={orderedArticles}
+              onReorder={setOrderedArticleIds}
+              disabled={isMutating}
+            />
+          </div>
         ) : null}
       </div>
     </div>
