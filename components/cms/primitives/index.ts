@@ -31,6 +31,7 @@ export { CmsFormField } from "@/components/cms/primitives/form-field";
 export { CmsLayoutShell } from "@/components/cms/primitives/layout-shell";
 export { CmsMetaRow } from "@/components/cms/primitives/meta-row";
 export { CmsPageHeader } from "@/components/cms/primitives/page-header";
+export { CmsRichTextEditor } from "@/components/cms/primitives/rich-text-editor";
 export { CmsSectionDivider } from "@/components/cms/primitives/section-divider";
 export { CmsSurface } from "@/components/cms/primitives/surface";
 export {

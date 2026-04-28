@@ -11,33 +11,50 @@ import {
   CmsTextInput,
   cmsToast,
 } from "@/components/cms/primitives";
-import { mapCrudDomainError, useCmsFormNavigation } from "@/features/cms/shared/forms";
+import {
+  mapCrudDomainError,
+  useCmsFormNavigation,
+  validateFormInput,
+} from "@/features/cms/shared/forms";
 import {
   useUserById,
   useUserCreate,
   useUserUpdate,
+  useUserUpdateRole,
+  type UserDetail,
 } from "@/features/cms/users/hooks/use-user-crud";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
+import { createUserInputSchema, updateUserInputSchema } from "@/lib/server/modules/users/schema";
 import { trpc } from "@/lib/trpc/react";
+
+const userFieldLabels = {
+  email: "Email",
+  name: "Nome",
+  role: "Ruolo",
+  image: "Immagine",
+};
 
 type UserFormScreenProps = {
   mode: "create" | "edit";
   userId?: string;
+  initialData?: UserDetail;
 };
 
-export function CmsUserFormScreen({ mode, userId }: UserFormScreenProps) {
+export function CmsUserFormScreen({ mode, userId, initialData }: UserFormScreenProps) {
   const trpcUtils = trpc.useUtils();
   const { cancel, success } = useCmsFormNavigation("/cms/users");
   const text = i18n.cms;
-  const userQuery = useUserById(mode === "edit" ? userId : undefined);
+  const userQuery = useUserById(mode === "edit" ? userId : undefined, { initialData });
   const createMutation = useUserCreate();
   const updateMutation = useUserUpdate();
+  const updateRoleMutation = useUserUpdateRole();
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [role, setRole] = useState<"ADMIN" | "EDITOR">("EDITOR");
+  const [roleEdit, setRoleEdit] = useState<"" | "ADMIN" | "EDITOR">("");
 
   if (mode === "edit" && !userId) {
     return <CmsErrorState title="Utente non valido" description="ID mancante per la modifica." />;
@@ -52,36 +69,65 @@ export function CmsUserFormScreen({ mode, userId }: UserFormScreenProps) {
     return <CmsErrorState title={mapped.title} description={mapped.description} />;
   }
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const isPending =
+    createMutation.isPending || updateMutation.isPending || updateRoleMutation.isPending;
 
   const handleSubmit = async () => {
-    if (mode === "create" && !email.trim()) {
-      cmsToast.error("Email obbligatoria.", text.trpcErrors.badRequestTitle);
-      return;
-    }
-
     const resolvedName = name || userQuery.data?.name || "";
     const resolvedImage = image || undefined;
 
     try {
       if (mode === "create") {
-        await createMutation.mutateAsync({
-          email,
-          name: resolvedName || undefined,
-          role,
-        });
+        const validation = validateFormInput(
+          createUserInputSchema,
+          {
+            email,
+            name: resolvedName || undefined,
+            role,
+          },
+          userFieldLabels,
+        );
+
+        if (!validation.ok) {
+          cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+          return;
+        }
+
+        await createMutation.mutateAsync(validation.value);
         await invalidateAfterCmsMutation(trpcUtils, "users.create");
         success("Utente creato.");
         return;
       }
 
-      await updateMutation.mutateAsync({
-        id: userId!,
-        data: {
+      const validation = validateFormInput(
+        updateUserInputSchema,
+        {
           name: resolvedName || undefined,
           image: resolvedImage,
         },
+        userFieldLabels,
+      );
+
+      if (!validation.ok) {
+        cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+        return;
+      }
+
+      await updateMutation.mutateAsync({
+        id: userId!,
+        data: validation.value,
       });
+
+      const currentRole = userQuery.data?.role;
+      const nextRole = roleEdit || currentRole;
+
+      if (nextRole && currentRole && nextRole !== currentRole) {
+        await updateRoleMutation.mutateAsync({
+          id: userId!,
+          data: { role: nextRole },
+        });
+      }
+
       await invalidateAfterCmsMutation(trpcUtils, "users.update", { id: userId });
       success("Utente aggiornato.");
     } catch (error) {
@@ -100,6 +146,7 @@ export function CmsUserFormScreen({ mode, userId }: UserFormScreenProps) {
             <CmsFormField label="Email" htmlFor="user-email" required>
               <CmsTextInput
                 id="user-email"
+                type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
               />
@@ -116,7 +163,29 @@ export function CmsUserFormScreen({ mode, userId }: UserFormScreenProps) {
               />
             </CmsFormField>
           </>
-        ) : null}
+        ) : (
+          <>
+            <CmsFormField label="Email" htmlFor="user-email">
+              <CmsTextInput
+                id="user-email"
+                type="email"
+                value={userQuery.data?.email ?? ""}
+                disabled
+              />
+            </CmsFormField>
+
+            <CmsFormField label="Ruolo" htmlFor="user-role" required>
+              <CmsSelect
+                value={roleEdit || userQuery.data?.role || "EDITOR"}
+                onValueChange={(value) => setRoleEdit(value as "ADMIN" | "EDITOR")}
+                options={[
+                  { value: "EDITOR", label: "EDITOR" },
+                  { value: "ADMIN", label: "ADMIN" },
+                ]}
+              />
+            </CmsFormField>
+          </>
+        )}
 
         <CmsFormField label="Nome" htmlFor="user-name">
           <CmsTextInput
@@ -141,7 +210,7 @@ export function CmsUserFormScreen({ mode, userId }: UserFormScreenProps) {
             {text.common.cancel}
           </CmsActionButton>
           <CmsActionButton onClick={() => void handleSubmit()} isLoading={isPending}>
-            {mode === "create" ? "Crea" : "Salva"}
+            {mode === "create" ? text.forms.create : text.forms.save}
           </CmsActionButton>
         </div>
       </div>

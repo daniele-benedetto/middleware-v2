@@ -101,6 +101,11 @@ export const articlesRepository = {
         position: true,
         createdAt: true,
         updatedAt: true,
+        excerpt: true,
+        contentRich: true,
+        imageUrl: true,
+        audioUrl: true,
+        audioChunks: true,
         issue: {
           select: {
             title: true,
@@ -115,6 +120,11 @@ export const articlesRepository = {
           select: {
             name: true,
             email: true,
+          },
+        },
+        tags: {
+          select: {
+            tagId: true,
           },
         },
         _count: {

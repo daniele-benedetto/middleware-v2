@@ -15,22 +15,40 @@ import {
   useCategoryById,
   useCategoryCreate,
   useCategoryUpdate,
+  type CategoryDetail,
 } from "@/features/cms/categories/hooks/use-category-crud";
-import { mapCrudDomainError, useCmsFormNavigation } from "@/features/cms/shared/forms";
+import {
+  mapCrudDomainError,
+  useCmsFormNavigation,
+  validateFormInput,
+} from "@/features/cms/shared/forms";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
+import {
+  createCategoryInputSchema,
+  updateCategoryInputSchema,
+} from "@/lib/server/modules/categories/schema";
 import { trpc } from "@/lib/trpc/react";
+
+const categoryFieldLabels = {
+  name: "Nome",
+  slug: "Slug",
+  description: "Descrizione",
+};
 
 type CategoryFormScreenProps = {
   mode: "create" | "edit";
   categoryId?: string;
+  initialData?: CategoryDetail;
 };
 
-export function CmsCategoryFormScreen({ mode, categoryId }: CategoryFormScreenProps) {
+export function CmsCategoryFormScreen({ mode, categoryId, initialData }: CategoryFormScreenProps) {
   const trpcUtils = trpc.useUtils();
   const { cancel, success } = useCmsFormNavigation("/cms/categories");
   const text = i18n.cms;
-  const categoryQuery = useCategoryById(mode === "edit" ? categoryId : undefined);
+  const categoryQuery = useCategoryById(mode === "edit" ? categoryId : undefined, {
+    initialData,
+  });
   const createMutation = useCategoryCreate();
   const updateMutation = useCategoryUpdate();
 
@@ -56,34 +74,41 @@ export function CmsCategoryFormScreen({ mode, categoryId }: CategoryFormScreenPr
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSubmit = async () => {
-    const resolvedName = name || categoryQuery.data?.name || "";
-    const resolvedSlug = slug || categoryQuery.data?.slug || "";
-    const resolvedDescription = description || categoryQuery.data?.description || "";
-
-    if (!resolvedName.trim() || !resolvedSlug.trim()) {
-      cmsToast.error("Nome e slug sono obbligatori.", text.trpcErrors.badRequestTitle);
-      return;
-    }
+    const payload = {
+      name: name || categoryQuery.data?.name || "",
+      slug: slug || categoryQuery.data?.slug || "",
+      description: description || categoryQuery.data?.description || "" || undefined,
+    };
 
     try {
       if (mode === "create") {
-        await createMutation.mutateAsync({
-          name: resolvedName,
-          slug: resolvedSlug,
-          description: resolvedDescription || undefined,
-        });
+        const validation = validateFormInput(
+          createCategoryInputSchema,
+          payload,
+          categoryFieldLabels,
+        );
+
+        if (!validation.ok) {
+          cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+          return;
+        }
+
+        await createMutation.mutateAsync(validation.value);
         await invalidateAfterCmsMutation(trpcUtils, "categories.create");
         success("Categoria creata.");
         return;
       }
 
+      const validation = validateFormInput(updateCategoryInputSchema, payload, categoryFieldLabels);
+
+      if (!validation.ok) {
+        cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+        return;
+      }
+
       await updateMutation.mutateAsync({
         id: categoryId!,
-        data: {
-          name: resolvedName,
-          slug: resolvedSlug,
-          description: resolvedDescription || undefined,
-        },
+        data: validation.value,
       });
       await invalidateAfterCmsMutation(trpcUtils, "categories.update", { id: categoryId });
       success("Categoria aggiornata.");
@@ -127,7 +152,7 @@ export function CmsCategoryFormScreen({ mode, categoryId }: CategoryFormScreenPr
             {text.common.cancel}
           </CmsActionButton>
           <CmsActionButton onClick={() => void handleSubmit()} isLoading={isPending}>
-            {mode === "create" ? "Crea" : "Salva"}
+            {mode === "create" ? text.forms.create : text.forms.save}
           </CmsActionButton>
         </div>
       </div>

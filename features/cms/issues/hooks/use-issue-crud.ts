@@ -2,17 +2,19 @@
 
 import { trpc } from "@/lib/trpc/react";
 
-import type { RouterInputs } from "@/lib/trpc/types";
+import type { RouterInputs, RouterOutputs } from "@/lib/trpc/types";
 
 type CreateIssueInput = RouterInputs["issues"]["create"];
 type UpdateIssueInput = RouterInputs["issues"]["update"]["data"];
+type IssueDetail = RouterOutputs["issues"]["getById"];
 
-export function useIssueById(issueId?: string) {
+export function useIssueById(issueId?: string, options?: { initialData?: IssueDetail }) {
   return trpc.issues.getById.useQuery(
     { id: issueId ?? "" },
     {
       enabled: Boolean(issueId),
       staleTime: 30_000,
+      initialData: options?.initialData,
     },
   );
 }
@@ -25,4 +27,4 @@ export function useIssueUpdate() {
   return trpc.issues.update.useMutation();
 }
 
-export type { CreateIssueInput, UpdateIssueInput };
+export type { CreateIssueInput, IssueDetail, UpdateIssueInput };

@@ -15,22 +15,35 @@ import {
   useIssueById,
   useIssueCreate,
   useIssueUpdate,
+  type IssueDetail,
 } from "@/features/cms/issues/hooks/use-issue-crud";
-import { mapCrudDomainError, useCmsFormNavigation } from "@/features/cms/shared/forms";
+import {
+  mapCrudDomainError,
+  useCmsFormNavigation,
+  validateFormInput,
+} from "@/features/cms/shared/forms";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
+import { createIssueInputSchema, updateIssueInputSchema } from "@/lib/server/modules/issues/schema";
 import { trpc } from "@/lib/trpc/react";
+
+const issueFieldLabels = {
+  title: "Titolo",
+  slug: "Slug",
+  description: "Descrizione",
+};
 
 type IssueFormScreenProps = {
   mode: "create" | "edit";
   issueId?: string;
+  initialData?: IssueDetail;
 };
 
-export function CmsIssueFormScreen({ mode, issueId }: IssueFormScreenProps) {
+export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScreenProps) {
   const trpcUtils = trpc.useUtils();
   const { cancel, success } = useCmsFormNavigation("/cms/issues");
   const text = i18n.cms;
-  const issueQuery = useIssueById(mode === "edit" ? issueId : undefined);
+  const issueQuery = useIssueById(mode === "edit" ? issueId : undefined, { initialData });
   const createMutation = useIssueCreate();
   const updateMutation = useIssueUpdate();
 
@@ -54,34 +67,37 @@ export function CmsIssueFormScreen({ mode, issueId }: IssueFormScreenProps) {
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSubmit = async () => {
-    const resolvedTitle = title || issueQuery.data?.title || "";
-    const resolvedSlug = slug || issueQuery.data?.slug || "";
-    const resolvedDescription = description || issueQuery.data?.description || "";
-
-    if (!resolvedTitle.trim() || !resolvedSlug.trim()) {
-      cmsToast.error("Titolo e slug sono obbligatori.", text.trpcErrors.badRequestTitle);
-      return;
-    }
+    const payload = {
+      title: title || issueQuery.data?.title || "",
+      slug: slug || issueQuery.data?.slug || "",
+      description: description || issueQuery.data?.description || "" || undefined,
+    };
 
     try {
       if (mode === "create") {
-        await createMutation.mutateAsync({
-          title: resolvedTitle,
-          slug: resolvedSlug,
-          description: resolvedDescription || undefined,
-        });
+        const validation = validateFormInput(createIssueInputSchema, payload, issueFieldLabels);
+
+        if (!validation.ok) {
+          cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+          return;
+        }
+
+        await createMutation.mutateAsync(validation.value);
         await invalidateAfterCmsMutation(trpcUtils, "issues.create");
         success("Issue creata.");
         return;
       }
 
+      const validation = validateFormInput(updateIssueInputSchema, payload, issueFieldLabels);
+
+      if (!validation.ok) {
+        cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+        return;
+      }
+
       await updateMutation.mutateAsync({
         id: issueId!,
-        data: {
-          title: resolvedTitle,
-          slug: resolvedSlug,
-          description: resolvedDescription || undefined,
-        },
+        data: validation.value,
       });
       await invalidateAfterCmsMutation(trpcUtils, "issues.update", { id: issueId });
       success("Issue aggiornata.");
@@ -125,7 +141,7 @@ export function CmsIssueFormScreen({ mode, issueId }: IssueFormScreenProps) {
             {text.common.cancel}
           </CmsActionButton>
           <CmsActionButton onClick={() => void handleSubmit()} isLoading={isPending}>
-            {mode === "create" ? "Crea" : "Salva"}
+            {mode === "create" ? text.forms.create : text.forms.save}
           </CmsActionButton>
         </div>
       </div>

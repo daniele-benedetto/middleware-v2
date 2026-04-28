@@ -11,22 +11,39 @@ import {
   CmsTextarea,
   cmsToast,
 } from "@/components/cms/primitives";
-import { mapCrudDomainError, useCmsFormNavigation } from "@/features/cms/shared/forms";
-import { useTagById, useTagCreate, useTagUpdate } from "@/features/cms/tags/hooks/use-tag-crud";
+import {
+  mapCrudDomainError,
+  useCmsFormNavigation,
+  validateFormInput,
+} from "@/features/cms/shared/forms";
+import {
+  useTagById,
+  useTagCreate,
+  useTagUpdate,
+  type TagDetail,
+} from "@/features/cms/tags/hooks/use-tag-crud";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
+import { createTagInputSchema, updateTagInputSchema } from "@/lib/server/modules/tags/schema";
 import { trpc } from "@/lib/trpc/react";
+
+const tagFieldLabels = {
+  name: "Nome",
+  slug: "Slug",
+  description: "Descrizione",
+};
 
 type TagFormScreenProps = {
   mode: "create" | "edit";
   tagId?: string;
+  initialData?: TagDetail;
 };
 
-export function CmsTagFormScreen({ mode, tagId }: TagFormScreenProps) {
+export function CmsTagFormScreen({ mode, tagId, initialData }: TagFormScreenProps) {
   const trpcUtils = trpc.useUtils();
   const { cancel, success } = useCmsFormNavigation("/cms/tags");
   const text = i18n.cms;
-  const tagQuery = useTagById(mode === "edit" ? tagId : undefined);
+  const tagQuery = useTagById(mode === "edit" ? tagId : undefined, { initialData });
   const createMutation = useTagCreate();
   const updateMutation = useTagUpdate();
 
@@ -50,34 +67,37 @@ export function CmsTagFormScreen({ mode, tagId }: TagFormScreenProps) {
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSubmit = async () => {
-    const resolvedName = name || tagQuery.data?.name || "";
-    const resolvedSlug = slug || tagQuery.data?.slug || "";
-    const resolvedDescription = description || tagQuery.data?.description || "";
-
-    if (!resolvedName.trim() || !resolvedSlug.trim()) {
-      cmsToast.error("Nome e slug sono obbligatori.", text.trpcErrors.badRequestTitle);
-      return;
-    }
+    const payload = {
+      name: name || tagQuery.data?.name || "",
+      slug: slug || tagQuery.data?.slug || "",
+      description: description || tagQuery.data?.description || "" || undefined,
+    };
 
     try {
       if (mode === "create") {
-        await createMutation.mutateAsync({
-          name: resolvedName,
-          slug: resolvedSlug,
-          description: resolvedDescription || undefined,
-        });
+        const validation = validateFormInput(createTagInputSchema, payload, tagFieldLabels);
+
+        if (!validation.ok) {
+          cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+          return;
+        }
+
+        await createMutation.mutateAsync(validation.value);
         await invalidateAfterCmsMutation(trpcUtils, "tags.create");
         success("Tag creato.");
         return;
       }
 
+      const validation = validateFormInput(updateTagInputSchema, payload, tagFieldLabels);
+
+      if (!validation.ok) {
+        cmsToast.error(validation.message, text.trpcErrors.badRequestTitle);
+        return;
+      }
+
       await updateMutation.mutateAsync({
         id: tagId!,
-        data: {
-          name: resolvedName,
-          slug: resolvedSlug,
-          description: resolvedDescription || undefined,
-        },
+        data: validation.value,
       });
       await invalidateAfterCmsMutation(trpcUtils, "tags.update", { id: tagId });
       success("Tag aggiornato.");
@@ -121,7 +141,7 @@ export function CmsTagFormScreen({ mode, tagId }: TagFormScreenProps) {
             {text.common.cancel}
           </CmsActionButton>
           <CmsActionButton onClick={() => void handleSubmit()} isLoading={isPending}>
-            {mode === "create" ? "Crea" : "Salva"}
+            {mode === "create" ? text.forms.create : text.forms.save}
           </CmsActionButton>
         </div>
       </div>

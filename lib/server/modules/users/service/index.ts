@@ -5,13 +5,30 @@ import { ApiError } from "@/lib/server/http/api-error";
 import { usersRepository } from "@/lib/server/modules/users/repository";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
-import type { UserDetailDto, UserListItemDto } from "@/lib/server/modules/users/dto";
+import type {
+  UserAuthorOptionDto,
+  UserDetailDto,
+  UserListItemDto,
+} from "@/lib/server/modules/users/dto";
 import type {
   CreateUserInput,
+  ListUserAuthorsQuery,
   ListUsersQuery,
   UpdateUserInput,
   UpdateUserRoleInput,
 } from "@/lib/server/modules/users/schema";
+
+const toUserAuthorOptionDto = (user: {
+  id: string;
+  email: string;
+  name: string | null;
+}): UserAuthorOptionDto => {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  };
+};
 
 const toUserDto = (user: {
   id: string;
@@ -46,6 +63,17 @@ export const usersService = {
 
     return {
       items: users.map(toUserDto),
+      total,
+    };
+  },
+  async listAuthorOptions(query: ListUserAuthorsQuery, pagination: PaginationParams) {
+    const [users, total] = await Promise.all([
+      usersRepository.listAuthorOptions(query, pagination),
+      usersRepository.countAuthorOptions(query),
+    ]);
+
+    return {
+      items: users.map(toUserAuthorOptionDto),
       total,
     };
   },

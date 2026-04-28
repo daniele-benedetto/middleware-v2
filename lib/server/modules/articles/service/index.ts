@@ -8,7 +8,7 @@ import { normalizeSlug } from "@/lib/server/validation/slug";
 
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 import type { PaginationParams } from "@/lib/server/http/pagination";
-import type { ArticleDto } from "@/lib/server/modules/articles/dto";
+import type { ArticleDetailDto, ArticleDto } from "@/lib/server/modules/articles/dto";
 import type {
   CreateArticleInput,
   ListArticlesQuery,
@@ -46,6 +46,15 @@ type ArticleRecord = {
   _count?: { tags: number };
 };
 
+type ArticleDetailRecord = ArticleRecord & {
+  excerpt: string | null;
+  contentRich: unknown;
+  imageUrl: string | null;
+  audioUrl: string | null;
+  audioChunks: unknown;
+  tags?: Array<{ tagId: string }>;
+};
+
 const toArticleDto = (article: ArticleRecord): ArticleDto => {
   return {
     id: article.id,
@@ -65,6 +74,18 @@ const toArticleDto = (article: ArticleRecord): ArticleDto => {
     authorName: article.author?.name ?? null,
     authorEmail: article.author?.email ?? null,
     tagsCount: article._count?.tags ?? 0,
+  };
+};
+
+const toArticleDetailDto = (article: ArticleDetailRecord): ArticleDetailDto => {
+  return {
+    ...toArticleDto(article),
+    excerpt: article.excerpt,
+    contentRich: article.contentRich,
+    imageUrl: article.imageUrl,
+    audioUrl: article.audioUrl,
+    audioChunks: (article.audioChunks ?? null) as ArticleDetailDto["audioChunks"],
+    tagIds: (article.tags ?? []).map((relation) => relation.tagId),
   };
 };
 
@@ -99,7 +120,7 @@ export const articlesService = {
       throw new ApiError(404, "NOT_FOUND", "Article not found");
     }
 
-    return toArticleDto(article);
+    return toArticleDetailDto(article as ArticleDetailRecord);
   },
   async create(input: CreateArticleInput) {
     const normalizedInput: CreateArticleInput = {

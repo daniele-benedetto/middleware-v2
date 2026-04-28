@@ -4,9 +4,11 @@ import { z } from "zod";
 
 import {
   createUserInputSchema,
+  listUserAuthorsQuerySchema,
   listUsersQuerySchema,
   updateUserInputSchema,
   updateUserRoleInputSchema,
+  userAuthorOptionsDtoSchema,
   userDetailDtoSchema,
   userListDtoSchema,
   userListItemDtoSchema,
@@ -31,6 +33,10 @@ const usersListInputSchema = paginationInputSchema.extend({
   }),
 });
 
+const usersListAuthorsInputSchema = paginationInputSchema.extend({
+  query: listUserAuthorsQuerySchema.default({}),
+});
+
 export const usersRouter = router({
   list: protectedProcedure
     .use(requireRoleMiddleware(usersPolicy.listAllowedRoles))
@@ -43,6 +49,24 @@ export const usersRouter = router({
 
       return {
         items: parseOutput(result.items, userListDtoSchema),
+        pagination: {
+          page: input.page,
+          pageSize: input.pageSize,
+          total: result.total,
+        },
+      };
+    }),
+  listAuthors: protectedProcedure
+    .use(requireRoleMiddleware(usersPolicy.listAuthorsAllowedRoles))
+    .input(usersListAuthorsInputSchema)
+    .query(async ({ input }) => {
+      const result = await usersService.listAuthorOptions(input.query, {
+        page: input.page,
+        pageSize: input.pageSize,
+      });
+
+      return {
+        items: parseOutput(result.items, userAuthorOptionsDtoSchema),
         pagination: {
           page: input.page,
           pageSize: input.pageSize,

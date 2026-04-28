@@ -1,4 +1,8 @@
-export { articleDtoSchema, articlesListDtoSchema } from "@/lib/server/modules/articles/dto";
+export {
+  articleDetailDtoSchema,
+  articleDtoSchema,
+  articlesListDtoSchema,
+} from "@/lib/server/modules/articles/dto";
 export { articlesPolicy } from "@/lib/server/modules/articles/policy";
 export { articlesRepository } from "@/lib/server/modules/articles/repository";
 export {
@@ -15,5 +19,5 @@ export type {
   SyncArticleTagsInput,
   UpdateArticleInput,
 } from "@/lib/server/modules/articles/schema";
-export type { ArticleDto } from "@/lib/server/modules/articles/dto";
+export type { ArticleDetailDto, ArticleDto } from "@/lib/server/modules/articles/dto";
 export { articlesService } from "@/lib/server/modules/articles/service";

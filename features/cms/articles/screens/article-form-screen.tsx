@@ -8,6 +8,8 @@ import {
   CmsCheckbox,
   CmsFormField,
   CmsPageHeader,
+  CmsRichTextEditor,
+  CmsSelect,
   CmsTextInput,
   CmsTextarea,
   cmsToast,
@@ -17,42 +19,84 @@ import {
   useArticleCreate,
   useArticleSyncTags,
   useArticleUpdate,
+  useCategoryOptions,
+  useIssueOptions,
   useTagOptions,
+  useUserOptions,
+  type ArticleDetail,
+  type CreateArticleInput,
+  type UpdateArticleInput,
 } from "@/features/cms/articles/hooks/use-article-crud";
-import { mapCrudDomainError, useCmsFormNavigation } from "@/features/cms/shared/forms";
+import {
+  mapCrudDomainError,
+  useCmsFormNavigation,
+  validateFormInput,
+} from "@/features/cms/shared/forms";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
+import {
+  createArticleInputSchema,
+  updateArticleInputSchema,
+} from "@/lib/server/modules/articles/schema";
 import { trpc } from "@/lib/trpc/react";
+
+const articleFieldLabels = {
+  issueId: "Issue",
+  categoryId: "Categoria",
+  authorId: "Autore",
+  title: "Titolo",
+  slug: "Slug",
+  excerpt: "Excerpt",
+  imageUrl: "Image URL",
+  audioUrl: "Audio URL",
+};
+
+const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
 
 type ArticleFormScreenProps = {
   mode: "create" | "edit";
   articleId?: string;
+  initialData?: ArticleDetail;
 };
 
-const defaultJson = JSON.stringify({ type: "doc", content: [] });
+function stringifyAudioChunks(value: unknown): string {
+  if (value == null) return "";
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return "";
+  }
+}
 
-export function CmsArticleFormScreen({ mode, articleId }: ArticleFormScreenProps) {
+function parseJsonOrUndefined(value: string): unknown {
+  if (!value.trim()) return undefined;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+function tagIdsEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const sortedA = [...a].sort();
+  const sortedB = [...b].sort();
+  return sortedA.every((value, index) => value === sortedB[index]);
+}
+
+export function CmsArticleFormScreen({ mode, articleId, initialData }: ArticleFormScreenProps) {
   const trpcUtils = trpc.useUtils();
   const { cancel, success } = useCmsFormNavigation("/cms/articles");
   const text = i18n.cms;
 
-  const articleQuery = useArticleById(mode === "edit" ? articleId : undefined);
+  const articleQuery = useArticleById(mode === "edit" ? articleId : undefined, { initialData });
   const tagOptionsQuery = useTagOptions();
+  const issueOptionsQuery = useIssueOptions();
+  const categoryOptionsQuery = useCategoryOptions();
+  const userOptionsQuery = useUserOptions();
   const createMutation = useArticleCreate();
   const updateMutation = useArticleUpdate();
   const syncTagsMutation = useArticleSyncTags();
-
-  const [issueId, setIssueId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [authorId, setAuthorId] = useState("");
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
-  const [excerpt, setExcerpt] = useState("");
-  const [contentRich, setContentRich] = useState(mode === "create" ? defaultJson : "");
-  const [imageUrl, setImageUrl] = useState("");
-  const [audioUrl, setAudioUrl] = useState("");
-  const [audioChunks, setAudioChunks] = useState("");
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
   if (mode === "edit" && !articleId) {
     return <CmsErrorState title="Articolo non valido" description="ID mancante per la modifica." />;
@@ -67,119 +111,203 @@ export function CmsArticleFormScreen({ mode, articleId }: ArticleFormScreenProps
     return <CmsErrorState title={mapped.title} description={mapped.description} />;
   }
 
-  const isPending =
-    createMutation.isPending || updateMutation.isPending || syncTagsMutation.isPending;
-  const tags = tagOptionsQuery.data?.items ?? [];
+  return (
+    <ArticleFormContent
+      mode={mode}
+      articleId={articleId}
+      article={articleQuery.data}
+      tagsAvailable={tagOptionsQuery.data?.items ?? []}
+      issuesAvailable={issueOptionsQuery.data?.items ?? []}
+      categoriesAvailable={categoryOptionsQuery.data?.items ?? []}
+      authorsAvailable={userOptionsQuery.data?.items ?? []}
+      issuesLoading={issueOptionsQuery.isPending}
+      categoriesLoading={categoryOptionsQuery.isPending}
+      authorsLoading={userOptionsQuery.isPending}
+      isMutating={
+        createMutation.isPending || updateMutation.isPending || syncTagsMutation.isPending
+      }
+      onCancel={cancel}
+      onCreate={async (payload) => {
+        await createMutation.mutateAsync(payload);
+        await invalidateAfterCmsMutation(trpcUtils, "articles.create");
+        success("Articolo creato.");
+      }}
+      onUpdate={async ({ id, data, tagIds }) => {
+        await updateMutation.mutateAsync({ id, data });
+
+        if (tagIds) {
+          await syncTagsMutation.mutateAsync({ id, data: { tagIds } });
+        }
+
+        await invalidateAfterCmsMutation(trpcUtils, "articles.update", { id });
+        success("Articolo aggiornato.");
+      }}
+      onMutationError={(error) => {
+        const mapped = mapCrudDomainError(error, "articles");
+        cmsToast.error(mapped.description, mapped.title);
+      }}
+      onValidationError={(message) => {
+        cmsToast.error(message, text.trpcErrors.badRequestTitle);
+      }}
+    />
+  );
+}
+
+type ArticleFormContentProps = {
+  mode: "create" | "edit";
+  articleId?: string;
+  article?: ArticleDetail;
+  tagsAvailable: Array<{ id: string; name: string; slug: string }>;
+  issuesAvailable: Array<{ id: string; title: string; slug: string }>;
+  categoriesAvailable: Array<{ id: string; name: string }>;
+  authorsAvailable: Array<{ id: string; name: string | null; email: string }>;
+  issuesLoading: boolean;
+  categoriesLoading: boolean;
+  authorsLoading: boolean;
+  isMutating: boolean;
+  onCancel: () => void;
+  onCreate: (payload: CreateArticleInput) => Promise<void>;
+  onUpdate: (payload: ArticleUpdatePayload) => Promise<void>;
+  onMutationError: (error: unknown) => void;
+  onValidationError: (message: string) => void;
+};
+
+type ArticleUpdatePayload = {
+  id: string;
+  data: UpdateArticleInput;
+  tagIds?: string[];
+};
+
+function buildPayload(input: {
+  issueId: string;
+  categoryId: string;
+  authorId: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  contentRich: unknown;
+  imageUrl: string;
+  audioUrl: string;
+  audioChunks: unknown;
+}) {
+  return {
+    issueId: input.issueId,
+    categoryId: input.categoryId,
+    authorId: input.authorId,
+    title: input.title,
+    slug: input.slug,
+    excerpt: input.excerpt || undefined,
+    contentRich: input.contentRich,
+    imageUrl: input.imageUrl || undefined,
+    audioUrl: input.audioUrl || undefined,
+    audioChunks: input.audioChunks ?? undefined,
+  };
+}
+
+function ArticleFormContent({
+  mode,
+  articleId,
+  article,
+  tagsAvailable,
+  issuesAvailable,
+  categoriesAvailable,
+  authorsAvailable,
+  issuesLoading,
+  categoriesLoading,
+  authorsLoading,
+  isMutating,
+  onCancel,
+  onCreate,
+  onUpdate,
+  onMutationError,
+  onValidationError,
+}: ArticleFormContentProps) {
+  const text = i18n.cms;
+
+  const [issueId, setIssueId] = useState(article?.issueId ?? "");
+  const [categoryId, setCategoryId] = useState(article?.categoryId ?? "");
+  const [authorId, setAuthorId] = useState(article?.authorId ?? "");
+  const [title, setTitle] = useState(article?.title ?? "");
+  const [slug, setSlug] = useState(article?.slug ?? "");
+  const [excerpt, setExcerpt] = useState(article?.excerpt ?? "");
+  const [contentRich, setContentRich] = useState<unknown>(article?.contentRich ?? emptyContentDoc);
+  const [imageUrl, setImageUrl] = useState(article?.imageUrl ?? "");
+  const [audioUrl, setAudioUrl] = useState(article?.audioUrl ?? "");
+  const [audioChunks, setAudioChunks] = useState(stringifyAudioChunks(article?.audioChunks));
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(article?.tagIds ?? []);
 
   const toggleTag = (tagId: string, checked: boolean) => {
     setSelectedTagIds((current) => {
       if (checked) {
         return current.includes(tagId) ? current : [...current, tagId];
       }
-
       return current.filter((id) => id !== tagId);
     });
   };
 
-  const parseJsonOrUndefined = (value: string) => {
-    if (!value.trim()) {
-      return undefined;
-    }
-
-    try {
-      return JSON.parse(value);
-    } catch {
-      return null;
-    }
-  };
+  const issueOptions = issuesAvailable.map((issue) => ({
+    value: issue.id,
+    label: `${issue.title} (${issue.slug})`,
+  }));
+  const categoryOptions = categoriesAvailable.map((category) => ({
+    value: category.id,
+    label: category.name,
+  }));
+  const userOptions = authorsAvailable.map((user) => ({
+    value: user.id,
+    label: user.name ? `${user.name} (${user.email})` : user.email,
+  }));
 
   const handleSubmit = async () => {
-    const resolvedIssueId = issueId || articleQuery.data?.issueId || "";
-    const resolvedCategoryId = categoryId || articleQuery.data?.categoryId || "";
-    const resolvedAuthorId = authorId || articleQuery.data?.authorId || "";
-    const resolvedTitle = title || articleQuery.data?.title || "";
-    const resolvedSlug = slug || articleQuery.data?.slug || "";
-
-    if (
-      !resolvedIssueId ||
-      !resolvedCategoryId ||
-      !resolvedAuthorId ||
-      !resolvedTitle.trim() ||
-      !resolvedSlug.trim()
-    ) {
-      cmsToast.error(
-        "Issue, categoria, autore, titolo e slug sono obbligatori.",
-        text.trpcErrors.badRequestTitle,
-      );
-      return;
-    }
-
-    const parsedContentRich = parseJsonOrUndefined(contentRich);
-
-    if (mode === "create" && parsedContentRich == null) {
-      cmsToast.error("contentRich deve essere JSON valido.", text.trpcErrors.badRequestTitle);
-      return;
-    }
-
-    if (mode === "edit" && contentRich.trim() && parsedContentRich == null) {
-      cmsToast.error("contentRich deve essere JSON valido.", text.trpcErrors.badRequestTitle);
-      return;
-    }
-
     const parsedAudioChunks = parseJsonOrUndefined(audioChunks);
 
     if (audioChunks.trim() && parsedAudioChunks == null) {
-      cmsToast.error("audioChunks deve essere JSON valido.", text.trpcErrors.badRequestTitle);
+      onValidationError("audioChunks deve essere JSON valido.");
       return;
     }
 
+    const payload = buildPayload({
+      issueId,
+      categoryId,
+      authorId,
+      title,
+      slug,
+      excerpt,
+      contentRich,
+      imageUrl,
+      audioUrl,
+      audioChunks: parsedAudioChunks,
+    });
+
     try {
       if (mode === "create") {
-        await createMutation.mutateAsync({
-          issueId: resolvedIssueId,
-          categoryId: resolvedCategoryId,
-          authorId: resolvedAuthorId,
-          title: resolvedTitle,
-          slug: resolvedSlug,
-          excerpt: excerpt || undefined,
-          contentRich: parsedContentRich,
-          imageUrl: imageUrl || undefined,
-          audioUrl: audioUrl || undefined,
-          audioChunks: parsedAudioChunks,
-        });
-        await invalidateAfterCmsMutation(trpcUtils, "articles.create");
-        success("Articolo creato.");
+        const validation = validateFormInput(createArticleInputSchema, payload, articleFieldLabels);
+
+        if (!validation.ok) {
+          onValidationError(validation.message);
+          return;
+        }
+
+        await onCreate(validation.value);
         return;
       }
 
-      await updateMutation.mutateAsync({
-        id: articleId!,
-        data: {
-          issueId: resolvedIssueId,
-          categoryId: resolvedCategoryId,
-          authorId: resolvedAuthorId,
-          title: resolvedTitle,
-          slug: resolvedSlug,
-          excerpt: excerpt || undefined,
-          contentRich: parsedContentRich,
-          imageUrl: imageUrl || undefined,
-          audioUrl: audioUrl || undefined,
-          audioChunks: parsedAudioChunks,
-        },
-      });
+      const validation = validateFormInput(updateArticleInputSchema, payload, articleFieldLabels);
 
-      if (selectedTagIds.length > 0) {
-        await syncTagsMutation.mutateAsync({
-          id: articleId!,
-          data: { tagIds: selectedTagIds },
-        });
+      if (!validation.ok) {
+        onValidationError(validation.message);
+        return;
       }
 
-      await invalidateAfterCmsMutation(trpcUtils, "articles.update", { id: articleId });
-      success("Articolo aggiornato.");
+      const tagsChanged = !tagIdsEqual(selectedTagIds, article?.tagIds ?? []);
+
+      await onUpdate({
+        id: articleId!,
+        data: validation.value,
+        tagIds: tagsChanged ? selectedTagIds : undefined,
+      });
     } catch (error) {
-      const mapped = mapCrudDomainError(error, "articles");
-      cmsToast.error(mapped.description, mapped.title);
+      onMutationError(error);
     }
   };
 
@@ -189,27 +317,30 @@ export function CmsArticleFormScreen({ mode, articleId }: ArticleFormScreenProps
 
       <div className="space-y-4 border border-foreground p-4">
         <div className="grid gap-4 md:grid-cols-3">
-          <CmsFormField label="Issue ID" htmlFor="article-issue" required>
-            <CmsTextInput
-              id="article-issue"
-              value={issueId || articleQuery.data?.issueId || ""}
-              onChange={(event) => setIssueId(event.target.value)}
+          <CmsFormField label="Issue" htmlFor="article-issue" required>
+            <CmsSelect
+              value={issueId}
+              onValueChange={setIssueId}
+              options={issueOptions}
+              disabled={issuesLoading}
             />
           </CmsFormField>
 
-          <CmsFormField label="Category ID" htmlFor="article-category" required>
-            <CmsTextInput
-              id="article-category"
-              value={categoryId || articleQuery.data?.categoryId || ""}
-              onChange={(event) => setCategoryId(event.target.value)}
+          <CmsFormField label="Categoria" htmlFor="article-category" required>
+            <CmsSelect
+              value={categoryId}
+              onValueChange={setCategoryId}
+              options={categoryOptions}
+              disabled={categoriesLoading}
             />
           </CmsFormField>
 
-          <CmsFormField label="Author ID" htmlFor="article-author" required>
-            <CmsTextInput
-              id="article-author"
-              value={authorId || articleQuery.data?.authorId || ""}
-              onChange={(event) => setAuthorId(event.target.value)}
+          <CmsFormField label="Autore" htmlFor="article-author" required>
+            <CmsSelect
+              value={authorId}
+              onValueChange={setAuthorId}
+              options={userOptions}
+              disabled={authorsLoading}
             />
           </CmsFormField>
         </div>
@@ -217,7 +348,7 @@ export function CmsArticleFormScreen({ mode, articleId }: ArticleFormScreenProps
         <CmsFormField label="Titolo" htmlFor="article-title" required>
           <CmsTextInput
             id="article-title"
-            value={title || articleQuery.data?.title || ""}
+            value={title}
             onChange={(event) => setTitle(event.target.value)}
           />
         </CmsFormField>
@@ -225,7 +356,7 @@ export function CmsArticleFormScreen({ mode, articleId }: ArticleFormScreenProps
         <CmsFormField label="Slug" htmlFor="article-slug" required>
           <CmsTextInput
             id="article-slug"
-            value={slug || articleQuery.data?.slug || ""}
+            value={slug}
             onChange={(event) => setSlug(event.target.value)}
           />
         </CmsFormField>
@@ -238,11 +369,11 @@ export function CmsArticleFormScreen({ mode, articleId }: ArticleFormScreenProps
           />
         </CmsFormField>
 
-        <CmsFormField label="contentRich (JSON)" htmlFor="article-content-rich" required>
-          <CmsTextarea
-            id="article-content-rich"
+        <CmsFormField label="Contenuto" htmlFor="article-content-rich" required>
+          <CmsRichTextEditor
             value={contentRich}
-            onChange={(event) => setContentRich(event.target.value)}
+            onChange={setContentRich}
+            ariaLabel="Editor contenuto articolo"
           />
         </CmsFormField>
 
@@ -274,7 +405,7 @@ export function CmsArticleFormScreen({ mode, articleId }: ArticleFormScreenProps
 
         <CmsFormField label="Tag" htmlFor="article-tags">
           <div id="article-tags" className="space-y-2">
-            {tags.map((tag) => {
+            {tagsAvailable.map((tag) => {
               const checked = selectedTagIds.includes(tag.id);
 
               return (
@@ -287,16 +418,16 @@ export function CmsArticleFormScreen({ mode, articleId }: ArticleFormScreenProps
               );
             })}
 
-            {tags.length === 0 ? <p className="text-sm">Nessun tag disponibile.</p> : null}
+            {tagsAvailable.length === 0 ? <p className="text-sm">Nessun tag disponibile.</p> : null}
           </div>
         </CmsFormField>
 
         <div className="flex items-center gap-2">
-          <CmsActionButton variant="outline" onClick={cancel} disabled={isPending}>
+          <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
             {text.common.cancel}
           </CmsActionButton>
-          <CmsActionButton onClick={() => void handleSubmit()} isLoading={isPending}>
-            {mode === "create" ? "Crea" : "Salva"}
+          <CmsActionButton onClick={() => void handleSubmit()} isLoading={isMutating}>
+            {mode === "create" ? text.forms.create : text.forms.save}
           </CmsActionButton>
         </div>
       </div>

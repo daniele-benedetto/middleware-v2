@@ -1,4 +1,4 @@
-export const cmsCrudRoutesEnabled = false;
+export const cmsCrudRoutesEnabled = true;
 
 export const cmsCrudRoutes = {
   issues: {

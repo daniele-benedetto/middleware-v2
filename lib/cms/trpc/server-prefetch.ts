@@ -16,6 +16,12 @@ type TagsListOutput = RouterOutputs["tags"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
 
+type IssueDetailOutput = RouterOutputs["issues"]["getById"];
+type CategoryDetailOutput = RouterOutputs["categories"]["getById"];
+type TagDetailOutput = RouterOutputs["tags"]["getById"];
+type UserDetailOutput = RouterOutputs["users"]["getById"];
+type ArticleDetailOutput = RouterOutputs["articles"]["getById"];
+
 export async function prefetchIssuesList(input: IssuesListInput): Promise<IssuesListOutput> {
   const caller = await getTrpcCaller();
   return caller.issues.list(input);
@@ -41,6 +47,31 @@ export async function prefetchArticlesList(input: ArticlesListInput): Promise<Ar
 export async function prefetchUsersList(input: UsersListInput): Promise<UsersListOutput> {
   const caller = await getTrpcCaller();
   return caller.users.list(input);
+}
+
+export async function prefetchIssueById(id: string): Promise<IssueDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.issues.getById({ id });
+}
+
+export async function prefetchCategoryById(id: string): Promise<CategoryDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.categories.getById({ id });
+}
+
+export async function prefetchTagById(id: string): Promise<TagDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.tags.getById({ id });
+}
+
+export async function prefetchUserById(id: string): Promise<UserDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.users.getById({ id });
+}
+
+export async function prefetchArticleById(id: string): Promise<ArticleDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.articles.getById({ id });
 }
 
 export async function prefetchArticlesListWithFilterOptions(input: ArticlesListInput): Promise<{

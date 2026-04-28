@@ -97,6 +97,10 @@ export const cmsIt = {
   listToolbar: {
     searchPlaceholder: "Cerca...",
   },
+  forms: {
+    create: "Crea",
+    save: "Salva",
+  },
   common: {
     userFallback: "Utente",
     logout: "Logout",

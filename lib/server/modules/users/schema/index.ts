@@ -28,7 +28,12 @@ export const listUsersQuerySchema = z.object({
   sortOrder: sortOrderSchema.default("desc"),
 });
 
+export const listUserAuthorsQuerySchema = z.object({
+  q: z.string().trim().min(1).optional(),
+});
+
 export type CreateUserInput = z.infer<typeof createUserInputSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserInputSchema>;
 export type UpdateUserRoleInput = z.infer<typeof updateUserRoleInputSchema>;
 export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
+export type ListUserAuthorsQuery = z.infer<typeof listUserAuthorsQuerySchema>;

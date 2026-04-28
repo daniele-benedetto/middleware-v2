@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 
 import {
+  articleDetailDtoSchema,
   articleDtoSchema,
   articlesListDtoSchema,
   articlesPolicy,
@@ -59,7 +60,7 @@ export const articlesRouter = router({
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .input(articleIdInputSchema)
     .query(async ({ input }) => {
-      return parseOutput(await articlesService.getById(input.id), articleDtoSchema);
+      return parseOutput(await articlesService.getById(input.id), articleDetailDtoSchema);
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
