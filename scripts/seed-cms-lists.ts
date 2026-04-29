@@ -92,6 +92,21 @@ async function main() {
   const tagIndexes = Array.from({ length: tagCount }, (_, idx) => idx);
   const articleIndexes = Array.from({ length: articleCount }, (_, idx) => idx);
 
+  const issueDescriptionDoc = (issueNumber: number) => ({
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: `Issue di esempio ${pad(issueNumber)} per testare paginazione, filtri e ordinamenti.`,
+          },
+        ],
+      },
+    ],
+  });
+
   await processInBatches(issueIndexes, batchSize, async (idx) => {
     const issueNumber = idx + 1;
     const publishedAt = idx % 3 === 0 ? new Date(baseDate.getTime() + idx * 86_400_000) : null;
@@ -102,7 +117,7 @@ async function main() {
       },
       update: {
         title: `Issue ${pad(issueNumber)} · ${sectionNames[idx % sectionNames.length]}`,
-        description: `Issue di esempio ${pad(issueNumber)} per testare paginazione, filtri e ordinamenti.`,
+        description: issueDescriptionDoc(issueNumber),
         isActive: idx % 5 !== 0,
         sortOrder: issueNumber,
         publishedAt,
@@ -110,13 +125,27 @@ async function main() {
       create: {
         title: `Issue ${pad(issueNumber)} · ${sectionNames[idx % sectionNames.length]}`,
         slug: `issue-${pad(issueNumber)}`,
-        description: `Issue di esempio ${pad(issueNumber)} per testare paginazione, filtri e ordinamenti.`,
+        description: issueDescriptionDoc(issueNumber),
         isActive: idx % 5 !== 0,
         sortOrder: issueNumber,
         publishedAt,
-        coverUrl: `https://picsum.photos/seed/issue-${issueNumber}/1200/800`,
       },
     });
+  });
+
+  const categoryDescriptionDoc = (categoryNumber: number) => ({
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: `Categoria di esempio ${pad(categoryNumber)} per test list API.`,
+          },
+        ],
+      },
+    ],
   });
 
   await processInBatches(categoryIndexes, batchSize, async (idx) => {
@@ -129,16 +158,31 @@ async function main() {
       },
       update: {
         name: `${section} ${pad(categoryNumber)}`,
-        description: `Categoria di esempio ${pad(categoryNumber)} per test list API.`,
+        description: categoryDescriptionDoc(categoryNumber),
         isActive: idx % 7 !== 0,
       },
       create: {
         name: `${section} ${pad(categoryNumber)}`,
         slug: `category-${pad(categoryNumber)}`,
-        description: `Categoria di esempio ${pad(categoryNumber)} per test list API.`,
+        description: categoryDescriptionDoc(categoryNumber),
         isActive: idx % 7 !== 0,
       },
     });
+  });
+
+  const tagDescriptionDoc = (tagNumber: number) => ({
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: `Tag di esempio ${pad(tagNumber, 4)} per test sort e ricerca.`,
+          },
+        ],
+      },
+    ],
   });
 
   await processInBatches(tagIndexes, batchSize, async (idx) => {
@@ -151,13 +195,13 @@ async function main() {
       },
       update: {
         name: `${family}-${pad(tagNumber, 4)}`,
-        description: `Tag di esempio ${pad(tagNumber, 4)} per test sort e ricerca.`,
+        description: tagDescriptionDoc(tagNumber),
         isActive: idx % 9 !== 0,
       },
       create: {
         name: `${family}-${pad(tagNumber, 4)}`,
         slug: `tag-${pad(tagNumber, 4)}`,
-        description: `Tag di esempio ${pad(tagNumber, 4)} per test sort e ricerca.`,
+        description: tagDescriptionDoc(tagNumber),
         isActive: idx % 9 !== 0,
       },
     });

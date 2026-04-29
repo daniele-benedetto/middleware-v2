@@ -5,6 +5,7 @@ import { z } from "zod";
 import {
   createTagInputSchema,
   listTagsQuerySchema,
+  tagDetailDtoSchema,
   tagDtoSchema,
   tagsListDtoSchema,
   tagsPolicy,
@@ -52,7 +53,7 @@ export const tagsRouter = router({
     .use(requireRoleMiddleware(tagsPolicy.allowedRoles))
     .input(tagIdInputSchema)
     .query(async ({ input }) => {
-      return parseOutput(await tagsService.getById(input.id), tagDtoSchema);
+      return parseOutput(await tagsService.getById(input.id), tagDetailDtoSchema);
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(tagsPolicy.allowedRoles))

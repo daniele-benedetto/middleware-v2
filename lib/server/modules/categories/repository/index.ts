@@ -12,7 +12,7 @@ import type {
 export type CreateCategoryPersistInput = {
   name: string;
   slug: string;
-  description?: string;
+  description?: unknown;
   isActive?: boolean;
 };
 
@@ -75,6 +75,16 @@ export const categoriesRepository = {
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        articles: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            isFeatured: true,
+            position: true,
+          },
+          orderBy: [{ issueId: "asc" }, { position: "asc" }, { createdAt: "asc" }],
+        },
         _count: {
           select: {
             articles: true,
@@ -84,14 +94,32 @@ export const categoriesRepository = {
     });
   },
   async create(input: CreateCategoryPersistInput) {
-    return prisma.category.create({
-      data: input,
-    });
+    const data: Prisma.CategoryUncheckedCreateInput = {
+      name: input.name,
+      slug: input.slug,
+      description:
+        input.description === undefined ? undefined : (input.description as Prisma.InputJsonValue),
+      isActive: input.isActive,
+    };
+
+    return prisma.category.create({ data });
   },
   async update(id: string, input: UpdateCategoryInput) {
+    const data: Prisma.CategoryUncheckedUpdateInput = {
+      name: input.name,
+      slug: input.slug,
+      description:
+        input.description === undefined
+          ? undefined
+          : input.description === null
+            ? Prisma.JsonNull
+            : (input.description as Prisma.InputJsonValue),
+      isActive: input.isActive,
+    };
+
     return prisma.category.update({
       where: { id },
-      data: input,
+      data,
     });
   },
   async delete(id: string) {

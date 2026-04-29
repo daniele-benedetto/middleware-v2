@@ -19,8 +19,7 @@ type IssueRecord = {
   id: string;
   title: string;
   slug: string;
-  description: string | null;
-  coverUrl: string | null;
+  description: unknown;
   isActive: boolean;
   sortOrder: number;
   publishedAt: Date | null;
@@ -44,8 +43,7 @@ const toIssueDto = (issue: IssueRecord): IssueDto => {
     id: issue.id,
     title: issue.title,
     slug: issue.slug,
-    description: issue.description,
-    coverUrl: issue.coverUrl,
+    description: issue.description ?? null,
     isActive: issue.isActive,
     sortOrder: issue.sortOrder,
     publishedAt: issue.publishedAt?.toISOString() ?? null,
@@ -115,7 +113,6 @@ export const issuesService = {
           title: input.title,
           slug: candidateSlug,
           description: input.description,
-          coverUrl: input.coverUrl,
           isActive: input.isActive,
           publishedAt: input.publishedAt ?? null,
         });

@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
+import { CmsArticleListPanel } from "@/components/cms/common/article-list-panel";
 import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
   CmsCheckbox,
   CmsFormField,
   CmsPageHeader,
+  CmsRichTextEditor,
   CmsTextInput,
-  CmsTextarea,
   cmsToast,
 } from "@/components/cms/primitives";
 import {
@@ -32,8 +33,11 @@ import {
 } from "@/lib/server/modules/categories/schema";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
+import { cn } from "@/lib/utils";
 
 import type { RouterInputs } from "@/lib/trpc/types";
+
+const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
 
 type CategoryFormScreenProps = {
   mode: "create" | "edit";
@@ -137,24 +141,52 @@ function CategoryFormContent({
     slug: fieldText.slug,
     description: fieldText.description,
   };
+
   const [name, setName] = useState(category?.name ?? "");
-  const [slug, setSlug] = useState(category?.slug ?? "");
-  const [description, setDescription] = useState(category?.description ?? "");
+  const [description, setDescription] = useState<unknown>(category?.description ?? emptyContentDoc);
   const [isActive, setIsActive] = useState(category?.isActive ?? true);
 
+  const initialAutoSlug = useMemo(() => normalizeSlug(category?.name ?? ""), [category?.name]);
+  const [manualSlug, setManualSlug] = useState(category?.slug ?? "");
+  const [hasManualSlugOverride, setHasManualSlugOverride] = useState(
+    Boolean(category?.slug) && category?.slug !== initialAutoSlug,
+  );
+  const [isSlugEditing, setIsSlugEditing] = useState(false);
+
+  const autoSlug = normalizeSlug(name);
+  const resolvedSlug = hasManualSlugOverride ? manualSlug : autoSlug;
+  const slugPreview = resolvedSlug || categoryFormText.slugPreviewPlaceholder;
+  const slugHint = hasManualSlugOverride
+    ? categoryFormText.slugManualHint
+    : formText.generatedFromNameHint;
+  const associatedArticles = (category?.articles ?? []).map((article) => ({
+    id: article.id,
+    title: article.title,
+    isFeatured: article.isFeatured,
+  }));
+
+  const openSlugEditor = () => {
+    setManualSlug(resolvedSlug);
+    setIsSlugEditing(true);
+  };
+
   const regenerateSlugFromName = () => {
-    setSlug(normalizeSlug(name));
+    setManualSlug(autoSlug);
+    setHasManualSlugOverride(false);
+    setIsSlugEditing(false);
   };
 
   const handleSubmit = async () => {
+    const slugPayload = hasManualSlugOverride ? manualSlug : resolvedSlug || undefined;
+
     try {
       if (mode === "create") {
         const validation = validateFormInput(
           createCategoryInputSchema,
           {
             name,
-            slug: slug || undefined,
-            description: description || undefined,
+            slug: slugPayload,
+            description,
             isActive,
           },
           categoryFieldLabels,
@@ -173,8 +205,8 @@ function CategoryFormContent({
         updateCategoryInputSchema,
         {
           name,
-          slug,
-          description: description ? description : null,
+          slug: slugPayload,
+          description,
           isActive,
         },
         categoryFieldLabels,
@@ -195,7 +227,7 @@ function CategoryFormContent({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <CmsPageHeader
         title={mode === "create" ? categoryFormText.createTitle : categoryFormText.editTitle}
         actions={
@@ -210,51 +242,100 @@ function CategoryFormContent({
         }
       />
 
-      <div className="space-y-4 border border-foreground p-4">
-        <CmsFormField label={fieldText.name} htmlFor="category-name" required>
-          <CmsTextInput
-            id="category-name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-        </CmsFormField>
+      <div
+        className={cn(
+          "grid min-h-0 flex-1 gap-6 overflow-hidden",
+          mode === "edit" && "lg:grid-cols-[minmax(0,1fr)_360px]",
+        )}
+      >
+        <div className="min-h-0 space-y-4 overflow-y-auto pb-6 pr-1">
+          <section className="space-y-4 border border-foreground p-4">
+            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+              {categoryFormText.identitySection}
+            </div>
 
-        <CmsFormField
-          label={fieldText.slug}
-          htmlFor="category-slug"
-          required={mode === "edit"}
-          hint={mode === "create" ? formText.generatedFromNameHint : undefined}
-        >
-          <div className="flex items-center gap-2">
-            <CmsTextInput
-              id="category-slug"
-              className="flex-1"
-              value={slug}
-              onChange={(event) => setSlug(event.target.value)}
+            <CmsFormField label={fieldText.name} htmlFor="category-name" required>
+              <CmsTextInput
+                id="category-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </CmsFormField>
+
+            <CmsFormField label={fieldText.slug} htmlFor="category-slug" hint={slugHint}>
+              <div className="flex items-center gap-2">
+                {isSlugEditing ? (
+                  <CmsTextInput
+                    id="category-slug"
+                    className="flex-1"
+                    value={manualSlug}
+                    autoFocus
+                    onBlur={() => setIsSlugEditing(false)}
+                    onChange={(event) => {
+                      setManualSlug(event.target.value);
+                      setHasManualSlugOverride(true);
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={openSlugEditor}
+                    className={cn(
+                      "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
+                      "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
+                      resolvedSlug ? "text-foreground" : "text-border",
+                    )}
+                  >
+                    {slugPreview}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={regenerateSlugFromName}
+                  className={cn(
+                    "inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3",
+                    "font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover",
+                  )}
+                >
+                  {formText.regenerateSlug}
+                </button>
+              </div>
+            </CmsFormField>
+
+            <CmsFormField label={fieldText.description} htmlFor="category-description">
+              <CmsRichTextEditor
+                value={description}
+                onChange={setDescription}
+                ariaLabel="Editor descrizione categoria"
+              />
+            </CmsFormField>
+          </section>
+
+          <section className="space-y-4 border border-foreground p-4">
+            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+              {categoryFormText.statusSection}
+            </div>
+
+            <CmsCheckbox
+              label={categoryFormText.activeLabel}
+              checked={isActive}
+              onChange={setIsActive}
             />
-            <button
-              type="button"
-              onClick={regenerateSlugFromName}
-              className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
-            >
-              {formText.regenerateSlug}
-            </button>
+          </section>
+        </div>
+
+        {mode === "edit" ? (
+          <div className="min-h-0 overflow-y-auto pb-6 pl-1">
+            <CmsArticleListPanel
+              title={text.navigation.articles}
+              emptyText={categoryFormText.articlesPanelEmpty}
+              featuredAriaLabel={i18n.cms.lists.issues.articlesPanelFeaturedAria}
+              articles={associatedArticles}
+              className="min-h-full"
+            />
           </div>
-        </CmsFormField>
-
-        <CmsFormField label={fieldText.description} htmlFor="category-description">
-          <CmsTextarea
-            id="category-description"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-          />
-        </CmsFormField>
-
-        <CmsCheckbox
-          label={categoryFormText.activeLabel}
-          checked={isActive}
-          onChange={setIsActive}
-        />
+        ) : null}
       </div>
     </div>
   );

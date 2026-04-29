@@ -123,7 +123,6 @@ export const cmsIt = {
       audioChunksJson: "audioChunks (JSON)",
       tags: "Tag",
       description: "Descrizione",
-      coverUrl: "Cover URL",
       publishedAt: "Data pubblicazione",
     },
     resources: {
@@ -153,6 +152,11 @@ export const cmsIt = {
         created: "Tag creato.",
         updated: "Tag aggiornato.",
         activeLabel: "Tag attivo",
+        identitySection: "Identita tag",
+        statusSection: "Stato",
+        slugPreviewPlaceholder: "Slug generato automaticamente",
+        slugManualHint: "Clicca sullo slug per modificarlo manualmente",
+        articlesPanelEmpty: "Nessun articolo associato a questo tag.",
       },
       categories: {
         invalidTitle: "Categoria non valida",
@@ -161,6 +165,11 @@ export const cmsIt = {
         created: "Categoria creata.",
         updated: "Categoria aggiornata.",
         activeLabel: "Categoria attiva",
+        identitySection: "Identita categoria",
+        statusSection: "Stato",
+        slugPreviewPlaceholder: "Slug generato automaticamente",
+        slugManualHint: "Clicca sullo slug per modificarlo manualmente",
+        articlesPanelEmpty: "Nessun articolo associato a questa categoria.",
       },
       issues: {
         invalidTitle: "Issue non valida",

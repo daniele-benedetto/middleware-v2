@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
+import { CmsArticleListPanel } from "@/components/cms/common/article-list-panel";
 import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
   CmsCheckbox,
   CmsFormField,
   CmsPageHeader,
+  CmsRichTextEditor,
   CmsTextInput,
-  CmsTextarea,
   cmsToast,
 } from "@/components/cms/primitives";
 import {
@@ -29,8 +30,11 @@ import { i18n } from "@/lib/i18n";
 import { createTagInputSchema, updateTagInputSchema } from "@/lib/server/modules/tags/schema";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
+import { cn } from "@/lib/utils";
 
 import type { RouterInputs } from "@/lib/trpc/types";
+
+const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
 
 type TagFormScreenProps = {
   mode: "create" | "edit";
@@ -132,24 +136,52 @@ function TagFormContent({
     slug: fieldText.slug,
     description: fieldText.description,
   };
+
   const [name, setName] = useState(tag?.name ?? "");
-  const [slug, setSlug] = useState(tag?.slug ?? "");
-  const [description, setDescription] = useState(tag?.description ?? "");
+  const [description, setDescription] = useState<unknown>(tag?.description ?? emptyContentDoc);
   const [isActive, setIsActive] = useState(tag?.isActive ?? true);
 
+  const initialAutoSlug = useMemo(() => normalizeSlug(tag?.name ?? ""), [tag?.name]);
+  const [manualSlug, setManualSlug] = useState(tag?.slug ?? "");
+  const [hasManualSlugOverride, setHasManualSlugOverride] = useState(
+    Boolean(tag?.slug) && tag?.slug !== initialAutoSlug,
+  );
+  const [isSlugEditing, setIsSlugEditing] = useState(false);
+
+  const autoSlug = normalizeSlug(name);
+  const resolvedSlug = hasManualSlugOverride ? manualSlug : autoSlug;
+  const slugPreview = resolvedSlug || tagFormText.slugPreviewPlaceholder;
+  const slugHint = hasManualSlugOverride
+    ? tagFormText.slugManualHint
+    : formText.generatedFromNameHint;
+  const associatedArticles = (tag?.articles ?? []).map((article) => ({
+    id: article.id,
+    title: article.title,
+    isFeatured: article.isFeatured,
+  }));
+
+  const openSlugEditor = () => {
+    setManualSlug(resolvedSlug);
+    setIsSlugEditing(true);
+  };
+
   const regenerateSlugFromName = () => {
-    setSlug(normalizeSlug(name));
+    setManualSlug(autoSlug);
+    setHasManualSlugOverride(false);
+    setIsSlugEditing(false);
   };
 
   const handleSubmit = async () => {
+    const slugPayload = hasManualSlugOverride ? manualSlug : resolvedSlug || undefined;
+
     try {
       if (mode === "create") {
         const validation = validateFormInput(
           createTagInputSchema,
           {
             name,
-            slug: slug || undefined,
-            description: description || undefined,
+            slug: slugPayload,
+            description,
             isActive,
           },
           tagFieldLabels,
@@ -168,8 +200,8 @@ function TagFormContent({
         updateTagInputSchema,
         {
           name,
-          slug,
-          description: description ? description : null,
+          slug: slugPayload,
+          description,
           isActive,
         },
         tagFieldLabels,
@@ -190,7 +222,7 @@ function TagFormContent({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <CmsPageHeader
         title={mode === "create" ? tagFormText.createTitle : tagFormText.editTitle}
         actions={
@@ -205,47 +237,100 @@ function TagFormContent({
         }
       />
 
-      <div className="space-y-4 border border-foreground p-4">
-        <CmsFormField label={fieldText.name} htmlFor="tag-name" required>
-          <CmsTextInput
-            id="tag-name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-        </CmsFormField>
+      <div
+        className={cn(
+          "grid min-h-0 flex-1 gap-6 overflow-hidden",
+          mode === "edit" && "lg:grid-cols-[minmax(0,1fr)_360px]",
+        )}
+      >
+        <div className="min-h-0 space-y-4 overflow-y-auto pb-6 pr-1">
+          <section className="space-y-4 border border-foreground p-4">
+            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+              {tagFormText.identitySection}
+            </div>
 
-        <CmsFormField
-          label={fieldText.slug}
-          htmlFor="tag-slug"
-          required={mode === "edit"}
-          hint={mode === "create" ? formText.generatedFromNameHint : undefined}
-        >
-          <div className="flex items-center gap-2">
-            <CmsTextInput
-              id="tag-slug"
-              className="flex-1"
-              value={slug}
-              onChange={(event) => setSlug(event.target.value)}
+            <CmsFormField label={fieldText.name} htmlFor="tag-name" required>
+              <CmsTextInput
+                id="tag-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </CmsFormField>
+
+            <CmsFormField label={fieldText.slug} htmlFor="tag-slug" hint={slugHint}>
+              <div className="flex items-center gap-2">
+                {isSlugEditing ? (
+                  <CmsTextInput
+                    id="tag-slug"
+                    className="flex-1"
+                    value={manualSlug}
+                    autoFocus
+                    onBlur={() => setIsSlugEditing(false)}
+                    onChange={(event) => {
+                      setManualSlug(event.target.value);
+                      setHasManualSlugOverride(true);
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={openSlugEditor}
+                    className={cn(
+                      "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
+                      "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
+                      resolvedSlug ? "text-foreground" : "text-border",
+                    )}
+                  >
+                    {slugPreview}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={regenerateSlugFromName}
+                  className={cn(
+                    "inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3",
+                    "font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover",
+                  )}
+                >
+                  {formText.regenerateSlug}
+                </button>
+              </div>
+            </CmsFormField>
+
+            <CmsFormField label={fieldText.description} htmlFor="tag-description">
+              <CmsRichTextEditor
+                value={description}
+                onChange={setDescription}
+                ariaLabel="Editor descrizione tag"
+              />
+            </CmsFormField>
+          </section>
+
+          <section className="space-y-4 border border-foreground p-4">
+            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+              {tagFormText.statusSection}
+            </div>
+
+            <CmsCheckbox
+              label={tagFormText.activeLabel}
+              checked={isActive}
+              onChange={setIsActive}
             />
-            <button
-              type="button"
-              onClick={regenerateSlugFromName}
-              className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
-            >
-              {formText.regenerateSlug}
-            </button>
+          </section>
+        </div>
+
+        {mode === "edit" ? (
+          <div className="min-h-0 overflow-y-auto pb-6 pl-1">
+            <CmsArticleListPanel
+              title={text.navigation.articles}
+              emptyText={tagFormText.articlesPanelEmpty}
+              featuredAriaLabel={i18n.cms.lists.issues.articlesPanelFeaturedAria}
+              articles={associatedArticles}
+              className="min-h-full"
+            />
           </div>
-        </CmsFormField>
-
-        <CmsFormField label={fieldText.description} htmlFor="tag-description">
-          <CmsTextarea
-            id="tag-description"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-          />
-        </CmsFormField>
-
-        <CmsCheckbox label={tagFormText.activeLabel} checked={isActive} onChange={setIsActive} />
+        ) : null}
       </div>
     </div>
   );

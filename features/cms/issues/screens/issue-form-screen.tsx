@@ -11,8 +11,8 @@ import {
   CmsCheckbox,
   CmsFormField,
   CmsPageHeader,
+  CmsRichTextEditor,
   CmsTextInput,
-  CmsTextarea,
   cmsToast,
 } from "@/components/cms/primitives";
 import { Calendar } from "@/components/ui/calendar";
@@ -43,6 +43,8 @@ import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
 
+const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
+
 type IssueFormScreenProps = {
   mode: "create" | "edit";
   issueId?: string;
@@ -58,6 +60,25 @@ type IssueUpdatePayload = {
 function orderedIdsEqual(a: string[], b: string[]) {
   if (a.length !== b.length) return false;
   return a.every((id, index) => id === b[index]);
+}
+
+function moveItemByOffset(ids: string[], index: number, offset: -1 | 1) {
+  const nextIndex = index + offset;
+
+  if (index < 0 || nextIndex < 0 || index >= ids.length || nextIndex >= ids.length) {
+    return ids;
+  }
+
+  const reordered = [...ids];
+  const current = reordered[index];
+
+  if (!current) {
+    return ids;
+  }
+
+  reordered[index] = reordered[nextIndex] ?? "";
+  reordered[nextIndex] = current;
+  return reordered;
 }
 
 function normalizePickedDate(value: Date) {
@@ -237,13 +258,11 @@ function IssueFormContent({
     title: fieldText.title,
     slug: fieldText.slug,
     description: fieldText.description,
-    coverUrl: fieldText.coverUrl,
     publishedAt: fieldText.publishedAt,
   };
 
   const [title, setTitle] = useState(issue?.title ?? "");
-  const [description, setDescription] = useState(issue?.description ?? "");
-  const [coverUrl, setCoverUrl] = useState(issue?.coverUrl ?? "");
+  const [description, setDescription] = useState<unknown>(issue?.description ?? emptyContentDoc);
   const [isActive, setIsActive] = useState(issue?.isActive ?? true);
   const [publishedAt, setPublishedAt] = useState<Date | null>(
     issue?.publishedAt ? new Date(issue.publishedAt) : null,
@@ -273,6 +292,14 @@ function IssueFormContent({
   const initialArticleOrder = issue?.articles.map((article) => article.id) ?? [];
   const orderChanged = !orderedIdsEqual(orderedArticleIds, initialArticleOrder);
 
+  const moveArticleUp = (index: number) => {
+    setOrderedArticleIds((current) => moveItemByOffset(current, index, -1));
+  };
+
+  const moveArticleDown = (index: number) => {
+    setOrderedArticleIds((current) => moveItemByOffset(current, index, 1));
+  };
+
   const openSlugEditor = () => {
     setManualSlug(resolvedSlug);
     setIsSlugEditing(true);
@@ -299,8 +326,7 @@ function IssueFormContent({
           {
             title,
             slug: slugPayload,
-            description: description || undefined,
-            coverUrl: coverUrl || undefined,
+            description,
             isActive,
             publishedAt: publishedAt ?? undefined,
           },
@@ -321,8 +347,7 @@ function IssueFormContent({
         {
           title,
           slug: slugPayload,
-          description: description ? description : null,
-          coverUrl: coverUrl ? coverUrl : null,
+          description,
           isActive,
           publishedAt,
         },
@@ -422,10 +447,10 @@ function IssueFormContent({
             </CmsFormField>
 
             <CmsFormField label={fieldText.description} htmlFor="issue-description">
-              <CmsTextarea
-                id="issue-description"
+              <CmsRichTextEditor
                 value={description}
-                onChange={(event) => setDescription(event.target.value)}
+                onChange={setDescription}
+                ariaLabel="Editor descrizione issue"
               />
             </CmsFormField>
           </section>
@@ -449,15 +474,6 @@ function IssueFormContent({
                 onChange={setPublishedAt}
               />
             </CmsFormField>
-
-            <CmsFormField label={fieldText.coverUrl} htmlFor="issue-cover-url">
-              <CmsTextInput
-                id="issue-cover-url"
-                type="url"
-                value={coverUrl}
-                onChange={(event) => setCoverUrl(event.target.value)}
-              />
-            </CmsFormField>
           </section>
         </div>
 
@@ -471,9 +487,10 @@ function IssueFormContent({
               ) : null}
               <IssueArticlesPanel
                 articles={orderedArticles}
-                onReorder={setOrderedArticleIds}
                 disabled={isMutating}
                 className="min-h-0 flex-1 overflow-hidden"
+                onMoveUp={moveArticleUp}
+                onMoveDown={moveArticleDown}
               />
             </div>
           </div>

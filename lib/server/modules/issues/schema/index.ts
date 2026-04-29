@@ -3,8 +3,7 @@ import { z } from "zod";
 export const createIssueInputSchema = z.object({
   title: z.string().trim().min(1),
   slug: z.string().trim().min(1).optional(),
-  description: z.string().trim().optional(),
-  coverUrl: z.string().trim().url().optional(),
+  description: z.unknown().optional(),
   isActive: z.boolean().default(true),
   publishedAt: z.coerce.date().nullable().optional(),
 });
@@ -12,8 +11,7 @@ export const createIssueInputSchema = z.object({
 export const updateIssueInputSchema = createIssueInputSchema
   .partial()
   .extend({
-    description: z.string().trim().nullable().optional(),
-    coverUrl: z.string().trim().url().nullable().optional(),
+    description: z.unknown().nullable().optional(),
     publishedAt: z.coerce.date().nullable().optional(),
   })
   .refine((input) => Object.keys(input).length > 0, {

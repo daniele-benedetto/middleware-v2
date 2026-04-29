@@ -6,6 +6,7 @@ import {
   categoriesListDtoSchema,
   categoriesPolicy,
   categoriesService,
+  categoryDetailDtoSchema,
   categoryDtoSchema,
   createCategoryInputSchema,
   listCategoriesQuerySchema,
@@ -52,7 +53,7 @@ export const categoriesRouter = router({
     .use(requireRoleMiddleware(categoriesPolicy.allowedRoles))
     .input(categoryIdInputSchema)
     .query(async ({ input }) => {
-      return parseOutput(await categoriesService.getById(input.id), categoryDtoSchema);
+      return parseOutput(await categoriesService.getById(input.id), categoryDetailDtoSchema);
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(categoriesPolicy.allowedRoles))

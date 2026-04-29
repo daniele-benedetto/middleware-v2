@@ -37,7 +37,7 @@ export function CmsListLoadingState({
     <div className="flex h-full min-h-0 flex-col">
       <div className="mb-6 pb-4">
         <div className="flex items-start justify-between gap-4 max-sm:flex-col">
-          <Skeleton className="h-12 w-56 rounded-none border border-border bg-card-hover" />
+          <Skeleton className="lg:h-12.5 md:h-10 h-10 w-56 rounded-none border border-border bg-card-hover" />
           <Skeleton className="h-7 w-20 rounded-none border border-border bg-card-hover" />
         </div>
         <CmsSectionDivider tone="strong" className="mt-4" />

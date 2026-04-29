@@ -9,7 +9,7 @@ import type { ListTagsQuery, UpdateTagInput } from "@/lib/server/modules/tags/sc
 export type CreateTagPersistInput = {
   name: string;
   slug: string;
-  description?: string;
+  description?: unknown;
   isActive?: boolean;
 };
 
@@ -70,6 +70,24 @@ export const tagsRepository = {
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        articles: {
+          select: {
+            article: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                isFeatured: true,
+                position: true,
+              },
+            },
+          },
+          orderBy: [
+            { article: { issueId: "asc" } },
+            { article: { position: "asc" } },
+            { article: { createdAt: "asc" } },
+          ],
+        },
         _count: {
           select: {
             articles: true,
@@ -79,14 +97,32 @@ export const tagsRepository = {
     });
   },
   async create(input: CreateTagPersistInput) {
-    return prisma.tag.create({
-      data: input,
-    });
+    const data: Prisma.TagUncheckedCreateInput = {
+      name: input.name,
+      slug: input.slug,
+      description:
+        input.description === undefined ? undefined : (input.description as Prisma.InputJsonValue),
+      isActive: input.isActive,
+    };
+
+    return prisma.tag.create({ data });
   },
   async update(id: string, input: UpdateTagInput) {
+    const data: Prisma.TagUncheckedUpdateInput = {
+      name: input.name,
+      slug: input.slug,
+      description:
+        input.description === undefined
+          ? undefined
+          : input.description === null
+            ? Prisma.JsonNull
+            : (input.description as Prisma.InputJsonValue),
+      isActive: input.isActive,
+    };
+
     return prisma.tag.update({
       where: { id },
-      data: input,
+      data,
     });
   },
   async delete(id: string) {

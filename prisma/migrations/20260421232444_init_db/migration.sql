@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 -- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'EDITOR');
 
@@ -6,7 +8,7 @@ CREATE TYPE "ArticleStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
 
 -- CreateTable
 CREATE TABLE "user" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
     "email" TEXT NOT NULL,
     "name" TEXT,
     "role" "UserRole" NOT NULL DEFAULT 'EDITOR',
@@ -65,12 +67,10 @@ CREATE TABLE "verification" (
 
 -- CreateTable
 CREATE TABLE "issues" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
     "title" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "description" TEXT,
-    "coverUrl" TEXT,
-    "color" TEXT,
+    "description" JSONB,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "sortOrder" INTEGER NOT NULL DEFAULT 0,
     "publishedAt" TIMESTAMP(3),
@@ -82,10 +82,10 @@ CREATE TABLE "issues" (
 
 -- CreateTable
 CREATE TABLE "categories" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "description" TEXT,
+    "description" JSONB,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -95,10 +95,10 @@ CREATE TABLE "categories" (
 
 -- CreateTable
 CREATE TABLE "tags" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "description" TEXT,
+    "description" JSONB,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -108,7 +108,7 @@ CREATE TABLE "tags" (
 
 -- CreateTable
 CREATE TABLE "articles" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
     "issueId" TEXT NOT NULL,
     "categoryId" TEXT NOT NULL,
     "authorId" TEXT NOT NULL,

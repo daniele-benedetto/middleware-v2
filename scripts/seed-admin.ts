@@ -6,10 +6,10 @@ import { hashPassword } from "better-auth/crypto";
 
 import { prisma } from "../lib/prisma";
 
-const ADMIN_NAME = "";
-const ADMIN_PASSWORD = "";
-const ADMIN_EMAIL = "";
-const PRUNE_OTHER_USERS = "false";
+const ADMIN_NAME = "Daniele Benedetto";
+const ADMIN_PASSWORD = "Asdf1234!";
+const ADMIN_EMAIL = "daniele.benedetto@outlook.it";
+const PRUNE_OTHER_USERS = false;
 
 async function main() {
   const passwordHash = await hashPassword(ADMIN_PASSWORD);

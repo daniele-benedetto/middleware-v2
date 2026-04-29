@@ -1,7 +1,7 @@
 import { CmsSectionDivider } from "@/components/cms/primitives/section-divider";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function CmsIssueEditLoading() {
+export default function CmsCategoryEditLoading() {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="mb-6 pb-4">
@@ -51,16 +51,11 @@ export default function CmsIssueEditLoading() {
           </section>
 
           <section className="space-y-4 border border-foreground p-4">
-            <Skeleton className="h-3 w-32 rounded-none bg-card-hover" />
+            <Skeleton className="h-3 w-24 rounded-none bg-card-hover" />
 
             <div className="flex items-center gap-2">
               <Skeleton className="size-4 rounded-none border border-border bg-card-hover" />
-              <Skeleton className="h-3 w-20 rounded-none bg-card-hover" />
-            </div>
-
-            <div>
-              <Skeleton className="mb-1.5 h-2.5 w-24 rounded-none bg-card-hover" />
-              <Skeleton className="h-10 w-full rounded-none border border-border bg-card-hover" />
+              <Skeleton className="h-3 w-24 rounded-none bg-card-hover" />
             </div>
           </section>
         </div>
@@ -78,10 +73,6 @@ export default function CmsIssueEditLoading() {
                     key={index}
                     className="flex items-center gap-2 px-3 py-2 odd:bg-white even:bg-card-hover"
                   >
-                    <div className="flex shrink-0 items-center gap-1">
-                      <Skeleton className="h-7 w-7 rounded-none border border-border bg-card-hover" />
-                      <Skeleton className="h-7 w-7 rounded-none border border-border bg-card-hover" />
-                    </div>
                     <Skeleton className="h-4 flex-1 rounded-none bg-card-hover" />
                     <Skeleton className="size-3.5 rounded-none bg-card-hover" />
                   </li>

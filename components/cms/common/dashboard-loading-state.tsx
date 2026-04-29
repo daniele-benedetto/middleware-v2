@@ -9,7 +9,7 @@ export function CmsDashboardLoadingState({ cards = 5 }: CmsDashboardLoadingState
   return (
     <div className="space-y-7">
       <div className="mb-6 pb-4">
-        <Skeleton className="h-12 w-56 rounded-none border border-border bg-card-hover" />
+        <Skeleton className="lg:h-12.5 md:h-10 h-10 w-56 rounded-none border border-border bg-card-hover" />
         <CmsSectionDivider tone="strong" className="mt-4" />
       </div>
 

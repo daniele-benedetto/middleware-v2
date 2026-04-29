@@ -5,8 +5,9 @@ import { ApiError } from "@/lib/server/http/api-error";
 import { categoriesRepository } from "@/lib/server/modules/categories/repository";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
+import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 import type { PaginationParams } from "@/lib/server/http/pagination";
-import type { CategoryDto } from "@/lib/server/modules/categories/dto";
+import type { CategoryDetailDto, CategoryDto } from "@/lib/server/modules/categories/dto";
 import type {
   CreateCategoryInput,
   ListCategoriesQuery,
@@ -17,11 +18,21 @@ type CategoryRecord = {
   id: string;
   name: string;
   slug: string;
-  description: string | null;
+  description: unknown;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
   _count?: { articles: number };
+};
+
+type CategoryDetailRecord = CategoryRecord & {
+  articles?: Array<{
+    id: string;
+    title: string;
+    status: ArticleStatus;
+    isFeatured: boolean;
+    position: number;
+  }>;
 };
 
 const toCategoryDto = (category: CategoryRecord): CategoryDto => {
@@ -29,11 +40,24 @@ const toCategoryDto = (category: CategoryRecord): CategoryDto => {
     id: category.id,
     name: category.name,
     slug: category.slug,
-    description: category.description,
+    description: category.description ?? null,
     isActive: category.isActive,
     createdAt: category.createdAt.toISOString(),
     updatedAt: category.updatedAt.toISOString(),
     articlesCount: category._count?.articles ?? 0,
+  };
+};
+
+const toCategoryDetailDto = (category: CategoryDetailRecord): CategoryDetailDto => {
+  return {
+    ...toCategoryDto(category),
+    articles: (category.articles ?? []).map((article) => ({
+      id: article.id,
+      title: article.title,
+      status: article.status,
+      isFeatured: article.isFeatured,
+      position: article.position,
+    })),
   };
 };
 
@@ -66,7 +90,7 @@ export const categoriesService = {
       throw new ApiError(404, "NOT_FOUND", "Category not found");
     }
 
-    return toCategoryDto(category);
+    return toCategoryDetailDto(category as CategoryDetailRecord);
   },
   async create(input: CreateCategoryInput) {
     const normalizedInput = {

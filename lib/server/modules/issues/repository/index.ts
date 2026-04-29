@@ -13,8 +13,7 @@ import type {
 export type CreateIssuePersistInput = {
   title: string;
   slug: string;
-  description?: string;
-  coverUrl?: string;
+  description?: unknown;
   isActive?: boolean;
   publishedAt?: Date | null;
 };
@@ -54,7 +53,6 @@ export const issuesRepository = {
         title: true,
         slug: true,
         description: true,
-        coverUrl: true,
         isActive: true,
         sortOrder: true,
         publishedAt: true,
@@ -80,7 +78,6 @@ export const issuesRepository = {
         title: true,
         slug: true,
         description: true,
-        coverUrl: true,
         isActive: true,
         sortOrder: true,
         publishedAt: true,
@@ -105,14 +102,34 @@ export const issuesRepository = {
     });
   },
   async create(input: CreateIssuePersistInput) {
-    return prisma.issue.create({
-      data: input,
-    });
+    const data: Prisma.IssueUncheckedCreateInput = {
+      title: input.title,
+      slug: input.slug,
+      description:
+        input.description === undefined ? undefined : (input.description as Prisma.InputJsonValue),
+      isActive: input.isActive,
+      publishedAt: input.publishedAt ?? null,
+    };
+
+    return prisma.issue.create({ data });
   },
   async update(id: string, input: UpdateIssueInput) {
+    const data: Prisma.IssueUncheckedUpdateInput = {
+      title: input.title,
+      slug: input.slug,
+      description:
+        input.description === undefined
+          ? undefined
+          : input.description === null
+            ? Prisma.JsonNull
+            : (input.description as Prisma.InputJsonValue),
+      isActive: input.isActive,
+      publishedAt: input.publishedAt,
+    };
+
     return prisma.issue.update({
       where: { id },
-      data: input,
+      data,
     });
   },
   async delete(id: string) {
@@ -145,7 +162,6 @@ export const issuesRepository = {
           title: true,
           slug: true,
           description: true,
-          coverUrl: true,
           isActive: true,
           sortOrder: true,
           publishedAt: true,

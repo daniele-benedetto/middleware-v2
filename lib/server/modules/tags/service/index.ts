@@ -5,8 +5,9 @@ import { ApiError } from "@/lib/server/http/api-error";
 import { tagsRepository } from "@/lib/server/modules/tags/repository";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
+import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 import type { PaginationParams } from "@/lib/server/http/pagination";
-import type { TagDto } from "@/lib/server/modules/tags/dto";
+import type { TagDetailDto, TagDto } from "@/lib/server/modules/tags/dto";
 import type {
   CreateTagInput,
   ListTagsQuery,
@@ -17,11 +18,23 @@ type TagRecord = {
   id: string;
   name: string;
   slug: string;
-  description: string | null;
+  description: unknown;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
   _count?: { articles: number };
+};
+
+type TagDetailRecord = TagRecord & {
+  articles?: Array<{
+    article: {
+      id: string;
+      title: string;
+      status: ArticleStatus;
+      isFeatured: boolean;
+      position: number;
+    };
+  }>;
 };
 
 const toTagDto = (tag: TagRecord): TagDto => {
@@ -29,11 +42,24 @@ const toTagDto = (tag: TagRecord): TagDto => {
     id: tag.id,
     name: tag.name,
     slug: tag.slug,
-    description: tag.description,
+    description: tag.description ?? null,
     isActive: tag.isActive,
     createdAt: tag.createdAt.toISOString(),
     updatedAt: tag.updatedAt.toISOString(),
     articlesCount: tag._count?.articles ?? 0,
+  };
+};
+
+const toTagDetailDto = (tag: TagDetailRecord): TagDetailDto => {
+  return {
+    ...toTagDto(tag),
+    articles: (tag.articles ?? []).map(({ article }) => ({
+      id: article.id,
+      title: article.title,
+      status: article.status,
+      isFeatured: article.isFeatured,
+      position: article.position,
+    })),
   };
 };
 
@@ -66,7 +92,7 @@ export const tagsService = {
       throw new ApiError(404, "NOT_FOUND", "Tag not found");
     }
 
-    return toTagDto(tag);
+    return toTagDetailDto(tag as TagDetailRecord);
   },
   async create(input: CreateTagInput) {
     const normalizedInput = {

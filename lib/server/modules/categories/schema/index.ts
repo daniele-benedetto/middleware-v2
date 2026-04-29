@@ -3,14 +3,14 @@ import { z } from "zod";
 export const createCategoryInputSchema = z.object({
   name: z.string().trim().min(1),
   slug: z.string().trim().min(1).optional(),
-  description: z.string().trim().optional(),
+  description: z.unknown().optional(),
   isActive: z.boolean().default(true),
 });
 
 export const updateCategoryInputSchema = createCategoryInputSchema
   .partial()
   .extend({
-    description: z.string().trim().nullable().optional(),
+    description: z.unknown().nullable().optional(),
   })
   .refine((input) => Object.keys(input).length > 0, {
     message: "At least one field is required",

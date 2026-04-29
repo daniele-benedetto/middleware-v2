@@ -1,4 +1,4 @@
-export { tagDtoSchema, tagsListDtoSchema } from "@/lib/server/modules/tags/dto";
+export { tagDetailDtoSchema, tagDtoSchema, tagsListDtoSchema } from "@/lib/server/modules/tags/dto";
 export { tagsPolicy } from "@/lib/server/modules/tags/policy";
 export { tagsRepository } from "@/lib/server/modules/tags/repository";
 export {
@@ -11,5 +11,5 @@ export type {
   ListTagsQuery,
   UpdateTagInput,
 } from "@/lib/server/modules/tags/schema";
-export type { TagDto } from "@/lib/server/modules/tags/dto";
+export type { TagDetailDto, TagDto } from "@/lib/server/modules/tags/dto";
 export { tagsService } from "@/lib/server/modules/tags/service";
