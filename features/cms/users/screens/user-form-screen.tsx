@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
+import { CmsArticleListPanel } from "@/components/cms/common/article-list-panel";
 import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
@@ -20,6 +21,7 @@ import {
 import {
   useUserById,
   type CreateUserInput,
+  type UpdateUserInput,
   useUserCreate,
   useUserUpdate,
   useUserUpdateRole,
@@ -29,6 +31,7 @@ import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { createUserInputSchema, updateUserInputSchema } from "@/lib/server/modules/users/schema";
 import { trpc } from "@/lib/trpc/react";
+import { cn } from "@/lib/utils";
 
 type UserFormScreenProps = {
   mode: "create" | "edit";
@@ -47,7 +50,7 @@ type UserFormContentProps = {
   onCreate: (payload: CreateUserInput) => Promise<void>;
   onUpdate: (payload: {
     id: string;
-    data: { name?: string | null; image?: string | null };
+    data: UpdateUserInput;
     nextRole?: "ADMIN" | "EDITOR";
   }) => Promise<void>;
   onMutationError: (error: unknown) => void;
@@ -151,15 +154,20 @@ function UserFormContent({
   const userFieldLabels = {
     email: fieldText.email,
     name: fieldText.name,
+    password: fieldText.password,
     role: fieldText.role,
-    image: fieldText.image,
   };
   const [email, setEmail] = useState("");
   const [name, setName] = useState(user?.name ?? "");
-  const [image, setImage] = useState(user?.image ?? "");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<"ADMIN" | "EDITOR">("EDITOR");
   const [roleEdit, setRoleEdit] = useState<"ADMIN" | "EDITOR">(user?.role ?? "EDITOR");
   const isCurrentUser = mode === "edit" && user?.id === currentUserId;
+  const associatedArticles = (user?.articles ?? []).map((article) => ({
+    id: article.id,
+    title: article.title,
+    isFeatured: article.isFeatured,
+  }));
 
   const handleSubmit = async () => {
     try {
@@ -169,7 +177,7 @@ function UserFormContent({
           {
             email,
             name: name || undefined,
-            image: image || undefined,
+            password,
             role,
           },
           userFieldLabels,
@@ -188,7 +196,7 @@ function UserFormContent({
         updateUserInputSchema,
         {
           name: name ? name : null,
-          image: image ? image : null,
+          password: password || undefined,
         },
         userFieldLabels,
       );
@@ -209,7 +217,7 @@ function UserFormContent({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <CmsPageHeader
         title={mode === "create" ? userFormText.createTitle : userFormText.editTitle}
         actions={
@@ -224,69 +232,99 @@ function UserFormContent({
         }
       />
 
-      <div className="space-y-4 border border-foreground p-4">
-        {mode === "create" ? (
-          <>
-            <CmsFormField label={fieldText.email} htmlFor="user-email" required>
-              <CmsTextInput
-                id="user-email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </CmsFormField>
+      <div
+        className={cn(
+          "grid min-h-0 flex-1 gap-6 overflow-hidden",
+          mode === "edit" && "lg:grid-cols-[minmax(0,1fr)_360px]",
+        )}
+      >
+        <div className="min-h-0 overflow-y-auto pb-6 pr-1">
+          <div className="space-y-4 border border-foreground p-4">
+            {mode === "create" ? (
+              <>
+                <CmsFormField label={fieldText.email} htmlFor="user-email" required>
+                  <CmsTextInput
+                    id="user-email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                  />
+                </CmsFormField>
 
-            <CmsFormField label={fieldText.role} htmlFor="user-role" required>
-              <CmsSelect
-                value={role}
-                onValueChange={(value) => setRole(value as "ADMIN" | "EDITOR")}
-                options={[
-                  { value: "EDITOR", label: "EDITOR" },
-                  { value: "ADMIN", label: "ADMIN" },
-                ]}
+                <CmsFormField label={fieldText.role} htmlFor="user-role" required>
+                  <CmsSelect
+                    value={role}
+                    onValueChange={(value) => setRole(value as "ADMIN" | "EDITOR")}
+                    options={[
+                      { value: "EDITOR", label: "EDITOR" },
+                      { value: "ADMIN", label: "ADMIN" },
+                    ]}
+                  />
+                </CmsFormField>
+              </>
+            ) : (
+              <>
+                <CmsFormField label={fieldText.email} htmlFor="user-email">
+                  <CmsTextInput id="user-email" type="email" value={user?.email ?? ""} disabled />
+                </CmsFormField>
+
+                <CmsFormField
+                  label={fieldText.role}
+                  htmlFor="user-role"
+                  required
+                  hint={isCurrentUser ? userFormText.selfRoleHint : undefined}
+                >
+                  <CmsSelect
+                    value={roleEdit}
+                    disabled={isCurrentUser}
+                    onValueChange={(value) => setRoleEdit(value as "ADMIN" | "EDITOR")}
+                    options={[
+                      { value: "EDITOR", label: "EDITOR" },
+                      { value: "ADMIN", label: "ADMIN" },
+                    ]}
+                  />
+                </CmsFormField>
+              </>
+            )}
+
+            <CmsFormField label={fieldText.name} htmlFor="user-name">
+              <CmsTextInput
+                id="user-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
               />
-            </CmsFormField>
-          </>
-        ) : (
-          <>
-            <CmsFormField label={fieldText.email} htmlFor="user-email">
-              <CmsTextInput id="user-email" type="email" value={user?.email ?? ""} disabled />
             </CmsFormField>
 
             <CmsFormField
-              label={fieldText.role}
-              htmlFor="user-role"
-              required
-              hint={isCurrentUser ? userFormText.selfRoleHint : undefined}
+              label={fieldText.password}
+              htmlFor="user-password"
+              required={mode === "create"}
+              hint={
+                mode === "create" ? userFormText.passwordCreateHint : userFormText.passwordEditHint
+              }
             >
-              <CmsSelect
-                value={roleEdit}
-                disabled={isCurrentUser}
-                onValueChange={(value) => setRoleEdit(value as "ADMIN" | "EDITOR")}
-                options={[
-                  { value: "EDITOR", label: "EDITOR" },
-                  { value: "ADMIN", label: "ADMIN" },
-                ]}
+              <CmsTextInput
+                id="user-password"
+                type="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
               />
             </CmsFormField>
-          </>
-        )}
+          </div>
+        </div>
 
-        <CmsFormField label={fieldText.name} htmlFor="user-name">
-          <CmsTextInput
-            id="user-name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-        </CmsFormField>
-
-        <CmsFormField label={userFormText.imageUrlLabel} htmlFor="user-image">
-          <CmsTextInput
-            id="user-image"
-            value={image}
-            onChange={(event) => setImage(event.target.value)}
-          />
-        </CmsFormField>
+        {mode === "edit" ? (
+          <div className="min-h-0 overflow-y-auto pb-6 pl-1">
+            <CmsArticleListPanel
+              title={text.navigation.articles}
+              emptyText={userFormText.articlesPanelEmpty}
+              featuredAriaLabel={i18n.cms.lists.issues.articlesPanelFeaturedAria}
+              articles={associatedArticles}
+              className="min-h-full"
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );

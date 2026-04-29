@@ -3,14 +3,14 @@ import { z } from "zod";
 export const createUserInputSchema = z.object({
   email: z.string().email().trim().toLowerCase(),
   name: z.string().trim().min(1).optional(),
-  image: z.string().trim().url().optional(),
+  password: z.string().min(8),
   role: z.enum(["ADMIN", "EDITOR"]),
 });
 
 export const updateUserInputSchema = z
   .object({
     name: z.string().trim().min(1).nullable().optional(),
-    image: z.string().trim().url().nullable().optional(),
+    password: z.string().min(8).optional(),
   })
   .refine((input) => Object.keys(input).length > 0, {
     message: "At least one field is required",

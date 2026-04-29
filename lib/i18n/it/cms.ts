@@ -108,9 +108,9 @@ export const cmsIt = {
     generatedFromNameHint: "Generato dal nome se vuoto",
     fields: {
       email: "Email",
+      password: "Password",
       role: "Ruolo",
       name: "Nome",
-      image: "Immagine",
       issue: "Issue",
       category: "Categoria",
       author: "Autore",
@@ -132,7 +132,9 @@ export const cmsIt = {
         editTitle: "Modifica Utente",
         created: "Utente creato.",
         updated: "Utente aggiornato.",
-        imageUrlLabel: "Immagine (URL)",
+        passwordCreateHint: "Minimo 8 caratteri",
+        passwordEditHint: "Lascia vuota per non cambiare la password",
+        articlesPanelEmpty: "Nessun articolo associato a questo utente.",
         selfRoleHint: "Il tuo ruolo non puo essere modificato da questa schermata",
       },
       articles: {

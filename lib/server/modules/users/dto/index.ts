@@ -11,8 +11,16 @@ export const userListItemDtoSchema = z.object({
   authoredArticlesCount: z.number().int(),
 });
 
+export const userArticleSummaryDtoSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
+  isFeatured: z.boolean(),
+  position: z.number().int(),
+});
+
 export const userDetailDtoSchema = userListItemDtoSchema.extend({
-  image: z.string().nullable(),
+  articles: z.array(userArticleSummaryDtoSchema),
 });
 export const userListDtoSchema = z.array(userListItemDtoSchema);
 
@@ -26,4 +34,5 @@ export const userAuthorOptionsDtoSchema = z.array(userAuthorOptionDtoSchema);
 
 export type UserListItemDto = z.infer<typeof userListItemDtoSchema>;
 export type UserDetailDto = z.infer<typeof userDetailDtoSchema>;
+export type UserArticleSummaryDto = z.infer<typeof userArticleSummaryDtoSchema>;
 export type UserAuthorOptionDto = z.infer<typeof userAuthorOptionDtoSchema>;

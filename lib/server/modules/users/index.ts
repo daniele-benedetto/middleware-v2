@@ -1,6 +1,7 @@
 export {
   userAuthorOptionDtoSchema,
   userAuthorOptionsDtoSchema,
+  userArticleSummaryDtoSchema,
   userDetailDtoSchema,
   userListDtoSchema,
   userListItemDtoSchema,
@@ -23,6 +24,7 @@ export type {
 } from "@/lib/server/modules/users/schema";
 export type {
   UserAuthorOptionDto,
+  UserArticleSummaryDto,
   UserDetailDto,
   UserListItemDto,
 } from "@/lib/server/modules/users/dto";

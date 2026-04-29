@@ -1,9 +1,12 @@
 import "server-only";
 
+import { hashPassword } from "better-auth/crypto";
+
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
 import { usersRepository } from "@/lib/server/modules/users/repository";
 
+import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
   UserAuthorOptionDto,
@@ -60,18 +63,28 @@ const toUserDetailDto = (user: {
   name: string | null;
   role: "ADMIN" | "EDITOR";
   emailVerified: boolean;
-  image: string | null;
   createdAt: Date;
   updatedAt: Date;
+  authoredArticles?: Array<{
+    id: string;
+    title: string;
+    status: ArticleStatus;
+    isFeatured: boolean;
+    position: number;
+  }>;
   _count?: {
     authoredArticles: number;
   };
-}): UserDetailDto => {
-  return {
-    ...toUserDto(user),
-    image: user.image,
-  };
-};
+}): UserDetailDto => ({
+  ...toUserDto(user),
+  articles: (user.authoredArticles ?? []).map((article) => ({
+    id: article.id,
+    title: article.title,
+    status: article.status,
+    isFeatured: article.isFeatured,
+    position: article.position,
+  })),
+});
 
 function assertCanManageOtherUser(actorUserId: string, targetUserId: string, message: string) {
   if (actorUserId === targetUserId) {
@@ -112,8 +125,16 @@ export const usersService = {
     return toUserDetailDto(user);
   },
   async create(input: CreateUserInput) {
+    const passwordHash = await hashPassword(input.password);
+
     try {
-      const user = await usersRepository.create(input);
+      const user = await usersRepository.create({
+        email: input.email,
+        name: input.name,
+        role: input.role,
+        emailVerified: true,
+        passwordHash,
+      });
       const userWithRelations = await usersRepository.getById(user.id);
 
       if (!userWithRelations) {
@@ -130,8 +151,13 @@ export const usersService = {
     }
   },
   async update(id: string, input: UpdateUserInput) {
+    const passwordHash = input.password ? await hashPassword(input.password) : undefined;
+
     try {
-      await usersRepository.update(id, input);
+      await usersRepository.update(id, {
+        name: input.name,
+        passwordHash,
+      });
       const user = await usersRepository.getById(id);
 
       if (!user) {
