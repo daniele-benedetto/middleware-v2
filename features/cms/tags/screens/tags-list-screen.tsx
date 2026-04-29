@@ -366,7 +366,6 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
           ) : (
             <div className="px-5 py-4">
               <CmsEmptyState
-                eyebrow={listText.eyebrow}
                 title={text.resource.emptyTitle(text.navigation.tags)}
                 description={text.resource.emptyDescription}
                 descriptionFiltered={text.resource.emptyDescriptionFiltered}

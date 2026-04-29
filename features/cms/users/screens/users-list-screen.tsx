@@ -504,7 +504,6 @@ export function CmsUsersListScreen({
           ) : (
             <div className="px-5 py-4">
               <CmsEmptyState
-                eyebrow={listText.eyebrow}
                 title={text.resource.emptyTitle(text.navigation.users)}
                 description={text.resource.emptyDescription}
                 descriptionFiltered={text.resource.emptyDescriptionFiltered}

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { startTransition, useCallback } from "react";
 
 import { serializeCmsSearchParams } from "@/lib/cms/query";
 
@@ -24,8 +24,11 @@ export function useCmsListUrlState({ baseParams, clearSelection }: UseCmsListUrl
       });
 
       const next = nextParams.toString();
-      clearSelection?.();
-      router.replace(next ? `${pathname}?${next}` : pathname);
+
+      startTransition(() => {
+        clearSelection?.();
+        router.replace(next ? `${pathname}?${next}` : pathname);
+      });
     },
     [baseParams, clearSelection, pathname, router],
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { startTransition } from "react";
 
 import { cmsToast } from "@/components/cms/primitives";
 import { i18n } from "@/lib/i18n";
@@ -10,12 +11,17 @@ export function useCmsFormNavigation(listPath: string) {
 
   return {
     cancel: () => {
-      router.push(listPath);
+      startTransition(() => {
+        router.push(listPath);
+      });
     },
     success: (message: string = i18n.cms.common.actionCompleted) => {
       cmsToast.info(message);
-      router.push(listPath);
-      router.refresh();
+
+      startTransition(() => {
+        router.push(listPath);
+        router.refresh();
+      });
     },
   };
 }

@@ -533,7 +533,6 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
           ) : (
             <div className="px-5 py-4">
               <CmsEmptyState
-                eyebrow={listText.eyebrow}
                 title={text.resource.emptyTitle(text.navigation.issues)}
                 description={text.resource.emptyDescription}
                 descriptionFiltered={text.resource.emptyDescriptionFiltered}

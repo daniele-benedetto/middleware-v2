@@ -1,4 +1,4 @@
-import { CmsBody, CmsDisplay, CmsMetaText, CmsSurface } from "@/components/cms/primitives";
+import { CmsBody, CmsDisplay, CmsSurface } from "@/components/cms/primitives";
 
 import type { ReactNode } from "react";
 
@@ -7,7 +7,6 @@ type CmsEmptyStateProps = {
   description: string;
   descriptionFiltered?: string;
   hasActiveFilters?: boolean;
-  eyebrow?: string;
   action?: ReactNode;
 };
 
@@ -16,7 +15,6 @@ export function CmsEmptyState({
   description,
   descriptionFiltered,
   hasActiveFilters = false,
-  eyebrow,
   action,
 }: CmsEmptyStateProps) {
   const resolvedDescription =
@@ -28,11 +26,6 @@ export function CmsEmptyState({
       spacing="xl"
       className="flex flex-col items-center gap-3 text-center"
     >
-      {eyebrow ? (
-        <CmsMetaText variant="category" className="block">
-          {eyebrow}
-        </CmsMetaText>
-      ) : null}
       <CmsDisplay as="h2" size="h2">
         {title}
       </CmsDisplay>

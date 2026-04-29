@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { startTransition, useState } from "react";
 
 import {
   CmsActionButton,
@@ -42,8 +42,10 @@ export function CmsLoginForm() {
         return;
       }
 
-      router.replace(nextPath);
-      router.refresh();
+      startTransition(() => {
+        router.replace(nextPath);
+        router.refresh();
+      });
     } catch {
       setError(text.invalidCredentials);
     } finally {

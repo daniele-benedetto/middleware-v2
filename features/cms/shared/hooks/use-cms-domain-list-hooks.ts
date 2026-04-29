@@ -27,6 +27,15 @@ type CmsListQueryOptions<TInput, TOutput> = {
   initialData?: TOutput;
 };
 
+type CmsListQueryHookResult<TOutput> = {
+  data: TOutput | undefined;
+  isPending: boolean;
+  isFetching: boolean;
+  isError: boolean;
+  error: unknown;
+  refetch: () => Promise<unknown>;
+};
+
 function isSameInput<TInput>(left: TInput | undefined, right: TInput | undefined) {
   if (!left || !right) {
     return false;
@@ -75,16 +84,21 @@ type TagsListOutput = RouterOutputs["tags"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
 
-export function useIssuesListQuery(
-  input: IssuesListInput,
-  options?: CmsListQueryOptions<IssuesListInput, IssuesListOutput>,
-): CmsListQueryState<IssuesListOutput["items"][number]> {
+function useCmsDomainListQuery<
+  TInput extends { page?: number; pageSize?: number },
+  TItem,
+  TOutput extends {
+    items: TItem[];
+    pagination: { page: number; pageSize: number; total: number };
+  },
+>(
+  input: TInput,
+  options: CmsListQueryOptions<TInput, TOutput> | undefined,
+  createQuery: (initialData: TOutput | undefined) => CmsListQueryHookResult<TOutput>,
+): CmsListQueryState<TItem> {
   const hasMatchingInitialInput = isSameInput(input, options?.initialDataInput);
 
-  const query = trpc.issues.list.useQuery(input, {
-    ...cmsListQueryOptions,
-    initialData: hasMatchingInitialInput ? options?.initialData : undefined,
-  });
+  const query = createQuery(hasMatchingInitialInput ? options?.initialData : undefined);
   const paginationInput = { page: input.page ?? 1, pageSize: input.pageSize ?? 20 };
 
   return toListQueryState(query.data, paginationInput, {
@@ -94,88 +108,64 @@ export function useIssuesListQuery(
     error: query.error,
     refetch: query.refetch,
   });
+}
+
+export function useIssuesListQuery(
+  input: IssuesListInput,
+  options?: CmsListQueryOptions<IssuesListInput, IssuesListOutput>,
+): CmsListQueryState<IssuesListOutput["items"][number]> {
+  return useCmsDomainListQuery(input, options, (initialData) =>
+    trpc.issues.list.useQuery(input, {
+      ...cmsListQueryOptions,
+      initialData,
+    }),
+  );
 }
 
 export function useCategoriesListQuery(
   input: CategoriesListInput,
   options?: CmsListQueryOptions<CategoriesListInput, CategoriesListOutput>,
 ): CmsListQueryState<CategoriesListOutput["items"][number]> {
-  const hasMatchingInitialInput = isSameInput(input, options?.initialDataInput);
-
-  const query = trpc.categories.list.useQuery(input, {
-    ...cmsListQueryOptions,
-    initialData: hasMatchingInitialInput ? options?.initialData : undefined,
-  });
-  const paginationInput = { page: input.page ?? 1, pageSize: input.pageSize ?? 20 };
-
-  return toListQueryState(query.data, paginationInput, {
-    isPending: query.isPending,
-    isFetching: query.isFetching,
-    isError: query.isError,
-    error: query.error,
-    refetch: query.refetch,
-  });
+  return useCmsDomainListQuery(input, options, (initialData) =>
+    trpc.categories.list.useQuery(input, {
+      ...cmsListQueryOptions,
+      initialData,
+    }),
+  );
 }
 
 export function useTagsListQuery(
   input: TagsListInput,
   options?: CmsListQueryOptions<TagsListInput, TagsListOutput>,
 ): CmsListQueryState<TagsListOutput["items"][number]> {
-  const hasMatchingInitialInput = isSameInput(input, options?.initialDataInput);
-
-  const query = trpc.tags.list.useQuery(input, {
-    ...cmsListQueryOptions,
-    initialData: hasMatchingInitialInput ? options?.initialData : undefined,
-  });
-  const paginationInput = { page: input.page ?? 1, pageSize: input.pageSize ?? 20 };
-
-  return toListQueryState(query.data, paginationInput, {
-    isPending: query.isPending,
-    isFetching: query.isFetching,
-    isError: query.isError,
-    error: query.error,
-    refetch: query.refetch,
-  });
+  return useCmsDomainListQuery(input, options, (initialData) =>
+    trpc.tags.list.useQuery(input, {
+      ...cmsListQueryOptions,
+      initialData,
+    }),
+  );
 }
 
 export function useArticlesListQuery(
   input: ArticlesListInput,
   options?: CmsListQueryOptions<ArticlesListInput, ArticlesListOutput>,
 ): CmsListQueryState<ArticlesListOutput["items"][number]> {
-  const hasMatchingInitialInput = isSameInput(input, options?.initialDataInput);
-
-  const query = trpc.articles.list.useQuery(input, {
-    ...cmsListQueryOptions,
-    initialData: hasMatchingInitialInput ? options?.initialData : undefined,
-  });
-  const paginationInput = { page: input.page ?? 1, pageSize: input.pageSize ?? 20 };
-
-  return toListQueryState(query.data, paginationInput, {
-    isPending: query.isPending,
-    isFetching: query.isFetching,
-    isError: query.isError,
-    error: query.error,
-    refetch: query.refetch,
-  });
+  return useCmsDomainListQuery(input, options, (initialData) =>
+    trpc.articles.list.useQuery(input, {
+      ...cmsListQueryOptions,
+      initialData,
+    }),
+  );
 }
 
 export function useUsersListQuery(
   input: UsersListInput,
   options?: CmsListQueryOptions<UsersListInput, UsersListOutput>,
 ): CmsListQueryState<UsersListOutput["items"][number]> {
-  const hasMatchingInitialInput = isSameInput(input, options?.initialDataInput);
-
-  const query = trpc.users.list.useQuery(input, {
-    ...cmsListQueryOptions,
-    initialData: hasMatchingInitialInput ? options?.initialData : undefined,
-  });
-  const paginationInput = { page: input.page ?? 1, pageSize: input.pageSize ?? 20 };
-
-  return toListQueryState(query.data, paginationInput, {
-    isPending: query.isPending,
-    isFetching: query.isFetching,
-    isError: query.isError,
-    error: query.error,
-    refetch: query.refetch,
-  });
+  return useCmsDomainListQuery(input, options, (initialData) =>
+    trpc.users.list.useQuery(input, {
+      ...cmsListQueryOptions,
+      initialData,
+    }),
+  );
 }
