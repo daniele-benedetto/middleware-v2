@@ -348,6 +348,16 @@ function ArticleFormContent({
     <div className="space-y-6">
       <CmsPageHeader
         title={mode === "create" ? articleFormText.createTitle : articleFormText.editTitle}
+        actions={
+          <div className="flex items-center gap-2">
+            <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
+              {text.common.cancel}
+            </CmsActionButton>
+            <CmsActionButton onClick={() => void handleSubmit()} isLoading={isMutating}>
+              {mode === "create" ? text.forms.create : text.forms.save}
+            </CmsActionButton>
+          </div>
+        }
       />
 
       <div className="space-y-4 border border-foreground p-4">
@@ -469,15 +479,6 @@ function ArticleFormContent({
             ) : null}
           </div>
         </CmsFormField>
-
-        <div className="flex items-center gap-2">
-          <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
-            {text.common.cancel}
-          </CmsActionButton>
-          <CmsActionButton onClick={() => void handleSubmit()} isLoading={isMutating}>
-            {mode === "create" ? text.forms.create : text.forms.save}
-          </CmsActionButton>
-        </div>
       </div>
     </div>
   );

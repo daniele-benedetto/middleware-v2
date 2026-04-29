@@ -26,8 +26,8 @@ const issueIdInputSchema = z.object({
 
 const issuesListInputSchema = paginationInputSchema.extend({
   query: listIssuesQuerySchema.default({
-    sortBy: "createdAt",
-    sortOrder: "desc",
+    sortBy: "sortOrder",
+    sortOrder: "asc",
   }),
 });
 

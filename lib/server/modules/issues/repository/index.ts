@@ -15,7 +15,6 @@ export type CreateIssuePersistInput = {
   slug: string;
   description?: string;
   coverUrl?: string;
-  color?: string;
   isActive?: boolean;
   publishedAt?: Date | null;
 };
@@ -56,7 +55,6 @@ export const issuesRepository = {
         slug: true,
         description: true,
         coverUrl: true,
-        color: true,
         isActive: true,
         sortOrder: true,
         publishedAt: true,
@@ -83,7 +81,6 @@ export const issuesRepository = {
         slug: true,
         description: true,
         coverUrl: true,
-        color: true,
         isActive: true,
         sortOrder: true,
         publishedAt: true,
@@ -149,7 +146,6 @@ export const issuesRepository = {
           slug: true,
           description: true,
           coverUrl: true,
-          color: true,
           isActive: true,
           sortOrder: true,
           publishedAt: true,

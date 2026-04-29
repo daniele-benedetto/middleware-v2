@@ -604,7 +604,6 @@ export function CmsArticlesListScreen({
               reorder.isReorderMode ? (
                 <>
                   <CmsActionButton
-                    size="xs"
                     variant="outline"
                     onClick={reorder.cancel}
                     disabled={reorderMutation.isPending}
@@ -612,7 +611,6 @@ export function CmsArticlesListScreen({
                     {commonText.cancel}
                   </CmsActionButton>
                   <CmsActionButton
-                    size="xs"
                     variant="outline"
                     onClick={() => {
                       void saveArticleOrder();
@@ -624,7 +622,6 @@ export function CmsArticlesListScreen({
                 </>
               ) : (
                 <CmsActionButton
-                  size="xs"
                   variant="outline"
                   onClick={() => {
                     selection.clearSelection();
@@ -636,7 +633,6 @@ export function CmsArticlesListScreen({
               )
             ) : null}
             <CmsActionButton
-              size="xs"
               variant="outline"
               onClick={() => navigateToCrudRoute(cmsCrudRoutes.articles.create)}
             >

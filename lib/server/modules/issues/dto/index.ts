@@ -6,7 +6,6 @@ export const issueDtoSchema = z.object({
   slug: z.string(),
   description: z.string().nullable(),
   coverUrl: z.string().nullable(),
-  color: z.string().nullable(),
   isActive: z.boolean(),
   sortOrder: z.number().int(),
   publishedAt: z.string().nullable(),

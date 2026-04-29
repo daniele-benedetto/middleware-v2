@@ -102,6 +102,7 @@ export const cmsIt = {
     create: "Crea",
     save: "Salva",
     regenerateSlug: "Rigenera",
+    clearDate: "Rimuovi data",
     invalidEditIdDescription: "ID mancante per la modifica.",
     generatedFromTitleHint: "Generato dal titolo se vuoto",
     generatedFromNameHint: "Generato dal nome se vuoto",
@@ -123,7 +124,6 @@ export const cmsIt = {
       tags: "Tag",
       description: "Descrizione",
       coverUrl: "Cover URL",
-      color: "Colore",
       publishedAt: "Data pubblicazione",
     },
     resources: {
@@ -170,6 +170,11 @@ export const cmsIt = {
         updated: "Issue aggiornata.",
         invalidPublishedAt: "Data pubblicazione non valida.",
         activeLabel: "Issue attiva",
+        identitySection: "Identita editoriale",
+        publishingSection: "Pubblicazione e stato",
+        slugPreviewPlaceholder: "Slug generato automaticamente",
+        slugManualHint: "Clicca sullo slug per modificarlo manualmente",
+        selectDatePlaceholder: "Seleziona data",
         dirtyArticleOrder: "Riordino articoli non ancora salvato.",
         reorderArticlesFailed: (description: string) =>
           `Issue salvata, riordino articoli fallito: ${description}`,

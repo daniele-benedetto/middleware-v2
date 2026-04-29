@@ -5,7 +5,6 @@ export const createIssueInputSchema = z.object({
   slug: z.string().trim().min(1).optional(),
   description: z.string().trim().optional(),
   coverUrl: z.string().trim().url().optional(),
-  color: z.string().trim().min(1).optional(),
   isActive: z.boolean().default(true),
   publishedAt: z.coerce.date().nullable().optional(),
 });
@@ -15,7 +14,6 @@ export const updateIssueInputSchema = createIssueInputSchema
   .extend({
     description: z.string().trim().nullable().optional(),
     coverUrl: z.string().trim().url().nullable().optional(),
-    color: z.string().trim().min(1).nullable().optional(),
     publishedAt: z.coerce.date().nullable().optional(),
   })
   .refine((input) => Object.keys(input).length > 0, {
@@ -38,8 +36,8 @@ export const listIssuesQuerySchema = z.object({
   isActive: booleanQuerySchema.optional(),
   published: booleanQuerySchema.optional(),
   q: z.string().trim().min(1).optional(),
-  sortBy: z.enum(["createdAt", "sortOrder", "publishedAt"]).default("createdAt"),
-  sortOrder: sortOrderSchema.default("desc"),
+  sortBy: z.enum(["createdAt", "sortOrder", "publishedAt"]).default("sortOrder"),
+  sortOrder: sortOrderSchema.default("asc"),
 });
 
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;

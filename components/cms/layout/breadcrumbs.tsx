@@ -12,6 +12,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Skeleton } from "@/components/ui/skeleton";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +53,7 @@ export function CmsBreadcrumbs() {
         {segments.map((segment, index) => {
           const href = `/cms/${segments.slice(0, index + 1).join("/")}`;
           const isLast = index === segments.length - 1;
+          const isPendingDynamicLabel = isUuid(segment) && !dynamicLabel;
           const label = isUuid(segment) && dynamicLabel ? dynamicLabel : formatSegment(segment);
 
           return (
@@ -59,10 +61,20 @@ export function CmsBreadcrumbs() {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 {isLast ? (
-                  <BreadcrumbPage className={cmsEyebrowClassName}>{label}</BreadcrumbPage>
+                  <BreadcrumbPage className={cmsEyebrowClassName}>
+                    {isPendingDynamicLabel ? (
+                      <Skeleton className="h-3.5 w-24 rounded-none bg-card-hover" />
+                    ) : (
+                      label
+                    )}
+                  </BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink href={href} className={clickableBreadcrumbClassName}>
-                    {label}
+                    {isPendingDynamicLabel ? (
+                      <Skeleton className="h-3.5 w-24 rounded-none bg-card-hover" />
+                    ) : (
+                      label
+                    )}
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>

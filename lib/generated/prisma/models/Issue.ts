@@ -40,7 +40,6 @@ export type IssueMinAggregateOutputType = {
   slug: string | null
   description: string | null
   coverUrl: string | null
-  color: string | null
   isActive: boolean | null
   sortOrder: number | null
   publishedAt: Date | null
@@ -54,7 +53,6 @@ export type IssueMaxAggregateOutputType = {
   slug: string | null
   description: string | null
   coverUrl: string | null
-  color: string | null
   isActive: boolean | null
   sortOrder: number | null
   publishedAt: Date | null
@@ -68,7 +66,6 @@ export type IssueCountAggregateOutputType = {
   slug: number
   description: number
   coverUrl: number
-  color: number
   isActive: number
   sortOrder: number
   publishedAt: number
@@ -92,7 +89,6 @@ export type IssueMinAggregateInputType = {
   slug?: true
   description?: true
   coverUrl?: true
-  color?: true
   isActive?: true
   sortOrder?: true
   publishedAt?: true
@@ -106,7 +102,6 @@ export type IssueMaxAggregateInputType = {
   slug?: true
   description?: true
   coverUrl?: true
-  color?: true
   isActive?: true
   sortOrder?: true
   publishedAt?: true
@@ -120,7 +115,6 @@ export type IssueCountAggregateInputType = {
   slug?: true
   description?: true
   coverUrl?: true
-  color?: true
   isActive?: true
   sortOrder?: true
   publishedAt?: true
@@ -221,7 +215,6 @@ export type IssueGroupByOutputType = {
   slug: string
   description: string | null
   coverUrl: string | null
-  color: string | null
   isActive: boolean
   sortOrder: number
   publishedAt: Date | null
@@ -258,7 +251,6 @@ export type IssueWhereInput = {
   slug?: Prisma.StringFilter<"Issue"> | string
   description?: Prisma.StringNullableFilter<"Issue"> | string | null
   coverUrl?: Prisma.StringNullableFilter<"Issue"> | string | null
-  color?: Prisma.StringNullableFilter<"Issue"> | string | null
   isActive?: Prisma.BoolFilter<"Issue"> | boolean
   sortOrder?: Prisma.IntFilter<"Issue"> | number
   publishedAt?: Prisma.DateTimeNullableFilter<"Issue"> | Date | string | null
@@ -273,7 +265,6 @@ export type IssueOrderByWithRelationInput = {
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   coverUrl?: Prisma.SortOrderInput | Prisma.SortOrder
-  color?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -291,7 +282,6 @@ export type IssueWhereUniqueInput = Prisma.AtLeast<{
   title?: Prisma.StringFilter<"Issue"> | string
   description?: Prisma.StringNullableFilter<"Issue"> | string | null
   coverUrl?: Prisma.StringNullableFilter<"Issue"> | string | null
-  color?: Prisma.StringNullableFilter<"Issue"> | string | null
   isActive?: Prisma.BoolFilter<"Issue"> | boolean
   sortOrder?: Prisma.IntFilter<"Issue"> | number
   publishedAt?: Prisma.DateTimeNullableFilter<"Issue"> | Date | string | null
@@ -306,7 +296,6 @@ export type IssueOrderByWithAggregationInput = {
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   coverUrl?: Prisma.SortOrderInput | Prisma.SortOrder
-  color?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -328,7 +317,6 @@ export type IssueScalarWhereWithAggregatesInput = {
   slug?: Prisma.StringWithAggregatesFilter<"Issue"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Issue"> | string | null
   coverUrl?: Prisma.StringNullableWithAggregatesFilter<"Issue"> | string | null
-  color?: Prisma.StringNullableWithAggregatesFilter<"Issue"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Issue"> | boolean
   sortOrder?: Prisma.IntWithAggregatesFilter<"Issue"> | number
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Issue"> | Date | string | null
@@ -342,7 +330,6 @@ export type IssueCreateInput = {
   slug: string
   description?: string | null
   coverUrl?: string | null
-  color?: string | null
   isActive?: boolean
   sortOrder?: number
   publishedAt?: Date | string | null
@@ -357,7 +344,6 @@ export type IssueUncheckedCreateInput = {
   slug: string
   description?: string | null
   coverUrl?: string | null
-  color?: string | null
   isActive?: boolean
   sortOrder?: number
   publishedAt?: Date | string | null
@@ -372,7 +358,6 @@ export type IssueUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -387,7 +372,6 @@ export type IssueUncheckedUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -402,7 +386,6 @@ export type IssueCreateManyInput = {
   slug: string
   description?: string | null
   coverUrl?: string | null
-  color?: string | null
   isActive?: boolean
   sortOrder?: number
   publishedAt?: Date | string | null
@@ -416,7 +399,6 @@ export type IssueUpdateManyMutationInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -430,7 +412,6 @@ export type IssueUncheckedUpdateManyInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -444,7 +425,6 @@ export type IssueCountOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrder
   coverUrl?: Prisma.SortOrder
-  color?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
@@ -462,7 +442,6 @@ export type IssueMaxOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrder
   coverUrl?: Prisma.SortOrder
-  color?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
@@ -476,7 +455,6 @@ export type IssueMinOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrder
   coverUrl?: Prisma.SortOrder
-  color?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
@@ -521,7 +499,6 @@ export type IssueCreateWithoutArticlesInput = {
   slug: string
   description?: string | null
   coverUrl?: string | null
-  color?: string | null
   isActive?: boolean
   sortOrder?: number
   publishedAt?: Date | string | null
@@ -535,7 +512,6 @@ export type IssueUncheckedCreateWithoutArticlesInput = {
   slug: string
   description?: string | null
   coverUrl?: string | null
-  color?: string | null
   isActive?: boolean
   sortOrder?: number
   publishedAt?: Date | string | null
@@ -565,7 +541,6 @@ export type IssueUpdateWithoutArticlesInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -579,7 +554,6 @@ export type IssueUncheckedUpdateWithoutArticlesInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -624,7 +598,6 @@ export type IssueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   slug?: boolean
   description?: boolean
   coverUrl?: boolean
-  color?: boolean
   isActive?: boolean
   sortOrder?: boolean
   publishedAt?: boolean
@@ -640,7 +613,6 @@ export type IssueSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   slug?: boolean
   description?: boolean
   coverUrl?: boolean
-  color?: boolean
   isActive?: boolean
   sortOrder?: boolean
   publishedAt?: boolean
@@ -654,7 +626,6 @@ export type IssueSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   slug?: boolean
   description?: boolean
   coverUrl?: boolean
-  color?: boolean
   isActive?: boolean
   sortOrder?: boolean
   publishedAt?: boolean
@@ -668,7 +639,6 @@ export type IssueSelectScalar = {
   slug?: boolean
   description?: boolean
   coverUrl?: boolean
-  color?: boolean
   isActive?: boolean
   sortOrder?: boolean
   publishedAt?: boolean
@@ -676,7 +646,7 @@ export type IssueSelectScalar = {
   updatedAt?: boolean
 }
 
-export type IssueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "description" | "coverUrl" | "color" | "isActive" | "sortOrder" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["issue"]>
+export type IssueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "description" | "coverUrl" | "isActive" | "sortOrder" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["issue"]>
 export type IssueInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   articles?: boolean | Prisma.Issue$articlesArgs<ExtArgs>
   _count?: boolean | Prisma.IssueCountOutputTypeDefaultArgs<ExtArgs>
@@ -695,7 +665,6 @@ export type $IssuePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     slug: string
     description: string | null
     coverUrl: string | null
-    color: string | null
     isActive: boolean
     sortOrder: number
     publishedAt: Date | null
@@ -1130,7 +1099,6 @@ export interface IssueFieldRefs {
   readonly slug: Prisma.FieldRef<"Issue", 'String'>
   readonly description: Prisma.FieldRef<"Issue", 'String'>
   readonly coverUrl: Prisma.FieldRef<"Issue", 'String'>
-  readonly color: Prisma.FieldRef<"Issue", 'String'>
   readonly isActive: Prisma.FieldRef<"Issue", 'Boolean'>
   readonly sortOrder: Prisma.FieldRef<"Issue", 'Int'>
   readonly publishedAt: Prisma.FieldRef<"Issue", 'DateTime'>

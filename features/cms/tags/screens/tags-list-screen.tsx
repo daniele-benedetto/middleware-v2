@@ -192,7 +192,6 @@ export function CmsTagsListScreen({ initialInput, initialData }: CmsTagsListScre
         title={text.navigation.tags}
         actions={
           <CmsActionButton
-            size="xs"
             variant="outline"
             onClick={() => navigateToCrudRoute(cmsCrudRoutes.tags.create)}
           >

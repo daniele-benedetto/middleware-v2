@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
@@ -13,6 +15,8 @@ import {
   CmsTextarea,
   cmsToast,
 } from "@/components/cms/primitives";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useArticlesReorder } from "@/features/cms/articles/hooks/use-article-crud";
 import { IssueArticlesPanel } from "@/features/cms/issues/components/issue-articles-panel";
 import {
@@ -37,6 +41,7 @@ import { i18n } from "@/lib/i18n";
 import { createIssueInputSchema, updateIssueInputSchema } from "@/lib/server/modules/issues/schema";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
+import { cn } from "@/lib/utils";
 
 type IssueFormScreenProps = {
   mode: "create" | "edit";
@@ -55,19 +60,68 @@ function orderedIdsEqual(a: string[], b: string[]) {
   return a.every((id, index) => id === b[index]);
 }
 
-function toDateTimeLocalValue(value: string | null) {
-  if (!value) {
-    return "";
-  }
+function normalizePickedDate(value: Date) {
+  const next = new Date(value);
+  next.setHours(12, 0, 0, 0);
+  return next;
+}
 
-  const date = new Date(value);
+function IssuePublishedDatePicker({
+  value,
+  placeholder,
+  clearLabel,
+  onChange,
+}: {
+  value: Date | null;
+  placeholder: string;
+  clearLabel: string;
+  onChange: (value: Date | null) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <Popover>
+        <PopoverTrigger
+          render={
+            <button
+              type="button"
+              className={cn(
+                "flex h-10 flex-1 items-center gap-2 border border-foreground bg-white px-3 text-left",
+                "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
+                value ? "text-foreground" : "text-border",
+              )}
+            />
+          }
+        >
+          <CalendarIcon className="size-3.5 shrink-0" />
+          {value ? format(value, "dd/MM/yyyy") : placeholder}
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={value ?? undefined}
+            onSelect={(date) => {
+              if (date) {
+                onChange(normalizePickedDate(date));
+              }
+            }}
+          />
+        </PopoverContent>
+      </Popover>
 
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-  return localDate.toISOString().slice(0, 16);
+      {value ? (
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          className={cn(
+            "inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3",
+            "font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover",
+          )}
+        >
+          {clearLabel}
+        </button>
+      ) : null}
+    </div>
+  );
 }
 
 export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScreenProps) {
@@ -184,19 +238,33 @@ function IssueFormContent({
     slug: fieldText.slug,
     description: fieldText.description,
     coverUrl: fieldText.coverUrl,
-    color: fieldText.color,
     publishedAt: fieldText.publishedAt,
   };
+
   const [title, setTitle] = useState(issue?.title ?? "");
-  const [slug, setSlug] = useState(issue?.slug ?? "");
   const [description, setDescription] = useState(issue?.description ?? "");
   const [coverUrl, setCoverUrl] = useState(issue?.coverUrl ?? "");
-  const [color, setColor] = useState(issue?.color ?? "");
   const [isActive, setIsActive] = useState(issue?.isActive ?? true);
-  const [publishedAt, setPublishedAt] = useState(toDateTimeLocalValue(issue?.publishedAt ?? null));
+  const [publishedAt, setPublishedAt] = useState<Date | null>(
+    issue?.publishedAt ? new Date(issue.publishedAt) : null,
+  );
   const [orderedArticleIds, setOrderedArticleIds] = useState<string[]>(
     issue?.articles.map((article) => article.id) ?? [],
   );
+
+  const initialAutoSlug = useMemo(() => normalizeSlug(issue?.title ?? ""), [issue?.title]);
+  const [manualSlug, setManualSlug] = useState(issue?.slug ?? "");
+  const [hasManualSlugOverride, setHasManualSlugOverride] = useState(
+    Boolean(issue?.slug) && issue?.slug !== initialAutoSlug,
+  );
+  const [isSlugEditing, setIsSlugEditing] = useState(false);
+
+  const autoSlug = normalizeSlug(title);
+  const resolvedSlug = hasManualSlugOverride ? manualSlug : autoSlug;
+  const slugPreview = resolvedSlug || issueFormText.slugPreviewPlaceholder;
+  const slugHint = hasManualSlugOverride
+    ? issueFormText.slugManualHint
+    : formText.generatedFromTitleHint;
 
   const articlesById = new Map((issue?.articles ?? []).map((article) => [article.id, article]));
   const orderedArticles = orderedArticleIds
@@ -205,17 +273,24 @@ function IssueFormContent({
   const initialArticleOrder = issue?.articles.map((article) => article.id) ?? [];
   const orderChanged = !orderedIdsEqual(orderedArticleIds, initialArticleOrder);
 
+  const openSlugEditor = () => {
+    setManualSlug(resolvedSlug);
+    setIsSlugEditing(true);
+  };
+
   const regenerateSlugFromTitle = () => {
-    setSlug(normalizeSlug(title));
+    setManualSlug(autoSlug);
+    setHasManualSlugOverride(false);
+    setIsSlugEditing(false);
   };
 
   const handleSubmit = async () => {
-    const normalizedPublishedAt = publishedAt ? new Date(publishedAt) : null;
-
-    if (publishedAt && (!normalizedPublishedAt || Number.isNaN(normalizedPublishedAt.getTime()))) {
+    if (publishedAt && Number.isNaN(publishedAt.getTime())) {
       onValidationError(issueFormText.invalidPublishedAt);
       return;
     }
+
+    const slugPayload = hasManualSlugOverride ? manualSlug : resolvedSlug || undefined;
 
     try {
       if (mode === "create") {
@@ -223,12 +298,11 @@ function IssueFormContent({
           createIssueInputSchema,
           {
             title,
-            slug: slug || undefined,
+            slug: slugPayload,
             description: description || undefined,
             coverUrl: coverUrl || undefined,
-            color: color || undefined,
             isActive,
-            publishedAt: normalizedPublishedAt || undefined,
+            publishedAt: publishedAt ?? undefined,
           },
           issueFieldLabels,
         );
@@ -246,12 +320,11 @@ function IssueFormContent({
         updateIssueInputSchema,
         {
           title,
-          slug,
+          slug: slugPayload,
           description: description ? description : null,
           coverUrl: coverUrl ? coverUrl : null,
-          color: color ? color : null,
           isActive,
-          publishedAt: normalizedPublishedAt,
+          publishedAt,
         },
         issueFieldLabels,
       );
@@ -272,98 +345,10 @@ function IssueFormContent({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <CmsPageHeader
         title={mode === "create" ? issueFormText.createTitle : issueFormText.editTitle}
-      />
-
-      <div className={mode === "edit" ? "grid gap-6 lg:grid-cols-[1fr_360px]" : "grid gap-6"}>
-        <div className="space-y-4 border border-foreground p-4">
-          <CmsFormField label={fieldText.title} htmlFor="issue-title" required>
-            <CmsTextInput
-              id="issue-title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-            />
-          </CmsFormField>
-
-          <CmsFormField
-            label={fieldText.slug}
-            htmlFor="issue-slug"
-            required={mode === "edit"}
-            hint={mode === "create" ? formText.generatedFromTitleHint : undefined}
-          >
-            <div className="flex items-center gap-2">
-              <CmsTextInput
-                id="issue-slug"
-                className="flex-1"
-                value={slug}
-                placeholder={mode === "create" ? "auto da titolo" : undefined}
-                onChange={(event) => setSlug(event.target.value)}
-              />
-              <button
-                type="button"
-                onClick={regenerateSlugFromTitle}
-                className="shrink-0 font-ui text-[10px] uppercase tracking-[0.06em] text-muted-foreground hover:text-accent"
-              >
-                {formText.regenerateSlug}
-              </button>
-            </div>
-          </CmsFormField>
-
-          <CmsFormField label={fieldText.description} htmlFor="issue-description">
-            <CmsTextarea
-              id="issue-description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-            />
-          </CmsFormField>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <CmsFormField label={fieldText.coverUrl} htmlFor="issue-cover-url">
-              <CmsTextInput
-                id="issue-cover-url"
-                type="url"
-                value={coverUrl}
-                onChange={(event) => setCoverUrl(event.target.value)}
-              />
-            </CmsFormField>
-
-            <CmsFormField label={fieldText.color} htmlFor="issue-color">
-              <div className="flex items-center gap-2">
-                <CmsTextInput
-                  id="issue-color"
-                  type="color"
-                  className="h-11 w-16 p-1"
-                  value={color || "#111111"}
-                  onChange={(event) => setColor(event.target.value)}
-                />
-                <CmsTextInput
-                  value={color}
-                  placeholder="#111111"
-                  onChange={(event) => setColor(event.target.value)}
-                />
-              </div>
-            </CmsFormField>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 md:items-end">
-            <CmsFormField label={fieldText.publishedAt} htmlFor="issue-published-at">
-              <CmsTextInput
-                id="issue-published-at"
-                type="datetime-local"
-                value={publishedAt}
-                onChange={(event) => setPublishedAt(event.target.value)}
-              />
-            </CmsFormField>
-
-            <CmsCheckbox
-              label={issueFormText.activeLabel}
-              checked={isActive}
-              onChange={setIsActive}
-            />
-          </div>
-
+        actions={
           <div className="flex items-center gap-2">
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
               {text.common.cancel}
@@ -372,20 +357,125 @@ function IssueFormContent({
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
           </div>
+        }
+      />
+
+      <div
+        className={cn(
+          "grid min-h-0 flex-1 gap-6 overflow-hidden",
+          mode === "edit" && "lg:grid-cols-[minmax(0,1fr)_360px]",
+        )}
+      >
+        <div className="min-h-0 space-y-4 overflow-y-auto pb-6 pr-1">
+          <section className="space-y-4 border border-foreground p-4">
+            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+              {issueFormText.identitySection}
+            </div>
+
+            <CmsFormField label={fieldText.title} htmlFor="issue-title" required>
+              <CmsTextInput
+                id="issue-title"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+              />
+            </CmsFormField>
+
+            <CmsFormField label={fieldText.slug} htmlFor="issue-slug" hint={slugHint}>
+              <div className="flex items-center gap-2">
+                {isSlugEditing ? (
+                  <CmsTextInput
+                    id="issue-slug"
+                    className="flex-1"
+                    value={manualSlug}
+                    autoFocus
+                    onBlur={() => setIsSlugEditing(false)}
+                    onChange={(event) => {
+                      setManualSlug(event.target.value);
+                      setHasManualSlugOverride(true);
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={openSlugEditor}
+                    className={cn(
+                      "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
+                      "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
+                      resolvedSlug ? "text-foreground" : "text-border",
+                    )}
+                  >
+                    {slugPreview}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={regenerateSlugFromTitle}
+                  className={cn(
+                    "inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3",
+                    "font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover",
+                  )}
+                >
+                  {formText.regenerateSlug}
+                </button>
+              </div>
+            </CmsFormField>
+
+            <CmsFormField label={fieldText.description} htmlFor="issue-description">
+              <CmsTextarea
+                id="issue-description"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+              />
+            </CmsFormField>
+          </section>
+
+          <section className="space-y-4 border border-foreground p-4">
+            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+              {issueFormText.publishingSection}
+            </div>
+
+            <CmsCheckbox
+              label={issueFormText.activeLabel}
+              checked={isActive}
+              onChange={setIsActive}
+            />
+
+            <CmsFormField label={fieldText.publishedAt} htmlFor="issue-published-at">
+              <IssuePublishedDatePicker
+                value={publishedAt}
+                placeholder={issueFormText.selectDatePlaceholder}
+                clearLabel={formText.clearDate}
+                onChange={setPublishedAt}
+              />
+            </CmsFormField>
+
+            <CmsFormField label={fieldText.coverUrl} htmlFor="issue-cover-url">
+              <CmsTextInput
+                id="issue-cover-url"
+                type="url"
+                value={coverUrl}
+                onChange={(event) => setCoverUrl(event.target.value)}
+              />
+            </CmsFormField>
+          </section>
         </div>
 
         {mode === "edit" ? (
-          <div className="space-y-3">
-            {orderChanged ? (
-              <div className="border border-accent px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-accent">
-                {issueFormText.dirtyArticleOrder}
-              </div>
-            ) : null}
-            <IssueArticlesPanel
-              articles={orderedArticles}
-              onReorder={setOrderedArticleIds}
-              disabled={isMutating}
-            />
+          <div className="min-h-0 overflow-y-auto pb-6 pl-1">
+            <div className="flex min-h-full flex-col gap-3">
+              {orderChanged ? (
+                <div className="shrink-0 border border-accent px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-accent">
+                  {issueFormText.dirtyArticleOrder}
+                </div>
+              ) : null}
+              <IssueArticlesPanel
+                articles={orderedArticles}
+                onReorder={setOrderedArticleIds}
+                disabled={isMutating}
+                className="min-h-0 flex-1 overflow-hidden"
+              />
+            </div>
           </div>
         ) : null}
       </div>

@@ -173,10 +173,10 @@ type UsersListInput = RouterInputs["users"]["list"];
 export function parseIssuesListSearchParams(input: CmsSearchParamsInput): IssuesListInput {
   const base = parseCmsListSearchParams(input, {
     allowedSortBy: issuesSortByValues,
-    defaultSortBy: "createdAt",
-    defaultSortOrder: "desc",
+    defaultSortBy: "sortOrder",
+    defaultSortOrder: "asc",
   });
-  const sortBy = parseEnumQueryParam(base.sortBy, issuesSortByValues) ?? "createdAt";
+  const sortBy = parseEnumQueryParam(base.sortBy, issuesSortByValues) ?? "sortOrder";
 
   return {
     page: base.page,

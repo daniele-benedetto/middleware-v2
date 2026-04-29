@@ -38,6 +38,7 @@ import {
 } from "@/features/cms/shared/actions";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import {
+  cmsListQueryOptions,
   useCmsListUrlState,
   useIssuesListQuery,
   useListSelection,
@@ -47,6 +48,7 @@ import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { parseIssuesListSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
+import { paginationDefaults } from "@/lib/server/http/pagination";
 import { trpc } from "@/lib/trpc/react";
 
 import type { IssuesListInitialData } from "@/features/cms/shared/types/initial-data";
@@ -83,7 +85,32 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
   const listQuery = useIssuesListQuery(input, { initialDataInput: initialInput, initialData });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
-  const reorder = useReorderMode(listQuery.items);
+
+  const reorderBaseInput: IssuesListInput = {
+    page: 1,
+    pageSize: paginationDefaults.maxPageSize,
+    query: {
+      sortBy: "sortOrder",
+      sortOrder: "asc",
+    },
+  };
+
+  const reorderBaseQuery = trpc.issues.list.useQuery(reorderBaseInput, {
+    ...cmsListQueryOptions,
+    enabled:
+      input.query?.sortBy === "sortOrder" &&
+      input.query.sortOrder === "asc" &&
+      !input.query.q &&
+      input.query.isActive === undefined &&
+      input.query.published === undefined,
+  });
+
+  const reorderBaseData = reorderBaseQuery.data;
+  const hasFullReorderBase = reorderBaseData
+    ? reorderBaseData.pagination.total === reorderBaseData.items.length
+    : false;
+
+  const reorder = useReorderMode(reorderBaseData?.items ?? []);
 
   const navigateToCrudRoute = (href: string) => {
     router.push(href);
@@ -111,7 +138,8 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
     !input.query.q &&
     input.query.isActive === undefined &&
     input.query.published === undefined &&
-    listQuery.pagination.total === listQuery.items.length;
+    Boolean(reorderBaseData) &&
+    hasFullReorderBase;
 
   const displayedIssues = reorder.isReorderMode ? reorder.displayedItems : listQuery.items;
 
@@ -199,7 +227,21 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
         orderedIssueIds: reorder.normalizedOrder,
       });
 
+      const visibleStart = (listQuery.pagination.page - 1) * listQuery.pagination.pageSize;
+      const visibleEnd = visibleStart + listQuery.pagination.pageSize;
+
       trpcUtils.issues.list.setData(input, (current) => {
+        if (!current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          items: reorderedItems.slice(visibleStart, visibleEnd),
+        };
+      });
+
+      trpcUtils.issues.list.setData(reorderBaseInput, (current) => {
         if (!current) {
           return current;
         }
@@ -255,48 +297,33 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
         title={text.navigation.issues}
         actions={
           <div className="flex items-center gap-2">
-            {canReorder ? (
-              reorder.isReorderMode ? (
-                <>
-                  <CmsActionButton
-                    size="xs"
-                    variant="outline"
-                    onClick={reorder.cancel}
-                    disabled={reorderMutation.isPending}
-                  >
-                    {commonText.cancel}
-                  </CmsActionButton>
-                  <CmsActionButton
-                    size="xs"
-                    variant="outline"
-                    onClick={() => {
-                      void saveIssueOrder();
-                    }}
-                    disabled={!reorder.hasChanges || reorderMutation.isPending}
-                  >
-                    {commonText.saveOrder}
-                  </CmsActionButton>
-                </>
-              ) : (
+            {reorder.hasChanges ? (
+              <>
                 <CmsActionButton
-                  size="xs"
+                  variant="outline"
+                  onClick={reorder.cancel}
+                  disabled={reorderMutation.isPending}
+                >
+                  {commonText.cancel}
+                </CmsActionButton>
+                <CmsActionButton
                   variant="outline"
                   onClick={() => {
-                    selection.clearSelection();
-                    reorder.start();
+                    void saveIssueOrder();
                   }}
+                  disabled={reorderMutation.isPending}
                 >
-                  {commonText.reorderMode}
+                  {commonText.saveOrder}
                 </CmsActionButton>
-              )
-            ) : null}
-            <CmsActionButton
-              size="xs"
-              variant="outline"
-              onClick={() => navigateToCrudRoute(cmsCrudRoutes.issues.create)}
-            >
-              {text.resource.new}
-            </CmsActionButton>
+              </>
+            ) : (
+              <CmsActionButton
+                variant="outline"
+                onClick={() => navigateToCrudRoute(cmsCrudRoutes.issues.create)}
+              >
+                {text.resource.new}
+              </CmsActionButton>
+            )}
           </div>
         }
       />
@@ -307,7 +334,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
             <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
               {commonText.totalRecords(listQuery.pagination.total)}
             </div>
-            {reorder.isReorderMode ? (
+            {reorder.hasChanges ? (
               <div className="border border-accent px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-accent">
                 {listText.reorderHelp}
               </div>
@@ -325,7 +352,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                   ? () => selection.setSelection(pageIssueIds)
                   : undefined
               }
-              selectAllDisabled={isActionPending || reorder.isReorderMode}
+              selectAllDisabled={isActionPending || reorder.hasChanges}
             />
 
             <div className="grid gap-3 lg:grid-cols-3">
@@ -397,7 +424,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                   <TableHead className={cmsTableClasses.headerCell}>
                     <Checkbox
                       checked={allSelectedOnPage}
-                      disabled={reorder.isReorderMode}
+                      disabled={reorder.hasChanges}
                       onCheckedChange={() => {
                         selection.toggleSelectAll(pageIssueIds);
                       }}
@@ -443,7 +470,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <Checkbox
                         checked={selection.isSelected(issue.id)}
-                        disabled={reorder.isReorderMode}
+                        disabled={reorder.hasChanges}
                         onCheckedChange={() => {
                           selection.toggleSelection(issue.id);
                         }}
@@ -476,13 +503,13 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                           variant="outline"
                           size="xs"
                           onClick={() => navigateToCrudRoute(cmsCrudRoutes.issues.edit(issue.id))}
-                          disabled={isActionPending || reorder.isReorderMode}
+                          disabled={isActionPending || reorder.hasChanges}
                         >
                           {quickText.edit}
                         </CmsActionButton>
                         <CmsConfirmDialog
                           triggerLabel={quickText.delete}
-                          triggerDisabled={isActionPending || reorder.isReorderMode}
+                          triggerDisabled={isActionPending || reorder.hasChanges}
                           title={quickText.confirmDeleteTitle}
                           description={quickText.confirmDeleteSingleIssue}
                           tone="danger"
@@ -497,13 +524,12 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                         <CmsActionButton
                           variant="outline"
                           size="xs"
-                          disabled={
-                            !canReorder ||
-                            !reorder.isReorderMode ||
-                            index === 0 ||
-                            reorderMutation.isPending
-                          }
+                          disabled={!canReorder || index === 0 || reorderMutation.isPending}
                           onClick={() => {
+                            if (!reorder.isReorderMode) {
+                              selection.clearSelection();
+                              reorder.start();
+                            }
                             reorder.moveUp(index);
                           }}
                         >
@@ -514,11 +540,14 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                           size="xs"
                           disabled={
                             !canReorder ||
-                            !reorder.isReorderMode ||
                             index === displayedIssues.length - 1 ||
                             reorderMutation.isPending
                           }
                           onClick={() => {
+                            if (!reorder.isReorderMode) {
+                              selection.clearSelection();
+                              reorder.start();
+                            }
                             reorder.moveDown(index);
                           }}
                         >

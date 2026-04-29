@@ -106,7 +106,6 @@ async function main() {
         isActive: idx % 5 !== 0,
         sortOrder: issueNumber,
         publishedAt,
-        color: `#${(0x335577 + idx * 911).toString(16).slice(-6)}`,
       },
       create: {
         title: `Issue ${pad(issueNumber)} · ${sectionNames[idx % sectionNames.length]}`,
@@ -115,7 +114,6 @@ async function main() {
         isActive: idx % 5 !== 0,
         sortOrder: issueNumber,
         publishedAt,
-        color: `#${(0x335577 + idx * 911).toString(16).slice(-6)}`,
         coverUrl: `https://picsum.photos/seed/issue-${issueNumber}/1200/800`,
       },
     });

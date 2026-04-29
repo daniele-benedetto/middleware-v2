@@ -34,6 +34,7 @@ type IssueArticlesPanelProps = {
   articles: IssueArticleRow[];
   onReorder: (orderedIds: string[]) => void;
   disabled?: boolean;
+  className?: string;
 };
 
 const statusBadgeVariant = {
@@ -42,7 +43,12 @@ const statusBadgeVariant = {
   ARCHIVED: "status-archived",
 } as const;
 
-export function IssueArticlesPanel({ articles, onReorder, disabled }: IssueArticlesPanelProps) {
+export function IssueArticlesPanel({
+  articles,
+  onReorder,
+  disabled,
+  className,
+}: IssueArticlesPanelProps) {
   const listText = i18n.cms.lists.issues;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -67,8 +73,10 @@ export function IssueArticlesPanel({ articles, onReorder, disabled }: IssueArtic
   };
 
   return (
-    <div className="border border-foreground bg-white">
-      <div className="flex items-center justify-between border-b border-foreground px-3 py-2">
+    <div
+      className={cn("flex h-full min-h-0 flex-col border border-foreground bg-white", className)}
+    >
+      <div className="shrink-0 flex items-center justify-between border-b border-foreground px-3 py-2">
         <span className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
           {listText.articlesPanelTitle}
         </span>
@@ -82,18 +90,24 @@ export function IssueArticlesPanel({ articles, onReorder, disabled }: IssueArtic
           {listText.articlesPanelEmpty}
         </div>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext
-            items={articles.map((article) => article.id)}
-            strategy={verticalListSortingStrategy}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            <ul className="divide-y divide-border">
-              {articles.map((article) => (
-                <SortableArticleRow key={article.id} article={article} disabled={disabled} />
-              ))}
-            </ul>
-          </SortableContext>
-        </DndContext>
+            <SortableContext
+              items={articles.map((article) => article.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul className="divide-y divide-border">
+                {articles.map((article) => (
+                  <SortableArticleRow key={article.id} article={article} disabled={disabled} />
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
+        </div>
       )}
     </div>
   );

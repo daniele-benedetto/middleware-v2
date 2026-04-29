@@ -191,7 +191,19 @@ function TagFormContent({
 
   return (
     <div className="space-y-6">
-      <CmsPageHeader title={mode === "create" ? tagFormText.createTitle : tagFormText.editTitle} />
+      <CmsPageHeader
+        title={mode === "create" ? tagFormText.createTitle : tagFormText.editTitle}
+        actions={
+          <div className="flex items-center gap-2">
+            <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
+              {text.common.cancel}
+            </CmsActionButton>
+            <CmsActionButton onClick={() => void handleSubmit()} isLoading={isMutating}>
+              {mode === "create" ? text.forms.create : text.forms.save}
+            </CmsActionButton>
+          </div>
+        }
+      />
 
       <div className="space-y-4 border border-foreground p-4">
         <CmsFormField label={fieldText.name} htmlFor="tag-name" required>
@@ -234,15 +246,6 @@ function TagFormContent({
         </CmsFormField>
 
         <CmsCheckbox label={tagFormText.activeLabel} checked={isActive} onChange={setIsActive} />
-
-        <div className="flex items-center gap-2">
-          <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
-            {text.common.cancel}
-          </CmsActionButton>
-          <CmsActionButton onClick={() => void handleSubmit()} isLoading={isMutating}>
-            {mode === "create" ? text.forms.create : text.forms.save}
-          </CmsActionButton>
-        </div>
       </div>
     </div>
   );

@@ -249,7 +249,6 @@ export function CmsUsersListScreen({
         title={text.navigation.users}
         actions={
           <CmsActionButton
-            size="xs"
             variant="outline"
             onClick={() => navigateToCrudRoute(cmsCrudRoutes.users.create)}
           >

@@ -199,7 +199,6 @@ export function CmsCategoriesListScreen({
         title={text.navigation.categories}
         actions={
           <CmsActionButton
-            size="xs"
             variant="outline"
             onClick={() => navigateToCrudRoute(cmsCrudRoutes.categories.create)}
           >

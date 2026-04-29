@@ -92,7 +92,6 @@ model Issue {
   slug        String    @unique
   description String?
   coverUrl    String?
-  color       String?
   isActive    Boolean   @default(true)
   sortOrder   Int       @default(0)
   publishedAt DateTime?
