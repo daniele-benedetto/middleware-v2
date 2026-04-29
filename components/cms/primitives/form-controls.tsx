@@ -175,7 +175,7 @@ type CmsSelectProps = {
   placeholder?: string;
   disabled?: boolean;
   onValueChange?: (value: string) => void;
-  options: Array<{ value: string; label: string }>;
+  options: Array<{ value: string; label: string; displayLabel?: string }>;
 } & VariantProps<typeof cmsSelectTriggerVariants>;
 
 export function CmsSelect({
@@ -204,7 +204,8 @@ export function CmsSelect({
             if (currentValue == null || currentValue === "") {
               return placeholder;
             }
-            return options.find((option) => option.value === currentValue)?.label ?? currentValue;
+            const currentOption = options.find((option) => option.value === currentValue);
+            return currentOption?.displayLabel ?? currentOption?.label ?? currentValue;
           }}
         </ShadcnSelectValue>
       </ShadcnSelectTrigger>

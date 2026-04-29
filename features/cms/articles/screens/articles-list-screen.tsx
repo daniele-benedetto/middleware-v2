@@ -240,6 +240,7 @@ export function CmsArticlesListScreen({
   const commonText = text.common;
   const quickText = text.quickActions;
   const optionsText = text.listOptions;
+  const fieldText = text.forms.fields;
 
   const input = parseArticlesListSearchParams(searchParams);
   const listQuery = useArticlesListQuery(input, {
@@ -298,9 +299,13 @@ export function CmsArticlesListScreen({
     const items = categoriesOptionsQuery.data?.items ?? [];
     return [
       { value: "all", label: optionsText.categoryAll },
-      ...items.map((category) => ({ value: category.id, label: category.name })),
+      ...items.map((category) => ({
+        value: category.id,
+        label: category.name,
+        displayLabel: `${fieldText.category}: ${category.name}`,
+      })),
     ];
-  }, [categoriesOptionsQuery.data?.items, optionsText.categoryAll]);
+  }, [categoriesOptionsQuery.data?.items, fieldText.category, optionsText.categoryAll]);
 
   const authorOptions = useMemo(() => {
     const items = authorsOptionsQuery.data?.items ?? [];
@@ -309,9 +314,10 @@ export function CmsArticlesListScreen({
       ...items.map((author) => ({
         value: author.id,
         label: author.name ? `${author.name} (${author.email})` : author.email,
+        displayLabel: `${fieldText.author}: ${author.name ?? author.email}`,
       })),
     ];
-  }, [authorsOptionsQuery.data?.items, optionsText.authorAll]);
+  }, [authorsOptionsQuery.data?.items, fieldText.author, optionsText.authorAll]);
 
   const { updateSearchParams } = useCmsListUrlState({
     baseParams: {

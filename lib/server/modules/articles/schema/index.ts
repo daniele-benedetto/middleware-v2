@@ -8,7 +8,7 @@ const articleBaseInputSchema = z.object({
   authorId: z.string().uuid(),
   title: z.string().trim().min(1),
   slug: z.string().trim().min(1),
-  excerpt: z.string().trim().optional(),
+  excerptRich: z.unknown().optional(),
   contentRich: z.unknown(),
   imageUrl: z.string().trim().url().optional(),
   audioUrl: z.string().trim().url().optional(),
@@ -22,7 +22,7 @@ export const createArticleInputSchema = articleBaseInputSchema.extend({
 export const updateArticleInputSchema = articleBaseInputSchema
   .partial()
   .extend({
-    excerpt: z.string().trim().nullable().optional(),
+    excerptRich: z.unknown().nullable().optional(),
     imageUrl: z.string().trim().url().nullable().optional(),
     audioUrl: z.string().trim().url().nullable().optional(),
     audioChunks: z.unknown().nullable().optional(),

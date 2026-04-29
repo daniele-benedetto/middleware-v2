@@ -146,6 +146,7 @@ model Article {
   title       String
   slug        String
   excerpt     String?
+  excerptRich Json?
   contentRich Json
 
   imageUrl    String?

@@ -10,6 +10,10 @@ import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { ArticleDetailDto, ArticleDto } from "@/lib/server/modules/articles/dto";
 import type {
+  CreateArticlePersistInput,
+  UpdateArticlePersistInput,
+} from "@/lib/server/modules/articles/repository";
+import type {
   CreateArticleInput,
   ListArticlesQuery,
   ReorderArticlesInput,
@@ -48,12 +52,88 @@ type ArticleRecord = {
 
 type ArticleDetailRecord = ArticleRecord & {
   excerpt: string | null;
+  excerptRich: unknown;
   contentRich: unknown;
   imageUrl: string | null;
   audioUrl: string | null;
   audioChunks: unknown;
   tags?: Array<{ tagId: string }>;
 };
+
+function collectRichTextFragments(value: unknown, fragments: string[]) {
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectRichTextFragments(item, fragments));
+    return;
+  }
+
+  if (!value || typeof value !== "object") {
+    return;
+  }
+
+  const node = value as { text?: unknown; type?: unknown; content?: unknown };
+
+  if (typeof node.text === "string") {
+    fragments.push(node.text);
+  }
+
+  if (node.type === "hardBreak") {
+    fragments.push("\n");
+  }
+
+  if (node.content !== undefined) {
+    collectRichTextFragments(node.content, fragments);
+  }
+}
+
+function extractPlainTextFromRichText(value: unknown): string | null {
+  const fragments: string[] = [];
+  collectRichTextFragments(value, fragments);
+
+  const text = fragments.join(" ").replace(/\s+/g, " ").trim();
+  return text || null;
+}
+
+function createRichTextDocFromPlainText(value: string): unknown {
+  const paragraphs = value
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => ({
+      type: "paragraph",
+      content: [{ type: "text", text: line }],
+    }));
+
+  return {
+    type: "doc",
+    content: paragraphs.length > 0 ? paragraphs : [{ type: "paragraph" }],
+  };
+}
+
+function toCreateExcerptPersist(
+  input: CreateArticleInput,
+): Pick<CreateArticlePersistInput, "excerpt" | "excerptRich"> {
+  if (input.excerptRich === undefined) {
+    return {};
+  }
+
+  return {
+    excerpt: extractPlainTextFromRichText(input.excerptRich) ?? undefined,
+    excerptRich: input.excerptRich,
+  };
+}
+
+function toUpdateExcerptPersist(
+  input: UpdateArticleInput,
+): Pick<UpdateArticlePersistInput, "excerpt" | "excerptRich"> {
+  if (input.excerptRich === undefined) {
+    return {};
+  }
+
+  return {
+    excerpt: extractPlainTextFromRichText(input.excerptRich),
+    excerptRich: input.excerptRich,
+  };
+}
 
 const toArticleDto = (article: ArticleRecord): ArticleDto => {
   return {
@@ -81,6 +161,9 @@ const toArticleDetailDto = (article: ArticleDetailRecord): ArticleDetailDto => {
   return {
     ...toArticleDto(article),
     excerpt: article.excerpt,
+    excerptRich:
+      article.excerptRich ??
+      (article.excerpt ? createRichTextDocFromPlainText(article.excerpt) : null),
     contentRich: article.contentRich,
     imageUrl: article.imageUrl,
     audioUrl: article.audioUrl,
@@ -136,9 +219,10 @@ export const articlesService = {
     return toArticleDetailDto(article as ArticleDetailRecord);
   },
   async create(input: CreateArticleInput) {
-    const normalizedInput: CreateArticleInput = {
+    const normalizedInput: CreateArticlePersistInput = {
       ...input,
       slug: ensureSlug(input.slug),
+      ...toCreateExcerptPersist(input),
       tagIds: input.tagIds?.length ? Array.from(new Set(input.tagIds)) : undefined,
     };
 
@@ -170,9 +254,10 @@ export const articlesService = {
       throw new ApiError(404, "NOT_FOUND", "Article not found");
     }
 
-    const normalizedInput: UpdateArticleInput = {
+    const normalizedInput: UpdateArticlePersistInput = {
       ...input,
       slug: input.slug ? ensureSlug(input.slug) : undefined,
+      ...toUpdateExcerptPersist(input),
     };
 
     const nextStatus = normalizedInput.status ?? current.status;

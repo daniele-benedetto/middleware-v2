@@ -18,11 +18,17 @@ export type CreateArticlePersistInput = {
   title: string;
   slug: string;
   excerpt?: string;
+  excerptRich?: unknown;
   contentRich: unknown;
   imageUrl?: string;
   audioUrl?: string;
   audioChunks?: unknown;
   tagIds?: string[];
+};
+
+export type UpdateArticlePersistInput = UpdateArticleInput & {
+  excerpt?: string | null;
+  excerptRich?: unknown | null;
 };
 
 const toArticleWhereInput = (query: ListArticlesQuery): Prisma.ArticleWhereInput => {
@@ -115,6 +121,7 @@ export const articlesRepository = {
         createdAt: true,
         updatedAt: true,
         excerpt: true,
+        excerptRich: true,
         contentRich: true,
         imageUrl: true,
         audioUrl: true,
@@ -156,6 +163,8 @@ export const articlesRepository = {
       title: input.title,
       slug: input.slug,
       excerpt: input.excerpt,
+      excerptRich:
+        input.excerptRich === undefined ? undefined : (input.excerptRich as Prisma.InputJsonValue),
       contentRich: input.contentRich as Prisma.InputJsonValue,
       imageUrl: input.imageUrl,
       audioUrl: input.audioUrl,
@@ -178,7 +187,7 @@ export const articlesRepository = {
       return article;
     });
   },
-  async update(id: string, input: UpdateArticleInput) {
+  async update(id: string, input: UpdateArticlePersistInput) {
     const data: Prisma.ArticleUncheckedUpdateInput = {
       issueId: input.issueId,
       categoryId: input.categoryId,
@@ -186,6 +195,12 @@ export const articlesRepository = {
       title: input.title,
       slug: input.slug,
       excerpt: input.excerpt,
+      excerptRich:
+        input.excerptRich === undefined
+          ? undefined
+          : input.excerptRich === null
+            ? Prisma.JsonNull
+            : (input.excerptRich as Prisma.InputJsonValue),
       contentRich:
         input.contentRich === undefined ? undefined : (input.contentRich as Prisma.InputJsonValue),
       imageUrl: input.imageUrl,

@@ -24,6 +24,7 @@ export const articleDtoSchema = z.object(articleSummaryDtoShape);
 
 export const articleDetailDtoSchema = z.object({
   ...articleSummaryDtoShape,
+  excerptRich: z.unknown().nullable(),
   contentRich: z.unknown(),
   audioUrl: z.string().nullable(),
   audioChunks: z.unknown().nullable(),

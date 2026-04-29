@@ -252,6 +252,20 @@ async function main() {
         publishedAt,
         title: `Articolo ${pad(articleNumber, 5)} ${sectionNames[idx % sectionNames.length]}`,
         excerpt: `Testo di esempio per articolo ${pad(articleNumber, 5)} (${status.toLowerCase()}).`,
+        excerptRich: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: `Testo di esempio per articolo ${pad(articleNumber, 5)} (${status.toLowerCase()}).`,
+                },
+              ],
+            },
+          ],
+        },
         contentRich: {
           version: 1,
           blocks: [
@@ -286,6 +300,20 @@ async function main() {
         title: `Articolo ${pad(articleNumber, 5)} ${sectionNames[idx % sectionNames.length]}`,
         slug: articleSlug,
         excerpt: `Testo di esempio per articolo ${pad(articleNumber, 5)} (${status.toLowerCase()}).`,
+        excerptRich: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: `Testo di esempio per articolo ${pad(articleNumber, 5)} (${status.toLowerCase()}).`,
+                },
+              ],
+            },
+          ],
+        },
         contentRich: {
           version: 1,
           blocks: [
