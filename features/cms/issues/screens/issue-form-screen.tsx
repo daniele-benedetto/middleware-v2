@@ -17,7 +17,6 @@ import {
 } from "@/components/cms/primitives";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useArticlesReorder } from "@/features/cms/articles/hooks/use-article-crud";
 import { IssueArticlesPanel } from "@/features/cms/issues/components/issue-articles-panel";
 import {
   useIssueById,
@@ -32,11 +31,7 @@ import {
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
-import {
-  invalidateAfterCmsMutation,
-  invalidateArticlesAfterMutation,
-  invalidateIssuesAfterMutation,
-} from "@/lib/cms/trpc";
+import { invalidateAfterCmsMutation, invalidateArticlesAfterMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { createIssueInputSchema, updateIssueInputSchema } from "@/lib/server/modules/issues/schema";
 import { normalizeSlug } from "@/lib/server/validation/slug";
@@ -154,7 +149,6 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
   const issueQuery = useIssueById(mode === "edit" ? issueId : undefined, { initialData });
   const createMutation = useIssueCreate();
   const updateMutation = useIssueUpdate();
-  const reorderMutation = useArticlesReorder();
 
   useSetCmsBreadcrumbLabel(mode === "edit" ? issueQuery.data?.title : null);
 
@@ -181,7 +175,7 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
       mode={mode}
       issueId={issueId}
       issue={issueQuery.data}
-      isMutating={createMutation.isPending || updateMutation.isPending || reorderMutation.isPending}
+      isMutating={createMutation.isPending || updateMutation.isPending}
       onCancel={cancel}
       onCreate={async (payload) => {
         await createMutation.mutateAsync(payload);
@@ -189,24 +183,7 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
         success(issueFormText.created);
       }}
       onUpdate={async ({ id, data, orderedArticleIds }) => {
-        await updateMutation.mutateAsync({ id, data });
-
-        if (orderedArticleIds && orderedArticleIds.length > 0) {
-          try {
-            await reorderMutation.mutateAsync({
-              issueId: id,
-              orderedArticleIds,
-            });
-          } catch (error) {
-            const mapped = mapCrudDomainError(error, "articles");
-            cmsToast.error(issueFormText.reorderArticlesFailed(mapped.description), mapped.title);
-            await Promise.all([
-              invalidateIssuesAfterMutation(trpcUtils, { id }),
-              invalidateArticlesAfterMutation(trpcUtils, { ids: orderedArticleIds }),
-            ]);
-            return;
-          }
-        }
+        await updateMutation.mutateAsync({ id, data, orderedArticleIds });
 
         await Promise.all([
           invalidateAfterCmsMutation(trpcUtils, "issues.update", { id }),
@@ -370,7 +347,13 @@ function IssueFormContent({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <form
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void handleSubmit();
+      }}
+    >
       <CmsPageHeader
         title={mode === "create" ? issueFormText.createTitle : issueFormText.editTitle}
         actions={
@@ -378,7 +361,7 @@ function IssueFormContent({
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
               {text.common.cancel}
             </CmsActionButton>
-            <CmsActionButton onClick={() => void handleSubmit()} isLoading={isMutating}>
+            <CmsActionButton type="submit" isLoading={isMutating}>
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
           </div>
@@ -450,7 +433,7 @@ function IssueFormContent({
               <CmsRichTextEditor
                 value={description}
                 onChange={setDescription}
-                ariaLabel="Editor descrizione issue"
+                ariaLabel={issueFormText.descriptionEditorAriaLabel}
               />
             </CmsFormField>
           </section>
@@ -496,6 +479,6 @@ function IssueFormContent({
           </div>
         ) : null}
       </div>
-    </div>
+    </form>
   );
 }

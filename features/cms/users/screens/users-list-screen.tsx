@@ -269,16 +269,14 @@ export function CmsUsersListScreen({
                 ...action,
                 onExecute: () => {
                   if (action.id === "bulk-role-admin") {
-                    void runBulkAction("role-admin");
-                    return;
+                    return runBulkAction("role-admin");
                   }
 
                   if (action.id === "bulk-role-editor") {
-                    void runBulkAction("role-editor");
-                    return;
+                    return runBulkAction("role-editor");
                   }
 
-                  void runBulkAction("delete");
+                  return runBulkAction("delete");
                 },
               }))}
               onSelectAll={
@@ -480,16 +478,14 @@ export function CmsUsersListScreen({
                               tone={action.tone === "danger" ? "danger" : "default"}
                               onConfirm={() => {
                                 if (action.id === "single-role-admin") {
-                                  void runSingleAction("role-admin", user.id);
-                                  return;
+                                  return runSingleAction("role-admin", user.id);
                                 }
 
                                 if (action.id === "single-role-editor") {
-                                  void runSingleAction("role-editor", user.id);
-                                  return;
+                                  return runSingleAction("role-editor", user.id);
                                 }
 
-                                void runSingleAction("delete", user.id);
+                                return runSingleAction("delete", user.id);
                               }}
                             />
                           ))}

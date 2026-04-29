@@ -1,4 +1,8 @@
 import { CmsTagFormScreen } from "@/features/cms/tags/screens/tag-form-screen";
+import {
+  prefetchCmsDetailOrNotFound,
+  resolveCmsRouteEntityIdOrNotFound,
+} from "@/lib/cms/route-handling";
 import { prefetchTagById } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
@@ -13,7 +17,9 @@ type CmsTagEditPageProps = {
 };
 
 export default async function CmsTagEditPage({ params }: CmsTagEditPageProps) {
-  const { id } = await params;
-  const initialData = await prefetchTagById(id).catch(() => undefined);
+  const { id: rawId } = await params;
+  const id = resolveCmsRouteEntityIdOrNotFound(rawId);
+  const initialData = await prefetchCmsDetailOrNotFound(() => prefetchTagById(id));
+
   return <CmsTagFormScreen mode="edit" tagId={id} initialData={initialData} />;
 }

@@ -343,9 +343,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
               selectedCount={selection.selectedCount}
               actions={bulkActions.map((action) => ({
                 ...action,
-                onExecute: () => {
-                  void runBulkAction("delete");
-                },
+                onExecute: () => runBulkAction("delete"),
               }))}
               onSelectAll={
                 pageIssueIds.length > 0 && !allSelectedOnPage
@@ -513,9 +511,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                           title={quickText.confirmDeleteTitle}
                           description={quickText.confirmDeleteSingleIssue}
                           tone="danger"
-                          onConfirm={() => {
-                            void runSingleAction("delete", issue.id);
-                          }}
+                          onConfirm={() => runSingleAction("delete", issue.id)}
                         />
                       </div>
                     </TableCell>
@@ -525,6 +521,8 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                           variant="outline"
                           size="xs"
                           disabled={!canReorder || index === 0 || reorderMutation.isPending}
+                          aria-label={`${commonText.moveUp}: ${issue.title}`}
+                          title={`${commonText.moveUp}: ${issue.title}`}
                           onClick={() => {
                             if (!reorder.isReorderMode) {
                               selection.clearSelection();
@@ -543,6 +541,8 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                             index === displayedIssues.length - 1 ||
                             reorderMutation.isPending
                           }
+                          aria-label={`${commonText.moveDown}: ${issue.title}`}
+                          title={`${commonText.moveDown}: ${issue.title}`}
                           onClick={() => {
                             if (!reorder.isReorderMode) {
                               selection.clearSelection();

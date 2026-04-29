@@ -1,4 +1,8 @@
 import { CmsIssueFormScreen } from "@/features/cms/issues/screens/issue-form-screen";
+import {
+  prefetchCmsDetailOrNotFound,
+  resolveCmsRouteEntityIdOrNotFound,
+} from "@/lib/cms/route-handling";
 import { prefetchIssueById } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
@@ -13,7 +17,9 @@ type CmsIssueEditPageProps = {
 };
 
 export default async function CmsIssueEditPage({ params }: CmsIssueEditPageProps) {
-  const { id } = await params;
-  const initialData = await prefetchIssueById(id).catch(() => undefined);
+  const { id: rawId } = await params;
+  const id = resolveCmsRouteEntityIdOrNotFound(rawId);
+  const initialData = await prefetchCmsDetailOrNotFound(() => prefetchIssueById(id));
+
   return <CmsIssueFormScreen mode="edit" issueId={id} initialData={initialData} />;
 }

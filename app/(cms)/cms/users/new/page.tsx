@@ -1,4 +1,5 @@
-import { CmsForbiddenState } from "@/components/cms/common";
+import { forbidden } from "next/navigation";
+
 import { CmsUserFormScreen } from "@/features/cms/users/screens/user-form-screen";
 import { hasCmsRole, requireCmsSession } from "@/lib/cms/auth";
 import { i18n } from "@/lib/i18n";
@@ -13,7 +14,7 @@ export default async function CmsUserNewPage() {
   const session = await requireCmsSession("/cms/users/new");
 
   if (!hasCmsRole(session, "ADMIN")) {
-    return <CmsForbiddenState />;
+    forbidden();
   }
 
   return <CmsUserFormScreen mode="create" currentUserId={session.user.id} />;

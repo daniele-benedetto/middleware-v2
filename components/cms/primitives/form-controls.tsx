@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Switch as ShadcnSwitch } from "@/components/ui/switch";
 import { Textarea as ShadcnTextarea } from "@/components/ui/textarea";
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
@@ -141,6 +142,7 @@ export function CmsTextarea({
   defaultValue,
   ...props
 }: CmsTextareaProps) {
+  const text = i18n.cms.forms;
   const resolvedState: CmsControlState = disabled ? "disabled" : (state ?? "default");
   const currentLength =
     typeof value === "string"
@@ -161,8 +163,7 @@ export function CmsTextarea({
       />
       {showCounter ? (
         <div className="mt-1.25 text-right font-ui text-[10px] uppercase tracking-[0.04em] text-border">
-          {currentLength}
-          {maxLength ? ` / ${maxLength} CAR.` : " CAR."}
+          {text.characterCount(currentLength, maxLength)}
         </div>
       ) : null}
     </div>
@@ -181,7 +182,7 @@ type CmsSelectProps = {
 export function CmsSelect({
   value,
   defaultValue,
-  placeholder = "— SELEZIONA —",
+  placeholder = i18n.cms.forms.selectPlaceholder,
   disabled,
   state,
   onValueChange,

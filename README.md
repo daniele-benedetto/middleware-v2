@@ -23,6 +23,11 @@ Required vars:
 - `BETTER_AUTH_SECRET`: Better Auth signing secret
 - `BETTER_AUTH_URL`: app base URL
 
+Postgres SSL note:
+
+- prefer `sslmode=verify-full` as the explicit baseline when provider certificate chain and hostname verification are supported
+- if you intentionally need current libpq-style `require` semantics, use `uselibpqcompat=true&sslmode=require`
+
 ## Setup
 
 ```bash

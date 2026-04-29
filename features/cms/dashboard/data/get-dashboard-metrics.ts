@@ -4,6 +4,7 @@ import { articlesService } from "@/lib/server/modules/articles/service";
 import { categoriesService } from "@/lib/server/modules/categories/service";
 import { issuesService } from "@/lib/server/modules/issues/service";
 import { tagsService } from "@/lib/server/modules/tags/service";
+import { usersService } from "@/lib/server/modules/users/service";
 
 const countPagination = {
   page: 1,
@@ -30,6 +31,11 @@ const articlesQueryDefaults = {
   sortOrder: "desc",
 } as const;
 
+const usersQueryDefaults = {
+  sortBy: "createdAt",
+  sortOrder: "desc",
+} as const;
+
 export type CmsDashboardMetrics = {
   issuesTotal: number;
   issuesActive: number;
@@ -41,6 +47,7 @@ export type CmsDashboardMetrics = {
   articlesPublished: number;
   articlesArchived: number;
   articlesFeatured: number;
+  usersTotal: number;
 };
 
 export async function getCmsDashboardMetrics(): Promise<CmsDashboardMetrics> {
@@ -55,6 +62,7 @@ export async function getCmsDashboardMetrics(): Promise<CmsDashboardMetrics> {
     articlesPublished,
     articlesArchived,
     articlesFeatured,
+    usersTotal,
   ] = await Promise.all([
     issuesService.list(issuesQueryDefaults, countPagination),
     issuesService.list({ ...issuesQueryDefaults, isActive: true }, countPagination),
@@ -66,6 +74,7 @@ export async function getCmsDashboardMetrics(): Promise<CmsDashboardMetrics> {
     articlesService.list({ ...articlesQueryDefaults, status: "PUBLISHED" }, countPagination),
     articlesService.list({ ...articlesQueryDefaults, status: "ARCHIVED" }, countPagination),
     articlesService.list({ ...articlesQueryDefaults, featured: true }, countPagination),
+    usersService.list(usersQueryDefaults, countPagination),
   ]);
 
   return {
@@ -79,5 +88,6 @@ export async function getCmsDashboardMetrics(): Promise<CmsDashboardMetrics> {
     articlesPublished: articlesPublished.total,
     articlesArchived: articlesArchived.total,
     articlesFeatured: articlesFeatured.total,
+    usersTotal: usersTotal.total,
   };
 }

@@ -1,4 +1,9 @@
-export { mapTrpcErrorToCmsUiMessage, type CmsUiError } from "@/lib/cms/trpc/error-messages";
+export {
+  hasCmsTrpcErrorCode,
+  isCmsNotFoundLikeError,
+  mapTrpcErrorToCmsUiMessage,
+  type CmsUiError,
+} from "@/lib/cms/trpc/error-messages";
 export {
   invalidateAfterCmsMutation,
   invalidateArticlesAfterMutation,

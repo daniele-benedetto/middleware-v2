@@ -17,7 +17,17 @@ export type CmsUiError = {
 };
 
 type TrpcLikeError = {
+  code?: string;
   message?: string;
+  cause?: {
+    code?: string;
+    message?: string;
+  };
+  shape?: {
+    data?: {
+      code?: string;
+    };
+  };
   data?: {
     code?: string;
     details?: unknown;
@@ -33,8 +43,9 @@ function readTrpcCode(error: unknown): SupportedCmsErrorCode | undefined {
     return undefined;
   }
 
-  const data = (error as TrpcLikeError).data;
-  const code = data?.code;
+  const trpcError = error as TrpcLikeError;
+  const data = trpcError.data;
+  const code = trpcError.code ?? data?.code ?? trpcError.shape?.data?.code ?? trpcError.cause?.code;
 
   if (
     code === "UNAUTHORIZED" ||
@@ -49,6 +60,41 @@ function readTrpcCode(error: unknown): SupportedCmsErrorCode | undefined {
   }
 
   return undefined;
+}
+
+function readErrorMessage(error: unknown): string | undefined {
+  if (!isObject(error)) {
+    return undefined;
+  }
+
+  const trpcError = error as TrpcLikeError;
+
+  if (typeof trpcError.message === "string" && trpcError.message.length > 0) {
+    return trpcError.message;
+  }
+
+  if (typeof trpcError.cause?.message === "string" && trpcError.cause.message.length > 0) {
+    return trpcError.cause.message;
+  }
+
+  return undefined;
+}
+
+export function hasCmsTrpcErrorCode(
+  error: unknown,
+  code: SupportedCmsErrorCode,
+): error is TrpcLikeError {
+  return readTrpcCode(error) === code;
+}
+
+export function isCmsNotFoundLikeError(error: unknown) {
+  if (hasCmsTrpcErrorCode(error, "NOT_FOUND")) {
+    return true;
+  }
+
+  const message = readErrorMessage(error);
+
+  return typeof message === "string" && /not found/i.test(message);
 }
 
 function readBadRequestDetails(error: unknown) {

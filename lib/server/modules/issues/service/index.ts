@@ -2,7 +2,10 @@ import "server-only";
 
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
-import { issuesRepository } from "@/lib/server/modules/issues/repository";
+import {
+  ISSUE_ARTICLE_ORDER_MISMATCH,
+  issuesRepository,
+} from "@/lib/server/modules/issues/repository";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
@@ -134,14 +137,14 @@ export const issuesService = {
 
     throw new ApiError(409, "CONFLICT", "Issue slug already exists");
   },
-  async update(id: string, input: UpdateIssueInput) {
+  async update(id: string, input: UpdateIssueInput, orderedArticleIds?: string[]) {
     const normalizedInput: UpdateIssueInput = {
       ...input,
       slug: input.slug ? ensureSlug(input.slug) : undefined,
     };
 
     try {
-      await issuesRepository.update(id, normalizedInput);
+      await issuesRepository.updateWithArticleOrder(id, normalizedInput, orderedArticleIds);
       const issue = await issuesRepository.getById(id);
 
       if (!issue) {
@@ -156,6 +159,14 @@ export const issuesService = {
 
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw new ApiError(409, "CONFLICT", "Issue slug already exists");
+      }
+
+      if (error instanceof Error && error.message === ISSUE_ARTICLE_ORDER_MISMATCH) {
+        throw new ApiError(
+          400,
+          "VALIDATION_ERROR",
+          "orderedArticleIds must include all and only articles from the target issue",
+        );
       }
 
       throw error;

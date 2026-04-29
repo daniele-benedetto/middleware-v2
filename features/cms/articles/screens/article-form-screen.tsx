@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { CmsErrorState } from "@/components/cms/common";
 import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
+  CmsAccordion,
   CmsActionButton,
   CmsCheckbox,
   CmsFormField,
@@ -38,7 +39,7 @@ import {
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
-import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
+import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import {
   createArticleInputSchema,
@@ -311,6 +312,35 @@ export function CmsArticleFormScreen({
     return <CmsErrorState title={mapped.title} description={mapped.description} />;
   }
 
+  const optionsError =
+    (issueOptionsQuery.isError ? issueOptionsQuery.error : null) ??
+    (categoryOptionsQuery.isError ? categoryOptionsQuery.error : null) ??
+    (userOptionsQuery.isError ? userOptionsQuery.error : null) ??
+    (tagOptionsQuery.isError ? tagOptionsQuery.error : null);
+
+  if (optionsError) {
+    const mapped = mapTrpcErrorToCmsUiMessage(optionsError);
+
+    return (
+      <CmsErrorState
+        title={mapped.title}
+        description={mapped.description}
+        onRetry={
+          mapped.retryable
+            ? () => {
+                void Promise.all([
+                  issueOptionsQuery.refetch(),
+                  categoryOptionsQuery.refetch(),
+                  userOptionsQuery.refetch(),
+                  tagOptionsQuery.refetch(),
+                ]);
+              }
+            : undefined
+        }
+      />
+    );
+  }
+
   return (
     <ArticleFormContent
       key={mode === "edit" ? (articleQuery.data?.id ?? articleId) : "create"}
@@ -338,7 +368,15 @@ export function CmsArticleFormScreen({
         await updateMutation.mutateAsync({ id, data });
 
         if (tagIds) {
-          await syncTagsMutation.mutateAsync({ id, data: { tagIds } });
+          try {
+            await syncTagsMutation.mutateAsync({ id, data: { tagIds } });
+          } catch (error) {
+            const mapped = mapCrudDomainError(error, "articles");
+            await invalidateAfterCmsMutation(trpcUtils, "articles.update", { id });
+            cmsToast.error(articleFormText.syncTagsFailed(mapped.description), mapped.title);
+            cancel();
+            return;
+          }
         }
 
         await invalidateAfterCmsMutation(trpcUtils, "articles.update", { id });
@@ -556,7 +594,13 @@ function ArticleFormContent({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <form
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void handleSubmit();
+      }}
+    >
       <CmsPageHeader
         title={mode === "create" ? articleFormText.createTitle : articleFormText.editTitle}
         actions={
@@ -564,7 +608,7 @@ function ArticleFormContent({
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
               {text.common.cancel}
             </CmsActionButton>
-            <CmsActionButton onClick={() => void handleSubmit()} isLoading={isMutating}>
+            <CmsActionButton type="submit" isLoading={isMutating}>
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
           </div>
@@ -641,7 +685,7 @@ function ArticleFormContent({
               <CmsRichTextEditor
                 value={contentRich}
                 onChange={setContentRich}
-                ariaLabel="Editor contenuto articolo"
+                ariaLabel={articleFormText.contentEditorAriaLabel}
               />
             </CmsFormField>
 
@@ -649,7 +693,7 @@ function ArticleFormContent({
               <CmsRichTextEditor
                 value={excerptRich}
                 onChange={setExcerptRich}
-                ariaLabel="Editor excerpt articolo"
+                ariaLabel={articleFormText.excerptEditorAriaLabel}
               />
             </CmsFormField>
           </section>
@@ -761,16 +805,35 @@ function ArticleFormContent({
               />
             </CmsFormField>
 
-            <CmsFormField label={fieldText.audioChunksJson} htmlFor="article-audio-chunks">
-              <CmsTextarea
-                id="article-audio-chunks"
-                value={audioChunks}
-                onChange={(event) => setAudioChunks(event.target.value)}
-              />
-            </CmsFormField>
+            <CmsAccordion
+              defaultValue={audioChunks.trim() ? ["article-audio-chunks"] : undefined}
+              items={[
+                {
+                  value: "article-audio-chunks",
+                  title: articleFormText.technicalSection,
+                  content: (
+                    <div className="space-y-3">
+                      <p className="font-ui text-[10px] uppercase tracking-[0.04em] text-muted-foreground">
+                        {articleFormText.technicalSectionHint}
+                      </p>
+                      <CmsFormField
+                        label={fieldText.audioChunksJson}
+                        htmlFor="article-audio-chunks"
+                      >
+                        <CmsTextarea
+                          id="article-audio-chunks"
+                          value={audioChunks}
+                          onChange={(event) => setAudioChunks(event.target.value)}
+                        />
+                      </CmsFormField>
+                    </div>
+                  ),
+                },
+              ]}
+            />
           </section>
         </div>
       </div>
-    </div>
+    </form>
   );
 }

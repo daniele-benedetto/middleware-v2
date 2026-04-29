@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp, Star } from "lucide-react";
 
 import { CmsActionButton, cmsTableClasses } from "@/components/cms/primitives";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export type CmsArticleListPanelItem = {
@@ -33,6 +34,7 @@ export function CmsArticleListPanel({
   onMoveUp,
   onMoveDown,
 }: CmsArticleListPanelProps) {
+  const commonText = i18n.cms.common;
   const isReorderable = Boolean(onMoveUp && onMoveDown);
 
   return (
@@ -66,6 +68,8 @@ export function CmsArticleListPanel({
                           size="xs"
                           disabled={disabled || index === 0}
                           onClick={() => onMoveUp?.(index)}
+                          aria-label={`${commonText.moveUp}: ${article.title}`}
+                          title={`${commonText.moveUp}: ${article.title}`}
                         >
                           <ArrowUp className="size-3" />
                         </CmsActionButton>
@@ -74,6 +78,8 @@ export function CmsArticleListPanel({
                           size="xs"
                           disabled={disabled || index === articles.length - 1}
                           onClick={() => onMoveDown?.(index)}
+                          aria-label={`${commonText.moveDown}: ${article.title}`}
+                          title={`${commonText.moveDown}: ${article.title}`}
                         >
                           <ArrowDown className="size-3" />
                         </CmsActionButton>

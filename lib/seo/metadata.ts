@@ -8,6 +8,7 @@ type PageMetadataInput = {
   path?: string;
   index?: boolean;
   openGraphImage?: string;
+  twitterImage?: string;
 };
 
 type ArticleMetadataInput = {
@@ -64,16 +65,17 @@ export function getSitemapUrl(): string {
 }
 
 export function getOpenGraphImageUrl(): string {
-  return toAbsoluteUrl("/opengraph-image");
+  return toAbsoluteUrl("/brand/og-default-1200x630.png");
 }
 
 export function getTwitterImageUrl(): string {
-  return toAbsoluteUrl("/twitter-image");
+  return toAbsoluteUrl("/brand/twitter-default-1200x630.png");
 }
 
 export function buildRootMetadata(): Metadata {
   const canonical = getCanonicalUrl("/");
   const defaultOgImage = getOpenGraphImageUrl();
+  const defaultTwitterImage = getTwitterImageUrl();
 
   return {
     metadataBase: seoConfig.siteUrl,
@@ -116,7 +118,7 @@ export function buildRootMetadata(): Metadata {
       title: seoConfig.defaultTitle,
       description: seoConfig.defaultDescription,
       creator: seoConfig.twitterHandle,
-      images: [defaultOgImage],
+      images: [defaultTwitterImage],
     },
   };
 }
@@ -128,9 +130,11 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
     path = "/",
     index = true,
     openGraphImage = getOpenGraphImageUrl(),
+    twitterImage = getTwitterImageUrl(),
   } = input;
   const canonical = getCanonicalUrl(path);
   const resolvedImage = resolveImageUrl(openGraphImage);
+  const resolvedTwitterImage = resolveImageUrl(twitterImage);
 
   return {
     title,
@@ -160,7 +164,7 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
       title: title ?? seoConfig.defaultTitle,
       description,
       creator: seoConfig.twitterHandle,
-      images: [resolvedImage],
+      images: [resolvedTwitterImage],
     },
   };
 }

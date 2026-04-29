@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Button as ShadcnButton } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import type { ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 const cmsButtonVariants = cva(
   "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-none font-ui font-normal uppercase transition-all " +
@@ -59,13 +59,15 @@ const legacyToneMap: Record<LegacyTone, CmsButtonVariant> = {
   danger: "primary-accent",
 };
 
-type CmsActionButtonProps = {
+type CmsActionButtonProps = Omit<
+  ComponentPropsWithoutRef<typeof ShadcnButton>,
+  "children" | "className" | "disabled" | "type" | "size" | "variant"
+> & {
   children: ReactNode;
   className?: string;
   isLoading?: boolean;
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
-  onClick?: () => void;
   variant?: CmsButtonVariant;
   size?: CmsButtonSize;
   tone?: LegacyTone;
@@ -81,6 +83,7 @@ export function CmsActionButton({
   variant,
   size,
   tone,
+  ...props
 }: CmsActionButtonProps) {
   const resolvedVariant: CmsButtonVariant = variant ?? (tone ? legacyToneMap[tone] : "primary");
 
@@ -91,6 +94,7 @@ export function CmsActionButton({
       className={cn(cmsButtonVariants({ variant: resolvedVariant, size }), className)}
       data-loading={isLoading}
       disabled={disabled ?? isLoading}
+      {...props}
     >
       {children}
     </ShadcnButton>

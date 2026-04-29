@@ -1,3 +1,5 @@
+import { i18n } from "@/lib/i18n";
+
 import type {
   CmsQuickAction,
   CmsQuickActionConfirmCopy,
@@ -25,6 +27,7 @@ function resolveConfirmCopy<TContext>(
   action: CmsQuickAction<TContext>,
   context: TContext,
 ): CmsQuickActionConfirmCopy | undefined {
+  const text = i18n.cms.common;
   const shouldConfirm = evaluateRule(action.requiresConfirm, context, false);
 
   if (!shouldConfirm) {
@@ -33,8 +36,8 @@ function resolveConfirmCopy<TContext>(
 
   if (!action.confirm) {
     return {
-      title: "Conferma azione",
-      description: "Questa azione verra applicata agli elementi selezionati.",
+      title: text.defaultConfirmTitle,
+      description: text.defaultBulkActionDescription,
     };
   }
 

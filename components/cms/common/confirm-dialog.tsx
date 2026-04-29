@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 import { CmsActionButton } from "@/components/cms/primitives";
 import {
   Dialog,
@@ -21,7 +25,7 @@ type CmsConfirmDialogProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   footerInfo?: ReactNode;
-  onConfirm?: () => void;
+  onConfirm?: () => void | Promise<unknown>;
   tone?: "default" | "danger";
 };
 
@@ -39,11 +43,37 @@ export function CmsConfirmDialog({
 }: CmsConfirmDialogProps) {
   const text = i18n.cms.resource;
   const confirmVariant = tone === "danger" ? "primary-accent" : "primary";
+  const [open, setOpen] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+
+  const handleConfirm = async () => {
+    if (!onConfirm || isConfirming) {
+      return;
+    }
+
+    setIsConfirming(true);
+
+    try {
+      await onConfirm();
+      setOpen(false);
+    } finally {
+      setIsConfirming(false);
+    }
+  };
 
   return (
-    <Dialog>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (isConfirming && !nextOpen) {
+          return;
+        }
+
+        setOpen(nextOpen);
+      }}
+    >
       <DialogTrigger
-        disabled={triggerDisabled}
+        disabled={triggerDisabled || isConfirming}
         className={cn(
           "cursor-pointer inline-flex h-auto items-center gap-1.5 rounded-none border bg-background px-3.5 py-1.5",
           "font-ui text-[10px] uppercase tracking-[0.08em] transition-colors",
@@ -68,6 +98,7 @@ export function CmsConfirmDialog({
             {title}
           </DialogTitle>
           <DialogClose
+            disabled={isConfirming}
             aria-label={text.cancel}
             className="cursor-pointer font-ui text-[16px] leading-none text-white/50 transition-colors hover:text-white focus-visible:text-white"
           >
@@ -83,13 +114,17 @@ export function CmsConfirmDialog({
               variant={confirmVariant}
               size="md"
               className="flex-1"
-              onClick={onConfirm}
+              onClick={() => {
+                void handleConfirm();
+              }}
+              isLoading={isConfirming}
             >
               → {confirmLabel ?? text.confirm}
             </CmsActionButton>
             <DialogClose
+              disabled={isConfirming}
               render={
-                <CmsActionButton variant="outline" size="md">
+                <CmsActionButton variant="outline" size="md" disabled={isConfirming}>
                   {cancelLabel ?? text.cancel}
                 </CmsActionButton>
               }

@@ -665,7 +665,7 @@ export function CmsArticlesListScreen({
                 ...action,
                 onExecute: () => {
                   const bulkAction = action.id.replace("bulk-", "") as ArticleQuickAction;
-                  void runBulkAction(bulkAction);
+                  return runBulkAction(bulkAction);
                 },
               }))}
               onSelectAll={
@@ -885,9 +885,9 @@ export function CmsArticlesListScreen({
                               confirmLabel={action.confirm.confirmLabel}
                               cancelLabel={action.confirm.cancelLabel}
                               tone={action.tone === "danger" ? "danger" : "default"}
-                              onConfirm={() => {
-                                void runSingleAction(action.id as ArticleQuickAction, article.id);
-                              }}
+                              onConfirm={() =>
+                                runSingleAction(action.id as ArticleQuickAction, article.id)
+                              }
                             />
                           ) : (
                             <CmsActionButton
@@ -916,6 +916,8 @@ export function CmsArticlesListScreen({
                             index === 0 ||
                             reorderMutation.isPending
                           }
+                          aria-label={`${commonText.moveUp}: ${article.title}`}
+                          title={`${commonText.moveUp}: ${article.title}`}
                           onClick={() => {
                             reorder.moveUp(index);
                           }}
@@ -931,6 +933,8 @@ export function CmsArticlesListScreen({
                             index === displayedArticles.length - 1 ||
                             reorderMutation.isPending
                           }
+                          aria-label={`${commonText.moveDown}: ${article.title}`}
+                          title={`${commonText.moveDown}: ${article.title}`}
                           onClick={() => {
                             reorder.moveDown(index);
                           }}

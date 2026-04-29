@@ -18,6 +18,8 @@ export type CreateIssuePersistInput = {
   publishedAt?: Date | null;
 };
 
+export const ISSUE_ARTICLE_ORDER_MISMATCH = "ISSUE_ARTICLE_ORDER_MISMATCH";
+
 const toIssueWhereInput = (query: ListIssuesQuery): Prisma.IssueWhereInput => {
   const publishedAtFilter =
     query.published === undefined ? undefined : query.published ? { not: null } : null;
@@ -130,6 +132,58 @@ export const issuesRepository = {
     return prisma.issue.update({
       where: { id },
       data,
+    });
+  },
+  async updateWithArticleOrder(id: string, input: UpdateIssueInput, orderedArticleIds?: string[]) {
+    const data: Prisma.IssueUncheckedUpdateInput = {
+      title: input.title,
+      slug: input.slug,
+      description:
+        input.description === undefined
+          ? undefined
+          : input.description === null
+            ? Prisma.JsonNull
+            : (input.description as Prisma.InputJsonValue),
+      isActive: input.isActive,
+      publishedAt: input.publishedAt,
+    };
+
+    return prisma.$transaction(async (tx) => {
+      const issue = await tx.issue.update({
+        where: { id },
+        data,
+      });
+
+      if (orderedArticleIds) {
+        const currentIssueArticles = await tx.article.findMany({
+          where: { issueId: id },
+          select: { id: true },
+          orderBy: { position: "asc" },
+        });
+
+        const currentIds = currentIssueArticles.map((article) => article.id);
+        const expected = new Set(currentIds);
+        const sameLength = currentIds.length === orderedArticleIds.length;
+        const sameElements =
+          sameLength &&
+          orderedArticleIds.every((articleId) => expected.has(articleId)) &&
+          currentIds.every((articleId) => orderedArticleIds.includes(articleId));
+
+        if (!sameElements) {
+          throw new Error(ISSUE_ARTICLE_ORDER_MISMATCH);
+        }
+
+        for (const [index, articleId] of orderedArticleIds.entries()) {
+          await tx.article.update({
+            where: { id: articleId },
+            data: {
+              position: index,
+            },
+          });
+        }
+      }
+
+      return issue;
     });
   },
   async delete(id: string) {

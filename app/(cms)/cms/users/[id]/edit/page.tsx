@@ -1,6 +1,11 @@
-import { CmsForbiddenState } from "@/components/cms/common";
+import { forbidden } from "next/navigation";
+
 import { CmsUserFormScreen } from "@/features/cms/users/screens/user-form-screen";
 import { hasCmsRole, requireCmsSession } from "@/lib/cms/auth";
+import {
+  prefetchCmsDetailOrNotFound,
+  resolveCmsRouteEntityIdOrNotFound,
+} from "@/lib/cms/route-handling";
 import { prefetchUserById } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
@@ -15,14 +20,15 @@ type CmsUserEditPageProps = {
 };
 
 export default async function CmsUserEditPage({ params }: CmsUserEditPageProps) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = resolveCmsRouteEntityIdOrNotFound(rawId);
   const session = await requireCmsSession(`/cms/users/${id}/edit`);
 
   if (!hasCmsRole(session, "ADMIN")) {
-    return <CmsForbiddenState />;
+    forbidden();
   }
 
-  const initialData = await prefetchUserById(id).catch(() => undefined);
+  const initialData = await prefetchCmsDetailOrNotFound(() => prefetchUserById(id));
 
   return (
     <CmsUserFormScreen

@@ -1,4 +1,5 @@
-import { CmsForbiddenState } from "@/components/cms/common";
+import { forbidden } from "next/navigation";
+
 import { CmsUsersListScreen } from "@/features/cms/users/screens/users-list-screen";
 import { hasCmsRole, requireCmsSession } from "@/lib/cms/auth";
 import { parseUsersListSearchParams } from "@/lib/cms/query";
@@ -21,7 +22,7 @@ export default async function CmsUsersPage({ searchParams }: CmsUsersPageProps) 
   const session = await requireCmsSession("/cms/users");
 
   if (!hasCmsRole(session, "ADMIN")) {
-    return <CmsForbiddenState />;
+    forbidden();
   }
 
   const input = parseUsersListSearchParams(resolvedSearchParams);

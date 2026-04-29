@@ -1,4 +1,8 @@
 import { CmsArticleFormScreen } from "@/features/cms/articles/screens/article-form-screen";
+import {
+  prefetchCmsDetailOrNotFound,
+  resolveCmsRouteEntityIdOrNotFound,
+} from "@/lib/cms/route-handling";
 import { prefetchArticleById, prefetchArticleFormOptions } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
@@ -13,11 +17,11 @@ type CmsArticleEditPageProps = {
 };
 
 export default async function CmsArticleEditPage({ params }: CmsArticleEditPageProps) {
-  const { id } = await params;
-  const [initialData, initialOptionsData] = await Promise.all([
-    prefetchArticleById(id).catch(() => undefined),
-    prefetchArticleFormOptions(),
-  ]);
+  const { id: rawId } = await params;
+  const id = resolveCmsRouteEntityIdOrNotFound(rawId);
+  const initialData = await prefetchCmsDetailOrNotFound(() => prefetchArticleById(id));
+
+  const initialOptionsData = await prefetchArticleFormOptions();
 
   return (
     <CmsArticleFormScreen

@@ -4,4 +4,3 @@ export {
   useSetCmsBreadcrumbLabel,
 } from "@/components/cms/layout/breadcrumbs-context";
 export { CmsSidebar } from "@/components/cms/layout/sidebar";
-export { CmsTopbar } from "@/components/cms/layout/topbar";

@@ -115,10 +115,18 @@ export function CmsUserFormScreen({
         await updateMutation.mutateAsync({ id, data });
 
         if (nextRole && userQuery.data?.role && nextRole !== userQuery.data.role) {
-          await updateRoleMutation.mutateAsync({
-            id,
-            data: { role: nextRole },
-          });
+          try {
+            await updateRoleMutation.mutateAsync({
+              id,
+              data: { role: nextRole },
+            });
+          } catch (error) {
+            const mapped = mapCrudDomainError(error, "users");
+            await invalidateAfterCmsMutation(trpcUtils, "users.update", { id });
+            cmsToast.error(userFormText.updateRoleFailed(mapped.description), mapped.title);
+            cancel();
+            return;
+          }
         }
 
         await invalidateAfterCmsMutation(trpcUtils, "users.update", { id });
@@ -217,7 +225,13 @@ function UserFormContent({
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <form
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void handleSubmit();
+      }}
+    >
       <CmsPageHeader
         title={mode === "create" ? userFormText.createTitle : userFormText.editTitle}
         actions={
@@ -225,7 +239,7 @@ function UserFormContent({
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
               {text.common.cancel}
             </CmsActionButton>
-            <CmsActionButton onClick={() => void handleSubmit()} isLoading={isMutating}>
+            <CmsActionButton type="submit" isLoading={isMutating}>
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
           </div>
@@ -256,8 +270,8 @@ function UserFormContent({
                     value={role}
                     onValueChange={(value) => setRole(value as "ADMIN" | "EDITOR")}
                     options={[
-                      { value: "EDITOR", label: "EDITOR" },
-                      { value: "ADMIN", label: "ADMIN" },
+                      { value: "EDITOR", label: userFormText.roleEditorLabel },
+                      { value: "ADMIN", label: userFormText.roleAdminLabel },
                     ]}
                   />
                 </CmsFormField>
@@ -279,8 +293,8 @@ function UserFormContent({
                     disabled={isCurrentUser}
                     onValueChange={(value) => setRoleEdit(value as "ADMIN" | "EDITOR")}
                     options={[
-                      { value: "EDITOR", label: "EDITOR" },
-                      { value: "ADMIN", label: "ADMIN" },
+                      { value: "EDITOR", label: userFormText.roleEditorLabel },
+                      { value: "ADMIN", label: userFormText.roleAdminLabel },
                     ]}
                   />
                 </CmsFormField>
@@ -326,6 +340,6 @@ function UserFormContent({
           </div>
         ) : null}
       </div>
-    </div>
+    </form>
   );
 }

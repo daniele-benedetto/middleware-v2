@@ -1,5 +1,6 @@
 import { SearchIcon } from "lucide-react";
 
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import type { InputHTMLAttributes, ReactNode } from "react";
@@ -14,7 +15,7 @@ export function CmsSearchBar({
   active = false,
   className,
   resultsSlot,
-  placeholder = "CERCA…",
+  placeholder = i18n.cms.listToolbar.searchPlaceholder,
   value,
   ...props
 }: CmsSearchBarProps) {

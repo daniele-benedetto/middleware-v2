@@ -1,4 +1,5 @@
 import { mapTrpcErrorToCmsUiMessage, type CmsUiError } from "@/lib/cms/trpc";
+import { i18n } from "@/lib/i18n";
 
 import type { BulkExecutionResult } from "@/features/cms/shared/actions/execute-bulk";
 
@@ -7,6 +8,8 @@ export function mapQuickActionError(error: unknown): CmsUiError {
 }
 
 export function mapBulkQuickActionError(result: BulkExecutionResult): CmsUiError | null {
+  const text = i18n.cms.quickActions;
+
   if (result.failed <= 0) {
     return null;
   }
@@ -17,8 +20,8 @@ export function mapBulkQuickActionError(result: BulkExecutionResult): CmsUiError
   if (!firstError) {
     return {
       code: "INTERNAL_SERVER_ERROR",
-      title: "Esecuzione parziale",
-      description: `Operazione completata con ${result.failed} errori su ${result.success + result.failed} elementi.`,
+      title: text.partialExecutionTitle,
+      description: text.partialExecutionSummary(result.failed, result.success + result.failed),
       retryable: true,
     };
   }
@@ -34,8 +37,8 @@ export function mapBulkQuickActionError(result: BulkExecutionResult): CmsUiError
 
   return {
     code: "INTERNAL_SERVER_ERROR",
-    title: "Esecuzione parziale",
-    description: `Completato: ${result.success}, falliti: ${result.failed}. Verifica i permessi o i dati e riprova.`,
+    title: text.partialExecutionTitle,
+    description: text.partialExecutionMixedSummary(result.success, result.failed),
     retryable: mappedFailures.some((item) => item.retryable),
   };
 }

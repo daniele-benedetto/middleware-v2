@@ -6,10 +6,10 @@ import type { CmsUiError } from "@/lib/cms/trpc";
 type ConflictResource = "issues" | "categories" | "tags" | "users" | "articles";
 
 const conflictTitles: Record<ConflictResource, string> = {
-  issues: "Conflitto slug Issue",
-  categories: "Conflitto slug Categoria",
-  tags: "Conflitto slug Tag",
-  users: "Conflitto email Utente",
+  issues: i18n.cms.trpcErrors.conflictTitle,
+  categories: i18n.cms.trpcErrors.conflictTitle,
+  tags: i18n.cms.trpcErrors.conflictTitle,
+  users: i18n.cms.trpcErrors.conflictTitle,
   articles: i18n.cms.lists.articles.domainErrors.slugConflictTitle,
 };
 

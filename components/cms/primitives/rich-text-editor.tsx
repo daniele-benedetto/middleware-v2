@@ -16,6 +16,7 @@ import {
   Undo2,
 } from "lucide-react";
 
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
@@ -52,6 +53,8 @@ export function CmsRichTextEditor({
   className,
   ariaLabel,
 }: CmsRichTextEditorProps) {
+  const text = i18n.cms.richText;
+
   const editor = useEditor({
     extensions: [StarterKit],
     content: (value ?? emptyDoc) as never,
@@ -60,7 +63,7 @@ export function CmsRichTextEditor({
     editorProps: {
       attributes: {
         class: proseClasses,
-        "aria-label": ariaLabel ?? "Editor contenuto",
+        "aria-label": ariaLabel ?? text.defaultAriaLabel,
       },
     },
     onUpdate: ({ editor: nextEditor }) => {
@@ -112,12 +115,13 @@ function ToolbarButton({ onClick, active, disabled, label, children }: ToolbarBu
 }
 
 function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disabled?: boolean }) {
+  const text = i18n.cms.richText;
   const isDisabled = disabled || !editor;
 
   return (
     <div className="flex flex-wrap items-center gap-1 border-b border-foreground p-1.5">
       <ToolbarButton
-        label="Grassetto"
+        label={text.bold}
         onClick={() => editor?.chain().focus().toggleBold().run()}
         active={editor?.isActive("bold")}
         disabled={isDisabled}
@@ -125,7 +129,7 @@ function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disab
         <Bold className="h-3.5 w-3.5" />
       </ToolbarButton>
       <ToolbarButton
-        label="Corsivo"
+        label={text.italic}
         onClick={() => editor?.chain().focus().toggleItalic().run()}
         active={editor?.isActive("italic")}
         disabled={isDisabled}
@@ -133,7 +137,7 @@ function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disab
         <Italic className="h-3.5 w-3.5" />
       </ToolbarButton>
       <ToolbarButton
-        label="Barrato"
+        label={text.strike}
         onClick={() => editor?.chain().focus().toggleStrike().run()}
         active={editor?.isActive("strike")}
         disabled={isDisabled}
@@ -141,7 +145,7 @@ function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disab
         <Strikethrough className="h-3.5 w-3.5" />
       </ToolbarButton>
       <ToolbarButton
-        label="Codice inline"
+        label={text.inlineCode}
         onClick={() => editor?.chain().focus().toggleCode().run()}
         active={editor?.isActive("code")}
         disabled={isDisabled}
@@ -152,7 +156,7 @@ function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disab
       <ToolbarSeparator />
 
       <ToolbarButton
-        label="Titolo H2"
+        label={text.heading2}
         onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
         active={editor?.isActive("heading", { level: 2 })}
         disabled={isDisabled}
@@ -160,7 +164,7 @@ function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disab
         <Heading2 className="h-3.5 w-3.5" />
       </ToolbarButton>
       <ToolbarButton
-        label="Titolo H3"
+        label={text.heading3}
         onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
         active={editor?.isActive("heading", { level: 3 })}
         disabled={isDisabled}
@@ -171,7 +175,7 @@ function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disab
       <ToolbarSeparator />
 
       <ToolbarButton
-        label="Lista puntata"
+        label={text.bulletList}
         onClick={() => editor?.chain().focus().toggleBulletList().run()}
         active={editor?.isActive("bulletList")}
         disabled={isDisabled}
@@ -179,7 +183,7 @@ function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disab
         <List className="h-3.5 w-3.5" />
       </ToolbarButton>
       <ToolbarButton
-        label="Lista numerata"
+        label={text.orderedList}
         onClick={() => editor?.chain().focus().toggleOrderedList().run()}
         active={editor?.isActive("orderedList")}
         disabled={isDisabled}
@@ -187,7 +191,7 @@ function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disab
         <ListOrdered className="h-3.5 w-3.5" />
       </ToolbarButton>
       <ToolbarButton
-        label="Blockquote"
+        label={text.blockquote}
         onClick={() => editor?.chain().focus().toggleBlockquote().run()}
         active={editor?.isActive("blockquote")}
         disabled={isDisabled}
@@ -198,14 +202,14 @@ function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disab
       <ToolbarSeparator />
 
       <ToolbarButton
-        label="Annulla"
+        label={text.undo}
         onClick={() => editor?.chain().focus().undo().run()}
         disabled={isDisabled || !editor?.can().undo()}
       >
         <Undo2 className="h-3.5 w-3.5" />
       </ToolbarButton>
       <ToolbarButton
-        label="Ripeti"
+        label={text.redo}
         onClick={() => editor?.chain().focus().redo().run()}
         disabled={isDisabled || !editor?.can().redo()}
       >

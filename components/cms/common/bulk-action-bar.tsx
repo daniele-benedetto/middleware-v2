@@ -6,7 +6,7 @@ import type { CmsResolvedQuickAction } from "@/features/cms/shared/actions";
 
 type CmsBulkAction = CmsResolvedQuickAction & {
   isLoading?: boolean;
-  onExecute: () => void;
+  onExecute: () => void | Promise<unknown>;
 };
 
 type CmsBulkActionBarProps = {

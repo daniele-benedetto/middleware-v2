@@ -1,4 +1,8 @@
 import { CmsCategoryFormScreen } from "@/features/cms/categories/screens/category-form-screen";
+import {
+  prefetchCmsDetailOrNotFound,
+  resolveCmsRouteEntityIdOrNotFound,
+} from "@/lib/cms/route-handling";
 import { prefetchCategoryById } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
@@ -13,7 +17,9 @@ type CmsCategoryEditPageProps = {
 };
 
 export default async function CmsCategoryEditPage({ params }: CmsCategoryEditPageProps) {
-  const { id } = await params;
-  const initialData = await prefetchCategoryById(id).catch(() => undefined);
+  const { id: rawId } = await params;
+  const id = resolveCmsRouteEntityIdOrNotFound(rawId);
+  const initialData = await prefetchCmsDetailOrNotFound(() => prefetchCategoryById(id));
+
   return <CmsCategoryFormScreen mode="edit" categoryId={id} initialData={initialData} />;
 }

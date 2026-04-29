@@ -50,8 +50,7 @@ export const cmsIt = {
     statusTitle: "Stato editoriale",
     statusSubtitle: "Conteggi aggregati dalle liste CMS per monitoraggio rapido.",
     activityTitle: "Attivita recente",
-    activitySubtitle: "Placeholder operativo in attesa del feed audit dedicato.",
-    badgeAuditPlaceholder: "Feed audit non disponibile",
+    activitySubtitle: "Indicatori sintetici per orientare il lavoro editoriale della giornata.",
     metrics: {
       issuesTotal: "Issues totali",
       issuesActive: "Issues attive",
@@ -63,6 +62,7 @@ export const cmsIt = {
       articlesPublished: "Articoli pubblicati",
       articlesArchived: "Articoli archiviati",
       articlesFeatured: "Articoli in evidenza",
+      usersTotal: "Utenti totali",
     },
     activity: {
       backlog: "Backlog editoriale",
@@ -92,11 +92,24 @@ export const cmsIt = {
     emptyDescription: "I dati compariranno qui dopo la prima creazione.",
     emptyDescriptionFiltered:
       "Nessun risultato per i filtri applicati. Riprova con altri filtri o senza filtri.",
-    usersSubtitle: "Placeholder sezione Admin. Il gate ruolo e tracciato in attivita 2.",
     emptyTitle: (value: string) => `Nessun elemento in ${value.toLowerCase()}`,
   },
   listToolbar: {
     searchPlaceholder: "Cerca...",
+  },
+  richText: {
+    defaultAriaLabel: "Editor contenuto",
+    bold: "Grassetto",
+    italic: "Corsivo",
+    strike: "Barrato",
+    inlineCode: "Codice inline",
+    heading2: "Titolo H2",
+    heading3: "Titolo H3",
+    bulletList: "Lista puntata",
+    orderedList: "Lista numerata",
+    blockquote: "Blockquote",
+    undo: "Annulla",
+    redo: "Ripeti",
   },
   forms: {
     create: "Crea",
@@ -106,6 +119,9 @@ export const cmsIt = {
     invalidEditIdDescription: "ID mancante per la modifica.",
     generatedFromTitleHint: "Generato dal titolo se vuoto",
     generatedFromNameHint: "Generato dal nome se vuoto",
+    selectPlaceholder: "— SELEZIONA —",
+    characterCount: (current: number, max?: number) =>
+      max ? `${current} / ${max} CAR.` : `${current} CAR.`,
     fields: {
       email: "Email",
       password: "Password",
@@ -132,10 +148,14 @@ export const cmsIt = {
         editTitle: "Modifica Utente",
         created: "Utente creato.",
         updated: "Utente aggiornato.",
+        updateRoleFailed: (description: string) =>
+          `Utente salvato, aggiornamento ruolo fallito: ${description}`,
         passwordCreateHint: "Minimo 8 caratteri",
         passwordEditHint: "Lascia vuota per non cambiare la password",
         articlesPanelEmpty: "Nessun articolo associato a questo utente.",
         selfRoleHint: "Il tuo ruolo non puo essere modificato da questa schermata",
+        roleAdminLabel: "ADMIN",
+        roleEditorLabel: "EDITOR",
       },
       articles: {
         invalidTitle: "Articolo non valido",
@@ -143,15 +163,22 @@ export const cmsIt = {
         editTitle: "Modifica Articolo",
         created: "Articolo creato.",
         updated: "Articolo aggiornato.",
+        syncTagsFailed: (description: string) =>
+          `Articolo salvato, sincronizzazione tag fallita: ${description}`,
         invalidAudioChunks: "audioChunks deve essere JSON valido.",
         identitySection: "Identita articolo",
         contentSection: "Contenuto",
         contentFieldLabel: "Corpo articolo",
+        contentEditorAriaLabel: "Editor contenuto articolo",
+        excerptEditorAriaLabel: "Editor excerpt articolo",
         publishingSection: "Pubblicazione e stato",
         relationsSection: "Relazioni editoriali",
         tagsSection: "Tag",
         tagsFieldLabel: "Tag associati",
         mediaSection: "Media e distribuzione",
+        technicalSection: "Campi tecnici",
+        technicalSectionHint:
+          "Usa questo blocco solo per controlli avanzati di ingestione o segmentazione audio.",
         tagSelectEmpty: "Seleziona tag",
         tagSearchPlaceholder: "Cerca tag...",
         tagSearchEmpty: "Nessun tag corrispondente.",
@@ -172,6 +199,7 @@ export const cmsIt = {
         updated: "Tag aggiornato.",
         activeLabel: "Tag attivo",
         identitySection: "Identita tag",
+        descriptionEditorAriaLabel: "Editor descrizione tag",
         statusSection: "Stato",
         slugPreviewPlaceholder: "Slug generato automaticamente",
         slugManualHint: "Clicca sullo slug per modificarlo manualmente",
@@ -185,6 +213,7 @@ export const cmsIt = {
         updated: "Categoria aggiornata.",
         activeLabel: "Categoria attiva",
         identitySection: "Identita categoria",
+        descriptionEditorAriaLabel: "Editor descrizione categoria",
         statusSection: "Stato",
         slugPreviewPlaceholder: "Slug generato automaticamente",
         slugManualHint: "Clicca sullo slug per modificarlo manualmente",
@@ -199,13 +228,12 @@ export const cmsIt = {
         invalidPublishedAt: "Data pubblicazione non valida.",
         activeLabel: "Issue attiva",
         identitySection: "Identita editoriale",
+        descriptionEditorAriaLabel: "Editor descrizione issue",
         publishingSection: "Pubblicazione e stato",
         slugPreviewPlaceholder: "Slug generato automaticamente",
         slugManualHint: "Clicca sullo slug per modificarlo manualmente",
         selectDatePlaceholder: "Seleziona data",
         dirtyArticleOrder: "Riordino articoli non ancora salvato.",
-        reorderArticlesFailed: (description: string) =>
-          `Issue salvata, riordino articoli fallito: ${description}`,
       },
     },
   },
@@ -221,11 +249,13 @@ export const cmsIt = {
     open: "Apri",
     openSection: "Apri sezione",
     reorderMode: "Modalita reorder",
+    moveUp: "Sposta su",
+    moveDown: "Sposta giu",
     cancel: "Annulla",
     saveOrder: "Salva ordine",
     retry: "Riprova",
     errorEyebrow: "ERRORE",
-    selectAll: "Seleziona tutti",
+    selectAll: "Seleziona visibili",
     paginationAria: "Paginazione",
     featured: "Featured",
     yes: "Si",
@@ -236,6 +266,7 @@ export const cmsIt = {
     totalRecords: (count: number) => `Totale: ${count} record`,
     defaultConfirmTitle: "Conferma azione",
     defaultUserActionDescription: "Questa azione verra applicata all'utente selezionato.",
+    defaultBulkActionDescription: "Questa azione verra applicata agli elementi selezionati.",
   },
   quickActions: {
     edit: "Modifica",
@@ -276,6 +307,11 @@ export const cmsIt = {
     confirmRoleEditorBulkSingle: "Imposterai il ruolo EDITOR per l'utente selezionato.",
     confirmRoleEditorBulk: (count: number) =>
       `Imposterai il ruolo EDITOR per ${count} utenti selezionati.`,
+    partialExecutionTitle: "Esecuzione parziale",
+    partialExecutionSummary: (failed: number, total: number) =>
+      `Operazione completata con ${failed} errori su ${total} elementi.`,
+    partialExecutionMixedSummary: (success: number, failed: number) =>
+      `Completato: ${success}, falliti: ${failed}. Verifica i permessi o i dati e riprova.`,
   },
   listOptions: {
     statusAllMasculine: "Stato: tutti",
@@ -438,6 +474,22 @@ export const cmsIt = {
     badRequestDescription: "Controlla i dati inseriti e riprova.",
     internalErrorTitle: "Errore imprevisto",
     internalErrorDescription: "Si e verificato un errore inatteso. Riprova.",
+  },
+  validation: {
+    invalidData: "Dati non validi.",
+    fieldFallback: "Campo",
+    required: (label: string) => `${label} e obbligatorio.`,
+    arrayMinimum: (label: string, minimum: number) =>
+      `${label}: serve almeno ${minimum} elemento/i.`,
+    minValue: (label: string, minimum: number) =>
+      `${label}: valore troppo piccolo (min ${minimum}).`,
+    maxValue: (label: string, maximum: number) =>
+      `${label}: valore troppo grande (max ${maximum}).`,
+    invalidEmail: (label: string) => `${label}: email non valida.`,
+    invalidUrl: (label: string) => `${label}: URL non valido.`,
+    invalidUuid: (label: string) => `${label}: identificativo non valido.`,
+    invalidFormat: (label: string) => `${label}: formato non valido.`,
+    invalidValue: (label: string) => `${label}: valore non ammesso.`,
   },
   badge: {
     remove: "Rimuovi",
