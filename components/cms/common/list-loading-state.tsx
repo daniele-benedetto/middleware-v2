@@ -74,7 +74,7 @@ export function CmsListLoadingState({
           ) : null}
         </div>
 
-        <div className="min-h-0 flex-1 overflow-auto">
+        <div className="cms-scroll min-h-0 flex-1 overflow-auto">
           <Table className={cmsTableClasses.table}>
             <TableHeader>
               <TableRow className={cmsTableClasses.headerRow}>

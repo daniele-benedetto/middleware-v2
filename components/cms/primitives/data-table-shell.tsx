@@ -22,7 +22,7 @@ export function CmsDataTableShell({
       className={cn("flex min-h-0 flex-1 flex-col divide-y divide-foreground", className)}
     >
       <div className="shrink-0 px-5 py-4">{toolbar}</div>
-      <div className="min-h-0 flex-1 overflow-auto">{table}</div>
+      <div className="cms-scroll min-h-0 flex-1 overflow-auto">{table}</div>
       <div className="shrink-0 px-5 py-3">{pagination}</div>
     </CmsSurface>
   );

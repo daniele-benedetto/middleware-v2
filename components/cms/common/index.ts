@@ -8,6 +8,7 @@ export { CmsListLoadingState } from "@/components/cms/common/list-loading-state"
 export { CmsLoadingState } from "@/components/cms/common/loading-state";
 export { CmsPaginationFooter } from "@/components/cms/common/pagination-footer";
 export { CmsReorderModeBar } from "@/components/cms/common/reorder-mode-bar";
+export { CmsShellSystemState } from "@/components/cms/common/shell-system-state";
 export {
   CmsSystemActionButton,
   CmsSystemActionLink,

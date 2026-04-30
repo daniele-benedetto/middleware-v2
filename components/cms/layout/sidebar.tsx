@@ -176,7 +176,7 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
             </SheetClose>
           </div>
 
-          <div className="flex flex-1 flex-col justify-between gap-6 overflow-y-auto p-5">
+          <div className="cms-scroll flex flex-1 flex-col justify-between gap-6 overflow-y-auto p-5">
             {navigationLinks(() => setIsMenuOpen(false))}
             <div className="border-t-[3px] border-foreground pt-5">
               {renderUserMenu(mobileSheetRef)}

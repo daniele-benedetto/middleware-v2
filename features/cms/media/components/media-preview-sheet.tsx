@@ -133,7 +133,7 @@ export function CmsMediaPreviewSheet({
             </SheetClose>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto bg-(--bg-main) px-5 py-5">
+          <div className="cms-scroll min-h-0 flex-1 overflow-y-auto bg-(--bg-main) px-5 py-5">
             <div className="space-y-5">
               <section className="space-y-3">
                 <div className="relative overflow-hidden border border-foreground bg-white">

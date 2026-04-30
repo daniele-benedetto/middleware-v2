@@ -57,7 +57,7 @@ export function CmsArticleListPanel({
           {emptyText}
         </div>
       ) : (
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="cms-scroll min-h-0 flex-1 overflow-y-auto">
           <Table className={cmsTableClasses.table}>
             <TableBody>
               {articles.map((article, index) => (

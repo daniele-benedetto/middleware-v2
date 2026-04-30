@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@plugin "tailwind-scrollbar";
+
 :root {
   color-scheme: light;
 
@@ -245,6 +247,54 @@ body {
 .motion-base {
   transition-duration: var(--motion-base);
   transition-timing-function: var(--easing-standard);
+}
+
+@utility cms-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-30) transparent;
+  scrollbar-gutter: stable;
+}
+
+@utility cms-scroll-strong {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink) var(--bg-hover);
+  scrollbar-gutter: stable;
+}
+
+.cms-scroll::-webkit-scrollbar,
+.cms-scroll-strong::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.cms-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cms-scroll-strong::-webkit-scrollbar-track {
+  background: var(--bg-hover);
+  border-left: 1px solid var(--ink);
+  border-top: 1px solid var(--ink);
+}
+
+.cms-scroll::-webkit-scrollbar-thumb,
+.cms-scroll-strong::-webkit-scrollbar-thumb {
+  background: var(--ink-30);
+  border: 0;
+  border-radius: 0;
+}
+
+.cms-scroll-strong::-webkit-scrollbar-thumb {
+  background: var(--ink);
+}
+
+.cms-scroll:hover::-webkit-scrollbar-thumb {
+  background: var(--ink);
+}
+
+.cms-scroll::-webkit-scrollbar-corner,
+.cms-scroll-strong::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 @media (max-width: 767px) {

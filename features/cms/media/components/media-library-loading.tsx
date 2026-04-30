@@ -28,7 +28,7 @@ export function CmsMediaLibraryLoading({
         </CmsSurface>
       ) : null}
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+      <div className="cms-scroll min-h-0 flex-1 overflow-y-auto pr-1">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: tileCount }).map((_, index) => (
             <Skeleton

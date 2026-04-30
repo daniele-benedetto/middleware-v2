@@ -252,7 +252,7 @@ function UserFormContent({
           mode === "edit" && "lg:grid-cols-[minmax(0,1fr)_360px]",
         )}
       >
-        <div className="min-h-0 min-w-0 space-y-5 overflow-y-auto pb-6 lg:pr-6">
+        <div className="cms-scroll min-h-0 min-w-0 space-y-5 overflow-y-auto pb-6 lg:pr-6">
           {mode === "create" ? (
             <>
               <CmsFormField label={fieldText.email} htmlFor="user-email" required>
@@ -327,7 +327,7 @@ function UserFormContent({
         </div>
 
         {mode === "edit" ? (
-          <div className="flex min-h-0 min-w-0 flex-col overflow-y-auto pb-6 lg:border-l lg:border-foreground lg:pl-6">
+          <div className="cms-scroll flex min-h-0 min-w-0 flex-col overflow-y-auto pb-6 lg:border-l lg:border-foreground lg:pl-6">
             <CmsArticleListPanel
               title={text.navigation.articles}
               emptyText={userFormText.articlesPanelEmpty}
