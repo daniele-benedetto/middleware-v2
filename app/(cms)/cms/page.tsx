@@ -1,4 +1,3 @@
-import { getCmsDashboardMetrics } from "@/features/cms/dashboard/data/get-dashboard-metrics";
 import { CmsDashboardScreen } from "@/features/cms/dashboard/screens/dashboard-screen";
 import { requireCmsSession } from "@/lib/cms/auth";
 import { i18n } from "@/lib/i18n";
@@ -11,10 +10,7 @@ export const metadata = buildCmsMetadata({
 });
 
 export default async function CmsDashboardPage() {
-  const [session, metrics] = await Promise.all([
-    requireCmsSession("/cms"),
-    getCmsDashboardMetrics(),
-  ]);
+  const session = await requireCmsSession("/cms");
 
-  return <CmsDashboardScreen role={session.user.role} metrics={metrics} />;
+  return <CmsDashboardScreen role={session.user.role} />;
 }

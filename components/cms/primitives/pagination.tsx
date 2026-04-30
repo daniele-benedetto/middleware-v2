@@ -142,7 +142,7 @@ export function CmsStepper({ steps, currentIndex, className }: CmsStepperProps) 
           );
         })}
       </div>
-      <div className="mt-1.5 flex justify-between font-ui text-[9px] uppercase tracking-[0.05em] text-muted-foreground">
+      <div className="mt-1.5 flex justify-between font-ui text-[9px] uppercase tracking-wider text-muted-foreground">
         {steps.map((step, idx) => (
           <span key={`label-${idx}`} className={idx === currentIndex ? "text-accent" : undefined}>
             {step.label}

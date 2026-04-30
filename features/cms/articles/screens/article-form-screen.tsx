@@ -6,7 +6,6 @@ import { useMemo, useState } from "react";
 import { CmsErrorState } from "@/components/cms/common";
 import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
-  CmsAccordion,
   CmsActionButton,
   CmsCheckbox,
   CmsFormField,
@@ -805,32 +804,13 @@ function ArticleFormContent({
               />
             </CmsFormField>
 
-            <CmsAccordion
-              defaultValue={audioChunks.trim() ? ["article-audio-chunks"] : undefined}
-              items={[
-                {
-                  value: "article-audio-chunks",
-                  title: articleFormText.technicalSection,
-                  content: (
-                    <div className="space-y-3">
-                      <p className="font-ui text-[10px] uppercase tracking-[0.04em] text-muted-foreground">
-                        {articleFormText.technicalSectionHint}
-                      </p>
-                      <CmsFormField
-                        label={fieldText.audioChunksJson}
-                        htmlFor="article-audio-chunks"
-                      >
-                        <CmsTextarea
-                          id="article-audio-chunks"
-                          value={audioChunks}
-                          onChange={(event) => setAudioChunks(event.target.value)}
-                        />
-                      </CmsFormField>
-                    </div>
-                  ),
-                },
-              ]}
-            />
+            <CmsFormField label={fieldText.audioChunksJson} htmlFor="article-audio-chunks">
+              <CmsTextarea
+                id="article-audio-chunks"
+                value={audioChunks}
+                onChange={(event) => setAudioChunks(event.target.value)}
+              />
+            </CmsFormField>
           </section>
         </div>
       </div>
