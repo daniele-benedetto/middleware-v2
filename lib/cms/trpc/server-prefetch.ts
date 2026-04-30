@@ -15,6 +15,7 @@ type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
+type MediaListOutput = RouterOutputs["media"]["list"];
 
 type IssuesListOutput = RouterOutputs["issues"]["list"];
 type CategoriesListOutput = RouterOutputs["categories"]["list"];
@@ -54,6 +55,11 @@ export async function prefetchArticlesList(input: ArticlesListInput): Promise<Ar
 export async function prefetchUsersList(input: UsersListInput): Promise<UsersListOutput> {
   const caller = await getTrpcCaller();
   return caller.users.list(input);
+}
+
+export async function prefetchMediaList(): Promise<MediaListOutput> {
+  const caller = await getTrpcCaller();
+  return caller.media.list();
 }
 
 export async function prefetchIssueById(id: string): Promise<IssueDetailOutput> {

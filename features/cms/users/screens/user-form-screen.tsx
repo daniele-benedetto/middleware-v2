@@ -248,94 +248,92 @@ function UserFormContent({
 
       <div
         className={cn(
-          "grid min-h-0 flex-1 gap-6 overflow-hidden",
+          "grid min-h-0 flex-1 gap-0 overflow-hidden",
           mode === "edit" && "lg:grid-cols-[minmax(0,1fr)_360px]",
         )}
       >
-        <div className="min-h-0 overflow-y-auto pb-6 pr-1">
-          <div className="space-y-4 border border-foreground p-4">
-            {mode === "create" ? (
-              <>
-                <CmsFormField label={fieldText.email} htmlFor="user-email" required>
-                  <CmsTextInput
-                    id="user-email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                  />
-                </CmsFormField>
+        <div className="min-h-0 min-w-0 space-y-5 overflow-y-auto pb-6 lg:pr-6">
+          {mode === "create" ? (
+            <>
+              <CmsFormField label={fieldText.email} htmlFor="user-email" required>
+                <CmsTextInput
+                  id="user-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                />
+              </CmsFormField>
 
-                <CmsFormField label={fieldText.role} htmlFor="user-role" required>
-                  <CmsSelect
-                    value={role}
-                    onValueChange={(value) => setRole(value as "ADMIN" | "EDITOR")}
-                    options={[
-                      { value: "EDITOR", label: userFormText.roleEditorLabel },
-                      { value: "ADMIN", label: userFormText.roleAdminLabel },
-                    ]}
-                  />
-                </CmsFormField>
-              </>
-            ) : (
-              <>
-                <CmsFormField label={fieldText.email} htmlFor="user-email">
-                  <CmsTextInput id="user-email" type="email" value={user?.email ?? ""} disabled />
-                </CmsFormField>
+              <CmsFormField label={fieldText.role} htmlFor="user-role" required>
+                <CmsSelect
+                  value={role}
+                  onValueChange={(value) => setRole(value as "ADMIN" | "EDITOR")}
+                  options={[
+                    { value: "EDITOR", label: userFormText.roleEditorLabel },
+                    { value: "ADMIN", label: userFormText.roleAdminLabel },
+                  ]}
+                />
+              </CmsFormField>
+            </>
+          ) : (
+            <>
+              <CmsFormField label={fieldText.email} htmlFor="user-email">
+                <CmsTextInput id="user-email" type="email" value={user?.email ?? ""} disabled />
+              </CmsFormField>
 
-                <CmsFormField
-                  label={fieldText.role}
-                  htmlFor="user-role"
-                  required
-                  hint={isCurrentUser ? userFormText.selfRoleHint : undefined}
-                >
-                  <CmsSelect
-                    value={roleEdit}
-                    disabled={isCurrentUser}
-                    onValueChange={(value) => setRoleEdit(value as "ADMIN" | "EDITOR")}
-                    options={[
-                      { value: "EDITOR", label: userFormText.roleEditorLabel },
-                      { value: "ADMIN", label: userFormText.roleAdminLabel },
-                    ]}
-                  />
-                </CmsFormField>
-              </>
-            )}
+              <CmsFormField
+                label={fieldText.role}
+                htmlFor="user-role"
+                required
+                hint={isCurrentUser ? userFormText.selfRoleHint : undefined}
+              >
+                <CmsSelect
+                  value={roleEdit}
+                  disabled={isCurrentUser}
+                  onValueChange={(value) => setRoleEdit(value as "ADMIN" | "EDITOR")}
+                  options={[
+                    { value: "EDITOR", label: userFormText.roleEditorLabel },
+                    { value: "ADMIN", label: userFormText.roleAdminLabel },
+                  ]}
+                />
+              </CmsFormField>
+            </>
+          )}
 
-            <CmsFormField label={fieldText.name} htmlFor="user-name">
-              <CmsTextInput
-                id="user-name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
-            </CmsFormField>
+          <CmsFormField label={fieldText.name} htmlFor="user-name">
+            <CmsTextInput
+              id="user-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </CmsFormField>
 
-            <CmsFormField
-              label={fieldText.password}
-              htmlFor="user-password"
-              required={mode === "create"}
-              hint={
-                mode === "create" ? userFormText.passwordCreateHint : userFormText.passwordEditHint
-              }
-            >
-              <CmsTextInput
-                id="user-password"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            </CmsFormField>
-          </div>
+          <CmsFormField
+            label={fieldText.password}
+            htmlFor="user-password"
+            required={mode === "create"}
+            hint={
+              mode === "create" ? userFormText.passwordCreateHint : userFormText.passwordEditHint
+            }
+          >
+            <CmsTextInput
+              id="user-password"
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </CmsFormField>
         </div>
 
         {mode === "edit" ? (
-          <div className="min-h-0 overflow-y-auto pb-6 pl-1">
+          <div className="flex min-h-0 min-w-0 flex-col overflow-y-auto pb-6 lg:border-l lg:border-foreground lg:pl-6">
             <CmsArticleListPanel
               title={text.navigation.articles}
               emptyText={userFormText.articlesPanelEmpty}
               featuredAriaLabel={i18n.cms.lists.issues.articlesPanelFeaturedAria}
               articles={associatedArticles}
-              className="min-h-full"
+              className="min-h-0 flex-1"
             />
           </div>
         ) : null}

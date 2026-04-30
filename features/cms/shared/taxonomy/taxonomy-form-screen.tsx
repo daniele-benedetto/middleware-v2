@@ -64,7 +64,6 @@ type CmsTaxonomyFormText = {
   created: string;
   updated: string;
   activeLabel: string;
-  identitySection: string;
   descriptionEditorAriaLabel: string;
   statusSection: string;
   slugPreviewPlaceholder: string;
@@ -306,77 +305,68 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
         }
       />
 
-      <div
-        className={cn(
-          "grid min-h-0 flex-1 gap-6 overflow-hidden",
-          mode === "edit" && "lg:grid-cols-[minmax(0,1fr)_360px]",
-        )}
-      >
-        <div className="min-h-0 space-y-4 overflow-y-auto pb-6 pr-1">
-          <section className="space-y-4 border border-foreground p-4">
-            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-              {resourceText.identitySection}
-            </div>
+      <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="min-h-0 min-w-0 space-y-5 overflow-y-auto pb-6 lg:pr-6">
+          <CmsFormField label={fieldText.name} htmlFor="taxonomy-name" required>
+            <CmsTextInput
+              id="taxonomy-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </CmsFormField>
 
-            <CmsFormField label={fieldText.name} htmlFor="taxonomy-name" required>
-              <CmsTextInput
-                id="taxonomy-name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
-            </CmsFormField>
-
-            <CmsFormField label={fieldText.slug} htmlFor="taxonomy-slug" hint={slugHint}>
-              <div className="flex items-center gap-2">
-                {isSlugEditing ? (
-                  <CmsTextInput
-                    id="taxonomy-slug"
-                    className="flex-1"
-                    value={manualSlug}
-                    autoFocus
-                    onBlur={() => setIsSlugEditing(false)}
-                    onChange={(event) => {
-                      setManualSlug(event.target.value);
-                      setHasManualSlugOverride(true);
-                    }}
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={openSlugEditor}
-                    className={cn(
-                      "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
-                      "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
-                      resolvedSlug ? "text-foreground" : "text-border",
-                    )}
-                  >
-                    {slugPreview}
-                  </button>
-                )}
-
+          <CmsFormField label={fieldText.slug} htmlFor="taxonomy-slug" hint={slugHint}>
+            <div className="flex items-center gap-2">
+              {isSlugEditing ? (
+                <CmsTextInput
+                  id="taxonomy-slug"
+                  className="flex-1"
+                  value={manualSlug}
+                  autoFocus
+                  onBlur={() => setIsSlugEditing(false)}
+                  onChange={(event) => {
+                    setManualSlug(event.target.value);
+                    setHasManualSlugOverride(true);
+                  }}
+                />
+              ) : (
                 <button
                   type="button"
-                  onClick={regenerateSlugFromName}
+                  onClick={openSlugEditor}
                   className={cn(
-                    "inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3",
-                    "font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover",
+                    "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
+                    "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
+                    resolvedSlug ? "text-foreground" : "text-border",
                   )}
                 >
-                  {formText.regenerateSlug}
+                  {slugPreview}
                 </button>
-              </div>
-            </CmsFormField>
+              )}
 
-            <CmsFormField label={fieldText.description} htmlFor="taxonomy-description">
-              <CmsRichTextEditor
-                value={description}
-                onChange={setDescription}
-                ariaLabel={resourceText.descriptionEditorAriaLabel}
-              />
-            </CmsFormField>
-          </section>
+              <button
+                type="button"
+                onClick={regenerateSlugFromName}
+                className={cn(
+                  "inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3",
+                  "font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover",
+                )}
+              >
+                {formText.regenerateSlug}
+              </button>
+            </div>
+          </CmsFormField>
 
-          <section className="space-y-4 border border-foreground p-4">
+          <CmsFormField label={fieldText.description} htmlFor="taxonomy-description">
+            <CmsRichTextEditor
+              value={description}
+              onChange={setDescription}
+              ariaLabel={resourceText.descriptionEditorAriaLabel}
+            />
+          </CmsFormField>
+        </div>
+
+        <div className="flex min-h-0 min-w-0 flex-col gap-6 overflow-y-auto pb-6 lg:border-l lg:border-foreground lg:pl-6">
+          <section className="space-y-3">
             <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
               {resourceText.statusSection}
             </div>
@@ -387,19 +377,19 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
               onChange={setIsActive}
             />
           </section>
-        </div>
 
-        {mode === "edit" ? (
-          <div className="min-h-0 overflow-y-auto pb-6 pl-1">
-            <CmsArticleListPanel
-              title={text.navigation.articles}
-              emptyText={resourceText.articlesPanelEmpty}
-              featuredAriaLabel={i18n.cms.lists.issues.articlesPanelFeaturedAria}
-              articles={associatedArticles}
-              className="min-h-full"
-            />
-          </div>
-        ) : null}
+          {mode === "edit" ? (
+            <section className="flex min-h-0 flex-1 flex-col">
+              <CmsArticleListPanel
+                title={text.navigation.articles}
+                emptyText={resourceText.articlesPanelEmpty}
+                featuredAriaLabel={i18n.cms.lists.issues.articlesPanelFeaturedAria}
+                articles={associatedArticles}
+                className="min-h-0 flex-1"
+              />
+            </section>
+          ) : null}
+        </div>
       </div>
     </form>
   );

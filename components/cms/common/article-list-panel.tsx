@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowDown, ArrowUp, Star } from "lucide-react";
+import Link from "next/link";
 
 import { CmsActionButton, cmsTableClasses } from "@/components/cms/primitives";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -11,6 +12,7 @@ export type CmsArticleListPanelItem = {
   id: string;
   title: string;
   isFeatured: boolean;
+  href?: string;
 };
 
 type CmsArticleListPanelProps = {
@@ -87,7 +89,13 @@ export function CmsArticleListPanel({
                     </TableCell>
                   ) : null}
                   <TableCell className={cmsTableClasses.bodyCellTitle}>
-                    <span className="block truncate">{article.title}</span>
+                    {article.href ? (
+                      <Link href={article.href} className="block truncate hover:text-accent">
+                        {article.title}
+                      </Link>
+                    ) : (
+                      <span className="block truncate">{article.title}</span>
+                    )}
                   </TableCell>
                   <TableCell
                     className={cn(cmsTableClasses.bodyCellMeta, "w-px px-2 py-2 text-center")}

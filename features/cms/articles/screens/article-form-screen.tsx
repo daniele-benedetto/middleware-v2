@@ -1,21 +1,23 @@
 "use client";
 
 import { Check, ChevronDown } from "lucide-react";
-import { useMemo, useState } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 
 import { CmsErrorState } from "@/components/cms/common";
 import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
+  CmsBody,
   CmsCheckbox,
   CmsFormField,
+  CmsMetaText,
   CmsPageHeader,
   CmsRemovableTag,
   CmsRichTextEditor,
   CmsSearchBar,
   CmsSelect,
   CmsTextInput,
-  CmsTextarea,
   cmsToast,
 } from "@/components/cms/primitives";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -33,6 +35,8 @@ import {
   type CreateArticleInput,
   type UpdateArticleInput,
 } from "@/features/cms/articles/hooks/use-article-crud";
+import { CmsMediaImage } from "@/features/cms/media/components/media-image";
+import { CmsMediaPickerDialog } from "@/features/cms/media/components/media-picker-dialog";
 import {
   mapCrudDomainError,
   useCmsFormNavigation,
@@ -40,6 +44,7 @@ import {
 } from "@/features/cms/shared/forms";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
+import { extractCmsMediaPathname, resolveCmsMediaPreviewUrl } from "@/lib/media/blob";
 import {
   createArticleInputSchema,
   updateArticleInputSchema,
@@ -74,29 +79,139 @@ type ArticleFormOptionsInitialData = {
 type ArticleEditorialStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 type ArticleTagOption = { id: string; name: string; slug: string };
 
-function stringifyAudioChunks(value: unknown): string {
-  if (value == null) return "";
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return "";
-  }
-}
-
-function parseJsonOrUndefined(value: string): unknown {
-  if (!value.trim()) return undefined;
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
-}
-
 function tagIdsEqual(a: string[], b: string[]): boolean {
   if (a.length !== b.length) return false;
   const sortedA = [...a].sort();
   const sortedB = [...b].sort();
   return sortedA.every((value, index) => value === sortedB[index]);
+}
+
+function ArticleImagePreview({ url }: { url: string }) {
+  const pathname = extractCmsMediaPathname(url);
+
+  return (
+    <div className="relative aspect-[16/10] overflow-hidden border border-foreground bg-card-hover">
+      {pathname ? (
+        <CmsMediaImage
+          pathname={pathname}
+          alt="Article image preview"
+          sizes="(max-width: 1024px) 100vw, 40vw"
+          className="object-cover"
+        />
+      ) : (
+        <Image
+          fill
+          src={url}
+          alt="Article image preview"
+          sizes="(max-width: 1024px) 100vw, 40vw"
+          unoptimized
+          className="object-cover"
+        />
+      )}
+    </div>
+  );
+}
+
+function ArticleAudioPreview({ url }: { url: string }) {
+  return (
+    <div className="border border-foreground bg-card-hover p-4">
+      <audio controls preload="metadata" className="w-full" src={resolveCmsMediaPreviewUrl(url)}>
+        Audio preview
+      </audio>
+    </div>
+  );
+}
+
+function ArticleJsonPreview({ url }: { url: string }) {
+  const mediaText = i18n.cms.lists.media;
+  const [content, setContent] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    void fetch(resolveCmsMediaPreviewUrl(url), { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(mediaText.previewError);
+        }
+
+        const text = await response.text();
+
+        try {
+          setContent(JSON.stringify(JSON.parse(text), null, 2));
+        } catch {
+          setContent(text);
+        }
+      })
+      .catch((nextError) => {
+        if (!controller.signal.aborted) {
+          setError(nextError instanceof Error ? nextError.message : mediaText.previewError);
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, [mediaText.previewError, url]);
+
+  return (
+    <div className="space-y-2 border border-foreground bg-card-hover p-4">
+      <CmsMetaText variant="category">{mediaText.jsonPreviewLabel}</CmsMetaText>
+      {error ? (
+        <CmsBody size="sm" tone="accent">
+          {error}
+        </CmsBody>
+      ) : content ? (
+        <pre className="max-h-72 overflow-auto bg-white p-4 font-ui text-[12px] leading-[1.55] text-foreground whitespace-pre-wrap break-words">
+          {content}
+        </pre>
+      ) : (
+        <div className="font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
+          {mediaText.previewLoading}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ArticleMediaFieldPreview({
+  kind,
+  url,
+}: {
+  kind: "image" | "audio" | "json";
+  url: string;
+}) {
+  if (!url) {
+    return null;
+  }
+
+  if (kind === "image") {
+    return <ArticleImagePreview key={url} url={url} />;
+  }
+
+  if (kind === "audio") {
+    return <ArticleAudioPreview key={url} url={url} />;
+  }
+
+  return <ArticleJsonPreview key={url} url={url} />;
+}
+
+function extractAudioChunksUrl(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function isValidOptionalUrl(value: string) {
+  if (!value.trim()) {
+    return true;
+  }
+
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function resolvePublishedAtForStatus(status: ArticleEditorialStatus, currentValue: string | null) {
@@ -452,6 +567,7 @@ function ArticleFormContent({
     excerptRich: fieldText.excerpt,
     imageUrl: fieldText.imageUrl,
     audioUrl: fieldText.audioUrl,
+    audioChunks: fieldText.audioChunksUrl,
   };
 
   const [issueId, setIssueId] = useState(article?.issueId ?? "");
@@ -462,7 +578,10 @@ function ArticleFormContent({
   const [contentRich, setContentRich] = useState<unknown>(article?.contentRich ?? emptyContentDoc);
   const [imageUrl, setImageUrl] = useState(article?.imageUrl ?? "");
   const [audioUrl, setAudioUrl] = useState(article?.audioUrl ?? "");
-  const [audioChunks, setAudioChunks] = useState(stringifyAudioChunks(article?.audioChunks));
+  const [audioChunksUrl, setAudioChunksUrl] = useState(extractAudioChunksUrl(article?.audioChunks));
+  const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
+  const [isAudioPickerOpen, setIsAudioPickerOpen] = useState(false);
+  const [isJsonPickerOpen, setIsJsonPickerOpen] = useState(false);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(article?.tagIds ?? []);
   const [status, setStatus] = useState<ArticleEditorialStatus>(article?.status ?? "DRAFT");
   const [isFeatured, setIsFeatured] = useState(article?.isFeatured ?? false);
@@ -521,10 +640,8 @@ function ArticleFormContent({
   };
 
   const handleSubmit = async () => {
-    const parsedAudioChunks = parseJsonOrUndefined(audioChunks);
-
-    if (audioChunks.trim() && parsedAudioChunks == null) {
-      onValidationError(articleFormText.invalidAudioChunks);
+    if (!isValidOptionalUrl(audioChunksUrl)) {
+      onValidationError(`${fieldText.audioChunksUrl}: URL non valido.`);
       return;
     }
 
@@ -546,7 +663,7 @@ function ArticleFormContent({
             ...basePayload,
             imageUrl: imageUrl || undefined,
             audioUrl: audioUrl || undefined,
-            audioChunks: parsedAudioChunks ?? undefined,
+            audioChunks: audioChunksUrl || undefined,
             tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
           },
           articleFieldLabels,
@@ -567,7 +684,11 @@ function ArticleFormContent({
           ...basePayload,
           imageUrl: imageUrl ? imageUrl : null,
           audioUrl: audioUrl ? audioUrl : null,
-          audioChunks: audioChunks.trim() ? parsedAudioChunks : null,
+          audioChunks: audioChunksUrl
+            ? audioChunksUrl
+            : extractAudioChunksUrl(article?.audioChunks)
+              ? null
+              : undefined,
           status,
           publishedAt: resolvePublishedAtForStatus(status, article?.publishedAt ?? null),
           isFeatured,
@@ -614,96 +735,86 @@ function ArticleFormContent({
         }
       />
 
-      <div className="grid min-h-0 flex-1 gap-6 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="min-h-0 space-y-4 overflow-y-auto pb-6 pr-1">
-          <section className="space-y-4 border border-foreground p-4">
-            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-              {articleFormText.identitySection}
-            </div>
+      <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="min-h-0 min-w-0 space-y-5 overflow-y-auto pb-6 lg:pr-6">
+          <CmsFormField label={fieldText.title} htmlFor="article-title" required>
+            <CmsTextInput
+              id="article-title"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+            />
+          </CmsFormField>
 
-            <CmsFormField label={fieldText.title} htmlFor="article-title" required>
-              <CmsTextInput
-                id="article-title"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-              />
-            </CmsFormField>
-
-            <CmsFormField label={fieldText.slug} htmlFor="article-slug" required hint={slugHint}>
-              <div className="flex items-center gap-2">
-                {isSlugEditing ? (
-                  <CmsTextInput
-                    id="article-slug"
-                    className="flex-1"
-                    value={manualSlug}
-                    autoFocus
-                    onBlur={() => setIsSlugEditing(false)}
-                    onChange={(event) => {
-                      setManualSlug(event.target.value);
-                      setHasManualSlugOverride(true);
-                    }}
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={openSlugEditor}
-                    className={cn(
-                      "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
-                      "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
-                      resolvedSlug ? "text-foreground" : "text-border",
-                    )}
-                  >
-                    {slugPreview}
-                  </button>
-                )}
-
+          <CmsFormField label={fieldText.slug} htmlFor="article-slug" required hint={slugHint}>
+            <div className="flex items-center gap-2">
+              {isSlugEditing ? (
+                <CmsTextInput
+                  id="article-slug"
+                  className="flex-1"
+                  value={manualSlug}
+                  autoFocus
+                  onBlur={() => setIsSlugEditing(false)}
+                  onChange={(event) => {
+                    setManualSlug(event.target.value);
+                    setHasManualSlugOverride(true);
+                  }}
+                />
+              ) : (
                 <button
                   type="button"
-                  onClick={regenerateSlugFromTitle}
+                  onClick={openSlugEditor}
                   className={cn(
-                    "inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3",
-                    "font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover",
+                    "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
+                    "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
+                    resolvedSlug ? "text-foreground" : "text-border",
                   )}
                 >
-                  {formText.regenerateSlug}
+                  {slugPreview}
                 </button>
-              </div>
-            </CmsFormField>
-          </section>
+              )}
 
-          <section className="space-y-4 border border-foreground p-4">
-            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-              {articleFormText.contentSection}
+              <button
+                type="button"
+                onClick={regenerateSlugFromTitle}
+                className={cn(
+                  "inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3",
+                  "font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover",
+                )}
+              >
+                {formText.regenerateSlug}
+              </button>
             </div>
+          </CmsFormField>
 
-            <CmsFormField
-              label={articleFormText.contentFieldLabel}
-              htmlFor="article-content-rich"
-              required
-            >
-              <CmsRichTextEditor
-                value={contentRich}
-                onChange={setContentRich}
-                ariaLabel={articleFormText.contentEditorAriaLabel}
-              />
-            </CmsFormField>
+          <CmsFormField
+            label={articleFormText.contentFieldLabel}
+            htmlFor="article-content-rich"
+            required
+          >
+            <CmsRichTextEditor
+              value={contentRich}
+              onChange={setContentRich}
+              ariaLabel={articleFormText.contentEditorAriaLabel}
+            />
+          </CmsFormField>
 
-            <CmsFormField label={fieldText.excerpt} htmlFor="article-excerpt-rich">
-              <CmsRichTextEditor
-                value={excerptRich}
-                onChange={setExcerptRich}
-                ariaLabel={articleFormText.excerptEditorAriaLabel}
-              />
-            </CmsFormField>
-          </section>
+          <CmsFormField label={fieldText.excerpt} htmlFor="article-excerpt-rich">
+            <CmsRichTextEditor
+              value={excerptRich}
+              onChange={setExcerptRich}
+              ariaLabel={articleFormText.excerptEditorAriaLabel}
+            />
+          </CmsFormField>
+        </div>
 
-          <section className="space-y-4 border border-foreground p-4">
+        <div className="min-h-0 min-w-0 space-y-6 overflow-y-auto pb-6 lg:border-l lg:border-foreground lg:pl-6">
+          <section className="space-y-3">
             <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
               {articleFormText.publishingSection}
             </div>
 
             {mode === "edit" ? (
-              <>
+              <div className="space-y-4">
                 <CmsFormField label={listText.table.status} htmlFor="article-status" required>
                   <CmsSelect
                     value={status}
@@ -717,50 +828,50 @@ function ArticleFormContent({
                   checked={isFeatured}
                   onChange={setIsFeatured}
                 />
-              </>
+              </div>
             ) : (
               <div className="border border-dashed border-border px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
                 {articleFormText.createStatusHint}
               </div>
             )}
           </section>
-        </div>
 
-        <div className="min-h-0 space-y-4 overflow-y-auto pb-6 pl-1">
-          <section className="space-y-4 border border-foreground p-4">
+          <section className="space-y-3">
             <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
               {articleFormText.relationsSection}
             </div>
 
-            <CmsFormField label={fieldText.issue} htmlFor="article-issue" required>
-              <CmsSelect
-                value={issueId}
-                onValueChange={setIssueId}
-                options={issueOptions}
-                disabled={issuesLoading}
-              />
-            </CmsFormField>
+            <div className="space-y-4">
+              <CmsFormField label={fieldText.issue} htmlFor="article-issue" required>
+                <CmsSelect
+                  value={issueId}
+                  onValueChange={setIssueId}
+                  options={issueOptions}
+                  disabled={issuesLoading}
+                />
+              </CmsFormField>
 
-            <CmsFormField label={fieldText.category} htmlFor="article-category" required>
-              <CmsSelect
-                value={categoryId}
-                onValueChange={setCategoryId}
-                options={categoryOptions}
-                disabled={categoriesLoading}
-              />
-            </CmsFormField>
+              <CmsFormField label={fieldText.category} htmlFor="article-category" required>
+                <CmsSelect
+                  value={categoryId}
+                  onValueChange={setCategoryId}
+                  options={categoryOptions}
+                  disabled={categoriesLoading}
+                />
+              </CmsFormField>
 
-            <CmsFormField label={fieldText.author} htmlFor="article-author" required>
-              <CmsSelect
-                value={authorId}
-                onValueChange={setAuthorId}
-                options={userOptions}
-                disabled={authorsLoading}
-              />
-            </CmsFormField>
+              <CmsFormField label={fieldText.author} htmlFor="article-author" required>
+                <CmsSelect
+                  value={authorId}
+                  onValueChange={setAuthorId}
+                  options={userOptions}
+                  disabled={authorsLoading}
+                />
+              </CmsFormField>
+            </div>
           </section>
 
-          <section className="space-y-4 border border-foreground p-4">
+          <section className="space-y-3">
             <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
               {articleFormText.tagsSection}
             </div>
@@ -783,37 +894,163 @@ function ArticleFormContent({
             </CmsFormField>
           </section>
 
-          <section className="space-y-4 border border-foreground p-4">
+          <section className="space-y-3">
             <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
               {articleFormText.mediaSection}
             </div>
 
-            <CmsFormField label={fieldText.imageUrl} htmlFor="article-image-url">
-              <CmsTextInput
-                id="article-image-url"
-                value={imageUrl}
-                onChange={(event) => setImageUrl(event.target.value)}
-              />
-            </CmsFormField>
+            <div className="space-y-4">
+              <CmsFormField label={fieldText.imageUrl} htmlFor="article-image-url">
+                <div className="space-y-3">
+                  {imageUrl ? (
+                    <ArticleMediaFieldPreview kind="image" url={imageUrl} />
+                  ) : (
+                    <div className="flex aspect-[16/10] items-center justify-center border border-dashed border-border bg-card-hover px-6 text-center">
+                      <div className="space-y-1.5">
+                        <CmsMetaText variant="category">
+                          {articleFormText.imagePlaceholderTitle}
+                        </CmsMetaText>
+                        <CmsBody size="sm" tone="muted">
+                          {articleFormText.imagePlaceholderDescription}
+                        </CmsBody>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    <CmsActionButton
+                      variant="outline"
+                      size="xs"
+                      disabled={isMutating}
+                      onClick={() => setIsImagePickerOpen(true)}
+                    >
+                      {articleFormText.openImageLibrary}
+                    </CmsActionButton>
+                    {imageUrl ? (
+                      <CmsActionButton
+                        variant="ghost"
+                        size="xs"
+                        disabled={isMutating}
+                        onClick={() => setImageUrl("")}
+                      >
+                        {articleFormText.clearMediaField}
+                      </CmsActionButton>
+                    ) : null}
+                  </div>
+                </div>
+              </CmsFormField>
 
-            <CmsFormField label={fieldText.audioUrl} htmlFor="article-audio-url">
-              <CmsTextInput
-                id="article-audio-url"
-                value={audioUrl}
-                onChange={(event) => setAudioUrl(event.target.value)}
-              />
-            </CmsFormField>
+              <CmsFormField label={fieldText.audioUrl} htmlFor="article-audio-url">
+                <div className="space-y-3">
+                  {audioUrl ? (
+                    <ArticleMediaFieldPreview kind="audio" url={audioUrl} />
+                  ) : (
+                    <div className="flex aspect-[16/10] items-center justify-center border border-dashed border-border bg-card-hover px-6 text-center">
+                      <div className="space-y-1.5">
+                        <CmsMetaText variant="category">
+                          {articleFormText.audioPlaceholderTitle}
+                        </CmsMetaText>
+                        <CmsBody size="sm" tone="muted">
+                          {articleFormText.audioPlaceholderDescription}
+                        </CmsBody>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    <CmsActionButton
+                      variant="outline"
+                      size="xs"
+                      disabled={isMutating}
+                      onClick={() => setIsAudioPickerOpen(true)}
+                    >
+                      {articleFormText.openAudioLibrary}
+                    </CmsActionButton>
+                    {audioUrl ? (
+                      <CmsActionButton
+                        variant="ghost"
+                        size="xs"
+                        disabled={isMutating}
+                        onClick={() => setAudioUrl("")}
+                      >
+                        {articleFormText.clearMediaField}
+                      </CmsActionButton>
+                    ) : null}
+                  </div>
+                </div>
+              </CmsFormField>
 
-            <CmsFormField label={fieldText.audioChunksJson} htmlFor="article-audio-chunks">
-              <CmsTextarea
-                id="article-audio-chunks"
-                value={audioChunks}
-                onChange={(event) => setAudioChunks(event.target.value)}
-              />
-            </CmsFormField>
+              <CmsFormField label={fieldText.audioChunksUrl} htmlFor="article-audio-chunks-url">
+                <div className="space-y-3">
+                  {audioChunksUrl ? (
+                    <ArticleMediaFieldPreview kind="json" url={audioChunksUrl} />
+                  ) : (
+                    <div className="flex aspect-[16/10] items-center justify-center border border-dashed border-border bg-card-hover px-6 text-center">
+                      <div className="space-y-1.5">
+                        <CmsMetaText variant="category">
+                          {articleFormText.jsonPlaceholderTitle}
+                        </CmsMetaText>
+                        <CmsBody size="sm" tone="muted">
+                          {articleFormText.jsonPlaceholderDescription}
+                        </CmsBody>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    <CmsActionButton
+                      variant="outline"
+                      size="xs"
+                      disabled={isMutating}
+                      onClick={() => setIsJsonPickerOpen(true)}
+                    >
+                      {articleFormText.openJsonLibrary}
+                    </CmsActionButton>
+                    {audioChunksUrl ? (
+                      <CmsActionButton
+                        variant="ghost"
+                        size="xs"
+                        disabled={isMutating}
+                        onClick={() => setAudioChunksUrl("")}
+                      >
+                        {articleFormText.clearMediaField}
+                      </CmsActionButton>
+                    ) : null}
+                  </div>
+                </div>
+              </CmsFormField>
+            </div>
           </section>
         </div>
       </div>
+
+      <CmsMediaPickerDialog
+        open={isImagePickerOpen}
+        onOpenChange={setIsImagePickerOpen}
+        title={articleFormText.imageLibraryTitle}
+        description={articleFormText.imageLibraryDescription}
+        selectActionLabel={articleFormText.selectImage}
+        allowedKinds={["image"]}
+        selectionMode="select-inline"
+        onSelectUrl={setImageUrl}
+      />
+
+      <CmsMediaPickerDialog
+        open={isAudioPickerOpen}
+        onOpenChange={setIsAudioPickerOpen}
+        title={articleFormText.audioLibraryTitle}
+        description={articleFormText.audioLibraryDescription}
+        selectActionLabel={articleFormText.selectAudio}
+        allowedKinds={["audio"]}
+        onSelectUrl={setAudioUrl}
+      />
+
+      <CmsMediaPickerDialog
+        open={isJsonPickerOpen}
+        onOpenChange={setIsJsonPickerOpen}
+        title={articleFormText.jsonLibraryTitle}
+        description={articleFormText.jsonLibraryDescription}
+        selectActionLabel={articleFormText.selectJson}
+        allowedKinds={["json"]}
+        onSelectUrl={setAudioChunksUrl}
+      />
     </form>
   );
 }

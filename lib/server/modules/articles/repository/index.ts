@@ -331,4 +331,88 @@ export const articlesRepository = {
       });
     });
   },
+  async listMediaReferences(urls: string[]) {
+    if (urls.length === 0) {
+      return [];
+    }
+
+    return prisma.article.findMany({
+      where: {
+        OR: [
+          { imageUrl: { in: urls } },
+          { audioUrl: { in: urls } },
+          ...urls.map((url) => ({ audioChunks: { equals: url } })),
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        imageUrl: true,
+        audioUrl: true,
+        audioChunks: true,
+      },
+    });
+  },
+  async replaceMediaUrl(currentUrl: string, nextUrl: string) {
+    if (currentUrl === nextUrl) {
+      return [];
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const impactedArticles = await tx.article.findMany({
+        where: {
+          OR: [
+            { imageUrl: currentUrl },
+            { audioUrl: currentUrl },
+            { audioChunks: { equals: currentUrl } },
+          ],
+        },
+        select: { id: true },
+      });
+
+      await Promise.all([
+        tx.article.updateMany({
+          where: { imageUrl: currentUrl },
+          data: { imageUrl: nextUrl },
+        }),
+        tx.article.updateMany({
+          where: { audioUrl: currentUrl },
+          data: { audioUrl: nextUrl },
+        }),
+        tx.article.updateMany({
+          where: { audioChunks: { equals: currentUrl } },
+          data: { audioChunks: nextUrl },
+        }),
+      ]);
+
+      return [...new Set(impactedArticles.map((article) => article.id))];
+    });
+  },
+  async clearMediaUrl(url: string) {
+    return prisma.$transaction(async (tx) => {
+      const impactedArticles = await tx.article.findMany({
+        where: {
+          OR: [{ imageUrl: url }, { audioUrl: url }, { audioChunks: { equals: url } }],
+        },
+        select: { id: true },
+      });
+
+      await Promise.all([
+        tx.article.updateMany({
+          where: { imageUrl: url },
+          data: { imageUrl: null },
+        }),
+        tx.article.updateMany({
+          where: { audioUrl: url },
+          data: { audioUrl: null },
+        }),
+        tx.article.updateMany({
+          where: { audioChunks: { equals: url } },
+          data: { audioChunks: Prisma.JsonNull },
+        }),
+      ]);
+
+      return [...new Set(impactedArticles.map((article) => article.id))];
+    });
+  },
 };
