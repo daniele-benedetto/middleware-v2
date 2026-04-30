@@ -22,7 +22,7 @@ export function CmsMediaLibraryLoading({
             <CmsSearchBar
               value=""
               readOnly
-              className="[&_[type=search]]:pointer-events-none [&_[type=search]]:text-transparent"
+              className="**:[[type=search]]:pointer-events-none **:[[type=search]]:text-transparent"
             />
           </div>
         </CmsSurface>
@@ -33,7 +33,7 @@ export function CmsMediaLibraryLoading({
           {Array.from({ length: tileCount }).map((_, index) => (
             <Skeleton
               key={`media-loading-${index}`}
-              className="aspect-[4/3] w-full rounded-none border border-foreground bg-card-hover"
+              className="aspect-4/3 w-full rounded-none border border-foreground bg-card-hover"
             />
           ))}
         </div>

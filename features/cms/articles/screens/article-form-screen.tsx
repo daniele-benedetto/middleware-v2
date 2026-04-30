@@ -90,7 +90,7 @@ function ArticleImagePreview({ url }: { url: string }) {
   const pathname = extractCmsMediaPathname(url);
 
   return (
-    <div className="relative aspect-[16/10] overflow-hidden border border-foreground bg-card-hover">
+    <div className="relative aspect-16/10 overflow-hidden border border-foreground bg-card-hover">
       {pathname ? (
         <CmsMediaImage
           pathname={pathname}
@@ -163,7 +163,7 @@ function ArticleJsonPreview({ url }: { url: string }) {
           {error}
         </CmsBody>
       ) : content ? (
-        <pre className="max-h-72 overflow-auto bg-white p-4 font-ui text-[12px] leading-[1.55] text-foreground whitespace-pre-wrap break-words">
+        <pre className="max-h-72 overflow-auto bg-white p-4 font-ui text-[12px] leading-[1.55] text-foreground whitespace-pre-wrap wrap-break-word">
           {content}
         </pre>
       ) : (
@@ -905,7 +905,7 @@ function ArticleFormContent({
                   {imageUrl ? (
                     <ArticleMediaFieldPreview kind="image" url={imageUrl} />
                   ) : (
-                    <div className="flex aspect-[16/10] items-center justify-center border border-dashed border-border bg-card-hover px-6 text-center">
+                    <div className="flex aspect-16/10 items-center justify-center border border-dashed border-border bg-card-hover px-6 text-center">
                       <div className="space-y-1.5">
                         <CmsMetaText variant="category">
                           {articleFormText.imagePlaceholderTitle}
@@ -944,7 +944,7 @@ function ArticleFormContent({
                   {audioUrl ? (
                     <ArticleMediaFieldPreview kind="audio" url={audioUrl} />
                   ) : (
-                    <div className="flex aspect-[16/10] items-center justify-center border border-dashed border-border bg-card-hover px-6 text-center">
+                    <div className="flex aspect-16/10 items-center justify-center border border-dashed border-border bg-card-hover px-6 text-center">
                       <div className="space-y-1.5">
                         <CmsMetaText variant="category">
                           {articleFormText.audioPlaceholderTitle}
@@ -983,7 +983,7 @@ function ArticleFormContent({
                   {audioChunksUrl ? (
                     <ArticleMediaFieldPreview kind="json" url={audioChunksUrl} />
                   ) : (
-                    <div className="flex aspect-[16/10] items-center justify-center border border-dashed border-border bg-card-hover px-6 text-center">
+                    <div className="flex aspect-16/10 items-center justify-center border border-dashed border-border bg-card-hover px-6 text-center">
                       <div className="space-y-1.5">
                         <CmsMetaText variant="category">
                           {articleFormText.jsonPlaceholderTitle}

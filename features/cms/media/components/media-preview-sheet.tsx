@@ -138,7 +138,7 @@ export function CmsMediaPreviewSheet({
               <section className="space-y-3">
                 <div className="relative overflow-hidden border border-foreground bg-white">
                   {item.kind === "image" ? (
-                    <div className="relative aspect-[16/10]">
+                    <div className="relative aspect-16/10">
                       <CmsMediaImage
                         pathname={item.pathname}
                         alt={item.fileName}
@@ -173,7 +173,7 @@ export function CmsMediaPreviewSheet({
                           {previewError}
                         </div>
                       ) : (
-                        <pre className="max-h-120 overflow-auto bg-card-hover p-4 font-ui text-[12px] leading-[1.55] text-foreground whitespace-pre-wrap break-words">
+                        <pre className="max-h-120 overflow-auto bg-card-hover p-4 font-ui text-[12px] leading-[1.55] text-foreground whitespace-pre-wrap wrap-break-word">
                           {jsonPreview}
                         </pre>
                       )}

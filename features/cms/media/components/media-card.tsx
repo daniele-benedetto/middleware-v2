@@ -44,7 +44,7 @@ export function CmsMediaCard({
           )}
         />
       ) : null}
-      <div className="relative aspect-[4/3] overflow-hidden bg-card-hover">
+      <div className="relative aspect-4/3 overflow-hidden bg-card-hover">
         {item.kind === "image" ? (
           <CmsMediaImage
             pathname={item.pathname}

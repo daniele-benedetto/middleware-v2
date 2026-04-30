@@ -22,8 +22,8 @@ import { i18n } from "@/lib/i18n";
 import {
   buildCmsMediaUploadAccept,
   buildMediaPathname,
-  cmsMediaDefaultKinds,
   cmsMediaBlobAccess,
+  cmsMediaDefaultKinds,
   cmsMediaUploadMaxSizeInBytes,
   inferMediaKind,
   parseMediaPathname,
@@ -155,7 +155,7 @@ export function CmsMediaUploadDialog({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5 px-6 py-5">
-          <DialogDescription className="max-w-120 font-editorial text-[15px] leading-[1.5] text-foreground">
+          <DialogDescription className="max-w-120 font-editorial text-[15px] leading-normal text-foreground">
             {mediaText.uploadDescription}
           </DialogDescription>
 
