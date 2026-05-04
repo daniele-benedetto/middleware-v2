@@ -16,6 +16,7 @@ import {
   CmsRemovableTag,
   CmsRichTextEditor,
   CmsSearchBar,
+  CmsSearchSelect,
   CmsSelect,
   CmsTextInput,
   cmsToast,
@@ -843,29 +844,32 @@ function ArticleFormContent({
 
             <div className="space-y-4">
               <CmsFormField label={fieldText.issue} htmlFor="article-issue" required>
-                <CmsSelect
+                <CmsSearchSelect
                   value={issueId}
                   onValueChange={setIssueId}
                   options={issueOptions}
                   disabled={issuesLoading}
+                  loading={issuesLoading}
                 />
               </CmsFormField>
 
               <CmsFormField label={fieldText.category} htmlFor="article-category" required>
-                <CmsSelect
+                <CmsSearchSelect
                   value={categoryId}
                   onValueChange={setCategoryId}
                   options={categoryOptions}
                   disabled={categoriesLoading}
+                  loading={categoriesLoading}
                 />
               </CmsFormField>
 
               <CmsFormField label={fieldText.author} htmlFor="article-author" required>
-                <CmsSelect
+                <CmsSearchSelect
                   value={authorId}
                   onValueChange={setAuthorId}
                   options={userOptions}
                   disabled={authorsLoading}
+                  loading={authorsLoading}
                 />
               </CmsFormField>
             </div>

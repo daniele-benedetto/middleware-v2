@@ -122,6 +122,8 @@ export const cmsIt = {
     generatedFromTitleHint: "Generato dal titolo se vuoto",
     generatedFromNameHint: "Generato dal nome se vuoto",
     selectPlaceholder: "— SELEZIONA —",
+    searchSelectEmpty: "Nessun risultato corrispondente.",
+    searchSelectNoOptions: "Nessuna opzione disponibile.",
     characterCount: (current: number, max?: number) =>
       max ? `${current} / ${max} CAR.` : `${current} CAR.`,
     fields: {

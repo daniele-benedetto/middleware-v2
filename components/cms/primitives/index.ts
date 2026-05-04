@@ -22,6 +22,7 @@ export {
   CmsCheckbox,
   CmsFormLabel,
   CmsRadio,
+  CmsSearchSelect,
   CmsSelect,
   CmsTextarea,
   CmsTextInput,

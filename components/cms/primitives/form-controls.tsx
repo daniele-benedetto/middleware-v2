@@ -1,8 +1,13 @@
+"use client";
+
 import { cva, type VariantProps } from "class-variance-authority";
+import { Check, ChevronDown, Search } from "lucide-react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
 import { Checkbox as ShadcnCheckbox } from "@/components/ui/checkbox";
 import { Input as ShadcnInput } from "@/components/ui/input";
 import { Label as ShadcnLabel } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   RadioGroup as ShadcnRadioGroup,
   RadioGroupItem as ShadcnRadioGroupItem,
@@ -230,6 +235,192 @@ export function CmsSelect({
         ))}
       </ShadcnSelectContent>
     </ShadcnSelect>
+  );
+}
+
+type CmsSearchSelectOption = {
+  value: string;
+  label: string;
+  displayLabel?: string;
+  description?: string;
+  keywords?: string;
+};
+
+type CmsSearchSelectProps = {
+  value?: string;
+  defaultValue?: string;
+  placeholder?: string;
+  disabled?: boolean;
+  loading?: boolean;
+  loadingText?: string;
+  searchPlaceholder?: string;
+  searchEmptyText?: string;
+  emptyText?: string;
+  onValueChange?: (value: string) => void;
+  options: CmsSearchSelectOption[];
+} & VariantProps<typeof cmsSelectTriggerVariants>;
+
+export function CmsSearchSelect({
+  value,
+  defaultValue,
+  placeholder = i18n.cms.forms.selectPlaceholder,
+  disabled,
+  loading = false,
+  loadingText,
+  searchPlaceholder = i18n.cms.listToolbar.searchPlaceholder,
+  searchEmptyText = i18n.cms.forms.searchSelectEmpty,
+  emptyText = i18n.cms.forms.searchSelectNoOptions,
+  state,
+  onValueChange,
+  options,
+}: CmsSearchSelectProps) {
+  const [internalValue, setInternalValue] = useState(defaultValue ?? "");
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const deferredQuery = useDeferredValue(query);
+
+  const isControlled = value !== undefined;
+  const currentValue = isControlled ? value : internalValue;
+
+  const filteredOptions = useMemo(() => {
+    const normalized = deferredQuery.trim().toLowerCase();
+
+    if (!normalized) {
+      return options;
+    }
+
+    return options.filter((option) => {
+      const haystack = [option.label, option.displayLabel, option.description, option.keywords]
+        .filter((value): value is string => Boolean(value))
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(normalized);
+    });
+  }, [deferredQuery, options]);
+
+  const selectedOption = options.find((option) => option.value === currentValue);
+  const selectedLabel = selectedOption?.displayLabel ?? selectedOption?.label;
+  const triggerLabel = selectedLabel ?? (loading ? (loadingText ?? placeholder) : placeholder);
+  const isPlaceholder = !selectedLabel;
+  const resolvedState: CmsControlState = disabled ? "disabled" : (state ?? "default");
+  const hasOptions = options.length > 0;
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const focusTimeout = window.setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+
+    return () => window.clearTimeout(focusTimeout);
+  }, [open]);
+
+  const handleSelect = (next: string) => {
+    if (!isControlled) {
+      setInternalValue(next);
+    }
+    onValueChange?.(next);
+    setQuery("");
+    setOpen(false);
+  };
+
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      setQuery("");
+    }
+    setOpen(next);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={handleOpenChange}>
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            disabled={disabled || loading}
+            data-placeholder={isPlaceholder ? "" : undefined}
+            className={cn(
+              cmsSelectTriggerVariants({ state: resolvedState }),
+              "cursor-pointer flex items-center",
+              disabled || loading ? "" : "hover:bg-card-hover",
+            )}
+          />
+        }
+      >
+        <span
+          className={cn(
+            "line-clamp-1 flex-1 text-left",
+            isPlaceholder ? "text-border" : "text-foreground",
+          )}
+        >
+          {triggerLabel}
+        </span>
+        <ChevronDown className="size-3 shrink-0 text-foreground" />
+      </PopoverTrigger>
+
+      <PopoverContent
+        sideOffset={0}
+        className="w-(--anchor-width) rounded-none border border-accent bg-white p-0 shadow-none ring-0"
+      >
+        {hasOptions ? (
+          <>
+            <div className="flex items-center gap-2 border-b border-border bg-white px-3 py-2">
+              <Search className="size-3.5 shrink-0 text-muted-foreground" />
+              <input
+                ref={inputRef}
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={searchPlaceholder}
+                className={cn(
+                  "flex-1 appearance-none border-0 bg-transparent p-0 outline-none",
+                  "font-ui text-[12px] uppercase tracking-[0.04em] text-foreground placeholder:text-border",
+                  "focus-visible:outline-none focus-visible:ring-0",
+                )}
+              />
+            </div>
+            <div className="cms-scroll max-h-72 overflow-y-auto">
+              {filteredOptions.length > 0 ? (
+                filteredOptions.map((option) => {
+                  const selected = option.value === currentValue;
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => handleSelect(option.value)}
+                      className={cn(
+                        "flex w-full cursor-pointer items-center justify-between gap-2 border-0 py-2 pr-3 pl-3 text-left",
+                        "font-ui text-[11px] uppercase tracking-[0.04em] transition-none",
+                        "hover:bg-accent hover:text-white",
+                        selected
+                          ? "bg-card-hover text-foreground"
+                          : "bg-white text-muted-foreground",
+                      )}
+                    >
+                      <span className="line-clamp-1">{option.label}</span>
+                      {selected ? <Check className="size-3.5 shrink-0 text-accent" /> : null}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="px-3 py-3 font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
+                  {searchEmptyText}
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="px-3 py-3 font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
+            {loading ? (loadingText ?? emptyText) : emptyText}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
 

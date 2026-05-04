@@ -16,6 +16,7 @@ import {
   CmsActionButton,
   CmsDataTableShell,
   CmsPageHeader,
+  CmsSearchSelect,
   CmsSelect,
   cmsTableClasses,
   cmsToast,
@@ -712,31 +713,34 @@ export function CmsArticlesListScreen({
                   ]}
                 />
 
-                <CmsSelect
+                <CmsSearchSelect
                   value={input.query?.issueId ?? "all"}
                   onValueChange={(value) => {
                     updateSearchParams({ issueId: value === "all" ? undefined : value, page: 1 });
                   }}
                   options={issueOptions}
+                  loading={issuesOptionsQuery.isPending}
                 />
               </div>
             </div>
 
             <div className="grid gap-3 lg:grid-cols-4">
-              <CmsSelect
+              <CmsSearchSelect
                 value={input.query?.categoryId ?? "all"}
                 onValueChange={(value) => {
                   updateSearchParams({ categoryId: value === "all" ? undefined : value, page: 1 });
                 }}
                 options={categoryOptions}
+                loading={categoriesOptionsQuery.isPending}
               />
 
-              <CmsSelect
+              <CmsSearchSelect
                 value={input.query?.authorId ?? "all"}
                 onValueChange={(value) => {
                   updateSearchParams({ authorId: value === "all" ? undefined : value, page: 1 });
                 }}
                 options={authorOptions}
+                loading={authorsOptionsQuery.isPending}
               />
 
               <CmsSelect
