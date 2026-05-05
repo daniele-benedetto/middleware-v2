@@ -1,26 +1,21 @@
 import "server-only";
 
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { USER_ROLES } from "@/lib/server/auth/roles";
 
 import type { UserRole } from "@/lib/server/auth/roles";
 import type { AuthSession } from "@/lib/server/auth/types";
+
+function isUserRole(value: string): value is UserRole {
+  return value === USER_ROLES.ADMIN || value === USER_ROLES.EDITOR;
+}
 
 async function resolveSession(headers: Headers): Promise<AuthSession | null> {
   const session = await auth.api.getSession({
     headers,
   });
 
-  if (!session?.user) {
-    return null;
-  }
-
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-
-  if (!dbUser) {
+  if (!session?.user || !isUserRole(session.user.role)) {
     return null;
   }
 
@@ -29,7 +24,7 @@ async function resolveSession(headers: Headers): Promise<AuthSession | null> {
       id: session.user.id,
       email: session.user.email,
       name: session.user.name,
-      role: dbUser.role as UserRole,
+      role: session.user.role,
     },
   };
 }

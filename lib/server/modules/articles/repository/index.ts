@@ -31,6 +31,53 @@ export type UpdateArticlePersistInput = UpdateArticleInput & {
   excerptRich?: unknown | null;
 };
 
+const ARTICLE_DETAIL_SELECT = {
+  id: true,
+  issueId: true,
+  categoryId: true,
+  authorId: true,
+  title: true,
+  slug: true,
+  status: true,
+  publishedAt: true,
+  isFeatured: true,
+  position: true,
+  createdAt: true,
+  updatedAt: true,
+  excerpt: true,
+  excerptRich: true,
+  contentRich: true,
+  imageUrl: true,
+  audioUrl: true,
+  audioChunks: true,
+  issue: {
+    select: {
+      title: true,
+    },
+  },
+  category: {
+    select: {
+      name: true,
+    },
+  },
+  author: {
+    select: {
+      name: true,
+      email: true,
+    },
+  },
+  tags: {
+    select: {
+      tagId: true,
+    },
+  },
+  _count: {
+    select: {
+      tags: true,
+    },
+  },
+} as const satisfies Prisma.ArticleSelect;
+
 const toArticleWhereInput = (query: ListArticlesQuery): Prisma.ArticleWhereInput => {
   return {
     status: query.status,
@@ -107,52 +154,7 @@ export const articlesRepository = {
   async getById(id: string) {
     return prisma.article.findUnique({
       where: { id },
-      select: {
-        id: true,
-        issueId: true,
-        categoryId: true,
-        authorId: true,
-        title: true,
-        slug: true,
-        status: true,
-        publishedAt: true,
-        isFeatured: true,
-        position: true,
-        createdAt: true,
-        updatedAt: true,
-        excerpt: true,
-        excerptRich: true,
-        contentRich: true,
-        imageUrl: true,
-        audioUrl: true,
-        audioChunks: true,
-        issue: {
-          select: {
-            title: true,
-          },
-        },
-        category: {
-          select: {
-            name: true,
-          },
-        },
-        author: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-        tags: {
-          select: {
-            tagId: true,
-          },
-        },
-        _count: {
-          select: {
-            tags: true,
-          },
-        },
-      },
+      select: ARTICLE_DETAIL_SELECT,
     });
   },
   async create(input: CreateArticlePersistInput) {
@@ -174,13 +176,23 @@ export const articlesRepository = {
     const tagIds = Array.from(new Set(input.tagIds ?? []));
 
     return prisma.$transaction(async (tx) => {
-      const article = await tx.article.create({
-        data,
-      });
+      const created = await tx.article.create({ data, select: { id: true } });
 
       if (tagIds.length > 0) {
         await tx.articleTag.createMany({
-          data: tagIds.map((tagId) => ({ articleId: article.id, tagId })),
+          data: tagIds.map((tagId) => ({ articleId: created.id, tagId })),
+        });
+      }
+
+      const article = await tx.article.findUnique({
+        where: { id: created.id },
+        select: ARTICLE_DETAIL_SELECT,
+      });
+
+      if (!article) {
+        throw new Prisma.PrismaClientKnownRequestError("Article not found", {
+          code: "P2025",
+          clientVersion: Prisma.prismaVersion.client,
         });
       }
 
@@ -220,6 +232,7 @@ export const articlesRepository = {
     return prisma.article.update({
       where: { id },
       data,
+      select: ARTICLE_DETAIL_SELECT,
     });
   },
   async delete(id: string) {
@@ -250,6 +263,7 @@ export const articlesRepository = {
 
       return tx.article.findUnique({
         where: { id },
+        select: ARTICLE_DETAIL_SELECT,
       });
     });
   },
@@ -260,6 +274,7 @@ export const articlesRepository = {
         status: "PUBLISHED",
         publishedAt: new Date(),
       },
+      select: ARTICLE_DETAIL_SELECT,
     });
   },
   async unpublish(id: string) {
@@ -269,6 +284,7 @@ export const articlesRepository = {
         status: "DRAFT",
         publishedAt: null,
       },
+      select: ARTICLE_DETAIL_SELECT,
     });
   },
   async archive(id: string) {
@@ -278,6 +294,7 @@ export const articlesRepository = {
         status: "ARCHIVED",
         publishedAt: null,
       },
+      select: ARTICLE_DETAIL_SELECT,
     });
   },
   async feature(id: string) {
@@ -286,6 +303,7 @@ export const articlesRepository = {
       data: {
         isFeatured: true,
       },
+      select: ARTICLE_DETAIL_SELECT,
     });
   },
   async unfeature(id: string) {
@@ -294,6 +312,7 @@ export const articlesRepository = {
       data: {
         isFeatured: false,
       },
+      select: ARTICLE_DETAIL_SELECT,
     });
   },
   async reorder(input: ReorderArticlesInput) {
@@ -316,14 +335,15 @@ export const articlesRepository = {
         });
       }
 
-      for (const [index, articleId] of input.orderedArticleIds.entries()) {
-        await tx.article.update({
-          where: { id: articleId },
-          data: {
-            position: index,
-          },
-        });
-      }
+      await Promise.all(
+        input.orderedArticleIds.map((articleId, index) =>
+          tx.article.update({
+            where: { id: articleId },
+            data: { position: index },
+            select: { id: true },
+          }),
+        ),
+      );
 
       return tx.article.findMany({
         where: { issueId: input.issueId },

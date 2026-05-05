@@ -22,9 +22,8 @@ export function CmsEmptyState({
 
   return (
     <CmsShellSystemState
-      size="sm"
+      size="md"
       title={title}
-      code="400"
       description={resolvedDescription}
       descriptionTone="muted"
       actions={action}

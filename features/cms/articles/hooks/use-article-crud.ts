@@ -43,10 +43,6 @@ export function useArticleSyncTags() {
   return trpc.articles.syncTags.useMutation();
 }
 
-export function useArticlesReorder() {
-  return trpc.articles.reorder.useMutation();
-}
-
 export function useTagOptions(options?: { initialData?: TagOptionsOutput }) {
   return trpc.tags.list.useQuery(articleTagOptionsInput, {
     ...cmsOptionsQueryOptions,

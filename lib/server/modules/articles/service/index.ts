@@ -228,13 +228,7 @@ export const articlesService = {
 
     try {
       const article = await articlesRepository.create(normalizedInput);
-      const withRelations = await articlesRepository.getById(article.id);
-
-      if (!withRelations) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
-      return toArticleDto(withRelations);
+      return toArticleDto(article);
     } catch (error) {
       if (isUniqueError(error)) {
         throw new ApiError(409, "CONFLICT", "Article slug already exists for this issue");
@@ -267,13 +261,7 @@ export const articlesService = {
     assertPublishedAtConsistency(nextStatus, nextPublishedAt ?? null);
 
     try {
-      await articlesRepository.update(id, normalizedInput);
-      const article = await articlesRepository.getById(id);
-
-      if (!article) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
+      const article = await articlesRepository.update(id, normalizedInput);
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {
@@ -310,13 +298,7 @@ export const articlesService = {
         throw new ApiError(404, "NOT_FOUND", "Article not found");
       }
 
-      const withRelations = await articlesRepository.getById(article.id);
-
-      if (!withRelations) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
-      return toArticleDto(withRelations);
+      return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {
         throw new ApiError(404, "NOT_FOUND", "Article not found");
@@ -341,13 +323,7 @@ export const articlesService = {
     }
 
     try {
-      await articlesRepository.publish(id);
-      const article = await articlesRepository.getById(id);
-
-      if (!article) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
+      const article = await articlesRepository.publish(id);
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {
@@ -358,14 +334,18 @@ export const articlesService = {
     }
   },
   async unpublish(id: string) {
+    const current = await articlesRepository.getById(id);
+
+    if (!current) {
+      throw new ApiError(404, "NOT_FOUND", "Article not found");
+    }
+
+    if (current.status === "DRAFT" && current.publishedAt === null) {
+      return toArticleDto(current);
+    }
+
     try {
-      await articlesRepository.unpublish(id);
-      const article = await articlesRepository.getById(id);
-
-      if (!article) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
+      const article = await articlesRepository.unpublish(id);
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {
@@ -376,14 +356,18 @@ export const articlesService = {
     }
   },
   async archive(id: string) {
+    const current = await articlesRepository.getById(id);
+
+    if (!current) {
+      throw new ApiError(404, "NOT_FOUND", "Article not found");
+    }
+
+    if (current.status === "ARCHIVED" && current.publishedAt === null) {
+      return toArticleDto(current);
+    }
+
     try {
-      await articlesRepository.archive(id);
-      const article = await articlesRepository.getById(id);
-
-      if (!article) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
+      const article = await articlesRepository.archive(id);
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {
@@ -394,14 +378,18 @@ export const articlesService = {
     }
   },
   async feature(id: string) {
+    const current = await articlesRepository.getById(id);
+
+    if (!current) {
+      throw new ApiError(404, "NOT_FOUND", "Article not found");
+    }
+
+    if (current.isFeatured) {
+      return toArticleDto(current);
+    }
+
     try {
-      await articlesRepository.feature(id);
-      const article = await articlesRepository.getById(id);
-
-      if (!article) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
+      const article = await articlesRepository.feature(id);
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {
@@ -412,14 +400,18 @@ export const articlesService = {
     }
   },
   async unfeature(id: string) {
+    const current = await articlesRepository.getById(id);
+
+    if (!current) {
+      throw new ApiError(404, "NOT_FOUND", "Article not found");
+    }
+
+    if (!current.isFeatured) {
+      return toArticleDto(current);
+    }
+
     try {
-      await articlesRepository.unfeature(id);
-      const article = await articlesRepository.getById(id);
-
-      if (!article) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
+      const article = await articlesRepository.unfeature(id);
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {

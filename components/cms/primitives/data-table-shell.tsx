@@ -80,27 +80,3 @@ export const cmsTableClasses = {
     "px-3.5 py-2.75 border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
   ),
 } as const;
-
-export type CmsSortDirection = "asc" | "desc" | null;
-
-type CmsSortIconProps = {
-  direction: CmsSortDirection;
-  className?: string;
-};
-
-export function CmsSortIcon({ direction, className }: CmsSortIconProps) {
-  const symbol = direction === "asc" ? "↑" : direction === "desc" ? "↓" : "↕";
-  const active = direction !== null;
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        "ml-1.5 inline-block font-ui text-[10px] leading-none",
-        active ? "text-accent" : "text-border",
-        className,
-      )}
-    >
-      {symbol}
-    </span>
-  );
-}

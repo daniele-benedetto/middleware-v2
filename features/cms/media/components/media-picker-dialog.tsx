@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import { CmsActionButton, CmsMetaText } from "@/components/cms/primitives";
@@ -11,12 +12,20 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CmsMediaLibrary } from "@/features/cms/media/components/media-library";
+import { CmsMediaLibraryLoading } from "@/features/cms/media/components/media-library-loading";
 import { i18n } from "@/lib/i18n";
 
 import type { CmsSupportedMediaKind } from "@/lib/media/blob";
 import type { RouterOutputs } from "@/lib/trpc/types";
 import type { PutBlobResult } from "@vercel/blob";
+
+const CmsMediaLibrary = dynamic(
+  () => import("@/features/cms/media/components/media-library").then((mod) => mod.CmsMediaLibrary),
+  {
+    ssr: false,
+    loading: () => <CmsMediaLibraryLoading />,
+  },
+);
 
 type MediaItem = RouterOutputs["media"]["list"]["items"][number];
 

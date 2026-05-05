@@ -1,8 +1,9 @@
 "use client";
 
-import { Check, ChevronDown } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
 
 import { CmsErrorState } from "@/components/cms/common";
 import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
@@ -13,16 +14,15 @@ import {
   CmsFormField,
   CmsMetaText,
   CmsPageHeader,
-  CmsRemovableTag,
   CmsRichTextEditor,
-  CmsSearchBar,
   CmsSearchSelect,
   CmsSelect,
   CmsTextInput,
   cmsToast,
 } from "@/components/cms/primitives";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CmsArticleFormLoading } from "@/features/cms/articles/components/article-form-loading";
+import { ArticleMediaFieldPreview } from "@/features/cms/articles/components/article-media-field-preview";
+import { ArticleTagsMultiSelect } from "@/features/cms/articles/components/article-tags-multi-select";
 import {
   useArticleById,
   useArticleCreate,
@@ -36,7 +36,6 @@ import {
   type CreateArticleInput,
   type UpdateArticleInput,
 } from "@/features/cms/articles/hooks/use-article-crud";
-import { CmsMediaImage } from "@/features/cms/media/components/media-image";
 import { CmsMediaPickerDialog } from "@/features/cms/media/components/media-picker-dialog";
 import {
   mapCrudDomainError,
@@ -45,7 +44,6 @@ import {
 } from "@/features/cms/shared/forms";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
-import { extractCmsMediaPathname, resolveCmsMediaPreviewUrl } from "@/lib/media/blob";
 import {
   createArticleInputSchema,
   updateArticleInputSchema,
@@ -78,124 +76,32 @@ type ArticleFormOptionsInitialData = {
 };
 
 type ArticleEditorialStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
-type ArticleTagOption = { id: string; name: string; slug: string };
+
+const articleStatusOptions = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
+
+const articleFormStateSchema = z.object({
+  issueId: z.string().uuid(),
+  categoryId: z.string().uuid(),
+  authorId: z.string().uuid(),
+  title: z.string().trim().min(1),
+  slug: z.string().trim(),
+  excerptRich: z.unknown(),
+  contentRich: z.unknown(),
+  imageUrl: z.string().trim().refine(isValidOptionalUrl),
+  audioUrl: z.string().trim().refine(isValidOptionalUrl),
+  audioChunksUrl: z.string().trim().refine(isValidOptionalUrl),
+  tagIds: z.array(z.string().uuid()),
+  status: z.enum(articleStatusOptions),
+  isFeatured: z.boolean(),
+});
+
+type ArticleFormValues = z.infer<typeof articleFormStateSchema>;
 
 function tagIdsEqual(a: string[], b: string[]): boolean {
   if (a.length !== b.length) return false;
   const sortedA = [...a].sort();
   const sortedB = [...b].sort();
   return sortedA.every((value, index) => value === sortedB[index]);
-}
-
-function ArticleImagePreview({ url }: { url: string }) {
-  const pathname = extractCmsMediaPathname(url);
-
-  return (
-    <div className="relative aspect-16/10 overflow-hidden border border-foreground bg-card-hover">
-      {pathname ? (
-        <CmsMediaImage
-          pathname={pathname}
-          alt="Article image preview"
-          sizes="(max-width: 1024px) 100vw, 40vw"
-          className="object-cover"
-        />
-      ) : (
-        <Image
-          fill
-          src={url}
-          alt="Article image preview"
-          sizes="(max-width: 1024px) 100vw, 40vw"
-          unoptimized
-          className="object-cover"
-        />
-      )}
-    </div>
-  );
-}
-
-function ArticleAudioPreview({ url }: { url: string }) {
-  return (
-    <div className="border border-foreground bg-card-hover p-4">
-      <audio controls preload="metadata" className="w-full" src={resolveCmsMediaPreviewUrl(url)}>
-        Audio preview
-      </audio>
-    </div>
-  );
-}
-
-function ArticleJsonPreview({ url }: { url: string }) {
-  const mediaText = i18n.cms.lists.media;
-  const [content, setContent] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    void fetch(resolveCmsMediaPreviewUrl(url), { signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error(mediaText.previewError);
-        }
-
-        const text = await response.text();
-
-        try {
-          setContent(JSON.stringify(JSON.parse(text), null, 2));
-        } catch {
-          setContent(text);
-        }
-      })
-      .catch((nextError) => {
-        if (!controller.signal.aborted) {
-          setError(nextError instanceof Error ? nextError.message : mediaText.previewError);
-        }
-      });
-
-    return () => {
-      controller.abort();
-    };
-  }, [mediaText.previewError, url]);
-
-  return (
-    <div className="space-y-2 border border-foreground bg-card-hover p-4">
-      <CmsMetaText variant="category">{mediaText.jsonPreviewLabel}</CmsMetaText>
-      {error ? (
-        <CmsBody size="sm" tone="accent">
-          {error}
-        </CmsBody>
-      ) : content ? (
-        <pre className="max-h-72 overflow-auto bg-white p-4 font-ui text-[12px] leading-[1.55] text-foreground whitespace-pre-wrap wrap-break-word">
-          {content}
-        </pre>
-      ) : (
-        <div className="font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
-          {mediaText.previewLoading}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ArticleMediaFieldPreview({
-  kind,
-  url,
-}: {
-  kind: "image" | "audio" | "json";
-  url: string;
-}) {
-  if (!url) {
-    return null;
-  }
-
-  if (kind === "image") {
-    return <ArticleImagePreview key={url} url={url} />;
-  }
-
-  if (kind === "audio") {
-    return <ArticleAudioPreview key={url} url={url} />;
-  }
-
-  return <ArticleJsonPreview key={url} url={url} />;
 }
 
 function extractAudioChunksUrl(value: unknown) {
@@ -228,160 +134,64 @@ function resolvePublishedAtForStatus(status: ArticleEditorialStatus, currentValu
   return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
 }
 
-function ArticleTagsMultiSelect({
-  availableTags,
-  selectedTagIds,
-  disabled,
-  loading,
-  loadingText,
-  emptyText,
-  searchPlaceholder,
-  searchEmptyText,
-  triggerEmptyText,
-  clearText,
-  selectedCountText,
-  onChange,
-}: {
-  availableTags: ArticleTagOption[];
-  selectedTagIds: string[];
-  disabled: boolean;
-  loading: boolean;
-  loadingText: string;
-  emptyText: string;
-  searchPlaceholder: string;
-  searchEmptyText: string;
-  triggerEmptyText: string;
-  clearText: string;
-  selectedCountText: (count: number) => string;
-  onChange: (tagId: string, checked: boolean) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
+function getArticleFormDefaultValues(article?: ArticleDetail): ArticleFormValues {
+  return {
+    issueId: article?.issueId ?? "",
+    categoryId: article?.categoryId ?? "",
+    authorId: article?.authorId ?? "",
+    title: article?.title ?? "",
+    slug: article?.slug ?? "",
+    excerptRich: article?.excerptRich ?? emptyContentDoc,
+    contentRich: article?.contentRich ?? emptyContentDoc,
+    imageUrl: article?.imageUrl ?? "",
+    audioUrl: article?.audioUrl ?? "",
+    audioChunksUrl: extractAudioChunksUrl(article?.audioChunks),
+    tagIds: article?.tagIds ?? [],
+    status: article?.status ?? "DRAFT",
+    isFeatured: article?.isFeatured ?? false,
+  };
+}
 
-  const filteredTags = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+function buildCreateArticlePayload(values: ArticleFormValues, resolvedSlug: string) {
+  return {
+    issueId: values.issueId,
+    categoryId: values.categoryId,
+    authorId: values.authorId,
+    title: values.title,
+    slug: resolvedSlug,
+    excerptRich: values.excerptRich,
+    contentRich: values.contentRich,
+    imageUrl: values.imageUrl || undefined,
+    audioUrl: values.audioUrl || undefined,
+    audioChunks: values.audioChunksUrl || undefined,
+    tagIds: values.tagIds.length > 0 ? values.tagIds : undefined,
+  };
+}
 
-    if (!normalizedQuery) {
-      return availableTags;
-    }
-
-    return availableTags.filter((tag) => {
-      return (
-        tag.name.toLowerCase().includes(normalizedQuery) ||
-        tag.slug.toLowerCase().includes(normalizedQuery)
-      );
-    });
-  }, [availableTags, query]);
-
-  const selectedTags = useMemo(() => {
-    const selectedIds = new Set(selectedTagIds);
-    return availableTags.filter((tag) => selectedIds.has(tag.id));
-  }, [availableTags, selectedTagIds]);
-
-  const triggerLabel = loading
-    ? loadingText
-    : selectedTagIds.length > 0
-      ? selectedCountText(selectedTagIds.length)
-      : triggerEmptyText;
-
-  return (
-    <div className="space-y-3">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          render={
-            <button
-              id="article-tags"
-              type="button"
-              disabled={disabled || loading}
-              className={cn(
-                "flex min-h-10 w-full items-center justify-between border border-foreground bg-white px-3 text-left",
-                "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
-                (disabled || loading) &&
-                  "cursor-not-allowed border-border bg-card-hover text-border hover:bg-card-hover",
-              )}
-            />
-          }
-        >
-          <span
-            className={selectedTagIds.length > 0 && !loading ? "text-foreground" : "text-border"}
-          >
-            {triggerLabel}
-          </span>
-          <ChevronDown className="size-3.5 text-muted-foreground" />
-        </PopoverTrigger>
-
-        <PopoverContent className="w-(--anchor-width) max-w-88 border-0 p-0">
-          {availableTags.length > 0 ? (
-            <CmsSearchBar
-              className="border-0 p-0 focus-within:border-0 [&>div]:border-b-0 [&>div>div]:border-r-0 [&>div>div_svg]:text-foreground"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={searchPlaceholder}
-              active={Boolean(query)}
-              resultsSlot={
-                <div className="max-h-64 overflow-y-auto">
-                  {filteredTags.length > 0 ? (
-                    filteredTags.map((tag) => {
-                      const checked = selectedTagIds.includes(tag.id);
-
-                      return (
-                        <button
-                          key={tag.id}
-                          type="button"
-                          onClick={() => onChange(tag.id, !checked)}
-                          className={cn(
-                            "flex w-full items-center justify-between border-b border-card-hover px-3.5 py-2 text-left last:border-b-0",
-                            "font-ui text-[11px] uppercase tracking-[0.04em]",
-                            checked
-                              ? "bg-card-hover text-foreground"
-                              : "bg-white text-muted-foreground hover:bg-card-hover hover:text-foreground",
-                          )}
-                        >
-                          <span>
-                            {tag.name}
-                            <span className="ml-2 text-[10px] text-border">{tag.slug}</span>
-                          </span>
-                          {checked ? <Check className="size-3.5 text-accent" /> : null}
-                        </button>
-                      );
-                    })
-                  ) : (
-                    <div className="px-3.5 py-3 font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
-                      {searchEmptyText}
-                    </div>
-                  )}
-                </div>
-              }
-            />
-          ) : (
-            <div className="font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
-              {loading ? loadingText : emptyText}
-            </div>
-          )}
-        </PopoverContent>
-      </Popover>
-
-      {selectedTags.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
-          {selectedTags.map((tag) => (
-            <CmsRemovableTag key={tag.id} onRemove={() => onChange(tag.id, false)}>
-              {tag.name}
-            </CmsRemovableTag>
-          ))}
-
-          {selectedTags.length > 1 ? (
-            <CmsActionButton
-              variant="ghost"
-              size="xs"
-              onClick={() => selectedTagIds.forEach((id) => onChange(id, false))}
-            >
-              {clearText}
-            </CmsActionButton>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
-  );
+function buildUpdateArticlePayload(
+  values: ArticleFormValues,
+  article: ArticleDetail | undefined,
+  resolvedSlug: string,
+) {
+  return {
+    issueId: values.issueId,
+    categoryId: values.categoryId,
+    authorId: values.authorId,
+    title: values.title,
+    slug: resolvedSlug,
+    excerptRich: values.excerptRich,
+    contentRich: values.contentRich,
+    imageUrl: values.imageUrl ? values.imageUrl : null,
+    audioUrl: values.audioUrl ? values.audioUrl : null,
+    audioChunks: values.audioChunksUrl
+      ? values.audioChunksUrl
+      : extractAudioChunksUrl(article?.audioChunks)
+        ? null
+        : undefined,
+    status: values.status,
+    publishedAt: resolvePublishedAtForStatus(values.status, article?.publishedAt ?? null),
+    isFeatured: values.isFeatured,
+  };
 }
 
 export function CmsArticleFormScreen({
@@ -559,7 +369,7 @@ function ArticleFormContent({
   const fieldText = formText.fields;
   const listText = text.lists.articles;
   const commonText = text.common;
-  const articleFieldLabels = {
+  const formFieldLabels = {
     issueId: fieldText.issue,
     categoryId: fieldText.category,
     authorId: fieldText.author,
@@ -568,40 +378,34 @@ function ArticleFormContent({
     excerptRich: fieldText.excerpt,
     imageUrl: fieldText.imageUrl,
     audioUrl: fieldText.audioUrl,
+    audioChunksUrl: fieldText.audioChunksUrl,
+  };
+
+  const payloadFieldLabels = {
+    ...formFieldLabels,
     audioChunks: fieldText.audioChunksUrl,
   };
 
-  const [issueId, setIssueId] = useState(article?.issueId ?? "");
-  const [categoryId, setCategoryId] = useState(article?.categoryId ?? "");
-  const [authorId, setAuthorId] = useState(article?.authorId ?? "");
-  const [title, setTitle] = useState(article?.title ?? "");
-  const [excerptRich, setExcerptRich] = useState<unknown>(article?.excerptRich ?? emptyContentDoc);
-  const [contentRich, setContentRich] = useState<unknown>(article?.contentRich ?? emptyContentDoc);
-  const [imageUrl, setImageUrl] = useState(article?.imageUrl ?? "");
-  const [audioUrl, setAudioUrl] = useState(article?.audioUrl ?? "");
-  const [audioChunksUrl, setAudioChunksUrl] = useState(extractAudioChunksUrl(article?.audioChunks));
+  const { control, getValues, handleSubmit, setValue } = useForm<ArticleFormValues>({
+    resolver: zodResolver(articleFormStateSchema),
+    defaultValues: getArticleFormDefaultValues(article),
+  });
+
   const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
   const [isAudioPickerOpen, setIsAudioPickerOpen] = useState(false);
   const [isJsonPickerOpen, setIsJsonPickerOpen] = useState(false);
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(article?.tagIds ?? []);
-  const [status, setStatus] = useState<ArticleEditorialStatus>(article?.status ?? "DRAFT");
-  const [isFeatured, setIsFeatured] = useState(article?.isFeatured ?? false);
-
-  const initialAutoSlug = useMemo(() => normalizeSlug(article?.title ?? ""), [article?.title]);
-  const [manualSlug, setManualSlug] = useState(article?.slug ?? "");
+  const initialAutoSlug = normalizeSlug(article?.title ?? "");
   const [hasManualSlugOverride, setHasManualSlugOverride] = useState(
     Boolean(article?.slug) && article?.slug !== initialAutoSlug,
   );
   const [isSlugEditing, setIsSlugEditing] = useState(false);
 
-  const toggleTag = (tagId: string, checked: boolean) => {
-    setSelectedTagIds((current) => {
-      if (checked) {
-        return current.includes(tagId) ? current : [...current, tagId];
-      }
-      return current.filter((id) => id !== tagId);
-    });
-  };
+  const title = useWatch({ control, name: "title" }) ?? "";
+  const manualSlug = useWatch({ control, name: "slug" }) ?? "";
+  const imageUrl = useWatch({ control, name: "imageUrl" }) ?? "";
+  const audioUrl = useWatch({ control, name: "audioUrl" }) ?? "";
+  const audioChunksUrl = useWatch({ control, name: "audioChunksUrl" }) ?? "";
+  const selectedTagIds = useWatch({ control, name: "tagIds" }) ?? [];
 
   const issueOptions = issuesAvailable.map((issue) => ({
     value: issue.id,
@@ -630,44 +434,33 @@ function ArticleFormContent({
     : formText.generatedFromTitleHint;
 
   const openSlugEditor = () => {
-    setManualSlug(resolvedSlug);
+    setValue("slug", resolvedSlug, { shouldDirty: true });
     setIsSlugEditing(true);
   };
 
   const regenerateSlugFromTitle = () => {
-    setManualSlug(autoSlug);
+    setValue("slug", autoSlug, { shouldDirty: true, shouldValidate: true });
     setHasManualSlugOverride(false);
     setIsSlugEditing(false);
   };
 
-  const handleSubmit = async () => {
-    if (!isValidOptionalUrl(audioChunksUrl)) {
-      onValidationError(`${fieldText.audioChunksUrl}: URL non valido.`);
-      return;
-    }
+  const toggleTag = (tagId: string, checked: boolean) => {
+    const nextTagIds = checked
+      ? selectedTagIds.includes(tagId)
+        ? selectedTagIds
+        : [...selectedTagIds, tagId]
+      : selectedTagIds.filter((id) => id !== tagId);
 
-    const basePayload = {
-      issueId,
-      categoryId,
-      authorId,
-      title,
-      slug: hasManualSlugOverride ? manualSlug : resolvedSlug,
-      excerptRich,
-      contentRich,
-    };
+    setValue("tagIds", nextTagIds, { shouldDirty: true, shouldValidate: true });
+  };
 
+  const handleValidSubmit = async (values: ArticleFormValues) => {
     try {
       if (mode === "create") {
         const validation = validateFormInput(
           createArticleInputSchema,
-          {
-            ...basePayload,
-            imageUrl: imageUrl || undefined,
-            audioUrl: audioUrl || undefined,
-            audioChunks: audioChunksUrl || undefined,
-            tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
-          },
-          articleFieldLabels,
+          buildCreateArticlePayload(values, hasManualSlugOverride ? values.slug : autoSlug),
+          payloadFieldLabels,
         );
 
         if (!validation.ok) {
@@ -681,20 +474,8 @@ function ArticleFormContent({
 
       const validation = validateFormInput(
         updateArticleInputSchema,
-        {
-          ...basePayload,
-          imageUrl: imageUrl ? imageUrl : null,
-          audioUrl: audioUrl ? audioUrl : null,
-          audioChunks: audioChunksUrl
-            ? audioChunksUrl
-            : extractAudioChunksUrl(article?.audioChunks)
-              ? null
-              : undefined,
-          status,
-          publishedAt: resolvePublishedAtForStatus(status, article?.publishedAt ?? null),
-          isFeatured,
-        },
-        articleFieldLabels,
+        buildUpdateArticlePayload(values, article, hasManualSlugOverride ? values.slug : autoSlug),
+        payloadFieldLabels,
       );
 
       if (!validation.ok) {
@@ -702,25 +483,30 @@ function ArticleFormContent({
         return;
       }
 
-      const tagsChanged = !tagIdsEqual(selectedTagIds, article?.tagIds ?? []);
+      const tagsChanged = !tagIdsEqual(values.tagIds, article?.tagIds ?? []);
 
       await onUpdate({
         id: articleId!,
         data: validation.value,
-        tagIds: tagsChanged ? selectedTagIds : undefined,
+        tagIds: tagsChanged ? values.tagIds : undefined,
       });
     } catch (error) {
       onMutationError(error);
     }
   };
 
+  const handleInvalidSubmit = () => {
+    const validation = validateFormInput(articleFormStateSchema, getValues(), formFieldLabels);
+
+    if (!validation.ok) {
+      onValidationError(validation.message);
+    }
+  };
+
   return (
     <form
       className="flex min-h-0 flex-1 flex-col overflow-hidden"
-      onSubmit={(event) => {
-        event.preventDefault();
-        void handleSubmit();
-      }}
+      onSubmit={handleSubmit(handleValidSubmit, handleInvalidSubmit)}
     >
       <CmsPageHeader
         title={mode === "create" ? articleFormText.createTitle : articleFormText.editTitle}
@@ -739,26 +525,44 @@ function ArticleFormContent({
       <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="cms-scroll min-h-0 min-w-0 space-y-5 overflow-y-auto pb-6 lg:pr-6">
           <CmsFormField label={fieldText.title} htmlFor="article-title" required>
-            <CmsTextInput
-              id="article-title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
+            <Controller
+              name="title"
+              control={control}
+              render={({ field, fieldState }) => (
+                <CmsTextInput
+                  id="article-title"
+                  value={field.value}
+                  state={fieldState.error ? "error" : undefined}
+                  onBlur={field.onBlur}
+                  onChange={(event) => field.onChange(event.target.value)}
+                />
+              )}
             />
           </CmsFormField>
 
           <CmsFormField label={fieldText.slug} htmlFor="article-slug" required hint={slugHint}>
             <div className="flex items-center gap-2">
               {isSlugEditing ? (
-                <CmsTextInput
-                  id="article-slug"
-                  className="flex-1"
-                  value={manualSlug}
-                  autoFocus
-                  onBlur={() => setIsSlugEditing(false)}
-                  onChange={(event) => {
-                    setManualSlug(event.target.value);
-                    setHasManualSlugOverride(true);
-                  }}
+                <Controller
+                  name="slug"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <CmsTextInput
+                      id="article-slug"
+                      className="flex-1"
+                      value={field.value}
+                      autoFocus
+                      state={fieldState.error ? "error" : undefined}
+                      onBlur={() => {
+                        field.onBlur();
+                        setIsSlugEditing(false);
+                      }}
+                      onChange={(event) => {
+                        field.onChange(event.target.value);
+                        setHasManualSlugOverride(true);
+                      }}
+                    />
+                  )}
                 />
               ) : (
                 <button
@@ -792,18 +596,30 @@ function ArticleFormContent({
             htmlFor="article-content-rich"
             required
           >
-            <CmsRichTextEditor
-              value={contentRich}
-              onChange={setContentRich}
-              ariaLabel={articleFormText.contentEditorAriaLabel}
+            <Controller
+              name="contentRich"
+              control={control}
+              render={({ field }) => (
+                <CmsRichTextEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  ariaLabel={articleFormText.contentEditorAriaLabel}
+                />
+              )}
             />
           </CmsFormField>
 
           <CmsFormField label={fieldText.excerpt} htmlFor="article-excerpt-rich">
-            <CmsRichTextEditor
-              value={excerptRich}
-              onChange={setExcerptRich}
-              ariaLabel={articleFormText.excerptEditorAriaLabel}
+            <Controller
+              name="excerptRich"
+              control={control}
+              render={({ field }) => (
+                <CmsRichTextEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  ariaLabel={articleFormText.excerptEditorAriaLabel}
+                />
+              )}
             />
           </CmsFormField>
         </div>
@@ -817,17 +633,30 @@ function ArticleFormContent({
             {mode === "edit" ? (
               <div className="space-y-4">
                 <CmsFormField label={listText.table.status} htmlFor="article-status" required>
-                  <CmsSelect
-                    value={status}
-                    onValueChange={(value) => setStatus(value as ArticleEditorialStatus)}
-                    options={statusOptions}
+                  <Controller
+                    name="status"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <CmsSelect
+                        value={field.value}
+                        state={fieldState.error ? "error" : undefined}
+                        onValueChange={(value) => field.onChange(value as ArticleEditorialStatus)}
+                        options={statusOptions}
+                      />
+                    )}
                   />
                 </CmsFormField>
 
-                <CmsCheckbox
-                  label={commonText.featured}
-                  checked={isFeatured}
-                  onChange={setIsFeatured}
+                <Controller
+                  name="isFeatured"
+                  control={control}
+                  render={({ field }) => (
+                    <CmsCheckbox
+                      label={commonText.featured}
+                      checked={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
                 />
               </div>
             ) : (
@@ -844,32 +673,53 @@ function ArticleFormContent({
 
             <div className="space-y-4">
               <CmsFormField label={fieldText.issue} htmlFor="article-issue" required>
-                <CmsSearchSelect
-                  value={issueId}
-                  onValueChange={setIssueId}
-                  options={issueOptions}
-                  disabled={issuesLoading}
-                  loading={issuesLoading}
+                <Controller
+                  name="issueId"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <CmsSearchSelect
+                      value={field.value}
+                      state={fieldState.error ? "error" : undefined}
+                      onValueChange={field.onChange}
+                      options={issueOptions}
+                      disabled={issuesLoading}
+                      loading={issuesLoading}
+                    />
+                  )}
                 />
               </CmsFormField>
 
               <CmsFormField label={fieldText.category} htmlFor="article-category" required>
-                <CmsSearchSelect
-                  value={categoryId}
-                  onValueChange={setCategoryId}
-                  options={categoryOptions}
-                  disabled={categoriesLoading}
-                  loading={categoriesLoading}
+                <Controller
+                  name="categoryId"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <CmsSearchSelect
+                      value={field.value}
+                      state={fieldState.error ? "error" : undefined}
+                      onValueChange={field.onChange}
+                      options={categoryOptions}
+                      disabled={categoriesLoading}
+                      loading={categoriesLoading}
+                    />
+                  )}
                 />
               </CmsFormField>
 
               <CmsFormField label={fieldText.author} htmlFor="article-author" required>
-                <CmsSearchSelect
-                  value={authorId}
-                  onValueChange={setAuthorId}
-                  options={userOptions}
-                  disabled={authorsLoading}
-                  loading={authorsLoading}
+                <Controller
+                  name="authorId"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <CmsSearchSelect
+                      value={field.value}
+                      state={fieldState.error ? "error" : undefined}
+                      onValueChange={field.onChange}
+                      options={userOptions}
+                      disabled={authorsLoading}
+                      loading={authorsLoading}
+                    />
+                  )}
                 />
               </CmsFormField>
             </div>
@@ -934,7 +784,9 @@ function ArticleFormContent({
                         variant="ghost"
                         size="xs"
                         disabled={isMutating}
-                        onClick={() => setImageUrl("")}
+                        onClick={() =>
+                          setValue("imageUrl", "", { shouldDirty: true, shouldValidate: true })
+                        }
                       >
                         {articleFormText.clearMediaField}
                       </CmsActionButton>
@@ -973,7 +825,9 @@ function ArticleFormContent({
                         variant="ghost"
                         size="xs"
                         disabled={isMutating}
-                        onClick={() => setAudioUrl("")}
+                        onClick={() =>
+                          setValue("audioUrl", "", { shouldDirty: true, shouldValidate: true })
+                        }
                       >
                         {articleFormText.clearMediaField}
                       </CmsActionButton>
@@ -1012,7 +866,12 @@ function ArticleFormContent({
                         variant="ghost"
                         size="xs"
                         disabled={isMutating}
-                        onClick={() => setAudioChunksUrl("")}
+                        onClick={() =>
+                          setValue("audioChunksUrl", "", {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
+                        }
                       >
                         {articleFormText.clearMediaField}
                       </CmsActionButton>
@@ -1033,7 +892,9 @@ function ArticleFormContent({
         selectActionLabel={articleFormText.selectImage}
         allowedKinds={["image"]}
         selectionMode="select-inline"
-        onSelectUrl={setImageUrl}
+        onSelectUrl={(url) =>
+          setValue("imageUrl", url, { shouldDirty: true, shouldValidate: true })
+        }
       />
 
       <CmsMediaPickerDialog
@@ -1043,7 +904,9 @@ function ArticleFormContent({
         description={articleFormText.audioLibraryDescription}
         selectActionLabel={articleFormText.selectAudio}
         allowedKinds={["audio"]}
-        onSelectUrl={setAudioUrl}
+        onSelectUrl={(url) =>
+          setValue("audioUrl", url, { shouldDirty: true, shouldValidate: true })
+        }
       />
 
       <CmsMediaPickerDialog
@@ -1053,7 +916,9 @@ function ArticleFormContent({
         description={articleFormText.jsonLibraryDescription}
         selectActionLabel={articleFormText.selectJson}
         allowedKinds={["json"]}
-        onSelectUrl={setAudioChunksUrl}
+        onSelectUrl={(url) =>
+          setValue("audioChunksUrl", url, { shouldDirty: true, shouldValidate: true })
+        }
       />
     </form>
   );

@@ -11,12 +11,7 @@ export { CmsPagination, CmsStepper } from "@/components/cms/primitives/paginatio
 export { CmsSearchBar, CmsSearchResultItem } from "@/components/cms/primitives/search-bar";
 export { cmsToast } from "@/components/cms/primitives/toast";
 export { CmsTooltip } from "@/components/cms/primitives/tooltip";
-export {
-  CmsDataTableShell,
-  CmsSortIcon,
-  cmsTableClasses,
-  type CmsSortDirection,
-} from "@/components/cms/primitives/data-table-shell";
+export { CmsDataTableShell, cmsTableClasses } from "@/components/cms/primitives/data-table-shell";
 export { CmsEditorialCard } from "@/components/cms/primitives/editorial-card";
 export {
   CmsCheckbox,
@@ -32,7 +27,7 @@ export { CmsFormField } from "@/components/cms/primitives/form-field";
 export { CmsLayoutShell } from "@/components/cms/primitives/layout-shell";
 export { CmsMetaRow } from "@/components/cms/primitives/meta-row";
 export { CmsPageHeader } from "@/components/cms/primitives/page-header";
-export { CmsRichTextEditor } from "@/components/cms/primitives/rich-text-editor";
+export { CmsRichTextEditor } from "@/components/cms/primitives/rich-text-editor-lazy";
 export { CmsSectionDivider } from "@/components/cms/primitives/section-divider";
 export { CmsSurface } from "@/components/cms/primitives/surface";
 export {

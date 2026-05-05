@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
 
 import {
-  CmsBulkActionBar,
   CmsEmptyState,
   CmsErrorState,
   CmsLoadingState,
@@ -16,8 +15,6 @@ import {
   CmsActionButton,
   CmsDataTableShell,
   CmsPageHeader,
-  CmsSearchSelect,
-  CmsSelect,
   cmsTableClasses,
   cmsToast,
 } from "@/components/cms/primitives";
@@ -30,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ArticlesListToolbar } from "@/features/cms/articles/components/articles-list-toolbar";
 import {
   executeBulk,
   mapBulkQuickActionError,
@@ -37,7 +35,6 @@ import {
   resolveQuickActions,
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
-import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import {
   cmsOptionsQueryOptions,
   useArticlesListQuery,
@@ -592,6 +589,14 @@ export function CmsArticlesListScreen({
     isPending: isActionPending || reorder.isReorderMode,
   });
 
+  const toolbarBulkActions = resolvedBulkActions.map((action) => ({
+    ...action,
+    onExecute: () => {
+      const bulkAction = action.id.replace("bulk-", "") as ArticleQuickAction;
+      return runBulkAction(bulkAction);
+    },
+  }));
+
   const hasActiveFilters = Boolean(
     input.query?.q ||
     input.query?.status !== undefined ||
@@ -651,122 +656,56 @@ export function CmsArticlesListScreen({
 
       <CmsDataTableShell
         toolbar={
-          <div className="space-y-3">
-            <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
-              {commonText.totalRecords(listQuery.pagination.total)}
-            </div>
-            {reorder.isReorderMode ? (
-              <div className="border border-accent px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-accent">
-                {listText.reorderHelp}
-              </div>
-            ) : null}
-            <CmsBulkActionBar
-              selectedCount={selection.selectedCount}
-              actions={resolvedBulkActions.map((action) => ({
-                ...action,
-                onExecute: () => {
-                  const bulkAction = action.id.replace("bulk-", "") as ArticleQuickAction;
-                  return runBulkAction(bulkAction);
-                },
-              }))}
-              onSelectAll={
-                pageArticleIds.length > 0 && !allSelectedOnPage
-                  ? () => selection.setSelection(pageArticleIds)
-                  : undefined
-              }
-              selectAllDisabled={isActionPending || reorder.isReorderMode}
-            />
-
-            <div className="grid gap-3 lg:grid-cols-3">
-              <CmsListSearchInput
-                key={input.query?.q ?? ""}
-                initialValue={input.query?.q ?? ""}
-                placeholder={text.listToolbar.searchPlaceholder}
-                className="col-span-1 lg:col-span-1"
-                onSearchChange={(value) => {
-                  updateSearchParams({ q: value, page: 1 });
-                }}
-              />
-              <div className="grid grid-cols-3 gap-2 col-span-1 lg:col-span-2">
-                <CmsSelect
-                  value={input.query?.status ?? "all"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ status: value === "all" ? undefined : value, page: 1 });
-                  }}
-                  options={[
-                    { value: "all", label: optionsText.statusAllMasculine },
-                    { value: "DRAFT", label: listText.statusDraft },
-                    { value: "PUBLISHED", label: listText.statusPublished },
-                    { value: "ARCHIVED", label: listText.statusArchived },
-                  ]}
-                />
-
-                <CmsSelect
-                  value={input.query?.featured ?? "all"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ featured: value === "all" ? undefined : value, page: 1 });
-                  }}
-                  options={[
-                    { value: "all", label: optionsText.featuredAll },
-                    { value: "true", label: optionsText.featuredOnly },
-                    { value: "false", label: optionsText.notFeaturedOnly },
-                  ]}
-                />
-
-                <CmsSearchSelect
-                  value={input.query?.issueId ?? "all"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ issueId: value === "all" ? undefined : value, page: 1 });
-                  }}
-                  options={issueOptions}
-                  loading={issuesOptionsQuery.isPending}
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-3 lg:grid-cols-4">
-              <CmsSearchSelect
-                value={input.query?.categoryId ?? "all"}
-                onValueChange={(value) => {
-                  updateSearchParams({ categoryId: value === "all" ? undefined : value, page: 1 });
-                }}
-                options={categoryOptions}
-                loading={categoriesOptionsQuery.isPending}
-              />
-
-              <CmsSearchSelect
-                value={input.query?.authorId ?? "all"}
-                onValueChange={(value) => {
-                  updateSearchParams({ authorId: value === "all" ? undefined : value, page: 1 });
-                }}
-                options={authorOptions}
-                loading={authorsOptionsQuery.isPending}
-              />
-
-              <CmsSelect
-                value={input.query?.sortBy ?? "createdAt"}
-                onValueChange={(value) => {
-                  updateSearchParams({ sortBy: value, page: 1 });
-                }}
-                options={[
-                  { value: "createdAt", label: optionsText.sortCreatedAt },
-                  { value: "publishedAt", label: optionsText.sortPublishedAt },
-                  { value: "position", label: optionsText.sortPosition },
-                ]}
-              />
-
-              <CmsSelect
-                value={input.query?.sortOrder ?? "desc"}
-                onValueChange={(value) => {
-                  updateSearchParams({ sortOrder: value, page: 1 });
-                }}
-                options={[
-                  { value: "desc", label: optionsText.desc },
-                  { value: "asc", label: optionsText.asc },
-                ]}
-              />
-            </div>
-          </div>
+          <ArticlesListToolbar
+            totalRecords={listQuery.pagination.total}
+            isReorderMode={reorder.isReorderMode}
+            selectedCount={selection.selectedCount}
+            bulkActions={toolbarBulkActions}
+            onSelectAll={
+              pageArticleIds.length > 0 && !allSelectedOnPage
+                ? () => selection.setSelection(pageArticleIds)
+                : undefined
+            }
+            selectAllDisabled={isActionPending || reorder.isReorderMode}
+            searchValue={input.query?.q ?? ""}
+            statusValue={input.query?.status ?? "all"}
+            featuredValue={input.query?.featured ?? "all"}
+            issueIdValue={input.query?.issueId ?? "all"}
+            categoryIdValue={input.query?.categoryId ?? "all"}
+            authorIdValue={input.query?.authorId ?? "all"}
+            sortByValue={input.query?.sortBy ?? "createdAt"}
+            sortOrderValue={input.query?.sortOrder ?? "desc"}
+            issueOptions={issueOptions}
+            categoryOptions={categoryOptions}
+            authorOptions={authorOptions}
+            issuesLoading={issuesOptionsQuery.isPending}
+            categoriesLoading={categoriesOptionsQuery.isPending}
+            authorsLoading={authorsOptionsQuery.isPending}
+            onSearchChange={(value) => {
+              updateSearchParams({ q: value, page: 1 });
+            }}
+            onStatusChange={(value) => {
+              updateSearchParams({ status: value === "all" ? undefined : value, page: 1 });
+            }}
+            onFeaturedChange={(value) => {
+              updateSearchParams({ featured: value === "all" ? undefined : value, page: 1 });
+            }}
+            onIssueChange={(value) => {
+              updateSearchParams({ issueId: value === "all" ? undefined : value, page: 1 });
+            }}
+            onCategoryChange={(value) => {
+              updateSearchParams({ categoryId: value === "all" ? undefined : value, page: 1 });
+            }}
+            onAuthorChange={(value) => {
+              updateSearchParams({ authorId: value === "all" ? undefined : value, page: 1 });
+            }}
+            onSortByChange={(value) => {
+              updateSearchParams({ sortBy: value, page: 1 });
+            }}
+            onSortOrderChange={(value) => {
+              updateSearchParams({ sortOrder: value, page: 1 });
+            }}
+          />
         }
         table={
           displayedArticles.length > 0 ? (

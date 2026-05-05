@@ -13,4 +13,3 @@ export {
   invalidateUsersAfterMutation,
   type CmsMutationName,
 } from "@/lib/cms/trpc/invalidation";
-export { cmsQueryKeys } from "@/lib/cms/trpc/query-keys";

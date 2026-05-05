@@ -9,7 +9,7 @@ type RateLimitPolicy = (typeof rateLimitPolicies)[keyof typeof rateLimitPolicies
 
 export function rateLimitMiddleware(policy: RateLimitPolicy) {
   return trpc.middleware(async ({ ctx, next }) => {
-    enforceRateLimit(ctx.request, policy);
+    await enforceRateLimit(ctx.request, policy);
     return next();
   });
 }

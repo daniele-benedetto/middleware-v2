@@ -19,9 +19,9 @@ export function auditMiddleware<TInput>(buildPayload: BuildAuditPayload<TInput>)
     };
 
     try {
-      await auditAction(ctx.request, buildPayload(input as TInput));
+      await auditAction(ctx.request, buildPayload(input as TInput), ctx.session);
     } catch {
-      await auditAction(ctx.request, fallbackPayload);
+      await auditAction(ctx.request, fallbackPayload, ctx.session);
     }
 
     return next();
