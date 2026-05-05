@@ -182,7 +182,7 @@
 
 ---
 
-## 8. Type safety
+## 8. Type safety ✅ VERIFIED
 
 - [x] `pnpm typecheck` pulito
 - [x] Zero `any` nel codice di prodotto (verificato via grep)
@@ -193,14 +193,13 @@
 
 ✅ `parseOutput` valida i DTO a runtime.
 ✅ Tipi espliciti ai bordi (input procedure, output service, repository contracts).
-
-⚠️ Nessun problema rilevante.
+✅ Ricontrollato sul codice di prodotto corrente: `pnpm typecheck` pulito, nessun `any` nei path applicativi (escluso il client Prisma generato).
 
 💡 Mantieni la disciplina dei DTO. Valuta `z.brand` per `UserId`/`ArticleId` se vorrai prevenire scambi accidentali.
 
 ---
 
-## 9. Code reuse & DRY
+## 9. Code reuse & DRY ✅ FIXED
 
 - [x] Helper centralizzati (slug, role label, status label)
 - [x] i18n keys come unica fonte
@@ -212,9 +211,9 @@
 ✅ `resolveCmsRouteEntityIdOrNotFound` + `prefetchCmsDetailOrNotFound` su tutte le pagine `[id]`.
 ✅ `useCmsFormNavigation(listPath)` per cancel/success.
 
-⚠️ Duplicazione tra `prefetchXxxList` (uno per dominio in `lib/cms/trpc/server-prefetch.ts`) — schema ripetitivo.
+### Correzioni applicate
 
-💡 Un `prefetchCmsList(caller, key, input)` generico copre i 5 domini in un solo helper.
+- ✅ `lib/cms/trpc/server-prefetch.ts` ora centralizza i cinque wrapper `prefetchXxxList` in un helper generico `prefetchCmsList(input, prefetcher)`, mantenendo invariata l'API usata dalle pagine CMS.
 
 ---
 
@@ -238,7 +237,7 @@
 
 ---
 
-## 11. i18n & contenuti
+## 11. i18n & contenuti ✅ FIXED
 
 - [x] Una sola lingua attiva (it) con coerenza naming
 - [x] Date/numero formatter centralizzati
@@ -247,13 +246,13 @@
 ✅ Centralizzato in `lib/i18n/it/cms.ts`, accesso via `i18n.cms.*` (zero magic string nei componenti).
 ✅ Schema validation messages mappati a chiavi i18n (`features/cms/shared/forms/validate-form.ts`).
 
-⚠️ Chiavi i18n morte: `i18n.cms.dashboard.metrics.*` e `i18n.cms.dashboard.activity.*` non sono più riferite (la dashboard è stata semplificata a quick-links).
+### Correzioni applicate
 
-💡 Cancella le chiavi `dashboard.metrics`/`dashboard.activity` da `lib/i18n/it/cms.ts`.
+- ✅ Rimosse da `lib/i18n/it/cms.ts` le chiavi dashboard non più referenziate dopo la semplificazione a quick-links: `dashboard.metrics.*`, `dashboard.activity.*`, `dashboard.statusTitle`, `dashboard.statusSubtitle`, `dashboard.activityTitle`, `dashboard.activitySubtitle`.
 
 ---
 
-## 12. Validazione
+## 12. Validazione ✅ VERIFIED
 
 - [x] Zod su input/output procedure + form schema
 - [x] Schema riusati tra client e server dove sensato
@@ -265,13 +264,13 @@
 ✅ Validazione UUID delle param `[id]` su tutte le route `cms/.../[id]`.
 ✅ Upload media: pathname sanificato, kind whitelisted, max 25MB, no overwrite, no random suffix (`app/api/cms/media/upload/route.ts`).
 
-⚠️ Niente di rilevante.
+✅ Ricontrollata sul codice corrente: nessun gap rilevante emerso tra schema Zod, validazione route params, normalizzazione slug e vincoli upload.
 
 💡 Mantieni `assertPublishedAtConsistency` come unico punto di verità; estendi se aggiungerai workflow editoriali.
 
 ---
 
-## 13. Convenzioni & coerenza
+## 13. Convenzioni & coerenza ✅ FIXED
 
 - [x] Naming file `kebab-case.tsx` coerente
 - [x] Naming componenti `PascalCase`, prefisso `Cms*` dove utile
@@ -284,9 +283,10 @@
 ✅ `import "server-only"` presente nei moduli sensibili.
 ✅ Tailwind v4 via `@theme inline` in `app/globals.css` (no `tailwind.config.*`).
 
-⚠️ Mix di stili nei sotto-componenti inline degli screen articolo (vedi §5) vs primitives esterne — leggera incoerenza estetica.
+### Correzioni applicate
 
-💡 Una volta estratti i sotto-componenti, ricondurli alle primitives `Cms*`.
+- ✅ I sotto-componenti articolo prima inline sono ora estratti in `features/cms/articles/components/*` e ricondotti alle primitives/shared UI del CMS (`CmsActionButton`, `CmsMetaText`, `CmsBody`, ecc.), eliminando l'incoerenza estetica segnalata.
+- ✅ Ricontrollati `TODO/FIXME` e naming sul codice di prodotto corrente: nessun rilievo nuovo emerso.
 
 ---
 
@@ -350,9 +350,8 @@
 
 ---
 
-## TL;DR — top 2 azioni proporzionate (in ordine di ROI)
+## TL;DR — top 1 azione proporzionata (in ordine di ROI)
 
-1. **Rimuovi le chiavi i18n morte** `i18n.cms.dashboard.metrics.*` e `i18n.cms.dashboard.activity.*` (`lib/i18n/it/cms.ts`).
-2. **`docs/architecture.md`** con flusso request → tRPC → service → repo → DB, upload media e matrice ruoli/risorse.
+1. **`docs/architecture.md`** con flusso request → tRPC → service → repo → DB, upload media e matrice ruoli/risorse.
 
 Niente di tutto ciò richiede over-engineering: interventi locali, ognuno < ~1 ora, con benefici misurabili (latenza, bundle, manutenibilità). La base è in salute — questi sono rifiniture, non rifondazioni.

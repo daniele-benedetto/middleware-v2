@@ -49,33 +49,6 @@ export const cmsIt = {
     subtitle: "Panoramica operativa delle sezioni editoriali.",
     section: "Sezione",
     quickLinksTitle: "Accesso rapido",
-    statusTitle: "Stato editoriale",
-    statusSubtitle: "Conteggi aggregati dalle liste CMS per monitoraggio rapido.",
-    activityTitle: "Attivita recente",
-    activitySubtitle: "Indicatori sintetici per orientare il lavoro editoriale della giornata.",
-    metrics: {
-      issuesTotal: "Issues totali",
-      issuesActive: "Issues attive",
-      issuesPublished: "Issues pubblicate",
-      categoriesTotal: "Categorie totali",
-      tagsTotal: "Tag totali",
-      articlesTotal: "Articoli totali",
-      articlesDraft: "Articoli in bozza",
-      articlesPublished: "Articoli pubblicati",
-      articlesArchived: "Articoli archiviati",
-      articlesFeatured: "Articoli in evidenza",
-      usersTotal: "Utenti totali",
-    },
-    activity: {
-      backlog: "Backlog editoriale",
-      backlogDescription: (count: number) => `${count} bozze in attesa di lavorazione editoriale.`,
-      publication: "Copertura pubblicazioni",
-      publicationDescription: (count: number) =>
-        `${count} articoli pubblicati disponibili in archivio.`,
-      issues: "Programmazione numeri",
-      issuesDescription: (active: number, total: number) =>
-        `${active} issue attive su ${total} totali nel piano editoriale.`,
-    },
   },
   resource: {
     subtitle: "Lista base con filtri, tabella, paginazione e conferma per azioni distruttive.",

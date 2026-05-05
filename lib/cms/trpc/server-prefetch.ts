@@ -10,6 +10,8 @@ import { getTrpcCaller } from "@/lib/server/trpc/caller";
 
 import type { RouterInputs, RouterOutputs } from "@/lib/trpc/types";
 
+type TrpcCaller = Awaited<ReturnType<typeof getTrpcCaller>>;
+
 type IssuesListInput = RouterInputs["issues"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
@@ -30,31 +32,36 @@ type UserDetailOutput = RouterOutputs["users"]["getById"];
 type ArticleDetailOutput = RouterOutputs["articles"]["getById"];
 type UsersAuthorOptionsOutput = RouterOutputs["users"]["listAuthors"];
 
-export async function prefetchIssuesList(input: IssuesListInput): Promise<IssuesListOutput> {
+type CmsListPrefetcher<TInput, TOutput> = (caller: TrpcCaller, input: TInput) => Promise<TOutput>;
+
+async function prefetchCmsList<TInput, TOutput>(
+  input: TInput,
+  prefetcher: CmsListPrefetcher<TInput, TOutput>,
+): Promise<TOutput> {
   const caller = await getTrpcCaller();
-  return caller.issues.list(input);
+  return prefetcher(caller, input);
+}
+
+export async function prefetchIssuesList(input: IssuesListInput): Promise<IssuesListOutput> {
+  return prefetchCmsList(input, (caller, listInput) => caller.issues.list(listInput));
 }
 
 export async function prefetchCategoriesList(
   input: CategoriesListInput,
 ): Promise<CategoriesListOutput> {
-  const caller = await getTrpcCaller();
-  return caller.categories.list(input);
+  return prefetchCmsList(input, (caller, listInput) => caller.categories.list(listInput));
 }
 
 export async function prefetchTagsList(input: TagsListInput): Promise<TagsListOutput> {
-  const caller = await getTrpcCaller();
-  return caller.tags.list(input);
+  return prefetchCmsList(input, (caller, listInput) => caller.tags.list(listInput));
 }
 
 export async function prefetchArticlesList(input: ArticlesListInput): Promise<ArticlesListOutput> {
-  const caller = await getTrpcCaller();
-  return caller.articles.list(input);
+  return prefetchCmsList(input, (caller, listInput) => caller.articles.list(listInput));
 }
 
 export async function prefetchUsersList(input: UsersListInput): Promise<UsersListOutput> {
-  const caller = await getTrpcCaller();
-  return caller.users.list(input);
+  return prefetchCmsList(input, (caller, listInput) => caller.users.list(listInput));
 }
 
 export async function prefetchMediaList(): Promise<MediaListOutput> {
