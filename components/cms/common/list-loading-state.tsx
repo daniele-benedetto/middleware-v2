@@ -18,6 +18,7 @@ type CmsListLoadingStateProps = {
   secondaryFilterColumns?: number;
   rows?: number;
   hiddenButton?: boolean;
+  hiddenCheckbox?: boolean;
 };
 
 export function CmsListLoadingState({
@@ -82,9 +83,11 @@ export function CmsListLoadingState({
           <Table className={cmsTableClasses.table}>
             <TableHeader>
               <TableRow className={cmsTableClasses.headerRow}>
-                <TableHead className={cn(cmsTableClasses.headerCell, "w-10 px-2")}>
-                  <Skeleton className="size-4 rounded-none bg-[rgba(240,232,216,0.35)]" />
-                </TableHead>
+                {!hiddenButton && (
+                  <TableHead className={cn(cmsTableClasses.headerCell, "w-10 px-2")}>
+                    <Skeleton className="size-4 rounded-none bg-[rgba(240,232,216,0.35)]" />
+                  </TableHead>
+                )}
                 {Array.from({ length: contentColumns }).map((_, index) => (
                   <TableHead key={`head-${index}`} className={cmsTableClasses.headerCell}>
                     <Skeleton className="h-3.5 w-20 rounded-none bg-[rgba(240,232,216,0.25)]" />
@@ -95,9 +98,11 @@ export function CmsListLoadingState({
             <TableBody>
               {Array.from({ length: rows }).map((_, rowIndex) => (
                 <TableRow key={`row-${rowIndex}`} className={cmsTableClasses.bodyRow}>
-                  <TableCell className={cn(cmsTableClasses.bodyCellMeta, "w-10 px-2 py-3.5")}>
-                    <Skeleton className="size-4.5 rounded-none border border-border bg-foreground/10" />
-                  </TableCell>
+                  {!hiddenButton && (
+                    <TableCell className={cn(cmsTableClasses.bodyCellMeta, "w-10 px-2 py-3.5")}>
+                      <Skeleton className="size-4.5 rounded-none border border-border bg-foreground/10" />
+                    </TableCell>
+                  )}
                   {Array.from({ length: contentColumns }).map((_, cellIndex) => (
                     <TableCell
                       key={`cell-${rowIndex}-${cellIndex}`}

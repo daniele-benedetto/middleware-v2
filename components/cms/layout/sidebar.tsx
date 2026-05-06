@@ -35,7 +35,6 @@ type CmsSidebarProps = {
 export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const text = i18n.cms.navigation;
   const commonText = i18n.cms.common;
   const visibleNavigation = toVisibleNavigation(role);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -84,9 +83,6 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
             )}
           >
             {item.label}
-            {item.adminOnly ? (
-              <span className="ml-2 text-muted-foreground">{text.adminSuffix}</span>
-            ) : null}
           </Link>
         );
       })}

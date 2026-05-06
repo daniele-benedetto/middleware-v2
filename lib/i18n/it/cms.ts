@@ -24,7 +24,6 @@ export const cmsIt = {
     media: "Media",
     auditLogs: "Audit log",
     users: "Utenti",
-    adminSuffix: "(Admin)",
   },
   topbar: {
     label: "Pannello editoriale",
