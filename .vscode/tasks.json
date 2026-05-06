@@ -23,6 +23,34 @@
       "problemMatcher": []
     },
     {
+      "label": "fix:tailwind-vars:check",
+      "type": "shell",
+      "command": "pnpm fix:tailwind-vars:check",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "format:check",
+      "type": "shell",
+      "command": "pnpm format:check",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "test:run",
+      "type": "shell",
+      "command": "pnpm test:run",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "test:coverage",
+      "type": "shell",
+      "command": "pnpm test:coverage",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
       "label": "check:all",
       "type": "shell",
       "command": "pnpm check:all",

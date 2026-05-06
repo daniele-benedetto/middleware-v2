@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createCmsDomainErrorDetails } from "@/lib/cms/errors/domain-error-details";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
 import { articlesRepository } from "@/lib/server/modules/articles/repository";
@@ -231,11 +232,21 @@ export const articlesService = {
       return toArticleDto(article);
     } catch (error) {
       if (isUniqueError(error)) {
-        throw new ApiError(409, "CONFLICT", "Article slug already exists for this issue");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "Article slug already exists for this issue",
+          createCmsDomainErrorDetails("ARTICLE_SLUG_EXISTS_IN_ISSUE"),
+        );
       }
 
       if (isRelationError(error)) {
-        throw new ApiError(400, "VALIDATION_ERROR", "Article references invalid related records");
+        throw new ApiError(
+          400,
+          "VALIDATION_ERROR",
+          "Article references invalid related records",
+          createCmsDomainErrorDetails("ARTICLE_INVALID_RELATIONS"),
+        );
       }
 
       throw error;
@@ -269,11 +280,21 @@ export const articlesService = {
       }
 
       if (isUniqueError(error)) {
-        throw new ApiError(409, "CONFLICT", "Article slug already exists for this issue");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "Article slug already exists for this issue",
+          createCmsDomainErrorDetails("ARTICLE_SLUG_EXISTS_IN_ISSUE"),
+        );
       }
 
       if (isRelationError(error)) {
-        throw new ApiError(400, "VALIDATION_ERROR", "Article references invalid related records");
+        throw new ApiError(
+          400,
+          "VALIDATION_ERROR",
+          "Article references invalid related records",
+          createCmsDomainErrorDetails("ARTICLE_INVALID_RELATIONS"),
+        );
       }
 
       throw error;
@@ -305,7 +326,12 @@ export const articlesService = {
       }
 
       if (isRelationError(error)) {
-        throw new ApiError(400, "VALIDATION_ERROR", "One or more tags are invalid");
+        throw new ApiError(
+          400,
+          "VALIDATION_ERROR",
+          "One or more tags are invalid",
+          createCmsDomainErrorDetails("ARTICLE_INVALID_TAGS"),
+        );
       }
 
       throw error;
@@ -435,6 +461,7 @@ export const articlesService = {
         400,
         "VALIDATION_ERROR",
         "orderedArticleIds must include all and only articles from the target issue",
+        createCmsDomainErrorDetails("ARTICLE_REORDER_IDS_MISMATCH"),
       );
     }
 

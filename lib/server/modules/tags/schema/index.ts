@@ -11,6 +11,7 @@ export const updateTagInputSchema = createTagInputSchema
   .partial()
   .extend({
     description: z.unknown().nullable().optional(),
+    isActive: z.boolean().optional(),
   })
   .refine((input) => Object.keys(input).length > 0, {
     message: "At least one field is required",

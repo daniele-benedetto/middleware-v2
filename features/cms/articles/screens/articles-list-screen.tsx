@@ -189,6 +189,10 @@ function patchArticleForOptimisticAction<
 function mapArticleDomainError(uiError: CmsUiError): CmsUiError {
   const text = i18n.cms.lists.articles.domainErrors;
 
+  if (uiError.reason) {
+    return uiError;
+  }
+
   if (uiError.code === "CONFLICT") {
     return {
       ...uiError,

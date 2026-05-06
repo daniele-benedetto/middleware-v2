@@ -16,6 +16,10 @@ const conflictTitles: Record<ConflictResource, string> = {
 export function mapCrudDomainError(error: unknown, resource: ConflictResource): CmsUiError {
   const uiError = mapTrpcErrorToCmsUiMessage(error);
 
+  if (uiError.reason) {
+    return uiError;
+  }
+
   if (uiError.code === "CONFLICT") {
     return {
       ...uiError,

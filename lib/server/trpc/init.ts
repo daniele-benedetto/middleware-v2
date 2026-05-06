@@ -10,7 +10,7 @@ import type { TrpcContext } from "@/lib/server/trpc/context";
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
-    if (error.code === "BAD_REQUEST" && error.cause) {
+    if (error.cause) {
       return {
         ...shape,
         data: {

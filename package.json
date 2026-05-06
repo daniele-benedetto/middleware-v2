@@ -7,6 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "pnpm lint --fix",
     "typecheck": "tsc --noEmit",
@@ -15,7 +18,7 @@
     "fix:tailwind-vars": "node scripts/fix-tailwind-color-vars.mjs",
     "fix:tailwind-vars:check": "node scripts/fix-tailwind-color-vars.mjs --check",
     "fix:all": "pnpm fix:tailwind-vars && pnpm format && pnpm lint:fix",
-    "check:all": "pnpm lint && pnpm typecheck && pnpm prisma:validate && pnpm build",
+    "check:all": "pnpm fix:tailwind-vars:check && pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:run && pnpm prisma:validate && pnpm build",
     "prisma:format": "prisma format",
     "prisma:validate": "prisma validate",
     "prisma:migrate": "prisma migrate dev",
@@ -79,6 +82,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.5",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "eslint-config-prettier": "^10.1.8",
@@ -90,6 +94,7 @@
     "prisma": "^7.7.0",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.5"
   }
 }

@@ -436,6 +436,14 @@ export const cmsIt = {
         slugConflictTitle: "Conflitto slug",
         slugConflictDescription: "Lo slug e gia usato in questa issue. Aggiorna lo slug e riprova.",
         invalidPayloadTitle: "Payload non valido",
+        invalidRelationsTitle: "Relazioni non valide",
+        invalidRelationsDescription:
+          "Issue, categoria o autore selezionati non sono validi o non esistono piu.",
+        invalidTagsTitle: "Tag non validi",
+        invalidTagsDescription: "Uno o piu tag selezionati non sono validi o non esistono piu.",
+        reorderInvalidTitle: "Ordine articoli non valido",
+        reorderInvalidDescription:
+          "L'ordine degli articoli non e piu allineato con questa issue. Ricarica i dati e riprova.",
         rateLimitTitle: "Rate limit azioni editoriali",
         rateLimitDescription: "Troppe azioni critiche in poco tempo. Riprova tra poco.",
       },
@@ -617,6 +625,38 @@ export const cmsIt = {
     badRequestDescription: "Controlla i dati inseriti e riprova.",
     internalErrorTitle: "Errore imprevisto",
     internalErrorDescription: "Si e verificato un errore inatteso. Riprova.",
+    domain: {
+      categoryDeleteHasArticlesTitle: "Categoria non eliminabile",
+      categoryDeleteHasArticlesDescription:
+        "Non puoi eliminare questa categoria perche ha articoli associati. Sposta o elimina prima quegli articoli.",
+      categorySlugExistsTitle: "Slug categoria gia usato",
+      categorySlugExistsDescription:
+        "Esiste gia una categoria con questo slug. Modificalo e riprova.",
+      issueArticleOrderMismatchTitle: "Ordine articoli non valido",
+      issueArticleOrderMismatchDescription:
+        "L'ordine inviato non corrisponde piu agli articoli di questa issue. Ricarica i dati e riprova.",
+      issueDeleteHasArticlesTitle: "Issue non eliminabile",
+      issueDeleteHasArticlesDescription:
+        "Non puoi eliminare questa issue perche contiene articoli associati. Sposta o elimina prima quegli articoli.",
+      issueSlugExistsTitle: "Slug issue gia usato",
+      issueSlugExistsDescription: "Esiste gia un'issue con questo slug. Modificalo e riprova.",
+      tagDeleteHasArticlesTitle: "Tag non eliminabile",
+      tagDeleteHasArticlesDescription:
+        "Non puoi eliminare questo tag perche e ancora associato ad almeno un articolo. Rimuovi prima le associazioni.",
+      tagSlugExistsTitle: "Slug tag gia usato",
+      tagSlugExistsDescription: "Esiste gia un tag con questo slug. Modificalo e riprova.",
+      userDeleteHasArticlesTitle: "Utente non eliminabile",
+      userDeleteHasArticlesDescription:
+        "Non puoi eliminare questo utente perche ha articoli associati come autore. Riassegna prima quegli articoli.",
+      userEmailExistsTitle: "Email gia usata",
+      userEmailExistsDescription:
+        "Esiste gia un utente con questa email. Usa un indirizzo diverso o aggiorna l'utente esistente.",
+      userSelfDeleteForbiddenTitle: "Operazione non consentita",
+      userSelfDeleteForbiddenDescription: "Non puoi eliminare il tuo account da questa schermata.",
+      userSelfRoleChangeForbiddenTitle: "Operazione non consentita",
+      userSelfRoleChangeForbiddenDescription:
+        "Non puoi modificare il tuo ruolo da questa schermata.",
+    },
   },
   validation: {
     invalidData: "Dati non validi.",

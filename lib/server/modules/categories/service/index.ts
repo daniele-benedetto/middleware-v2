@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createCmsDomainErrorDetails } from "@/lib/cms/errors/domain-error-details";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
 import { categoriesRepository } from "@/lib/server/modules/categories/repository";
@@ -109,7 +110,12 @@ export const categoriesService = {
       return toCategoryDto(categoryWithCount);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new ApiError(409, "CONFLICT", "Category slug already exists");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "Category slug already exists",
+          createCmsDomainErrorDetails("CATEGORY_SLUG_EXISTS"),
+        );
       }
 
       throw error;
@@ -136,7 +142,12 @@ export const categoriesService = {
       }
 
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new ApiError(409, "CONFLICT", "Category slug already exists");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "Category slug already exists",
+          createCmsDomainErrorDetails("CATEGORY_SLUG_EXISTS"),
+        );
       }
 
       throw error;
@@ -151,7 +162,12 @@ export const categoriesService = {
       }
 
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
-        throw new ApiError(409, "CONFLICT", "Category cannot be deleted due to related records");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "Category cannot be deleted due to related records",
+          createCmsDomainErrorDetails("CATEGORY_DELETE_HAS_ARTICLES"),
+        );
       }
 
       throw error;

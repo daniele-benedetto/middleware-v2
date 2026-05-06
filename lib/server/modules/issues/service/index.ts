@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createCmsDomainErrorDetails } from "@/lib/cms/errors/domain-error-details";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
 import {
@@ -135,7 +136,12 @@ export const issuesService = {
       }
     }
 
-    throw new ApiError(409, "CONFLICT", "Issue slug already exists");
+    throw new ApiError(
+      409,
+      "CONFLICT",
+      "Issue slug already exists",
+      createCmsDomainErrorDetails("ISSUE_SLUG_EXISTS"),
+    );
   },
   async update(id: string, input: UpdateIssueInput, orderedArticleIds?: string[]) {
     const normalizedInput: UpdateIssueInput = {
@@ -158,7 +164,12 @@ export const issuesService = {
       }
 
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new ApiError(409, "CONFLICT", "Issue slug already exists");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "Issue slug already exists",
+          createCmsDomainErrorDetails("ISSUE_SLUG_EXISTS"),
+        );
       }
 
       if (error instanceof Error && error.message === ISSUE_ARTICLE_ORDER_MISMATCH) {
@@ -166,6 +177,7 @@ export const issuesService = {
           400,
           "VALIDATION_ERROR",
           "orderedArticleIds must include all and only articles from the target issue",
+          createCmsDomainErrorDetails("ISSUE_ARTICLE_ORDER_MISMATCH"),
         );
       }
 
@@ -181,7 +193,12 @@ export const issuesService = {
       }
 
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
-        throw new ApiError(409, "CONFLICT", "Issue cannot be deleted due to related records");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "Issue cannot be deleted due to related records",
+          createCmsDomainErrorDetails("ISSUE_DELETE_HAS_ARTICLES"),
+        );
       }
 
       throw error;

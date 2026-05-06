@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createCmsDomainErrorDetails } from "@/lib/cms/errors/domain-error-details";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
 import { tagsRepository } from "@/lib/server/modules/tags/repository";
@@ -111,7 +112,12 @@ export const tagsService = {
       return toTagDto(tagWithCount);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new ApiError(409, "CONFLICT", "Tag slug already exists");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "Tag slug already exists",
+          createCmsDomainErrorDetails("TAG_SLUG_EXISTS"),
+        );
       }
 
       throw error;
@@ -138,7 +144,12 @@ export const tagsService = {
       }
 
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new ApiError(409, "CONFLICT", "Tag slug already exists");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "Tag slug already exists",
+          createCmsDomainErrorDetails("TAG_SLUG_EXISTS"),
+        );
       }
 
       throw error;
@@ -153,7 +164,12 @@ export const tagsService = {
       }
 
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
-        throw new ApiError(409, "CONFLICT", "Tag cannot be deleted due to related records");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "Tag cannot be deleted due to related records",
+          createCmsDomainErrorDetails("TAG_DELETE_HAS_ARTICLES"),
+        );
       }
 
       throw error;

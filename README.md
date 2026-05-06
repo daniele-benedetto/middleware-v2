@@ -42,13 +42,16 @@ Current setup runs with a single database as source of truth (Vercel auto-deploy
 ## Development commands
 
 - `pnpm dev` - start Next.js dev server
+- `pnpm test` - run Vitest in watch mode
+- `pnpm test:run` - run Vitest once
+- `pnpm test:coverage` - run Vitest with V8 coverage
 - `pnpm lint` - run ESLint
 - `pnpm lint:fix` - apply ESLint autofixes
 - `pnpm typecheck` - run TypeScript typecheck
 - `pnpm format` - run Prettier write mode
 - `pnpm format:check` - run Prettier check mode
 - `pnpm fix:all` - run formatter + lint autofix
-- `pnpm check:all` - run lint + typecheck + prisma validate + build
+- `pnpm check:all` - run tailwind vars check + format check + lint + typecheck + vitest + prisma validate + build
 - `pnpm build` - production build check
 - `pnpm prisma:studio` - inspect DB with Prisma Studio
 - `pnpm seed:admin` - upsert bootstrap admin user
@@ -58,8 +61,10 @@ Current setup runs with a single database as source of truth (Vercel auto-deploy
 - Husky hooks:
   - `pre-commit`: runs `lint-staged` on staged files
   - `pre-push`: runs `pnpm check:all`
+- Vitest is configured for structured unit tests under `tests/` with Node environment and tsconfig path aliases.
+- Current suite is docker-free and covers production-critical server/shared logic: CMS error contract, Zod schema boundaries, validation helpers, media/blob helpers, bulk/shared UI logic, and service layers with mocked repositories.
 - VS Code workspace settings are in `.vscode/` and enable format-on-save + ESLint fix-on-save.
-- CI workflow (`.github/workflows/ci.yml`) runs full quality checks on PRs and pushes to `main`.
+- CI workflow (`.github/workflows/ci.yml`) runs full quality checks on PRs and pushes to `main`, including formatting and Tailwind variable normalization checks.
 - Recommended local flow before commit:
   - `pnpm fix:all`
   - `pnpm check:all`

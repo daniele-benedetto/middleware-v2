@@ -2,6 +2,10 @@ import "server-only";
 
 import { hashPassword } from "better-auth/crypto";
 
+import {
+  createCmsDomainErrorDetails,
+  type CmsDomainErrorReason,
+} from "@/lib/cms/errors/domain-error-details";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
 import { usersRepository } from "@/lib/server/modules/users/repository";
@@ -86,9 +90,14 @@ const toUserDetailDto = (user: {
   })),
 });
 
-function assertCanManageOtherUser(actorUserId: string, targetUserId: string, message: string) {
+function assertCanManageOtherUser(
+  actorUserId: string,
+  targetUserId: string,
+  message: string,
+  reason: CmsDomainErrorReason,
+) {
   if (actorUserId === targetUserId) {
-    throw new ApiError(403, "FORBIDDEN", message);
+    throw new ApiError(403, "FORBIDDEN", message, createCmsDomainErrorDetails(reason));
   }
 }
 
@@ -144,7 +153,12 @@ export const usersService = {
       return toUserDto(userWithRelations);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new ApiError(409, "CONFLICT", "User email already exists");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "User email already exists",
+          createCmsDomainErrorDetails("USER_EMAIL_EXISTS"),
+        );
       }
 
       throw error;
@@ -174,7 +188,12 @@ export const usersService = {
     }
   },
   async updateRole(actorUserId: string, id: string, input: UpdateUserRoleInput) {
-    assertCanManageOtherUser(actorUserId, id, "Administrators cannot change their own role");
+    assertCanManageOtherUser(
+      actorUserId,
+      id,
+      "Administrators cannot change their own role",
+      "USER_SELF_ROLE_CHANGE_FORBIDDEN",
+    );
 
     try {
       await usersRepository.updateRole(id, input);
@@ -194,7 +213,12 @@ export const usersService = {
     }
   },
   async delete(actorUserId: string, id: string) {
-    assertCanManageOtherUser(actorUserId, id, "Administrators cannot delete their own account");
+    assertCanManageOtherUser(
+      actorUserId,
+      id,
+      "Administrators cannot delete their own account",
+      "USER_SELF_DELETE_FORBIDDEN",
+    );
 
     try {
       await usersRepository.delete(id);
@@ -204,7 +228,12 @@ export const usersService = {
       }
 
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
-        throw new ApiError(409, "CONFLICT", "User cannot be deleted due to related records");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "User cannot be deleted due to related records",
+          createCmsDomainErrorDetails("USER_DELETE_HAS_AUTHORED_ARTICLES"),
+        );
       }
 
       throw error;

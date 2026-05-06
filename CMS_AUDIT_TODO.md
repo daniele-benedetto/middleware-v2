@@ -217,7 +217,7 @@
 
 ---
 
-## 10. Error handling & UX di errore
+## 10. Error handling & UX di errore ✅ FIXED
 
 - [x] Errori tRPC mappati a UI con i18n
 - [x] Forbidden state dedicato
@@ -225,20 +225,20 @@
 - [x] `error.tsx` per ogni route group
 - [x] Logging server presente
 
-✅ `mapTrpcErrorToCmsUiMessage` (`lib/cms/trpc/error-messages.ts`) traduce 7 codici tRPC.
-✅ `mapCrudDomainError` con override per `CONFLICT` per dominio (es. `slugConflictTitle`).
-✅ `errorFormatter` espone `data.details` per `BAD_REQUEST` Zod (`lib/server/trpc/init.ts`).
+✅ `mapTrpcErrorToCmsUiMessage` (`lib/cms/trpc/error-messages.ts`) traduce i codici tRPC e mappa anche `reason` di dominio strutturati.
+✅ `mapCrudDomainError` e `mapQuickActionError` preservano i messaggi specifici quando il backend espone un errore di dominio tipizzato.
+✅ `errorFormatter` espone `data.details` anche per errori applicativi con `cause`, non solo per `BAD_REQUEST` Zod (`lib/server/trpc/init.ts`).
 ✅ `CmsShellSystemState` per stati uniformi.
-
-⚠️ Nessuna telemetria errori (Sentry o equivalente).
 
 ### Correzioni applicate
 
 - ✅ `AuditLog` persistente in Prisma (`prisma/schema.prisma`) con actor, outcome, path, requestId, IP, user-agent ed eventuale errore.
-- ✅ Aggiunta migration Prisma non applicata `prisma/migrations/20260506120000_add_audit_logs/migration.sql` per creare enum e tabella `audit_logs` in modo esplicito.
 - ✅ `lib/server/trpc/middlewares/audit.ts` registra ora l'esito reale della mutation (`SUCCESS`/`FAILURE`) invece del solo tentativo iniziale.
 - ✅ `lib/server/http/audit.ts` salva su DB e degrada a `console.info` solo come fallback se la persistenza non e disponibile.
 - ✅ Nuova vista admin-only `/cms/audit-logs` con filtri e paginazione per consultare i log persistiti senza uscire dal CMS.
+- ✅ Introdotto un contratto condiviso `CmsDomainErrorDetails` (`lib/cms/errors/domain-error-details.ts`) per propagare errori di dominio stabili dal service layer alla UI via tRPC.
+- ✅ I toast CMS mostrano ora messaggi azionabili per vincoli reali di dominio: categoria/tag/issue non eliminabili se hanno articoli associati, utente non eliminabile se autore di articoli, self-delete/self-role-change vietati, slug/email duplicati, relazioni articolo/tag non valide e mismatch nel reorder.
+- ✅ Gli errori bulk non vengono piu raggruppati solo per `code`, ma per firma completa (`code + reason + description`), evitando toast fuorvianti quando piu conflitti diversi condividono lo stesso codice HTTP/tRPC.
 
 💡 Wire-up minimale Sentry server-side per `INTERNAL_SERVER_ERROR`/non mappati.
 
@@ -273,6 +273,11 @@
 
 ✅ Ricontrollata sul codice corrente: nessun gap rilevante emerso tra schema Zod, validazione route params, normalizzazione slug e vincoli upload.
 
+### Correzioni applicate
+
+- ✅ I test hanno scoperto e corretto un bug nei payload `update` di `issues/categories/tags`: il default di `isActive` faceva passare anche `{}` come input valido. Gli schema di update ora usano `isActive` realmente opzionale senza default (`lib/server/modules/issues/schema/index.ts`, `lib/server/modules/categories/schema/index.ts`, `lib/server/modules/tags/schema/index.ts`).
+- ✅ `createUserInputSchema` ora fa `trim().toLowerCase().email()` nell'ordine corretto, quindi email con spazi esterni vengono normalizzate prima della validazione (`lib/server/modules/users/schema/index.ts`).
+
 💡 Mantieni `assertPublishedAtConsistency` come unico punto di verità; estendi se aggiungerai workflow editoriali.
 
 ---
@@ -301,18 +306,24 @@
 
 - [x] `pnpm lint --max-warnings=0` pulito
 - [x] `pnpm typecheck` pulito
+- [x] `pnpm test:run` pulito
 - [x] `pnpm build` pulito
 - [x] ESLint flat config moderna (ESLint 9)
 - [x] Prettier uniforme
+- [x] Vitest configurato
 - [x] Husky + lint-staged attivi
 - [x] CI GitHub Actions presente (`.github/workflows/ci.yml`, `pnpm check:all` su Node 24 / pnpm 10)
 
-✅ `pnpm check:all` (lint + typecheck + prisma:validate + build) in CI.
+✅ `pnpm check:all` (fix:tailwind-vars:check + format:check + lint + typecheck + test:run + prisma:validate + build) in CI.
 ✅ `tsconfig.json` strict, alias `@/*` consistente.
+✅ I gate automatici attivi oggi sono `lint-staged` in pre-commit e `pnpm check:all` in pre-push/CI.
+✅ Baseline Vitest strutturata sotto `tests/unit/**` + `tests/helpers/**`, con script `test`, `test:run`, `test:coverage` e alias/shim compatibili con il codice Next/server-only.
+✅ Suite estesa, docker-free: `21` file / `145` test verdi. Coperti helper di dominio, schema Zod server, validazione slug/publishedAt, utilities media/blob, `executeBulk`, `resolveQuickActions`, `validateFormInput`, mapping errori tRPC/UI e service layer `articles/categories/issues/tags/users/media` con repository mockati.
+✅ `pnpm test:coverage` attuale: circa `55%` line coverage complessiva, con copertura alta sulle utility/shared e sui service layer critici gia testati.
 
-⚠️ Nessun framework di test configurato (lo dichiara già `AGENTS.md`).
+⚠️ Nessun test di integrazione DB o E2E browser ancora configurato.
 
-💡 A medio termine: baseline Vitest sui service layer (integration con Postgres real via testcontainers). Non urgente.
+💡 Prossimo step proporzionato: introdurre integrazione DB solo quando avrai un ambiente Postgres isolato locale/CI distinto dal database reale, poi aggiungere una smoke E2E minima sui flussi auth + CMS critici.
 
 ---
 

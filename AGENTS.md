@@ -10,6 +10,8 @@
 
 - Install deps: `pnpm install`
 - Dev server: `pnpm dev`
+- Test: `pnpm test:run`
+- Coverage: `pnpm test:coverage`
 - Lint: `pnpm lint`
 - Type check: `pnpm typecheck`
 - Production sanity check: `pnpm build`
@@ -19,7 +21,8 @@
 - Tailwind CSS v4 is wired through `postcss.config.mjs` with `@tailwindcss/postcss`; global styles use `@import "tailwindcss"` in `app/globals.css`.
 - No `tailwind.config.*` exists; theme tokens are defined via `@theme inline` in `app/globals.css`.
 - TS path alias is root-based: `@/*` -> `./*` (see `tsconfig.json`).
-- No test framework or test scripts are configured yet; do not assume Jest/Vitest/Playwright.
+- Vitest is configured for Node-based, docker-free unit tests under `tests/unit/**`; `server-only` imports are shimmed in test via `vitest.config.ts`.
+- No browser E2E framework is configured yet; do not assume Playwright/Cypress.
 - Prisma schema lives in `prisma/schema.prisma`; generated client output is `lib/generated/prisma`.
 
 ## Current Data Decisions

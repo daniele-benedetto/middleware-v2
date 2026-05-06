@@ -12,6 +12,7 @@ export const updateIssueInputSchema = createIssueInputSchema
   .partial()
   .extend({
     description: z.unknown().nullable().optional(),
+    isActive: z.boolean().optional(),
     publishedAt: z.coerce.date().nullable().optional(),
   })
   .refine((input) => Object.keys(input).length > 0, {

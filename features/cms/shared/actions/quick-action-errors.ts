@@ -7,6 +7,10 @@ export function mapQuickActionError(error: unknown): CmsUiError {
   return mapTrpcErrorToCmsUiMessage(error);
 }
 
+function buildQuickActionErrorSignature(error: CmsUiError) {
+  return `${error.code}:${error.reason ?? "generic"}:${error.description}`;
+}
+
 export function mapBulkQuickActionError(result: BulkExecutionResult): CmsUiError | null {
   const text = i18n.cms.quickActions;
 
@@ -26,9 +30,12 @@ export function mapBulkQuickActionError(result: BulkExecutionResult): CmsUiError
     };
   }
 
-  const allSameCode = mappedFailures.every((item) => item.code === firstError.code);
+  const firstSignature = buildQuickActionErrorSignature(firstError);
+  const allSameError = mappedFailures.every(
+    (item) => buildQuickActionErrorSignature(item) === firstSignature,
+  );
 
-  if (allSameCode) {
+  if (allSameError) {
     return {
       ...firstError,
       description: `${firstError.description} (${result.failed} errori su ${result.success + result.failed} elementi).`,
