@@ -13,17 +13,37 @@ type BuildAuditPayload<TInput> = (input: TInput) => AuditPayload;
 
 export function auditMiddleware<TInput>(buildPayload: BuildAuditPayload<TInput>) {
   return trpc.middleware(async ({ ctx, input, next }) => {
-    const fallbackPayload: AuditPayload = {
+    let payload: AuditPayload = {
       action: "unknown",
       resource: "unknown",
     };
 
     try {
-      await auditAction(ctx.request, buildPayload(input as TInput), ctx.session);
+      payload = buildPayload(input as TInput);
     } catch {
-      await auditAction(ctx.request, fallbackPayload, ctx.session);
+      payload = {
+        action: "unknown",
+        resource: "unknown",
+      };
     }
 
-    return next();
+    const result = await next();
+
+    if (result.ok) {
+      await auditAction(ctx.request, payload, {
+        outcome: "SUCCESS",
+        session: ctx.session,
+      });
+
+      return result;
+    }
+
+    await auditAction(ctx.request, payload, {
+      outcome: "FAILURE",
+      error: result.error,
+      session: ctx.session,
+    });
+
+    return result;
   });
 }

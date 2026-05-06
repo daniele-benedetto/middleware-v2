@@ -1,4 +1,5 @@
 export {
+  useAuditLogsListQuery,
   useArticlesListQuery,
   useCategoriesListQuery,
   useIssuesListQuery,

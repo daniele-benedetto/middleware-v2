@@ -59,7 +59,8 @@ export const ModelName = {
   Category: 'Category',
   Tag: 'Tag',
   Article: 'Article',
-  ArticleTag: 'ArticleTag'
+  ArticleTag: 'ArticleTag',
+  AuditLog: 'AuditLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -208,6 +209,29 @@ export const ArticleTagScalarFieldEnum = {
 } as const
 
 export type ArticleTagScalarFieldEnum = (typeof ArticleTagScalarFieldEnum)[keyof typeof ArticleTagScalarFieldEnum]
+
+
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  actorId: 'actorId',
+  actorEmail: 'actorEmail',
+  actorRole: 'actorRole',
+  action: 'action',
+  resource: 'resource',
+  resourceId: 'resourceId',
+  outcome: 'outcome',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  method: 'method',
+  path: 'path',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  requestId: 'requestId',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -16,6 +16,7 @@ type IssuesListInput = RouterInputs["issues"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
+type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 type MediaListOutput = RouterOutputs["media"]["list"];
 
@@ -23,6 +24,7 @@ type IssuesListOutput = RouterOutputs["issues"]["list"];
 type CategoriesListOutput = RouterOutputs["categories"]["list"];
 type TagsListOutput = RouterOutputs["tags"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
+type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
 
 type IssueDetailOutput = RouterOutputs["issues"]["getById"];
@@ -58,6 +60,12 @@ export async function prefetchTagsList(input: TagsListInput): Promise<TagsListOu
 
 export async function prefetchArticlesList(input: ArticlesListInput): Promise<ArticlesListOutput> {
   return prefetchCmsList(input, (caller, listInput) => caller.articles.list(listInput));
+}
+
+export async function prefetchAuditLogsList(
+  input: AuditLogsListInput,
+): Promise<AuditLogsListOutput> {
+  return prefetchCmsList(input, (caller, listInput) => caller.auditLogs.list(listInput));
 }
 
 export async function prefetchUsersList(input: UsersListInput): Promise<UsersListOutput> {

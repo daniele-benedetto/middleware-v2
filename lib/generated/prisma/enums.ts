@@ -24,3 +24,11 @@ export const ArticleStatus = {
 } as const
 
 export type ArticleStatus = (typeof ArticleStatus)[keyof typeof ArticleStatus]
+
+
+export const AuditLogOutcome = {
+  SUCCESS: 'SUCCESS',
+  FAILURE: 'FAILURE'
+} as const
+
+export type AuditLogOutcome = (typeof AuditLogOutcome)[keyof typeof AuditLogOutcome]

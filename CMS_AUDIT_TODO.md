@@ -231,9 +231,16 @@
 ✅ `CmsShellSystemState` per stati uniformi.
 
 ⚠️ Nessuna telemetria errori (Sentry o equivalente).
-⚠️ `lib/server/http/audit.ts` scrive su `console.info` (JSON line) — niente sink persistente.
 
-💡 Wire-up minimale Sentry server-side per `INTERNAL_SERVER_ERROR`/non mappati. Per audit log persistente, valuta una tabella `AuditLog` quando la compliance lo richiederà.
+### Correzioni applicate
+
+- ✅ `AuditLog` persistente in Prisma (`prisma/schema.prisma`) con actor, outcome, path, requestId, IP, user-agent ed eventuale errore.
+- ✅ Aggiunta migration Prisma non applicata `prisma/migrations/20260506120000_add_audit_logs/migration.sql` per creare enum e tabella `audit_logs` in modo esplicito.
+- ✅ `lib/server/trpc/middlewares/audit.ts` registra ora l'esito reale della mutation (`SUCCESS`/`FAILURE`) invece del solo tentativo iniziale.
+- ✅ `lib/server/http/audit.ts` salva su DB e degrada a `console.info` solo come fallback se la persistenza non e disponibile.
+- ✅ Nuova vista admin-only `/cms/audit-logs` con filtri e paginazione per consultare i log persistiti senza uscire dal CMS.
+
+💡 Wire-up minimale Sentry server-side per `INTERNAL_SERVER_ERROR`/non mappati.
 
 ---
 
@@ -325,10 +332,9 @@
 ✅ `buildCmsMetadata` forza `index: false` sulle pagine CMS (`lib/seo/metadata.ts:172-177`).
 
 ⚠️ Rate limiter non robusto in serverless (vedi §7).
-⚠️ Audit log solo su `console.info` (vedi §10).
 ⚠️ Verificare esplicitamente che `app/api/cms/media/blob/route.ts` faccia session+role check **prima** di proxare blob privati.
 
-💡 Verifica esplicita auth nella route blob. Sposta rate limit + audit log su backing store persistente quando passerai a multi-istanza.
+💡 Verifica esplicita auth nella route blob. Sposta il rate limit su backing store persistente quando passerai a multi-istanza.
 
 ---
 

@@ -311,6 +311,40 @@ export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
   _max?: Prisma.NestedJsonFilter<$PrismaModel>
 }
 
+export type EnumUserRoleNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.UserRole | Prisma.EnumUserRoleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumUserRoleNullableFilter<$PrismaModel> | $Enums.UserRole | null
+}
+
+export type EnumAuditLogOutcomeFilter<$PrismaModel = never> = {
+  equals?: $Enums.AuditLogOutcome | Prisma.EnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.AuditLogOutcome[] | Prisma.ListEnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AuditLogOutcome[] | Prisma.ListEnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAuditLogOutcomeFilter<$PrismaModel> | $Enums.AuditLogOutcome
+}
+
+export type EnumUserRoleNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.UserRole | Prisma.EnumUserRoleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumUserRoleNullableWithAggregatesFilter<$PrismaModel> | $Enums.UserRole | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumUserRoleNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumUserRoleNullableFilter<$PrismaModel>
+}
+
+export type EnumAuditLogOutcomeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AuditLogOutcome | Prisma.EnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.AuditLogOutcome[] | Prisma.ListEnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AuditLogOutcome[] | Prisma.ListEnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAuditLogOutcomeWithAggregatesFilter<$PrismaModel> | $Enums.AuditLogOutcome
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAuditLogOutcomeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAuditLogOutcomeFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -565,6 +599,40 @@ export type NestedJsonFilterBase<$PrismaModel = never> = {
   gt?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   gte?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   not?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel> | Prisma.JsonNullValueFilter
+}
+
+export type NestedEnumUserRoleNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.UserRole | Prisma.EnumUserRoleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumUserRoleNullableFilter<$PrismaModel> | $Enums.UserRole | null
+}
+
+export type NestedEnumAuditLogOutcomeFilter<$PrismaModel = never> = {
+  equals?: $Enums.AuditLogOutcome | Prisma.EnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.AuditLogOutcome[] | Prisma.ListEnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AuditLogOutcome[] | Prisma.ListEnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAuditLogOutcomeFilter<$PrismaModel> | $Enums.AuditLogOutcome
+}
+
+export type NestedEnumUserRoleNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.UserRole | Prisma.EnumUserRoleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumUserRoleNullableWithAggregatesFilter<$PrismaModel> | $Enums.UserRole | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumUserRoleNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumUserRoleNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumAuditLogOutcomeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AuditLogOutcome | Prisma.EnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.AuditLogOutcome[] | Prisma.ListEnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AuditLogOutcome[] | Prisma.ListEnumAuditLogOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAuditLogOutcomeWithAggregatesFilter<$PrismaModel> | $Enums.AuditLogOutcome
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAuditLogOutcomeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAuditLogOutcomeFilter<$PrismaModel>
 }
 
 

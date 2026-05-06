@@ -51,6 +51,24 @@ const toUserAuthorsWhereInput = (query: ListUserAuthorsQuery): Prisma.UserWhereI
 };
 
 export const usersRepository = {
+  async listIdentityByIds(ids: string[]) {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    return prisma.user.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+  },
   async list(query: ListUsersQuery, pagination: PaginationParams) {
     const where = toUserWhereInput(query);
     const orderBy = toUserOrderByInput(query);

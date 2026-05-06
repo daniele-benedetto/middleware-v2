@@ -2,6 +2,7 @@ import "server-only";
 
 import { getRedisClient } from "@/lib/redis";
 import { ApiError } from "@/lib/server/http/api-error";
+import { getRequestClientIp } from "@/lib/server/http/request";
 
 type RateLimitPolicy = {
   name: string;
@@ -33,17 +34,6 @@ export const rateLimitPolicies = {
   reorder: { name: "reorder", limit: 15, windowMs: 60_000 },
 } as const satisfies Record<string, RateLimitPolicy>;
 
-const getClientIp = (request: Request): string => {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-
-  if (forwardedFor) {
-    const [ip] = forwardedFor.split(",");
-    return ip.trim();
-  }
-
-  return request.headers.get("x-real-ip") ?? "unknown";
-};
-
 const maybePruneCounters = (now: number) => {
   if (counters.size < MAX_COUNTERS) {
     return;
@@ -63,7 +53,7 @@ type RateLimitCounter = {
 
 function buildRateLimitKey(request: Request, policy: RateLimitPolicy): string {
   const url = new URL(request.url);
-  const clientIp = getClientIp(request);
+  const clientIp = getRequestClientIp(request) ?? "unknown";
   return `${policy.name}:${request.method}:${url.pathname}:${clientIp}`;
 }
 

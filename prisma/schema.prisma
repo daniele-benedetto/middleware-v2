@@ -18,6 +18,11 @@ enum ArticleStatus {
   ARCHIVED
 }
 
+enum AuditLogOutcome {
+  SUCCESS
+  FAILURE
+}
+
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
@@ -182,4 +187,30 @@ model ArticleTag {
   @@id([articleId, tagId])
   @@index([tagId])
   @@map("article_tags")
+}
+
+model AuditLog {
+  id           String          @id @default(uuid())
+  actorId      String?
+  actorEmail   String?
+  actorRole    UserRole?
+  action       String
+  resource     String
+  resourceId   String?
+  outcome      AuditLogOutcome
+  errorCode    String?
+  errorMessage String?
+  method       String
+  path         String
+  ipAddress    String?
+  userAgent    String?
+  requestId    String?
+  metadata     Json?
+  createdAt    DateTime        @default(now())
+
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@index([resource, resourceId, createdAt])
+  @@index([outcome, createdAt])
+  @@map("audit_logs")
 }

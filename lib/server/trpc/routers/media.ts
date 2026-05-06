@@ -21,15 +21,27 @@ export const mediaRouter = router({
   }),
   rename: writeProcedure
     .use(requireRoleMiddleware(mediaPolicy.allowedRoles))
-    .use(auditMiddleware(() => ({ action: "rename", resource: "media" })))
     .input(renameMediaInputSchema)
+    .use(
+      auditMiddleware<{ url: string }>((input) => ({
+        action: "rename",
+        resource: "media",
+        resourceId: input.url,
+      })),
+    )
     .mutation(async ({ input }) => {
       return parseOutput(await mediaService.rename(input), renameMediaResultDtoSchema);
     }),
   delete: writeProcedure
     .use(requireRoleMiddleware(mediaPolicy.allowedRoles))
-    .use(auditMiddleware(() => ({ action: "delete", resource: "media" })))
     .input(deleteMediaInputSchema)
+    .use(
+      auditMiddleware<{ url: string }>((input) => ({
+        action: "delete",
+        resource: "media",
+        resourceId: input.url,
+      })),
+    )
     .mutation(async ({ input }) => {
       return parseOutput(await mediaService.delete(input), deleteMediaResultDtoSchema);
     }),

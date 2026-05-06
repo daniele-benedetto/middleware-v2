@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+  auditLogOutcomeValues,
+  auditLogResourceValues,
+  auditLogSortByValues,
+} from "@/lib/audit-logs/constants";
 import { paginationDefaults } from "@/lib/server/http/pagination";
 
 import type { RouterInputs } from "@/lib/trpc/types";
@@ -168,6 +173,7 @@ type IssuesListInput = RouterInputs["issues"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
+type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 
 export function parseIssuesListSearchParams(input: CmsSearchParamsInput): IssuesListInput {
@@ -248,6 +254,30 @@ export function parseArticlesListSearchParams(input: CmsSearchParamsInput): Arti
       categoryId: parseUuidQueryParam(readParam(input, "categoryId")),
       authorId: parseUuidQueryParam(readParam(input, "authorId")),
       featured: parseBooleanQueryParam(readParam(input, "featured")),
+      q: base.q,
+      sortBy,
+      sortOrder: base.sortOrder,
+    }),
+  };
+}
+
+export function parseAuditLogsListSearchParams(input: CmsSearchParamsInput): AuditLogsListInput {
+  const base = parseCmsListSearchParams(input, {
+    allowedSortBy: auditLogSortByValues,
+    defaultSortBy: "createdAt",
+    defaultSortOrder: "desc",
+  });
+  const sortBy = parseEnumQueryParam(base.sortBy, auditLogSortByValues) ?? "createdAt";
+
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      outcome: parseEnumQueryParam(cleanString(readParam(input, "outcome")), auditLogOutcomeValues),
+      resource: parseEnumQueryParam(
+        cleanString(readParam(input, "resource")),
+        auditLogResourceValues,
+      ),
       q: base.q,
       sortBy,
       sortOrder: base.sortOrder,
