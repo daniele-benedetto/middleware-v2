@@ -36,6 +36,8 @@ const bodyCellBase = "align-middle";
 export const cmsTableClasses = {
   table: "w-full border-collapse",
   headerCheckbox: "bg-white",
+  selectionCell: "w-8 px-0 text-center align-middle",
+  selectionCellInner: "flex items-center justify-center",
   headerRow:
     "bg-foreground border-b-[2px] border-foreground hover:bg-foreground data-[state=selected]:bg-foreground",
   headerCell: cn(

@@ -15,5 +15,6 @@ export {
   type CmsPagination,
 } from "@/features/cms/shared/hooks/use-cms-list-query";
 export { useCmsListUrlState } from "@/features/cms/shared/hooks/use-cms-list-url-state";
+export { useDragReorder } from "@/features/cms/shared/hooks/use-drag-reorder";
 export { useListSelection } from "@/features/cms/shared/hooks/use-list-selection";
-export { useReorderMode } from "@/features/cms/shared/hooks/use-reorder-mode";
+export { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sensors";

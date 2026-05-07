@@ -27,14 +27,15 @@ type CmsRichTextEditorProps = {
   disabled?: boolean;
   className?: string;
   ariaLabel?: string;
+  fullHeight?: boolean;
 };
 
 const emptyDoc = { type: "doc", content: [{ type: "paragraph" }] };
 
-const proseClasses = cn(
+const proseBaseClasses = cn(
   "prose prose-sm max-w-none font-editorial text-[16px] text-foreground leading-[1.6]",
   "focus:outline-none",
-  "min-h-40 px-3 py-2.5",
+  "px-3 py-2.5",
   "[&_h2]:font-ui [&_h2]:text-[18px] [&_h2]:uppercase [&_h2]:tracking-[0.04em] [&_h2]:text-foreground [&_h2]:mt-4 [&_h2]:mb-2",
   "[&_h3]:font-ui [&_h3]:text-[14px] [&_h3]:uppercase [&_h3]:tracking-[0.04em] [&_h3]:text-foreground [&_h3]:mt-3 [&_h3]:mb-1.5",
   "[&_p]:mb-2 [&_p:last-child]:mb-0",
@@ -52,8 +53,10 @@ export function CmsRichTextEditor({
   disabled,
   className,
   ariaLabel,
+  fullHeight = false,
 }: CmsRichTextEditorProps) {
   const text = i18n.cms.richText;
+  const proseClasses = cn(proseBaseClasses, fullHeight ? "min-h-full" : "min-h-40");
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -75,12 +78,16 @@ export function CmsRichTextEditor({
     <div
       className={cn(
         "border border-foreground bg-white",
+        fullHeight && "flex min-h-0 flex-1 flex-col",
         disabled && "border-border bg-card-hover text-border",
         className,
       )}
     >
       <CmsRichTextToolbar editor={editor} disabled={disabled} />
-      <EditorContent editor={editor} />
+      <EditorContent
+        editor={editor}
+        className={cn(fullHeight && "min-h-0 flex-1 [&_.ProseMirror]:min-h-full")}
+      />
     </div>
   );
 }

@@ -16,7 +16,7 @@ const CmsRichTextEditorImpl = dynamic<ComponentProps<CmsRichTextEditorComponent>
       <div
         aria-hidden
         className={cn(
-          "flex min-h-40 items-center justify-center border border-foreground bg-card-hover",
+          "flex min-h-40 w-full flex-1 items-center justify-center border border-foreground bg-card-hover",
           "font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground",
         )}
       />

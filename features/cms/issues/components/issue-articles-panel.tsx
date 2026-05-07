@@ -14,16 +14,14 @@ type IssueArticlesPanelProps = {
   articles: IssueArticleRow[];
   disabled?: boolean;
   className?: string;
-  onMoveUp: (index: number) => void;
-  onMoveDown: (index: number) => void;
+  onReorder: (orderedIds: string[]) => void | Promise<void>;
 };
 
 export function IssueArticlesPanel({
   articles,
   disabled,
   className,
-  onMoveUp,
-  onMoveDown,
+  onReorder,
 }: IssueArticlesPanelProps) {
   const listText = i18n.cms.lists.issues;
 
@@ -35,8 +33,8 @@ export function IssueArticlesPanel({
       articles={articles}
       disabled={disabled}
       className={className}
-      onMoveUp={onMoveUp}
-      onMoveDown={onMoveDown}
+      onReorder={onReorder}
+      dndContextId="cms-issue-articles-panel-dnd"
     />
   );
 }

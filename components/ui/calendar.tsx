@@ -9,40 +9,42 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: D
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      className={cn("bg-white", className)}
       classNames={{
         root: "w-full",
-        months: "flex flex-col gap-4",
-        month: "space-y-4",
-        month_caption: "relative flex items-center justify-center pt-1",
-        caption_label: "font-ui text-[11px] uppercase tracking-[0.08em] text-foreground",
+        months: "flex flex-col gap-0",
+        month: "space-y-0",
+        month_caption:
+          "grid grid-cols-[2rem_1fr_2rem] items-center border-b border-foreground px-3 py-2",
+        caption_label:
+          "text-center font-ui text-[11px] uppercase tracking-[0.08em] text-foreground",
         chevron: "size-3.5 text-foreground",
-        nav: "flex items-center gap-1",
+        nav: "contents",
         button_previous: cn(
           buttonVariants({ variant: "outline", size: "icon-xs" }),
-          "absolute left-0 h-8 w-8 rounded-none border-foreground bg-white p-0 text-foreground hover:bg-card-hover hover:text-foreground",
+          "col-start-1 row-start-1 h-8 w-8 rounded-none border-foreground bg-white p-0 text-foreground hover:bg-card-hover hover:text-foreground",
         ),
         button_next: cn(
           buttonVariants({ variant: "outline", size: "icon-xs" }),
-          "absolute right-0 h-8 w-8 rounded-none border-foreground bg-white p-0 text-foreground hover:bg-card-hover hover:text-foreground",
+          "col-start-3 row-start-1 h-8 w-8 justify-self-end rounded-none border-foreground bg-white p-0 text-foreground hover:bg-card-hover hover:text-foreground",
         ),
-        month_grid: "w-full border-collapse",
-        weekdays: "grid grid-cols-7",
+        month_grid: "w-full border-collapse px-3 py-3",
+        weekdays: "grid grid-cols-7 border-b border-border px-3 pb-2",
         weekday:
-          "flex h-8 items-center justify-center font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground",
-        weeks: "space-y-1",
+          "flex h-7 items-center justify-center font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground",
+        weeks: "space-y-1 px-3 py-3",
         week: "grid grid-cols-7 gap-1",
         day: "flex items-center justify-center",
         day_button: cn(
           buttonVariants({ variant: "ghost", size: "icon-sm" }),
-          "h-10 w-10 rounded-none border border-transparent p-0 font-ui text-[11px] text-foreground",
+          "h-10 w-full rounded-none border border-transparent p-0 font-ui text-[11px] text-foreground",
           "hover:border-foreground hover:bg-card-hover hover:text-foreground",
           "focus-visible:border-accent focus-visible:ring-0",
           "aria-selected:border-accent aria-selected:bg-accent aria-selected:text-white",
           "aria-selected:hover:border-accent aria-selected:hover:bg-accent aria-selected:hover:text-white",
         ),
         selected: "",
-        today: "[&>button]:border-foreground",
+        today: "[&>button]:border-foreground [&>button]:bg-card-hover/60",
         outside: "[&>button]:text-border [&>button]:opacity-60",
         disabled:
           "[&>button]:border-transparent [&>button]:text-border [&>button]:opacity-40 [&>button:hover]:bg-transparent [&>button:hover]:text-border",

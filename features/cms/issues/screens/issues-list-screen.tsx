@@ -1,8 +1,14 @@
 "use client";
 
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
 
 import {
   CmsBulkActionBar,
@@ -40,9 +46,10 @@ import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-se
 import {
   cmsListQueryOptions,
   useCmsListUrlState,
+  useDragReorder,
   useIssuesListQuery,
   useListSelection,
-  useReorderMode,
+  useSortableSensors,
 } from "@/features/cms/shared/hooks";
 import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { parseIssuesListSearchParams } from "@/lib/cms/query";
@@ -50,6 +57,7 @@ import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cm
 import { i18n } from "@/lib/i18n";
 import { paginationDefaults } from "@/lib/server/http/pagination";
 import { trpc } from "@/lib/trpc/react";
+import { cn } from "@/lib/utils";
 
 import type { IssuesListInitialData } from "@/features/cms/shared/types/initial-data";
 import type { RouterInputs } from "@/lib/trpc/types";
@@ -71,6 +79,121 @@ type CmsIssuesListScreenProps = {
   initialInput?: IssuesListInput;
   initialData?: IssuesListInitialData;
 };
+
+type IssueTableRow = {
+  id: string;
+  title: string;
+  slug: string;
+  isActive: boolean;
+  publishedAt: string | null;
+  articlesCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function stopRowReorder(event: { stopPropagation: () => void }) {
+  event.stopPropagation();
+}
+
+type SortableIssueRowProps = {
+  issue: IssueTableRow;
+  canReorder: boolean;
+  isPending: boolean;
+  isSelected: boolean;
+  onToggleSelection: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  selectLabel: string;
+  editLabel: string;
+  deleteLabel: string;
+  deleteConfirmTitle: string;
+  deleteConfirmDescription: string;
+  activeLabel: string;
+  inactiveLabel: string;
+};
+
+function SortableIssueRow({
+  issue,
+  canReorder,
+  isPending,
+  isSelected,
+  onToggleSelection,
+  onEdit,
+  onDelete,
+  selectLabel,
+  editLabel,
+  deleteLabel,
+  deleteConfirmTitle,
+  deleteConfirmDescription,
+  activeLabel,
+  inactiveLabel,
+}: SortableIssueRowProps) {
+  const isDragEnabled = canReorder && !isPending;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: issue.id,
+    disabled: !isDragEnabled,
+  });
+
+  const rowTransform = transform ? { ...transform, x: 0, scaleX: 1, scaleY: 1 } : null;
+
+  return (
+    <TableRow
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(rowTransform), transition }}
+      className={cn(
+        cmsTableClasses.bodyRow,
+        isDragEnabled && "cursor-grab select-none touch-manipulation active:cursor-grabbing",
+        isDragging && "relative z-10 bg-white shadow-[0_0_0_2px_var(--color-accent)]",
+      )}
+      {...(isDragEnabled ? attributes : {})}
+      {...(isDragEnabled ? listeners : {})}
+    >
+      <TableCell className={cn(cmsTableClasses.bodyCellMeta, cmsTableClasses.selectionCell)}>
+        <div className={cmsTableClasses.selectionCellInner} onPointerDownCapture={stopRowReorder}>
+          <Checkbox
+            checked={isSelected}
+            disabled={isPending}
+            onCheckedChange={() => {
+              onToggleSelection(issue.id);
+            }}
+            aria-label={selectLabel}
+          />
+        </div>
+      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellTitle}>{issue.title}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{issue.slug}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        {issue.isActive ? activeLabel : inactiveLabel}
+      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        {formatDate(issue.publishedAt)}
+      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{String(issue.articlesCount)}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{formatDate(issue.createdAt)}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{formatDate(issue.updatedAt)}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        <div className="flex items-center gap-2" onPointerDownCapture={stopRowReorder}>
+          <CmsActionButton
+            variant="outline"
+            size="xs"
+            onClick={() => onEdit(issue.id)}
+            disabled={isPending}
+          >
+            {editLabel}
+          </CmsActionButton>
+          <CmsConfirmDialog
+            triggerLabel={deleteLabel}
+            triggerDisabled={isPending}
+            title={deleteConfirmTitle}
+            description={deleteConfirmDescription}
+            tone="danger"
+            onConfirm={() => onDelete(issue.id)}
+          />
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
 
 export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesListScreenProps) {
   const router = useRouter();
@@ -110,7 +233,8 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
     ? reorderBaseData.pagination.total === reorderBaseData.items.length
     : false;
 
-  const reorder = useReorderMode(reorderBaseData?.items ?? []);
+  const reorder = useDragReorder(reorderBaseData?.items ?? []);
+  const sortableSensors = useSortableSensors();
 
   const navigateToCrudRoute = (href: string) => {
     router.push(href);
@@ -141,13 +265,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
     Boolean(reorderBaseData) &&
     hasFullReorderBase;
 
-  const displayedIssues = reorder.isReorderMode ? reorder.displayedItems : listQuery.items;
-
-  useEffect(() => {
-    if (!canReorder && reorder.isReorderMode) {
-      reorder.cancel();
-    }
-  }, [canReorder, reorder]);
+  const displayedIssues = canReorder ? reorder.displayedItems : listQuery.items;
 
   if (listQuery.isPending) {
     return <CmsLoadingState />;
@@ -216,15 +334,10 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
     }
   };
 
-  const saveIssueOrder = async () => {
-    if (!reorder.hasChanges) {
-      reorder.cancel();
-      return;
-    }
-
+  const persistIssueOrder = async (nextOrder: string[]) => {
     try {
       const reorderedItems = await reorderMutation.mutateAsync({
-        orderedIssueIds: reorder.normalizedOrder,
+        orderedIssueIds: nextOrder,
       });
 
       const visibleStart = (listQuery.pagination.page - 1) * listQuery.pagination.pageSize;
@@ -252,15 +365,31 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
         };
       });
 
-      reorder.commit();
+      reorder.sync(reorderedItems.map((item) => item.id));
       await invalidateAfterCmsMutation(trpcUtils, "issues.reorder", {
-        ids: reorder.normalizedOrder,
+        ids: nextOrder,
       });
       cmsToast.info(listText.reorderUpdated);
     } catch (error) {
+      reorder.reset();
       const mapped = mapQuickActionError(error);
       cmsToast.error(mapped.description, mapped.title);
     }
+  };
+
+  const handleIssueDrop = async (activeId: string, overId: string) => {
+    const activeIndex = reorder.orderedIds.indexOf(activeId);
+    const overIndex = reorder.orderedIds.indexOf(overId);
+
+    if (activeIndex < 0 || overIndex < 0 || activeIndex === overIndex) {
+      return;
+    }
+
+    const nextOrder = arrayMove(reorder.orderedIds, activeIndex, overIndex);
+
+    reorder.sync(nextOrder);
+
+    await persistIssueOrder(nextOrder);
   };
 
   const bulkActions = resolveQuickActions(
@@ -297,33 +426,12 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
         title={text.navigation.issues}
         actions={
           <div className="flex items-center gap-2">
-            {reorder.hasChanges ? (
-              <>
-                <CmsActionButton
-                  variant="outline"
-                  onClick={reorder.cancel}
-                  disabled={reorderMutation.isPending}
-                >
-                  {commonText.cancel}
-                </CmsActionButton>
-                <CmsActionButton
-                  variant="outline"
-                  onClick={() => {
-                    void saveIssueOrder();
-                  }}
-                  disabled={reorderMutation.isPending}
-                >
-                  {commonText.saveOrder}
-                </CmsActionButton>
-              </>
-            ) : (
-              <CmsActionButton
-                variant="outline"
-                onClick={() => navigateToCrudRoute(cmsCrudRoutes.issues.create)}
-              >
-                {text.resource.new}
-              </CmsActionButton>
-            )}
+            <CmsActionButton
+              variant="outline"
+              onClick={() => navigateToCrudRoute(cmsCrudRoutes.issues.create)}
+            >
+              {text.resource.new}
+            </CmsActionButton>
           </div>
         }
       />
@@ -334,11 +442,6 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
             <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
               {commonText.totalRecords(listQuery.pagination.total)}
             </div>
-            {reorder.hasChanges ? (
-              <div className="border border-accent px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-accent">
-                {listText.reorderHelp}
-              </div>
-            ) : null}
             <CmsBulkActionBar
               selectedCount={selection.selectedCount}
               actions={bulkActions.map((action) => ({
@@ -350,7 +453,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                   ? () => selection.setSelection(pageIssueIds)
                   : undefined
               }
-              selectAllDisabled={isActionPending || reorder.hasChanges}
+              selectAllDisabled={isActionPending}
             />
 
             <div className="grid gap-3 lg:grid-cols-3">
@@ -416,149 +519,93 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
         }
         table={
           displayedIssues.length > 0 ? (
-            <Table className={cmsTableClasses.table}>
-              <TableHeader>
-                <TableRow className={cmsTableClasses.headerRow}>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    <Checkbox
-                      checked={allSelectedOnPage}
-                      disabled={reorder.hasChanges}
-                      onCheckedChange={() => {
-                        selection.toggleSelectAll(pageIssueIds);
-                      }}
-                      className={cmsTableClasses.headerCheckbox}
-                      aria-label={commonText.selectAll}
-                    />
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.title}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.slug}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.status}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.published}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.order}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.articles}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.createdAt}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.updatedAt}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.actions}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.reorder}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {displayedIssues.map((issue, index) => (
-                  <TableRow key={issue.id} className={cmsTableClasses.bodyRow}>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <Checkbox
-                        checked={selection.isSelected(issue.id)}
-                        disabled={reorder.hasChanges}
-                        onCheckedChange={() => {
-                          selection.toggleSelection(issue.id);
-                        }}
-                        aria-label={listText.selectItem(issue.title)}
-                      />
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellTitle}>{issue.title}</TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>{issue.slug}</TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {issue.isActive ? listText.active : listText.inactive}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {formatDate(issue.publishedAt)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {String(issue.sortOrder)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {String(issue.articlesCount)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {formatDate(issue.createdAt)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {formatDate(issue.updatedAt)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <div className="flex items-center gap-2">
-                        <CmsActionButton
-                          variant="outline"
-                          size="xs"
-                          onClick={() => navigateToCrudRoute(cmsCrudRoutes.issues.edit(issue.id))}
-                          disabled={isActionPending || reorder.hasChanges}
-                        >
-                          {quickText.edit}
-                        </CmsActionButton>
-                        <CmsConfirmDialog
-                          triggerLabel={quickText.delete}
-                          triggerDisabled={isActionPending || reorder.hasChanges}
-                          title={quickText.confirmDeleteTitle}
-                          description={quickText.confirmDeleteSingleIssue}
-                          tone="danger"
-                          onConfirm={() => runSingleAction("delete", issue.id)}
+            <DndContext
+              id="cms-issues-list-dnd"
+              sensors={sortableSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={({ active, over }) => {
+                if (!canReorder || reorderMutation.isPending || !over) {
+                  return;
+                }
+
+                void handleIssueDrop(String(active.id), String(over.id));
+              }}
+            >
+              <Table className={cmsTableClasses.table}>
+                <TableHeader>
+                  <TableRow className={cmsTableClasses.headerRow}>
+                    <TableHead
+                      className={cn(cmsTableClasses.headerCell, cmsTableClasses.selectionCell)}
+                    >
+                      <div
+                        className={cmsTableClasses.selectionCellInner}
+                        onPointerDownCapture={stopRowReorder}
+                      >
+                        <Checkbox
+                          checked={allSelectedOnPage}
+                          disabled={isActionPending}
+                          onCheckedChange={() => {
+                            selection.toggleSelectAll(pageIssueIds);
+                          }}
+                          className={cmsTableClasses.headerCheckbox}
+                          aria-label={commonText.selectAll}
                         />
                       </div>
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <div className="flex items-center gap-1">
-                        <CmsActionButton
-                          variant="outline"
-                          size="xs"
-                          disabled={!canReorder || index === 0 || reorderMutation.isPending}
-                          aria-label={`${commonText.moveUp}: ${issue.title}`}
-                          title={`${commonText.moveUp}: ${issue.title}`}
-                          onClick={() => {
-                            if (!reorder.isReorderMode) {
-                              selection.clearSelection();
-                              reorder.start();
-                            }
-                            reorder.moveUp(index);
-                          }}
-                        >
-                          <ArrowUp className="size-3" />
-                        </CmsActionButton>
-                        <CmsActionButton
-                          variant="outline"
-                          size="xs"
-                          disabled={
-                            !canReorder ||
-                            index === displayedIssues.length - 1 ||
-                            reorderMutation.isPending
-                          }
-                          aria-label={`${commonText.moveDown}: ${issue.title}`}
-                          title={`${commonText.moveDown}: ${issue.title}`}
-                          onClick={() => {
-                            if (!reorder.isReorderMode) {
-                              selection.clearSelection();
-                              reorder.start();
-                            }
-                            reorder.moveDown(index);
-                          }}
-                        >
-                          <ArrowDown className="size-3" />
-                        </CmsActionButton>
-                      </div>
-                    </TableCell>
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.title}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.slug}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.status}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.published}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.articles}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.createdAt}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.updatedAt}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.actions}
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  <SortableContext
+                    items={displayedIssues.map((issue) => issue.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {displayedIssues.map((issue) => (
+                      <SortableIssueRow
+                        key={issue.id}
+                        issue={issue}
+                        canReorder={canReorder}
+                        isPending={isActionPending}
+                        isSelected={selection.isSelected(issue.id)}
+                        onToggleSelection={selection.toggleSelection}
+                        onEdit={(id) => navigateToCrudRoute(cmsCrudRoutes.issues.edit(id))}
+                        onDelete={(id) => runSingleAction("delete", id)}
+                        selectLabel={listText.selectItem(issue.title)}
+                        editLabel={quickText.edit}
+                        deleteLabel={quickText.delete}
+                        deleteConfirmTitle={quickText.confirmDeleteTitle}
+                        deleteConfirmDescription={quickText.confirmDeleteSingleIssue}
+                        activeLabel={listText.active}
+                        inactiveLabel={listText.inactive}
+                      />
+                    ))}
+                  </SortableContext>
+                </TableBody>
+              </Table>
+            </DndContext>
           ) : (
             <div className="px-5 py-4">
               <CmsEmptyState

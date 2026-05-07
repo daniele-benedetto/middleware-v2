@@ -1,4 +1,5 @@
 import { CmsFormLabel } from "@/components/cms/primitives/form-controls";
+import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
 
@@ -9,6 +10,7 @@ type CmsFormFieldProps = {
   error?: string;
   required?: boolean;
   children: ReactNode;
+  className?: string;
 };
 
 export function CmsFormField({
@@ -18,9 +20,10 @@ export function CmsFormField({
   error,
   required = false,
   children,
+  className,
 }: CmsFormFieldProps) {
   return (
-    <div>
+    <div className={cn(className)}>
       <CmsFormLabel htmlFor={htmlFor} state={error ? "error" : "default"}>
         {label}
         {required ? " *" : ""}

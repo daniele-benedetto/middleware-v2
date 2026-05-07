@@ -523,7 +523,7 @@ function ArticleFormContent({
       />
 
       <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="cms-scroll min-h-0 min-w-0 space-y-5 overflow-y-auto pb-6 lg:pr-6">
+        <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-5 overflow-y-auto pb-6 lg:pr-6">
           <CmsFormField label={fieldText.title} htmlFor="article-title" required>
             <Controller
               name="title"
@@ -595,6 +595,7 @@ function ArticleFormContent({
             label={articleFormText.contentFieldLabel}
             htmlFor="article-content-rich"
             required
+            className="flex min-h-0 flex-1 flex-col"
           >
             <Controller
               name="contentRich"
@@ -604,6 +605,7 @@ function ArticleFormContent({
                   value={field.value}
                   onChange={field.onChange}
                   ariaLabel={articleFormText.contentEditorAriaLabel}
+                  fullHeight
                 />
               )}
             />

@@ -43,6 +43,7 @@ import {
 } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
+import { cn } from "@/lib/utils";
 
 type CmsTaxonomyListItem = {
   id: string;
@@ -320,15 +321,19 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
             <Table className={cmsTableClasses.table}>
               <TableHeader>
                 <TableRow className={cmsTableClasses.headerRow}>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    <Checkbox
-                      checked={allSelectedOnPage}
-                      onCheckedChange={() => {
-                        selection.toggleSelectAll(pageItemIds);
-                      }}
-                      className={cmsTableClasses.headerCheckbox}
-                      aria-label={commonText.selectAll}
-                    />
+                  <TableHead
+                    className={cn(cmsTableClasses.headerCell, cmsTableClasses.selectionCell)}
+                  >
+                    <div className={cmsTableClasses.selectionCellInner}>
+                      <Checkbox
+                        checked={allSelectedOnPage}
+                        onCheckedChange={() => {
+                          selection.toggleSelectAll(pageItemIds);
+                        }}
+                        className={cmsTableClasses.headerCheckbox}
+                        aria-label={commonText.selectAll}
+                      />
+                    </div>
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
                     {listText.table.name}
@@ -356,14 +361,18 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
               <TableBody>
                 {listQuery.items.map((item) => (
                   <TableRow key={item.id} className={cmsTableClasses.bodyRow}>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <Checkbox
-                        checked={selection.isSelected(item.id)}
-                        onCheckedChange={() => {
-                          selection.toggleSelection(item.id);
-                        }}
-                        aria-label={listText.selectItem(item.name)}
-                      />
+                    <TableCell
+                      className={cn(cmsTableClasses.bodyCellMeta, cmsTableClasses.selectionCell)}
+                    >
+                      <div className={cmsTableClasses.selectionCellInner}>
+                        <Checkbox
+                          checked={selection.isSelected(item.id)}
+                          onCheckedChange={() => {
+                            selection.toggleSelection(item.id);
+                          }}
+                          aria-label={listText.selectItem(item.name)}
+                        />
+                      </div>
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellTitle}>{item.name}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>{item.slug}</TableCell>

@@ -1,9 +1,16 @@
 "use client";
 
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import {
   CmsEmptyState,
@@ -39,8 +46,9 @@ import {
   cmsOptionsQueryOptions,
   useArticlesListQuery,
   useCmsListUrlState,
+  useDragReorder,
   useListSelection,
-  useReorderMode,
+  useSortableSensors,
 } from "@/features/cms/shared/hooks";
 import {
   articleAuthorOptionsInput,
@@ -56,6 +64,7 @@ import {
 } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
+import { cn } from "@/lib/utils";
 
 import type {
   ArticlesListInitialData,
@@ -228,6 +237,148 @@ type CmsArticlesListScreenProps = {
   initialAuthorsOptionsData?: UsersAuthorOptionsInitialData;
 };
 
+type ArticleTableRow = {
+  id: string;
+  title: string;
+  issueTitle: string | null;
+  categoryName: string | null;
+  authorName: string | null;
+  authorEmail: string | null;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  isFeatured: boolean;
+  tagsCount: number;
+  publishedAt: string | null;
+  createdAt: string;
+};
+
+function stopRowReorder(event: { stopPropagation: () => void }) {
+  event.stopPropagation();
+}
+
+type SortableArticleRowProps = {
+  article: ArticleTableRow;
+  canReorder: boolean;
+  isPending: boolean;
+  isSelected: boolean;
+  onToggleSelection: (id: string) => void;
+  onEdit: (id: string) => void;
+  onRunAction: (action: ArticleQuickAction, id: string) => void;
+  selectLabel: string;
+  editLabel: string;
+  yesLabel: string;
+  noLabel: string;
+};
+
+function SortableArticleRow({
+  article,
+  canReorder,
+  isPending,
+  isSelected,
+  onToggleSelection,
+  onEdit,
+  onRunAction,
+  selectLabel,
+  editLabel,
+  yesLabel,
+  noLabel,
+}: SortableArticleRowProps) {
+  const isDragEnabled = canReorder && !isPending;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: article.id,
+    disabled: !isDragEnabled,
+  });
+
+  const rowTransform = transform ? { ...transform, x: 0, scaleX: 1, scaleY: 1 } : null;
+
+  return (
+    <TableRow
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(rowTransform), transition }}
+      className={cn(
+        cmsTableClasses.bodyRow,
+        isDragEnabled && "cursor-grab select-none touch-manipulation active:cursor-grabbing",
+        isDragging && "relative z-10 bg-white shadow-[0_0_0_2px_var(--color-accent)]",
+      )}
+      {...(isDragEnabled ? attributes : {})}
+      {...(isDragEnabled ? listeners : {})}
+    >
+      <TableCell className={cn(cmsTableClasses.bodyCellMeta, cmsTableClasses.selectionCell)}>
+        <div className={cmsTableClasses.selectionCellInner} onPointerDownCapture={stopRowReorder}>
+          <Checkbox
+            checked={isSelected}
+            disabled={isPending}
+            onCheckedChange={() => {
+              onToggleSelection(article.id);
+            }}
+            aria-label={selectLabel}
+          />
+        </div>
+      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellTitle}>{article.title}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{article.issueTitle ?? "-"}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{article.categoryName ?? "-"}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        {article.authorName ?? article.authorEmail ?? "-"}
+      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{article.status}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        {article.isFeatured ? yesLabel : noLabel}
+      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{String(article.tagsCount)}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        {formatDate(article.publishedAt)}
+      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        {formatDate(article.createdAt)}
+      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        <div className="flex items-center gap-1.5" onPointerDownCapture={stopRowReorder}>
+          <CmsActionButton
+            variant="outline"
+            size="xs"
+            disabled={isPending}
+            onClick={() => onEdit(article.id)}
+          >
+            {editLabel}
+          </CmsActionButton>
+          {resolveQuickActions(articleSingleActionConfig, {
+            selectedCount: 1,
+            isPending,
+            status: article.status,
+            isFeatured: article.isFeatured,
+          }).map((action) =>
+            action.confirm ? (
+              <CmsConfirmDialog
+                key={`${article.id}-${action.id}`}
+                triggerLabel={action.label}
+                triggerDisabled={action.disabled}
+                title={action.confirm.title}
+                description={action.confirm.description}
+                confirmLabel={action.confirm.confirmLabel}
+                cancelLabel={action.confirm.cancelLabel}
+                tone={action.tone === "danger" ? "danger" : "default"}
+                onConfirm={() => onRunAction(action.id as ArticleQuickAction, article.id)}
+              />
+            ) : (
+              <CmsActionButton
+                key={`${article.id}-${action.id}`}
+                variant={action.tone === "danger" ? "primary-accent" : "outline"}
+                size="xs"
+                disabled={action.disabled}
+                onClick={() => {
+                  onRunAction(action.id as ArticleQuickAction, article.id);
+                }}
+              >
+                {action.label}
+              </CmsActionButton>
+            ),
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 export function CmsArticlesListScreen({
   initialInput,
   initialData,
@@ -348,15 +499,10 @@ export function CmsArticlesListScreen({
     input.query.featured === undefined &&
     listQuery.pagination.total === listQuery.items.length;
 
-  const reorder = useReorderMode(listQuery.items);
+  const reorder = useDragReorder(listQuery.items);
+  const sortableSensors = useSortableSensors();
 
-  const displayedArticles = reorder.isReorderMode ? reorder.displayedItems : listQuery.items;
-
-  useEffect(() => {
-    if (!canReorder && reorder.isReorderMode) {
-      reorder.cancel();
-    }
-  }, [canReorder, reorder]);
+  const displayedArticles = canReorder ? reorder.displayedItems : listQuery.items;
 
   if (listQuery.isPending) {
     return <CmsLoadingState />;
@@ -500,22 +646,11 @@ export function CmsArticlesListScreen({
     }
   };
 
-  const saveArticleOrder = async () => {
-    const issueId = input.query?.issueId;
-
-    if (!issueId) {
-      return;
-    }
-
-    if (!reorder.hasChanges) {
-      reorder.cancel();
-      return;
-    }
-
+  const persistArticleOrder = async (issueId: string, nextOrder: string[]) => {
     try {
       const reorderedItems = await reorderMutation.mutateAsync({
         issueId,
-        orderedArticleIds: reorder.normalizedOrder,
+        orderedArticleIds: nextOrder,
       });
 
       trpcUtils.articles.list.setData(input, (current) => {
@@ -529,15 +664,36 @@ export function CmsArticlesListScreen({
         };
       });
 
-      reorder.commit();
+      reorder.sync(reorderedItems.map((item) => item.id));
       await invalidateAfterCmsMutation(trpcUtils, "articles.reorder", {
-        ids: reorder.normalizedOrder,
+        ids: nextOrder,
       });
       cmsToast.info(listText.reorderUpdated);
     } catch (error) {
+      reorder.reset();
       const mapped = mapArticleDomainError(mapQuickActionError(error));
       cmsToast.error(mapped.description, mapped.title);
     }
+  };
+
+  const handleArticleDrop = async (activeId: string, overId: string) => {
+    const issueId = input.query?.issueId;
+
+    if (!issueId) {
+      return;
+    }
+
+    const activeIndex = reorder.orderedIds.indexOf(activeId);
+    const overIndex = reorder.orderedIds.indexOf(overId);
+
+    if (activeIndex < 0 || overIndex < 0 || activeIndex === overIndex) {
+      return;
+    }
+
+    const nextOrder = arrayMove(reorder.orderedIds, activeIndex, overIndex);
+
+    reorder.sync(nextOrder);
+    await persistArticleOrder(issueId, nextOrder);
   };
 
   const bulkActionConfig: CmsQuickAction[] = [
@@ -590,7 +746,7 @@ export function CmsArticlesListScreen({
 
   const resolvedBulkActions = resolveQuickActions(bulkActionConfig, {
     selectedCount: selection.selectedCount,
-    isPending: isActionPending || reorder.isReorderMode,
+    isPending: isActionPending,
   });
 
   const toolbarBulkActions = resolvedBulkActions.map((action) => ({
@@ -616,38 +772,6 @@ export function CmsArticlesListScreen({
         title={text.navigation.articles}
         actions={
           <div className="flex items-center gap-2">
-            {canReorder ? (
-              reorder.isReorderMode ? (
-                <>
-                  <CmsActionButton
-                    variant="outline"
-                    onClick={reorder.cancel}
-                    disabled={reorderMutation.isPending}
-                  >
-                    {commonText.cancel}
-                  </CmsActionButton>
-                  <CmsActionButton
-                    variant="outline"
-                    onClick={() => {
-                      void saveArticleOrder();
-                    }}
-                    disabled={!reorder.hasChanges || reorderMutation.isPending}
-                  >
-                    {commonText.saveOrder}
-                  </CmsActionButton>
-                </>
-              ) : (
-                <CmsActionButton
-                  variant="outline"
-                  onClick={() => {
-                    selection.clearSelection();
-                    reorder.start();
-                  }}
-                >
-                  {commonText.reorderMode}
-                </CmsActionButton>
-              )
-            ) : null}
             <CmsActionButton
               variant="outline"
               onClick={() => navigateToCrudRoute(cmsCrudRoutes.articles.create)}
@@ -662,7 +786,6 @@ export function CmsArticlesListScreen({
         toolbar={
           <ArticlesListToolbar
             totalRecords={listQuery.pagination.total}
-            isReorderMode={reorder.isReorderMode}
             selectedCount={selection.selectedCount}
             bulkActions={toolbarBulkActions}
             onSelectAll={
@@ -670,7 +793,7 @@ export function CmsArticlesListScreen({
                 ? () => selection.setSelection(pageArticleIds)
                 : undefined
             }
-            selectAllDisabled={isActionPending || reorder.isReorderMode}
+            selectAllDisabled={isActionPending}
             searchValue={input.query?.q ?? ""}
             statusValue={input.query?.status ?? "all"}
             featuredValue={input.query?.featured ?? "all"}
@@ -713,187 +836,98 @@ export function CmsArticlesListScreen({
         }
         table={
           displayedArticles.length > 0 ? (
-            <Table className={cmsTableClasses.table}>
-              <TableHeader>
-                <TableRow className={cmsTableClasses.headerRow}>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    <Checkbox
-                      checked={allSelectedOnPage}
-                      disabled={reorder.isReorderMode}
-                      onCheckedChange={() => {
-                        selection.toggleSelectAll(pageArticleIds);
-                      }}
-                      className={cmsTableClasses.headerCheckbox}
-                      aria-label={commonText.selectAll}
-                    />
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.title}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.issue}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.category}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.author}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.status}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.featured}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.position}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.tags}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.published}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.createdAt}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.actions}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.reorder}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {displayedArticles.map((article, index) => (
-                  <TableRow key={article.id} className={cmsTableClasses.bodyRow}>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <Checkbox
-                        checked={selection.isSelected(article.id)}
-                        disabled={reorder.isReorderMode}
-                        onCheckedChange={() => {
-                          selection.toggleSelection(article.id);
-                        }}
-                        aria-label={listText.selectItem(article.title)}
-                      />
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellTitle}>{article.title}</TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {article.issueTitle ?? "-"}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {article.categoryName ?? "-"}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {article.authorName ?? article.authorEmail ?? "-"}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>{article.status}</TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {article.isFeatured ? commonText.yes : commonText.no}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {String(article.position)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {String(article.tagsCount)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {formatDate(article.publishedAt)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {formatDate(article.createdAt)}
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <div className="flex items-center gap-1.5">
-                        <CmsActionButton
-                          variant="outline"
-                          size="xs"
-                          disabled={isActionPending || reorder.isReorderMode}
-                          onClick={() =>
-                            navigateToCrudRoute(cmsCrudRoutes.articles.edit(article.id))
-                          }
-                        >
-                          {quickText.edit}
-                        </CmsActionButton>
-                        {resolveQuickActions(articleSingleActionConfig, {
-                          selectedCount: 1,
-                          isPending: isActionPending || reorder.isReorderMode,
-                          status: article.status,
-                          isFeatured: article.isFeatured,
-                        }).map((action) =>
-                          action.confirm ? (
-                            <CmsConfirmDialog
-                              key={`${article.id}-${action.id}`}
-                              triggerLabel={action.label}
-                              triggerDisabled={action.disabled}
-                              title={action.confirm.title}
-                              description={action.confirm.description}
-                              confirmLabel={action.confirm.confirmLabel}
-                              cancelLabel={action.confirm.cancelLabel}
-                              tone={action.tone === "danger" ? "danger" : "default"}
-                              onConfirm={() =>
-                                runSingleAction(action.id as ArticleQuickAction, article.id)
-                              }
-                            />
-                          ) : (
-                            <CmsActionButton
-                              key={`${article.id}-${action.id}`}
-                              variant={action.tone === "danger" ? "primary-accent" : "outline"}
-                              size="xs"
-                              disabled={action.disabled}
-                              onClick={() => {
-                                void runSingleAction(action.id as ArticleQuickAction, article.id);
-                              }}
-                            >
-                              {action.label}
-                            </CmsActionButton>
-                          ),
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <div className="flex items-center gap-1">
-                        <CmsActionButton
-                          variant="outline"
-                          size="xs"
-                          disabled={
-                            !canReorder ||
-                            !reorder.isReorderMode ||
-                            index === 0 ||
-                            reorderMutation.isPending
-                          }
-                          aria-label={`${commonText.moveUp}: ${article.title}`}
-                          title={`${commonText.moveUp}: ${article.title}`}
-                          onClick={() => {
-                            reorder.moveUp(index);
+            <DndContext
+              id="cms-articles-list-dnd"
+              sensors={sortableSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={({ active, over }) => {
+                if (!canReorder || reorderMutation.isPending || !over) {
+                  return;
+                }
+
+                void handleArticleDrop(String(active.id), String(over.id));
+              }}
+            >
+              <Table className={cmsTableClasses.table}>
+                <TableHeader>
+                  <TableRow className={cmsTableClasses.headerRow}>
+                    <TableHead
+                      className={cn(cmsTableClasses.headerCell, cmsTableClasses.selectionCell)}
+                    >
+                      <div
+                        className={cmsTableClasses.selectionCellInner}
+                        onPointerDownCapture={stopRowReorder}
+                      >
+                        <Checkbox
+                          checked={allSelectedOnPage}
+                          disabled={isActionPending}
+                          onCheckedChange={() => {
+                            selection.toggleSelectAll(pageArticleIds);
                           }}
-                        >
-                          <ArrowUp className="size-3" />
-                        </CmsActionButton>
-                        <CmsActionButton
-                          variant="outline"
-                          size="xs"
-                          disabled={
-                            !canReorder ||
-                            !reorder.isReorderMode ||
-                            index === displayedArticles.length - 1 ||
-                            reorderMutation.isPending
-                          }
-                          aria-label={`${commonText.moveDown}: ${article.title}`}
-                          title={`${commonText.moveDown}: ${article.title}`}
-                          onClick={() => {
-                            reorder.moveDown(index);
-                          }}
-                        >
-                          <ArrowDown className="size-3" />
-                        </CmsActionButton>
+                          className={cmsTableClasses.headerCheckbox}
+                          aria-label={commonText.selectAll}
+                        />
                       </div>
-                    </TableCell>
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.title}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.issue}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.category}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.author}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.status}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.featured}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.tags}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.published}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.createdAt}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.actions}
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  <SortableContext
+                    items={displayedArticles.map((article) => article.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {displayedArticles.map((article) => (
+                      <SortableArticleRow
+                        key={article.id}
+                        article={article}
+                        canReorder={canReorder}
+                        isPending={isActionPending}
+                        isSelected={selection.isSelected(article.id)}
+                        onToggleSelection={selection.toggleSelection}
+                        onEdit={(id) => navigateToCrudRoute(cmsCrudRoutes.articles.edit(id))}
+                        onRunAction={(action, id) => {
+                          void runSingleAction(action, id);
+                        }}
+                        selectLabel={listText.selectItem(article.title)}
+                        editLabel={quickText.edit}
+                        yesLabel={commonText.yes}
+                        noLabel={commonText.no}
+                      />
+                    ))}
+                  </SortableContext>
+                </TableBody>
+              </Table>
+            </DndContext>
           ) : (
             <div className="px-5 py-4">
               <CmsEmptyState

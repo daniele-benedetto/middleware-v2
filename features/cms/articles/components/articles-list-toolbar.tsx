@@ -19,7 +19,6 @@ type ArticlesListToolbarOption = {
 
 type ArticlesListToolbarProps = {
   totalRecords: number;
-  isReorderMode: boolean;
   selectedCount: number;
   bulkActions: ArticlesListToolbarAction[];
   onSelectAll?: () => void;
@@ -50,7 +49,6 @@ type ArticlesListToolbarProps = {
 
 export function ArticlesListToolbar({
   totalRecords,
-  isReorderMode,
   selectedCount,
   bulkActions,
   onSelectAll,
@@ -88,12 +86,6 @@ export function ArticlesListToolbar({
       <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
         {commonText.totalRecords(totalRecords)}
       </div>
-
-      {isReorderMode ? (
-        <div className="border border-accent px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-accent">
-          {listText.reorderHelp}
-        </div>
-      ) : null}
 
       <CmsBulkActionBar
         selectedCount={selectedCount}

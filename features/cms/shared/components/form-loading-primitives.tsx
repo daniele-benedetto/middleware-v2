@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export function CmsFormLoadingHeader() {
   return (
@@ -15,9 +16,20 @@ export function CmsFormLoadingHeader() {
   );
 }
 
-export function CmsRichTextLoading({ height = "h-40" }: { height?: string }) {
+export function CmsRichTextLoading({
+  height = "h-40",
+  fullHeight = false,
+}: {
+  height?: string;
+  fullHeight?: boolean;
+}) {
   return (
-    <div className="border border-foreground bg-white">
+    <div
+      className={cn(
+        "border border-foreground bg-white",
+        fullHeight && "flex min-h-0 flex-1 flex-col",
+      )}
+    >
       <div className="flex flex-wrap items-center gap-1 border-b border-foreground px-2 py-1.5">
         {Array.from({ length: 9 }).map((_, index) => (
           <Skeleton
@@ -26,7 +38,9 @@ export function CmsRichTextLoading({ height = "h-40" }: { height?: string }) {
           />
         ))}
       </div>
-      <Skeleton className={`${height} w-full rounded-none bg-card-hover`} />
+      <Skeleton
+        className={cn("w-full rounded-none bg-card-hover", fullHeight ? "min-h-0 flex-1" : height)}
+      />
     </div>
   );
 }
@@ -69,14 +83,16 @@ export function CmsSlugFieldLoading({ labelWidth = "w-12" }: { labelWidth?: stri
 export function CmsRichTextFieldLoading({
   labelWidth = "w-20",
   height = "h-40",
+  fullHeight = false,
 }: {
   labelWidth?: string;
   height?: string;
+  fullHeight?: boolean;
 }) {
   return (
-    <div>
+    <div className={cn(fullHeight && "flex min-h-0 flex-1 flex-col")}>
       <Skeleton className={`mb-1.5 h-2.5 ${labelWidth} rounded-none bg-card-hover`} />
-      <CmsRichTextLoading height={height} />
+      <CmsRichTextLoading height={height} fullHeight={fullHeight} />
     </div>
   );
 }
@@ -85,11 +101,7 @@ export function CmsSectionLabelLoading({ width = "w-28" }: { width?: string }) {
   return <Skeleton className={`h-3 ${width} rounded-none bg-card-hover`} />;
 }
 
-export function CmsArticlePanelLoading({
-  withReorderControls = false,
-}: {
-  withReorderControls?: boolean;
-}) {
+export function CmsArticlePanelLoading() {
   return (
     <div className="flex h-full min-h-0 flex-col border border-foreground bg-white">
       <div className="flex shrink-0 items-center justify-between border-b border-foreground px-3 py-2">
@@ -103,12 +115,6 @@ export function CmsArticlePanelLoading({
               key={index}
               className="flex items-center gap-2 px-3 py-2 odd:bg-white even:bg-card-hover"
             >
-              {withReorderControls ? (
-                <div className="flex shrink-0 items-center gap-1">
-                  <Skeleton className="h-7 w-7 rounded-none border border-border bg-card-hover" />
-                  <Skeleton className="h-7 w-7 rounded-none border border-border bg-card-hover" />
-                </div>
-              ) : null}
               <Skeleton className="h-4 flex-1 rounded-none bg-card-hover" />
               <Skeleton className="size-3.5 rounded-none bg-card-hover" />
             </li>

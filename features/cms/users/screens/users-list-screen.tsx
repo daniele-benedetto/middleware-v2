@@ -45,6 +45,7 @@ import { parseUsersListSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
+import { cn } from "@/lib/utils";
 
 import type { UsersListInitialData } from "@/features/cms/shared/types/initial-data";
 import type { RouterInputs } from "@/lib/trpc/types";
@@ -340,15 +341,19 @@ export function CmsUsersListScreen({
             <Table className={cmsTableClasses.table}>
               <TableHeader>
                 <TableRow className={cmsTableClasses.headerRow}>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    <Checkbox
-                      checked={allSelectedOnPage}
-                      onCheckedChange={() => {
-                        selection.toggleSelectAll(pageActionableUserIds);
-                      }}
-                      className={cmsTableClasses.headerCheckbox}
-                      aria-label={commonText.selectAll}
-                    />
+                  <TableHead
+                    className={cn(cmsTableClasses.headerCell, cmsTableClasses.selectionCell)}
+                  >
+                    <div className={cmsTableClasses.selectionCellInner}>
+                      <Checkbox
+                        checked={allSelectedOnPage}
+                        onCheckedChange={() => {
+                          selection.toggleSelectAll(pageActionableUserIds);
+                        }}
+                        className={cmsTableClasses.headerCheckbox}
+                        aria-label={commonText.selectAll}
+                      />
+                    </div>
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
                     {listText.table.email}
@@ -382,15 +387,19 @@ export function CmsUsersListScreen({
 
                   return (
                     <TableRow key={user.id} className={cmsTableClasses.bodyRow}>
-                      <TableCell className={cmsTableClasses.bodyCellMeta}>
-                        <Checkbox
-                          checked={selection.isSelected(user.id)}
-                          disabled={isCurrentUser}
-                          onCheckedChange={() => {
-                            selection.toggleSelection(user.id);
-                          }}
-                          aria-label={listText.selectItemByEmail(user.email)}
-                        />
+                      <TableCell
+                        className={cn(cmsTableClasses.bodyCellMeta, cmsTableClasses.selectionCell)}
+                      >
+                        <div className={cmsTableClasses.selectionCellInner}>
+                          <Checkbox
+                            checked={selection.isSelected(user.id)}
+                            disabled={isCurrentUser}
+                            onCheckedChange={() => {
+                              selection.toggleSelection(user.id);
+                            }}
+                            aria-label={listText.selectItemByEmail(user.email)}
+                          />
+                        </div>
                       </TableCell>
                       <TableCell className={cmsTableClasses.bodyCellTitle}>{user.email}</TableCell>
                       <TableCell className={cmsTableClasses.bodyCellMeta}>

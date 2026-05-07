@@ -31,7 +31,7 @@ import {
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
-import { invalidateAfterCmsMutation, invalidateArticlesAfterMutation } from "@/lib/cms/trpc";
+import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { createIssueInputSchema, updateIssueInputSchema } from "@/lib/server/modules/issues/schema";
 import { normalizeSlug } from "@/lib/server/validation/slug";
@@ -49,32 +49,7 @@ type IssueFormScreenProps = {
 type IssueUpdatePayload = {
   id: string;
   data: UpdateIssueInput;
-  orderedArticleIds?: string[];
 };
-
-function orderedIdsEqual(a: string[], b: string[]) {
-  if (a.length !== b.length) return false;
-  return a.every((id, index) => id === b[index]);
-}
-
-function moveItemByOffset(ids: string[], index: number, offset: -1 | 1) {
-  const nextIndex = index + offset;
-
-  if (index < 0 || nextIndex < 0 || index >= ids.length || nextIndex >= ids.length) {
-    return ids;
-  }
-
-  const reordered = [...ids];
-  const current = reordered[index];
-
-  if (!current) {
-    return ids;
-  }
-
-  reordered[index] = reordered[nextIndex] ?? "";
-  reordered[nextIndex] = current;
-  return reordered;
-}
 
 function normalizePickedDate(value: Date) {
   const next = new Date(value);
@@ -93,6 +68,8 @@ function IssuePublishedDatePicker({
   clearLabel: string;
   onChange: (value: Date | null) => void;
 }) {
+  const formattedValue = value ? format(value, "dd/MM/yyyy") : placeholder;
+
   return (
     <div className="flex items-center gap-2">
       <Popover>
@@ -101,17 +78,20 @@ function IssuePublishedDatePicker({
             <button
               type="button"
               className={cn(
-                "flex h-10 flex-1 items-center gap-2 border border-foreground bg-white px-3 text-left",
+                "flex h-10 flex-1 items-center justify-between gap-3 border border-foreground bg-white px-3 text-left",
                 "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
                 value ? "text-foreground" : "text-border",
               )}
             />
           }
         >
-          <CalendarIcon className="size-3.5 shrink-0" />
-          {value ? format(value, "dd/MM/yyyy") : placeholder}
+          <span className="flex min-w-0 items-center gap-2">
+            <CalendarIcon className="size-3.5 shrink-0" />
+            <span className="truncate">{formattedValue}</span>
+          </span>
+          <span className="shrink-0 text-[10px] tracking-[0.08em] text-muted-foreground">Data</span>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
+        <PopoverContent className="w-[20rem] rounded-none border border-foreground bg-white p-0 shadow-none">
           <Calendar
             mode="single"
             selected={value ?? undefined}
@@ -149,6 +129,7 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
   const issueQuery = useIssueById(mode === "edit" ? issueId : undefined, { initialData });
   const createMutation = useIssueCreate();
   const updateMutation = useIssueUpdate();
+  const articleReorderMutation = trpc.articles.reorder.useMutation();
 
   useSetCmsBreadcrumbLabel(mode === "edit" ? issueQuery.data?.title : null);
 
@@ -176,22 +157,31 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
       issueId={issueId}
       issue={issueQuery.data}
       isMutating={createMutation.isPending || updateMutation.isPending}
+      isArticleOrderPending={articleReorderMutation.isPending}
       onCancel={cancel}
       onCreate={async (payload) => {
         await createMutation.mutateAsync(payload);
         await invalidateAfterCmsMutation(trpcUtils, "issues.create");
         success(issueFormText.created);
       }}
-      onUpdate={async ({ id, data, orderedArticleIds }) => {
-        await updateMutation.mutateAsync({ id, data, orderedArticleIds });
+      onUpdate={async ({ id, data }) => {
+        await updateMutation.mutateAsync({ id, data });
+        await invalidateAfterCmsMutation(trpcUtils, "issues.update", { id });
+        success(issueFormText.updated);
+      }}
+      onReorderArticles={async ({ issueId: currentIssueId, orderedArticleIds }) => {
+        const reorderedItems = await articleReorderMutation.mutateAsync({
+          issueId: currentIssueId,
+          orderedArticleIds,
+        });
 
         await Promise.all([
-          invalidateAfterCmsMutation(trpcUtils, "issues.update", { id }),
-          orderedArticleIds
-            ? invalidateArticlesAfterMutation(trpcUtils, { ids: orderedArticleIds })
-            : Promise.resolve(),
+          invalidateAfterCmsMutation(trpcUtils, "articles.reorder", { ids: orderedArticleIds }),
+          invalidateAfterCmsMutation(trpcUtils, "issues.update", { id: currentIssueId }),
         ]);
-        success(issueFormText.updated);
+
+        cmsToast.info(text.lists.articles.reorderUpdated);
+        return reorderedItems.map((item) => item.id);
       }}
       onMutationError={(error) => {
         const mapped = mapCrudDomainError(error, "issues");
@@ -209,9 +199,14 @@ type IssueFormContentProps = {
   issueId?: string;
   issue?: IssueDetail;
   isMutating: boolean;
+  isArticleOrderPending: boolean;
   onCancel: () => void;
   onCreate: (payload: CreateIssueInput) => Promise<void>;
   onUpdate: (payload: IssueUpdatePayload) => Promise<void>;
+  onReorderArticles: (payload: {
+    issueId: string;
+    orderedArticleIds: string[];
+  }) => Promise<string[]>;
   onMutationError: (error: unknown) => void;
   onValidationError: (message: string) => void;
 };
@@ -221,9 +216,11 @@ function IssueFormContent({
   issueId,
   issue,
   isMutating,
+  isArticleOrderPending,
   onCancel,
   onCreate,
   onUpdate,
+  onReorderArticles,
   onMutationError,
   onValidationError,
 }: IssueFormContentProps) {
@@ -266,16 +263,7 @@ function IssueFormContent({
   const orderedArticles = orderedArticleIds
     .map((id) => articlesById.get(id))
     .filter((article): article is NonNullable<typeof article> => Boolean(article));
-  const initialArticleOrder = issue?.articles.map((article) => article.id) ?? [];
-  const orderChanged = !orderedIdsEqual(orderedArticleIds, initialArticleOrder);
-
-  const moveArticleUp = (index: number) => {
-    setOrderedArticleIds((current) => moveItemByOffset(current, index, -1));
-  };
-
-  const moveArticleDown = (index: number) => {
-    setOrderedArticleIds((current) => moveItemByOffset(current, index, 1));
-  };
+  const isBusy = isMutating || isArticleOrderPending;
 
   const openSlugEditor = () => {
     setManualSlug(resolvedSlug);
@@ -339,10 +327,28 @@ function IssueFormContent({
       await onUpdate({
         id: issueId!,
         data: validation.value,
-        orderedArticleIds: orderChanged ? orderedArticleIds : undefined,
       });
     } catch (error) {
       onMutationError(error);
+    }
+  };
+
+  const handleArticleReorder = async (nextOrder: string[]) => {
+    if (!issueId) {
+      return;
+    }
+
+    const previousOrder = orderedArticleIds;
+
+    setOrderedArticleIds(nextOrder);
+
+    try {
+      const syncedOrder = await onReorderArticles({ issueId, orderedArticleIds: nextOrder });
+      setOrderedArticleIds(syncedOrder);
+    } catch (error) {
+      setOrderedArticleIds(previousOrder);
+      const mapped = mapTrpcErrorToCmsUiMessage(error);
+      cmsToast.error(mapped.description, mapped.title);
     }
   };
 
@@ -358,10 +364,10 @@ function IssueFormContent({
         title={mode === "create" ? issueFormText.createTitle : issueFormText.editTitle}
         actions={
           <div className="flex items-center gap-2">
-            <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
+            <CmsActionButton variant="outline" onClick={onCancel} disabled={isBusy}>
               {text.common.cancel}
             </CmsActionButton>
-            <CmsActionButton type="submit" isLoading={isMutating}>
+            <CmsActionButton type="submit" isLoading={isBusy}>
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
           </div>
@@ -369,7 +375,7 @@ function IssueFormContent({
       />
 
       <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="cms-scroll min-h-0 min-w-0 space-y-5 overflow-y-auto pb-6 lg:pr-6">
+        <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-5 overflow-y-auto pb-6 lg:pr-6">
           <CmsFormField label={fieldText.title} htmlFor="issue-title" required>
             <CmsTextInput
               id="issue-title"
@@ -419,11 +425,16 @@ function IssueFormContent({
             </div>
           </CmsFormField>
 
-          <CmsFormField label={fieldText.description} htmlFor="issue-description">
+          <CmsFormField
+            label={fieldText.description}
+            htmlFor="issue-description"
+            className="flex min-h-0 flex-1 flex-col"
+          >
             <CmsRichTextEditor
               value={description}
               onChange={setDescription}
               ariaLabel={issueFormText.descriptionEditorAriaLabel}
+              fullHeight
             />
           </CmsFormField>
         </div>
@@ -453,18 +464,12 @@ function IssueFormContent({
           </section>
 
           {mode === "edit" ? (
-            <section className="flex min-h-0 flex-1 flex-col gap-3">
-              {orderChanged ? (
-                <div className="shrink-0 border border-accent px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-accent">
-                  {issueFormText.dirtyArticleOrder}
-                </div>
-              ) : null}
+            <section className="flex min-h-0 flex-1 flex-col">
               <IssueArticlesPanel
                 articles={orderedArticles}
-                disabled={isMutating}
+                disabled={isBusy}
                 className="min-h-0 flex-1"
-                onMoveUp={moveArticleUp}
-                onMoveDown={moveArticleDown}
+                onReorder={handleArticleReorder}
               />
             </section>
           ) : null}

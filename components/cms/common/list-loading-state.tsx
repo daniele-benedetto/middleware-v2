@@ -84,8 +84,12 @@ export function CmsListLoadingState({
             <TableHeader>
               <TableRow className={cmsTableClasses.headerRow}>
                 {!hiddenButton && (
-                  <TableHead className={cn(cmsTableClasses.headerCell, "w-10 px-2")}>
-                    <Skeleton className="size-4 rounded-none bg-[rgba(240,232,216,0.35)]" />
+                  <TableHead
+                    className={cn(cmsTableClasses.headerCell, cmsTableClasses.selectionCell)}
+                  >
+                    <div className={cmsTableClasses.selectionCellInner}>
+                      <Skeleton className="size-4 rounded-none bg-[rgba(240,232,216,0.35)]" />
+                    </div>
                   </TableHead>
                 )}
                 {Array.from({ length: contentColumns }).map((_, index) => (
@@ -99,8 +103,12 @@ export function CmsListLoadingState({
               {Array.from({ length: rows }).map((_, rowIndex) => (
                 <TableRow key={`row-${rowIndex}`} className={cmsTableClasses.bodyRow}>
                   {!hiddenButton && (
-                    <TableCell className={cn(cmsTableClasses.bodyCellMeta, "w-10 px-2 py-3.5")}>
-                      <Skeleton className="size-4.5 rounded-none border border-border bg-foreground/10" />
+                    <TableCell
+                      className={cn(cmsTableClasses.bodyCellMeta, cmsTableClasses.selectionCell)}
+                    >
+                      <div className={cmsTableClasses.selectionCellInner}>
+                        <Skeleton className="size-4 rounded-none border border-border bg-foreground/10" />
+                      </div>
                     </TableCell>
                   )}
                   {Array.from({ length: contentColumns }).map((_, cellIndex) => (

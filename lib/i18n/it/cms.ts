@@ -229,7 +229,6 @@ export const cmsIt = {
         slugPreviewPlaceholder: "Slug generato automaticamente",
         slugManualHint: "Clicca sullo slug per modificarlo manualmente",
         selectDatePlaceholder: "Seleziona data",
-        dirtyArticleOrder: "Riordino articoli non ancora salvato.",
       },
     },
   },
@@ -244,11 +243,7 @@ export const cmsIt = {
     close: "Chiudi",
     open: "Apri",
     openSection: "Apri sezione",
-    reorderMode: "Modalita reorder",
-    moveUp: "Sposta su",
-    moveDown: "Sposta giu",
     cancel: "Annulla",
-    saveOrder: "Salva ordine",
     retry: "Riprova",
     errorEyebrow: "ERRORE",
     selectAll: "Seleziona visibili",
@@ -352,19 +347,15 @@ export const cmsIt = {
   lists: {
     issues: {
       subtitle: "Filtri, ricerca, ordinamento, paginazione e riordino.",
-      reorderHelp:
-        "Modalita reorder attiva: usa le frecce per riordinare e salva per applicare le modifiche.",
       table: {
         title: "Titolo",
         slug: "Slug",
         status: "Stato",
         published: "Pubblicata",
-        order: "Ordine",
         articles: "Articoli",
         createdAt: "Creata",
         updatedAt: "Aggiornata",
         actions: "Azioni",
-        reorder: "Reorder",
       },
       eyebrow: "Issues",
       active: "Attiva",
@@ -410,8 +401,6 @@ export const cmsIt = {
     },
     articles: {
       subtitle: "Filtri avanzati, ricerca, ordinamento e paginazione.",
-      reorderHelp:
-        "Modalita reorder attiva: usa le frecce per riordinare gli articoli dell'issue selezionata.",
       table: {
         title: "Titolo",
         issue: "Issue",
@@ -419,12 +408,10 @@ export const cmsIt = {
         author: "Autore",
         status: "Stato",
         featured: "Featured",
-        position: "Posizione",
         tags: "Tag",
         published: "Pubblicata",
         createdAt: "Creata",
         actions: "Azioni",
-        reorder: "Reorder",
       },
       eyebrow: "Articoli",
       statusDraft: "Bozza",

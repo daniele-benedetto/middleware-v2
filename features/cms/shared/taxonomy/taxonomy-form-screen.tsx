@@ -306,7 +306,7 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
       />
 
       <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="cms-scroll min-h-0 min-w-0 space-y-5 overflow-y-auto pb-6 lg:pr-6">
+        <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-5 overflow-y-auto pb-6 lg:pr-6">
           <CmsFormField label={fieldText.name} htmlFor="taxonomy-name" required>
             <CmsTextInput
               id="taxonomy-name"
@@ -356,11 +356,16 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
             </div>
           </CmsFormField>
 
-          <CmsFormField label={fieldText.description} htmlFor="taxonomy-description">
+          <CmsFormField
+            label={fieldText.description}
+            htmlFor="taxonomy-description"
+            className="flex min-h-0 flex-1 flex-col"
+          >
             <CmsRichTextEditor
               value={description}
               onChange={setDescription}
               ariaLabel={resourceText.descriptionEditorAriaLabel}
+              fullHeight
             />
           </CmsFormField>
         </div>
