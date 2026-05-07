@@ -345,7 +345,7 @@
 ✅ `lib/server/http/rate-limit.ts` usa Redis come backend obbligatorio in produzione; se `REDIS_URL` manca o Redis non è raggiungibile, le mutation rate-limited falliscono esplicitamente invece di degradare silenziosamente a in-memory.
 ✅ `app/api/cms/media/blob/route.ts` esegue session+role check prima di proxare blob privati.
 
-💡 Prossimo miglioramento proporzionato: aggiungere test unitari dedicati per la blob route e per il fail-closed del rate limiter.
+✅ Aggiunti test unitari dedicati per il fail-closed del rate limiter e per `app/api/cms/media/blob/route.ts` (auth/role check prima del proxy, headers di risposta, mapping `403/404`).
 
 ---
 
