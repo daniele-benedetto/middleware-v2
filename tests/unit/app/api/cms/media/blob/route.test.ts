@@ -113,6 +113,9 @@ describe("GET /api/cms/media/blob", () => {
     getBlobMock.mockResolvedValue({
       statusCode: 200,
       stream: createBlobStream("image-bytes"),
+      headers: new Headers({
+        "content-type": "image/jpeg",
+      }),
       blob: {
         url: "https://store.blob.vercel-storage.com/covers/hero%20image.JPG",
         downloadUrl: "https://store.blob.vercel-storage.com/covers/hero%20image.JPG?download=1",

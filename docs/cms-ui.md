@@ -217,12 +217,10 @@ Rule:
 
 ## Foundation freeze
 
-Tokens fondazionali (palette, alpha, filetti, spacing, type scale, line-heights, griglie) allineati a `docs/Middleware Style Guide.html`. Aggiungere nuovi token solo dietro riferimento esplicito nella style guide. Per valori non tokenizzati preferire Tailwind arbitrary values locali al componente.
+Tokens fondazionali (palette, alpha, filetti, spacing, type scale, line-heights, griglie) sono documentati qui e implementati in `app/globals.css` e nelle primitives CMS. Aggiungere nuovi token solo quando servono davvero e mantenerli coerenti tra documentazione e implementazione.
 
 ## Source of truth
 
 - Canonical document: `docs/cms-ui.md`
 - Summary and onboarding context: `README.md`
-- CMS architecture audit and milestones: `docs/cms-architecture-audit.md`
-- CMS UI audit and milestones: `docs/cms-ui-audit.md`
 - CMS guard/permission smoke checklist: `docs/cms-smoke-checklist.md`

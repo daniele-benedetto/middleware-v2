@@ -25,6 +25,15 @@
 - No browser E2E framework is configured yet; do not assume Playwright/Cypress.
 - Prisma schema lives in `prisma/schema.prisma`; generated client output is `lib/generated/prisma`.
 
+## Active Docs
+
+- Keep project docs lean. The active docs set is:
+  - `docs/architecture.md` for architecture, runtime invariants, auth, media flow, and data-fetching overview.
+  - `docs/cms-ui.md` for CMS visual system and component governance.
+  - `docs/cms-smoke-checklist.md` for manual CMS smoke checks.
+- `README.md` remains the operational setup and workflow entrypoint.
+- Prefer updating these files instead of creating new audit/report/checklist docs unless explicitly requested.
+
 ## Current Data Decisions
 
 - Single environment for now: Vercel auto-deploy + one production database. Do not assume staging/dev DB split yet.
