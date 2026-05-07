@@ -22,6 +22,7 @@ Required vars:
 - `DATABASE_URL`: Postgres connection string
 - `BETTER_AUTH_SECRET`: Better Auth signing secret
 - `BETTER_AUTH_URL`: app base URL
+- `REDIS_URL`: Redis connection string for CMS rate limiting; required in production, optional in local dev/test
 
 Postgres SSL note:
 
@@ -38,6 +39,11 @@ pnpm prisma:generate
 ```
 
 Current setup runs with a single database as source of truth (Vercel auto-deploy).
+
+Production note:
+
+- Redis-backed rate limiting is required in production.
+- If `REDIS_URL` is missing or Redis is unavailable in production, rate-limited CMS writes fail closed instead of degrading to in-memory counters.
 
 ## Development commands
 
@@ -304,7 +310,9 @@ Representative outputs:
 ## API operational baseline
 
 - Pagination baseline: `page` default `1`, `pageSize` default `20`, `pageSize` max `100`.
-- Rate-limit baseline (in-memory, per IP + method + path, 60s window):
+- Rate-limit baseline (per IP + method + path, 60s window):
+  - production: Redis-backed via `REDIS_URL`, no in-memory fallback
+  - local dev/test: Redis when configured, otherwise in-memory fallback
   - `write`: `60` req/min
   - `sensitive-write` (users management): `20` req/min
   - `publish`: `30` req/min

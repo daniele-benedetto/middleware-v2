@@ -176,7 +176,7 @@
 
 ### Correzioni applicate
 
-- ✅ `lib/server/http/rate-limit.ts` usa ora Redis via `REDIS_URL` e client singleton `lib/redis.ts`; il fallback in-memory resta solo come degrado controllato se Redis non è configurato o non è raggiungibile.
+- ✅ `lib/server/http/rate-limit.ts` usa ora Redis via `REDIS_URL` e client singleton `lib/redis.ts`; il fallback in-memory resta disponibile solo fuori produzione se Redis non è configurato o non è raggiungibile.
 - ✅ `reorder` non è più sequenziale (vedi §3): una sola transaction con update concorrenti.
 - ✅ Bundle CMS alleggerito con `next/dynamic` su rich text editor e media library (vedi §2); `ArticleJsonPreview` resta inline intenzionalmente perché non introduce librerie pesanti.
 
@@ -329,7 +329,7 @@
 
 ## 15. Sicurezza
 
-- [x] Rate limiting su mutation sensibili (best-effort, vedi sotto)
+- [x] Rate limiting su mutation sensibili (Redis-backed in prod)
 - [x] Audit log su azioni admin
 - [x] Upload MIME/size whitelist + sanificazione filename
 - [x] Path traversal: id/slug validati prima delle query
@@ -342,10 +342,10 @@
 ✅ Blob privati streammati con `cache-control: private, no-store` (`app/api/cms/media/blob/route.ts`).
 ✅ `buildCmsMetadata` forza `index: false` sulle pagine CMS (`lib/seo/metadata.ts:172-177`).
 
-⚠️ Rate limiter non robusto in serverless (vedi §7).
-⚠️ Verificare esplicitamente che `app/api/cms/media/blob/route.ts` faccia session+role check **prima** di proxare blob privati.
+✅ `lib/server/http/rate-limit.ts` usa Redis come backend obbligatorio in produzione; se `REDIS_URL` manca o Redis non è raggiungibile, le mutation rate-limited falliscono esplicitamente invece di degradare silenziosamente a in-memory.
+✅ `app/api/cms/media/blob/route.ts` esegue session+role check prima di proxare blob privati.
 
-💡 Verifica esplicita auth nella route blob. Sposta il rate limit su backing store persistente quando passerai a multi-istanza.
+💡 Prossimo miglioramento proporzionato: aggiungere test unitari dedicati per la blob route e per il fail-closed del rate limiter.
 
 ---
 

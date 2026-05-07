@@ -51,6 +51,14 @@ type RateLimitCounter = {
   resetAt: number;
 };
 
+function isProductionRateLimit(): boolean {
+  return process.env.NODE_ENV === "production";
+}
+
+function buildRateLimitBackendUnavailableError(): ApiError {
+  return new ApiError(500, "INTERNAL_ERROR", "Rate limit backend unavailable");
+}
+
 function buildRateLimitKey(request: Request, policy: RateLimitPolicy): string {
   const url = new URL(request.url);
   const clientIp = getRequestClientIp(request) ?? "unknown";
@@ -117,11 +125,39 @@ async function incrementRedisCounter(
   };
 }
 
+async function incrementRequiredRedisCounter(
+  key: string,
+  policy: RateLimitPolicy,
+): Promise<RateLimitCounter> {
+  const counter = await incrementRedisCounter(key, policy);
+
+  if (!counter) {
+    throw new Error("Redis rate limit backend is unavailable");
+  }
+
+  return counter;
+}
+
 export async function enforceRateLimit(request: Request, policy: RateLimitPolicy): Promise<void> {
   const now = Date.now();
   const key = buildRateLimitKey(request, policy);
 
   let counter: RateLimitCounter;
+
+  if (isProductionRateLimit()) {
+    try {
+      counter = await incrementRequiredRedisCounter(key, policy);
+    } catch (error) {
+      console.error("RATE_LIMIT_BACKEND_UNAVAILABLE", error);
+      throw buildRateLimitBackendUnavailableError();
+    }
+
+    if (counter.count > policy.limit) {
+      throw new ApiError(429, "RATE_LIMITED", "Rate limit exceeded for this endpoint");
+    }
+
+    return;
+  }
 
   try {
     counter =

@@ -28,6 +28,7 @@
 ## Current Data Decisions
 
 - Single environment for now: Vercel auto-deploy + one production database. Do not assume staging/dev DB split yet.
+- Redis-backed rate limiting is mandatory in production; local/test may fall back to in-memory when `REDIS_URL` is unset or Redis is unavailable.
 - Better Auth ID strategy: `User.id` is DB-generated UUID; `Session/Account/Verification.id` is adapter-managed string.
 - Access model: `ADMIN` can manage users and assign roles; `EDITOR` can manage all editorial resources but cannot access user-management endpoints.
 - Delete policy: hard delete for all resources.
