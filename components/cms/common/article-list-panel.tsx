@@ -173,10 +173,12 @@ function SortableArticleListPanelRow({
           <span className="block truncate">{article.title}</span>
         )}
       </TableCell>
-      <TableCell className="w-px px-2 py-2 text-center font-ui text-[11px] text-muted-foreground">
-        {article.isFeatured ? (
-          <Star className="inline-block h-3.5 w-3.5 text-accent" aria-label={featuredAriaLabel} />
-        ) : null}
+      <TableCell className="w-7 min-w-7 max-w-7 px-0 py-2 text-center font-ui text-[11px] text-muted-foreground">
+        <div className="flex w-full items-center justify-center">
+          {article.isFeatured ? (
+            <Star className="h-3.5 w-3.5 text-accent" aria-label={featuredAriaLabel} />
+          ) : null}
+        </div>
       </TableCell>
     </TableRow>
   );

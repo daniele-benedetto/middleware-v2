@@ -25,10 +25,7 @@ export function CmsRichTextLoading({
 }) {
   return (
     <div
-      className={cn(
-        "border border-foreground bg-white",
-        fullHeight && "flex min-h-0 flex-1 flex-col",
-      )}
+      className={cn("border border-foreground bg-white", fullHeight && "flex min-h-full flex-col")}
     >
       <div className="flex flex-wrap items-center gap-1 border-b border-foreground px-2 py-1.5">
         {Array.from({ length: 9 }).map((_, index) => (
@@ -39,7 +36,7 @@ export function CmsRichTextLoading({
         ))}
       </div>
       <Skeleton
-        className={cn("w-full rounded-none bg-card-hover", fullHeight ? "min-h-0 flex-1" : height)}
+        className={cn("w-full rounded-none bg-card-hover", fullHeight ? "flex-1" : height)}
       />
     </div>
   );
@@ -90,7 +87,7 @@ export function CmsRichTextFieldLoading({
   fullHeight?: boolean;
 }) {
   return (
-    <div className={cn(fullHeight && "flex min-h-0 flex-1 flex-col")}>
+    <div className={cn(fullHeight && "flex flex-1 flex-col")}>
       <Skeleton className={`mb-1.5 h-2.5 ${labelWidth} rounded-none bg-card-hover`} />
       <CmsRichTextLoading height={height} fullHeight={fullHeight} />
     </div>
@@ -116,7 +113,9 @@ export function CmsArticlePanelLoading() {
               className="flex items-center gap-2 px-3 py-2 odd:bg-white even:bg-card-hover"
             >
               <Skeleton className="h-4 flex-1 rounded-none bg-card-hover" />
-              <Skeleton className="size-3.5 rounded-none bg-card-hover" />
+              <div className="flex w-7 min-w-7 max-w-7 items-center justify-center">
+                <Skeleton className="size-3.5 rounded-none bg-card-hover" />
+              </div>
             </li>
           ))}
         </ul>

@@ -93,6 +93,7 @@ function IssuePublishedDatePicker({
         </PopoverTrigger>
         <PopoverContent className="w-[20rem] rounded-none border border-foreground bg-white p-0 shadow-none">
           <Calendar
+            key={value ? format(value, "yyyy-MM-dd") : "empty-date"}
             mode="single"
             selected={value ?? undefined}
             onSelect={(date) => {
@@ -428,7 +429,7 @@ function IssueFormContent({
           <CmsFormField
             label={fieldText.description}
             htmlFor="issue-description"
-            className="flex min-h-0 flex-1 flex-col"
+            className="flex flex-1 flex-col"
           >
             <CmsRichTextEditor
               value={description}

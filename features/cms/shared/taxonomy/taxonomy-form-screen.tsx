@@ -359,7 +359,7 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
           <CmsFormField
             label={fieldText.description}
             htmlFor="taxonomy-description"
-            className="flex min-h-0 flex-1 flex-col"
+            className="flex flex-1 flex-col"
           >
             <CmsRichTextEditor
               value={description}

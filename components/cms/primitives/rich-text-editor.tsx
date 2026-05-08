@@ -34,15 +34,16 @@ const emptyDoc = { type: "doc", content: [{ type: "paragraph" }] };
 
 const proseBaseClasses = cn(
   "prose prose-sm max-w-none font-editorial text-[16px] text-foreground leading-[1.6]",
-  "focus:outline-none",
+  "min-w-0 break-words [overflow-wrap:anywhere] focus:outline-none",
   "px-3 py-2.5",
   "[&_h2]:font-ui [&_h2]:text-[18px] [&_h2]:uppercase [&_h2]:tracking-[0.04em] [&_h2]:text-foreground [&_h2]:mt-4 [&_h2]:mb-2",
   "[&_h3]:font-ui [&_h3]:text-[14px] [&_h3]:uppercase [&_h3]:tracking-[0.04em] [&_h3]:text-foreground [&_h3]:mt-3 [&_h3]:mb-1.5",
   "[&_p]:mb-2 [&_p:last-child]:mb-0",
   "[&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6",
   "[&_blockquote]:border-l-2 [&_blockquote]:border-foreground [&_blockquote]:pl-3 [&_blockquote]:italic",
-  "[&_code]:font-ui [&_code]:text-[13px] [&_code]:bg-card-hover [&_code]:px-1 [&_code]:py-0.5",
-  "[&_pre]:bg-card-hover [&_pre]:p-3 [&_pre]:font-ui [&_pre]:text-[13px] [&_pre]:overflow-x-auto",
+  "[&_code]:break-words [&_code]:font-ui [&_code]:text-[13px] [&_code]:bg-card-hover [&_code]:px-1 [&_code]:py-0.5",
+  "[&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_pre]:bg-card-hover [&_pre]:p-3 [&_pre]:font-ui [&_pre]:text-[13px]",
+  "[&_pre_code]:whitespace-pre-wrap [&_pre_code]:break-words [&_pre_code]:[overflow-wrap:anywhere]",
   "[&_strong]:font-bold",
   "[&_em]:italic",
 );
@@ -77,8 +78,8 @@ export function CmsRichTextEditor({
   return (
     <div
       className={cn(
-        "border border-foreground bg-white",
-        fullHeight && "flex min-h-0 flex-1 flex-col",
+        "min-w-0 border border-foreground bg-white",
+        fullHeight && "flex min-h-full flex-col",
         disabled && "border-border bg-card-hover text-border",
         className,
       )}
@@ -86,7 +87,11 @@ export function CmsRichTextEditor({
       <CmsRichTextToolbar editor={editor} disabled={disabled} />
       <EditorContent
         editor={editor}
-        className={cn(fullHeight && "min-h-0 flex-1 [&_.ProseMirror]:min-h-full")}
+        className={cn(
+          "min-w-0",
+          fullHeight && "flex-1 [&_.ProseMirror]:min-h-full",
+          "[&_.ProseMirror]:min-w-0",
+        )}
       />
     </div>
   );

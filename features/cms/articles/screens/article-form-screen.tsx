@@ -595,7 +595,7 @@ function ArticleFormContent({
             label={articleFormText.contentFieldLabel}
             htmlFor="article-content-rich"
             required
-            className="flex min-h-0 flex-1 flex-col"
+            className="flex flex-1 flex-col"
           >
             <Controller
               name="contentRich"

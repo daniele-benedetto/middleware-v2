@@ -73,6 +73,7 @@ export function CmsMediaUploadDialog({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    event.stopPropagation();
 
     if (!file || !parsedFile) {
       cmsToast.error(mediaText.uploadTypeInvalid, mediaText.uploadTitle);
