@@ -83,6 +83,7 @@ Grid primitives:
 Responsive rule:
 
 - under `768px`: single-column collapse, covers in 2 columns.
+- CMS list toolbar on mobile: keep search always visible, move secondary filters and sort controls into a right-side `Sheet` with explicit `Applica` and `Pulisci` actions. Desktop keeps filters inline.
 
 ## Motion and accessibility
 

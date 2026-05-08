@@ -33,6 +33,7 @@ export function CmsListLoadingState({
     secondaryFilterColumns > 0
       ? { gridTemplateColumns: `repeat(${secondaryFilterColumns}, minmax(0, 1fr))` }
       : undefined;
+  const hasFilterControls = filterColumns > 0 || secondaryFilterColumns > 0;
 
   const contentColumns = Math.max(0, columns - 1);
 
@@ -55,7 +56,14 @@ export function CmsListLoadingState({
         <div className="shrink-0 space-y-3 px-5 py-4">
           <Skeleton className="h-3.5 w-32 rounded-none bg-card-hover" />
 
-          <div className="grid gap-3 lg:grid-cols-3">
+          <div className="space-y-3 md:hidden">
+            <Skeleton className="h-10 rounded-none border border-border bg-card-hover" />
+            {hasFilterControls ? (
+              <Skeleton className="h-8 rounded-none border border-border bg-card-hover" />
+            ) : null}
+          </div>
+
+          <div className="hidden gap-3 md:grid lg:grid-cols-3">
             <Skeleton className="col-span-1 h-10 rounded-none border border-border bg-card-hover lg:col-span-1" />
             <div className="col-span-1 grid gap-2 lg:col-span-2" style={filterGridStyle}>
               {Array.from({ length: filterColumns }).map((_, index) => (
@@ -68,7 +76,7 @@ export function CmsListLoadingState({
           </div>
 
           {secondaryFilterGridStyle ? (
-            <div className="grid gap-3" style={secondaryFilterGridStyle}>
+            <div className="hidden gap-3 md:grid" style={secondaryFilterGridStyle}>
               {Array.from({ length: secondaryFilterColumns }).map((_, index) => (
                 <Skeleton
                   key={`filter2-${index}`}

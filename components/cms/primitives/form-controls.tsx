@@ -217,6 +217,8 @@ export function CmsSelect({
       </ShadcnSelectTrigger>
       <ShadcnSelectContent
         className="rounded-none border border-accent bg-white p-0 shadow-none ring-0"
+        align="start"
+        alignItemWithTrigger={false}
         sideOffset={0}
       >
         {options.map((option) => (

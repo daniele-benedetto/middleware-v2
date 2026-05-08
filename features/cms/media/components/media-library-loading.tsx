@@ -8,7 +8,7 @@ type CmsMediaLibraryLoadingProps = {
 
 export function CmsMediaLibraryLoading({
   withToolbar = true,
-  tileCount = 6,
+  tileCount = 8,
 }: CmsMediaLibraryLoadingProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -29,7 +29,7 @@ export function CmsMediaLibraryLoading({
       ) : null}
 
       <div className="cms-scroll min-h-0 flex-1 overflow-y-auto pr-1">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: tileCount }).map((_, index) => (
             <Skeleton
               key={`media-loading-${index}`}

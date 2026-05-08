@@ -23,11 +23,16 @@ function PopoverContent({
   Pick<PopoverPrimitive.Positioner.Props, "side" | "align" | "sideOffset">) {
   return (
     <PopoverPrimitive.Portal>
-      <PopoverPrimitive.Positioner side={side} align={align} sideOffset={sideOffset}>
+      <PopoverPrimitive.Positioner
+        side={side}
+        align={align}
+        sideOffset={sideOffset}
+        className="isolate z-[60]"
+      >
         <PopoverPrimitive.Popup
           data-slot="popover-content"
           className={cn(
-            "z-50 rounded-none border border-foreground bg-white text-foreground shadow-none outline-none",
+            "relative isolate z-[60] rounded-none border border-foreground bg-white text-foreground shadow-none outline-none",
             "data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0",
             "transition-[opacity,transform] duration-150",
             className,

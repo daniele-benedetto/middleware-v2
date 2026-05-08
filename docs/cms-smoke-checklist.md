@@ -42,6 +42,7 @@ Apply on `Issues`, `Categories`, `Tags`, `Articles`, `Users` when relevant:
 ## 6) Responsive minimum
 
 - Toolbar remains usable on desktop, tablet, and mobile.
+- On mobile list screens, search stays visible while secondary filters open inside the `Sheet`, and `Applica` / `Pulisci` behave coherently.
 - Tables or horizontal scrolling remain usable without hidden actions.
 - Confirm dialogs and action bars stay readable on narrow screens.
 

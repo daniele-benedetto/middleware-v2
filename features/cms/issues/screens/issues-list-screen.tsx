@@ -9,6 +9,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 import {
   CmsBulkActionBar,
@@ -42,6 +43,7 @@ import {
   resolveQuickActions,
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
+import { CmsListFiltersSheet } from "@/features/cms/shared/components/cms-list-filters-sheet";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import {
   cmsListQueryOptions,
@@ -90,6 +92,125 @@ type IssueTableRow = {
   createdAt: string;
   updatedAt: string;
 };
+
+type IssueListToolbarFiltersState = {
+  isActiveValue: string;
+  publishedValue: string;
+  sortByValue: string;
+  sortOrderValue: string;
+};
+
+const defaultIssueListToolbarFilters: IssueListToolbarFiltersState = {
+  isActiveValue: "all",
+  publishedValue: "all",
+  sortByValue: "createdAt",
+  sortOrderValue: "desc",
+};
+
+function buildIssueListToolbarFiltersState(input: IssuesListInput): IssueListToolbarFiltersState {
+  return {
+    isActiveValue: input.query?.isActive ?? defaultIssueListToolbarFilters.isActiveValue,
+    publishedValue: input.query?.published ?? defaultIssueListToolbarFilters.publishedValue,
+    sortByValue: input.query?.sortBy ?? defaultIssueListToolbarFilters.sortByValue,
+    sortOrderValue: input.query?.sortOrder ?? defaultIssueListToolbarFilters.sortOrderValue,
+  };
+}
+
+function countActiveIssueListFilters(filters: IssueListToolbarFiltersState) {
+  return [
+    filters.isActiveValue !== defaultIssueListToolbarFilters.isActiveValue,
+    filters.publishedValue !== defaultIssueListToolbarFilters.publishedValue,
+    filters.sortByValue !== defaultIssueListToolbarFilters.sortByValue,
+    filters.sortOrderValue !== defaultIssueListToolbarFilters.sortOrderValue,
+  ].filter(Boolean).length;
+}
+
+type IssueListToolbarFieldsProps = {
+  filters: IssueListToolbarFiltersState;
+  onIsActiveChange: (value: string) => void;
+  onPublishedChange: (value: string) => void;
+  onSortByChange: (value: string) => void;
+  onSortOrderChange: (value: string) => void;
+  layout: "desktop" | "mobile";
+};
+
+function IssueListToolbarFields({
+  filters,
+  onIsActiveChange,
+  onPublishedChange,
+  onSortByChange,
+  onSortOrderChange,
+  layout,
+}: IssueListToolbarFieldsProps) {
+  const optionsText = i18n.cms.listOptions;
+
+  const isActiveField = (
+    <CmsSelect
+      value={filters.isActiveValue}
+      onValueChange={onIsActiveChange}
+      options={[
+        { value: "all", label: optionsText.statusAllMasculine },
+        { value: "true", label: optionsText.activeOnlyFeminine },
+        { value: "false", label: optionsText.inactiveOnlyFeminine },
+      ]}
+    />
+  );
+
+  const publishedField = (
+    <CmsSelect
+      value={filters.publishedValue}
+      onValueChange={onPublishedChange}
+      options={[
+        { value: "all", label: optionsText.publicationAll },
+        { value: "true", label: optionsText.publicationOnly },
+        { value: "false", label: optionsText.publicationNot },
+      ]}
+    />
+  );
+
+  const sortByField = (
+    <CmsSelect
+      value={filters.sortByValue}
+      onValueChange={onSortByChange}
+      options={[
+        { value: "createdAt", label: optionsText.sortCreatedAt },
+        { value: "sortOrder", label: optionsText.sortOrder },
+        { value: "publishedAt", label: optionsText.sortPublishedAt },
+      ]}
+    />
+  );
+
+  const sortOrderField = (
+    <CmsSelect
+      value={filters.sortOrderValue}
+      onValueChange={onSortOrderChange}
+      options={[
+        { value: "desc", label: optionsText.desc },
+        { value: "asc", label: optionsText.asc },
+      ]}
+    />
+  );
+
+  if (layout === "mobile") {
+    return (
+      <>
+        {isActiveField}
+        {publishedField}
+        {sortByField}
+        {sortOrderField}
+      </>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-4 gap-2 col-span-1 lg:col-span-2">
+      {isActiveField}
+      {publishedField}
+      {sortByField}
+      {sortOrderField}
+    </div>
+  );
+}
 
 function stopRowReorder(event: { stopPropagation: () => void }) {
   event.stopPropagation();
@@ -202,9 +323,10 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
   const listText = text.lists.issues;
   const commonText = text.common;
   const quickText = text.quickActions;
-  const optionsText = text.listOptions;
 
   const input = parseIssuesListSearchParams(searchParams);
+  const currentToolbarFilters = buildIssueListToolbarFiltersState(input);
+  const [draftToolbarFilters, setDraftToolbarFilters] = useState(currentToolbarFilters);
   const listQuery = useIssuesListQuery(input, { initialDataInput: initialInput, initialData });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
@@ -419,6 +541,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
   const hasActiveFilters = Boolean(
     input.query?.q || input.query?.isActive !== undefined || input.query?.published !== undefined,
   );
+  const activeFiltersCount = countActiveIssueListFilters(currentToolbarFilters);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -456,7 +579,62 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
               selectAllDisabled={isActionPending}
             />
 
-            <div className="grid gap-3 lg:grid-cols-3">
+            <div className="space-y-3 md:hidden">
+              <CmsListSearchInput
+                key={input.query?.q ?? ""}
+                initialValue={input.query?.q ?? ""}
+                placeholder={text.listToolbar.searchPlaceholder}
+                onSearchChange={(value) => {
+                  updateSearchParams({ q: value, page: 1 });
+                }}
+              />
+
+              <CmsListFiltersSheet
+                activeFiltersCount={activeFiltersCount}
+                onOpenChange={(open) => {
+                  if (open) {
+                    setDraftToolbarFilters(currentToolbarFilters);
+                  }
+                }}
+                onApply={() => {
+                  updateSearchParams({
+                    isActive:
+                      draftToolbarFilters.isActiveValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.isActiveValue,
+                    published:
+                      draftToolbarFilters.publishedValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.publishedValue,
+                    sortBy: draftToolbarFilters.sortByValue,
+                    sortOrder: draftToolbarFilters.sortOrderValue,
+                    page: 1,
+                  });
+                }}
+                onClear={() => {
+                  setDraftToolbarFilters(defaultIssueListToolbarFilters);
+                }}
+              >
+                <IssueListToolbarFields
+                  filters={draftToolbarFilters}
+                  onIsActiveChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, isActiveValue: value }));
+                  }}
+                  onPublishedChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, publishedValue: value }));
+                  }}
+                  onSortByChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, sortByValue: value }));
+                  }}
+                  onSortOrderChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, sortOrderValue: value }));
+                  }}
+                  layout="mobile"
+                />
+              </CmsListFiltersSheet>
+            </div>
+
+            <div className="hidden gap-3 md:grid lg:grid-cols-3">
               <CmsListSearchInput
                 key={input.query?.q ?? ""}
                 initialValue={input.query?.q ?? ""}
@@ -466,54 +644,23 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                   updateSearchParams({ q: value, page: 1 });
                 }}
               />
-              <div className="grid grid-cols-4 gap-2 col-span-1 lg:col-span-2">
-                <CmsSelect
-                  value={input.query?.isActive ?? "all"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ isActive: value === "all" ? undefined : value, page: 1 });
-                  }}
-                  options={[
-                    { value: "all", label: optionsText.statusAllMasculine },
-                    { value: "true", label: optionsText.activeOnlyFeminine },
-                    { value: "false", label: optionsText.inactiveOnlyFeminine },
-                  ]}
-                />
 
-                <CmsSelect
-                  value={input.query?.published ?? "all"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ published: value === "all" ? undefined : value, page: 1 });
-                  }}
-                  options={[
-                    { value: "all", label: optionsText.publicationAll },
-                    { value: "true", label: optionsText.publicationOnly },
-                    { value: "false", label: optionsText.publicationNot },
-                  ]}
-                />
-
-                <CmsSelect
-                  value={input.query?.sortBy ?? "createdAt"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ sortBy: value, page: 1 });
-                  }}
-                  options={[
-                    { value: "createdAt", label: optionsText.sortCreatedAt },
-                    { value: "sortOrder", label: optionsText.sortOrder },
-                    { value: "publishedAt", label: optionsText.sortPublishedAt },
-                  ]}
-                />
-
-                <CmsSelect
-                  value={input.query?.sortOrder ?? "desc"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ sortOrder: value, page: 1 });
-                  }}
-                  options={[
-                    { value: "desc", label: optionsText.desc },
-                    { value: "asc", label: optionsText.asc },
-                  ]}
-                />
-              </div>
+              <IssueListToolbarFields
+                filters={currentToolbarFilters}
+                onIsActiveChange={(value) => {
+                  updateSearchParams({ isActive: value === "all" ? undefined : value, page: 1 });
+                }}
+                onPublishedChange={(value) => {
+                  updateSearchParams({ published: value === "all" ? undefined : value, page: 1 });
+                }}
+                onSortByChange={(value) => {
+                  updateSearchParams({ sortBy: value, page: 1 });
+                }}
+                onSortOrderChange={(value) => {
+                  updateSearchParams({ sortOrder: value, page: 1 });
+                }}
+                layout="desktop"
+              />
             </div>
           </div>
         }

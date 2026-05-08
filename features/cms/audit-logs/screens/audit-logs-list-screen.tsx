@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 import {
   CmsEmptyState,
@@ -24,6 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CmsAuditLogDetailDialog } from "@/features/cms/audit-logs/components/audit-log-detail-dialog";
+import { CmsListFiltersSheet } from "@/features/cms/shared/components/cms-list-filters-sheet";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import { useAuditLogsListQuery, useCmsListUrlState } from "@/features/cms/shared/hooks";
 import { parseAuditLogsListSearchParams } from "@/lib/cms/query";
@@ -54,14 +56,53 @@ type CmsAuditLogsListScreenProps = {
   initialData?: AuditLogsListInitialData;
 };
 
+type AuditLogsListToolbarFiltersState = {
+  outcomeValue: string;
+};
+
+const defaultAuditLogsListToolbarFilters: AuditLogsListToolbarFiltersState = {
+  outcomeValue: "all",
+};
+
+function buildAuditLogsListToolbarFiltersState(
+  input: AuditLogsListInput,
+): AuditLogsListToolbarFiltersState {
+  return {
+    outcomeValue: input.query?.outcome ?? defaultAuditLogsListToolbarFilters.outcomeValue,
+  };
+}
+
+function AuditLogsListToolbarField({
+  value,
+  onValueChange,
+}: {
+  value: string;
+  onValueChange: (value: string) => void;
+}) {
+  const optionsText = i18n.cms.listOptions;
+
+  return (
+    <CmsSelect
+      value={value}
+      onValueChange={onValueChange}
+      options={[
+        { value: "all", label: optionsText.outcomeAll },
+        { value: "SUCCESS", label: optionsText.outcomeSuccessOnly },
+        { value: "FAILURE", label: optionsText.outcomeFailureOnly },
+      ]}
+    />
+  );
+}
+
 export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLogsListScreenProps) {
   const searchParams = useSearchParams();
   const text = i18n.cms;
   const listText = text.lists.auditLogs;
   const commonText = text.common;
-  const optionsText = text.listOptions;
 
   const input = parseAuditLogsListSearchParams(searchParams);
+  const currentToolbarFilters = buildAuditLogsListToolbarFiltersState(input);
+  const [draftToolbarFilters, setDraftToolbarFilters] = useState(currentToolbarFilters);
   const listQuery = useAuditLogsListQuery(input, { initialDataInput: initialInput, initialData });
 
   const { updateSearchParams } = useCmsListUrlState({
@@ -90,6 +131,9 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
   }
 
   const hasActiveFilters = Boolean(input.query?.q || input.query?.outcome);
+  const activeFiltersCount = Number(
+    currentToolbarFilters.outcomeValue !== defaultAuditLogsListToolbarFilters.outcomeValue,
+  );
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -102,7 +146,46 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
               {commonText.totalRecords(listQuery.pagination.total)}
             </div>
 
-            <div className="grid gap-3 lg:grid-cols-4">
+            <div className="space-y-3 md:hidden">
+              <CmsListSearchInput
+                key={input.query?.q ?? ""}
+                initialValue={input.query?.q ?? ""}
+                placeholder={listText.searchPlaceholder}
+                onSearchChange={(value) => {
+                  updateSearchParams({ q: value, page: 1 });
+                }}
+              />
+
+              <CmsListFiltersSheet
+                activeFiltersCount={activeFiltersCount}
+                onOpenChange={(open) => {
+                  if (open) {
+                    setDraftToolbarFilters(currentToolbarFilters);
+                  }
+                }}
+                onApply={() => {
+                  updateSearchParams({
+                    outcome:
+                      draftToolbarFilters.outcomeValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.outcomeValue,
+                    page: 1,
+                  });
+                }}
+                onClear={() => {
+                  setDraftToolbarFilters(defaultAuditLogsListToolbarFilters);
+                }}
+              >
+                <AuditLogsListToolbarField
+                  value={draftToolbarFilters.outcomeValue}
+                  onValueChange={(value) => {
+                    setDraftToolbarFilters({ outcomeValue: value });
+                  }}
+                />
+              </CmsListFiltersSheet>
+            </div>
+
+            <div className="hidden gap-3 md:grid lg:grid-cols-4">
               <CmsListSearchInput
                 key={input.query?.q ?? ""}
                 initialValue={input.query?.q ?? ""}
@@ -114,16 +197,11 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
               />
 
               <div className="grid gap-2 sm:grid-cols-1 lg:col-span-1">
-                <CmsSelect
-                  value={input.query?.outcome ?? "all"}
+                <AuditLogsListToolbarField
+                  value={currentToolbarFilters.outcomeValue}
                   onValueChange={(value) => {
                     updateSearchParams({ outcome: value === "all" ? undefined : value, page: 1 });
                   }}
-                  options={[
-                    { value: "all", label: optionsText.outcomeAll },
-                    { value: "SUCCESS", label: optionsText.outcomeSuccessOnly },
-                    { value: "FAILURE", label: optionsText.outcomeFailureOnly },
-                  ]}
                 />
               </div>
             </div>

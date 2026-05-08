@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 import {
   CmsBulkActionBar,
@@ -34,6 +35,7 @@ import {
   resolveQuickActions,
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
+import { CmsListFiltersSheet } from "@/features/cms/shared/components/cms-list-filters-sheet";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import {
   useCmsListUrlState,
@@ -65,6 +67,104 @@ type CmsUsersListScreenProps = {
   currentUserId?: string;
 };
 
+type UsersListToolbarFiltersState = {
+  roleValue: string;
+  sortByValue: string;
+  sortOrderValue: string;
+};
+
+const defaultUsersListToolbarFilters: UsersListToolbarFiltersState = {
+  roleValue: "all",
+  sortByValue: "createdAt",
+  sortOrderValue: "desc",
+};
+
+function buildUsersListToolbarFiltersState(input: UsersListInput): UsersListToolbarFiltersState {
+  return {
+    roleValue: input.query?.role ?? defaultUsersListToolbarFilters.roleValue,
+    sortByValue: input.query?.sortBy ?? defaultUsersListToolbarFilters.sortByValue,
+    sortOrderValue: input.query?.sortOrder ?? defaultUsersListToolbarFilters.sortOrderValue,
+  };
+}
+
+function countActiveUsersListFilters(filters: UsersListToolbarFiltersState) {
+  return [
+    filters.roleValue !== defaultUsersListToolbarFilters.roleValue,
+    filters.sortByValue !== defaultUsersListToolbarFilters.sortByValue,
+    filters.sortOrderValue !== defaultUsersListToolbarFilters.sortOrderValue,
+  ].filter(Boolean).length;
+}
+
+type UsersListToolbarFieldsProps = {
+  filters: UsersListToolbarFiltersState;
+  onRoleChange: (value: string) => void;
+  onSortByChange: (value: string) => void;
+  onSortOrderChange: (value: string) => void;
+  layout: "desktop" | "mobile";
+};
+
+function UsersListToolbarFields({
+  filters,
+  onRoleChange,
+  onSortByChange,
+  onSortOrderChange,
+  layout,
+}: UsersListToolbarFieldsProps) {
+  const optionsText = i18n.cms.listOptions;
+
+  const roleField = (
+    <CmsSelect
+      value={filters.roleValue}
+      onValueChange={onRoleChange}
+      options={[
+        { value: "all", label: optionsText.roleAll },
+        { value: "ADMIN", label: optionsText.roleAdminOnly },
+        { value: "EDITOR", label: optionsText.roleEditorOnly },
+      ]}
+    />
+  );
+
+  const sortByField = (
+    <CmsSelect
+      value={filters.sortByValue}
+      onValueChange={onSortByChange}
+      options={[
+        { value: "createdAt", label: optionsText.sortCreatedAt },
+        { value: "email", label: optionsText.sortEmail },
+      ]}
+    />
+  );
+
+  const sortOrderField = (
+    <CmsSelect
+      value={filters.sortOrderValue}
+      onValueChange={onSortOrderChange}
+      options={[
+        { value: "desc", label: optionsText.desc },
+        { value: "asc", label: optionsText.asc },
+      ]}
+    />
+  );
+
+  if (layout === "mobile") {
+    return (
+      <>
+        {roleField}
+        {sortByField}
+        {sortOrderField}
+      </>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-3 gap-2 col-span-1 lg:col-span-2">
+      {roleField}
+      {sortByField}
+      {sortOrderField}
+    </div>
+  );
+}
+
 export function CmsUsersListScreen({
   initialInput,
   initialData,
@@ -76,9 +176,10 @@ export function CmsUsersListScreen({
   const listText = text.lists.users;
   const commonText = text.common;
   const quickText = text.quickActions;
-  const optionsText = text.listOptions;
 
   const input = parseUsersListSearchParams(searchParams);
+  const currentToolbarFilters = buildUsersListToolbarFiltersState(input);
+  const [draftToolbarFilters, setDraftToolbarFilters] = useState(currentToolbarFilters);
   const listQuery = useUsersListQuery(input, { initialDataInput: initialInput, initialData });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
@@ -243,6 +344,7 @@ export function CmsUsersListScreen({
 
   const hasActiveFilters = Boolean(input.query?.q || input.query?.role !== undefined);
   const isActionPending = deleteMutation.isPending || updateRoleMutation.isPending;
+  const activeFiltersCount = countActiveUsersListFilters(currentToolbarFilters);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -288,7 +390,55 @@ export function CmsUsersListScreen({
               selectAllDisabled={isActionPending}
             />
 
-            <div className="grid gap-3 lg:grid-cols-3">
+            <div className="space-y-3 md:hidden">
+              <CmsListSearchInput
+                key={input.query?.q ?? ""}
+                initialValue={input.query?.q ?? ""}
+                placeholder={text.listToolbar.searchPlaceholder}
+                onSearchChange={(value) => {
+                  updateSearchParams({ q: value, page: 1 });
+                }}
+              />
+
+              <CmsListFiltersSheet
+                activeFiltersCount={activeFiltersCount}
+                onOpenChange={(open) => {
+                  if (open) {
+                    setDraftToolbarFilters(currentToolbarFilters);
+                  }
+                }}
+                onApply={() => {
+                  updateSearchParams({
+                    role:
+                      draftToolbarFilters.roleValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.roleValue,
+                    sortBy: draftToolbarFilters.sortByValue,
+                    sortOrder: draftToolbarFilters.sortOrderValue,
+                    page: 1,
+                  });
+                }}
+                onClear={() => {
+                  setDraftToolbarFilters(defaultUsersListToolbarFilters);
+                }}
+              >
+                <UsersListToolbarFields
+                  filters={draftToolbarFilters}
+                  onRoleChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, roleValue: value }));
+                  }}
+                  onSortByChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, sortByValue: value }));
+                  }}
+                  onSortOrderChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, sortOrderValue: value }));
+                  }}
+                  layout="mobile"
+                />
+              </CmsListFiltersSheet>
+            </div>
+
+            <div className="hidden gap-3 md:grid lg:grid-cols-3">
               <CmsListSearchInput
                 key={input.query?.q ?? ""}
                 initialValue={input.query?.q ?? ""}
@@ -298,41 +448,20 @@ export function CmsUsersListScreen({
                   updateSearchParams({ q: value, page: 1 });
                 }}
               />
-              <div className="grid grid-cols-3 gap-2 col-span-1 lg:col-span-2">
-                <CmsSelect
-                  value={input.query?.role ?? "all"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ role: value === "all" ? undefined : value, page: 1 });
-                  }}
-                  options={[
-                    { value: "all", label: optionsText.roleAll },
-                    { value: "ADMIN", label: optionsText.roleAdminOnly },
-                    { value: "EDITOR", label: optionsText.roleEditorOnly },
-                  ]}
-                />
 
-                <CmsSelect
-                  value={input.query?.sortBy ?? "createdAt"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ sortBy: value, page: 1 });
-                  }}
-                  options={[
-                    { value: "createdAt", label: optionsText.sortCreatedAt },
-                    { value: "email", label: optionsText.sortEmail },
-                  ]}
-                />
-
-                <CmsSelect
-                  value={input.query?.sortOrder ?? "desc"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ sortOrder: value, page: 1 });
-                  }}
-                  options={[
-                    { value: "desc", label: optionsText.desc },
-                    { value: "asc", label: optionsText.asc },
-                  ]}
-                />
-              </div>
+              <UsersListToolbarFields
+                filters={currentToolbarFilters}
+                onRoleChange={(value) => {
+                  updateSearchParams({ role: value === "all" ? undefined : value, page: 1 });
+                }}
+                onSortByChange={(value) => {
+                  updateSearchParams({ sortBy: value, page: 1 });
+                }}
+                onSortOrderChange={(value) => {
+                  updateSearchParams({ sortOrder: value, page: 1 });
+                }}
+                layout="desktop"
+              />
             </div>
           </div>
         }

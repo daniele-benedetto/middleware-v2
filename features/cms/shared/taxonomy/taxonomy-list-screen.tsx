@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import {
   CmsBulkActionBar,
@@ -34,6 +34,7 @@ import {
   resolveQuickActions,
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
+import { CmsListFiltersSheet } from "@/features/cms/shared/components/cms-list-filters-sheet";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import { useListSelection } from "@/features/cms/shared/hooks";
 import {
@@ -122,6 +123,99 @@ type CmsTaxonomyListScreenProps<TItem extends CmsTaxonomyListItem> = {
   sortOptions: Array<{ value: string; label: string }>;
 };
 
+type TaxonomyListToolbarFiltersState = {
+  isActiveValue: string;
+  sortByValue: string;
+  sortOrderValue: "asc" | "desc";
+};
+
+function buildTaxonomyListToolbarFiltersState(
+  input: CmsTaxonomyListInput,
+  defaultSortByValue: string,
+): TaxonomyListToolbarFiltersState {
+  return {
+    isActiveValue: input.query?.isActive ?? "all",
+    sortByValue: input.query?.sortBy ?? defaultSortByValue,
+    sortOrderValue: input.query?.sortOrder ?? "desc",
+  };
+}
+
+function countActiveTaxonomyListFilters(
+  filters: TaxonomyListToolbarFiltersState,
+  defaultSortByValue: string,
+) {
+  return [
+    filters.isActiveValue !== "all",
+    filters.sortByValue !== defaultSortByValue,
+    filters.sortOrderValue !== "desc",
+  ].filter(Boolean).length;
+}
+
+type TaxonomyListToolbarFieldsProps = {
+  filters: TaxonomyListToolbarFiltersState;
+  statusOptions: Array<{ value: "all" | "true" | "false"; label: string }>;
+  sortOptions: Array<{ value: string; label: string }>;
+  onIsActiveChange: (value: string) => void;
+  onSortByChange: (value: string) => void;
+  onSortOrderChange: (value: "asc" | "desc") => void;
+  layout: "desktop" | "mobile";
+};
+
+function TaxonomyListToolbarFields({
+  filters,
+  statusOptions,
+  sortOptions,
+  onIsActiveChange,
+  onSortByChange,
+  onSortOrderChange,
+  layout,
+}: TaxonomyListToolbarFieldsProps) {
+  const optionsText = i18n.cms.listOptions;
+
+  const statusField = (
+    <CmsSelect
+      value={filters.isActiveValue}
+      onValueChange={onIsActiveChange}
+      options={statusOptions}
+    />
+  );
+
+  const sortByField = (
+    <CmsSelect value={filters.sortByValue} onValueChange={onSortByChange} options={sortOptions} />
+  );
+
+  const sortOrderField = (
+    <CmsSelect
+      value={filters.sortOrderValue}
+      onValueChange={(value) => {
+        onSortOrderChange(value as "asc" | "desc");
+      }}
+      options={[
+        { value: "desc", label: optionsText.desc },
+        { value: "asc", label: optionsText.asc },
+      ]}
+    />
+  );
+
+  if (layout === "mobile") {
+    return (
+      <>
+        {statusField}
+        {sortByField}
+        {sortOrderField}
+      </>
+    );
+  }
+
+  return (
+    <div className="col-span-1 grid grid-cols-3 gap-2 lg:col-span-2">
+      {statusField}
+      {sortByField}
+      {sortOrderField}
+    </div>
+  );
+}
+
 function formatDate(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
@@ -145,10 +239,12 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
   const text = i18n.cms;
   const commonText = text.common;
   const quickText = text.quickActions;
-  const optionsText = text.listOptions;
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
   const { clearSelection } = selection;
+  const defaultSortByValue = sortOptions[0]?.value ?? "createdAt";
+  const currentToolbarFilters = buildTaxonomyListToolbarFiltersState(input, defaultSortByValue);
+  const [draftToolbarFilters, setDraftToolbarFilters] = useState(currentToolbarFilters);
 
   useEffect(() => {
     clearSelection();
@@ -240,6 +336,10 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
   );
 
   const hasActiveFilters = Boolean(input.query?.q || input.query?.isActive !== undefined);
+  const activeFiltersCount = countActiveTaxonomyListFilters(
+    currentToolbarFilters,
+    defaultSortByValue,
+  );
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -272,7 +372,61 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
               selectAllDisabled={isActionPending}
             />
 
-            <div className="grid gap-3 lg:grid-cols-3">
+            <div className="space-y-3 md:hidden">
+              <CmsListSearchInput
+                key={input.query?.q ?? ""}
+                initialValue={input.query?.q ?? ""}
+                placeholder={text.listToolbar.searchPlaceholder}
+                onSearchChange={(value) => {
+                  updateSearchParams({ q: value, page: 1 });
+                }}
+              />
+
+              <CmsListFiltersSheet
+                activeFiltersCount={activeFiltersCount}
+                onOpenChange={(open) => {
+                  if (open) {
+                    setDraftToolbarFilters(currentToolbarFilters);
+                  }
+                }}
+                onApply={() => {
+                  updateSearchParams({
+                    isActive:
+                      draftToolbarFilters.isActiveValue === "all"
+                        ? undefined
+                        : (draftToolbarFilters.isActiveValue as "true" | "false"),
+                    sortBy: draftToolbarFilters.sortByValue,
+                    sortOrder: draftToolbarFilters.sortOrderValue,
+                    page: 1,
+                  });
+                }}
+                onClear={() => {
+                  setDraftToolbarFilters({
+                    isActiveValue: "all",
+                    sortByValue: defaultSortByValue,
+                    sortOrderValue: "desc",
+                  });
+                }}
+              >
+                <TaxonomyListToolbarFields
+                  filters={draftToolbarFilters}
+                  statusOptions={statusOptions}
+                  sortOptions={sortOptions}
+                  onIsActiveChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, isActiveValue: value }));
+                  }}
+                  onSortByChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, sortByValue: value }));
+                  }}
+                  onSortOrderChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, sortOrderValue: value }));
+                  }}
+                  layout="mobile"
+                />
+              </CmsListFiltersSheet>
+            </div>
+
+            <div className="hidden gap-3 md:grid lg:grid-cols-3">
               <CmsListSearchInput
                 key={input.query?.q ?? ""}
                 initialValue={input.query?.q ?? ""}
@@ -282,37 +436,25 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
                   updateSearchParams({ q: value, page: 1 });
                 }}
               />
-              <div className="col-span-1 grid grid-cols-3 gap-2 lg:col-span-2">
-                <CmsSelect
-                  value={input.query?.isActive ?? "all"}
-                  onValueChange={(value) => {
-                    updateSearchParams({
-                      isActive: value === "all" ? undefined : (value as "true" | "false"),
-                      page: 1,
-                    });
-                  }}
-                  options={statusOptions}
-                />
 
-                <CmsSelect
-                  value={input.query?.sortBy ?? sortOptions[0]?.value ?? "createdAt"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ sortBy: value, page: 1 });
-                  }}
-                  options={sortOptions}
-                />
-
-                <CmsSelect
-                  value={input.query?.sortOrder ?? "desc"}
-                  onValueChange={(value) => {
-                    updateSearchParams({ sortOrder: value as "asc" | "desc", page: 1 });
-                  }}
-                  options={[
-                    { value: "desc", label: optionsText.desc },
-                    { value: "asc", label: optionsText.asc },
-                  ]}
-                />
-              </div>
+              <TaxonomyListToolbarFields
+                filters={currentToolbarFilters}
+                statusOptions={statusOptions}
+                sortOptions={sortOptions}
+                onIsActiveChange={(value) => {
+                  updateSearchParams({
+                    isActive: value === "all" ? undefined : (value as "true" | "false"),
+                    page: 1,
+                  });
+                }}
+                onSortByChange={(value) => {
+                  updateSearchParams({ sortBy: value, page: 1 });
+                }}
+                onSortOrderChange={(value) => {
+                  updateSearchParams({ sortOrder: value, page: 1 });
+                }}
+                layout="desktop"
+              />
             </div>
           </div>
         }

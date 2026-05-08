@@ -90,111 +90,6 @@ function formatDate(value: string | null) {
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
 }
 
-type ArticleQuickAction = "publish" | "unpublish" | "archive" | "feature" | "unfeature" | "delete";
-type ArticleOptimisticAction = Extract<
-  ArticleQuickAction,
-  "publish" | "unpublish" | "feature" | "unfeature"
->;
-
-type ArticleSingleActionContext = {
-  selectedCount: number;
-  isPending: boolean;
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  isFeatured: boolean;
-};
-
-const articleSingleActionConfig: CmsQuickAction<ArticleSingleActionContext>[] = [
-  {
-    id: "publish",
-    label: i18n.cms.quickActions.publish,
-    scope: "single",
-    isVisible: (context) => context.status !== "PUBLISHED",
-    isEnabled: (context) => !context.isPending,
-  },
-  {
-    id: "unpublish",
-    label: i18n.cms.quickActions.unpublish,
-    scope: "single",
-    isVisible: (context) => context.status === "PUBLISHED",
-    isEnabled: (context) => !context.isPending,
-  },
-  {
-    id: "feature",
-    label: i18n.cms.quickActions.feature,
-    scope: "single",
-    isVisible: (context) => !context.isFeatured,
-    isEnabled: (context) => !context.isPending,
-  },
-  {
-    id: "unfeature",
-    label: i18n.cms.quickActions.unfeature,
-    scope: "single",
-    isVisible: (context) => context.isFeatured,
-    isEnabled: (context) => !context.isPending,
-  },
-  {
-    id: "archive",
-    label: i18n.cms.quickActions.archive,
-    scope: "single",
-    isVisible: (context) => context.status !== "ARCHIVED",
-    isEnabled: (context) => !context.isPending,
-  },
-  {
-    id: "delete",
-    label: i18n.cms.quickActions.delete,
-    scope: "single",
-    tone: "danger",
-    requiresConfirm: true,
-    confirm: {
-      title: i18n.cms.quickActions.confirmDeleteTitle,
-      description: i18n.cms.quickActions.confirmDeleteSingleArticle,
-    },
-    isEnabled: (context) => !context.isPending,
-  },
-];
-
-function isOptimisticArticleAction(action: ArticleQuickAction): action is ArticleOptimisticAction {
-  return (
-    action === "publish" || action === "unpublish" || action === "feature" || action === "unfeature"
-  );
-}
-
-function patchArticleForOptimisticAction<
-  TArticle extends {
-    status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-    publishedAt: string | null;
-    isFeatured: boolean;
-  },
->(action: ArticleOptimisticAction, article: TArticle): TArticle {
-  if (action === "publish") {
-    return {
-      ...article,
-      status: "PUBLISHED" as const,
-      publishedAt: article.publishedAt ?? new Date().toISOString(),
-    };
-  }
-
-  if (action === "unpublish") {
-    return {
-      ...article,
-      status: "DRAFT" as const,
-      publishedAt: null,
-    };
-  }
-
-  if (action === "feature") {
-    return {
-      ...article,
-      isFeatured: true,
-    };
-  }
-
-  return {
-    ...article,
-    isFeatured: false,
-  };
-}
-
 function mapArticleDomainError(uiError: CmsUiError): CmsUiError {
   const text = i18n.cms.lists.articles.domainErrors;
 
@@ -262,9 +157,12 @@ type SortableArticleRowProps = {
   isSelected: boolean;
   onToggleSelection: (id: string) => void;
   onEdit: (id: string) => void;
-  onRunAction: (action: ArticleQuickAction, id: string) => void;
+  onDelete: (id: string) => void;
   selectLabel: string;
   editLabel: string;
+  deleteLabel: string;
+  deleteConfirmTitle: string;
+  deleteConfirmDescription: string;
   yesLabel: string;
   noLabel: string;
 };
@@ -276,9 +174,12 @@ function SortableArticleRow({
   isSelected,
   onToggleSelection,
   onEdit,
-  onRunAction,
+  onDelete,
   selectLabel,
   editLabel,
+  deleteLabel,
+  deleteConfirmTitle,
+  deleteConfirmDescription,
   yesLabel,
   noLabel,
 }: SortableArticleRowProps) {
@@ -341,38 +242,14 @@ function SortableArticleRow({
           >
             {editLabel}
           </CmsActionButton>
-          {resolveQuickActions(articleSingleActionConfig, {
-            selectedCount: 1,
-            isPending,
-            status: article.status,
-            isFeatured: article.isFeatured,
-          }).map((action) =>
-            action.confirm ? (
-              <CmsConfirmDialog
-                key={`${article.id}-${action.id}`}
-                triggerLabel={action.label}
-                triggerDisabled={action.disabled}
-                title={action.confirm.title}
-                description={action.confirm.description}
-                confirmLabel={action.confirm.confirmLabel}
-                cancelLabel={action.confirm.cancelLabel}
-                tone={action.tone === "danger" ? "danger" : "default"}
-                onConfirm={() => onRunAction(action.id as ArticleQuickAction, article.id)}
-              />
-            ) : (
-              <CmsActionButton
-                key={`${article.id}-${action.id}`}
-                variant={action.tone === "danger" ? "primary-accent" : "outline"}
-                size="xs"
-                disabled={action.disabled}
-                onClick={() => {
-                  onRunAction(action.id as ArticleQuickAction, article.id);
-                }}
-              >
-                {action.label}
-              </CmsActionButton>
-            ),
-          )}
+          <CmsConfirmDialog
+            triggerLabel={deleteLabel}
+            triggerDisabled={isPending}
+            title={deleteConfirmTitle}
+            description={deleteConfirmDescription}
+            tone="danger"
+            onConfirm={() => onDelete(article.id)}
+          />
         </div>
       </TableCell>
     </TableRow>
@@ -408,22 +285,10 @@ export function CmsArticlesListScreen({
     router.push(href);
   };
 
-  const publishMutation = trpc.articles.publish.useMutation();
-  const unpublishMutation = trpc.articles.unpublish.useMutation();
-  const archiveMutation = trpc.articles.archive.useMutation();
-  const featureMutation = trpc.articles.feature.useMutation();
-  const unfeatureMutation = trpc.articles.unfeature.useMutation();
   const deleteMutation = trpc.articles.delete.useMutation();
   const reorderMutation = trpc.articles.reorder.useMutation();
 
-  const isActionPending =
-    publishMutation.isPending ||
-    unpublishMutation.isPending ||
-    archiveMutation.isPending ||
-    featureMutation.isPending ||
-    unfeatureMutation.isPending ||
-    deleteMutation.isPending ||
-    reorderMutation.isPending;
+  const isActionPending = deleteMutation.isPending || reorderMutation.isPending;
 
   const issuesOptionsQuery = trpc.issues.list.useQuery(articleIssueOptionsInput, {
     ...cmsOptionsQueryOptions,
@@ -525,110 +390,27 @@ export function CmsArticlesListScreen({
     pageArticleIds.length > 0 &&
     pageArticleIds.every((articleId) => selection.isSelected(articleId));
 
-  const runMutationByAction = (action: ArticleQuickAction, id: string) => {
-    if (action === "publish") {
-      return publishMutation.mutateAsync({ id });
-    }
-
-    if (action === "unpublish") {
-      return unpublishMutation.mutateAsync({ id });
-    }
-
-    if (action === "archive") {
-      return archiveMutation.mutateAsync({ id });
-    }
-
-    if (action === "feature") {
-      return featureMutation.mutateAsync({ id });
-    }
-
-    if (action === "unfeature") {
-      return unfeatureMutation.mutateAsync({ id });
-    }
-
-    return deleteMutation.mutateAsync({ id });
-  };
-
-  const mutationNameByAction: Record<
-    ArticleQuickAction,
-    | "articles.publish"
-    | "articles.unpublish"
-    | "articles.archive"
-    | "articles.feature"
-    | "articles.unfeature"
-    | "articles.delete"
-  > = {
-    publish: "articles.publish",
-    unpublish: "articles.unpublish",
-    archive: "articles.archive",
-    feature: "articles.feature",
-    unfeature: "articles.unfeature",
-    delete: "articles.delete",
-  };
-
-  const applyOptimisticArticleUpdates = (
-    action: ArticleOptimisticAction,
-    ids: string[],
-  ): (() => void) => {
-    const previousList = trpcUtils.articles.list.getData(input);
-
-    trpcUtils.articles.list.setData(input, (current) => {
-      if (!current) {
-        return current;
-      }
-
-      return {
-        ...current,
-        items: current.items.map((item) => {
-          if (!ids.includes(item.id)) {
-            return item;
-          }
-
-          return patchArticleForOptimisticAction(action, item);
-        }),
-      };
-    });
-
-    return () => {
-      trpcUtils.articles.list.setData(input, previousList);
-    };
-  };
-
-  const runSingleAction = async (action: ArticleQuickAction, id: string) => {
-    const rollbackOptimistic = isOptimisticArticleAction(action)
-      ? applyOptimisticArticleUpdates(action, [id])
-      : undefined;
-
+  const runSingleDelete = async (id: string) => {
     try {
-      await runMutationByAction(action, id);
-      await invalidateAfterCmsMutation(trpcUtils, mutationNameByAction[action], { id });
+      await deleteMutation.mutateAsync({ id });
+      await invalidateAfterCmsMutation(trpcUtils, "articles.delete", { id });
       selection.clearSelection();
       cmsToast.info(commonText.actionCompleted);
     } catch (error) {
-      rollbackOptimistic?.();
-
       const mapped = mapArticleDomainError(mapQuickActionError(error));
       cmsToast.error(mapped.description, mapped.title);
     }
   };
 
-  const runBulkAction = async (action: ArticleQuickAction) => {
+  const runBulkDelete = async () => {
     if (!selection.hasSelection) {
       return;
     }
 
     const selectedIds = [...selection.selectedIds];
-    const rollbackOptimistic = isOptimisticArticleAction(action)
-      ? applyOptimisticArticleUpdates(action, selectedIds)
-      : undefined;
+    const result = await executeBulk(selectedIds, (id) => deleteMutation.mutateAsync({ id }));
 
-    const result = await executeBulk(selectedIds, (id) => runMutationByAction(action, id));
-
-    if (result.failed > 0) {
-      rollbackOptimistic?.();
-    }
-
-    await invalidateAfterCmsMutation(trpcUtils, mutationNameByAction[action], {
+    await invalidateAfterCmsMutation(trpcUtils, "articles.delete", {
       ids: selectedIds,
     });
     selection.clearSelection();
@@ -698,36 +480,6 @@ export function CmsArticlesListScreen({
 
   const bulkActionConfig: CmsQuickAction[] = [
     {
-      id: "bulk-publish",
-      label: quickText.publish,
-      scope: "bulk",
-      isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
-    },
-    {
-      id: "bulk-unpublish",
-      label: quickText.unpublish,
-      scope: "bulk",
-      isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
-    },
-    {
-      id: "bulk-feature",
-      label: quickText.feature,
-      scope: "bulk",
-      isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
-    },
-    {
-      id: "bulk-unfeature",
-      label: quickText.unfeature,
-      scope: "bulk",
-      isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
-    },
-    {
-      id: "bulk-archive",
-      label: quickText.archive,
-      scope: "bulk",
-      isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
-    },
-    {
       id: "bulk-delete",
       label: quickText.delete,
       scope: "bulk",
@@ -751,10 +503,7 @@ export function CmsArticlesListScreen({
 
   const toolbarBulkActions = resolvedBulkActions.map((action) => ({
     ...action,
-    onExecute: () => {
-      const bulkAction = action.id.replace("bulk-", "") as ArticleQuickAction;
-      return runBulkAction(bulkAction);
-    },
+    onExecute: runBulkDelete,
   }));
 
   const hasActiveFilters = Boolean(
@@ -810,6 +559,18 @@ export function CmsArticlesListScreen({
             authorsLoading={authorsOptionsQuery.isPending}
             onSearchChange={(value) => {
               updateSearchParams({ q: value, page: 1 });
+            }}
+            onApplyFilters={(filters) => {
+              updateSearchParams({
+                status: filters.statusValue === "all" ? undefined : filters.statusValue,
+                featured: filters.featuredValue === "all" ? undefined : filters.featuredValue,
+                issueId: filters.issueIdValue === "all" ? undefined : filters.issueIdValue,
+                categoryId: filters.categoryIdValue === "all" ? undefined : filters.categoryIdValue,
+                authorId: filters.authorIdValue === "all" ? undefined : filters.authorIdValue,
+                sortBy: filters.sortByValue,
+                sortOrder: filters.sortOrderValue,
+                page: 1,
+              });
             }}
             onStatusChange={(value) => {
               updateSearchParams({ status: value === "all" ? undefined : value, page: 1 });
@@ -915,11 +676,14 @@ export function CmsArticlesListScreen({
                         isSelected={selection.isSelected(article.id)}
                         onToggleSelection={selection.toggleSelection}
                         onEdit={(id) => navigateToCrudRoute(cmsCrudRoutes.articles.edit(id))}
-                        onRunAction={(action, id) => {
-                          void runSingleAction(action, id);
+                        onDelete={(id) => {
+                          void runSingleDelete(id);
                         }}
                         selectLabel={listText.selectItem(article.title)}
                         editLabel={quickText.edit}
+                        deleteLabel={quickText.delete}
+                        deleteConfirmTitle={quickText.confirmDeleteTitle}
+                        deleteConfirmDescription={quickText.confirmDeleteSingleArticle}
                         yesLabel={commonText.yes}
                         noLabel={commonText.no}
                       />

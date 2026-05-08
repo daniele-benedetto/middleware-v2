@@ -72,6 +72,11 @@ export const cmsIt = {
   },
   listToolbar: {
     searchPlaceholder: "Cerca...",
+    filtersTrigger: (count: number) => (count > 0 ? `Filtri (${count})` : "Filtri"),
+    filtersTitle: "Filtri",
+    filtersDescription: "Applica o azzera i filtri.",
+    applyFilters: "Applica",
+    clearFilters: "Pulisci",
   },
   richText: {
     defaultAriaLabel: "Editor contenuto",
@@ -262,11 +267,6 @@ export const cmsIt = {
   quickActions: {
     edit: "Modifica",
     delete: "Elimina",
-    publish: "Pubblica",
-    unpublish: "Rimuovi pubblicazione",
-    feature: "Metti in evidenza",
-    unfeature: "Rimuovi dall'evidenza",
-    archive: "Archivia",
     setAdmin: "Imposta ADMIN",
     setEditor: "Imposta EDITOR",
     confirmDeleteTitle: "Conferma eliminazione",
