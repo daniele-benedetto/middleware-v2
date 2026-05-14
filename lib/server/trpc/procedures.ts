@@ -5,6 +5,9 @@ import { publicProcedure } from "@/lib/server/trpc/init";
 import { rateLimitMiddleware } from "@/lib/server/trpc/middlewares/rate-limit";
 import { requireSessionMiddleware } from "@/lib/server/trpc/middlewares/require-session";
 
+export const publicReadProcedure = publicProcedure.use(
+  rateLimitMiddleware(rateLimitPolicies.publicRead),
+);
 export const protectedProcedure = publicProcedure.use(requireSessionMiddleware);
 export const writeProcedure = protectedProcedure.use(rateLimitMiddleware(rateLimitPolicies.write));
 export const sensitiveWriteProcedure = protectedProcedure.use(

@@ -28,6 +28,7 @@ return { current, ttl }
 `;
 
 export const rateLimitPolicies = {
+  publicRead: { name: "public-read", limit: 120, windowMs: 60_000 },
   write: { name: "write", limit: 60, windowMs: 60_000 },
   sensitiveWrite: { name: "sensitive-write", limit: 20, windowMs: 60_000 },
   publish: { name: "publish", limit: 30, windowMs: 60_000 },
