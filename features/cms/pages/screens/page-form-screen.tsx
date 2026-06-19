@@ -252,7 +252,7 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
                   type="button"
                   onClick={() => setIsSlugEditing(true)}
                   className={cn(
-                    "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
+                    "flex h-10 flex-1 items-center rounded-[6px] border border-foreground bg-white px-3 text-left",
                     "font-ui text-[12px] font-bold uppercase tracking-[0.08em] transition-colors hover:bg-surface-hover",
                     resolvedSlug ? "text-foreground" : "text-border",
                   )}
@@ -266,7 +266,7 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
                   setValue("slug", normalizeSlug(watchedTitle ?? ""), { shouldDirty: true });
                   setHasManualSlugOverride(false);
                 }}
-                className="inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3 font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover"
+                className="inline-flex h-10 shrink-0 items-center rounded-[6px] border border-foreground bg-white px-3 font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover"
               >
                 {formText.regenerateSlug}
               </button>

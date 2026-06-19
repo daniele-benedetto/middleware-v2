@@ -25,6 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CmsAuditLogDetailDialog } from "@/features/cms/audit-logs/components/audit-log-detail-dialog";
+import { formatAuditActionLabel } from "@/features/cms/audit-logs/format";
 import { CmsListFiltersSheet } from "@/features/cms/shared/components/cms-list-filters-sheet";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import { useAuditLogsListQuery, useCmsListUrlState } from "@/features/cms/shared/hooks";
@@ -46,10 +47,6 @@ function formatDateTime(value: string) {
         dateStyle: "short",
         timeStyle: "medium",
       });
-}
-
-function formatActionLabel(value: string) {
-  return value.replace(/-/g, " ").toUpperCase();
 }
 
 type CmsAuditLogsListScreenProps = {
@@ -237,7 +234,7 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <div className="space-y-1">
                         <div className="font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-foreground">
-                          {`${formatActionLabel(entry.action)}: ${
+                          {`${formatAuditActionLabel(entry.action, listText)}: ${
                             entry.resource === "articles"
                               ? listText.resourceArticleLabel
                               : entry.resource === "categories"

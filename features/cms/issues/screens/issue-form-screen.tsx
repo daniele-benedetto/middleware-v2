@@ -109,7 +109,7 @@ function IssuePublishedDatePicker({
           type="button"
           onClick={() => onChange(null)}
           className={cn(
-            "inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3",
+            "inline-flex h-10 shrink-0 items-center rounded-[6px] border border-foreground bg-white px-3",
             "font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover",
           )}
         >

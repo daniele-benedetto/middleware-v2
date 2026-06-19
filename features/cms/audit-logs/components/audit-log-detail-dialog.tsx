@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatAuditActionLabel } from "@/features/cms/audit-logs/format";
 import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -41,10 +42,6 @@ function formatDateTime(value: string) {
         dateStyle: "short",
         timeStyle: "medium",
       });
-}
-
-function formatActionLabel(value: string) {
-  return value.replace(/-/g, " ").toUpperCase();
 }
 
 function formatMetadata(value: unknown) {
@@ -387,7 +384,7 @@ export function CmsAuditLogDetailDialog({ auditLogId }: CmsAuditLogDetailDialogP
                       },
                       {
                         label: text.table.action,
-                        value: formatActionLabel(detailQuery.data.action),
+                        value: formatAuditActionLabel(detailQuery.data.action, text),
                       },
                       {
                         label: text.fields.resourceType,

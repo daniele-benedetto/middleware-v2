@@ -590,7 +590,7 @@ function ArticleFormContent({
                   type="button"
                   onClick={openSlugEditor}
                   className={cn(
-                    "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
+                    "flex h-10 flex-1 items-center rounded-[6px] border border-foreground bg-white px-3 text-left",
                     "font-ui text-[12px] font-bold uppercase tracking-[0.08em] transition-colors hover:bg-surface-hover",
                     resolvedSlug ? "text-foreground" : "text-border",
                   )}
@@ -603,7 +603,7 @@ function ArticleFormContent({
                 type="button"
                 onClick={regenerateSlugFromTitle}
                 className={cn(
-                  "inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3",
+                  "inline-flex h-10 shrink-0 items-center rounded-[6px] border border-foreground bg-white px-3",
                   "font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover",
                 )}
               >

@@ -61,6 +61,10 @@ function formatDate(value: string) {
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
 }
 
+function formatUserRole(value: "ADMIN" | "EDITOR") {
+  return value === "ADMIN" ? i18n.cms.topbar.roleAdmin : i18n.cms.topbar.roleEditor;
+}
+
 type UserQuickAction = "delete";
 
 type CmsUsersListScreenProps = {
@@ -436,7 +440,9 @@ export function CmsUsersListScreen({
                       <TableCell className={cmsTableClasses.bodyCellMeta}>
                         {user.name ?? "-"}
                       </TableCell>
-                      <TableCell className={cmsTableClasses.bodyCellMeta}>{user.role}</TableCell>
+                      <TableCell className={cmsTableClasses.bodyCellMeta}>
+                        {formatUserRole(user.role)}
+                      </TableCell>
                       <TableCell className={cmsTableClasses.bodyCellMeta}>
                         {user.emailVerified ? commonText.yes : commonText.no}
                       </TableCell>
