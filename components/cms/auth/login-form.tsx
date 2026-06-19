@@ -10,6 +10,7 @@ import {
   CmsTextInput,
 } from "@/components/cms/primitives";
 import { authClient } from "@/lib/auth-client";
+import { getSafeCmsNextPath } from "@/lib/cms/redirect";
 import { i18n } from "@/lib/i18n";
 
 export function CmsLoginForm() {
@@ -22,7 +23,7 @@ export function CmsLoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const nextPath = searchParams.get("next") ?? "/cms";
+  const nextPath = getSafeCmsNextPath(searchParams.get("next"));
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -80,6 +81,7 @@ export function CmsLoginForm() {
             onChange={(event) => setPassword(event.target.value)}
             required
             type="password"
+            showPasswordToggle
             value={password}
             placeholder={text.passwordPlaceholder}
           />
@@ -93,7 +95,13 @@ export function CmsLoginForm() {
         ) : null}
       </div>
 
-      <CmsActionButton isLoading={isSubmitting} tone="danger" size="full" type="submit">
+      <CmsActionButton
+        isLoading={isSubmitting}
+        tone="danger"
+        size="full"
+        type="submit"
+        className="rounded-none"
+      >
         {isSubmitting ? `→ ${text.signingInCta}` : `→ ${text.signInCta}`}
       </CmsActionButton>
     </form>

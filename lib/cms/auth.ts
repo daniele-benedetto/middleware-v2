@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { CMS_NEXT_PATH_HEADER, getSafeCmsNextPath } from "@/lib/cms/redirect";
 import { getAuthSessionFromHeaders } from "@/lib/server/auth/session";
 
 import type { UserRole } from "@/lib/server/auth/roles";
@@ -14,11 +15,17 @@ export const getCmsSession = cache(async (): Promise<AuthSession | null> => {
   return getAuthSessionFromHeaders(new Headers(requestHeaders));
 });
 
-export async function requireCmsSession(nextPath = "/cms") {
+async function getCmsNextPathFallback() {
+  const requestHeaders = await headers();
+  return getSafeCmsNextPath(requestHeaders.get(CMS_NEXT_PATH_HEADER));
+}
+
+export async function requireCmsSession(nextPath?: string) {
   const session = await getCmsSession();
 
   if (!session) {
-    redirect(`/cms/login?next=${encodeURIComponent(nextPath)}`);
+    const resolvedNextPath = getSafeCmsNextPath(nextPath ?? (await getCmsNextPathFallback()));
+    redirect(`/cms/login?next=${encodeURIComponent(resolvedNextPath)}`);
   }
 
   return session;
