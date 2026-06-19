@@ -20,11 +20,11 @@ import {
 import { CmsUserFormLoading } from "@/features/cms/users/components/user-form-loading";
 import {
   useUserById,
-  type CreateUserInput,
-  type UpdateUserInput,
   useUserCreate,
   useUserUpdate,
   useUserUpdateRole,
+  type CreateUserInput,
+  type UpdateUserInput,
   type UserDetail,
 } from "@/features/cms/users/hooks/use-user-crud";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
@@ -363,7 +363,7 @@ function UserFormContent({
               endAction={
                 <button
                   type="button"
-                  className="inline-flex size-7 items-center justify-center rounded-[var(--radius-control)] text-muted-foreground hover:text-foreground focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:pointer-events-none disabled:text-border"
+                  className="inline-flex size-7 items-center justify-center rounded-(--radius-control) text-muted-foreground hover:text-foreground focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:pointer-events-none disabled:text-border"
                   onClick={() => setPassword(generateStrongPassword())}
                   disabled={isMutating}
                   aria-label={formText.generatePassword}

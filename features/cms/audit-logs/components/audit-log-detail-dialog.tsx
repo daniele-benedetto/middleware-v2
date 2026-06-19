@@ -240,7 +240,7 @@ function AuditLogDetailSkeleton({ text }: { text: typeof i18n.cms.lists.auditLog
       </DetailSection>
 
       <DetailSection title={text.sections.metadata}>
-        <div className="space-y-2 border-y border-(color:--line-section) py-3">
+        <div className="space-y-2 border-y border-(--line-section) py-3">
           <Skeleton className="h-3 w-full rounded-[6px] bg-card-hover" />
           <Skeleton className="h-3 w-11/12 rounded-[6px] bg-card-hover" />
           <Skeleton className="h-3 w-4/5 rounded-[6px] bg-card-hover" />
@@ -362,7 +362,7 @@ export function CmsAuditLogDetailDialog({ auditLogId }: CmsAuditLogDetailDialogP
               <AuditLogDetailSkeleton text={text} />
             ) : detailError ? (
               <div className="rounded-[8px] border-l-4 border-accent bg-white px-4 py-4">
-                <div className="font-ui text-[10px] font-extrabold uppercase tracking-[0.1em] text-accent">
+                <div className="font-ui text-[10px] font-extrabold uppercase tracking-widest text-accent">
                   {detailError.title}
                 </div>
                 <div className="mt-2 font-editorial text-[15px] leading-normal text-body-text">
@@ -495,7 +495,7 @@ export function CmsAuditLogDetailDialog({ auditLogId }: CmsAuditLogDetailDialogP
 
                 {metadata ? (
                   <DetailSection title={text.sections.metadata}>
-                    <pre className="overflow-x-auto border-y border-(color:--line-section) py-3 font-technical text-[11px] leading-relaxed text-foreground whitespace-pre-wrap wrap-break-word">
+                    <pre className="overflow-x-auto border-y border-(--line-section) py-3 font-technical text-[11px] leading-relaxed text-foreground whitespace-pre-wrap wrap-break-word">
                       {metadata}
                     </pre>
                   </DetailSection>
