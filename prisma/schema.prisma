@@ -18,6 +18,12 @@ enum ArticleStatus {
   ARCHIVED
 }
 
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 enum AuditLogOutcome {
   SUCCESS
   FAILURE
@@ -167,6 +173,7 @@ model Article {
   tags     ArticleTag[]
 
   @@unique([issueId, slug])
+  @@unique([slug])
   @@index([slug])
   @@index([issueId, position])
   @@index([categoryId])
@@ -187,6 +194,20 @@ model ArticleTag {
   @@id([articleId, tagId])
   @@index([tagId])
   @@map("article_tags")
+}
+
+model Page {
+  id          String     @id @default(uuid())
+  title       String
+  slug        String     @unique
+  status      PageStatus @default(DRAFT)
+  contentRich Json
+  publishedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([status, publishedAt])
+  @@map("pages")
 }
 
 model AuditLog {

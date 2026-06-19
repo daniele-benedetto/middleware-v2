@@ -57,7 +57,13 @@ export type CmsMutationName =
   | "articles.archive"
   | "articles.feature"
   | "articles.unfeature"
-  | "articles.reorder";
+  | "articles.reorder"
+  | "pages.create"
+  | "pages.update"
+  | "pages.delete"
+  | "pages.publish"
+  | "pages.unpublish"
+  | "pages.archive";
 
 export async function invalidateIssuesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
   await invalidateResource(utils.issues.list.invalidate, utils.issues.getById.invalidate, input);
@@ -87,6 +93,10 @@ export async function invalidateArticlesAfterMutation(utils: TrpcUtils, input?: 
   );
 }
 
+export async function invalidatePagesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
+  await invalidateResource(utils.pages.list.invalidate, utils.pages.getById.invalidate, input);
+}
+
 export async function invalidateAfterCmsMutation(
   utils: TrpcUtils,
   mutation: CmsMutationName,
@@ -109,6 +119,11 @@ export async function invalidateAfterCmsMutation(
 
   if (mutation.startsWith("users.")) {
     await invalidateUsersAfterMutation(utils, input);
+    return;
+  }
+
+  if (mutation.startsWith("pages.")) {
+    await invalidatePagesAfterMutation(utils, input);
     return;
   }
 

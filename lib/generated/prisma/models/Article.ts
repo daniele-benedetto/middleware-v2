@@ -341,6 +341,7 @@ export type ArticleOrderByWithRelationInput = {
 
 export type ArticleWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  slug?: string
   issueId_slug?: Prisma.ArticleIssueIdSlugCompoundUniqueInput
   AND?: Prisma.ArticleWhereInput | Prisma.ArticleWhereInput[]
   OR?: Prisma.ArticleWhereInput[]
@@ -353,7 +354,6 @@ export type ArticleWhereUniqueInput = Prisma.AtLeast<{
   position?: Prisma.IntFilter<"Article"> | number
   publishedAt?: Prisma.DateTimeNullableFilter<"Article"> | Date | string | null
   title?: Prisma.StringFilter<"Article"> | string
-  slug?: Prisma.StringFilter<"Article"> | string
   excerpt?: Prisma.StringNullableFilter<"Article"> | string | null
   excerptRich?: Prisma.JsonNullableFilter<"Article">
   contentRich?: Prisma.JsonFilter<"Article">
@@ -366,7 +366,7 @@ export type ArticleWhereUniqueInput = Prisma.AtLeast<{
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   author?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   tags?: Prisma.ArticleTagListRelationFilter
-}, "id" | "issueId_slug">
+}, "id" | "issueId_slug" | "slug">
 
 export type ArticleOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

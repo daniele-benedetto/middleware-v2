@@ -16,6 +16,7 @@ type IssuesListInput = RouterInputs["issues"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
+type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 type MediaListOutput = RouterOutputs["media"]["list"];
@@ -32,6 +33,8 @@ type CategoryDetailOutput = RouterOutputs["categories"]["getById"];
 type TagDetailOutput = RouterOutputs["tags"]["getById"];
 type UserDetailOutput = RouterOutputs["users"]["getById"];
 type ArticleDetailOutput = RouterOutputs["articles"]["getById"];
+type PageDetailOutput = RouterOutputs["pages"]["getById"];
+type PagesListOutput = RouterOutputs["pages"]["list"];
 type UsersAuthorOptionsOutput = RouterOutputs["users"]["listAuthors"];
 
 type CmsListPrefetcher<TInput, TOutput> = (caller: TrpcCaller, input: TInput) => Promise<TOutput>;
@@ -60,6 +63,10 @@ export async function prefetchTagsList(input: TagsListInput): Promise<TagsListOu
 
 export async function prefetchArticlesList(input: ArticlesListInput): Promise<ArticlesListOutput> {
   return prefetchCmsList(input, (caller, listInput) => caller.articles.list(listInput));
+}
+
+export async function prefetchPagesList(input: PagesListInput): Promise<PagesListOutput> {
+  return prefetchCmsList(input, (caller, listInput) => caller.pages.list(listInput));
 }
 
 export async function prefetchAuditLogsList(
@@ -100,6 +107,11 @@ export async function prefetchUserById(id: string): Promise<UserDetailOutput> {
 export async function prefetchArticleById(id: string): Promise<ArticleDetailOutput> {
   const caller = await getTrpcCaller();
   return caller.articles.getById({ id });
+}
+
+export async function prefetchPageById(id: string): Promise<PageDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.pages.getById({ id });
 }
 
 export async function prefetchArticleFormOptions(): Promise<{

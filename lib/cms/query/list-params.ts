@@ -33,11 +33,13 @@ type CmsSerializableSearchParams = Record<string, CmsSerializableParam>;
 const uuidSchema = z.string().uuid();
 
 const articleStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
+const pageStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
 const roleValues = ["ADMIN", "EDITOR"] as const;
 const issuesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
 const categoriesSortByValues = ["createdAt", "name", "slug"] as const;
 const tagsSortByValues = ["createdAt", "name", "slug"] as const;
 const articlesSortByValues = ["createdAt", "publishedAt", "position"] as const;
+const pagesSortByValues = ["createdAt", "updatedAt", "publishedAt", "title"] as const;
 const usersSortByValues = ["createdAt", "email"] as const;
 
 function readParam(input: CmsSearchParamsInput, key: string) {
@@ -173,6 +175,7 @@ type IssuesListInput = RouterInputs["issues"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
+type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 
@@ -254,6 +257,26 @@ export function parseArticlesListSearchParams(input: CmsSearchParamsInput): Arti
       categoryId: parseUuidQueryParam(readParam(input, "categoryId")),
       authorId: parseUuidQueryParam(readParam(input, "authorId")),
       featured: parseBooleanQueryParam(readParam(input, "featured")),
+      q: base.q,
+      sortBy,
+      sortOrder: base.sortOrder,
+    }),
+  };
+}
+
+export function parsePagesListSearchParams(input: CmsSearchParamsInput): PagesListInput {
+  const base = parseCmsListSearchParams(input, {
+    allowedSortBy: pagesSortByValues,
+    defaultSortBy: "updatedAt",
+    defaultSortOrder: "desc",
+  });
+  const sortBy = parseEnumQueryParam(base.sortBy, pagesSortByValues) ?? "updatedAt";
+
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      status: parseEnumQueryParam(cleanString(readParam(input, "status")), pageStatusValues),
       q: base.q,
       sortBy,
       sortOrder: base.sortOrder,

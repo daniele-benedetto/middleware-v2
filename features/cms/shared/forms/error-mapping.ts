@@ -3,7 +3,7 @@ import { i18n } from "@/lib/i18n";
 
 import type { CmsUiError } from "@/lib/cms/trpc";
 
-type ConflictResource = "issues" | "categories" | "tags" | "users" | "articles";
+type ConflictResource = "issues" | "categories" | "tags" | "users" | "articles" | "pages";
 
 const conflictTitles: Record<ConflictResource, string> = {
   issues: i18n.cms.trpcErrors.conflictTitle,
@@ -11,6 +11,7 @@ const conflictTitles: Record<ConflictResource, string> = {
   tags: i18n.cms.trpcErrors.conflictTitle,
   users: i18n.cms.trpcErrors.conflictTitle,
   articles: i18n.cms.lists.articles.domainErrors.slugConflictTitle,
+  pages: i18n.cms.trpcErrors.domain.pageSlugExistsTitle,
 };
 
 export function mapCrudDomainError(error: unknown, resource: ConflictResource): CmsUiError {

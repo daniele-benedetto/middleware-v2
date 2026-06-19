@@ -26,6 +26,15 @@ export const ArticleStatus = {
 export type ArticleStatus = (typeof ArticleStatus)[keyof typeof ArticleStatus]
 
 
+export const PageStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type PageStatus = (typeof PageStatus)[keyof typeof PageStatus]
+
+
 export const AuditLogOutcome = {
   SUCCESS: 'SUCCESS',
   FAILURE: 'FAILURE'

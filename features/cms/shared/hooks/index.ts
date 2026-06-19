@@ -3,6 +3,7 @@ export {
   useArticlesListQuery,
   useCategoriesListQuery,
   useIssuesListQuery,
+  usePagesListQuery,
   useTagsListQuery,
   useUsersListQuery,
 } from "@/features/cms/shared/hooks/use-cms-domain-list-hooks";

@@ -6,6 +6,7 @@ import { auditLogsRouter } from "@/lib/server/trpc/routers/audit-logs";
 import { categoriesRouter } from "@/lib/server/trpc/routers/categories";
 import { issuesRouter } from "@/lib/server/trpc/routers/issues";
 import { mediaRouter } from "@/lib/server/trpc/routers/media";
+import { pagesRouter } from "@/lib/server/trpc/routers/pages";
 import { publicRouter } from "@/lib/server/trpc/routers/public";
 import { tagsRouter } from "@/lib/server/trpc/routers/tags";
 import { usersRouter } from "@/lib/server/trpc/routers/users";
@@ -17,6 +18,7 @@ export const appRouter = router({
   categories: categoriesRouter,
   tags: tagsRouter,
   articles: articlesRouter,
+  pages: pagesRouter,
   media: mediaRouter,
   public: publicRouter,
 });

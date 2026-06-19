@@ -1,9 +1,9 @@
 import { ApiError } from "@/lib/server/http/api-error";
 
-import type { ArticleStatus } from "@/lib/generated/prisma/enums";
+type PublishableStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
 export function assertPublishedAtConsistency(
-  status: ArticleStatus,
+  status: PublishableStatus,
   publishedAt: Date | null,
 ): void {
   if (status === "PUBLISHED" && !publishedAt) {

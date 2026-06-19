@@ -76,6 +76,7 @@ type IssuesListInput = RouterInputs["issues"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
+type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 
@@ -83,6 +84,7 @@ type IssuesListOutput = RouterOutputs["issues"]["list"];
 type CategoriesListOutput = RouterOutputs["categories"]["list"];
 type TagsListOutput = RouterOutputs["tags"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
+type PagesListOutput = RouterOutputs["pages"]["list"];
 type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
 
@@ -154,6 +156,18 @@ export function useArticlesListQuery(
 ): CmsListQueryState<ArticlesListOutput["items"][number]> {
   return useCmsDomainListQuery(input, options, (initialData) =>
     trpc.articles.list.useQuery(input, {
+      ...cmsListQueryOptions,
+      initialData,
+    }),
+  );
+}
+
+export function usePagesListQuery(
+  input: PagesListInput,
+  options?: CmsListQueryOptions<PagesListInput, PagesListOutput>,
+): CmsListQueryState<PagesListOutput["items"][number]> {
+  return useCmsDomainListQuery(input, options, (initialData) =>
+    trpc.pages.list.useQuery(input, {
       ...cmsListQueryOptions,
       initialData,
     }),

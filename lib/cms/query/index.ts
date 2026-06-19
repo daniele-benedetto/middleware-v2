@@ -4,6 +4,7 @@ export {
   parseCategoriesListSearchParams,
   parseCmsListSearchParams,
   parseIssuesListSearchParams,
+  parsePagesListSearchParams,
   parseTagsListSearchParams,
   parseUsersListSearchParams,
   serializeCmsSearchParams,

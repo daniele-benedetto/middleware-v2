@@ -87,6 +87,11 @@ export type Article = Prisma.ArticleModel
  */
 export type ArticleTag = Prisma.ArticleTagModel
 /**
+ * Model Page
+ * 
+ */
+export type Page = Prisma.PageModel
+/**
  * Model AuditLog
  * 
  */

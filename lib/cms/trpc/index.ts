@@ -9,6 +9,7 @@ export {
   invalidateArticlesAfterMutation,
   invalidateCategoriesAfterMutation,
   invalidateIssuesAfterMutation,
+  invalidatePagesAfterMutation,
   invalidateTagsAfterMutation,
   invalidateUsersAfterMutation,
   type CmsMutationName,
