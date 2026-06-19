@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Trash2 } from "lucide-react";
+import { Plus, Save, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -196,10 +196,12 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
               />
             ) : null}
             <CmsActionButton variant="outline" onClick={cancel}>
+              <X aria-hidden />
               {text.resource.cancel}
             </CmsActionButton>
             <CmsActionButton type="submit" isLoading={isSubmitting}>
-              {formText.save}
+              {mode === "create" ? <Plus aria-hidden /> : <Save aria-hidden />}
+              {mode === "create" ? formText.create : formText.save}
             </CmsActionButton>
           </div>
         }

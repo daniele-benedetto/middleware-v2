@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Plus, Save, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
@@ -312,9 +312,6 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
         title={mode === "create" ? resourceText.createTitle : resourceText.editTitle}
         actions={
           <div className="flex items-center gap-2">
-            <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
-              {text.common.cancel}
-            </CmsActionButton>
             {mode === "edit" && entityId ? (
               <CmsConfirmDialog
                 triggerLabel={text.quickActions.delete}
@@ -330,7 +327,12 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
                 onConfirm={() => onDelete(entityId)}
               />
             ) : null}
+            <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
+              <X aria-hidden />
+              {text.common.cancel}
+            </CmsActionButton>
             <CmsActionButton type="submit" isLoading={isMutating}>
+              {mode === "create" ? <Plus aria-hidden /> : <Save aria-hidden />}
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
           </div>

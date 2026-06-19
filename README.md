@@ -60,7 +60,6 @@ Production note:
 - `pnpm check:all` - run tailwind vars check + format check + lint + typecheck + vitest + prisma validate + build
 - `pnpm build` - production build check
 - `pnpm prisma:studio` - inspect DB with Prisma Studio
-- `pnpm seed:admin` - upsert bootstrap admin user
 
 ## Quality automation
 

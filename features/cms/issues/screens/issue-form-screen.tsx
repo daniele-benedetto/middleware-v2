@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Trash2 } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Save, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
@@ -370,9 +370,6 @@ function IssueFormContent({
         title={mode === "create" ? issueFormText.createTitle : issueFormText.editTitle}
         actions={
           <div className="flex items-center gap-2">
-            <CmsActionButton variant="outline" onClick={onCancel} disabled={isBusy}>
-              {text.common.cancel}
-            </CmsActionButton>
             {mode === "edit" && issueId ? (
               <CmsConfirmDialog
                 triggerLabel={text.quickActions.delete}
@@ -384,7 +381,12 @@ function IssueFormContent({
                 onConfirm={() => onDelete(issueId)}
               />
             ) : null}
+            <CmsActionButton variant="outline" onClick={onCancel} disabled={isBusy}>
+              <X aria-hidden />
+              {text.common.cancel}
+            </CmsActionButton>
             <CmsActionButton type="submit" isLoading={isBusy}>
+              {mode === "create" ? <Plus aria-hidden /> : <Save aria-hidden />}
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
           </div>

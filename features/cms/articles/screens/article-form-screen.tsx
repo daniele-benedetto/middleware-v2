@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Trash2 } from "lucide-react";
+import { Plus, Save, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -522,9 +522,6 @@ function ArticleFormContent({
         title={mode === "create" ? articleFormText.createTitle : articleFormText.editTitle}
         actions={
           <div className="flex items-center gap-2">
-            <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
-              {text.common.cancel}
-            </CmsActionButton>
             {mode === "edit" && articleId ? (
               <CmsConfirmDialog
                 triggerLabel={text.quickActions.delete}
@@ -536,7 +533,12 @@ function ArticleFormContent({
                 onConfirm={() => onDelete(articleId)}
               />
             ) : null}
+            <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
+              <X aria-hidden />
+              {text.common.cancel}
+            </CmsActionButton>
             <CmsActionButton type="submit" isLoading={isMutating}>
+              {mode === "create" ? <Plus aria-hidden /> : <Save aria-hidden />}
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
           </div>

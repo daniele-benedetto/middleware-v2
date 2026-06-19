@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Plus, Save, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
@@ -243,9 +243,6 @@ function UserFormContent({
         title={mode === "create" ? userFormText.createTitle : userFormText.editTitle}
         actions={
           <div className="flex items-center gap-2">
-            <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
-              {text.common.cancel}
-            </CmsActionButton>
             {mode === "edit" && userId && !isCurrentUser ? (
               <CmsConfirmDialog
                 triggerLabel={text.quickActions.delete}
@@ -257,7 +254,12 @@ function UserFormContent({
                 onConfirm={() => onDelete(userId)}
               />
             ) : null}
+            <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
+              <X aria-hidden />
+              {text.common.cancel}
+            </CmsActionButton>
             <CmsActionButton type="submit" isLoading={isMutating}>
+              {mode === "create" ? <Plus aria-hidden /> : <Save aria-hidden />}
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
           </div>
