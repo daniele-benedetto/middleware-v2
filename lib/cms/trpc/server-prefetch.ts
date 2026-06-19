@@ -16,6 +16,7 @@ type IssuesListInput = RouterInputs["issues"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
+type AuthorsListInput = RouterInputs["authors"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
@@ -25,17 +26,18 @@ type IssuesListOutput = RouterOutputs["issues"]["list"];
 type CategoriesListOutput = RouterOutputs["categories"]["list"];
 type TagsListOutput = RouterOutputs["tags"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
+type AuthorsListOutput = RouterOutputs["authors"]["list"];
 type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
 
 type IssueDetailOutput = RouterOutputs["issues"]["getById"];
 type CategoryDetailOutput = RouterOutputs["categories"]["getById"];
 type TagDetailOutput = RouterOutputs["tags"]["getById"];
+type AuthorDetailOutput = RouterOutputs["authors"]["getById"];
 type UserDetailOutput = RouterOutputs["users"]["getById"];
 type ArticleDetailOutput = RouterOutputs["articles"]["getById"];
 type PageDetailOutput = RouterOutputs["pages"]["getById"];
 type PagesListOutput = RouterOutputs["pages"]["list"];
-type UsersAuthorOptionsOutput = RouterOutputs["users"]["listAuthors"];
 
 type CmsListPrefetcher<TInput, TOutput> = (caller: TrpcCaller, input: TInput) => Promise<TOutput>;
 
@@ -63,6 +65,10 @@ export async function prefetchTagsList(input: TagsListInput): Promise<TagsListOu
 
 export async function prefetchArticlesList(input: ArticlesListInput): Promise<ArticlesListOutput> {
   return prefetchCmsList(input, (caller, listInput) => caller.articles.list(listInput));
+}
+
+export async function prefetchAuthorsList(input: AuthorsListInput): Promise<AuthorsListOutput> {
+  return prefetchCmsList(input, (caller, listInput) => caller.authors.list(listInput));
 }
 
 export async function prefetchPagesList(input: PagesListInput): Promise<PagesListOutput> {
@@ -99,6 +105,11 @@ export async function prefetchTagById(id: string): Promise<TagDetailOutput> {
   return caller.tags.getById({ id });
 }
 
+export async function prefetchAuthorById(id: string): Promise<AuthorDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.authors.getById({ id });
+}
+
 export async function prefetchUserById(id: string): Promise<UserDetailOutput> {
   const caller = await getTrpcCaller();
   return caller.users.getById({ id });
@@ -118,7 +129,7 @@ export async function prefetchArticleFormOptions(): Promise<{
   tagsOptions: TagsListOutput;
   issuesOptions: IssuesListOutput;
   categoriesOptions: CategoriesListOutput;
-  authorsOptions: UsersAuthorOptionsOutput;
+  authorsOptions: AuthorsListOutput;
 }> {
   const caller = await getTrpcCaller();
 
@@ -126,7 +137,7 @@ export async function prefetchArticleFormOptions(): Promise<{
     caller.tags.list(articleTagOptionsInput),
     caller.issues.list(articleIssueOptionsInput),
     caller.categories.list(articleCategoryOptionsInput),
-    caller.users.listAuthors(articleAuthorOptionsInput),
+    caller.authors.list(articleAuthorOptionsInput),
   ]);
 
   return {
@@ -141,7 +152,7 @@ export async function prefetchArticlesListWithFilterOptions(input: ArticlesListI
   articles: ArticlesListOutput;
   issuesOptions: IssuesListOutput;
   categoriesOptions: CategoriesListOutput;
-  authorsOptions: UsersAuthorOptionsOutput;
+  authorsOptions: AuthorsListOutput;
 }> {
   const caller = await getTrpcCaller();
 
@@ -149,7 +160,7 @@ export async function prefetchArticlesListWithFilterOptions(input: ArticlesListI
     caller.articles.list(input),
     caller.issues.list(articleIssueOptionsInput),
     caller.categories.list(articleCategoryOptionsInput),
-    caller.users.listAuthors(articleAuthorOptionsInput),
+    caller.authors.list(articleAuthorOptionsInput),
   ]);
 
   return {

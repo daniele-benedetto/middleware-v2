@@ -70,9 +70,9 @@ import { cn } from "@/lib/utils";
 
 import type {
   ArticlesListInitialData,
+  AuthorsListInitialData,
   CategoriesListInitialData,
   IssuesListInitialData,
-  UsersAuthorOptionsInitialData,
 } from "@/features/cms/shared/types/initial-data";
 import type { RouterInputs } from "@/lib/trpc/types";
 
@@ -143,7 +143,7 @@ type CmsArticlesListScreenProps = {
   initialData?: ArticlesListInitialData;
   initialIssuesOptionsData?: IssuesListInitialData;
   initialCategoriesOptionsData?: CategoriesListInitialData;
-  initialAuthorsOptionsData?: UsersAuthorOptionsInitialData;
+  initialAuthorsOptionsData?: AuthorsListInitialData;
 };
 
 type ArticleTableRow = {
@@ -152,7 +152,6 @@ type ArticleTableRow = {
   issueTitle: string | null;
   categoryName: string | null;
   authorName: string | null;
-  authorEmail: string | null;
   status: ArticleStatus;
   isFeatured: boolean;
   tagsCount: number;
@@ -233,9 +232,7 @@ function SortableArticleRow({
       <TableCell className={cmsTableClasses.bodyCellTitle}>{article.title}</TableCell>
       <TableCell className={cmsTableClasses.bodyCellMeta}>{article.issueTitle ?? "-"}</TableCell>
       <TableCell className={cmsTableClasses.bodyCellMeta}>{article.categoryName ?? "-"}</TableCell>
-      <TableCell className={cmsTableClasses.bodyCellMeta}>
-        {article.authorName ?? article.authorEmail ?? "-"}
-      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{article.authorName ?? "-"}</TableCell>
       <TableCell className={cmsTableClasses.bodyCellMeta}>
         {formatArticleStatus(article.status)}
       </TableCell>
@@ -321,7 +318,7 @@ export function CmsArticlesListScreen({
     initialData: initialCategoriesOptionsData,
   });
 
-  const authorsOptionsQuery = trpc.users.listAuthors.useQuery(articleAuthorOptionsInput, {
+  const authorsOptionsQuery = trpc.authors.list.useQuery(articleAuthorOptionsInput, {
     ...cmsOptionsQueryOptions,
     initialData: initialAuthorsOptionsData,
   });
@@ -352,8 +349,8 @@ export function CmsArticlesListScreen({
       { value: "all", label: optionsText.authorAll },
       ...items.map((author) => ({
         value: author.id,
-        label: author.name ? `${author.name} (${author.email})` : author.email,
-        displayLabel: `${fieldText.author}: ${author.name ?? author.email}`,
+        label: author.name,
+        displayLabel: `${fieldText.author}: ${author.name}`,
       })),
     ];
   }, [authorsOptionsQuery.data?.items, fieldText.author, optionsText.authorAll]);
@@ -368,7 +365,7 @@ export function CmsArticlesListScreen({
       status: input.query?.status,
       issueId: input.query?.issueId,
       categoryId: input.query?.categoryId,
-      authorId: input.query?.authorId,
+      authorId: input.query?.authorId ?? undefined,
       featured: input.query?.featured,
     },
     clearSelection: selection.clearSelection,

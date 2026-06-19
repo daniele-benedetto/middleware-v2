@@ -403,9 +403,6 @@ export function CmsUsersListScreen({
                     {listText.table.verified}
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.articles}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
                     {listText.table.createdAt}
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
@@ -445,9 +442,6 @@ export function CmsUsersListScreen({
                       </TableCell>
                       <TableCell className={cmsTableClasses.bodyCellMeta}>
                         {user.emailVerified ? commonText.yes : commonText.no}
-                      </TableCell>
-                      <TableCell className={cmsTableClasses.bodyCellMeta}>
-                        {String(user.authoredArticlesCount)}
                       </TableCell>
                       <TableCell className={cmsTableClasses.bodyCellMeta}>
                         {formatDate(user.createdAt)}

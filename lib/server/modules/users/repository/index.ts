@@ -8,7 +8,6 @@ import { prisma } from "@/lib/prisma";
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
   CreateUserInput,
-  ListUserAuthorsQuery,
   ListUsersQuery,
   UpdateUserInput,
   UpdateUserRoleInput,
@@ -37,17 +36,6 @@ const toUserWhereInput = (query: ListUsersQuery): Prisma.UserWhereInput => {
 
 const toUserOrderByInput = (query: ListUsersQuery): Prisma.UserOrderByWithRelationInput => {
   return { [query.sortBy]: query.sortOrder };
-};
-
-const toUserAuthorsWhereInput = (query: ListUserAuthorsQuery): Prisma.UserWhereInput => {
-  return {
-    OR: query.q
-      ? [
-          { email: { contains: query.q, mode: "insensitive" } },
-          { name: { contains: query.q, mode: "insensitive" } },
-        ]
-      : undefined,
-  };
 };
 
 export const usersRepository = {
@@ -86,35 +74,11 @@ export const usersRepository = {
         emailVerified: true,
         createdAt: true,
         updatedAt: true,
-        _count: {
-          select: {
-            authoredArticles: true,
-          },
-        },
       },
     });
   },
   async count(query: ListUsersQuery) {
     const where = toUserWhereInput(query);
-    return prisma.user.count({ where });
-  },
-  async listAuthorOptions(query: ListUserAuthorsQuery, pagination: PaginationParams) {
-    const where = toUserAuthorsWhereInput(query);
-
-    return prisma.user.findMany({
-      where,
-      orderBy: { email: "asc" },
-      skip: (pagination.page - 1) * pagination.pageSize,
-      take: pagination.pageSize,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
-    });
-  },
-  async countAuthorOptions(query: ListUserAuthorsQuery) {
-    const where = toUserAuthorsWhereInput(query);
     return prisma.user.count({ where });
   },
   async getById(id: string) {
@@ -128,21 +92,6 @@ export const usersRepository = {
         emailVerified: true,
         createdAt: true,
         updatedAt: true,
-        authoredArticles: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-            isFeatured: true,
-            position: true,
-          },
-          orderBy: [{ createdAt: "desc" }, { title: "asc" }],
-        },
-        _count: {
-          select: {
-            authoredArticles: true,
-          },
-        },
       },
     });
   },

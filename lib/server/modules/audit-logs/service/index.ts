@@ -175,7 +175,6 @@ async function resolveUserSummary(resourceId: string): Promise<AuditLogResourceS
       user.name ? { label: "Nome", value: user.name } : null,
       { label: "Ruolo", value: user.role },
       { label: "Email verificata", value: formatBoolean(user.emailVerified) },
-      { label: "Articoli firmati", value: String(user._count?.authoredArticles ?? 0) },
     ]),
   };
 }
@@ -197,7 +196,7 @@ async function resolveArticleSummary(resourceId: string): Promise<AuditLogResour
       { label: "Stato", value: article.status },
       { label: "Issue", value: article.issue.title },
       { label: "Categoria", value: article.category.name },
-      { label: "Autore", value: article.author.name ?? article.author.email },
+      { label: "Autore", value: article.author?.name ?? "-" },
       { label: "Pubblicato", value: formatNullableDate(article.publishedAt) },
       { label: "Featured", value: formatBoolean(article.isFeatured) },
       { label: "Posizione", value: String(article.position) },

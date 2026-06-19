@@ -41,6 +41,9 @@ export type CmsMutationName =
   | "categories.create"
   | "categories.update"
   | "categories.delete"
+  | "authors.create"
+  | "authors.update"
+  | "authors.delete"
   | "tags.create"
   | "tags.update"
   | "tags.delete"
@@ -81,6 +84,10 @@ export async function invalidateTagsAfterMutation(utils: TrpcUtils, input?: Muta
   await invalidateResource(utils.tags.list.invalidate, utils.tags.getById.invalidate, input);
 }
 
+export async function invalidateAuthorsAfterMutation(utils: TrpcUtils, input?: MutationInput) {
+  await invalidateResource(utils.authors.list.invalidate, utils.authors.getById.invalidate, input);
+}
+
 export async function invalidateUsersAfterMutation(utils: TrpcUtils, input?: MutationInput) {
   await invalidateResource(utils.users.list.invalidate, utils.users.getById.invalidate, input);
 }
@@ -114,6 +121,11 @@ export async function invalidateAfterCmsMutation(
 
   if (mutation.startsWith("tags.")) {
     await invalidateTagsAfterMutation(utils, input);
+    return;
+  }
+
+  if (mutation.startsWith("authors.")) {
+    await invalidateAuthorsAfterMutation(utils, input);
     return;
   }
 

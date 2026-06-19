@@ -18,7 +18,7 @@ type ArticleDetail = RouterOutputs["articles"]["getById"];
 type TagOptionsOutput = RouterOutputs["tags"]["list"];
 type IssueOptionsOutput = RouterOutputs["issues"]["list"];
 type CategoryOptionsOutput = RouterOutputs["categories"]["list"];
-type UserOptionsOutput = RouterOutputs["users"]["listAuthors"];
+type AuthorOptionsOutput = RouterOutputs["authors"]["list"];
 
 export function useArticleById(articleId?: string, options?: { initialData?: ArticleDetail }) {
   return trpc.articles.getById.useQuery(
@@ -64,8 +64,8 @@ export function useCategoryOptions(options?: { initialData?: CategoryOptionsOutp
   });
 }
 
-export function useUserOptions(options?: { initialData?: UserOptionsOutput }) {
-  return trpc.users.listAuthors.useQuery(articleAuthorOptionsInput, {
+export function useAuthorOptions(options?: { initialData?: AuthorOptionsOutput }) {
+  return trpc.authors.list.useQuery(articleAuthorOptionsInput, {
     ...cmsOptionsQueryOptions,
     initialData: options?.initialData,
   });

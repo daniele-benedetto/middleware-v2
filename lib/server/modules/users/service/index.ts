@@ -10,32 +10,14 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
 import { usersRepository } from "@/lib/server/modules/users/repository";
 
-import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 import type { PaginationParams } from "@/lib/server/http/pagination";
-import type {
-  UserAuthorOptionDto,
-  UserDetailDto,
-  UserListItemDto,
-} from "@/lib/server/modules/users/dto";
+import type { UserDetailDto, UserListItemDto } from "@/lib/server/modules/users/dto";
 import type {
   CreateUserInput,
-  ListUserAuthorsQuery,
   ListUsersQuery,
   UpdateUserInput,
   UpdateUserRoleInput,
 } from "@/lib/server/modules/users/schema";
-
-const toUserAuthorOptionDto = (user: {
-  id: string;
-  email: string;
-  name: string | null;
-}): UserAuthorOptionDto => {
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-  };
-};
 
 const toUserDto = (user: {
   id: string;
@@ -45,9 +27,6 @@ const toUserDto = (user: {
   emailVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
-  _count?: {
-    authoredArticles: number;
-  };
 }): UserListItemDto => {
   return {
     id: user.id,
@@ -57,38 +36,10 @@ const toUserDto = (user: {
     emailVerified: user.emailVerified,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
-    authoredArticlesCount: user._count?.authoredArticles ?? 0,
   };
 };
 
-const toUserDetailDto = (user: {
-  id: string;
-  email: string;
-  name: string | null;
-  role: "ADMIN" | "EDITOR";
-  emailVerified: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  authoredArticles?: Array<{
-    id: string;
-    title: string;
-    status: ArticleStatus;
-    isFeatured: boolean;
-    position: number;
-  }>;
-  _count?: {
-    authoredArticles: number;
-  };
-}): UserDetailDto => ({
-  ...toUserDto(user),
-  articles: (user.authoredArticles ?? []).map((article) => ({
-    id: article.id,
-    title: article.title,
-    status: article.status,
-    isFeatured: article.isFeatured,
-    position: article.position,
-  })),
-});
+const toUserDetailDto = (user: Parameters<typeof toUserDto>[0]): UserDetailDto => toUserDto(user);
 
 function assertCanManageOtherUser(
   actorUserId: string,
@@ -110,17 +61,6 @@ export const usersService = {
 
     return {
       items: users.map(toUserDto),
-      total,
-    };
-  },
-  async listAuthorOptions(query: ListUserAuthorsQuery, pagination: PaginationParams) {
-    const [users, total] = await Promise.all([
-      usersRepository.listAuthorOptions(query, pagination),
-      usersRepository.countAuthorOptions(query),
-    ]);
-
-    return {
-      items: users.map(toUserAuthorOptionDto),
       total,
     };
   },
@@ -225,15 +165,6 @@ export const usersService = {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
         throw new ApiError(404, "NOT_FOUND", "User not found");
-      }
-
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
-        throw new ApiError(
-          409,
-          "CONFLICT",
-          "User cannot be deleted due to related records",
-          createCmsDomainErrorDetails("USER_DELETE_HAS_AUTHORED_ARTICLES"),
-        );
       }
 
       throw error;

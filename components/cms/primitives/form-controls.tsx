@@ -121,6 +121,7 @@ export function CmsFormLabel({ children, htmlFor, className, state }: CmsFormLab
 
 type CmsTextInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> &
   VariantProps<typeof cmsTextInputVariants> & {
+    endAction?: ReactNode;
     showPasswordToggle?: boolean;
   };
 
@@ -129,6 +130,7 @@ export function CmsTextInput({
   state,
   tone,
   disabled,
+  endAction,
   type,
   showPasswordToggle = false,
   ...props
@@ -136,6 +138,7 @@ export function CmsTextInput({
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const resolvedState: CmsControlState = disabled ? "disabled" : (state ?? "default");
   const canTogglePassword = type === "password" && showPasswordToggle;
+  const hasEndActions = canTogglePassword || Boolean(endAction);
   const resolvedType = canTogglePassword && isPasswordVisible ? "text" : type;
   const input = (
     <ShadcnInput
@@ -143,30 +146,37 @@ export function CmsTextInput({
       type={resolvedType}
       className={cn(
         cmsTextInputVariants({ state: resolvedState, tone }),
-        canTogglePassword && "pr-10",
+        canTogglePassword && endAction ? "pr-18" : hasEndActions && "pr-10",
         className,
       )}
       {...props}
     />
   );
 
-  if (!canTogglePassword) {
+  if (!hasEndActions) {
     return input;
   }
 
   return (
     <div className="relative">
       {input}
-      <button
-        type="button"
-        className="absolute top-1/2 right-2 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-[var(--radius-control)] text-muted-foreground hover:text-foreground focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:pointer-events-none disabled:text-border"
-        onClick={() => setIsPasswordVisible((current) => !current)}
-        disabled={disabled}
-        aria-label={isPasswordVisible ? i18n.cms.forms.hidePassword : i18n.cms.forms.showPassword}
-        aria-pressed={isPasswordVisible}
-      >
-        {isPasswordVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-      </button>
+      <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">
+        {endAction}
+        {canTogglePassword ? (
+          <button
+            type="button"
+            className="inline-flex size-7 items-center justify-center rounded-[var(--radius-control)] text-muted-foreground hover:text-foreground focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:pointer-events-none disabled:text-border"
+            onClick={() => setIsPasswordVisible((current) => !current)}
+            disabled={disabled}
+            aria-label={
+              isPasswordVisible ? i18n.cms.forms.hidePassword : i18n.cms.forms.showPassword
+            }
+            aria-pressed={isPasswordVisible}
+          >
+            {isPasswordVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

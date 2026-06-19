@@ -21,7 +21,7 @@ const publicArticleBaseShape = {
   categoryId: z.string().uuid(),
   categorySlug: z.string(),
   categoryName: z.string(),
-  authorId: z.string().uuid(),
+  authorId: z.string().uuid().nullable(),
   authorName: z.string().nullable(),
   tagsCount: z.number().int(),
 } as const;

@@ -38,11 +38,25 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  sessions         Session[]
-  accounts         Account[]
-  authoredArticles Article[] @relation("ArticleAuthor")
+  sessions Session[]
+  accounts Account[]
 
   @@map("user")
+}
+
+model Author {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  bioRich   Json?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articles Article[]
+
+  @@index([isActive])
+  @@map("authors")
 }
 
 model Session {
@@ -148,7 +162,7 @@ model Article {
   id          String        @id @default(uuid())
   issueId     String
   categoryId  String
-  authorId    String
+  authorId    String?
   status      ArticleStatus @default(DRAFT)
   isFeatured  Boolean       @default(false)
   position    Int           @default(0)
@@ -169,7 +183,7 @@ model Article {
 
   issue    Issue        @relation(fields: [issueId], references: [id], onDelete: Restrict)
   category Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  author   User         @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  author   Author?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
   tags     ArticleTag[]
 
   @@unique([issueId, slug])

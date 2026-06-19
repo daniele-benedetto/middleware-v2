@@ -1,10 +1,9 @@
 "use client";
 
-import { Plus, Save, Trash2, X } from "lucide-react";
+import { Plus, Save, Trash2, WandSparkles, X } from "lucide-react";
 import { useState } from "react";
 
-import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
-import { CmsArticleListPanel } from "@/components/cms/common/article-list-panel";
+import { CmsConfirmDialog, CmsErrorState } from "@/components/cms/common";
 import {
   CmsActionButton,
   CmsFormField,
@@ -18,6 +17,7 @@ import {
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
+import { CmsUserFormLoading } from "@/features/cms/users/components/user-form-loading";
 import {
   useUserById,
   type CreateUserInput,
@@ -31,7 +31,6 @@ import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { createUserInputSchema, updateUserInputSchema } from "@/lib/server/modules/users/schema";
 import { trpc } from "@/lib/trpc/react";
-import { cn } from "@/lib/utils";
 
 type UserFormScreenProps = {
   mode: "create" | "edit";
@@ -57,6 +56,34 @@ type UserFormContentProps = {
   onMutationError: (error: unknown) => void;
   onValidationError: (message: string) => void;
 };
+
+const PASSWORD_LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
+const PASSWORD_UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const PASSWORD_NUMBERS = "0123456789";
+const PASSWORD_SYMBOLS = "!@#$%^&*()-_=+[]{};:,.?";
+
+function randomIndex(length: number) {
+  const value = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(value);
+  return value[0] % length;
+}
+
+function generateStrongPassword() {
+  const groups = [PASSWORD_LOWERCASE, PASSWORD_UPPERCASE, PASSWORD_NUMBERS, PASSWORD_SYMBOLS];
+  const allCharacters = groups.join("");
+  const characters = groups.map((group) => group[randomIndex(group.length)]);
+
+  while (characters.length < 16) {
+    characters.push(allCharacters[randomIndex(allCharacters.length)]);
+  }
+
+  for (let index = characters.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomIndex(index + 1);
+    [characters[index], characters[swapIndex]] = [characters[swapIndex], characters[index]];
+  }
+
+  return characters.join("");
+}
 
 export function CmsUserFormScreen({
   mode,
@@ -85,7 +112,7 @@ export function CmsUserFormScreen({
   }
 
   if (mode === "edit" && userQuery.isPending) {
-    return <CmsLoadingState />;
+    return <CmsUserFormLoading mode="edit" />;
   }
 
   if (mode === "edit" && userQuery.isError) {
@@ -178,11 +205,6 @@ function UserFormContent({
   const [role, setRole] = useState<"ADMIN" | "EDITOR">("EDITOR");
   const [roleEdit, setRoleEdit] = useState<"ADMIN" | "EDITOR">(user?.role ?? "EDITOR");
   const isCurrentUser = mode === "edit" && user?.id === currentUserId;
-  const associatedArticles = (user?.articles ?? []).map((article) => ({
-    id: article.id,
-    title: article.title,
-    isFeatured: article.isFeatured,
-  }));
 
   const handleSubmit = async () => {
     try {
@@ -266,12 +288,7 @@ function UserFormContent({
         }
       />
 
-      <div
-        className={cn(
-          "grid min-h-0 flex-1 gap-0 overflow-hidden",
-          mode === "edit" && "lg:grid-cols-[minmax(0,1fr)_360px]",
-        )}
-      >
+      <div className="min-h-0 flex-1 overflow-hidden">
         <div className="cms-scroll min-h-0 min-w-0 space-y-5 overflow-y-auto pb-6 lg:pr-6">
           {mode === "create" ? (
             <>
@@ -342,21 +359,21 @@ function UserFormContent({
               autoComplete="new-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+              showPasswordToggle
+              endAction={
+                <button
+                  type="button"
+                  className="inline-flex size-7 items-center justify-center rounded-[var(--radius-control)] text-muted-foreground hover:text-foreground focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:pointer-events-none disabled:text-border"
+                  onClick={() => setPassword(generateStrongPassword())}
+                  disabled={isMutating}
+                  aria-label={formText.generatePassword}
+                >
+                  <WandSparkles className="size-4" aria-hidden />
+                </button>
+              }
             />
           </CmsFormField>
         </div>
-
-        {mode === "edit" ? (
-          <div className="cms-scroll flex min-h-0 min-w-0 flex-col overflow-y-auto pb-6 lg:border-l lg:border-foreground lg:pl-6">
-            <CmsArticleListPanel
-              title={text.navigation.articles}
-              emptyText={userFormText.articlesPanelEmpty}
-              featuredAriaLabel={i18n.cms.lists.issues.articlesPanelFeaturedAria}
-              articles={associatedArticles}
-              className="min-h-0 flex-1"
-            />
-          </div>
-        ) : null}
       </div>
     </form>
   );

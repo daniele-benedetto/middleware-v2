@@ -11,6 +11,10 @@ export const cmsCrudRoutes = {
     create: "/cms/tags/new",
     edit: (id: string) => `/cms/tags/${id}/edit`,
   },
+  authors: {
+    create: "/cms/authors/new",
+    edit: (id: string) => `/cms/authors/${id}/edit`,
+  },
   articles: {
     create: "/cms/articles/new",
     edit: (id: string) => `/cms/articles/${id}/edit`,

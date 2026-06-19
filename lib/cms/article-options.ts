@@ -30,5 +30,9 @@ export const articleCategoryOptionsInput = {
 export const articleAuthorOptionsInput = {
   page: 1,
   pageSize: 100,
-  query: {},
-} satisfies RouterInputs["users"]["listAuthors"];
+  query: {
+    isActive: "true",
+    sortBy: "name",
+    sortOrder: "asc",
+  },
+} satisfies RouterInputs["authors"]["list"];

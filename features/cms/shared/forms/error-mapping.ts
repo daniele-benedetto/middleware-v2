@@ -3,10 +3,18 @@ import { i18n } from "@/lib/i18n";
 
 import type { CmsUiError } from "@/lib/cms/trpc";
 
-type ConflictResource = "issues" | "categories" | "tags" | "users" | "articles" | "pages";
+type ConflictResource =
+  | "issues"
+  | "authors"
+  | "categories"
+  | "tags"
+  | "users"
+  | "articles"
+  | "pages";
 
 const conflictTitles: Record<ConflictResource, string> = {
   issues: i18n.cms.trpcErrors.conflictTitle,
+  authors: i18n.cms.trpcErrors.domain.authorSlugExistsTitle,
   categories: i18n.cms.trpcErrors.conflictTitle,
   tags: i18n.cms.trpcErrors.conflictTitle,
   users: i18n.cms.trpcErrors.conflictTitle,

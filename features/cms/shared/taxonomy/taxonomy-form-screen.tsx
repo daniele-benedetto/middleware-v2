@@ -39,7 +39,8 @@ type CmsTaxonomyDetail = {
   id: string;
   name: string;
   slug: string;
-  description: unknown;
+  description?: unknown;
+  bioRich?: unknown;
   isActive: boolean;
   articles?: CmsTaxonomyArticleSummary[];
 };
@@ -56,7 +57,8 @@ type CmsTaxonomyMutationState<TInput> = {
   mutateAsync: (input: TInput) => Promise<unknown>;
 };
 
-type CmsTaxonomyResource = "categories" | "tags";
+type CmsTaxonomyResource = "authors" | "categories" | "tags";
+type CmsTaxonomyRichTextField = "bioRich" | "description";
 type CmsTaxonomyFormText = {
   invalidTitle: string;
   createTitle: string;
@@ -80,10 +82,17 @@ type CmsTaxonomyFormScreenProps<TCreateInput, TUpdateInput, TDetail extends CmsT
   createSchema: ZodType<TCreateInput>;
   updateSchema: ZodType<TUpdateInput>;
   resource: CmsTaxonomyResource;
+  richTextField?: CmsTaxonomyRichTextField;
   resourceText: CmsTaxonomyFormText;
   listPath: string;
-  createMutationName: Extract<CmsMutationName, "categories.create" | "tags.create">;
-  updateMutationName: Extract<CmsMutationName, "categories.update" | "tags.update">;
+  createMutationName: Extract<
+    CmsMutationName,
+    "authors.create" | "categories.create" | "tags.create"
+  >;
+  updateMutationName: Extract<
+    CmsMutationName,
+    "authors.update" | "categories.update" | "tags.update"
+  >;
 };
 
 type CmsTaxonomyFormContentProps<TCreateInput, TUpdateInput, TDetail extends CmsTaxonomyDetail> = {
@@ -92,6 +101,7 @@ type CmsTaxonomyFormContentProps<TCreateInput, TUpdateInput, TDetail extends Cms
   detail?: TDetail;
   isMutating: boolean;
   resource: CmsTaxonomyResource;
+  richTextField: CmsTaxonomyRichTextField;
   resourceText: CmsTaxonomyFormText;
   onCancel: () => void;
   onCreate: (payload: TCreateInput) => Promise<void>;
@@ -116,6 +126,7 @@ export function CmsTaxonomyFormScreen<
   createSchema,
   updateSchema,
   resource,
+  richTextField = "description",
   resourceText,
   listPath,
   createMutationName,
@@ -127,7 +138,11 @@ export function CmsTaxonomyFormScreen<
   const formText = text.forms;
   const categoryDeleteMutation = trpc.categories.delete.useMutation();
   const tagDeleteMutation = trpc.tags.delete.useMutation();
-  const isDeleting = categoryDeleteMutation.isPending || tagDeleteMutation.isPending;
+  const authorDeleteMutation = trpc.authors.delete.useMutation();
+  const isDeleting =
+    authorDeleteMutation.isPending ||
+    categoryDeleteMutation.isPending ||
+    tagDeleteMutation.isPending;
 
   if (mode === "edit" && !entityId) {
     return (
@@ -155,6 +170,7 @@ export function CmsTaxonomyFormScreen<
       detail={detailQuery.data}
       isMutating={createMutation.isPending || updateMutation.isPending || isDeleting}
       resource={resource}
+      richTextField={richTextField}
       resourceText={resourceText}
       onCancel={cancel}
       onCreate={async (payload) => {
@@ -168,7 +184,10 @@ export function CmsTaxonomyFormScreen<
         success(resourceText.updated);
       }}
       onDelete={async (id) => {
-        if (resource === "categories") {
+        if (resource === "authors") {
+          await authorDeleteMutation.mutateAsync({ id });
+          await invalidateAfterCmsMutation(trpcUtils, "authors.delete", { id });
+        } else if (resource === "categories") {
           await categoryDeleteMutation.mutateAsync({ id });
           await invalidateAfterCmsMutation(trpcUtils, "categories.delete", { id });
         } else {
@@ -197,6 +216,7 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
   detail,
   isMutating,
   resource,
+  richTextField,
   resourceText,
   onCancel,
   onCreate,
@@ -217,7 +237,9 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
   };
 
   const [name, setName] = useState(detail?.name ?? "");
-  const [description, setDescription] = useState<unknown>(detail?.description ?? emptyContentDoc);
+  const [richTextValue, setRichTextValue] = useState<unknown>(
+    detail?.[richTextField] ?? emptyContentDoc,
+  );
   const [isActive, setIsActive] = useState(detail?.isActive ?? true);
 
   const initialAutoSlug = useMemo(() => normalizeSlug(detail?.name ?? ""), [detail?.name]);
@@ -260,7 +282,7 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
           {
             name,
             slug: slugPayload,
-            description,
+            [richTextField]: richTextValue,
             isActive,
           },
           fieldLabels,
@@ -280,7 +302,7 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
         {
           name,
           slug: slugPayload,
-          description,
+          [richTextField]: richTextValue,
           isActive,
         },
         fieldLabels,
@@ -319,9 +341,11 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
                 triggerDisabled={isMutating}
                 title={text.quickActions.confirmDeleteTitle}
                 description={
-                  resource === "categories"
-                    ? text.quickActions.confirmDeleteSingleCategory
-                    : text.quickActions.confirmDeleteSingleTag
+                  resource === "authors"
+                    ? text.quickActions.confirmDeleteSingleAuthor
+                    : resource === "categories"
+                      ? text.quickActions.confirmDeleteSingleCategory
+                      : text.quickActions.confirmDeleteSingleTag
                 }
                 tone="danger"
                 onConfirm={() => onDelete(entityId)}
@@ -396,8 +420,8 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
             className="flex flex-1 flex-col"
           >
             <CmsRichTextEditor
-              value={description}
-              onChange={setDescription}
+              value={richTextValue}
+              onChange={setRichTextValue}
               ariaLabel={resourceText.descriptionEditorAriaLabel}
               fullHeight
             />

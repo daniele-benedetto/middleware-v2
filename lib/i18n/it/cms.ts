@@ -19,6 +19,7 @@ export const cmsIt = {
     issues: "Uscite",
     categories: "Categorie",
     tags: "Tag",
+    authors: "Autori",
     articles: "Articoli",
     pages: "Pagine",
     media: "Media",
@@ -35,6 +36,7 @@ export const cmsIt = {
     issues: "Uscite",
     categories: "Categorie",
     tags: "Tag",
+    authors: "Autori",
     articles: "Articoli",
     pages: "Pagine",
     media: "Media",
@@ -96,6 +98,7 @@ export const cmsIt = {
     searchSelectNoOptions: "Nessuna opzione disponibile.",
     showPassword: "Mostra password",
     hidePassword: "Nascondi password",
+    generatePassword: "Genera password sicura",
     characterCount: (current: number, max?: number) =>
       max ? `${current} / ${max} CAR.` : `${current} CAR.`,
     fields: {
@@ -215,6 +218,19 @@ export const cmsIt = {
         slugManualHint: "Clicca sullo slug per modificarlo manualmente",
         articlesPanelEmpty: "Nessun articolo associato a questo tag.",
       },
+      authors: {
+        invalidTitle: "Autore non valido",
+        createTitle: "Nuovo Autore",
+        editTitle: "Modifica Autore",
+        created: "Autore creato.",
+        updated: "Autore aggiornato.",
+        activeLabel: "Autore attivo",
+        descriptionEditorAriaLabel: "Editor bio autore",
+        statusSection: "Stato",
+        slugPreviewPlaceholder: "Slug generato automaticamente",
+        slugManualHint: "Clicca sullo slug per modificarlo manualmente",
+        articlesPanelEmpty: "Nessun articolo associato a questo autore.",
+      },
       categories: {
         invalidTitle: "Categoria non valida",
         createTitle: "Nuova Categoria",
@@ -286,6 +302,9 @@ export const cmsIt = {
       `Eliminerai definitivamente ${count} categorie selezionate.`,
     confirmDeleteTagSingle: "Eliminerai definitivamente il tag selezionato.",
     confirmDeleteTagBulk: (count: number) => `Eliminerai definitivamente ${count} tag selezionati.`,
+    confirmDeleteAuthorSingle: "Eliminerai definitivamente l'autore selezionato.",
+    confirmDeleteAuthorBulk: (count: number) =>
+      `Eliminerai definitivamente ${count} autori selezionati.`,
     confirmDeleteArticleSingle: "Eliminerai definitivamente l'articolo selezionato.",
     confirmDeleteArticleBulk: (count: number) =>
       `Eliminerai definitivamente ${count} articoli selezionati.`,
@@ -300,6 +319,7 @@ export const cmsIt = {
     confirmDeleteSinglePage: "Eliminerai definitivamente questa pagina.",
     confirmDeleteSingleCategory: "Eliminerai definitivamente questa categoria.",
     confirmDeleteSingleTag: "Eliminerai definitivamente questo tag.",
+    confirmDeleteSingleAuthor: "Eliminerai definitivamente questo autore.",
     confirmDeleteSingleIssue: "Eliminerai definitivamente questa uscita.",
     confirmRoleAdminSingle: "Imposterai il ruolo ADMIN per questo utente.",
     confirmRoleEditorSingle: "Imposterai il ruolo EDITOR per questo utente.",
@@ -342,6 +362,7 @@ export const cmsIt = {
     issueAll: "Uscita: tutte",
     categoryAll: "Categoria: tutte",
     authorAll: "Autore: tutti",
+    authorNone: "Autore: nessuno",
     featuredAll: "Featured: tutti",
     featuredOnly: "Featured: solo featured",
     notFeaturedOnly: "Featured: solo non featured",
@@ -407,6 +428,22 @@ export const cmsIt = {
         actions: "Azioni",
       },
       eyebrow: "Tag",
+      active: "Attivo",
+      inactive: "Non attivo",
+      selectItem: (name: string) => `Seleziona ${name}`,
+    },
+    authors: {
+      subtitle: "Filtri, ricerca, ordinamento e paginazione.",
+      table: {
+        name: "Nome",
+        slug: "Slug",
+        status: "Stato",
+        articles: "Articoli",
+        createdAt: "Creato",
+        updatedAt: "Aggiornato",
+        actions: "Azioni",
+      },
+      eyebrow: "Autori",
       active: "Attivo",
       inactive: "Non attivo",
       selectItem: (name: string) => `Seleziona ${name}`,
@@ -666,6 +703,8 @@ export const cmsIt = {
       categorySlugExistsTitle: "Slug categoria gia usato",
       categorySlugExistsDescription:
         "Esiste gia una categoria con questo slug. Modificalo e riprova.",
+      authorSlugExistsTitle: "Slug autore gia usato",
+      authorSlugExistsDescription: "Esiste gia un autore con questo slug. Modificalo e riprova.",
       issueArticleOrderMismatchTitle: "Ordine articoli non valido",
       issueArticleOrderMismatchDescription:
         "L'ordine inviato non corrisponde piu agli articoli di questa uscita. Ricarica i dati e riprova.",
@@ -681,9 +720,6 @@ export const cmsIt = {
       tagSlugExistsDescription: "Esiste gia un tag con questo slug. Modificalo e riprova.",
       pageSlugExistsTitle: "Slug pagina gia usato",
       pageSlugExistsDescription: "Esiste gia una pagina con questo slug. Modificalo e riprova.",
-      userDeleteHasArticlesTitle: "Utente non eliminabile",
-      userDeleteHasArticlesDescription:
-        "Non puoi eliminare questo utente perche ha articoli associati come autore. Riassegna prima quegli articoli.",
       userEmailExistsTitle: "Email gia usata",
       userEmailExistsDescription:
         "Esiste gia un utente con questa email. Usa un indirizzo diverso o aggiorna l'utente esistente.",

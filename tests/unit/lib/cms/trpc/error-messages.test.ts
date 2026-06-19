@@ -76,9 +76,9 @@ describe("mapTrpcErrorToCmsUiMessage", () => {
     },
     {
       code: "CONFLICT" as const,
-      reason: "USER_DELETE_HAS_AUTHORED_ARTICLES" as const,
-      title: i18n.cms.trpcErrors.domain.userDeleteHasArticlesTitle,
-      description: i18n.cms.trpcErrors.domain.userDeleteHasArticlesDescription,
+      reason: "AUTHOR_SLUG_EXISTS" as const,
+      title: i18n.cms.trpcErrors.domain.authorSlugExistsTitle,
+      description: i18n.cms.trpcErrors.domain.authorSlugExistsDescription,
     },
     {
       code: "CONFLICT" as const,

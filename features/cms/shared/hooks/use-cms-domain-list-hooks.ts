@@ -75,6 +75,7 @@ function toListQueryState<TItem>(
 type IssuesListInput = RouterInputs["issues"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
+type AuthorsListInput = RouterInputs["authors"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
@@ -83,6 +84,7 @@ type UsersListInput = RouterInputs["users"]["list"];
 type IssuesListOutput = RouterOutputs["issues"]["list"];
 type CategoriesListOutput = RouterOutputs["categories"]["list"];
 type TagsListOutput = RouterOutputs["tags"]["list"];
+type AuthorsListOutput = RouterOutputs["authors"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
 type PagesListOutput = RouterOutputs["pages"]["list"];
 type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
@@ -144,6 +146,18 @@ export function useTagsListQuery(
 ): CmsListQueryState<TagsListOutput["items"][number]> {
   return useCmsDomainListQuery(input, options, (initialData) =>
     trpc.tags.list.useQuery(input, {
+      ...cmsListQueryOptions,
+      initialData,
+    }),
+  );
+}
+
+export function useAuthorsListQuery(
+  input: AuthorsListInput,
+  options?: CmsListQueryOptions<AuthorsListInput, AuthorsListOutput>,
+): CmsListQueryState<AuthorsListOutput["items"][number]> {
+  return useCmsDomainListQuery(input, options, (initialData) =>
+    trpc.authors.list.useQuery(input, {
       ...cmsListQueryOptions,
       initialData,
     }),

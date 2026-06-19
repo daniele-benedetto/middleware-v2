@@ -14,7 +14,7 @@ import type {
 export type CreateArticlePersistInput = {
   issueId: string;
   categoryId: string;
-  authorId: string;
+  authorId?: string | null;
   title: string;
   slug: string;
   excerpt?: string;
@@ -63,7 +63,6 @@ const ARTICLE_DETAIL_SELECT = {
   author: {
     select: {
       name: true,
-      email: true,
     },
   },
   tags: {
@@ -136,7 +135,6 @@ export const articlesRepository = {
         author: {
           select: {
             name: true,
-            email: true,
           },
         },
         _count: {
@@ -161,7 +159,7 @@ export const articlesRepository = {
     const data: Prisma.ArticleUncheckedCreateInput = {
       issueId: input.issueId,
       categoryId: input.categoryId,
-      authorId: input.authorId,
+      authorId: input.authorId ?? null,
       title: input.title,
       slug: input.slug,
       excerpt: input.excerpt,

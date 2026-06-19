@@ -4,7 +4,7 @@ const articleSummaryDtoShape = {
   id: z.string().uuid(),
   issueId: z.string().uuid(),
   categoryId: z.string().uuid(),
-  authorId: z.string().uuid(),
+  authorId: z.string().uuid().nullable(),
   title: z.string(),
   slug: z.string(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
@@ -16,7 +16,6 @@ const articleSummaryDtoShape = {
   issueTitle: z.string().nullable(),
   categoryName: z.string().nullable(),
   authorName: z.string().nullable(),
-  authorEmail: z.string().nullable(),
   tagsCount: z.number().int(),
 } as const;
 

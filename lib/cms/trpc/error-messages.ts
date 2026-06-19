@@ -224,6 +224,16 @@ function mapDomainError(
     };
   }
 
+  if (code === "CONFLICT" && reason === "AUTHOR_SLUG_EXISTS") {
+    return {
+      code,
+      reason,
+      title: text.authorSlugExistsTitle,
+      description: text.authorSlugExistsDescription,
+      retryable: false,
+    };
+  }
+
   if (code === "BAD_REQUEST" && reason === "ISSUE_ARTICLE_ORDER_MISMATCH") {
     return {
       code,
@@ -270,16 +280,6 @@ function mapDomainError(
       reason,
       title: text.tagSlugExistsTitle,
       description: text.tagSlugExistsDescription,
-      retryable: false,
-    };
-  }
-
-  if (code === "CONFLICT" && reason === "USER_DELETE_HAS_AUTHORED_ARTICLES") {
-    return {
-      code,
-      reason,
-      title: text.userDeleteHasArticlesTitle,
-      description: text.userDeleteHasArticlesDescription,
       retryable: false,
     };
   }

@@ -34,25 +34,30 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-function hasCurrentArticleSchema(client: PrismaClient | undefined) {
+function hasCurrentSchema(client: PrismaClient | undefined) {
   if (!client) {
     return false;
   }
 
-  const runtimeFields = (
+  const runtimeModels = (
     client as PrismaClient & {
       _runtimeDataModel?: {
         models?: {
           Article?: {
             fields?: Array<{ name?: string }>;
           };
+          Author?: unknown;
         };
       };
     }
-  )._runtimeDataModel?.models?.Article?.fields;
+  )._runtimeDataModel?.models;
+
+  const runtimeFields = runtimeModels?.Article?.fields;
 
   if (Array.isArray(runtimeFields)) {
-    return runtimeFields.some((field) => field?.name === "excerptRich");
+    return (
+      Boolean(runtimeModels?.Author) && runtimeFields.some((field) => field?.name === "excerptRich")
+    );
   }
 
   const inlineSchema = (
@@ -64,14 +69,14 @@ function hasCurrentArticleSchema(client: PrismaClient | undefined) {
   )._engineConfig?.inlineSchema;
 
   if (typeof inlineSchema === "string") {
-    return inlineSchema.includes("excerptRich");
+    return inlineSchema.includes("model Author") && inlineSchema.includes("excerptRich");
   }
 
   return true;
 }
 
 const existingPrisma = globalForPrisma.prisma;
-const shouldReuseExistingPrisma = hasCurrentArticleSchema(existingPrisma);
+const shouldReuseExistingPrisma = hasCurrentSchema(existingPrisma);
 
 if (existingPrisma && !shouldReuseExistingPrisma) {
   void existingPrisma.$disconnect().catch(() => undefined);

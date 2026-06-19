@@ -56,6 +56,10 @@ function resolveRobots(index: boolean): Metadata["robots"] {
   };
 }
 
+function getDefaultKeywords(): string[] {
+  return [...seoConfig.keywords];
+}
+
 export function getCanonicalUrl(path = "/"): string {
   return toAbsoluteUrl(path);
 }
@@ -85,6 +89,7 @@ export function buildRootMetadata(): Metadata {
       template: seoConfig.titleTemplate,
     },
     description: seoConfig.defaultDescription,
+    keywords: getDefaultKeywords(),
     alternates: {
       canonical,
     },
@@ -139,6 +144,7 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
   return {
     title,
     description,
+    keywords: getDefaultKeywords(),
     alternates: {
       canonical,
     },
@@ -187,6 +193,7 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
   return {
     title: input.title,
     description,
+    keywords: [...getDefaultKeywords(), ...(input.tags ?? [])],
     alternates: {
       canonical,
     },

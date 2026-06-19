@@ -29,9 +29,9 @@ import {
   useArticleSyncTags,
   useArticleUpdate,
   useCategoryOptions,
+  useAuthorOptions,
   useIssueOptions,
   useTagOptions,
-  useUserOptions,
   type ArticleDetail,
   type CreateArticleInput,
   type UpdateArticleInput,
@@ -55,12 +55,13 @@ import { cn } from "@/lib/utils";
 
 import type {
   CategoriesListInitialData,
+  AuthorsListInitialData,
   IssuesListInitialData,
   TagsListInitialData,
-  UsersAuthorOptionsInitialData,
 } from "@/features/cms/shared/types/initial-data";
 
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
+const noAuthorValue = "__none";
 
 type ArticleFormScreenProps = {
   mode: "create" | "edit";
@@ -73,7 +74,7 @@ type ArticleFormOptionsInitialData = {
   tagsOptions: TagsListInitialData;
   issuesOptions: IssuesListInitialData;
   categoriesOptions: CategoriesListInitialData;
-  authorsOptions: UsersAuthorOptionsInitialData;
+  authorsOptions: AuthorsListInitialData;
 };
 
 type ArticleEditorialStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -83,7 +84,7 @@ const articleStatusOptions = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
 const articleFormStateSchema = z.object({
   issueId: z.string().uuid(),
   categoryId: z.string().uuid(),
-  authorId: z.string().uuid(),
+  authorId: z.union([z.string().uuid(), z.literal(noAuthorValue)]),
   title: z.string().trim().min(1),
   slug: z.string().trim(),
   excerptRich: z.unknown(),
@@ -139,7 +140,7 @@ function getArticleFormDefaultValues(article?: ArticleDetail): ArticleFormValues
   return {
     issueId: article?.issueId ?? "",
     categoryId: article?.categoryId ?? "",
-    authorId: article?.authorId ?? "",
+    authorId: article?.authorId ?? noAuthorValue,
     title: article?.title ?? "",
     slug: article?.slug ?? "",
     excerptRich: article?.excerptRich ?? emptyContentDoc,
@@ -157,7 +158,7 @@ function buildCreateArticlePayload(values: ArticleFormValues, resolvedSlug: stri
   return {
     issueId: values.issueId,
     categoryId: values.categoryId,
-    authorId: values.authorId,
+    authorId: values.authorId === noAuthorValue ? null : values.authorId,
     title: values.title,
     slug: resolvedSlug,
     excerptRich: values.excerptRich,
@@ -177,7 +178,7 @@ function buildUpdateArticlePayload(
   return {
     issueId: values.issueId,
     categoryId: values.categoryId,
-    authorId: values.authorId,
+    authorId: values.authorId === noAuthorValue ? null : values.authorId,
     title: values.title,
     slug: resolvedSlug,
     excerptRich: values.excerptRich,
@@ -213,7 +214,7 @@ export function CmsArticleFormScreen({
   const categoryOptionsQuery = useCategoryOptions({
     initialData: initialOptionsData?.categoriesOptions,
   });
-  const userOptionsQuery = useUserOptions({ initialData: initialOptionsData?.authorsOptions });
+  const authorOptionsQuery = useAuthorOptions({ initialData: initialOptionsData?.authorsOptions });
   const createMutation = useArticleCreate();
   const updateMutation = useArticleUpdate();
   const deleteMutation = trpc.articles.delete.useMutation();
@@ -240,7 +241,7 @@ export function CmsArticleFormScreen({
   const optionsError =
     (issueOptionsQuery.isError ? issueOptionsQuery.error : null) ??
     (categoryOptionsQuery.isError ? categoryOptionsQuery.error : null) ??
-    (userOptionsQuery.isError ? userOptionsQuery.error : null) ??
+    (authorOptionsQuery.isError ? authorOptionsQuery.error : null) ??
     (tagOptionsQuery.isError ? tagOptionsQuery.error : null);
 
   if (optionsError) {
@@ -256,7 +257,7 @@ export function CmsArticleFormScreen({
                 void Promise.all([
                   issueOptionsQuery.refetch(),
                   categoryOptionsQuery.refetch(),
-                  userOptionsQuery.refetch(),
+                  authorOptionsQuery.refetch(),
                   tagOptionsQuery.refetch(),
                 ]);
               }
@@ -275,11 +276,11 @@ export function CmsArticleFormScreen({
       tagsAvailable={tagOptionsQuery.data?.items ?? []}
       issuesAvailable={issueOptionsQuery.data?.items ?? []}
       categoriesAvailable={categoryOptionsQuery.data?.items ?? []}
-      authorsAvailable={userOptionsQuery.data?.items ?? []}
+      authorsAvailable={authorOptionsQuery.data?.items ?? []}
       tagsLoading={tagOptionsQuery.isPending}
       issuesLoading={issueOptionsQuery.isPending}
       categoriesLoading={categoryOptionsQuery.isPending}
-      authorsLoading={userOptionsQuery.isPending}
+      authorsLoading={authorOptionsQuery.isPending}
       isMutating={
         createMutation.isPending ||
         updateMutation.isPending ||
@@ -333,7 +334,7 @@ type ArticleFormContentProps = {
   tagsAvailable: Array<{ id: string; name: string; slug: string }>;
   issuesAvailable: Array<{ id: string; title: string; slug: string }>;
   categoriesAvailable: Array<{ id: string; name: string }>;
-  authorsAvailable: Array<{ id: string; name: string | null; email: string }>;
+  authorsAvailable: Array<{ id: string; name: string }>;
   tagsLoading: boolean;
   issuesLoading: boolean;
   categoriesLoading: boolean;
@@ -425,10 +426,13 @@ function ArticleFormContent({
     value: category.id,
     label: category.name,
   }));
-  const userOptions = authorsAvailable.map((user) => ({
-    value: user.id,
-    label: user.name ? `${user.name} (${user.email})` : user.email,
-  }));
+  const authorOptions = [
+    { value: noAuthorValue, label: text.listOptions.authorNone },
+    ...authorsAvailable.map((author) => ({
+      value: author.id,
+      label: author.name,
+    })),
+  ];
 
   const statusOptions = [
     { value: "DRAFT", label: listText.statusDraft },
@@ -736,7 +740,7 @@ function ArticleFormContent({
                 />
               </CmsFormField>
 
-              <CmsFormField label={fieldText.author} htmlFor="article-author" required>
+              <CmsFormField label={fieldText.author} htmlFor="article-author">
                 <Controller
                   name="authorId"
                   control={control}
@@ -745,7 +749,7 @@ function ArticleFormContent({
                       value={field.value}
                       state={fieldState.error ? "error" : undefined}
                       onValueChange={field.onChange}
-                      options={userOptions}
+                      options={authorOptions}
                       disabled={authorsLoading}
                       loading={authorsLoading}
                     />

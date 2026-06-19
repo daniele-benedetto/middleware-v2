@@ -1,6 +1,7 @@
 export {
   parseAuditLogsListSearchParams,
   parseArticlesListSearchParams,
+  parseAuthorsListSearchParams,
   parseCategoriesListSearchParams,
   parseCmsListSearchParams,
   parseIssuesListSearchParams,

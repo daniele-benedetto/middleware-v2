@@ -3,8 +3,6 @@ const hashPasswordMock = vi.hoisted(() => vi.fn());
 const usersRepositoryMock = vi.hoisted(() => ({
   list: vi.fn(),
   count: vi.fn(),
-  listAuthorOptions: vi.fn(),
-  countAuthorOptions: vi.fn(),
   getById: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
@@ -32,8 +30,6 @@ function createUserRecord(overrides: Record<string, unknown> = {}) {
     emailVerified: true,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-    _count: { authoredArticles: 2 },
-    authoredArticles: [],
     ...overrides,
   };
 }
@@ -66,7 +62,6 @@ describe("usersService", () => {
     expect(result).toMatchObject({
       id: "user-1",
       email: "editor@example.com",
-      authoredArticlesCount: 2,
     });
   });
 
@@ -107,18 +102,6 @@ describe("usersService", () => {
       details: { reason: "USER_SELF_DELETE_FORBIDDEN" },
     });
     expect(usersRepositoryMock.delete).not.toHaveBeenCalled();
-  });
-
-  it("maps delete relation errors to a domain conflict", async () => {
-    usersRepositoryMock.delete.mockRejectedValue(
-      createPrismaKnownRequestError("P2003", "fk constraint"),
-    );
-
-    await expect(usersService.delete("admin-1", "user-2")).rejects.toMatchObject({
-      status: 409,
-      code: "CONFLICT",
-      details: { reason: "USER_DELETE_HAS_AUTHORED_ARTICLES" },
-    });
   });
 
   it("updates users without hashing when password is omitted", async () => {

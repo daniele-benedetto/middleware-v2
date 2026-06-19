@@ -19,10 +19,10 @@ type PublicArticleSummaryRecord = {
   publishedAt: Date | null;
   issueId: string;
   categoryId: string;
-  authorId: string;
+  authorId: string | null;
   issue?: { slug: string; title: string } | null;
   category?: { slug: string; name: string } | null;
-  author?: { name: string | null } | null;
+  author?: { name: string } | null;
   _count?: { tags: number };
 };
 

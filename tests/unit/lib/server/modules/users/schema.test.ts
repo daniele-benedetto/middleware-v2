@@ -1,6 +1,5 @@
 import {
   createUserInputSchema,
-  listUserAuthorsQuerySchema,
   listUsersQuerySchema,
   updateUserInputSchema,
   updateUserRoleInputSchema,
@@ -46,9 +45,5 @@ describe("users schemas", () => {
       sortBy: "createdAt",
       sortOrder: "desc",
     });
-  });
-
-  it("trims optional author search query", () => {
-    expect(listUserAuthorsQuerySchema.parse({ q: "  maria  " })).toEqual({ q: "maria" });
   });
 });

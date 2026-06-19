@@ -38,6 +38,7 @@ const roleValues = ["ADMIN", "EDITOR"] as const;
 const issuesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
 const categoriesSortByValues = ["createdAt", "name", "slug"] as const;
 const tagsSortByValues = ["createdAt", "name", "slug"] as const;
+const authorsSortByValues = ["createdAt", "name", "slug"] as const;
 const articlesSortByValues = ["createdAt", "publishedAt", "position"] as const;
 const pagesSortByValues = ["createdAt", "updatedAt", "publishedAt", "title"] as const;
 const usersSortByValues = ["createdAt", "email"] as const;
@@ -174,6 +175,7 @@ export function serializeCmsSearchParams(input: CmsSerializableSearchParams) {
 type IssuesListInput = RouterInputs["issues"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
+type AuthorsListInput = RouterInputs["authors"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
@@ -227,6 +229,26 @@ export function parseTagsListSearchParams(input: CmsSearchParamsInput): TagsList
     defaultSortOrder: "desc",
   });
   const sortBy = parseEnumQueryParam(base.sortBy, tagsSortByValues) ?? "createdAt";
+
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      isActive: parseBooleanQueryParam(readParam(input, "isActive")),
+      q: base.q,
+      sortBy,
+      sortOrder: base.sortOrder,
+    }),
+  };
+}
+
+export function parseAuthorsListSearchParams(input: CmsSearchParamsInput): AuthorsListInput {
+  const base = parseCmsListSearchParams(input, {
+    allowedSortBy: authorsSortByValues,
+    defaultSortBy: "createdAt",
+    defaultSortOrder: "desc",
+  });
+  const sortBy = parseEnumQueryParam(base.sortBy, authorsSortByValues) ?? "createdAt";
 
   return {
     page: base.page,

@@ -36,7 +36,7 @@ type ArticleRecord = {
   id: string;
   issueId: string;
   categoryId: string;
-  authorId: string;
+  authorId: string | null;
   title: string;
   slug: string;
   status: ArticleStatus;
@@ -47,7 +47,7 @@ type ArticleRecord = {
   updatedAt: Date;
   issue?: { title: string } | null;
   category?: { name: string } | null;
-  author?: { name: string | null; email: string } | null;
+  author?: { name: string } | null;
   _count?: { tags: number };
 };
 
@@ -153,7 +153,6 @@ const toArticleDto = (article: ArticleRecord): ArticleDto => {
     issueTitle: article.issue?.title ?? null,
     categoryName: article.category?.name ?? null,
     authorName: article.author?.name ?? null,
-    authorEmail: article.author?.email ?? null,
     tagsCount: article._count?.tags ?? 0,
   };
 };

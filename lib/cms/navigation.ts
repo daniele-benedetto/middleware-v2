@@ -10,6 +10,7 @@ export const cmsNavigation: CmsNavItem[] = [
   { label: i18n.cms.navigation.issues, href: "/cms/issues" },
   { label: i18n.cms.navigation.categories, href: "/cms/categories" },
   { label: i18n.cms.navigation.tags, href: "/cms/tags" },
+  { label: i18n.cms.navigation.authors, href: "/cms/authors" },
   { label: i18n.cms.navigation.articles, href: "/cms/articles" },
   { label: i18n.cms.navigation.pages, href: "/cms/pages" },
   { label: i18n.cms.navigation.media, href: "/cms/media" },

@@ -5,7 +5,7 @@ import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 const articleBaseInputSchema = z.object({
   issueId: z.string().uuid(),
   categoryId: z.string().uuid(),
-  authorId: z.string().uuid(),
+  authorId: z.string().uuid().nullable().optional(),
   title: z.string().trim().min(1),
   slug: z.string().trim().min(1),
   excerptRich: z.unknown().optional(),
@@ -56,7 +56,7 @@ export const listArticlesQuerySchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"] satisfies ArticleStatus[]).optional(),
   issueId: z.string().uuid().optional(),
   categoryId: z.string().uuid().optional(),
-  authorId: z.string().uuid().optional(),
+  authorId: z.string().uuid().nullable().optional(),
   featured: featuredQuerySchema.optional(),
   q: z.string().trim().min(1).optional(),
   sortBy: z.enum(["createdAt", "publishedAt", "position"]).default("createdAt"),
