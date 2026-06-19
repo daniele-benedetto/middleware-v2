@@ -1,10 +1,10 @@
 "use client";
 
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
+import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import {
   CmsActionButton,
   CmsCheckbox,
@@ -129,6 +129,7 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
   const issueQuery = useIssueById(mode === "edit" ? issueId : undefined, { initialData });
   const createMutation = useIssueCreate();
   const updateMutation = useIssueUpdate();
+  const deleteMutation = trpc.issues.delete.useMutation();
   const articleReorderMutation = trpc.articles.reorder.useMutation();
 
   if (mode === "edit" && !issueId) {
@@ -154,7 +155,7 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
       mode={mode}
       issueId={issueId}
       issue={issueQuery.data}
-      isMutating={createMutation.isPending || updateMutation.isPending}
+      isMutating={createMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
       isArticleOrderPending={articleReorderMutation.isPending}
       onCancel={cancel}
       onCreate={async (payload) => {
@@ -181,6 +182,11 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
         cmsToast.info(text.lists.articles.reorderUpdated);
         return reorderedItems.map((item) => item.id);
       }}
+      onDelete={async (id) => {
+        await deleteMutation.mutateAsync({ id });
+        await invalidateAfterCmsMutation(trpcUtils, "issues.delete", { id });
+        success();
+      }}
       onMutationError={(error) => {
         const mapped = mapCrudDomainError(error, "issues");
         cmsToast.error(mapped.description, mapped.title);
@@ -201,6 +207,7 @@ type IssueFormContentProps = {
   onCancel: () => void;
   onCreate: (payload: CreateIssueInput) => Promise<void>;
   onUpdate: (payload: IssueUpdatePayload) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
   onReorderArticles: (payload: {
     issueId: string;
     orderedArticleIds: string[];
@@ -218,6 +225,7 @@ function IssueFormContent({
   onCancel,
   onCreate,
   onUpdate,
+  onDelete,
   onReorderArticles,
   onMutationError,
   onValidationError,
@@ -365,6 +373,17 @@ function IssueFormContent({
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isBusy}>
               {text.common.cancel}
             </CmsActionButton>
+            {mode === "edit" && issueId ? (
+              <CmsConfirmDialog
+                triggerLabel={text.quickActions.delete}
+                triggerIcon={<Trash2 aria-hidden />}
+                triggerDisabled={isBusy}
+                title={text.quickActions.confirmDeleteTitle}
+                description={text.quickActions.confirmDeleteSingleIssue}
+                tone="danger"
+                onConfirm={() => onDelete(issueId)}
+              />
+            ) : null}
             <CmsActionButton type="submit" isLoading={isBusy}>
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>

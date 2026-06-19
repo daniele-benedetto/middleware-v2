@@ -1,11 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { CmsErrorState } from "@/components/cms/common";
+import { CmsConfirmDialog, CmsErrorState } from "@/components/cms/common";
 import {
   CmsActionButton,
   CmsBody,
@@ -215,6 +216,7 @@ export function CmsArticleFormScreen({
   const userOptionsQuery = useUserOptions({ initialData: initialOptionsData?.authorsOptions });
   const createMutation = useArticleCreate();
   const updateMutation = useArticleUpdate();
+  const deleteMutation = trpc.articles.delete.useMutation();
   const syncTagsMutation = useArticleSyncTags();
 
   if (mode === "edit" && !articleId) {
@@ -279,7 +281,10 @@ export function CmsArticleFormScreen({
       categoriesLoading={categoryOptionsQuery.isPending}
       authorsLoading={userOptionsQuery.isPending}
       isMutating={
-        createMutation.isPending || updateMutation.isPending || syncTagsMutation.isPending
+        createMutation.isPending ||
+        updateMutation.isPending ||
+        syncTagsMutation.isPending ||
+        deleteMutation.isPending
       }
       onCancel={cancel}
       onCreate={async (payload) => {
@@ -304,6 +309,11 @@ export function CmsArticleFormScreen({
 
         await invalidateAfterCmsMutation(trpcUtils, "articles.update", { id });
         success(articleFormText.updated);
+      }}
+      onDelete={async (id) => {
+        await deleteMutation.mutateAsync({ id });
+        await invalidateAfterCmsMutation(trpcUtils, "articles.delete", { id });
+        success();
       }}
       onMutationError={(error) => {
         const mapped = mapCrudDomainError(error, "articles");
@@ -332,6 +342,7 @@ type ArticleFormContentProps = {
   onCancel: () => void;
   onCreate: (payload: CreateArticleInput) => Promise<void>;
   onUpdate: (payload: ArticleUpdatePayload) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
   onMutationError: (error: unknown) => void;
   onValidationError: (message: string) => void;
 };
@@ -358,6 +369,7 @@ function ArticleFormContent({
   onCancel,
   onCreate,
   onUpdate,
+  onDelete,
   onMutationError,
   onValidationError,
 }: ArticleFormContentProps) {
@@ -513,6 +525,17 @@ function ArticleFormContent({
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
               {text.common.cancel}
             </CmsActionButton>
+            {mode === "edit" && articleId ? (
+              <CmsConfirmDialog
+                triggerLabel={text.quickActions.delete}
+                triggerIcon={<Trash2 aria-hidden />}
+                triggerDisabled={isMutating}
+                title={text.quickActions.confirmDeleteTitle}
+                description={text.quickActions.confirmDeleteSingleArticle}
+                tone="danger"
+                onConfirm={() => onDelete(articleId)}
+              />
+            ) : null}
             <CmsActionButton type="submit" isLoading={isMutating}>
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>

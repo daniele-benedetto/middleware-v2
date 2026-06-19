@@ -1,8 +1,9 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
+import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import { CmsArticleListPanel } from "@/components/cms/common/article-list-panel";
 import {
   CmsActionButton,
@@ -90,10 +91,12 @@ type CmsTaxonomyFormContentProps<TCreateInput, TUpdateInput, TDetail extends Cms
   entityId?: string;
   detail?: TDetail;
   isMutating: boolean;
+  resource: CmsTaxonomyResource;
   resourceText: CmsTaxonomyFormText;
   onCancel: () => void;
   onCreate: (payload: TCreateInput) => Promise<void>;
   onUpdate: (payload: { id: string; data: TUpdateInput }) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
   onMutationError: (error: unknown) => void;
   onValidationError: (message: string) => void;
   createSchema: ZodType<TCreateInput>;
@@ -122,6 +125,9 @@ export function CmsTaxonomyFormScreen<
   const { cancel, success } = useCmsFormNavigation(listPath);
   const text = i18n.cms;
   const formText = text.forms;
+  const categoryDeleteMutation = trpc.categories.delete.useMutation();
+  const tagDeleteMutation = trpc.tags.delete.useMutation();
+  const isDeleting = categoryDeleteMutation.isPending || tagDeleteMutation.isPending;
 
   if (mode === "edit" && !entityId) {
     return (
@@ -147,7 +153,8 @@ export function CmsTaxonomyFormScreen<
       mode={mode}
       entityId={entityId}
       detail={detailQuery.data}
-      isMutating={createMutation.isPending || updateMutation.isPending}
+      isMutating={createMutation.isPending || updateMutation.isPending || isDeleting}
+      resource={resource}
       resourceText={resourceText}
       onCancel={cancel}
       onCreate={async (payload) => {
@@ -159,6 +166,17 @@ export function CmsTaxonomyFormScreen<
         await updateMutation.mutateAsync({ id, data });
         await invalidateAfterCmsMutation(trpcUtils, updateMutationName, { id });
         success(resourceText.updated);
+      }}
+      onDelete={async (id) => {
+        if (resource === "categories") {
+          await categoryDeleteMutation.mutateAsync({ id });
+          await invalidateAfterCmsMutation(trpcUtils, "categories.delete", { id });
+        } else {
+          await tagDeleteMutation.mutateAsync({ id });
+          await invalidateAfterCmsMutation(trpcUtils, "tags.delete", { id });
+        }
+
+        success();
       }}
       onMutationError={(error) => {
         const mapped = mapCrudDomainError(error, resource);
@@ -178,10 +196,12 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
   entityId,
   detail,
   isMutating,
+  resource,
   resourceText,
   onCancel,
   onCreate,
   onUpdate,
+  onDelete,
   onMutationError,
   onValidationError,
   createSchema,
@@ -295,6 +315,21 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
               {text.common.cancel}
             </CmsActionButton>
+            {mode === "edit" && entityId ? (
+              <CmsConfirmDialog
+                triggerLabel={text.quickActions.delete}
+                triggerIcon={<Trash2 aria-hidden />}
+                triggerDisabled={isMutating}
+                title={text.quickActions.confirmDeleteTitle}
+                description={
+                  resource === "categories"
+                    ? text.quickActions.confirmDeleteSingleCategory
+                    : text.quickActions.confirmDeleteSingleTag
+                }
+                tone="danger"
+                onConfirm={() => onDelete(entityId)}
+              />
+            ) : null}
             <CmsActionButton type="submit" isLoading={isMutating}>
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
