@@ -1,11 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { CmsErrorState } from "@/components/cms/common";
+import { CmsConfirmDialog, CmsErrorState } from "@/components/cms/common";
 import {
   CmsActionButton,
   CmsFormField,
@@ -79,6 +80,7 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
   const pageQuery = usePageById(mode === "edit" ? pageId : undefined, { initialData });
   const createMutation = usePageCreate();
   const updateMutation = usePageUpdate();
+  const deleteMutation = trpc.pages.delete.useMutation();
   const [hasManualSlugOverride, setHasManualSlugOverride] = useState(mode === "edit");
   const [isSlugEditing, setIsSlugEditing] = useState(false);
   const page = pageQuery.data;
@@ -119,7 +121,21 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
     { value: "ARCHIVED", label: text.lists.pages.statusArchived },
   ];
 
-  const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  const isSubmitting =
+    createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+
+  const handleDelete = async () => {
+    if (!pageId) return;
+
+    try {
+      await deleteMutation.mutateAsync({ id: pageId });
+      await invalidateAfterCmsMutation(trpcUtils, "pages.delete", { id: pageId });
+      success();
+    } catch (error) {
+      const mapped = mapTrpcErrorToCmsUiMessage(error);
+      cmsToast.error(mapped.description, mapped.title);
+    }
+  };
 
   const onSubmit = handleSubmit(async (values) => {
     const slug = normalizeSlug(values.slug || values.title);
@@ -168,6 +184,17 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
         title={mode === "create" ? pageFormText.createTitle : pageFormText.editTitle}
         actions={
           <div className="flex gap-2">
+            {mode === "edit" ? (
+              <CmsConfirmDialog
+                triggerLabel={text.quickActions.delete}
+                triggerIcon={<Trash2 aria-hidden />}
+                triggerDisabled={isSubmitting}
+                title={text.quickActions.confirmDeleteTitle}
+                description={text.quickActions.confirmDeleteSinglePage}
+                tone="danger"
+                onConfirm={handleDelete}
+              />
+            ) : null}
             <CmsActionButton variant="outline" onClick={cancel}>
               {text.resource.cancel}
             </CmsActionButton>
