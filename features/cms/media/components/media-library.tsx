@@ -126,7 +126,7 @@ export function CmsMediaLibrary({
       return;
     }
 
-    cmsToast.info(mediaText.uploadCompleted);
+    cmsToast.success(mediaText.uploadCompleted);
   };
 
   const handleRename = async (item: MediaItem, nextName: string) => {
@@ -138,7 +138,7 @@ export function CmsMediaLibrary({
 
       await refreshMedia(result.articleIds);
       setSelectedPathname(result.item.pathname);
-      cmsToast.info(
+      cmsToast.success(
         result.articleIds.length > 0
           ? mediaText.renameCompletedWithArticles(result.articleIds.length)
           : mediaText.renameCompleted,
@@ -154,7 +154,7 @@ export function CmsMediaLibrary({
       const result = await deleteMutation.mutateAsync({ url: item.url });
       await refreshMedia(result.articleIds);
       setSelectedPathname(null);
-      cmsToast.info(
+      cmsToast.success(
         result.articleIds.length > 0
           ? mediaText.deleteCompletedWithArticles(result.articleIds.length)
           : mediaText.deleteCompleted,

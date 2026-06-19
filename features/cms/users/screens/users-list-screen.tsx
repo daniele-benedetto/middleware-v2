@@ -226,7 +226,7 @@ export function CmsUsersListScreen({
 
       await invalidateAfterCmsMutation(trpcUtils, "users.delete", { id });
       selection.clearSelection();
-      cmsToast.info(commonText.actionCompleted);
+      cmsToast.success(commonText.actionCompleted);
     } catch (error) {
       const mapped = mapQuickActionError(error);
       cmsToast.error(mapped.description, mapped.title);
@@ -252,7 +252,7 @@ export function CmsUsersListScreen({
     selection.clearSelection();
 
     if (result.failed === 0) {
-      cmsToast.info(commonText.actionCompletedOnRecords(result.success));
+      cmsToast.success(commonText.actionCompletedOnRecords(result.success));
       return;
     }
 

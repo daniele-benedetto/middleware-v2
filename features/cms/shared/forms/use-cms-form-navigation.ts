@@ -16,7 +16,7 @@ export function useCmsFormNavigation(listPath: string) {
       });
     },
     success: (message: string = i18n.cms.common.actionCompleted) => {
-      cmsToast.info(message);
+      cmsToast.success(message);
 
       startTransition(() => {
         router.push(listPath);

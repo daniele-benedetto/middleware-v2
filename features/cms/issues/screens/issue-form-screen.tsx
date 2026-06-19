@@ -179,7 +179,7 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
           invalidateAfterCmsMutation(trpcUtils, "issues.update", { id: currentIssueId }),
         ]);
 
-        cmsToast.info(text.lists.articles.reorderUpdated);
+        cmsToast.success(text.lists.articles.reorderUpdated);
         return reorderedItems.map((item) => item.id);
       }}
       onDelete={async (id) => {

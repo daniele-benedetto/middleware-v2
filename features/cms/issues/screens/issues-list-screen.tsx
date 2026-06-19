@@ -413,7 +413,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
 
       await invalidateAfterCmsMutation(trpcUtils, "issues.delete", { id });
       selection.clearSelection();
-      cmsToast.info(commonText.actionCompleted);
+      cmsToast.success(commonText.actionCompleted);
     } catch (error) {
       const mapped = mapQuickActionError(error);
       cmsToast.error(mapped.description, mapped.title);
@@ -439,7 +439,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
     selection.clearSelection();
 
     if (result.failed === 0) {
-      cmsToast.info(commonText.actionCompletedOnRecords(result.success));
+      cmsToast.success(commonText.actionCompletedOnRecords(result.success));
       return;
     }
 
@@ -485,7 +485,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
       await invalidateAfterCmsMutation(trpcUtils, "issues.reorder", {
         ids: nextOrder,
       });
-      cmsToast.info(listText.reorderUpdated);
+      cmsToast.success(listText.reorderUpdated);
     } catch (error) {
       reorder.reset();
       const mapped = mapQuickActionError(error);

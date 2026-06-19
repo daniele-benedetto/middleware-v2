@@ -5,7 +5,7 @@ import { toast as sonnerToast } from "sonner";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-type CmsToastVariant = "info" | "breaking" | "error";
+type CmsToastVariant = "success" | "info" | "breaking" | "error";
 
 type CmsToastRenderProps = {
   id: string | number;
@@ -18,37 +18,48 @@ function CmsToastCard({ id, label, body, variant }: CmsToastRenderProps) {
   const text = i18n.cms.common;
   const containerClass = cn(
     "flex w-full min-w-80 max-w-120 items-stretch",
-    variant === "error"
-      ? "bg-foreground text-background"
-      : variant === "breaking"
-        ? "border border-accent bg-white"
-        : "border border-foreground bg-white",
+    variant === "success"
+      ? "border border-success bg-white"
+      : variant === "error"
+        ? "border border-destructive bg-white"
+        : variant === "breaking"
+          ? "border border-warning bg-white"
+          : "border border-foreground bg-white",
   );
 
   const barClass = cn(
     "w-1 shrink-0",
-    variant === "error" ? "bg-accent" : variant === "breaking" ? "bg-accent" : "bg-foreground",
+    variant === "success"
+      ? "bg-success"
+      : variant === "error"
+        ? "bg-destructive"
+        : variant === "breaking"
+          ? "bg-warning"
+          : "bg-foreground",
   );
 
   const labelClass = cn(
     "mb-1 font-ui text-[10px] uppercase tracking-[0.08em]",
-    variant === "error"
-      ? "text-background/50"
-      : variant === "breaking"
-        ? "text-accent"
-        : "text-muted-foreground",
+    variant === "success"
+      ? "text-success"
+      : variant === "error"
+        ? "text-destructive"
+        : variant === "breaking"
+          ? "text-warning"
+          : "text-muted-foreground",
   );
 
-  const bodyClass = cn(
-    "font-editorial text-[14px] leading-[1.45]",
-    variant === "error" ? "text-background" : "text-foreground",
-  );
+  const bodyClass = "font-editorial text-[14px] leading-[1.45] text-foreground";
 
   const closeClass = cn(
     "flex items-center px-3 py-2.5 font-ui text-[12px] cursor-pointer",
-    variant === "error"
-      ? "text-background/30 hover:text-background/60"
-      : "text-border hover:text-foreground",
+    variant === "success"
+      ? "text-success/50 hover:text-success"
+      : variant === "error"
+        ? "text-destructive/50 hover:text-destructive"
+        : variant === "breaking"
+          ? "text-warning/50 hover:text-warning"
+          : "text-border hover:text-foreground",
   );
 
   return (
@@ -78,6 +89,8 @@ function showToast(variant: CmsToastVariant, defaultLabel: string, body: string,
 }
 
 export const cmsToast = {
+  success: (body: string, label?: string) =>
+    showToast("success", i18n.cms.toast.success, body, label),
   info: (body: string, label?: string) => showToast("info", i18n.cms.toast.info, body, label),
   breaking: (body: string, label?: string) =>
     showToast("breaking", i18n.cms.toast.breaking, body, label),

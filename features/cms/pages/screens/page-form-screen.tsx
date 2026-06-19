@@ -155,7 +155,7 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
           publishedAt: null,
         });
         await invalidateAfterCmsMutation(trpcUtils, "pages.create");
-        cmsToast.info(pageFormText.created);
+        cmsToast.success(pageFormText.created);
       } else if (pageId) {
         await updateMutation.mutateAsync({
           id: pageId,
@@ -168,7 +168,7 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
           },
         });
         await invalidateAfterCmsMutation(trpcUtils, "pages.update");
-        cmsToast.info(pageFormText.updated);
+        cmsToast.success(pageFormText.updated);
       }
 
       success();

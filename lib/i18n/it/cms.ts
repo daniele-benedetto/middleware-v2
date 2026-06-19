@@ -639,6 +639,7 @@ export const cmsIt = {
     next: "SUCC. →",
   },
   toast: {
+    success: "SUCCESSO",
     info: "INFO",
     breaking: "BREAKING",
     error: "ERRORE",

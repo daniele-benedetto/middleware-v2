@@ -274,7 +274,7 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
       await deleteMutation.mutateAsync({ id });
       await invalidateAfterCmsMutation(trpcUtils, deleteMutationName, { id });
       selection.clearSelection();
-      cmsToast.info(commonText.actionCompleted);
+      cmsToast.success(commonText.actionCompleted);
     } catch (error) {
       const mapped = mapQuickActionError(error);
       cmsToast.error(mapped.description, mapped.title);
@@ -293,7 +293,7 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
     selection.clearSelection();
 
     if (result.failed === 0) {
-      cmsToast.info(commonText.actionCompletedOnRecords(result.success));
+      cmsToast.success(commonText.actionCompletedOnRecords(result.success));
       return;
     }
 

@@ -416,7 +416,7 @@ export function CmsArticlesListScreen({
       await deleteMutation.mutateAsync({ id });
       await invalidateAfterCmsMutation(trpcUtils, "articles.delete", { id });
       selection.clearSelection();
-      cmsToast.info(commonText.actionCompleted);
+      cmsToast.success(commonText.actionCompleted);
     } catch (error) {
       const mapped = mapArticleDomainError(mapQuickActionError(error));
       cmsToast.error(mapped.description, mapped.title);
@@ -437,7 +437,7 @@ export function CmsArticlesListScreen({
     selection.clearSelection();
 
     if (result.failed === 0) {
-      cmsToast.info(commonText.actionCompletedOnRecords(result.success));
+      cmsToast.success(commonText.actionCompletedOnRecords(result.success));
       return;
     }
 
@@ -471,7 +471,7 @@ export function CmsArticlesListScreen({
       await invalidateAfterCmsMutation(trpcUtils, "articles.reorder", {
         ids: nextOrder,
       });
-      cmsToast.info(listText.reorderUpdated);
+      cmsToast.success(listText.reorderUpdated);
     } catch (error) {
       reorder.reset();
       const mapped = mapArticleDomainError(mapQuickActionError(error));

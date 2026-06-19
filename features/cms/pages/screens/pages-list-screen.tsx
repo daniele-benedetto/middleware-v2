@@ -162,7 +162,7 @@ export function CmsPagesListScreen({ initialInput, initialData }: CmsPagesListSc
       await deleteMutation.mutateAsync({ id });
       await invalidateAfterCmsMutation(trpcUtils, "pages.delete", { id });
       selection.clearSelection();
-      cmsToast.info(commonText.actionCompleted);
+      cmsToast.success(commonText.actionCompleted);
     } catch (error) {
       const mapped = mapQuickActionError(error);
       cmsToast.error(mapped.description, mapped.title);
@@ -179,7 +179,7 @@ export function CmsPagesListScreen({ initialInput, initialData }: CmsPagesListSc
     selection.clearSelection();
 
     if (result.failed === 0) {
-      cmsToast.info(commonText.actionCompletedOnRecords(result.success));
+      cmsToast.success(commonText.actionCompletedOnRecords(result.success));
       return;
     }
 
