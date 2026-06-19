@@ -8,6 +8,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
@@ -77,6 +78,8 @@ import type { RouterInputs } from "@/lib/trpc/types";
 
 type ArticlesListInput = RouterInputs["articles"]["list"];
 
+type ArticleStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+
 const CmsConfirmDialog = dynamic(
   () => import("@/components/cms/common/confirm-dialog").then((mod) => mod.CmsConfirmDialog),
   { ssr: false },
@@ -89,6 +92,16 @@ function formatDate(value: string | null) {
 
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
+}
+
+function formatArticleStatus(status: ArticleStatus) {
+  const listText = i18n.cms.lists.articles;
+
+  return {
+    DRAFT: listText.statusDraft,
+    PUBLISHED: listText.statusPublished,
+    ARCHIVED: listText.statusArchived,
+  }[status];
 }
 
 function mapArticleDomainError(uiError: CmsUiError): CmsUiError {
@@ -140,7 +153,7 @@ type ArticleTableRow = {
   categoryName: string | null;
   authorName: string | null;
   authorEmail: string | null;
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  status: ArticleStatus;
   isFeatured: boolean;
   tagsCount: number;
   publishedAt: string | null;
@@ -223,7 +236,9 @@ function SortableArticleRow({
       <TableCell className={cmsTableClasses.bodyCellMeta}>
         {article.authorName ?? article.authorEmail ?? "-"}
       </TableCell>
-      <TableCell className={cmsTableClasses.bodyCellMeta}>{article.status}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        {formatArticleStatus(article.status)}
+      </TableCell>
       <TableCell className={cmsTableClasses.bodyCellMeta}>
         {article.isFeatured ? yesLabel : noLabel}
       </TableCell>
@@ -239,13 +254,17 @@ function SortableArticleRow({
           <CmsActionButton
             variant="outline"
             size="xs"
+            className={cmsTableClasses.rowActionButton}
             disabled={isPending}
             onClick={() => onEdit(article.id)}
           >
+            <Pencil aria-hidden />
             {editLabel}
           </CmsActionButton>
           <CmsConfirmDialog
             triggerLabel={deleteLabel}
+            triggerIcon={<Trash2 aria-hidden />}
+            triggerClassName={cmsTableClasses.rowDeleteActionButton}
             triggerDisabled={isPending}
             title={deleteConfirmTitle}
             description={deleteConfirmDescription}
@@ -527,6 +546,7 @@ export function CmsArticlesListScreen({
               variant="outline"
               onClick={() => navigateToCrudRoute(cmsCrudRoutes.articles.create)}
             >
+              <Plus aria-hidden />
               {text.resource.new}
             </CmsActionButton>
           </div>
@@ -539,12 +559,6 @@ export function CmsArticlesListScreen({
             totalRecords={listQuery.pagination.total}
             selectedCount={selection.selectedCount}
             bulkActions={toolbarBulkActions}
-            onSelectAll={
-              pageArticleIds.length > 0 && !allSelectedOnPage
-                ? () => selection.setSelection(pageArticleIds)
-                : undefined
-            }
-            selectAllDisabled={isActionPending}
             searchValue={input.query?.q ?? ""}
             statusValue={input.query?.status ?? "all"}
             featuredValue={input.query?.featured ?? "all"}
@@ -574,27 +588,6 @@ export function CmsArticlesListScreen({
                 page: 1,
               });
             }}
-            onStatusChange={(value) => {
-              updateSearchParams({ status: value === "all" ? undefined : value, page: 1 });
-            }}
-            onFeaturedChange={(value) => {
-              updateSearchParams({ featured: value === "all" ? undefined : value, page: 1 });
-            }}
-            onIssueChange={(value) => {
-              updateSearchParams({ issueId: value === "all" ? undefined : value, page: 1 });
-            }}
-            onCategoryChange={(value) => {
-              updateSearchParams({ categoryId: value === "all" ? undefined : value, page: 1 });
-            }}
-            onAuthorChange={(value) => {
-              updateSearchParams({ authorId: value === "all" ? undefined : value, page: 1 });
-            }}
-            onSortByChange={(value) => {
-              updateSearchParams({ sortBy: value, page: 1 });
-            }}
-            onSortOrderChange={(value) => {
-              updateSearchParams({ sortOrder: value, page: 1 });
-            }}
           />
         }
         table={
@@ -611,7 +604,10 @@ export function CmsArticlesListScreen({
                 void handleArticleDrop(String(active.id), String(over.id));
               }}
             >
-              <Table className={cmsTableClasses.table}>
+              <Table
+                className={cmsTableClasses.table}
+                containerClassName={cmsTableClasses.tableContainer}
+              >
                 <TableHeader>
                   <TableRow className={cmsTableClasses.headerRow}>
                     <TableHead

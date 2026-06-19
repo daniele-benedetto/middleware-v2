@@ -5,7 +5,6 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
-import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
   CmsCheckbox,
@@ -131,8 +130,6 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
   const createMutation = useIssueCreate();
   const updateMutation = useIssueUpdate();
   const articleReorderMutation = trpc.articles.reorder.useMutation();
-
-  useSetCmsBreadcrumbLabel(mode === "edit" ? issueQuery.data?.title : null);
 
   if (mode === "edit" && !issueId) {
     return (

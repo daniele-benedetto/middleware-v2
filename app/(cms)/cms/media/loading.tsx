@@ -8,6 +8,7 @@ export default function CmsMediaLoading() {
       <div className="mb-6 pb-4">
         <div className="flex items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
           <Skeleton className="h-12 w-40 rounded-[8px] border border-border bg-card-hover" />
+          <Skeleton className="h-12 w-32 rounded-[6px] border border-border bg-card-hover" />
         </div>
         <CmsSectionDivider tone="strong" className="mt-4" />
       </div>

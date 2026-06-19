@@ -6,7 +6,6 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { CmsErrorState } from "@/components/cms/common";
-import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
   CmsBody,
@@ -217,8 +216,6 @@ export function CmsArticleFormScreen({
   const createMutation = useArticleCreate();
   const updateMutation = useArticleUpdate();
   const syncTagsMutation = useArticleSyncTags();
-
-  useSetCmsBreadcrumbLabel(mode === "edit" ? articleQuery.data?.title : null);
 
   if (mode === "edit" && !articleId) {
     return (

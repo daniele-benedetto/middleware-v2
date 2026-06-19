@@ -19,6 +19,7 @@ import type { ReactNode } from "react";
 type CmsConfirmDialogProps = {
   triggerLabel: string;
   triggerIcon?: ReactNode;
+  triggerClassName?: string;
   triggerDisabled?: boolean;
   title: string;
   description: string;
@@ -32,6 +33,7 @@ type CmsConfirmDialogProps = {
 export function CmsConfirmDialog({
   triggerLabel,
   triggerIcon,
+  triggerClassName,
   triggerDisabled,
   title,
   description,
@@ -82,6 +84,7 @@ export function CmsConfirmDialog({
           tone === "danger"
             ? "border-accent text-accent hover:bg-surface-hover"
             : "border-foreground text-foreground hover:bg-surface-hover",
+          triggerClassName,
         )}
       >
         {triggerIcon}

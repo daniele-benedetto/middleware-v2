@@ -1,5 +1,6 @@
 "use client";
 
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -60,7 +61,7 @@ function formatDate(value: string) {
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
 }
 
-type UserQuickAction = "role-admin" | "role-editor" | "delete";
+type UserQuickAction = "delete";
 
 type CmsUsersListScreenProps = {
   initialInput?: UsersListInput;
@@ -101,7 +102,6 @@ type UsersListToolbarFieldsProps = {
   onRoleChange: (value: string) => void;
   onSortByChange: (value: string) => void;
   onSortOrderChange: (value: string) => void;
-  layout: "desktop" | "mobile";
 };
 
 function UsersListToolbarFields({
@@ -109,7 +109,6 @@ function UsersListToolbarFields({
   onRoleChange,
   onSortByChange,
   onSortOrderChange,
-  layout,
 }: UsersListToolbarFieldsProps) {
   const optionsText = i18n.cms.listOptions;
 
@@ -147,22 +146,12 @@ function UsersListToolbarFields({
     />
   );
 
-  if (layout === "mobile") {
-    return (
-      <>
-        {roleField}
-        {sortByField}
-        {sortOrderField}
-      </>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-3 gap-2 col-span-1 lg:col-span-2">
+    <>
       {roleField}
       {sortByField}
       {sortOrderField}
-    </div>
+    </>
   );
 }
 
@@ -184,7 +173,6 @@ export function CmsUsersListScreen({
   const listQuery = useUsersListQuery(input, { initialDataInput: initialInput, initialData });
   const trpcUtils = trpc.useUtils();
   const selection = useListSelection();
-  const updateRoleMutation = trpc.users.updateRole.useMutation();
   const deleteMutation = trpc.users.delete.useMutation();
 
   const navigateToCrudRoute = (href: string) => {
@@ -228,21 +216,11 @@ export function CmsUsersListScreen({
 
   const runSingleAction = async (action: UserQuickAction, id: string) => {
     try {
-      if (action === "role-admin") {
-        await updateRoleMutation.mutateAsync({ id, data: { role: "ADMIN" } });
-      }
-
-      if (action === "role-editor") {
-        await updateRoleMutation.mutateAsync({ id, data: { role: "EDITOR" } });
-      }
-
       if (action === "delete") {
         await deleteMutation.mutateAsync({ id });
       }
 
-      const mutationName = action === "delete" ? "users.delete" : ("users.updateRole" as const);
-
-      await invalidateAfterCmsMutation(trpcUtils, mutationName, { id });
+      await invalidateAfterCmsMutation(trpcUtils, "users.delete", { id });
       selection.clearSelection();
       cmsToast.info(commonText.actionCompleted);
     } catch (error) {
@@ -259,14 +237,6 @@ export function CmsUsersListScreen({
     const selectedIds = [...selection.selectedIds];
 
     const result = await executeBulk(selectedIds, (id) => {
-      if (action === "role-admin") {
-        return updateRoleMutation.mutateAsync({ id, data: { role: "ADMIN" } });
-      }
-
-      if (action === "role-editor") {
-        return updateRoleMutation.mutateAsync({ id, data: { role: "EDITOR" } });
-      }
-
       if (action === "delete") {
         return deleteMutation.mutateAsync({ id });
       }
@@ -274,9 +244,7 @@ export function CmsUsersListScreen({
       return Promise.resolve();
     });
 
-    const mutationName = action === "delete" ? "users.delete" : ("users.updateRole" as const);
-
-    await invalidateAfterCmsMutation(trpcUtils, mutationName, { ids: selectedIds });
+    await invalidateAfterCmsMutation(trpcUtils, "users.delete", { ids: selectedIds });
     selection.clearSelection();
 
     if (result.failed === 0) {
@@ -293,34 +261,6 @@ export function CmsUsersListScreen({
 
   const bulkActions = resolveQuickActions(
     [
-      {
-        id: "bulk-role-admin",
-        label: quickText.setAdmin,
-        scope: "bulk",
-        requiresConfirm: ({ selectedCount }) => selectedCount > 0,
-        confirm: ({ selectedCount }) => ({
-          title: quickText.confirmRoleTitle,
-          description:
-            selectedCount === 1
-              ? quickText.confirmRoleAdminBulkSingle
-              : quickText.confirmRoleAdminBulk(selectedCount),
-        }),
-        isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
-      } satisfies CmsQuickAction,
-      {
-        id: "bulk-role-editor",
-        label: quickText.setEditor,
-        scope: "bulk",
-        requiresConfirm: ({ selectedCount }) => selectedCount > 0,
-        confirm: ({ selectedCount }) => ({
-          title: quickText.confirmRoleTitle,
-          description:
-            selectedCount === 1
-              ? quickText.confirmRoleEditorBulkSingle
-              : quickText.confirmRoleEditorBulk(selectedCount),
-        }),
-        isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
-      } satisfies CmsQuickAction,
       {
         id: "bulk-delete",
         label: quickText.delete,
@@ -339,12 +279,11 @@ export function CmsUsersListScreen({
     ],
     {
       selectedCount: selection.selectedCount,
-      isPending: deleteMutation.isPending || updateRoleMutation.isPending,
+      isPending: deleteMutation.isPending,
     },
   );
 
   const hasActiveFilters = Boolean(input.query?.q || input.query?.role !== undefined);
-  const isActionPending = deleteMutation.isPending || updateRoleMutation.isPending;
   const activeFiltersCount = countActiveUsersListFilters(currentToolbarFilters);
 
   return (
@@ -356,6 +295,7 @@ export function CmsUsersListScreen({
             variant="outline"
             onClick={() => navigateToCrudRoute(cmsCrudRoutes.users.create)}
           >
+            <Plus aria-hidden />
             {text.resource.new}
           </CmsActionButton>
         }
@@ -367,33 +307,8 @@ export function CmsUsersListScreen({
             <div className={cmsMetaLabelClass}>
               {commonText.totalRecords(listQuery.pagination.total)}
             </div>
-            <CmsBulkActionBar
-              selectedCount={selection.selectedCount}
-              actions={bulkActions.map((action) => ({
-                ...action,
-                onExecute: () => {
-                  if (action.id === "bulk-role-admin") {
-                    return runBulkAction("role-admin");
-                  }
-
-                  if (action.id === "bulk-role-editor") {
-                    return runBulkAction("role-editor");
-                  }
-
-                  return runBulkAction("delete");
-                },
-              }))}
-              onSelectAll={
-                pageActionableUserIds.length > 0 && !allSelectedOnPage
-                  ? () => selection.setSelection(pageActionableUserIds)
-                  : undefined
-              }
-              selectAllDisabled={isActionPending}
-            />
-
-            <div className="space-y-3 md:hidden">
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
               <CmsListSearchInput
-                key={input.query?.q ?? ""}
                 initialValue={input.query?.q ?? ""}
                 placeholder={text.listToolbar.searchPlaceholder}
                 onSearchChange={(value) => {
@@ -401,8 +316,18 @@ export function CmsUsersListScreen({
                 }}
               />
 
+              <CmsBulkActionBar
+                selectedCount={selection.selectedCount}
+                actions={bulkActions.map((action) => ({
+                  ...action,
+                  onExecute: () => runBulkAction("delete"),
+                }))}
+                className="md:justify-self-end"
+              />
+
               <CmsListFiltersSheet
                 activeFiltersCount={activeFiltersCount}
+                className="md:w-36"
                 onOpenChange={(open) => {
                   if (open) {
                     setDraftToolbarFilters(currentToolbarFilters);
@@ -434,41 +359,17 @@ export function CmsUsersListScreen({
                   onSortOrderChange={(value) => {
                     setDraftToolbarFilters((current) => ({ ...current, sortOrderValue: value }));
                   }}
-                  layout="mobile"
                 />
               </CmsListFiltersSheet>
-            </div>
-
-            <div className="hidden gap-3 md:grid lg:grid-cols-3">
-              <CmsListSearchInput
-                key={input.query?.q ?? ""}
-                initialValue={input.query?.q ?? ""}
-                placeholder={text.listToolbar.searchPlaceholder}
-                className="col-span-1 lg:col-span-1"
-                onSearchChange={(value) => {
-                  updateSearchParams({ q: value, page: 1 });
-                }}
-              />
-
-              <UsersListToolbarFields
-                filters={currentToolbarFilters}
-                onRoleChange={(value) => {
-                  updateSearchParams({ role: value === "all" ? undefined : value, page: 1 });
-                }}
-                onSortByChange={(value) => {
-                  updateSearchParams({ sortBy: value, page: 1 });
-                }}
-                onSortOrderChange={(value) => {
-                  updateSearchParams({ sortOrder: value, page: 1 });
-                }}
-                layout="desktop"
-              />
             </div>
           </div>
         }
         table={
           listQuery.items.length > 0 ? (
-            <Table className={cmsTableClasses.table}>
+            <Table
+              className={cmsTableClasses.table}
+              containerClassName={cmsTableClasses.tableContainer}
+            >
               <TableHeader>
                 <TableRow className={cmsTableClasses.headerRow}>
                   <TableHead
@@ -553,37 +454,15 @@ export function CmsUsersListScreen({
                           <CmsActionButton
                             variant="outline"
                             size="xs"
-                            disabled={deleteMutation.isPending || updateRoleMutation.isPending}
+                            className={cmsTableClasses.rowActionButton}
+                            disabled={deleteMutation.isPending}
                             onClick={() => navigateToCrudRoute(cmsCrudRoutes.users.edit(user.id))}
                           >
+                            <Pencil aria-hidden />
                             {quickText.edit}
                           </CmsActionButton>
                           {resolveQuickActions(
                             [
-                              {
-                                id: "single-role-admin",
-                                label: quickText.setAdmin,
-                                scope: "single",
-                                requiresConfirm: true,
-                                confirm: {
-                                  title: quickText.confirmRoleTitle,
-                                  description: quickText.confirmRoleAdminSingle,
-                                },
-                                isVisible: () => !isCurrentUser && user.role !== "ADMIN",
-                                isEnabled: ({ isPending }) => !isPending,
-                              },
-                              {
-                                id: "single-role-editor",
-                                label: quickText.setEditor,
-                                scope: "single",
-                                requiresConfirm: true,
-                                confirm: {
-                                  title: quickText.confirmRoleTitle,
-                                  description: quickText.confirmRoleEditorSingle,
-                                },
-                                isVisible: () => !isCurrentUser && user.role !== "EDITOR",
-                                isEnabled: ({ isPending }) => !isPending,
-                              },
                               {
                                 id: "single-delete",
                                 label: quickText.delete,
@@ -600,12 +479,14 @@ export function CmsUsersListScreen({
                             ] satisfies CmsQuickAction[],
                             {
                               selectedCount: 1,
-                              isPending: deleteMutation.isPending || updateRoleMutation.isPending,
+                              isPending: deleteMutation.isPending,
                             },
                           ).map((action) => (
                             <CmsConfirmDialog
                               key={`${user.id}-${action.id}`}
                               triggerLabel={action.label}
+                              triggerIcon={<Trash2 aria-hidden />}
+                              triggerClassName={cmsTableClasses.rowDeleteActionButton}
                               triggerDisabled={action.disabled}
                               title={action.confirm?.title ?? commonText.defaultConfirmTitle}
                               description={
@@ -614,18 +495,8 @@ export function CmsUsersListScreen({
                               }
                               confirmLabel={action.confirm?.confirmLabel}
                               cancelLabel={action.confirm?.cancelLabel}
-                              tone={action.tone === "danger" ? "danger" : "default"}
-                              onConfirm={() => {
-                                if (action.id === "single-role-admin") {
-                                  return runSingleAction("role-admin", user.id);
-                                }
-
-                                if (action.id === "single-role-editor") {
-                                  return runSingleAction("role-editor", user.id);
-                                }
-
-                                return runSingleAction("delete", user.id);
-                              }}
+                              tone="danger"
+                              onConfirm={() => runSingleAction("delete", user.id)}
                             />
                           ))}
                         </div>

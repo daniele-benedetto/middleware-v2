@@ -34,6 +34,7 @@ const headerCellBase =
 const bodyCellBase = "align-middle";
 
 export const cmsTableClasses = {
+  tableContainer: "overflow-visible",
   table: "w-full border-collapse",
   headerCheckbox: "bg-white",
   selectionCell: "w-8 min-w-8 max-w-8 px-0 text-center align-middle",
@@ -42,14 +43,14 @@ export const cmsTableClasses = {
     "bg-foreground border-b-[2px] border-foreground hover:bg-foreground data-[state=selected]:bg-foreground",
   headerCell: cn(
     headerCellBase,
-    "border-r border-(color:--line-subtle-on-dark) px-3.5 py-2.5 text-background last:border-r-0",
+    "sticky top-0 z-20 border-r border-(color:--line-subtle-on-dark) bg-foreground px-3.5 py-2.5 text-background last:border-r-0",
   ),
 
   sortableHeaderRow:
     "bg-card-hover border-b-[2px] border-foreground hover:bg-card-hover data-[state=selected]:bg-card-hover",
   sortableHeaderCell: cn(
     headerCellBase,
-    "px-3.5 py-2.25 text-muted-foreground border-r border-foreground last:border-r-0 cursor-pointer select-none",
+    "sticky top-0 z-20 border-r border-foreground bg-card-hover px-3.5 py-2.25 text-muted-foreground last:border-r-0 cursor-pointer select-none",
   ),
   sortableHeaderCellActive: "text-accent",
 
@@ -84,4 +85,6 @@ export const cmsTableClasses = {
     bodyCellBase,
     "border-r border-(color:--line-subtle) px-3.5 py-2.75 last:border-r-0",
   ),
+  rowActionButton: "gap-1.5 bg-transparent hover:bg-surface-hover [&_svg]:size-3.5",
+  rowDeleteActionButton: "gap-1.5 bg-transparent hover:bg-surface-hover [&_svg]:size-3.5",
 } as const;

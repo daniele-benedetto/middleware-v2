@@ -6,16 +6,17 @@ import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const editorialCardVariants = cva(
-  "group block border border-foreground transition-colors focus-visible:outline-none",
+  "group block border-r border-b border-foreground transition-colors focus-visible:outline-none focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-accent",
   {
     variants: {
       tone: {
-        default: "bg-background hover:bg-card-hover",
+        default:
+          "bg-background hover:bg-surface-hover hover:shadow-[var(--interactive-rail-shadow)]",
         accent: "border-accent bg-accent text-background hover:brightness-[0.93]",
       },
       density: {
-        compact: "px-4 py-3.5",
-        comfortable: "px-5 py-4.5",
+        compact: "px-5 py-4.5",
+        comfortable: "px-6 py-6",
       },
     },
     defaultVariants: { tone: "default", density: "comfortable" },
@@ -58,7 +59,7 @@ export function CmsEditorialCard({
     >
       <CmsMetaText
         variant="category"
-        className={cn("mb-1.75 block", isAccent && "text-background/80!")}
+        className={cn("mb-3.5 block", isAccent && "text-background/80!")}
       >
         {label}
       </CmsMetaText>
@@ -68,7 +69,7 @@ export function CmsEditorialCard({
         size="h2"
         tone={cardTitleToneMap[resolvedTone]}
         className={cn(
-          "mb-2.25 text-[18px]! leading-[1.1]! tracking-[-0.02em]!",
+          "mb-3 text-[21px]! leading-[1.12]! tracking-[-0.02em]!",
           "group-hover:underline group-hover:decoration-accent group-hover:underline-offset-[4px]",
           isAccent && "group-hover:decoration-background",
         )}
@@ -84,10 +85,8 @@ export function CmsEditorialCard({
 
       <span
         className={cn(
-          "mt-3.5 inline-flex rounded-[6px] border px-3 py-1.75 font-ui text-[12px] font-bold",
-          isAccent
-            ? "border-background text-background"
-            : "border-foreground text-foreground group-hover:border-accent group-hover:text-accent",
+          "mt-6 inline-flex font-ui text-[12px] font-bold text-accent",
+          isAccent ? "text-background" : "group-hover:underline group-hover:underline-offset-[4px]",
         )}
       >
         → {resolvedCtaLabel}

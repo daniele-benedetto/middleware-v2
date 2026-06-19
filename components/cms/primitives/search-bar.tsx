@@ -25,7 +25,7 @@ export function CmsSearchBar({
   return (
     <div
       className={cn(
-        "bg-white",
+        "overflow-hidden rounded-[6px] bg-white",
         accent
           ? "border border-accent"
           : "border border-foreground focus-within:border focus-within:border-accent",
@@ -50,6 +50,7 @@ export function CmsSearchBar({
             "focus-visible:outline-none focus-visible:ring-0",
             "appearance-none font-ui text-[12px] font-bold uppercase tracking-[0.08em]",
             "placeholder:text-border",
+            "[&::-webkit-search-cancel-button]:cursor-pointer",
             accent ? "text-accent" : "text-foreground",
           )}
           {...props}

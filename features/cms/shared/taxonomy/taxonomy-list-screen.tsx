@@ -1,5 +1,6 @@
 "use client";
 
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import {
@@ -159,7 +160,6 @@ type TaxonomyListToolbarFieldsProps = {
   onIsActiveChange: (value: string) => void;
   onSortByChange: (value: string) => void;
   onSortOrderChange: (value: "asc" | "desc") => void;
-  layout: "desktop" | "mobile";
 };
 
 function TaxonomyListToolbarFields({
@@ -169,7 +169,6 @@ function TaxonomyListToolbarFields({
   onIsActiveChange,
   onSortByChange,
   onSortOrderChange,
-  layout,
 }: TaxonomyListToolbarFieldsProps) {
   const optionsText = i18n.cms.listOptions;
 
@@ -198,22 +197,12 @@ function TaxonomyListToolbarFields({
     />
   );
 
-  if (layout === "mobile") {
-    return (
-      <>
-        {statusField}
-        {sortByField}
-        {sortOrderField}
-      </>
-    );
-  }
-
   return (
-    <div className="col-span-1 grid grid-cols-3 gap-2 lg:col-span-2">
+    <>
       {statusField}
       {sortByField}
       {sortOrderField}
-    </div>
+    </>
   );
 }
 
@@ -348,6 +337,7 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
         title={title}
         actions={
           <CmsActionButton variant="outline" onClick={onCreate}>
+            <Plus aria-hidden />
             {text.resource.new}
           </CmsActionButton>
         }
@@ -359,23 +349,8 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
             <div className={cmsMetaLabelClass}>
               {commonText.totalRecords(listQuery.pagination.total)}
             </div>
-            <CmsBulkActionBar
-              selectedCount={selection.selectedCount}
-              actions={bulkActions.map((action) => ({
-                ...action,
-                onExecute: runBulkDelete,
-              }))}
-              onSelectAll={
-                pageItemIds.length > 0 && !allSelectedOnPage
-                  ? () => selection.setSelection(pageItemIds)
-                  : undefined
-              }
-              selectAllDisabled={isActionPending}
-            />
-
-            <div className="space-y-3 md:hidden">
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
               <CmsListSearchInput
-                key={input.query?.q ?? ""}
                 initialValue={input.query?.q ?? ""}
                 placeholder={text.listToolbar.searchPlaceholder}
                 onSearchChange={(value) => {
@@ -383,8 +358,18 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
                 }}
               />
 
+              <CmsBulkActionBar
+                selectedCount={selection.selectedCount}
+                actions={bulkActions.map((action) => ({
+                  ...action,
+                  onExecute: runBulkDelete,
+                }))}
+                className="md:justify-self-end"
+              />
+
               <CmsListFiltersSheet
                 activeFiltersCount={activeFiltersCount}
+                className="md:w-36"
                 onOpenChange={(open) => {
                   if (open) {
                     setDraftToolbarFilters(currentToolbarFilters);
@@ -422,46 +407,17 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
                   onSortOrderChange={(value) => {
                     setDraftToolbarFilters((current) => ({ ...current, sortOrderValue: value }));
                   }}
-                  layout="mobile"
                 />
               </CmsListFiltersSheet>
-            </div>
-
-            <div className="hidden gap-3 md:grid lg:grid-cols-3">
-              <CmsListSearchInput
-                key={input.query?.q ?? ""}
-                initialValue={input.query?.q ?? ""}
-                placeholder={text.listToolbar.searchPlaceholder}
-                className="col-span-1 lg:col-span-1"
-                onSearchChange={(value) => {
-                  updateSearchParams({ q: value, page: 1 });
-                }}
-              />
-
-              <TaxonomyListToolbarFields
-                filters={currentToolbarFilters}
-                statusOptions={statusOptions}
-                sortOptions={sortOptions}
-                onIsActiveChange={(value) => {
-                  updateSearchParams({
-                    isActive: value === "all" ? undefined : (value as "true" | "false"),
-                    page: 1,
-                  });
-                }}
-                onSortByChange={(value) => {
-                  updateSearchParams({ sortBy: value, page: 1 });
-                }}
-                onSortOrderChange={(value) => {
-                  updateSearchParams({ sortOrder: value, page: 1 });
-                }}
-                layout="desktop"
-              />
             </div>
           </div>
         }
         table={
           listQuery.items.length > 0 ? (
-            <Table className={cmsTableClasses.table}>
+            <Table
+              className={cmsTableClasses.table}
+              containerClassName={cmsTableClasses.tableContainer}
+            >
               <TableHeader>
                 <TableRow className={cmsTableClasses.headerRow}>
                   <TableHead
@@ -536,13 +492,17 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
                         <CmsActionButton
                           variant="outline"
                           size="xs"
+                          className={cmsTableClasses.rowActionButton}
                           onClick={() => onEdit(item.id)}
                           disabled={deleteMutation.isPending}
                         >
+                          <Pencil aria-hidden />
                           {quickText.edit}
                         </CmsActionButton>
                         <CmsConfirmDialog
                           triggerLabel={quickText.delete}
+                          triggerIcon={<Trash2 aria-hidden />}
+                          triggerClassName={cmsTableClasses.rowDeleteActionButton}
                           triggerDisabled={deleteMutation.isPending}
                           title={quickText.confirmDeleteTitle}
                           description={bulkDeleteDescription(1)}

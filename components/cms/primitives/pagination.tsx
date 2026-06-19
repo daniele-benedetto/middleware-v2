@@ -2,7 +2,7 @@ import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const cellBase =
-  "inline-flex cursor-pointer items-center justify-center rounded-[6px] py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] transition-none";
+  "inline-flex cursor-pointer items-center justify-center rounded-[6px] py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] whitespace-nowrap transition-none";
 
 type CmsPaginationProps = {
   currentPage: number;
@@ -42,7 +42,7 @@ export function CmsPagination({
   return (
     <nav
       aria-label={text.common.paginationAria}
-      className={cn("flex flex-wrap items-center", className)}
+      className={cn("flex flex-wrap items-center gap-1", className)}
     >
       <button
         type="button"
@@ -50,7 +50,7 @@ export function CmsPagination({
         onClick={() => onPageChange?.(currentPage - 1)}
         className={cn(
           cellBase,
-          "border px-3.5",
+          "w-24 border px-3.5",
           prevDisabled
             ? "cursor-not-allowed border-border text-border"
             : "border-foreground text-foreground hover:bg-card-hover",
@@ -64,7 +64,7 @@ export function CmsPagination({
           return (
             <span
               key={`ellipsis-${idx}`}
-              className={cn(cellBase, "border border-l-0 border-border px-3 text-muted-foreground")}
+              className={cn(cellBase, "min-w-9 border border-border px-3 text-muted-foreground")}
             >
               …
             </span>
@@ -79,7 +79,7 @@ export function CmsPagination({
             onClick={() => onPageChange?.(item)}
             className={cn(
               cellBase,
-              "border border-l-0 px-3",
+              "min-w-9 border px-3",
               active
                 ? "border-accent bg-accent text-background"
                 : "border-foreground text-foreground hover:bg-card-hover",
@@ -96,7 +96,7 @@ export function CmsPagination({
         onClick={() => onPageChange?.(currentPage + 1)}
         className={cn(
           cellBase,
-          "border border-l-0 px-3.5",
+          "w-24 border px-3.5",
           nextDisabled
             ? "cursor-not-allowed border-border text-border"
             : "border-foreground text-foreground hover:bg-card-hover",

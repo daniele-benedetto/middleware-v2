@@ -1,5 +1,6 @@
 "use client";
 
+import { SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 
 import { CmsActionButton } from "@/components/cms/primitives";
@@ -54,21 +55,22 @@ export function CmsListFiltersSheet({
   };
 
   return (
-    <div className={cn("md:hidden", className)}>
+    <div className={className}>
       <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetTrigger
           render={
             <CmsActionButton
               variant={activeFiltersCount > 0 ? "outline-accent" : "outline"}
               size="xs"
-              className="w-full justify-center"
+              className="h-10 w-full justify-center"
             >
+              <SlidersHorizontal className="size-3.5" aria-hidden />
               {text.filtersTrigger(activeFiltersCount)}
             </CmsActionButton>
           }
         />
 
-        <SheetContent side="right" className="w-full max-w-96 bg-background">
+        <SheetContent side="right" className="w-full max-w-96 bg-background sm:max-w-110">
           <div className="flex items-start justify-between gap-4 border-b-2 border-foreground p-5">
             <div className="leading-[1.23]">
               <SheetTitle>{title ?? text.filtersTitle}</SheetTitle>

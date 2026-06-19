@@ -147,9 +147,8 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
               {commonText.totalRecords(listQuery.pagination.total)}
             </div>
 
-            <div className="space-y-3 md:hidden">
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
               <CmsListSearchInput
-                key={input.query?.q ?? ""}
                 initialValue={input.query?.q ?? ""}
                 placeholder={listText.searchPlaceholder}
                 onSearchChange={(value) => {
@@ -159,6 +158,7 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
 
               <CmsListFiltersSheet
                 activeFiltersCount={activeFiltersCount}
+                className="md:w-36"
                 onOpenChange={(open) => {
                   if (open) {
                     setDraftToolbarFilters(currentToolbarFilters);
@@ -185,32 +185,14 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
                 />
               </CmsListFiltersSheet>
             </div>
-
-            <div className="hidden gap-3 md:grid lg:grid-cols-4">
-              <CmsListSearchInput
-                key={input.query?.q ?? ""}
-                initialValue={input.query?.q ?? ""}
-                placeholder={listText.searchPlaceholder}
-                className="lg:col-span-3"
-                onSearchChange={(value) => {
-                  updateSearchParams({ q: value, page: 1 });
-                }}
-              />
-
-              <div className="grid gap-2 sm:grid-cols-1 lg:col-span-1">
-                <AuditLogsListToolbarField
-                  value={currentToolbarFilters.outcomeValue}
-                  onValueChange={(value) => {
-                    updateSearchParams({ outcome: value === "all" ? undefined : value, page: 1 });
-                  }}
-                />
-              </div>
-            </div>
           </div>
         }
         table={
           listQuery.items.length > 0 ? (
-            <Table className={cmsTableClasses.table}>
+            <Table
+              className={cmsTableClasses.table}
+              containerClassName={cmsTableClasses.tableContainer}
+            >
               <TableHeader>
                 <TableRow className={cmsTableClasses.headerRow}>
                   <TableHead className={cmsTableClasses.headerCell}>

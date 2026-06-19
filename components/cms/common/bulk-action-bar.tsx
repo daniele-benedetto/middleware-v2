@@ -1,7 +1,6 @@
 import { CmsConfirmDialog } from "@/components/cms/common/confirm-dialog";
 import { CmsActionButton } from "@/components/cms/primitives";
-import { cmsMetaLabelAccentClass } from "@/lib/cms/ui/variants";
-import { i18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 import type { CmsResolvedQuickAction } from "@/features/cms/shared/actions";
 
@@ -15,42 +14,26 @@ type CmsBulkActionBarProps = {
   actions: CmsBulkAction[];
   onSelectAll?: () => void;
   selectAllDisabled?: boolean;
+  className?: string;
 };
 
-export function CmsBulkActionBar({
-  selectedCount,
-  actions,
-  onSelectAll,
-  selectAllDisabled = false,
-}: CmsBulkActionBarProps) {
-  const text = i18n.cms.common;
-
+export function CmsBulkActionBar({ selectedCount, actions, className }: CmsBulkActionBarProps) {
   if (selectedCount <= 0) {
     return null;
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 border border-accent px-3 py-2 max-sm:flex-col max-sm:items-stretch">
-      <span className={cmsMetaLabelAccentClass}>{text.selectedCount(selectedCount)}</span>
-
-      <div className="flex items-center gap-2 max-sm:flex-wrap">
-        {onSelectAll ? (
-          <CmsActionButton
-            variant="outline"
-            size="xs"
-            disabled={selectAllDisabled}
-            onClick={onSelectAll}
-          >
-            {text.selectAll}
-          </CmsActionButton>
-        ) : null}
-
+    <div className={cn("flex items-center gap-2 max-sm:flex-wrap", className)}>
+      <div className="flex items-center gap-1.5 max-sm:flex-wrap">
         {actions.map((action) => {
+          const actionLabel = `${action.label} ${selectedCount}`;
+
           if (action.confirm) {
             return (
               <CmsConfirmDialog
                 key={action.id}
-                triggerLabel={action.label}
+                triggerLabel={actionLabel}
+                triggerClassName="h-10 bg-transparent"
                 triggerDisabled={action.disabled || action.isLoading}
                 title={action.confirm.title}
                 description={action.confirm.description}
@@ -67,11 +50,12 @@ export function CmsBulkActionBar({
               key={action.id}
               variant={action.tone === "danger" ? "outline-accent" : "outline"}
               size="xs"
+              className="h-10 bg-transparent"
               disabled={action.disabled || action.isLoading}
               isLoading={action.isLoading}
               onClick={action.onExecute}
             >
-              {action.label}
+              {actionLabel}
             </CmsActionButton>
           );
         })}

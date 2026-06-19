@@ -45,8 +45,6 @@ type ArticlesListToolbarProps = {
   totalRecords: number;
   selectedCount: number;
   bulkActions: ArticlesListToolbarAction[];
-  onSelectAll?: () => void;
-  selectAllDisabled: boolean;
   searchValue: string;
   statusValue: string;
   featuredValue: string;
@@ -63,13 +61,6 @@ type ArticlesListToolbarProps = {
   authorsLoading: boolean;
   onSearchChange: (value: string) => void;
   onApplyFilters: (filters: ArticlesListToolbarFiltersState) => void;
-  onStatusChange: (value: string) => void;
-  onFeaturedChange: (value: string) => void;
-  onIssueChange: (value: string) => void;
-  onCategoryChange: (value: string) => void;
-  onAuthorChange: (value: string) => void;
-  onSortByChange: (value: string) => void;
-  onSortOrderChange: (value: string) => void;
 };
 
 function buildArticlesListToolbarFiltersState({
@@ -119,7 +110,6 @@ type ArticlesListToolbarFieldsProps = {
   onAuthorChange: (value: string) => void;
   onSortByChange: (value: string) => void;
   onSortOrderChange: (value: string) => void;
-  layout: "desktop-primary" | "desktop-secondary" | "mobile";
 };
 
 function ArticlesListToolbarFields({
@@ -137,7 +127,6 @@ function ArticlesListToolbarFields({
   onAuthorChange,
   onSortByChange,
   onSortOrderChange,
-  layout,
 }: ArticlesListToolbarFieldsProps) {
   const text = i18n.cms;
   const listText = text.lists.articles;
@@ -218,32 +207,11 @@ function ArticlesListToolbarFields({
     />
   );
 
-  if (layout === "mobile") {
-    return (
-      <>
-        {statusField}
-        {featuredField}
-        {issueField}
-        {categoryField}
-        {authorField}
-        {sortByField}
-        {sortOrderField}
-      </>
-    );
-  }
-
-  if (layout === "desktop-primary") {
-    return (
-      <div className="grid col-span-1 grid-cols-3 gap-2 lg:col-span-2">
-        {statusField}
-        {featuredField}
-        {issueField}
-      </div>
-    );
-  }
-
   return (
     <>
+      {statusField}
+      {featuredField}
+      {issueField}
       {categoryField}
       {authorField}
       {sortByField}
@@ -256,8 +224,6 @@ export function ArticlesListToolbar({
   totalRecords,
   selectedCount,
   bulkActions,
-  onSelectAll,
-  selectAllDisabled,
   searchValue,
   statusValue,
   featuredValue,
@@ -274,13 +240,6 @@ export function ArticlesListToolbar({
   authorsLoading,
   onSearchChange,
   onApplyFilters,
-  onStatusChange,
-  onFeaturedChange,
-  onIssueChange,
-  onCategoryChange,
-  onAuthorChange,
-  onSortByChange,
-  onSortOrderChange,
 }: ArticlesListToolbarProps) {
   const text = i18n.cms;
   const commonText = text.common;
@@ -300,23 +259,22 @@ export function ArticlesListToolbar({
     <div className="space-y-3">
       <div className={cmsMetaLabelClass}>{commonText.totalRecords(totalRecords)}</div>
 
-      <CmsBulkActionBar
-        selectedCount={selectedCount}
-        actions={bulkActions}
-        onSelectAll={onSelectAll}
-        selectAllDisabled={selectAllDisabled}
-      />
-
-      <div className="space-y-3 md:hidden">
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
         <CmsListSearchInput
-          key={searchValue}
           initialValue={searchValue}
           placeholder={text.listToolbar.searchPlaceholder}
           onSearchChange={onSearchChange}
         />
 
+        <CmsBulkActionBar
+          selectedCount={selectedCount}
+          actions={bulkActions}
+          className="md:justify-self-end"
+        />
+
         <CmsListFiltersSheet
           activeFiltersCount={activeFiltersCount}
+          className="md:w-36"
           onOpenChange={(open) => {
             if (open) {
               setDraftFilters(currentFilters);
@@ -358,57 +316,8 @@ export function ArticlesListToolbar({
             onSortOrderChange={(value) => {
               setDraftFilters((current) => ({ ...current, sortOrderValue: value }));
             }}
-            layout="mobile"
           />
         </CmsListFiltersSheet>
-      </div>
-
-      <div className="hidden gap-3 md:grid lg:grid-cols-3">
-        <CmsListSearchInput
-          key={searchValue}
-          initialValue={searchValue}
-          placeholder={text.listToolbar.searchPlaceholder}
-          className="col-span-1 lg:col-span-1"
-          onSearchChange={onSearchChange}
-        />
-
-        <ArticlesListToolbarFields
-          filters={currentFilters}
-          issueOptions={issueOptions}
-          categoryOptions={categoryOptions}
-          authorOptions={authorOptions}
-          issuesLoading={issuesLoading}
-          categoriesLoading={categoriesLoading}
-          authorsLoading={authorsLoading}
-          onStatusChange={onStatusChange}
-          onFeaturedChange={onFeaturedChange}
-          onIssueChange={onIssueChange}
-          onCategoryChange={onCategoryChange}
-          onAuthorChange={onAuthorChange}
-          onSortByChange={onSortByChange}
-          onSortOrderChange={onSortOrderChange}
-          layout="desktop-primary"
-        />
-      </div>
-
-      <div className="hidden md:grid gap-3 lg:grid-cols-4">
-        <ArticlesListToolbarFields
-          filters={currentFilters}
-          issueOptions={issueOptions}
-          categoryOptions={categoryOptions}
-          authorOptions={authorOptions}
-          issuesLoading={issuesLoading}
-          categoriesLoading={categoriesLoading}
-          authorsLoading={authorsLoading}
-          onStatusChange={onStatusChange}
-          onFeaturedChange={onFeaturedChange}
-          onIssueChange={onIssueChange}
-          onCategoryChange={onCategoryChange}
-          onAuthorChange={onAuthorChange}
-          onSortByChange={onSortByChange}
-          onSortOrderChange={onSortOrderChange}
-          layout="desktop-secondary"
-        />
       </div>
     </div>
   );

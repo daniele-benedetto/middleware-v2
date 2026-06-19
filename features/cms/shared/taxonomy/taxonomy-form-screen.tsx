@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import { CmsArticleListPanel } from "@/components/cms/common/article-list-panel";
-import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
   CmsCheckbox,
@@ -123,8 +122,6 @@ export function CmsTaxonomyFormScreen<
   const { cancel, success } = useCmsFormNavigation(listPath);
   const text = i18n.cms;
   const formText = text.forms;
-
-  useSetCmsBreadcrumbLabel(mode === "edit" ? detailQuery.data?.name : null);
 
   if (mode === "edit" && !entityId) {
     return (

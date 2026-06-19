@@ -25,7 +25,7 @@ export default function CmsErrorPage({ reset }: CmsErrorPageProps) {
           <CmsSystemActionButton onClick={reset} tone="accent">
             {text.retry}
           </CmsSystemActionButton>
-          <CmsSystemActionLink href="/cms" tone="foreground">
+          <CmsSystemActionLink href="/cms/issues" tone="foreground">
             {text.goHome}
           </CmsSystemActionLink>
         </>

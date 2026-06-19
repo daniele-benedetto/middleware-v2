@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import { CmsArticleListPanel } from "@/components/cms/common/article-list-panel";
-import { useSetCmsBreadcrumbLabel } from "@/components/cms/layout";
 import {
   CmsActionButton,
   CmsFormField,
@@ -72,10 +71,6 @@ export function CmsUserFormScreen({
   const createMutation = useUserCreate();
   const updateMutation = useUserUpdate();
   const updateRoleMutation = useUserUpdateRole();
-
-  useSetCmsBreadcrumbLabel(
-    mode === "edit" ? (userQuery.data?.name ?? userQuery.data?.email ?? null) : null,
-  );
 
   if (mode === "edit" && !userId) {
     return (

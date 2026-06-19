@@ -11,7 +11,7 @@ export default function CmsNotFound() {
       description={text.notFoundDescription}
       actions={
         <>
-          <CmsSystemActionLink href="/cms" tone="accent">
+          <CmsSystemActionLink href="/cms/issues" tone="accent">
             {text.goHome}
           </CmsSystemActionLink>
         </>

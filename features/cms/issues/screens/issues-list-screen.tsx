@@ -8,6 +8,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -132,7 +133,6 @@ type IssueListToolbarFieldsProps = {
   onPublishedChange: (value: string) => void;
   onSortByChange: (value: string) => void;
   onSortOrderChange: (value: string) => void;
-  layout: "desktop" | "mobile";
 };
 
 function IssueListToolbarFields({
@@ -141,7 +141,6 @@ function IssueListToolbarFields({
   onPublishedChange,
   onSortByChange,
   onSortOrderChange,
-  layout,
 }: IssueListToolbarFieldsProps) {
   const optionsText = i18n.cms.listOptions;
 
@@ -192,24 +191,13 @@ function IssueListToolbarFields({
     />
   );
 
-  if (layout === "mobile") {
-    return (
-      <>
-        {isActiveField}
-        {publishedField}
-        {sortByField}
-        {sortOrderField}
-      </>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-4 gap-2 col-span-1 lg:col-span-2">
+    <>
       {isActiveField}
       {publishedField}
       {sortByField}
       {sortOrderField}
-    </div>
+    </>
   );
 }
 
@@ -299,13 +287,17 @@ function SortableIssueRow({
           <CmsActionButton
             variant="outline"
             size="xs"
+            className={cmsTableClasses.rowActionButton}
             onClick={() => onEdit(issue.id)}
             disabled={isPending}
           >
+            <Pencil aria-hidden />
             {editLabel}
           </CmsActionButton>
           <CmsConfirmDialog
             triggerLabel={deleteLabel}
+            triggerIcon={<Trash2 aria-hidden />}
+            triggerClassName={cmsTableClasses.rowDeleteActionButton}
             triggerDisabled={isPending}
             title={deleteConfirmTitle}
             description={deleteConfirmDescription}
@@ -555,6 +547,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
               variant="outline"
               onClick={() => navigateToCrudRoute(cmsCrudRoutes.issues.create)}
             >
+              <Plus aria-hidden />
               {text.resource.new}
             </CmsActionButton>
           </div>
@@ -567,23 +560,8 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
             <div className={cmsMetaLabelClass}>
               {commonText.totalRecords(listQuery.pagination.total)}
             </div>
-            <CmsBulkActionBar
-              selectedCount={selection.selectedCount}
-              actions={bulkActions.map((action) => ({
-                ...action,
-                onExecute: () => runBulkAction("delete"),
-              }))}
-              onSelectAll={
-                pageIssueIds.length > 0 && !allSelectedOnPage
-                  ? () => selection.setSelection(pageIssueIds)
-                  : undefined
-              }
-              selectAllDisabled={isActionPending}
-            />
-
-            <div className="space-y-3 md:hidden">
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
               <CmsListSearchInput
-                key={input.query?.q ?? ""}
                 initialValue={input.query?.q ?? ""}
                 placeholder={text.listToolbar.searchPlaceholder}
                 onSearchChange={(value) => {
@@ -591,8 +569,18 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                 }}
               />
 
+              <CmsBulkActionBar
+                selectedCount={selection.selectedCount}
+                actions={bulkActions.map((action) => ({
+                  ...action,
+                  onExecute: () => runBulkAction("delete"),
+                }))}
+                className="md:justify-self-end"
+              />
+
               <CmsListFiltersSheet
                 activeFiltersCount={activeFiltersCount}
+                className="md:w-36"
                 onOpenChange={(open) => {
                   if (open) {
                     setDraftToolbarFilters(currentToolbarFilters);
@@ -631,38 +619,8 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                   onSortOrderChange={(value) => {
                     setDraftToolbarFilters((current) => ({ ...current, sortOrderValue: value }));
                   }}
-                  layout="mobile"
                 />
               </CmsListFiltersSheet>
-            </div>
-
-            <div className="hidden gap-3 md:grid lg:grid-cols-3">
-              <CmsListSearchInput
-                key={input.query?.q ?? ""}
-                initialValue={input.query?.q ?? ""}
-                placeholder={text.listToolbar.searchPlaceholder}
-                className="col-span-1 lg:col-span-1"
-                onSearchChange={(value) => {
-                  updateSearchParams({ q: value, page: 1 });
-                }}
-              />
-
-              <IssueListToolbarFields
-                filters={currentToolbarFilters}
-                onIsActiveChange={(value) => {
-                  updateSearchParams({ isActive: value === "all" ? undefined : value, page: 1 });
-                }}
-                onPublishedChange={(value) => {
-                  updateSearchParams({ published: value === "all" ? undefined : value, page: 1 });
-                }}
-                onSortByChange={(value) => {
-                  updateSearchParams({ sortBy: value, page: 1 });
-                }}
-                onSortOrderChange={(value) => {
-                  updateSearchParams({ sortOrder: value, page: 1 });
-                }}
-                layout="desktop"
-              />
             </div>
           </div>
         }
@@ -680,7 +638,10 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                 void handleIssueDrop(String(active.id), String(over.id));
               }}
             >
-              <Table className={cmsTableClasses.table}>
+              <Table
+                className={cmsTableClasses.table}
+                containerClassName={cmsTableClasses.tableContainer}
+              >
                 <TableHeader>
                   <TableRow className={cmsTableClasses.headerRow}>
                     <TableHead
