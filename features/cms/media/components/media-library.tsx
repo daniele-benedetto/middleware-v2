@@ -1,9 +1,15 @@
 "use client";
 
+import { Upload } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 
-import { CmsEmptyState, CmsErrorState } from "@/components/cms/common";
-import { CmsActionButton, CmsSearchBar, CmsSurface, cmsToast } from "@/components/cms/primitives";
+import { CmsEmptyState, CmsErrorState, CmsPaginationFooter } from "@/components/cms/common";
+import {
+  CmsActionButton,
+  CmsDataTableShell,
+  CmsSearchBar,
+  cmsToast,
+} from "@/components/cms/primitives";
 import { CmsMediaCard } from "@/features/cms/media/components/media-card";
 import { CmsMediaLibraryLoading } from "@/features/cms/media/components/media-library-loading";
 import { CmsMediaPreviewSheet } from "@/features/cms/media/components/media-preview-sheet";
@@ -22,6 +28,7 @@ type MediaListInitialData = RouterOutputs["media"]["list"];
 type MediaItem = MediaListInitialData["items"][number];
 
 const emptyMediaItems: MediaItem[] = [];
+const defaultMediaPageSize = 20;
 
 type CmsMediaLibraryProps = {
   initialData?: MediaListInitialData;
@@ -32,6 +39,9 @@ type CmsMediaLibraryProps = {
   onSelectItem?: (item: MediaItem) => Promise<void> | void;
   onSelectionChange?: (item: MediaItem | null) => void;
   onBlobUploaded?: (blob: PutBlobResult) => Promise<void> | void;
+  uploadOpen?: boolean;
+  onUploadOpenChange?: (open: boolean) => void;
+  showUploadActionInToolbar?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
 };
@@ -45,6 +55,9 @@ export function CmsMediaLibrary({
   onSelectItem,
   onSelectionChange,
   onBlobUploaded,
+  uploadOpen,
+  onUploadOpenChange,
+  showUploadActionInToolbar = true,
   emptyTitle,
   emptyDescription,
 }: CmsMediaLibraryProps) {
@@ -54,11 +67,15 @@ export function CmsMediaLibrary({
   const listQuery = trpc.media.list.useQuery(undefined, initialData ? { initialData } : undefined);
   const renameMutation = trpc.media.rename.useMutation();
   const deleteMutation = trpc.media.delete.useMutation();
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [localUploadOpen, setLocalUploadOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(defaultMediaPageSize);
   const [selectedPathname, setSelectedPathname] = useState<string | null>(null);
   const [selectingPathname, setSelectingPathname] = useState<string | null>(null);
   const deferredSearchValue = useDeferredValue(searchValue);
+  const isUploadOpen = uploadOpen ?? localUploadOpen;
+  const setIsUploadOpen = onUploadOpenChange ?? setLocalUploadOpen;
 
   const items = listQuery.data?.items ?? emptyMediaItems;
   const visibleItems = useMemo(
@@ -77,6 +94,13 @@ export function CmsMediaLibrary({
       return haystack.includes(normalizedSearch);
     });
   }, [deferredSearchValue, visibleItems]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const effectivePage = Math.min(currentPage, totalPages);
+  const paginatedItems = useMemo(() => {
+    const start = (effectivePage - 1) * pageSize;
+    return filteredItems.slice(start, start + pageSize);
+  }, [effectivePage, filteredItems, pageSize]);
 
   const selectedItem = visibleItems.find((item) => item.pathname === selectedPathname) ?? null;
 
@@ -176,56 +200,88 @@ export function CmsMediaLibrary({
 
   return (
     <>
-      <div className="flex min-h-0 flex-1 flex-col gap-4">
-        <CmsSurface spacing="md" className="space-y-3">
-          <div className="flex items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
-            <div className={cmsMetaLabelClass}>{mediaText.totalFiles(visibleItems.length)}</div>
-            <CmsActionButton variant="outline" onClick={() => setIsUploadOpen(true)}>
-              {uploadButtonLabel ?? mediaText.uploadCta}
-            </CmsActionButton>
-          </div>
-          <CmsSearchBar
-            value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
-            placeholder={text.listToolbar.searchPlaceholder}
-          />
-        </CmsSurface>
-
-        <div className="cms-scroll min-h-0 flex-1 overflow-y-auto pr-1">
-          {filteredItems.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {filteredItems.map((item) => (
-                <CmsMediaCard
-                  key={item.pathname}
-                  item={item}
-                  selected={item.pathname === selectedPathname}
-                  selectable={interactionMode === "select-inline"}
-                  onPreview={() => {
-                    setSelectedPathname(item.pathname);
-                  }}
-                />
-              ))}
-            </div>
-          ) : (
-            <CmsEmptyState
-              title={
-                hasActiveSearch ? mediaText.emptySearchTitle : (emptyTitle ?? mediaText.emptyTitle)
-              }
-              description={
-                hasActiveSearch
-                  ? mediaText.emptySearchDescription
-                  : (emptyDescription ?? mediaText.emptyDescription)
-              }
-              action={
-                hasActiveSearch ? undefined : (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <CmsDataTableShell
+          toolbar={
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
+                <div className={cmsMetaLabelClass}>
+                  {mediaText.totalFiles(filteredItems.length)}
+                </div>
+                {showUploadActionInToolbar ? (
                   <CmsActionButton variant="outline" onClick={() => setIsUploadOpen(true)}>
+                    <Upload aria-hidden />
                     {uploadButtonLabel ?? mediaText.uploadCta}
                   </CmsActionButton>
-                )
-              }
+                ) : null}
+              </div>
+              <CmsSearchBar
+                value={searchValue}
+                onChange={(event) => {
+                  setSearchValue(event.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder={text.listToolbar.searchPlaceholder}
+              />
+            </div>
+          }
+          table={
+            paginatedItems.length > 0 ? (
+              <div className="p-5">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                  {paginatedItems.map((item) => (
+                    <CmsMediaCard
+                      key={item.pathname}
+                      item={item}
+                      selected={
+                        interactionMode === "select-inline" && item.pathname === selectedPathname
+                      }
+                      selectable={interactionMode === "select-inline"}
+                      onPreview={() => {
+                        setSelectedPathname(item.pathname);
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="px-5 py-4">
+                <CmsEmptyState
+                  title={
+                    hasActiveSearch
+                      ? mediaText.emptySearchTitle
+                      : (emptyTitle ?? mediaText.emptyTitle)
+                  }
+                  description={
+                    hasActiveSearch
+                      ? mediaText.emptySearchDescription
+                      : (emptyDescription ?? mediaText.emptyDescription)
+                  }
+                  action={
+                    hasActiveSearch ? undefined : (
+                      <CmsActionButton variant="outline" onClick={() => setIsUploadOpen(true)}>
+                        <Upload aria-hidden />
+                        {uploadButtonLabel ?? mediaText.uploadShortCta}
+                      </CmsActionButton>
+                    )
+                  }
+                />
+              </div>
+            )
+          }
+          pagination={
+            <CmsPaginationFooter
+              currentPage={effectivePage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(nextPageSize) => {
+                setPageSize(nextPageSize);
+                setCurrentPage(1);
+              }}
             />
-          )}
-        </div>
+          }
+        />
       </div>
 
       <CmsMediaUploadDialog

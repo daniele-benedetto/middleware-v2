@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, ImageIcon, X } from "lucide-react";
+import { ExternalLink, ImageIcon, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { CmsConfirmDialog } from "@/components/cms/common";
@@ -10,7 +10,6 @@ import {
   CmsBody,
   CmsDisplay,
   CmsFormField,
-  CmsMetaRow,
   CmsMetaText,
   CmsTextInput,
 } from "@/components/cms/primitives";
@@ -28,6 +27,7 @@ import {
   cmsMetaLabelAccentClass,
   cmsMetaLabelClass,
   cmsPanelClass,
+  cmsTinyMetaClass,
 } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMediaAssetUrl } from "@/lib/media/blob";
@@ -36,6 +36,12 @@ import { cn } from "@/lib/utils";
 import type { RouterOutputs } from "@/lib/trpc/types";
 
 type MediaItem = RouterOutputs["media"]["list"]["items"][number];
+
+type MediaPreviewDetailRowProps = {
+  label: string;
+  value: string;
+  breakAll?: boolean;
+};
 
 type CmsMediaPreviewSheetProps = {
   item: MediaItem;
@@ -50,6 +56,40 @@ type CmsMediaPreviewSheetProps = {
   onSelect?: () => void;
 };
 
+function getMediaTypeLabel(item: MediaItem) {
+  const mediaText = i18n.cms.lists.media;
+
+  if (item.kind === "image") {
+    return mediaText.typeImage;
+  }
+
+  if (item.kind === "audio") {
+    return mediaText.typeAudio;
+  }
+
+  if (item.kind === "json") {
+    return mediaText.typeJson;
+  }
+
+  return mediaText.typeOther;
+}
+
+function MediaPreviewDetailRow({ label, value, breakAll = false }: MediaPreviewDetailRowProps) {
+  return (
+    <div className="grid gap-1 border-b border-border py-3 last:border-b-0 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-4">
+      <div className={cmsTinyMetaClass}>{label}</div>
+      <div
+        className={cn(
+          "font-ui text-[12px] font-bold uppercase tracking-[0.06em] text-foreground",
+          breakAll && "break-all",
+        )}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
 export function CmsMediaPreviewSheet({
   item,
   open,
@@ -63,6 +103,7 @@ export function CmsMediaPreviewSheet({
   onSelect,
 }: CmsMediaPreviewSheetProps) {
   const mediaText = i18n.cms.lists.media;
+  const typeLabel = getMediaTypeLabel(item);
   const relatedArticles = useMemo(() => {
     return [
       ...new Map(item.articleReferences.map((reference) => [reference.id, reference])).values(),
@@ -119,13 +160,16 @@ export function CmsMediaPreviewSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full max-w-180 border-l-2 border-foreground p-0">
+      <SheetContent side="right" className="w-full max-w-190 border-l-2 border-foreground p-0">
         <div className="flex h-full flex-col">
           <div className="flex items-start justify-between gap-4 border-b-2 border-foreground bg-background px-5 py-4">
-            <div>
-              <SheetTitle className="text-[16px]! leading-none!">{item.fileName}</SheetTitle>
-              <SheetDescription className="mt-2 block break-all text-[10px]!">
-                {item.pathname}
+            <div className="min-w-0 space-y-2">
+              <CmsMetaText variant="category">{typeLabel}</CmsMetaText>
+              <SheetTitle className="truncate text-[18px]! leading-none! tracking-[-0.02em]!">
+                {item.fileName}
+              </SheetTitle>
+              <SheetDescription className="block text-[10px]!">
+                {formatMediaSize(item.size)} / {formatMediaDateTime(item.uploadedAt)}
               </SheetDescription>
             </div>
             <SheetClose
@@ -142,22 +186,25 @@ export function CmsMediaPreviewSheet({
 
           <div className="cms-scroll min-h-0 flex-1 overflow-y-auto bg-(--bg-main) px-5 py-5">
             <div className="space-y-5">
-              <section className="space-y-3">
-                <div className={cn("relative overflow-hidden", cmsPanelClass)}>
+              <section className={cn("overflow-hidden", cmsPanelClass)}>
+                <div className="flex items-center justify-between border-b border-foreground px-4 py-3">
+                  <CmsMetaText variant="category">{mediaText.previewCta}</CmsMetaText>
+                  <span className={cmsTinyMetaClass}>{typeLabel}</span>
+                </div>
+                <div className="relative bg-card-hover">
                   {item.kind === "image" ? (
-                    <div className="relative aspect-16/10">
+                    <div className="relative aspect-16/10 min-h-70">
                       <CmsMediaImage
                         pathname={item.pathname}
                         alt={item.fileName}
                         sizes="(max-width: 768px) 100vw, 60vw"
                         priority
-                        className="object-contain bg-card-hover"
+                        className="object-contain"
                       />
                     </div>
                   ) : item.kind === "audio" ? (
-                    <div className="space-y-4 p-4">
-                      <CmsMetaText variant="category">{mediaText.audioPreviewLabel}</CmsMetaText>
-                      <div className="rounded-[8px] border border-foreground bg-card-hover p-4">
+                    <div className="space-y-4 p-5">
+                      <div className="rounded-[8px] border border-foreground bg-white p-4">
                         <audio
                           controls
                           preload="metadata"
@@ -169,8 +216,7 @@ export function CmsMediaPreviewSheet({
                       </div>
                     </div>
                   ) : item.kind === "json" ? (
-                    <div className="space-y-3 p-4">
-                      <CmsMetaText variant="category">{mediaText.jsonPreviewLabel}</CmsMetaText>
+                    <div className="space-y-3 p-5">
                       {isPreviewLoading ? (
                         <div className={cmsMetaLabelClass}>{mediaText.previewLoading}</div>
                       ) : previewError ? (
@@ -193,28 +239,73 @@ export function CmsMediaPreviewSheet({
                     </div>
                   )}
                 </div>
+              </section>
 
-                <div className="flex flex-wrap gap-2">
-                  <CmsMetaRow
-                    label={mediaText.metadataType}
-                    value={
-                      item.kind === "image"
-                        ? mediaText.typeImage
-                        : item.kind === "audio"
-                          ? mediaText.typeAudio
-                          : item.kind === "json"
-                            ? mediaText.typeJson
-                            : mediaText.typeOther
-                    }
+              <section className={cn("space-y-3 p-4", cmsPanelClass)}>
+                <CmsMetaText variant="category">{mediaText.actionsTitle}</CmsMetaText>
+                <div
+                  className={cn(
+                    "grid gap-2",
+                    onSelect && selectActionLabel ? "sm:grid-cols-3" : "sm:grid-cols-2",
+                  )}
+                >
+                  {onSelect && selectActionLabel ? (
+                    <CmsActionButton
+                      variant="primary-accent"
+                      size="md"
+                      className="w-full"
+                      disabled={selectDisabled || isDeleting || isRenaming}
+                      onClick={onSelect}
+                    >
+                      {selectActionLabel}
+                    </CmsActionButton>
+                  ) : null}
+                  <CmsActionButton
+                    variant="outline"
+                    size="md"
+                    className="w-full"
+                    disabled={isDeleting || isRenaming}
+                    onClick={() => {
+                      window.open(
+                        buildCmsMediaAssetUrl(item.pathname),
+                        "_blank",
+                        "noopener,noreferrer",
+                      );
+                    }}
+                  >
+                    <ExternalLink className="size-3.5" />
+                    {mediaText.openCta}
+                  </CmsActionButton>
+                  <CmsConfirmDialog
+                    triggerLabel={mediaText.deleteCta}
+                    triggerIcon={<Trash2 className="size-3.5" aria-hidden />}
+                    triggerClassName="w-full justify-center bg-transparent px-5 py-2.5 text-[14.5px] hover:bg-surface-hover"
+                    triggerDisabled={isDeleting || isRenaming}
+                    title={mediaText.deleteConfirmTitle}
+                    description={mediaText.deleteConfirmDescription(item.fileName)}
+                    tone="danger"
+                    onConfirm={() => onDelete(item)}
                   />
-                  <CmsMetaRow label={mediaText.metadataSize} value={formatMediaSize(item.size)} />
-                  <CmsMetaRow
+                </div>
+              </section>
+
+              <section className={cn("space-y-3 p-4", cmsPanelClass)}>
+                <CmsMetaText variant="category">{mediaText.detailsTitle}</CmsMetaText>
+                <div>
+                  <MediaPreviewDetailRow label={mediaText.uploadNameLabel} value={item.fileName} />
+                  <MediaPreviewDetailRow
+                    label={mediaText.metadataPath}
+                    value={item.pathname}
+                    breakAll
+                  />
+                  <MediaPreviewDetailRow label={mediaText.metadataType} value={typeLabel} />
+                  <MediaPreviewDetailRow
+                    label={mediaText.metadataSize}
+                    value={formatMediaSize(item.size)}
+                  />
+                  <MediaPreviewDetailRow
                     label={mediaText.metadataUploadedAt}
                     value={formatMediaDateTime(item.uploadedAt)}
-                  />
-                  <CmsMetaRow
-                    label={mediaText.referencesTitle}
-                    value={mediaText.referencesCount(relatedArticles.length)}
                   />
                 </div>
               </section>
@@ -234,50 +325,22 @@ export function CmsMediaPreviewSheet({
                     onChange={(event) => setNextBaseName(event.target.value)}
                   />
                 </CmsFormField>
-                <div className="flex flex-wrap gap-2.5">
-                  {onSelect && selectActionLabel ? (
-                    <CmsActionButton
-                      variant="primary-accent"
-                      size="md"
-                      disabled={selectDisabled || isDeleting || isRenaming}
-                      onClick={onSelect}
-                    >
-                      {selectActionLabel}
-                    </CmsActionButton>
-                  ) : null}
+                <div className="flex justify-end">
                   <CmsActionButton
                     variant="outline"
                     size="md"
-                    disabled={isDeleting || isRenaming || nextBaseName.trim().length === 0}
+                    disabled={
+                      isDeleting ||
+                      isRenaming ||
+                      nextBaseName.trim().length === 0 ||
+                      nextBaseName.trim() === item.baseName
+                    }
                     onClick={() => {
                       void onRename(item, nextBaseName);
                     }}
                   >
                     {mediaText.renameCta}
                   </CmsActionButton>
-                  <CmsActionButton
-                    variant="outline"
-                    size="md"
-                    disabled={isDeleting || isRenaming}
-                    onClick={() => {
-                      window.open(
-                        buildCmsMediaAssetUrl(item.pathname),
-                        "_blank",
-                        "noopener,noreferrer",
-                      );
-                    }}
-                  >
-                    <ExternalLink className="size-3.5" />
-                    {mediaText.openCta}
-                  </CmsActionButton>
-                  <CmsConfirmDialog
-                    triggerLabel={mediaText.deleteCta}
-                    triggerDisabled={isDeleting || isRenaming}
-                    title={mediaText.deleteConfirmTitle}
-                    description={mediaText.deleteConfirmDescription(item.fileName)}
-                    tone="danger"
-                    onConfirm={() => onDelete(item)}
-                  />
                 </div>
               </section>
 

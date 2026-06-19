@@ -31,7 +31,7 @@ export function CmsMediaCard({
       type="button"
       onClick={onPreview}
       className={cn(
-        "group relative block w-full overflow-hidden rounded-[8px] border bg-card-hover text-left transition-colors",
+        "group relative block w-full cursor-pointer overflow-hidden rounded-[8px] border bg-card-hover text-left transition-colors",
         selected
           ? "border-accent bg-surface-hover"
           : "border-foreground hover:border-accent hover:bg-surface-hover",
@@ -46,7 +46,7 @@ export function CmsMediaCard({
           )}
         />
       ) : null}
-      <div className="relative aspect-4/3 overflow-hidden bg-[repeating-linear-gradient(135deg,var(--placeholder-line-a)_0_11px,var(--placeholder-line-b)_11px_22px)] grayscale">
+      <div className="relative aspect-4/3 overflow-hidden bg-[repeating-linear-gradient(135deg,var(--placeholder-line-a)_0_11px,var(--placeholder-line-b)_11px_22px)]">
         {item.kind === "image" ? (
           <CmsMediaImage
             pathname={item.pathname}
