@@ -29,11 +29,11 @@ const siteUrl = normalizeSiteUrl(
 );
 
 export const seoConfig = {
-  siteName: i18n.cms.brand.wordmark,
-  applicationName: i18n.cms.app.metadataTitle,
-  defaultTitle: i18n.cms.app.metadataTitle,
-  titleTemplate: `%s | ${i18n.cms.brand.wordmark}`,
-  defaultDescription: i18n.cms.app.metadataDescription,
+  siteName: i18n.public.brand.wordmark,
+  applicationName: i18n.public.brand.wordmark,
+  defaultTitle: "Middleware",
+  titleTemplate: `%s | Middleware`,
+  defaultDescription: "Middleware è un laboratorio di inchiesta sulla città di Modena.",
   locale: "it_IT",
   twitterHandle: "@middleware",
   siteUrl,
