@@ -36,9 +36,14 @@ export function EditorialAudioPlayer({
   const progress = totalSeconds > 0 ? Math.min(100, (currentSeconds / totalSeconds) * 100) : 0;
 
   return (
-    <div className={cn("max-w-120 border border-foreground bg-white px-4.5 py-3.5", className)}>
+    <div
+      className={cn(
+        "max-w-120 rounded-[8px] border border-foreground bg-white px-4.5 py-3.5",
+        className,
+      )}
+    >
       <div className="mb-2.5 flex items-center justify-between gap-3">
-        <span className="font-ui text-[11px] uppercase tracking-[0.06em] text-foreground">
+        <span className="font-ui text-[11px] font-extrabold uppercase tracking-[var(--tracking-label)] text-foreground">
           {resolvedLabel}
         </span>
         {onClose ? (
@@ -58,19 +63,19 @@ export function EditorialAudioPlayer({
           type="button"
           onClick={onToggle}
           aria-label={isPlaying ? text.pauseAriaLabel : text.playAriaLabel}
-          className="flex size-9 shrink-0 items-center justify-center bg-foreground text-white hover:brightness-[0.88]"
+          className="flex size-9 shrink-0 items-center justify-center rounded-[8px] bg-foreground text-background hover:brightness-[0.88]"
         >
           {isPlaying ? <PauseIcon className="size-3.5" /> : <PlayIcon className="size-3.5" />}
         </button>
 
-        <div className="relative h-0.75 flex-1 bg-[rgba(10,10,10,0.2)]">
+        <div className="relative h-0.75 flex-1 bg-(--line-section-strong)">
           <div
             className="h-full bg-accent transition-[width] duration-(--motion-base) ease-[cubic-bezier(0.2,0,0,1)]"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <span className="shrink-0 font-ui text-[11px] text-muted-foreground">
+        <span className="shrink-0 font-ui text-[11px] font-semibold text-muted-foreground">
           {formatTime(currentSeconds)} / {formatTime(totalSeconds)}
         </span>
       </div>

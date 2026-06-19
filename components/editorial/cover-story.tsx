@@ -33,7 +33,7 @@ export function EditorialCoverStory({
     <Tag
       className={cn(
         "flex min-h-55 flex-col gap-3 px-5.5 py-5",
-        isAccent ? "bg-accent text-white" : "bg-card-hover text-foreground",
+        isAccent ? "bg-accent text-background" : "bg-card-hover text-foreground",
         "transition-[filter] duration-(--motion-base) ease-[cubic-bezier(0.2,0,0,1)] hover:brightness-[0.93]",
         className,
       )}
@@ -41,8 +41,8 @@ export function EditorialCoverStory({
       <div className="flex items-baseline justify-between gap-4">
         <span
           className={cn(
-            "font-ui text-[11px] uppercase tracking-[0.06em]",
-            isAccent ? "text-white" : "text-foreground",
+            "font-ui text-[11px] font-extrabold uppercase tracking-[0.1em]",
+            isAccent ? "text-background" : "text-foreground",
           )}
         >
           {eyebrow}
@@ -51,7 +51,7 @@ export function EditorialCoverStory({
           <span
             className={cn(
               "font-ui text-[11px]",
-              isAccent ? "text-white/70" : "text-muted-foreground",
+              isAccent ? "text-background/70" : "text-muted-foreground",
             )}
           >
             {meta}
@@ -61,9 +61,9 @@ export function EditorialCoverStory({
 
       <h2
         className={cn(
-          "flex-1 font-display uppercase",
-          "text-[clamp(15px,2vw,22px)] leading-(--lh-xl) tracking-tight",
-          isAccent ? "text-white" : "text-foreground",
+          "flex-1 font-display font-bold",
+          "text-[clamp(15px,2vw,22px)] leading-[1.08] tracking-[-0.02em]",
+          isAccent ? "text-background" : "text-foreground",
         )}
       >
         {title}
@@ -74,9 +74,9 @@ export function EditorialCoverStory({
       <Link
         href={href}
         className={cn(
-          "self-start border px-3 py-1.75 font-ui text-[11px] uppercase tracking-[0.04em]",
+          "self-start rounded-[6px] border px-3 py-1.75 font-ui text-[12px] font-bold",
           isAccent
-            ? "border-white text-white hover:bg-white hover:text-accent"
+            ? "border-background text-background hover:bg-background hover:text-accent"
             : "border-foreground text-foreground hover:bg-foreground hover:text-(--bg-main)",
         )}
       >

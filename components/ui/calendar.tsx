@@ -12,7 +12,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: D
       locale={it}
       navLayout="around"
       showOutsideDays={showOutsideDays}
-      className={cn("bg-white", className)}
+      className={cn("rounded-[8px] bg-white", className)}
       classNames={{
         root: "w-full",
         months: "flex flex-col gap-0",
@@ -24,11 +24,11 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: D
         nav: "contents",
         button_previous: cn(
           buttonVariants({ variant: "outline", size: "icon-xs" }),
-          "col-start-1 row-start-1 h-full w-8 self-stretch rounded-none border-t-0 border-r border-b border-l-0 border-foreground bg-white p-0 text-foreground hover:bg-card-hover hover:text-foreground",
+          "col-start-1 row-start-1 h-full w-8 self-stretch rounded-tl-[8px] rounded-tr-none rounded-br-none rounded-bl-none border-t-0 border-r border-b border-l-0 border-foreground bg-white p-0 text-foreground hover:bg-surface-hover hover:text-foreground",
         ),
         button_next: cn(
           buttonVariants({ variant: "outline", size: "icon-xs" }),
-          "col-start-3 row-start-1 h-full w-8 justify-self-end self-stretch rounded-none border-t-0 border-r-0 border-b border-l border-foreground bg-white p-0 text-foreground hover:bg-card-hover hover:text-foreground",
+          "col-start-3 row-start-1 h-full w-8 justify-self-end self-stretch rounded-tl-none rounded-tr-[8px] rounded-br-none rounded-bl-none border-t-0 border-r-0 border-b border-l border-foreground bg-white p-0 text-foreground hover:bg-surface-hover hover:text-foreground",
         ),
         month_grid: "col-span-3 row-start-2 w-full border-collapse px-3 py-3",
         weekdays: "grid grid-cols-7 border-b border-border",
@@ -36,15 +36,15 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: D
           "flex h-7 items-center justify-center font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground",
         weeks: "space-y-1 px-3 py-3",
         week: "grid grid-cols-7 gap-1",
-        day: "flex items-center justify-center [&[data-selected=true]>button]:border-accent [&[data-selected=true]>button]:bg-accent [&[data-selected=true]>button]:text-white [&[data-selected=true]>button:hover]:border-accent [&[data-selected=true]>button:hover]:bg-accent [&[data-selected=true]>button:hover]:text-white",
+        day: "flex items-center justify-center [&[data-selected=true]>button]:border-accent [&[data-selected=true]>button]:bg-accent [&[data-selected=true]>button]:text-background [&[data-selected=true]>button:hover]:border-accent [&[data-selected=true]>button:hover]:bg-accent [&[data-selected=true]>button:hover]:text-background",
         day_button: cn(
           buttonVariants({ variant: "ghost", size: "icon-sm" }),
-          "h-10 w-full rounded-none border border-transparent p-0 font-ui text-[11px] text-foreground",
-          "hover:border-foreground hover:bg-card-hover hover:text-foreground",
+          "h-10 w-full rounded-[6px] border border-transparent p-0 font-ui text-[11px] font-bold text-foreground",
+          "hover:border-foreground hover:bg-surface-hover hover:text-foreground",
           "focus-visible:border-accent focus-visible:ring-0",
         ),
         selected:
-          "[&>button]:border-accent [&>button]:bg-accent [&>button]:text-white [&>button:hover]:border-accent [&>button:hover]:bg-accent [&>button:hover]:text-white",
+          "[&>button]:border-accent [&>button]:bg-accent [&>button]:text-background [&>button:hover]:border-accent [&>button:hover]:bg-accent [&>button:hover]:text-background",
         today: "[&>button]:border-foreground",
         outside: "[&>button]:text-border [&>button]:opacity-60",
         disabled:

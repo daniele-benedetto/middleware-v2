@@ -15,8 +15,8 @@ export function CmsMediaLibraryLoading({
       {withToolbar ? (
         <CmsSurface spacing="md" className="space-y-3">
           <div className="flex items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
-            <Skeleton className="h-3.5 w-44 rounded-none bg-card-hover" />
-            <Skeleton className="h-10 w-32 rounded-none border border-border bg-card-hover" />
+            <Skeleton className="h-3.5 w-44 rounded-[6px] bg-card-hover" />
+            <Skeleton className="h-10 w-32 rounded-[6px] border border-border bg-card-hover" />
           </div>
           <div className="pointer-events-none opacity-100">
             <CmsSearchBar
@@ -33,7 +33,7 @@ export function CmsMediaLibraryLoading({
           {Array.from({ length: tileCount }).map((_, index) => (
             <Skeleton
               key={`media-loading-${index}`}
-              className="aspect-4/3 w-full rounded-none border border-foreground bg-card-hover"
+              className="aspect-4/3 w-full rounded-[8px] border border-foreground bg-card-hover"
             />
           ))}
         </div>

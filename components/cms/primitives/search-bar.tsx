@@ -48,7 +48,7 @@ export function CmsSearchBar({
           className={cn(
             "flex-1 rounded-none border-0 bg-transparent px-3 py-2.5 outline-none",
             "focus-visible:outline-none focus-visible:ring-0",
-            "font-ui text-[12px] uppercase tracking-[0.04em] appearance-none",
+            "appearance-none font-ui text-[12px] font-bold uppercase tracking-[0.08em]",
             "placeholder:text-border",
             accent ? "text-accent" : "text-foreground",
           )}
@@ -81,7 +81,7 @@ export function CmsSearchResultItem({
       onClick={onSelect}
       className={cn(
         "block w-full px-3.5 py-1.75 text-left transition-none",
-        "font-ui text-[11px] uppercase tracking-[0.04em] text-foreground",
+        "font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-foreground",
         "border-b border-card-hover last:border-b-0",
         active ? "bg-card-hover" : "bg-white hover:bg-card-hover",
       )}

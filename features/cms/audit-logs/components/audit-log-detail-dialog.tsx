@@ -85,9 +85,9 @@ function DetailSection({
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-3 border-t-[3px] border-foreground pt-5 first:border-t-0 first:pt-0">
+    <section className="space-y-3 border-t-2 border-foreground pt-5 first:border-t-0 first:pt-0">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+        <div className="font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
           {title}
         </div>
         {action}
@@ -105,7 +105,7 @@ function DetailRows({ fields }: { fields: Array<{ label: string; value: string }
           key={`${field.label}-${field.value}`}
           className="text-[15px] leading-normal text-foreground"
         >
-          <dt className="inline font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+          <dt className="inline font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
             {field.label}: {field.value}
           </dt>
         </div>
@@ -123,9 +123,11 @@ function DetailRowsSkeleton({ rows }: { rows: Array<{ labelWidth: string; valueW
           className="text-[15px] leading-normal"
         >
           <Skeleton
-            className={`mr-2 inline-block h-2.5 ${row.labelWidth} rounded-none bg-card-hover`}
+            className={`mr-2 inline-block h-2.5 ${row.labelWidth} rounded-[6px] bg-card-hover`}
           />
-          <Skeleton className={`inline-block h-3.5 ${row.valueWidth} rounded-none bg-card-hover`} />
+          <Skeleton
+            className={`inline-block h-3.5 ${row.valueWidth} rounded-[6px] bg-card-hover`}
+          />
         </div>
       ))}
     </div>
@@ -175,8 +177,8 @@ function AuditLogDetailSkeleton({ text }: { text: typeof i18n.cms.lists.auditLog
     <div className="space-y-6">
       <DetailSection title={text.sections.event}>
         <div className="space-y-2">
-          <Skeleton className="h-6 w-64 rounded-none bg-card-hover" />
-          <Skeleton className="h-3 w-24 rounded-none bg-card-hover" />
+          <Skeleton className="h-6 w-64 rounded-[6px] bg-card-hover" />
+          <Skeleton className="h-3 w-24 rounded-[6px] bg-card-hover" />
         </div>
         <DetailRowsSkeleton
           rows={[
@@ -190,7 +192,7 @@ function AuditLogDetailSkeleton({ text }: { text: typeof i18n.cms.lists.auditLog
 
       <DetailSection
         title={text.sections.actor}
-        action={<Skeleton className="h-7 w-24 rounded-none border border-border bg-card-hover" />}
+        action={<Skeleton className="h-7 w-24 rounded-[6px] border border-border bg-card-hover" />}
       >
         <DetailRowsSkeleton
           rows={[
@@ -214,12 +216,12 @@ function AuditLogDetailSkeleton({ text }: { text: typeof i18n.cms.lists.auditLog
 
       <DetailSection
         title={text.sections.resource}
-        action={<Skeleton className="h-7 w-24 rounded-none border border-border bg-card-hover" />}
+        action={<Skeleton className="h-7 w-24 rounded-[6px] border border-border bg-card-hover" />}
       >
         <div className="space-y-2">
-          <Skeleton className="h-3 w-28 rounded-none bg-card-hover" />
-          <Skeleton className="h-7 w-72 rounded-none bg-card-hover" />
-          <Skeleton className="h-4 w-96 rounded-none bg-card-hover" />
+          <Skeleton className="h-3 w-28 rounded-[6px] bg-card-hover" />
+          <Skeleton className="h-7 w-72 rounded-[6px] bg-card-hover" />
+          <Skeleton className="h-4 w-96 rounded-[6px] bg-card-hover" />
         </div>
         <DetailRowsSkeleton
           rows={[
@@ -231,7 +233,7 @@ function AuditLogDetailSkeleton({ text }: { text: typeof i18n.cms.lists.auditLog
       </DetailSection>
 
       <DetailSection title={text.sections.error}>
-        <Skeleton className="h-3 w-32 rounded-none bg-card-hover" />
+        <Skeleton className="h-3 w-32 rounded-[6px] bg-card-hover" />
         <DetailRowsSkeleton
           rows={[
             { labelWidth: "w-22", valueWidth: "w-24" },
@@ -241,11 +243,11 @@ function AuditLogDetailSkeleton({ text }: { text: typeof i18n.cms.lists.auditLog
       </DetailSection>
 
       <DetailSection title={text.sections.metadata}>
-        <div className="space-y-2 border-y border-[rgba(10,10,10,0.16)] py-3">
-          <Skeleton className="h-3 w-full rounded-none bg-card-hover" />
-          <Skeleton className="h-3 w-11/12 rounded-none bg-card-hover" />
-          <Skeleton className="h-3 w-4/5 rounded-none bg-card-hover" />
-          <Skeleton className="h-3 w-2/3 rounded-none bg-card-hover" />
+        <div className="space-y-2 border-y border-(color:--line-section) py-3">
+          <Skeleton className="h-3 w-full rounded-[6px] bg-card-hover" />
+          <Skeleton className="h-3 w-11/12 rounded-[6px] bg-card-hover" />
+          <Skeleton className="h-3 w-4/5 rounded-[6px] bg-card-hover" />
+          <Skeleton className="h-3 w-2/3 rounded-[6px] bg-card-hover" />
         </div>
       </DetailSection>
     </div>
@@ -337,21 +339,21 @@ export function CmsAuditLogDetailDialog({ auditLogId }: CmsAuditLogDetailDialogP
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           showCloseButton={false}
-          className="flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 rounded-none border border-foreground bg-(--bg-main) p-0 ring-0 sm:max-w-2xl!"
+          className="flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 rounded-[8px] border border-foreground bg-background p-0 sm:max-w-2xl!"
         >
-          <div className="shrink-0 border-b-[3px] border-foreground bg-background px-6 py-4">
+          <div className="shrink-0 rounded-t-[8px] border-b-2 border-foreground bg-background px-6 py-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <DialogTitle className="font-ui text-[14px] uppercase leading-none tracking-[0.08em] text-foreground">
+                <DialogTitle className="font-display text-[20px] font-black leading-none tracking-[-0.02em] text-foreground">
                   {text.detailTitle}
                 </DialogTitle>
-                <DialogDescription className="mt-2 font-ui text-[12px] leading-normal tracking-[0.02em] text-foreground">
+                <DialogDescription className="mt-2 font-editorial text-[15px] leading-normal text-body-text">
                   {detailQuery.data
                     ? text.detailDescription(formatDateTime(detailQuery.data.createdAt))
                     : text.detailDescriptionPending}
                 </DialogDescription>
               </div>
-              <DialogClose className="inline-flex size-8 shrink-0 items-center justify-center border border-foreground bg-transparent transition-colors hover:bg-card-hover">
+              <DialogClose className="inline-flex size-8 shrink-0 items-center justify-center rounded-[6px] border border-foreground bg-transparent transition-colors hover:bg-surface-hover">
                 <X className="size-3.5" aria-hidden />
                 <span className="sr-only">{commonText.close}</span>
               </DialogClose>
@@ -362,11 +364,11 @@ export function CmsAuditLogDetailDialog({ auditLogId }: CmsAuditLogDetailDialogP
             {detailQuery.isPending ? (
               <AuditLogDetailSkeleton text={text} />
             ) : detailError ? (
-              <div className="border-l-4 border-accent bg-white px-4 py-4">
-                <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-accent">
+              <div className="rounded-[8px] border-l-4 border-accent bg-white px-4 py-4">
+                <div className="font-ui text-[10px] font-extrabold uppercase tracking-[0.1em] text-accent">
                   {detailError.title}
                 </div>
-                <div className="mt-2 font-ui text-[13px] leading-normal tracking-[0.02em] text-foreground">
+                <div className="mt-2 font-editorial text-[15px] leading-normal text-body-text">
                   {detailError.description}
                 </div>
               </div>
@@ -496,7 +498,7 @@ export function CmsAuditLogDetailDialog({ auditLogId }: CmsAuditLogDetailDialogP
 
                 {metadata ? (
                   <DetailSection title={text.sections.metadata}>
-                    <pre className="overflow-x-auto border-y border-[rgba(10,10,10,0.16)] py-3 font-mono text-[11px] leading-relaxed text-foreground whitespace-pre-wrap wrap-break-word">
+                    <pre className="overflow-x-auto border-y border-(color:--line-section) py-3 font-technical text-[11px] leading-relaxed text-foreground whitespace-pre-wrap wrap-break-word">
                       {metadata}
                     </pre>
                   </DetailSection>
@@ -505,7 +507,7 @@ export function CmsAuditLogDetailDialog({ auditLogId }: CmsAuditLogDetailDialogP
             ) : null}
           </div>
 
-          <div className="shrink-0 border-t-[3px] border-foreground px-6 py-4">
+          <div className="shrink-0 border-t-2 border-foreground px-6 py-4">
             <DialogClose
               render={
                 <CmsActionButton variant="outline" size="md">

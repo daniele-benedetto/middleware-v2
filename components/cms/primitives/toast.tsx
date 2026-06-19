@@ -19,7 +19,7 @@ function CmsToastCard({ id, label, body, variant }: CmsToastRenderProps) {
   const containerClass = cn(
     "flex w-full min-w-80 max-w-120 items-stretch",
     variant === "error"
-      ? "bg-foreground text-white"
+      ? "bg-foreground text-background"
       : variant === "breaking"
         ? "border border-accent bg-white"
         : "border border-foreground bg-white",
@@ -33,7 +33,7 @@ function CmsToastCard({ id, label, body, variant }: CmsToastRenderProps) {
   const labelClass = cn(
     "mb-1 font-ui text-[10px] uppercase tracking-[0.08em]",
     variant === "error"
-      ? "text-white/50"
+      ? "text-background/50"
       : variant === "breaking"
         ? "text-accent"
         : "text-muted-foreground",
@@ -41,12 +41,14 @@ function CmsToastCard({ id, label, body, variant }: CmsToastRenderProps) {
 
   const bodyClass = cn(
     "font-editorial text-[14px] leading-[1.45]",
-    variant === "error" ? "text-white" : "text-foreground",
+    variant === "error" ? "text-background" : "text-foreground",
   );
 
   const closeClass = cn(
     "flex items-center px-3 py-2.5 font-ui text-[12px] cursor-pointer",
-    variant === "error" ? "text-white/30 hover:text-white/60" : "text-border hover:text-foreground",
+    variant === "error"
+      ? "text-background/30 hover:text-background/60"
+      : "text-border hover:text-foreground",
   );
 
   return (

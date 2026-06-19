@@ -63,7 +63,7 @@ export function CmsWordmark({ size = "sm", className, as }: CmsWordmarkProps) {
     <CmsDisplay
       as={as ?? "span"}
       size={wordmarkDisplaySize[size]}
-      className={cn("text-foreground", className)}
+      className={cn("font-extrabold lowercase text-foreground", className)}
     >
       {text.wordmark}
     </CmsDisplay>

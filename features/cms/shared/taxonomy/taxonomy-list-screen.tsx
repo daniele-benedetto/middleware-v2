@@ -42,6 +42,7 @@ import {
   mapTrpcErrorToCmsUiMessage,
   type CmsMutationName,
 } from "@/lib/cms/trpc";
+import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
@@ -355,7 +356,7 @@ export function CmsTaxonomyListScreen<TItem extends CmsTaxonomyListItem>({
       <CmsDataTableShell
         toolbar={
           <div className="space-y-3">
-            <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
+            <div className={cmsMetaLabelClass}>
               {commonText.totalRecords(listQuery.pagination.total)}
             </div>
             <CmsBulkActionBar

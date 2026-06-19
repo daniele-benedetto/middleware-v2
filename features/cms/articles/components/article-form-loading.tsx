@@ -10,11 +10,11 @@ import {
 function MediaFieldSkeleton({ labelWidth = "w-16" }: { labelWidth?: string }) {
   return (
     <div>
-      <Skeleton className={`mb-1.5 h-2.5 ${labelWidth} rounded-none bg-card-hover`} />
+      <Skeleton className={`mb-1.5 h-2.5 ${labelWidth} rounded-[6px] bg-card-hover`} />
       <div className="space-y-3">
-        <Skeleton className="aspect-[16/10] w-full rounded-none border border-dashed border-border bg-card-hover" />
+        <Skeleton className="aspect-[16/10] w-full rounded-[8px] border border-dashed border-border bg-card-hover" />
         <div className="flex flex-wrap gap-2">
-          <Skeleton className="h-7 w-32 rounded-none border border-border bg-card-hover" />
+          <Skeleton className="h-7 w-32 rounded-[6px] border border-border bg-card-hover" />
         </div>
       </div>
     </div>
@@ -45,12 +45,12 @@ export function CmsArticleFormLoading({ mode = "edit" }: CmsArticleFormLoadingPr
               <div className="space-y-4">
                 <CmsFieldLoading labelWidth="w-16" />
                 <div className="flex items-center gap-2">
-                  <Skeleton className="size-4 rounded-none border border-border bg-card-hover" />
-                  <Skeleton className="h-3 w-20 rounded-none bg-card-hover" />
+                  <Skeleton className="size-4 rounded-[5px] border border-border bg-card-hover" />
+                  <Skeleton className="h-3 w-20 rounded-[6px] bg-card-hover" />
                 </div>
               </div>
             ) : (
-              <Skeleton className="h-9 w-full rounded-none border border-dashed border-border bg-card-hover" />
+              <Skeleton className="h-9 w-full rounded-[6px] border border-dashed border-border bg-card-hover" />
             )}
           </section>
 
@@ -70,7 +70,7 @@ export function CmsArticleFormLoading({ mode = "edit" }: CmsArticleFormLoadingPr
               {Array.from({ length: 4 }).map((_, index) => (
                 <Skeleton
                   key={`tag-${index}`}
-                  className="h-7 w-20 rounded-none border border-border bg-card-hover"
+                  className="h-7 w-20 rounded-[6px] border border-border bg-card-hover"
                 />
               ))}
             </div>

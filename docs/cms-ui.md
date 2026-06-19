@@ -8,18 +8,22 @@
 
 ## Core palette
 
-- `--bg-main`: `#F0E8D8`
-- `--bg-hover`: `#E5D9C5`
-- `--ink`: `#0A0A0A`
-- `--accent`: `#C8001A`
+- `--bg-main`: `#F4EBDD`
+- `--bg-hover`: `#E7DDCB`
+- `--ink`: `#111111`
+- `--accent`: `#A23B2A`
 - `--white`: `#FFFFFF`
+- `--body-text`: `#3A352D`
+- `--muted-text`: `#6B6357`
+- `--cream-on-dark`: `#CFC6B6`
+- `--dark-border`: `#34302B`
 
 Approved alpha variants:
 
-- `--ink-70`: `rgba(10,10,10,0.7)` (hairline/occhiello)
-- `--ink-60`: `rgba(10,10,10,0.6)` (testo secondario)
-- `--ink-50`: `rgba(10,10,10,0.5)` (metadati, numeri paragrafo)
-- `--ink-30`: `rgba(10,10,10,0.3)` (filetti, placeholder, disabled)
+- `--ink-70`: `rgba(17,17,17,0.7)` (hairline/occhiello)
+- `--ink-60`: `rgba(17,17,17,0.6)` (testo secondario)
+- `--ink-50`: `rgba(17,17,17,0.5)` (metadati, numeri paragrafo)
+- `--ink-30`: `rgba(17,17,17,0.22)` (filetti, placeholder, disabled)
 
 ## Semantic tokens
 
@@ -31,13 +35,14 @@ CMS feedback visuals are allowed and standardized:
 
 - `--ui-success`: `#1B7F3A`
 - `--ui-warning`: `#B26A00`
-- `--ui-destructive`: `#C8001A`
+- `--ui-destructive`: `#A23B2A`
 
 ## Typography roles
 
-- Display/headings: `Archivo Black` (uppercase)
-- Editorial long text: `Newsreader`
-- UI/meta/labels: `IBM Plex Mono`
+- Display/headings: `Archivo` (`800/900`, tight tracking)
+- Editorial long text: `Spectral`
+- UI/meta/labels: `Archivo` (`700/800`, uppercase labels)
+- Technical/monospace-only details: `IBM Plex Mono` through `.font-technical`
 
 Type scale (base):
 
@@ -45,8 +50,8 @@ Type scale (base):
 
 Editorial type scale (SG parity):
 
-- Display: `--text-display-hero` (clamp 48–96), `--text-display-h1` (clamp 28–48), `--text-display-h2` (clamp 18–28), `--text-display-h3`(clamp 16 28) `--text-display-quote` (clamp 20–32), `--text-display-label` (15)
-- Editorial: `--text-editorial-body` (19), `--text-editorial-epigraph` (16), `--text-editorial-blockquote` (17), `--text-editorial-hairline` (15), `--text-editorial-note` (14)
+- Display: `--text-display-hero` (clamp 36–68), `--text-display-h1` (clamp 32–52), `--text-display-h2` (clamp 24–34), `--text-display-h3` (clamp 20–24), `--text-display-quote` (clamp 20–32), `--text-display-label` (14)
+- Editorial: `--text-editorial-body` (18), `--text-editorial-epigraph` (16), `--text-editorial-blockquote` (17), `--text-editorial-hairline` (15), `--text-editorial-note` (14)
 - Meta: `--text-meta` (11), `--text-section-number` (12)
 
 Line-heights:
@@ -58,11 +63,11 @@ Weights: `--fw-regular`, `--fw-medium`, `--fw-semibold`
 
 ## Surfaces and separators
 
-- Border radius: `0`
+- Border radius: mostly `6px`/`8px` for controls and CTAs; large layout grids remain sharp when needed.
 - Shadows: `none`
-- Main separator: `--line-strong` (`3px` ink)
+- Main separator: `--line-strong` (`2px` ink)
 - Internal grid line: `--line-grid` (`1px` ink)
-- Semantic accent line: `--line-accent` (`4px` accent, blockquote)
+- Semantic accent line: `--line-accent` (`3px` accent, blockquote)
 - Menu accent line: `--line-menu-accent` (`4px` accent, bordo sinistro menu attivo)
 - Reading bar: `--line-reading` (`3px` accent)
 - Dashed separator: `--line-dashed` (`1px dashed` ink-30, slot vuoti archivio)
@@ -95,7 +100,7 @@ Responsive rule:
   - Bottoni, link, accordion, dialog trigger, checkbox, radio, toggle, generic focusable: **outer outline** — `outline: 3px solid accent` con `outline-offset: 2px`.
 - Global rule `*:focus-visible` in `app/globals.css` è in `@layer base` così le utility `outline-none` delle primitive shadcn (usate da input/textarea/select) vincono e non si ha doppio focus.
 - Dark mode: **non supportato**. Nessuna utility `dark:*` nei componenti CMS; `color-scheme: light` forzato in `:root`.
-- Text selection: accent background + white text.
+- Text selection: accent background + crema text.
 - Accessibility target: WCAG AA minimum.
 
 ## Components governance
@@ -126,7 +131,7 @@ Custom component allowed only when:
 - `<Button>` → `CmsActionButton`
 - `<Badge>` → `CmsBadge`
 
-Reason: shadcn defaults (`bg-transparent`, `border-input` = ink-30, `rounded-lg`) deviano dalla SG. I wrapper CMS garantiscono parity (bg bianco, border ink pieno, radius 0, stati default/focus/filled/error/disabled) e centralizzano eventuali fix futuri.
+Reason: shadcn defaults (`bg-transparent`, `border-input` = ink-30, generic radius) deviano dalla SG. I wrapper CMS garantiscono parity (bg bianco, border ink pieno, radius controllato, stati default/focus/filled/error/disabled) e centralizzano eventuali fix futuri.
 
 PR requirement:
 
@@ -148,7 +153,7 @@ PR requirement:
 
 Typography / surface:
 
-- `CmsEyebrow`: mono uppercase UI labels (breadcrumbs, table headers, badges, section labels)
+- `CmsEyebrow`: Archivo uppercase UI labels (breadcrumbs, table headers, badges, section labels)
 - `CmsHeading`: display and section headings (`size=page|section`)
 - `CmsBody` / `CmsBodyText`: editorial/body text (`size=md|lg`, `tone=foreground|muted|accent`)
 - `CmsDisplay`: display typography (`size=hero|h1|h2|quote|label`, `tone=foreground|accent|onAccent`)
@@ -164,8 +169,8 @@ Actions:
 
 Form controls (always wrap in `CmsFormField`):
 
-- `CmsFormField`: unico wrapper consentito. Gestisce label, hint, error state con prefisso `⚑` (U+2691) e testo `IBM Plex Mono 10px accent`.
-- `CmsFormLabel`: label mono 10px (`state=default|focus|filled|error|disabled`)
+- `CmsFormField`: unico wrapper consentito. Gestisce label, hint, error state con prefisso `⚑` (U+2691) e testo label Archivo 10px accent.
+- `CmsFormLabel`: label Archivo 10px (`state=default|focus|filled|error|disabled`)
 - `CmsTextInput`: text input (`tone=editorial|ui|mono`, `state` auto se `disabled`). Default/filled bianco, focus bordo 2px accent, error bg `--ui-error-bg`.
 - `CmsTextarea`: textarea editorial, supporta `showCounter` + `maxLength`.
 - `CmsSelect`: dropdown con opzioni `{value,label}[]`, placeholder default `— SELEZIONA —`.
@@ -184,10 +189,10 @@ Feedback / overlay:
 Data / navigation:
 
 - `CmsDataTableShell` + `cmsTableClasses`: wrap shadcn `Table` con parity SG sezione 08.
-  - Default table: `headerRow` (bg ink, border 2px), `headerCell` (mono 10px crema, divisori cream/15)
+  - Default table: `headerRow` (bg ink, border 2px), `headerCell` (Archivo 10px crema, divisori cream/15)
   - Sortable: `sortableHeaderRow` (bg crema-dk) + `sortableHeaderCell` + `sortableHeaderCellActive` (testo accent) + icona `<CmsSortIcon direction="asc|desc|null" />`
   - Body: `bodyRow` (alt bianco/crema-dk, hover bg accent + testo bianco), `bodyRowArchived` (bg crema-dk)
-  - Cells: `bodyCellTitle` (Newsreader 15), `bodyCellMeta` (mono 11 ink-60), `bodyCellNumeric` (right-aligned mono), `bodyCellBadge` (host per `CmsBadge variant="status-*"`), variante `*Archived` con testo ink-30 italic
+  - Cells: `bodyCellTitle` (Spectral 15), `bodyCellMeta` (Archivo 11 ink-60), `bodyCellNumeric` (right-aligned Archivo), `bodyCellBadge` (host per `CmsBadge variant="status-*"`), variante `*Archived` con testo ink-30 italic
 - `CmsPagination`: numerata zero-pad, bordo accent sull'attivo, `← PREC.` / `SUCC. →`, ellipsis `…`.
 - `CmsStepper`: dot size-3 per step, connettori accent/grigio.
 - `CmsSearchBar` + `CmsSearchResultItem`: barra ricerca con icona, stato `active` (bordo accent).

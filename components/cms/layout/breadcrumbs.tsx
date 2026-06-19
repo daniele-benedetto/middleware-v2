@@ -63,7 +63,7 @@ export function CmsBreadcrumbs() {
                 {isLast ? (
                   <BreadcrumbPage className={cmsEyebrowClassName}>
                     {isPendingDynamicLabel ? (
-                      <Skeleton className="h-3.5 w-24 rounded-none bg-card-hover" />
+                      <Skeleton className="h-3.5 w-24 rounded-[6px] bg-card-hover" />
                     ) : (
                       label
                     )}
@@ -71,7 +71,7 @@ export function CmsBreadcrumbs() {
                 ) : (
                   <BreadcrumbLink href={href} className={clickableBreadcrumbClassName}>
                     {isPendingDynamicLabel ? (
-                      <Skeleton className="h-3.5 w-24 rounded-none bg-card-hover" />
+                      <Skeleton className="h-3.5 w-24 rounded-[6px] bg-card-hover" />
                     ) : (
                       label
                     )}

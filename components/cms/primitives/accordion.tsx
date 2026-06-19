@@ -59,7 +59,7 @@ export function CmsAccordion({ items, defaultValue, className }: CmsAccordionPro
               className={cn(
                 "group flex flex-1 cursor-pointer items-center justify-between px-4.5 py-3.5 text-left",
                 "bg-(--bg-main) text-foreground transition-colors",
-                "aria-expanded:bg-foreground aria-expanded:text-white",
+                "aria-expanded:bg-foreground aria-expanded:text-background",
                 "focus-visible:outline-3 focus-visible:outline-accent focus-visible:-outline-offset-2",
               )}
             >
@@ -75,7 +75,7 @@ export function CmsAccordion({ items, defaultValue, className }: CmsAccordionPro
                 aria-hidden
                 className={cn(
                   "ml-3 shrink-0 font-ui text-[14px] leading-none",
-                  "text-border group-aria-expanded:text-white/60",
+                  "text-border group-aria-expanded:text-background/60",
                 )}
               >
                 <span className="group-aria-expanded:hidden">+</span>

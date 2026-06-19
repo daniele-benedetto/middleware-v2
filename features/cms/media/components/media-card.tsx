@@ -31,20 +31,22 @@ export function CmsMediaCard({
       type="button"
       onClick={onPreview}
       className={cn(
-        "group relative block w-full overflow-hidden border bg-card-hover text-left transition-colors",
-        selected ? "border-accent" : "border-foreground hover:border-accent",
+        "group relative block w-full overflow-hidden rounded-[8px] border bg-card-hover text-left transition-colors",
+        selected
+          ? "border-accent bg-surface-hover"
+          : "border-foreground hover:border-accent hover:bg-surface-hover",
       )}
     >
       {selectable ? (
         <span
           aria-hidden
           className={cn(
-            "pointer-events-none absolute top-2 right-2 z-10 size-3 rounded-full border bg-white transition-colors",
+            "pointer-events-none absolute top-2 right-2 z-10 size-3 rounded-[3px] border bg-white transition-colors",
             selected ? "border-accent bg-accent" : "border-foreground/40",
           )}
         />
       ) : null}
-      <div className="relative aspect-4/3 overflow-hidden bg-card-hover">
+      <div className="relative aspect-4/3 overflow-hidden bg-[repeating-linear-gradient(135deg,var(--placeholder-line-a)_0_11px,var(--placeholder-line-b)_11px_22px)] grayscale">
         {item.kind === "image" ? (
           <CmsMediaImage
             pathname={item.pathname}
@@ -56,7 +58,7 @@ export function CmsMediaCard({
           <div className="flex h-full items-center justify-center px-5 text-center">
             <div className="space-y-2">
               <FileCode2 className="mx-auto size-10 text-accent" aria-hidden />
-              <div className="font-ui text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+              <div className="font-ui text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                 {mediaText.jsonPreviewLabel}
               </div>
             </div>
@@ -65,7 +67,7 @@ export function CmsMediaCard({
           <div className="flex h-full items-center justify-center px-5 text-center">
             <div className="space-y-2">
               <Play className="mx-auto size-10 text-accent" aria-hidden />
-              <div className="font-ui text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+              <div className="font-ui text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                 {mediaText.audioPreviewLabel}
               </div>
             </div>
@@ -74,7 +76,7 @@ export function CmsMediaCard({
           <div className="flex h-full items-center justify-center px-5 text-center">
             <div className="space-y-2">
               <ImageIcon className="mx-auto size-10 text-border" aria-hidden />
-              <div className="font-ui text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+              <div className="font-ui text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                 {mediaText.previewUnavailableTitle}
               </div>
             </div>

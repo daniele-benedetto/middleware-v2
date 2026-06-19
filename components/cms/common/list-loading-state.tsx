@@ -41,9 +41,9 @@ export function CmsListLoadingState({
     <div className="flex h-full min-h-0 flex-col">
       <div className="mb-6 pb-4">
         <div className="flex items-start justify-between gap-4 max-sm:flex-col">
-          <Skeleton className="lg:h-12.5 md:h-10 h-10 w-56 rounded-none border border-border bg-card-hover" />
+          <Skeleton className="h-10 w-56 rounded-[8px] border border-border bg-card-hover md:h-10 lg:h-12.5" />
           {!hiddenButton && (
-            <Skeleton className="h-10 w-20 rounded-none border border-border bg-card-hover" />
+            <Skeleton className="h-10 w-20 rounded-[6px] border border-border bg-card-hover" />
           )}
         </div>
         <CmsSectionDivider tone="strong" className="mt-4" />
@@ -54,22 +54,22 @@ export function CmsListLoadingState({
         className="flex min-h-0 flex-1 flex-col divide-y divide-foreground"
       >
         <div className="shrink-0 space-y-3 px-5 py-4">
-          <Skeleton className="h-3.5 w-32 rounded-none bg-card-hover" />
+          <Skeleton className="h-3.5 w-32 rounded-[6px] bg-card-hover" />
 
           <div className="space-y-3 md:hidden">
-            <Skeleton className="h-10 rounded-none border border-border bg-card-hover" />
+            <Skeleton className="h-10 rounded-[6px] border border-border bg-card-hover" />
             {hasFilterControls ? (
-              <Skeleton className="h-8 rounded-none border border-border bg-card-hover" />
+              <Skeleton className="h-8 rounded-[6px] border border-border bg-card-hover" />
             ) : null}
           </div>
 
           <div className="hidden gap-3 md:grid lg:grid-cols-3">
-            <Skeleton className="col-span-1 h-10 rounded-none border border-border bg-card-hover lg:col-span-1" />
+            <Skeleton className="col-span-1 h-10 rounded-[6px] border border-border bg-card-hover lg:col-span-1" />
             <div className="col-span-1 grid gap-2 lg:col-span-2" style={filterGridStyle}>
               {Array.from({ length: filterColumns }).map((_, index) => (
                 <Skeleton
                   key={`filter-${index}`}
-                  className="h-10 rounded-none border border-border bg-card-hover"
+                  className="h-10 rounded-[6px] border border-border bg-card-hover"
                 />
               ))}
             </div>
@@ -80,7 +80,7 @@ export function CmsListLoadingState({
               {Array.from({ length: secondaryFilterColumns }).map((_, index) => (
                 <Skeleton
                   key={`filter2-${index}`}
-                  className="h-10 rounded-none border border-border bg-card-hover"
+                  className="h-10 rounded-[6px] border border-border bg-card-hover"
                 />
               ))}
             </div>
@@ -96,13 +96,13 @@ export function CmsListLoadingState({
                     className={cn(cmsTableClasses.headerCell, cmsTableClasses.selectionCell)}
                   >
                     <div className={cmsTableClasses.selectionCellInner}>
-                      <Skeleton className="size-4 rounded-none bg-[rgba(240,232,216,0.35)]" />
+                      <Skeleton className="size-4 rounded-[5px] bg-(--surface-skeleton-on-dark-strong)" />
                     </div>
                   </TableHead>
                 )}
                 {Array.from({ length: contentColumns }).map((_, index) => (
                   <TableHead key={`head-${index}`} className={cmsTableClasses.headerCell}>
-                    <Skeleton className="h-3.5 w-20 rounded-none bg-[rgba(240,232,216,0.25)]" />
+                    <Skeleton className="h-3.5 w-20 rounded-[6px] bg-(--surface-skeleton-on-dark)" />
                   </TableHead>
                 ))}
               </TableRow>
@@ -115,7 +115,7 @@ export function CmsListLoadingState({
                       className={cn(cmsTableClasses.bodyCellMeta, cmsTableClasses.selectionCell)}
                     >
                       <div className={cmsTableClasses.selectionCellInner}>
-                        <Skeleton className="size-4 rounded-none border border-border bg-foreground/10" />
+                        <Skeleton className="size-4 rounded-[5px] border border-border bg-(--surface-skeleton-muted)" />
                       </div>
                     </TableCell>
                   )}
@@ -132,8 +132,8 @@ export function CmsListLoadingState({
                       <Skeleton
                         className={
                           cellIndex === 0
-                            ? "h-5 w-40 rounded-none bg-foreground/10"
-                            : "h-4 w-20 rounded-none bg-foreground/10"
+                            ? "h-5 w-40 rounded-[6px] bg-(--surface-skeleton-muted)"
+                            : "h-4 w-20 rounded-[6px] bg-(--surface-skeleton-muted)"
                         }
                       />
                     </TableCell>
@@ -145,8 +145,8 @@ export function CmsListLoadingState({
         </div>
 
         <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-3 max-sm:flex-col max-sm:items-stretch">
-          <Skeleton className="h-8 w-60 rounded-none border border-border bg-card-hover" />
-          <Skeleton className="h-8 w-40 rounded-none border border-border bg-card-hover" />
+          <Skeleton className="h-8 w-60 rounded-[6px] border border-border bg-card-hover" />
+          <Skeleton className="h-8 w-40 rounded-[6px] border border-border bg-card-hover" />
         </div>
       </CmsSurface>
     </div>

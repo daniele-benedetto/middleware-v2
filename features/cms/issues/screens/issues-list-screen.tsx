@@ -56,6 +56,7 @@ import {
 import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { parseIssuesListSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
+import { cmsInteractiveRailClass, cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 import { paginationDefaults } from "@/lib/server/http/pagination";
 import { trpc } from "@/lib/trpc/react";
@@ -264,7 +265,8 @@ function SortableIssueRow({
       className={cn(
         cmsTableClasses.bodyRow,
         isDragEnabled && "cursor-grab select-none touch-manipulation active:cursor-grabbing",
-        isDragging && "relative z-10 bg-white shadow-[0_0_0_2px_var(--color-accent)]",
+        isDragging && "relative z-10 bg-surface-hover",
+        isDragging && cmsInteractiveRailClass,
       )}
       {...(isDragEnabled ? attributes : {})}
       {...(isDragEnabled ? listeners : {})}
@@ -562,7 +564,7 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
       <CmsDataTableShell
         toolbar={
           <div className="space-y-3">
-            <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
+            <div className={cmsMetaLabelClass}>
               {commonText.totalRecords(listQuery.pagination.total)}
             </div>
             <CmsBulkActionBar

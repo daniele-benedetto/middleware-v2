@@ -335,7 +335,7 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
                   onClick={openSlugEditor}
                   className={cn(
                     "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
-                    "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
+                    "font-ui text-[12px] font-bold uppercase tracking-[0.08em] transition-colors hover:bg-surface-hover",
                     resolvedSlug ? "text-foreground" : "text-border",
                   )}
                 >

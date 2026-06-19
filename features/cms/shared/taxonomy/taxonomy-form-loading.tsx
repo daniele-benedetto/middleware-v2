@@ -28,8 +28,8 @@ export function CmsTaxonomyFormLoading({ mode = "edit" }: CmsTaxonomyFormLoading
           <section className="space-y-3">
             <CmsSectionLabelLoading width="w-12" />
             <div className="flex items-center gap-2">
-              <Skeleton className="size-4 rounded-none border border-border bg-card-hover" />
-              <Skeleton className="h-3 w-24 rounded-none bg-card-hover" />
+              <Skeleton className="size-4 rounded-[5px] border border-border bg-card-hover" />
+              <Skeleton className="h-3 w-24 rounded-[6px] bg-card-hover" />
             </div>
           </section>
 

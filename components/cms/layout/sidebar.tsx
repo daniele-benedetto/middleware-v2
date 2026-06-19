@@ -75,8 +75,8 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "cursor-pointer relative block border-l-4 py-3 pl-4 pr-3",
-              "font-ui text-[11px] uppercase tracking-[0.08em] transition-colors",
+              "relative block cursor-pointer rounded-[6px] border-l-4 py-3 pr-3 pl-4",
+              "font-ui text-[12px] font-extrabold uppercase tracking-[0.1em] transition-colors",
               active
                 ? "border-accent bg-card-hover text-accent"
                 : "border-transparent text-foreground hover:border-foreground hover:bg-card-hover",
@@ -93,16 +93,16 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "group flex w-full items-center gap-3 border border-foreground bg-transparent px-3 py-3 text-left",
+          "group flex w-full items-center gap-3 rounded-[6px] border border-foreground bg-white px-3 py-3 text-left",
           "transition-colors hover:bg-card-hover",
           "data-popup-open:border-accent data-popup-open:bg-card-hover data-popup-open:text-accent",
         )}
       >
         <div className="min-w-0 flex-1">
-          <div className="truncate font-ui text-[12px] uppercase tracking-[0.08em] text-foreground">
+          <div className="truncate font-ui text-[12px] font-extrabold uppercase tracking-[0.1em] text-foreground">
             {userName?.trim() || commonText.userFallback}
           </div>
-          <div className="truncate font-ui text-[10px] tracking-[0.04em] text-muted-foreground">
+          <div className="truncate font-ui text-[10px] font-semibold tracking-[0.08em] text-muted-foreground">
             {userEmail}
           </div>
         </div>
@@ -139,7 +139,7 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
           {navigationLinks()}
         </div>
 
-        <div className="border-t-[3px] border-foreground pt-5">{renderUserMenu()}</div>
+        <div className="border-t-2 border-foreground pt-5">{renderUserMenu()}</div>
       </div>
 
       <div className="flex items-center justify-between gap-4 p-5 md:hidden">
@@ -157,14 +157,14 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
 
       <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
         <SheetContent ref={mobileSheetRef} side="left" className="w-full max-w-80">
-          <div className="flex items-center justify-between gap-4 border-b-[3px] border-foreground p-5">
+          <div className="flex items-center justify-between gap-4 border-b-2 border-foreground p-5">
             <SheetTitle className="sr-only">{commonText.menuTitle}</SheetTitle>
             <SheetDescription className="sr-only">{commonText.menuDescription}</SheetDescription>
             {brandBlock}
             <SheetClose
               aria-label={commonText.closeMenu}
               className={cn(
-                "inline-flex size-8 shrink-0 items-center justify-center border border-foreground bg-transparent",
+                "inline-flex size-8 shrink-0 items-center justify-center rounded-[6px] border border-foreground bg-transparent",
                 "transition-colors hover:bg-card-hover",
               )}
             >
@@ -174,7 +174,7 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
 
           <div className="cms-scroll flex flex-1 flex-col justify-between gap-6 overflow-y-auto p-5">
             {navigationLinks(() => setIsMenuOpen(false))}
-            <div className="border-t-[3px] border-foreground pt-5">
+            <div className="border-t-2 border-foreground pt-5">
               {renderUserMenu(mobileSheetRef)}
             </div>
           </div>

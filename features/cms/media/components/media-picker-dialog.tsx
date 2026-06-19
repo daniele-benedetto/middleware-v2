@@ -92,19 +92,19 @@ export function CmsMediaPickerDialog({
     >
       <DialogContent
         showCloseButton={false}
-        className="h-[calc(100vh-0.75rem)] w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] sm:max-w-[calc(100vw-0.75rem)] gap-0 rounded-none border border-foreground bg-(--bg-main) p-0 ring-0"
+        className="h-[calc(100vh-0.75rem)] w-[calc(100vw-0.75rem)] max-w-[calc(100vw-0.75rem)] gap-0 rounded-[8px] border border-foreground bg-background p-0 sm:max-w-[calc(100vw-0.75rem)]"
       >
-        <div className="border-b-[3px] border-foreground bg-background px-7 py-5">
+        <div className="rounded-t-[8px] border-b-2 border-foreground bg-background px-7 py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2.5">
-              <DialogTitle className="font-display text-[24px] uppercase leading-none tracking-[-0.02em] text-foreground">
+              <DialogTitle className="font-display text-[24px] font-black leading-none tracking-[-0.02em] text-foreground">
                 {title}
               </DialogTitle>
-              <DialogDescription className="max-w-200 font-editorial text-[16px] leading-[1.55] text-foreground">
+              <DialogDescription className="max-w-200 font-editorial text-[16px] leading-[1.55] text-body-text">
                 {description}
               </DialogDescription>
             </div>
-            <DialogClose className="inline-flex size-8 shrink-0 items-center justify-center border border-foreground bg-transparent transition-colors hover:bg-card-hover">
+            <DialogClose className="inline-flex size-8 shrink-0 items-center justify-center rounded-[6px] border border-foreground bg-transparent transition-colors hover:bg-surface-hover">
               <X className="size-3.5" aria-hidden />
               <span className="sr-only">{commonText.close}</span>
             </DialogClose>
@@ -123,7 +123,7 @@ export function CmsMediaPickerDialog({
         </div>
 
         {isInlineSelectionMode ? (
-          <div className="flex items-center justify-between gap-4 border-t-[3px] border-foreground bg-background px-7 py-5 max-sm:flex-col max-sm:items-stretch">
+          <div className="flex items-center justify-between gap-4 border-t-2 border-foreground bg-background px-7 py-5 max-sm:flex-col max-sm:items-stretch">
             <div className="min-w-0">
               <CmsMetaText variant="tiny">
                 {selectedItem ? selectedItem.fileName : mediaText.imagePickerEmptySelection}

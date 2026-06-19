@@ -30,6 +30,7 @@ import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-se
 import { useAuditLogsListQuery, useCmsListUrlState } from "@/features/cms/shared/hooks";
 import { parseAuditLogsListSearchParams } from "@/lib/cms/query";
 import { mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
+import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 
 import type { AuditLogsListInitialData } from "@/features/cms/shared/types/initial-data";
@@ -142,7 +143,7 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
       <CmsDataTableShell
         toolbar={
           <div className="space-y-3">
-            <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
+            <div className={cmsMetaLabelClass}>
               {commonText.totalRecords(listQuery.pagination.total)}
             </div>
 
@@ -253,7 +254,7 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
 
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <div className="space-y-1">
-                        <div className="font-ui text-[10px] uppercase tracking-[0.06em] text-foreground">
+                        <div className="font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-foreground">
                           {`${formatActionLabel(entry.action)}: ${
                             entry.resource === "articles"
                               ? listText.resourceArticleLabel

@@ -36,8 +36,8 @@ const proseBaseClasses = cn(
   "prose prose-sm max-w-none font-editorial text-[16px] text-foreground leading-[1.6]",
   "min-w-0 break-words [overflow-wrap:anywhere] focus:outline-none",
   "px-3 py-2.5",
-  "[&_h2]:font-ui [&_h2]:text-[18px] [&_h2]:uppercase [&_h2]:tracking-[0.04em] [&_h2]:text-foreground [&_h2]:mt-4 [&_h2]:mb-2",
-  "[&_h3]:font-ui [&_h3]:text-[14px] [&_h3]:uppercase [&_h3]:tracking-[0.04em] [&_h3]:text-foreground [&_h3]:mt-3 [&_h3]:mb-1.5",
+  "[&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:font-ui [&_h2]:text-[18px] [&_h2]:font-extrabold [&_h2]:uppercase [&_h2]:tracking-[0.08em] [&_h2]:text-foreground",
+  "[&_h3]:mt-3 [&_h3]:mb-1.5 [&_h3]:font-ui [&_h3]:text-[14px] [&_h3]:font-extrabold [&_h3]:uppercase [&_h3]:tracking-[0.08em] [&_h3]:text-foreground",
   "[&_p]:mb-2 [&_p:last-child]:mb-0",
   "[&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6",
   "[&_blockquote]:border-l-2 [&_blockquote]:border-foreground [&_blockquote]:pl-3 [&_blockquote]:italic",
@@ -117,7 +117,7 @@ function ToolbarButton({ onClick, active, disabled, label, children }: ToolbarBu
       className={cn(
         "inline-flex h-7 w-7 items-center justify-center border border-transparent text-foreground transition-colors",
         "hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-1",
-        active && "border-foreground bg-foreground text-white hover:bg-foreground",
+        active && "border-foreground bg-foreground text-background hover:bg-foreground",
         disabled && "cursor-not-allowed text-border hover:bg-transparent",
       )}
     >

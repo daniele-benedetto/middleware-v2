@@ -78,8 +78,8 @@ function IssuePublishedDatePicker({
             <button
               type="button"
               className={cn(
-                "flex h-10 flex-1 items-center justify-between gap-3 border border-foreground bg-white px-3 text-left",
-                "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
+                "flex h-10 flex-1 items-center justify-between gap-3 rounded-[6px] border border-foreground bg-white px-3 text-left",
+                "font-ui text-[12px] font-bold uppercase tracking-[0.08em] transition-colors hover:bg-surface-hover",
                 value ? "text-foreground" : "text-border",
               )}
             />
@@ -91,7 +91,7 @@ function IssuePublishedDatePicker({
           </span>
           <span className="shrink-0 text-[10px] tracking-[0.08em] text-muted-foreground">Data</span>
         </PopoverTrigger>
-        <PopoverContent className="w-[20rem] rounded-none border border-foreground bg-white p-0 shadow-none">
+        <PopoverContent className="w-[20rem] rounded-[8px] border border-foreground bg-white p-0 shadow-none">
           <Calendar
             key={value ? format(value, "yyyy-MM-dd") : "empty-date"}
             mode="single"
@@ -404,8 +404,8 @@ function IssueFormContent({
                   type="button"
                   onClick={openSlugEditor}
                   className={cn(
-                    "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
-                    "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
+                    "flex h-10 flex-1 items-center rounded-[6px] border border-foreground bg-white px-3 text-left",
+                    "font-ui text-[12px] font-bold uppercase tracking-[0.08em] transition-colors hover:bg-surface-hover",
                     resolvedSlug ? "text-foreground" : "text-border",
                   )}
                 >
@@ -417,8 +417,8 @@ function IssueFormContent({
                 type="button"
                 onClick={regenerateSlugFromTitle}
                 className={cn(
-                  "inline-flex h-10 shrink-0 items-center border border-foreground bg-white px-3",
-                  "font-ui text-[10px] uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-card-hover",
+                  "inline-flex h-10 shrink-0 items-center rounded-[6px] border border-foreground bg-white px-3",
+                  "font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-surface-hover",
                 )}
               >
                 {formText.regenerateSlug}

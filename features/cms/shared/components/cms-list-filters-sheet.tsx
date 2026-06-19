@@ -69,7 +69,7 @@ export function CmsListFiltersSheet({
         />
 
         <SheetContent side="right" className="w-full max-w-96 bg-background">
-          <div className="flex items-start justify-between gap-4 border-b-[3px] border-foreground p-5">
+          <div className="flex items-start justify-between gap-4 border-b-2 border-foreground p-5">
             <div className="leading-[1.23]">
               <SheetTitle>{title ?? text.filtersTitle}</SheetTitle>
               <SheetDescription>{description ?? text.filtersDescription}</SheetDescription>
@@ -84,7 +84,7 @@ export function CmsListFiltersSheet({
             <div className={cn("grid gap-3", contentClassName)}>{children}</div>
           </div>
 
-          <div className="border-t-[3px] border-foreground p-5">
+          <div className="border-t-2 border-foreground p-5">
             <div className="flex gap-2 max-sm:flex-col">
               <CmsActionButton
                 variant="outline"

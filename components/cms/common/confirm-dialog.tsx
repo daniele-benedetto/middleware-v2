@@ -75,13 +75,13 @@ export function CmsConfirmDialog({
       <DialogTrigger
         disabled={triggerDisabled || isConfirming}
         className={cn(
-          "cursor-pointer inline-flex h-auto items-center gap-1.5 rounded-none border bg-background px-3.5 py-1.5",
-          "font-ui text-[10px] uppercase tracking-[0.08em] transition-colors",
+          "inline-flex h-auto cursor-pointer items-center gap-1.5 rounded-[6px] border bg-background px-3.5 py-1.5",
+          "font-ui text-[10px] font-bold uppercase tracking-[0.08em] transition-colors",
           "focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-background",
           tone === "danger"
-            ? "border-accent text-accent hover:bg-card-hover"
-            : "border-foreground text-foreground hover:bg-card-hover",
+            ? "border-accent text-accent hover:bg-surface-hover"
+            : "border-foreground text-foreground hover:bg-surface-hover",
         )}
       >
         {triggerIcon}
@@ -90,23 +90,23 @@ export function CmsConfirmDialog({
       <DialogContent
         showCloseButton={false}
         className={cn(
-          "w-full max-w-100 sm:max-w-100 gap-0 rounded-none border border-foreground bg-(--bg-main) p-0 ring-0",
+          "w-full max-w-100 gap-0 rounded-[8px] border border-foreground bg-background p-0 sm:max-w-100",
         )}
       >
-        <div className="flex items-center justify-between bg-foreground px-4.5 py-3.5">
-          <DialogTitle className="font-display text-[14px] uppercase leading-none tracking-[-0.02em] text-white">
+        <div className="flex items-center justify-between rounded-t-[8px] bg-foreground px-4.5 py-3.5">
+          <DialogTitle className="font-display text-[14px] font-extrabold uppercase leading-none tracking-[-0.02em] text-background">
             {title}
           </DialogTitle>
           <DialogClose
             disabled={isConfirming}
             aria-label={text.cancel}
-            className="cursor-pointer font-ui text-[16px] leading-none text-white/50 transition-colors hover:text-white focus-visible:text-white"
+            className="cursor-pointer font-ui text-[16px] leading-none text-background/50 transition-colors hover:text-background focus-visible:text-background"
           >
             ×
           </DialogClose>
         </div>
         <div className="px-4.5 pt-5 pb-4">
-          <DialogDescription className="mb-4 font-editorial text-[15px] leading-[1.55] text-foreground">
+          <DialogDescription className="mb-4 font-editorial text-[15px] leading-[1.55] text-body-text">
             {description}
           </DialogDescription>
           <div className="flex flex-wrap gap-2.5">
@@ -132,7 +132,7 @@ export function CmsConfirmDialog({
           </div>
         </div>
         {footerInfo ? (
-          <div className="border-t border-border px-4.5 py-2.5 font-ui text-[10px] uppercase leading-none tracking-[0.04em] text-muted-foreground">
+          <div className="border-t border-border px-4.5 py-2.5 font-ui text-[10px] font-bold uppercase leading-none tracking-[0.08em] text-muted-foreground">
             {footerInfo}
           </div>
         ) : null}

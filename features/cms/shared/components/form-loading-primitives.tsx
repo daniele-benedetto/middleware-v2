@@ -5,13 +5,13 @@ export function CmsFormLoadingHeader() {
   return (
     <div className="mb-6 pb-4">
       <div className="flex items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
-        <Skeleton className="lg:h-12.5 md:h-10 h-10 w-72 rounded-none border border-border bg-card-hover" />
+        <Skeleton className="h-10 w-72 rounded-[8px] border border-border bg-card-hover md:h-10 lg:h-12.5" />
         <div className="flex items-center gap-3 max-sm:w-full max-sm:flex-wrap">
-          <Skeleton className="h-9 w-24 rounded-none border border-border bg-card-hover" />
-          <Skeleton className="h-9 w-24 rounded-none border border-border bg-card-hover" />
+          <Skeleton className="h-9 w-24 rounded-[6px] border border-border bg-card-hover" />
+          <Skeleton className="h-9 w-24 rounded-[6px] border border-border bg-card-hover" />
         </div>
       </div>
-      <hr className="mt-4 w-full border-0 border-t-[3px] border-foreground" />
+      <hr className="mt-4 w-full border-0 border-t-2 border-foreground" />
     </div>
   );
 }
@@ -25,18 +25,21 @@ export function CmsRichTextLoading({
 }) {
   return (
     <div
-      className={cn("border border-foreground bg-white", fullHeight && "flex min-h-full flex-col")}
+      className={cn(
+        "rounded-[8px] border border-foreground bg-white",
+        fullHeight && "flex min-h-full flex-col",
+      )}
     >
       <div className="flex flex-wrap items-center gap-1 border-b border-foreground px-2 py-1.5">
         {Array.from({ length: 9 }).map((_, index) => (
           <Skeleton
             key={`tb-${index}`}
-            className="h-6 w-6 rounded-none border border-border bg-card-hover"
+            className="h-6 w-6 rounded-[6px] border border-border bg-card-hover"
           />
         ))}
       </div>
       <Skeleton
-        className={cn("w-full rounded-none bg-card-hover", fullHeight ? "flex-1" : height)}
+        className={cn("w-full rounded-[6px] bg-card-hover", fullHeight ? "flex-1" : height)}
       />
     </div>
   );
@@ -53,12 +56,12 @@ export function CmsFieldLoading({
 }) {
   return (
     <div>
-      <Skeleton className={`mb-1.5 h-2.5 ${labelWidth} rounded-none bg-card-hover`} />
+      <Skeleton className={`mb-1.5 h-2.5 ${labelWidth} rounded-[6px] bg-card-hover`} />
       <Skeleton
-        className={`${inputClassName} w-full rounded-none border border-border bg-card-hover`}
+        className={`${inputClassName} w-full rounded-[6px] border border-border bg-card-hover`}
       />
       {hintWidth ? (
-        <Skeleton className={`mt-1.25 h-2.5 ${hintWidth} rounded-none bg-card-hover`} />
+        <Skeleton className={`mt-1.25 h-2.5 ${hintWidth} rounded-[6px] bg-card-hover`} />
       ) : null}
     </div>
   );
@@ -67,12 +70,12 @@ export function CmsFieldLoading({
 export function CmsSlugFieldLoading({ labelWidth = "w-12" }: { labelWidth?: string }) {
   return (
     <div>
-      <Skeleton className={`mb-1.5 h-2.5 ${labelWidth} rounded-none bg-card-hover`} />
+      <Skeleton className={`mb-1.5 h-2.5 ${labelWidth} rounded-[6px] bg-card-hover`} />
       <div className="flex items-center gap-2">
-        <Skeleton className="h-10 flex-1 rounded-none border border-border bg-card-hover" />
-        <Skeleton className="h-10 w-28 rounded-none border border-border bg-card-hover" />
+        <Skeleton className="h-10 flex-1 rounded-[6px] border border-border bg-card-hover" />
+        <Skeleton className="h-10 w-28 rounded-[6px] border border-border bg-card-hover" />
       </div>
-      <Skeleton className="mt-1.25 h-2.5 w-44 rounded-none bg-card-hover" />
+      <Skeleton className="mt-1.25 h-2.5 w-44 rounded-[6px] bg-card-hover" />
     </div>
   );
 }
@@ -88,22 +91,22 @@ export function CmsRichTextFieldLoading({
 }) {
   return (
     <div className={cn(fullHeight && "flex flex-1 flex-col")}>
-      <Skeleton className={`mb-1.5 h-2.5 ${labelWidth} rounded-none bg-card-hover`} />
+      <Skeleton className={`mb-1.5 h-2.5 ${labelWidth} rounded-[6px] bg-card-hover`} />
       <CmsRichTextLoading height={height} fullHeight={fullHeight} />
     </div>
   );
 }
 
 export function CmsSectionLabelLoading({ width = "w-28" }: { width?: string }) {
-  return <Skeleton className={`h-3 ${width} rounded-none bg-card-hover`} />;
+  return <Skeleton className={`h-3 ${width} rounded-[6px] bg-card-hover`} />;
 }
 
 export function CmsArticlePanelLoading() {
   return (
-    <div className="flex h-full min-h-0 flex-col border border-foreground bg-white">
+    <div className="flex h-full min-h-0 flex-col rounded-[8px] border border-foreground bg-white">
       <div className="flex shrink-0 items-center justify-between border-b border-foreground px-3 py-2">
-        <Skeleton className="h-2.5 w-24 rounded-none bg-card-hover" />
-        <Skeleton className="h-2.5 w-6 rounded-none bg-card-hover" />
+        <Skeleton className="h-2.5 w-24 rounded-[6px] bg-card-hover" />
+        <Skeleton className="h-2.5 w-6 rounded-[6px] bg-card-hover" />
       </div>
       <div className="cms-scroll min-h-0 flex-1 overflow-y-auto">
         <ul className="divide-y divide-border">
@@ -112,9 +115,9 @@ export function CmsArticlePanelLoading() {
               key={index}
               className="flex items-center gap-2 px-3 py-2 odd:bg-white even:bg-card-hover"
             >
-              <Skeleton className="h-4 flex-1 rounded-none bg-card-hover" />
+              <Skeleton className="h-4 flex-1 rounded-[6px] bg-card-hover" />
               <div className="flex w-7 min-w-7 max-w-7 items-center justify-center">
-                <Skeleton className="size-3.5 rounded-none bg-card-hover" />
+                <Skeleton className="size-3.5 rounded-[5px] bg-card-hover" />
               </div>
             </li>
           ))}

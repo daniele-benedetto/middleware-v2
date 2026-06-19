@@ -1,6 +1,6 @@
 "use client";
 
-import { Archivo_Black, IBM_Plex_Mono, Newsreader } from "next/font/google";
+import { Archivo, IBM_Plex_Mono, Spectral } from "next/font/google";
 
 import {
   CmsSystemActionButton,
@@ -12,14 +12,16 @@ import { cn } from "@/lib/utils";
 
 import "./globals.css";
 
-const archivoBlack = Archivo_Black({
-  variable: "--font-archivo-black",
-  weight: "400",
+const archivo = Archivo({
+  variable: "--font-archivo",
+  weight: ["400", "500", "600", "700", "800", "900"],
   subsets: ["latin"],
 });
 
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
+const spectral = Spectral({
+  variable: "--font-spectral",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
   subsets: ["latin"],
 });
 
@@ -42,8 +44,8 @@ export default function GlobalError({ reset }: GlobalErrorProps) {
       lang="it"
       className={cn(
         "h-full antialiased font-sans",
-        archivoBlack.variable,
-        newsreader.variable,
+        archivo.variable,
+        spectral.variable,
         ibmPlexMono.variable,
       )}
     >

@@ -343,16 +343,16 @@ Notes:
 
 Design direction: editorial, high contrast, no decorative effects.
 
-- Palette (fixed): `#F0E8D8`, `#E5D9C5`, `#0A0A0A`, `#C8001A`, `#FFFFFF`
+- Palette (fixed): `#F4EBDD`, `#E7DDCB`, `#111111`, `#A23B2A`, `#FFFFFF`
 - Ink alpha variants (no gray ramp): `ink-60`, `ink-50`, `ink-30`
 - Typography roles:
-  - display/headings: `Archivo Black`
-  - long-form content: `Newsreader`
-  - UI labels/metadata: `IBM Plex Mono`
-- Surfaces: `border-radius: 0`, `box-shadow: none`
-- Strokes: `3px` primary separators, `1px` grid lines, `4px` semantic accent, `3px` reading bar
+  - display/headings: `Archivo`
+  - long-form content: `Spectral`
+  - UI labels/metadata: `Archivo`
+- Surfaces: controlled `6px`/`8px` radius on controls and CTAs, `box-shadow: none`
+- Strokes: `2px` primary separators, `1px` grid lines, `3px` semantic accent, `3px` reading bar
 - Spacing scale: `4, 8, 12, 16, 20, 24, 32, 48, 72`
-- Selection: background `#C8001A`, text `#FFFFFF`
+- Selection: background `#A23B2A`, text `#F4EBDD`
 - Theme policy: light-only for current phase
 
 Implementation reference:

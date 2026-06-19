@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { CmsActionButton, CmsRemovableTag, CmsSearchBar } from "@/components/cms/primitives";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { cn } from "@/lib/utils";
 
 type ArticleTagOption = {
@@ -81,8 +82,8 @@ export function ArticleTagsMultiSelect({
               type="button"
               disabled={disabled || loading}
               className={cn(
-                "flex min-h-10 w-full items-center justify-between border border-foreground bg-white px-3 text-left",
-                "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
+                "flex min-h-10 w-full items-center justify-between rounded-[6px] border border-foreground bg-white px-3 text-left",
+                "font-ui text-[12px] font-bold uppercase tracking-[var(--tracking-meta)] transition-colors hover:bg-surface-hover",
                 (disabled || loading) &&
                   "cursor-not-allowed border-border bg-card-hover text-border hover:bg-card-hover",
               )}
@@ -118,10 +119,10 @@ export function ArticleTagsMultiSelect({
                           onClick={() => onChange(tag.id, !checked)}
                           className={cn(
                             "flex w-full items-center justify-between border-b border-card-hover px-3.5 py-2 text-left last:border-b-0",
-                            "font-ui text-[11px] uppercase tracking-[0.04em]",
+                            "font-ui text-[11px] font-bold uppercase tracking-[var(--tracking-meta)]",
                             checked
                               ? "bg-card-hover text-foreground"
-                              : "bg-white text-muted-foreground hover:bg-card-hover hover:text-foreground",
+                              : "bg-white text-muted-foreground hover:bg-surface-hover hover:text-foreground",
                           )}
                         >
                           <span>
@@ -133,17 +134,13 @@ export function ArticleTagsMultiSelect({
                       );
                     })
                   ) : (
-                    <div className="px-3.5 py-3 font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
-                      {searchEmptyText}
-                    </div>
+                    <div className={cn("px-3.5 py-3", cmsMetaLabelClass)}>{searchEmptyText}</div>
                   )}
                 </div>
               }
             />
           ) : (
-            <div className="font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
-              {loading ? loadingText : emptyText}
-            </div>
+            <div className={cmsMetaLabelClass}>{loading ? loadingText : emptyText}</div>
           )}
         </PopoverContent>
       </Popover>

@@ -39,7 +39,7 @@ export function CmsPaginationFooter({
 
       <div className="flex items-center gap-2.5">
         <CmsEyebrow>{text.perPage}</CmsEyebrow>
-        <div className="flex border border-foreground">
+        <div className="flex overflow-hidden rounded-[6px] border border-foreground">
           {pageSizeOptions.map((size) => {
             const active = size === pageSize;
             return (
@@ -48,8 +48,8 @@ export function CmsPaginationFooter({
                 type="button"
                 onClick={() => onPageSizeChange?.(size)}
                 className={cn(
-                  "cursor-pointer border-r border-foreground px-2.5 py-1 font-ui text-[11px] uppercase tracking-[0.04em] last:border-r-0",
-                  active ? "bg-accent text-white" : "text-foreground hover:bg-card-hover",
+                  "cursor-pointer border-r border-foreground px-2.5 py-1 font-ui text-[11px] font-bold uppercase tracking-[0.08em] last:border-r-0",
+                  active ? "bg-accent text-background" : "text-foreground hover:bg-surface-hover",
                 )}
               >
                 {size}

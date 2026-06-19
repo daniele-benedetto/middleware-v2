@@ -5,20 +5,21 @@ import { cn } from "@/lib/utils";
 import type { ElementType, ReactNode } from "react";
 
 /* =============================================================
- * DISPLAY (Archivo Black)
+ * DISPLAY (Archivo)
  * SG: hero / h1 / h2 / h3 / pull-quote / section-label
  * ============================================================= */
 
-const cmsDisplayVariants = cva("font-display uppercase text-foreground", {
+const cmsDisplayVariants = cva("font-display text-foreground", {
   variants: {
     size: {
-      hero: "text-(length:--text-display-hero) leading-(--lh-2xl) tracking-[-0.04em]",
-      h1: "text-(length:--text-display-h1) leading-(--lh-display-h1) tracking-[-0.03em]",
-      h2: "text-(length:--text-display-h2) leading-(--lh-xl) tracking-[-0.025em]",
-      h3: "text-(length:--text-display-h3) leading-(--lh-lg) tracking-[-0.02em]",
+      hero: "font-black text-(length:--text-display-hero) leading-[0.94] tracking-[var(--tracking-display-hero)]",
+      h1: "font-black text-(length:--text-display-h1) leading-none tracking-[var(--tracking-display-hero)]",
+      h2: "font-extrabold text-(length:--text-display-h2) leading-[1.02] tracking-[var(--tracking-display-tight)]",
+      h3: "font-bold text-(length:--text-display-h3) leading-[1.08] tracking-[var(--tracking-display-tight)]",
       quote:
-        "text-(length:--text-display-quote) leading-(--lh-display-quote) tracking-[-0.02em] italic",
-      label: "text-(length:--text-display-label) tracking-[0.04em]",
+        "font-semibold text-(length:--text-display-quote) leading-(--lh-display-quote) tracking-[var(--tracking-display-tight)] italic",
+      label:
+        "font-extrabold text-(length:--text-display-label) uppercase tracking-[var(--tracking-kicker)]",
     },
     tone: {
       foreground: "text-foreground",
@@ -60,19 +61,19 @@ function defaultTagFor(size: CmsDisplayProps["size"]): ElementType {
 }
 
 /* =============================================================
- * EDITORIAL (Newsreader)
+ * EDITORIAL (Spectral)
  * SG: body / epigraph / blockquote / hairline / note
  * ============================================================= */
 
 const cmsBodyVariants = cva("font-editorial", {
   variants: {
     size: {
-      sm: "text-[16px] leading-(--lh-md)",
-      md: "text-[17px] leading-(--lh-editorial)",
+      sm: "text-[15px] leading-(--lh-md)",
+      md: "text-[16px] leading-(--lh-editorial)",
       lg: "text-(length:--text-editorial-body) leading-(--lh-lg)",
     },
     tone: {
-      foreground: "text-foreground",
+      foreground: "text-body-text",
       muted: "text-muted-foreground",
       accent: "text-accent",
     },
@@ -97,7 +98,7 @@ export function CmsEpigraph({ children, author, className }: CmsEpigraphProps) {
     <p
       className={cn(
         "ml-auto max-w-95 text-right",
-        "font-editorial text-(length:--text-editorial-epigraph) leading-(--lh-editorial) italic text-foreground",
+        "font-editorial text-(length:--text-editorial-epigraph) leading-(--lh-editorial) italic text-body-text",
         className,
       )}
     >
@@ -116,7 +117,7 @@ type CmsBlockquoteProps = { children: ReactNode; source?: ReactNode; className?:
 export function CmsBlockquote({ children, source, className }: CmsBlockquoteProps) {
   return (
     <blockquote className={cn("max-w-130 border-l-4 border-accent py-1 pl-5", className)}>
-      <p className="font-editorial text-(length:--text-editorial-blockquote) leading-(--lh-editorial) italic text-foreground">
+      <p className="font-editorial text-(length:--text-editorial-blockquote) leading-(--lh-editorial) italic text-body-text">
         {children}
       </p>
       {source ? (
@@ -133,7 +134,7 @@ export function CmsHairline({ children, className }: CmsHairlineProps) {
     <p
       className={cn(
         "max-w-125 font-editorial italic font-light",
-        "text-(length:--text-editorial-hairline) leading-(--lh-md) text-(--ink-70)",
+        "text-(length:--text-editorial-hairline) leading-(--lh-md) text-muted-foreground",
         className,
       )}
     >
@@ -148,7 +149,7 @@ export function CmsNote({ number, children, className }: CmsNoteProps) {
   return (
     <div className={cn("flex max-w-140 items-baseline gap-2.5", className)}>
       <span className="shrink-0 font-ui text-(length:--text-meta) text-accent">{number}</span>
-      <span className="font-editorial text-(length:--text-editorial-note) leading-(--lh-sm) text-foreground">
+      <span className="font-editorial text-(length:--text-editorial-note) leading-(--lh-sm) text-body-text">
         {children}
       </span>
     </div>
@@ -156,17 +157,21 @@ export function CmsNote({ number, children, className }: CmsNoteProps) {
 }
 
 /* =============================================================
- * META (IBM Plex Mono)
+ * META (Archivo)
  * SG: category / meta / tagline / paragraph-number / section-number
  * ============================================================= */
 
 const cmsMetaTextVariants = cva("font-ui uppercase", {
   variants: {
     variant: {
-      category: "text-(length:--text-meta) tracking-[0.08em] text-accent",
-      meta: "text-(length:--text-meta) tracking-normal normal-case text-muted-foreground",
-      tagline: "text-(length:--text-meta) tracking-[0.06em] text-foreground",
-      tiny: "text-[10px] tracking-[0.08em] text-muted-foreground",
+      category: "font-extrabold text-[12px] tracking-[var(--tracking-kicker)] text-accent",
+      meta: "font-semibold text-(length:--text-meta) tracking-[0.06em] normal-case text-muted-foreground",
+      label: "font-bold text-[11px] tracking-[var(--tracking-meta)] text-muted-foreground",
+      "label-accent": "font-bold text-[11px] tracking-[var(--tracking-meta)] text-accent",
+      tagline:
+        "font-bold text-(length:--text-meta) tracking-[var(--tracking-label)] text-foreground",
+      action: "font-bold text-[10px] tracking-[var(--tracking-meta)] text-foreground",
+      tiny: "font-semibold text-[10px] tracking-[var(--tracking-meta)] text-muted-foreground",
     },
   },
   defaultVariants: { variant: "meta" },
@@ -188,7 +193,7 @@ export function CmsParagraphNumber({ children, className }: CmsParagraphNumberPr
   return (
     <span
       className={cn(
-        "block pt-0.75 text-right font-ui text-(length:--text-meta) text-(--ink-50)",
+        "block pt-0.75 text-right font-ui font-bold text-(length:--text-meta) text-(--ink-50)",
         className,
       )}
     >
@@ -206,8 +211,10 @@ type CmsSectionNumberProps = {
 export function CmsSectionNumber({ number, label, className }: CmsSectionNumberProps) {
   return (
     <div className={cn("flex items-baseline gap-2.5", className)}>
-      <span className="font-ui text-(length:--text-section-number) text-accent">{number}</span>
-      <span className="font-display uppercase text-(length:--text-display-label) tracking-[0.04em] text-foreground">
+      <span className="font-ui text-(length:--text-section-number) font-black text-accent">
+        {number}
+      </span>
+      <span className="font-display text-(length:--text-display-label) font-extrabold uppercase tracking-[var(--tracking-kicker)] text-foreground">
         {label}
       </span>
     </div>
@@ -218,17 +225,20 @@ export function CmsSectionNumber({ number, label, className }: CmsSectionNumberP
  * BACK-COMPAT: CmsEyebrow / CmsHeading / CmsBodyText
  * ============================================================= */
 
-const cmsEyebrowVariants = cva("font-ui text-(length:--text-meta) uppercase tracking-[0.08em]", {
-  variants: {
-    tone: {
-      foreground: "text-foreground",
-      accent: "text-accent",
-      muted: "text-muted-foreground",
-      onAccent: "text-primary-foreground/75",
+const cmsEyebrowVariants = cva(
+  "font-ui text-(length:--text-meta) font-extrabold uppercase tracking-[var(--tracking-kicker)]",
+  {
+    variants: {
+      tone: {
+        foreground: "text-foreground",
+        accent: "text-accent",
+        muted: "text-muted-foreground",
+        onAccent: "text-primary-foreground/75",
+      },
     },
+    defaultVariants: { tone: "foreground" },
   },
-  defaultVariants: { tone: "foreground" },
-});
+);
 
 export const cmsEyebrowClassName = cmsEyebrowVariants({});
 
@@ -241,11 +251,12 @@ export function CmsEyebrow({ children, className, tone }: CmsEyebrowProps) {
   return <p className={cn(cmsEyebrowVariants({ tone }), className)}>{children}</p>;
 }
 
-const cmsHeadingVariants = cva("font-display uppercase", {
+const cmsHeadingVariants = cva("font-display", {
   variants: {
     size: {
-      page: "text-(length:--text-display-h1) leading-(--lh-display-h1) tracking-[-0.03em]",
-      section: "text-(length:--text-display-h2) leading-(--lh-xl) tracking-[-0.025em]",
+      page: "font-black text-(length:--text-display-h1) leading-none tracking-[var(--tracking-display-hero)]",
+      section:
+        "font-extrabold text-(length:--text-display-h2) leading-[1.02] tracking-[var(--tracking-display-tight)]",
     },
     tone: {
       foreground: "text-foreground",

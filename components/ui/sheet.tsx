@@ -26,7 +26,7 @@ function SheetOverlay({ className, ...props }: DialogPrimitive.Backdrop.Props) {
     <DialogPrimitive.Backdrop
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-[rgba(10,10,10,0.45)]",
+        "fixed inset-0 z-50 bg-(--overlay-dark)",
         "transition-opacity duration-200 ease-out",
         "data-starting-style:opacity-0 data-ending-style:opacity-0",
         className,
@@ -42,19 +42,19 @@ const sheetContentVariants = cva(
     variants: {
       side: {
         left: [
-          "inset-y-0 left-0 h-full w-[85vw] max-w-80 border-r-[3px] border-foreground",
+          "inset-y-0 left-0 h-full w-[85vw] max-w-80 border-r-2 border-foreground",
           "data-starting-style:-translate-x-full data-ending-style:-translate-x-full",
         ].join(" "),
         right: [
-          "inset-y-0 right-0 h-full w-[85vw] max-w-80 border-l-[3px] border-foreground",
+          "inset-y-0 right-0 h-full w-[85vw] max-w-80 border-l-2 border-foreground",
           "data-starting-style:translate-x-full data-ending-style:translate-x-full",
         ].join(" "),
         top: [
-          "inset-x-0 top-0 w-full border-b-[3px] border-foreground",
+          "inset-x-0 top-0 w-full border-b-2 border-foreground",
           "data-starting-style:-translate-y-full data-ending-style:-translate-y-full",
         ].join(" "),
         bottom: [
-          "inset-x-0 bottom-0 w-full border-t-[3px] border-foreground",
+          "inset-x-0 bottom-0 w-full border-t-2 border-foreground",
           "data-starting-style:translate-y-full data-ending-style:translate-y-full",
         ].join(" "),
       },
@@ -85,7 +85,10 @@ function SheetTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   return (
     <DialogPrimitive.Title
       data-slot="sheet-title"
-      className={cn("font-display text-[15px] uppercase tracking-[0.04em]", className)}
+      className={cn(
+        "font-display text-[15px] font-extrabold tracking-[var(--tracking-display-tight)]",
+        className,
+      )}
       {...props}
     />
   );
@@ -96,7 +99,7 @@ function SheetDescription({ className, ...props }: DialogPrimitive.Description.P
     <DialogPrimitive.Description
       data-slot="sheet-description"
       className={cn(
-        "font-ui text-[11px] uppercase tracking-[0.08em] text-muted-foreground",
+        "font-ui text-[11px] font-bold uppercase tracking-[var(--tracking-meta)] text-muted-foreground",
         className,
       )}
       {...props}

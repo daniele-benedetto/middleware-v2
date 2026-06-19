@@ -62,6 +62,7 @@ import {
   mapTrpcErrorToCmsUiMessage,
   type CmsUiError,
 } from "@/lib/cms/trpc";
+import { cmsInteractiveRailClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
@@ -198,7 +199,8 @@ function SortableArticleRow({
       className={cn(
         cmsTableClasses.bodyRow,
         isDragEnabled && "cursor-grab select-none touch-manipulation active:cursor-grabbing",
-        isDragging && "relative z-10 bg-white shadow-[0_0_0_2px_var(--color-accent)]",
+        isDragging && "relative z-10 bg-surface-hover",
+        isDragging && cmsInteractiveRailClass,
       )}
       {...(isDragEnabled ? attributes : {})}
       {...(isDragEnabled ? listeners : {})}

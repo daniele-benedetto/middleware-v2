@@ -52,7 +52,7 @@ function DropdownMenuContent({
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
           className={cn(
-            "z-50 min-w-44 border border-foreground bg-background text-foreground",
+            "z-50 min-w-44 rounded-[8px] border border-foreground bg-white text-foreground",
             "outline-none data-open:animate-in data-open:fade-in-0",
             className,
           )}
@@ -69,11 +69,11 @@ function DropdownMenuItem({ className, ...props }: MenuPrimitive.Item.Props) {
     <MenuPrimitive.Item
       data-slot="dropdown-menu-item"
       className={cn(
-        "flex cursor-pointer select-none items-center gap-2 border-l-4 border-transparent py-3 pl-4 pr-3",
-        "font-ui text-[11px] uppercase tracking-[0.08em] text-foreground",
+        "flex cursor-pointer select-none items-center gap-2 border-l-4 border-transparent py-3 pr-3 pl-4 first:rounded-t-[8px] last:rounded-b-[8px]",
+        "font-ui text-[11px] font-extrabold uppercase tracking-[0.1em] text-foreground",
         "outline-none transition-colors",
-        "hover:border-accent hover:bg-card-hover hover:text-accent",
-        "data-highlighted:border-accent data-highlighted:bg-card-hover data-highlighted:text-accent",
+        "hover:border-accent hover:bg-surface-hover hover:text-accent",
+        "data-highlighted:border-accent data-highlighted:bg-surface-hover data-highlighted:text-accent",
         "data-disabled:pointer-events-none data-disabled:opacity-50 data-disabled:hover:border-transparent data-disabled:hover:bg-transparent data-disabled:hover:text-foreground",
         className,
       )}

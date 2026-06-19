@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;background:#F4EBDD;color:#111111;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  ::selection{background:#A23B2A;color:#F4EBDD;}
+</style>
+</helmet>
+
+<div style="font-family:'Archivo',sans-serif;background:#F4EBDD;min-height:100vh;padding:0 0 80px;">
+
+  <!-- ===== HEADER ===== -->
+  <header style="border-bottom:2px solid #111;padding:36px 56px 30px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+    <div>
+      <div style="display:flex;align-items:center;gap:13px;margin-bottom:18px;">
+        <div style="display:grid;grid-template-columns:repeat(3,11px);grid-auto-rows:11px;gap:2px;">
+          <div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div><div></div>
+          <div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div>
+          <div></div><div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div>
+        </div>
+        <span style="font-weight:800;font-size:24px;letter-spacing:-0.02em;">middleware</span>
+      </div>
+      <h1 style="margin:0;font-weight:900;font-size:clamp(36px,5vw,68px);line-height:0.94;letter-spacing:-0.035em;">Styleguide</h1>
+    </div>
+    <span style="font-family:'Spectral',serif;font-style:italic;font-size:16px;color:#6b6357;max-width:34ch;">Sistema visivo della rivista — marchio, colori, tipografia e componenti.</span>
+  </header>
+
+  <!-- ===== BRAND / LOGO ===== -->
+  <section style="padding:54px 56px;border-bottom:1px solid rgba(17,17,17,0.2);">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:34px;">
+      <span style="font-weight:900;font-size:15px;color:#A23B2A;">01</span>
+      <h2 style="margin:0;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;">Marchio</h2>
+      <span style="height:1px;flex:1;background:rgba(17,17,17,0.2);"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0;border:1px solid #111;">
+      <div style="padding:40px;border-right:1px solid #111;border-bottom:1px solid #111;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:200px;">
+        <div style="display:grid;grid-template-columns:repeat(3,26px);grid-auto-rows:26px;gap:5px;">
+          <div style="background:#A23B2A;border-radius:4px;"></div><div style="background:#A23B2A;border-radius:4px;"></div><div></div>
+          <div style="background:#A23B2A;border-radius:4px;"></div><div style="background:#A23B2A;border-radius:4px;"></div><div style="background:#A23B2A;border-radius:4px;"></div>
+          <div></div><div style="background:#A23B2A;border-radius:4px;"></div><div style="background:#A23B2A;border-radius:4px;"></div>
+        </div>
+        <span style="font-size:11.5px;font-weight:600;color:#6b6357;text-transform:uppercase;letter-spacing:0.1em;">Marchio modulare</span>
+      </div>
+      <div style="padding:40px;border-right:1px solid #111;border-bottom:1px solid #111;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:200px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="display:grid;grid-template-columns:repeat(3,12px);grid-auto-rows:12px;gap:2px;">
+            <div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div><div></div>
+            <div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div>
+            <div></div><div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div>
+          </div>
+          <span style="font-weight:800;font-size:26px;letter-spacing:-0.02em;">middleware</span>
+        </div>
+        <span style="font-size:11.5px;font-weight:600;color:#6b6357;text-transform:uppercase;letter-spacing:0.1em;">Lockup orizzontale</span>
+      </div>
+      <div style="padding:40px;border-bottom:1px solid #111;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:200px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="display:grid;grid-template-columns:repeat(3,12px);grid-auto-rows:12px;gap:2px;">
+            <div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div><div></div>
+            <div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div>
+            <div></div><div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div>
+          </div>
+          <span style="font-weight:800;font-size:26px;letter-spacing:-0.02em;color:#F4EBDD;">middleware</span>
+        </div>
+        <span style="font-size:11.5px;font-weight:600;color:#9b9286;text-transform:uppercase;letter-spacing:0.1em;">Su fondo scuro</span>
+      </div>
+    </div>
+    <p style="font-family:'Spectral',serif;font-size:15px;line-height:1.55;color:#3a352d;margin:24px 0 0;max-width:70ch;">Il marchio è una griglia modulare di sei moduli in rosso mattone: un sistema, non solo un segno. Si declina come lockup, indicatore di sezione e mini-marcatore nell'archivio. Mantenere sempre il modulo vuoto in alto a destra e in basso a sinistra.</p>
+  </section>
+
+  <!-- ===== COLORS ===== -->
+  <section style="padding:54px 56px;border-bottom:1px solid rgba(17,17,17,0.2);">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:34px;">
+      <span style="font-weight:900;font-size:15px;color:#A23B2A;">02</span>
+      <h2 style="margin:0;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;">Colori</h2>
+      <span style="height:1px;flex:1;background:rgba(17,17,17,0.2);"></span>
+    </div>
+
+    <div style="margin-bottom:14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6b6357;">Primari</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-bottom:40px;">
+      <sc-for list="{{ primaries }}" as="c" hint-placeholder-count="3">
+        <div style="border:1px solid #111;overflow:hidden;">
+          <div style="height:130px;background:{{ c.hex }};border-bottom:1px solid #111;"></div>
+          <div style="padding:16px 18px;background:#fff;">
+            <div style="font-weight:800;font-size:16px;letter-spacing:-0.01em;">{{ c.name }}</div>
+            <div style="font-family:'Archivo',monospace;font-size:13px;color:#A23B2A;font-weight:700;margin-top:4px;">{{ c.hex }}</div>
+            <div style="font-family:'Spectral',serif;font-size:13.5px;color:#6b6357;margin-top:8px;line-height:1.4;">{{ c.use }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-bottom:14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6b6357;">Neutri & testo</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;border:1px solid #111;">
+      <sc-for list="{{ neutrals }}" as="c" hint-placeholder-count="5">
+        <div style="border-right:1px solid #111;border-bottom:1px solid #111;background:#fff;">
+          <div style="height:78px;background:{{ c.hex }};"></div>
+          <div style="padding:12px 14px;">
+            <div style="font-weight:700;font-size:13px;">{{ c.name }}</div>
+            <div style="font-family:'Archivo',monospace;font-size:11.5px;color:#6b6357;font-weight:600;margin-top:3px;">{{ c.hex }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <p style="font-family:'Spectral',serif;font-size:15px;line-height:1.55;color:#3a352d;margin:24px 0 0;max-width:70ch;">Crema come superficie, nero come inchiostro, rosso mattone come unico accento — riservato a kicker, numeri, indicatori e call-to-action. Il rosso non si usa per grandi campiture di testo. Il blocco a fondo nero crea rottura di ritmo senza introdurre nuovi colori.</p>
+  </section>
+
+  <!-- ===== TYPOGRAPHY ===== -->
+  <section style="padding:54px 56px;border-bottom:1px solid rgba(17,17,17,0.2);">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:34px;">
+      <span style="font-weight:900;font-size:15px;color:#A23B2A;">03</span>
+      <h2 style="margin:0;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;">Tipografia</h2>
+      <span style="height:1px;flex:1;background:rgba(17,17,17,0.2);"></span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0;border:1px solid #111;margin-bottom:40px;">
+      <div style="padding:32px 34px;border-right:1px solid #111;background:#fff;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;">
+          <span style="font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:0.12em;color:#A23B2A;">Archivo</span>
+          <span style="font-family:'Spectral',serif;font-style:italic;font-size:13px;color:#6b6357;">Display & UI</span>
+        </div>
+        <div style="font-weight:900;font-size:64px;line-height:0.9;letter-spacing:-0.04em;">Aa</div>
+        <div style="font-weight:400;font-size:15px;color:#3a352d;margin-top:16px;letter-spacing:0.01em;">ABCDEFGHIJKLM<br>abcdefghijklm 0123456789</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;font-size:12px;font-weight:600;color:#6b6357;">
+          <span style="border:1px solid #111;padding:4px 9px;border-radius:5px;">Regular 400</span>
+          <span style="border:1px solid #111;padding:4px 9px;border-radius:5px;font-weight:700;">Bold 700</span>
+          <span style="border:1px solid #111;padding:4px 9px;border-radius:5px;font-weight:800;">Extrabold 800</span>
+          <span style="border:1px solid #111;padding:4px 9px;border-radius:5px;font-weight:900;">Black 900</span>
+        </div>
+      </div>
+      <div style="padding:32px 34px;background:#fff;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;">
+          <span style="font-family:'Spectral',serif;font-weight:600;font-size:15px;letter-spacing:0;color:#A23B2A;">Spectral</span>
+          <span style="font-family:'Spectral',serif;font-style:italic;font-size:13px;color:#6b6357;">Editoriale & testo</span>
+        </div>
+        <div style="font-family:'Spectral',serif;font-weight:500;font-size:64px;line-height:0.9;">Aa</div>
+        <div style="font-family:'Spectral',serif;font-size:16px;color:#3a352d;margin-top:16px;">ABCDEFGHIJKLM<br>abcdefghijklm 0123456789</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;font-size:12px;font-weight:600;color:#6b6357;font-family:'Spectral',serif;">
+          <span style="border:1px solid #111;padding:4px 9px;border-radius:5px;">Regular 400</span>
+          <span style="border:1px solid #111;padding:4px 9px;border-radius:5px;font-style:italic;">Italic 400</span>
+          <span style="border:1px solid #111;padding:4px 9px;border-radius:5px;font-weight:600;">Semibold 600</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- type scale -->
+    <div style="border-top:2px solid #111;">
+      <sc-for list="{{ scale }}" as="t" hint-placeholder-count="6">
+        <div style="display:flex;align-items:baseline;gap:28px;padding:18px 0;border-bottom:1px solid rgba(17,17,17,0.18);flex-wrap:wrap;">
+          <span style="flex:0 0 130px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6b6357;">{{ t.label }}</span>
+          <span style="flex:1;min-width:200px;font-family:{{ t.fam }};font-weight:{{ t.wt }};font-size:{{ t.size }};line-height:1.0;letter-spacing:-0.02em;font-style:{{ t.style }};">{{ t.sample }}</span>
+          <span style="flex:0 0 120px;font-family:'Archivo',monospace;font-size:12px;color:#A23B2A;font-weight:600;text-align:right;">{{ t.meta }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- ===== COMPONENTS ===== -->
+  <section style="padding:54px 56px;">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:34px;">
+      <span style="font-weight:900;font-size:15px;color:#A23B2A;">04</span>
+      <h2 style="margin:0;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;">Componenti</h2>
+      <span style="height:1px;flex:1;background:rgba(17,17,17,0.2);"></span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0;border:1px solid #111;">
+
+      <!-- badges -->
+      <div style="padding:30px 32px;border-right:1px solid #111;border-bottom:1px solid #111;background:#fff;">
+        <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6b6357;margin-bottom:20px;">Etichette & kicker</div>
+        <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start;">
+          <span style="display:inline-flex;align-items:center;gap:9px;background:#A23B2A;color:#F4EBDD;font-weight:800;font-size:12.5px;letter-spacing:0.12em;padding:7px 13px;border-radius:6px;"><span style="width:8px;height:8px;background:#F4EBDD;border-radius:2px;"></span>NUMERO 01</span>
+          <span style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#A23B2A;">Editoriale</span>
+          <span style="font-family:'Spectral',serif;font-style:italic;font-size:15px;color:#6b6357;">il materiale centrale dell'inchiesta</span>
+        </div>
+      </div>
+
+      <!-- buttons -->
+      <div style="padding:30px 32px;border-right:1px solid #111;border-bottom:1px solid #111;background:#fff;">
+        <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6b6357;margin-bottom:20px;">Pulsanti & link</div>
+        <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start;">
+          <span style="display:inline-flex;align-items:center;gap:10px;background:#111;color:#F4EBDD;font-weight:700;font-size:14.5px;padding:13px 22px;border-radius:8px;">Leggi il numero →</span>
+          <span style="display:inline-flex;align-items:center;gap:10px;background:#A23B2A;color:#F4EBDD;font-weight:700;font-size:14.5px;padding:13px 22px;border-radius:8px;">Apri l'editoriale →</span>
+          <span style="color:#A23B2A;font-weight:700;font-size:14.5px;text-decoration:underline;text-underline-offset:4px;">Apri il numero →</span>
+        </div>
+      </div>
+
+      <!-- node markers -->
+      <div style="padding:30px 32px;border-bottom:1px solid #111;background:#fff;">
+        <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6b6357;margin-bottom:20px;">Marcatori di sezione</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+          <span style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:#A23B2A;color:#F4EBDD;border-radius:9px;font-weight:800;font-size:15px;">01</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:#fff;color:#A23B2A;border:1.5px solid #A23B2A;border-radius:9px;font-weight:800;font-size:15px;">02</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:#111;color:#F4EBDD;border-radius:9px;font-weight:800;font-size:15px;">06</span>
+          <div style="display:grid;grid-template-columns:repeat(2,13px);grid-auto-rows:13px;gap:3px;margin-left:6px;">
+            <div style="background:#A23B2A;border-radius:2px;"></div><div style="background:#111;border-radius:2px;"></div>
+            <div style="background:#111;border-radius:2px;"></div><div style="background:#A23B2A;border-radius:2px;"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:18px;font-size:11px;font-weight:600;color:#6b6357;flex-wrap:wrap;">
+          <span style="display:flex;align-items:center;gap:7px;"><span style="width:12px;height:12px;background:#A23B2A;border-radius:3px;"></span>Editoriale</span>
+          <span style="display:flex;align-items:center;gap:7px;"><span style="width:12px;height:12px;background:#fff;border:1.5px solid #A23B2A;border-radius:3px;"></span>Interviste</span>
+          <span style="display:flex;align-items:center;gap:7px;"><span style="width:12px;height:12px;background:#111;border-radius:3px;"></span>Contributi</span>
+        </div>
+      </div>
+
+      <!-- card -->
+      <div style="padding:30px 32px;border-right:1px solid #111;background:#fff;">
+        <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6b6357;margin-bottom:20px;">Scheda materiale</div>
+        <article style="border:1px solid #111;padding:22px 22px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-weight:900;font-size:14px;color:#A23B2A;">02</span>
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#A23B2A;">Intervista</span>
+          </div>
+          <h3 style="margin:0;font-weight:700;font-size:22px;line-height:1.08;letter-spacing:-0.02em;">Vivere il quartiere oltre la paura</h3>
+          <p style="font-family:'Spectral',serif;font-size:15px;line-height:1.5;color:#3a352d;margin:12px 0 0;">Voci che ribaltano la narrazione dominante dell'insicurezza.</p>
+        </article>
+      </div>
+
+      <!-- placeholder -->
+      <div style="padding:30px 32px;background:#fff;">
+        <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6b6357;margin-bottom:20px;">Segnaposto immagine</div>
+        <div style="height:140px;background:repeating-linear-gradient(135deg,#e7ddcb 0 11px,#ded3bf 11px 22px);filter:grayscale(1);display:flex;align-items:center;justify-content:center;border:1px solid #111;">
+          <span style="font-family:'Archivo',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:#7a7163;background:#F4EBDD;border:1px solid #b7ab94;padding:5px 10px;border-radius:4px;">[ ritratto · b/n ]</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:1700}}">
+class Component extends DCLogic {
+  renderVals() {
+    const primaries = [
+      { name: 'Crema', hex: '#F4EBDD', use: 'Superficie / sfondo principale della rivista.' },
+      { name: 'Inchiostro', hex: '#111111', use: 'Testo, filetti, blocchi a fondo scuro.' },
+      { name: 'Rosso mattone', hex: '#A23B2A', use: 'Accento unico: kicker, numeri, CTA, marcatori.' },
+    ];
+    const neutrals = [
+      { name: 'Bianco scheda', hex: '#FFFFFF' },
+      { name: 'Testo corpo', hex: '#3A352D' },
+      { name: 'Testo tenue', hex: '#6B6357' },
+      { name: 'Crema su scuro', hex: '#CFC6B6' },
+      { name: 'Bordo scuro', hex: '#34302B' },
+    ];
+    const scale = [
+      { label: 'Display / H1', fam: "'Archivo',sans-serif", wt: 900, style: 'normal', size: '52px', sample: 'Dopo la piazza', meta: '900 · −0.04em' },
+      { label: 'Titolo sezione', fam: "'Archivo',sans-serif", wt: 800, style: 'normal', size: '34px', sample: 'Interviste', meta: '800 · −0.02em' },
+      { label: 'Titolo scheda', fam: "'Archivo',sans-serif", wt: 700, style: 'normal', size: '24px', sample: 'Vivere il quartiere', meta: '700 · −0.02em' },
+      { label: 'Kicker / label', fam: "'Archivo',sans-serif", wt: 800, style: 'normal', size: '14px', sample: 'EDITORIALE', meta: '800 · 0.12em' },
+      { label: 'Lead / abstract', fam: "'Spectral',serif", wt: 500, style: 'italic', size: '24px', sample: 'La presenza diventa radicamento', meta: 'Spectral · italic' },
+      { label: 'Corpo del testo', fam: "'Spectral',serif", wt: 400, style: 'normal', size: '18px', sample: 'Presenza, radicamento, territorio.', meta: 'Spectral · 400' },
+    ];
+    return { primaries, neutrals, scale };
+  }
+}
+</script>
+</body>
+</html>

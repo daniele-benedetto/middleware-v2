@@ -11,7 +11,7 @@ const editorialCardVariants = cva(
     variants: {
       tone: {
         default: "bg-background hover:bg-card-hover",
-        accent: "border-accent bg-accent text-white hover:brightness-[0.93]",
+        accent: "border-accent bg-accent text-background hover:brightness-[0.93]",
       },
       density: {
         compact: "px-4 py-3.5",
@@ -56,7 +56,10 @@ export function CmsEditorialCard({
       href={href}
       className={cn(editorialCardVariants({ tone: resolvedTone, density }), className)}
     >
-      <CmsMetaText variant="category" className={cn("block mb-1.75", isAccent && "text-white/80!")}>
+      <CmsMetaText
+        variant="category"
+        className={cn("mb-1.75 block", isAccent && "text-background/80!")}
+      >
         {label}
       </CmsMetaText>
 
@@ -65,25 +68,25 @@ export function CmsEditorialCard({
         size="h2"
         tone={cardTitleToneMap[resolvedTone]}
         className={cn(
-          "text-[18px]! leading-[1.1]! tracking-[-0.02em]! mb-2.25",
+          "mb-2.25 text-[18px]! leading-[1.1]! tracking-[-0.02em]!",
           "group-hover:underline group-hover:decoration-accent group-hover:underline-offset-[4px]",
-          isAccent && "group-hover:decoration-white",
+          isAccent && "group-hover:decoration-background",
         )}
       >
         {title}
       </CmsDisplay>
 
       {meta ? (
-        <CmsMetaText variant="meta" className={cn("block", isAccent && "text-white/70!")}>
+        <CmsMetaText variant="meta" className={cn("block", isAccent && "text-background/70!")}>
           {meta}
         </CmsMetaText>
       ) : null}
 
       <span
         className={cn(
-          "mt-3.5 inline-flex border px-3 py-1.75 font-ui text-[12px] uppercase tracking-[0.04em]",
+          "mt-3.5 inline-flex rounded-[6px] border px-3 py-1.75 font-ui text-[12px] font-bold",
           isAccent
-            ? "border-white text-white"
+            ? "border-background text-background"
             : "border-foreground text-foreground group-hover:border-accent group-hover:text-accent",
         )}
       >

@@ -29,7 +29,7 @@ export function CmsDataTableShell({
 }
 
 const headerCellBase =
-  "h-auto font-ui font-normal text-[10px] uppercase tracking-[0.08em] text-left align-middle";
+  "h-auto text-left align-middle font-ui text-[10px] font-extrabold uppercase tracking-[var(--tracking-label)]";
 
 const bodyCellBase = "align-middle";
 
@@ -42,7 +42,7 @@ export const cmsTableClasses = {
     "bg-foreground border-b-[2px] border-foreground hover:bg-foreground data-[state=selected]:bg-foreground",
   headerCell: cn(
     headerCellBase,
-    "px-3.5 py-2.5 text-(--bg-main) border-r border-[color:rgba(240,232,216,0.15)] last:border-r-0",
+    "border-r border-(color:--line-subtle-on-dark) px-3.5 py-2.5 text-background last:border-r-0",
   ),
 
   sortableHeaderRow:
@@ -62,23 +62,26 @@ export const cmsTableClasses = {
 
   bodyCellTitle: cn(
     bodyCellBase,
-    "px-3.5 py-2.75 font-editorial text-[15px] leading-[1.3] text-foreground border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
+    "border-r border-(color:--line-subtle) px-3.5 py-2.75 font-editorial text-[15px] leading-[1.3] text-body-text last:border-r-0",
   ),
   bodyCellTitleArchived: cn(
     bodyCellBase,
-    "px-3.5 py-2.75 font-editorial text-[15px] leading-[1.3] italic text-border border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
+    "border-r border-(color:--line-subtle) px-3.5 py-2.75 font-editorial text-[15px] leading-[1.3] italic text-border last:border-r-0",
   ),
   bodyCellMeta: cn(
     bodyCellBase,
-    "px-3.5 py-2.75 font-ui text-[11px] text-muted-foreground border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
+    "border-r border-(color:--line-subtle) px-3.5 py-2.75 font-ui text-[11px] font-semibold text-muted-foreground last:border-r-0",
   ),
   bodyCellMetaArchived: cn(
     bodyCellBase,
-    "px-3.5 py-2.75 font-ui text-[11px] text-border border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
+    "border-r border-(color:--line-subtle) px-3.5 py-2.75 font-ui text-[11px] font-semibold text-border last:border-r-0",
   ),
-  bodyCellNumeric: cn(bodyCellBase, "px-3.5 py-2.5 font-ui text-[11px] text-foreground text-right"),
+  bodyCellNumeric: cn(
+    bodyCellBase,
+    "px-3.5 py-2.5 text-right font-ui text-[11px] font-bold text-foreground",
+  ),
   bodyCellBadge: cn(
     bodyCellBase,
-    "px-3.5 py-2.75 border-r border-[color:rgba(10,10,10,0.1)] last:border-r-0",
+    "border-r border-(color:--line-subtle) px-3.5 py-2.75 last:border-r-0",
   ),
 } as const;

@@ -19,17 +19,17 @@ export function CmsSystemScreen({ code, title, description, actions }: CmsSystem
           <div className="flex min-w-0 flex-col">
             <span
               aria-hidden
-              className="font-display leading-[0.82] tracking-tighter text-foreground text-[clamp(100px,20vw,240px)]"
+              className="font-display text-[clamp(100px,20vw,240px)] font-black leading-[0.82] tracking-[-0.05em] text-foreground"
             >
               {code}
             </span>
           </div>
 
-          <div className="relative min-w-0 self-center border-l-4 border-accent pl-6">
-            <h1 className="font-display uppercase text-(length:--text-display-h1) leading-(--lh-display-h1) tracking-[-0.03em] text-foreground">
+          <div className="relative min-w-0 self-center border-l-[3px] border-accent pl-6">
+            <h1 className="font-display text-(length:--text-display-h1) font-black leading-none tracking-[-0.04em] text-foreground">
               {title}
             </h1>
-            <p className="mt-4 max-w-140 font-editorial italic text-[19px] leading-(--lh-editorial) text-foreground">
+            <p className="mt-4 max-w-140 font-editorial text-[19px] leading-(--lh-editorial) text-body-text italic">
               {description}
             </p>
             {actions ? (
@@ -85,7 +85,7 @@ export function CmsSystemActionButton({
 
 function systemActionClass(tone: "accent" | "foreground") {
   return cn(
-    "inline-flex items-center gap-2 font-ui text-[11px] uppercase tracking-[0.08em] transition-colors",
+    "inline-flex items-center gap-2 font-ui text-[12px] font-bold transition-colors",
     tone === "accent" ? "text-accent hover:text-foreground" : "text-foreground hover:text-accent",
   );
 }

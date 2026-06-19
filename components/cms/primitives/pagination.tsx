@@ -2,7 +2,7 @@ import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const cellBase =
-  "cursor-pointer inline-flex items-center justify-center rounded-none font-ui text-[11px] tracking-[0.04em] uppercase py-2 transition-none";
+  "inline-flex cursor-pointer items-center justify-center rounded-[6px] py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em] transition-none";
 
 type CmsPaginationProps = {
   currentPage: number;
@@ -81,7 +81,7 @@ export function CmsPagination({
               cellBase,
               "border border-l-0 px-3",
               active
-                ? "border-accent bg-accent text-white"
+                ? "border-accent bg-accent text-background"
                 : "border-foreground text-foreground hover:bg-card-hover",
             )}
           >
@@ -137,7 +137,7 @@ export function CmsStepper({ steps, currentIndex, className }: CmsStepperProps) 
           return (
             <div key={idx} className="flex flex-1 items-center last:flex-none">
               {connectorLeft}
-              <div className={cn("size-3 shrink-0 rounded-none", dotClass)} />
+              <div className={cn("size-3 shrink-0 rounded-[3px]", dotClass)} />
             </div>
           );
         })}

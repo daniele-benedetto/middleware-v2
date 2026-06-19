@@ -9,6 +9,7 @@ import { CmsMediaLibraryLoading } from "@/features/cms/media/components/media-li
 import { CmsMediaPreviewSheet } from "@/features/cms/media/components/media-preview-sheet";
 import { CmsMediaUploadDialog } from "@/features/cms/media/components/media-upload-dialog";
 import { invalidateArticlesAfterMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
+import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 import { cmsMediaDefaultKinds } from "@/lib/media/blob";
 import { trpc } from "@/lib/trpc/react";
@@ -178,9 +179,7 @@ export function CmsMediaLibrary({
       <div className="flex min-h-0 flex-1 flex-col gap-4">
         <CmsSurface spacing="md" className="space-y-3">
           <div className="flex items-center justify-between gap-3 max-sm:flex-col max-sm:items-stretch">
-            <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
-              {mediaText.totalFiles(visibleItems.length)}
-            </div>
+            <div className={cmsMetaLabelClass}>{mediaText.totalFiles(visibleItems.length)}</div>
             <CmsActionButton variant="outline" onClick={() => setIsUploadOpen(true)}>
               {uploadButtonLabel ?? mediaText.uploadCta}
             </CmsActionButton>

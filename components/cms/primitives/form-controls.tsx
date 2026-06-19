@@ -28,7 +28,8 @@ import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "rea
 
 type CmsControlState = "default" | "focus" | "filled" | "error" | "disabled";
 
-const labelBase = "block font-ui text-[10px] uppercase tracking-[0.08em] mb-1.5";
+const labelBase =
+  "mb-1.5 block font-ui text-[10px] font-extrabold uppercase tracking-[var(--tracking-kicker)]";
 
 const cmsFormLabelVariants = cva(labelBase, {
   variants: {
@@ -44,7 +45,7 @@ const cmsFormLabelVariants = cva(labelBase, {
 });
 
 const inputBaseReset =
-  "w-full rounded-none bg-white shadow-none outline-none transition-none appearance-none " +
+  "w-full rounded-[6px] bg-white shadow-none outline-none transition-none appearance-none " +
   "placeholder:text-border " +
   "focus-visible:outline-none focus-visible:ring-0 focus-visible:border focus-visible:border-accent " +
   "aria-invalid:ring-0 aria-invalid:border-accent";
@@ -52,9 +53,9 @@ const inputBaseReset =
 const cmsTextInputVariants = cva(`${inputBaseReset} h-auto leading-[1.2]`, {
   variants: {
     tone: {
-      editorial: "font-editorial text-[16px] text-foreground",
-      ui: "font-ui text-[12px] uppercase tracking-[0.04em] text-foreground",
-      mono: "font-ui text-[13px] tracking-[0.02em] text-foreground",
+      editorial: "font-editorial text-[16px] text-body-text",
+      ui: "font-ui text-[12px] font-bold uppercase tracking-[var(--tracking-meta)] text-foreground",
+      mono: "font-technical text-[13px] tracking-[0.02em] text-foreground",
     },
     state: {
       default: "border border-foreground bg-white px-3 py-2.5",
@@ -68,7 +69,7 @@ const cmsTextInputVariants = cva(`${inputBaseReset} h-auto leading-[1.2]`, {
 });
 
 const cmsTextareaVariants = cva(
-  `${inputBaseReset} font-editorial text-[16px] leading-[1.6] min-h-27 resize-y`,
+  `${inputBaseReset} min-h-27 resize-y font-editorial text-[16px] leading-[1.6] text-body-text`,
   {
     variants: {
       state: {
@@ -84,8 +85,8 @@ const cmsTextareaVariants = cva(
 );
 
 const cmsSelectTriggerVariants = cva(
-  "w-full rounded-none bg-white shadow-none outline-none transition-none " +
-    "h-auto data-[size=default]:h-auto leading-[1.2] font-ui text-[12px] uppercase tracking-[0.04em] text-foreground " +
+  "w-full rounded-[6px] bg-white shadow-none outline-none transition-none " +
+    "h-auto data-[size=default]:h-auto leading-[1.2] font-ui text-[12px] font-bold uppercase tracking-[var(--tracking-meta)] text-foreground " +
     "data-placeholder:text-border " +
     "focus-visible:outline-none focus-visible:ring-0 focus-visible:border focus-visible:border-accent " +
     "justify-between gap-3 " +
@@ -167,7 +168,7 @@ export function CmsTextarea({
         {...props}
       />
       {showCounter ? (
-        <div className="mt-1.25 text-right font-ui text-[10px] uppercase tracking-[0.04em] text-border">
+        <div className="mt-1.25 text-right font-ui text-[10px] font-bold uppercase tracking-[var(--tracking-meta)] text-border">
           {text.characterCount(currentLength, maxLength)}
         </div>
       ) : null}
@@ -216,7 +217,7 @@ export function CmsSelect({
         </ShadcnSelectValue>
       </ShadcnSelectTrigger>
       <ShadcnSelectContent
-        className="rounded-none border border-accent bg-white p-0 shadow-none ring-0"
+        className="rounded-[6px] border border-accent bg-white p-0 shadow-none ring-0"
         align="start"
         alignItemWithTrigger={false}
         sideOffset={0}
@@ -226,9 +227,9 @@ export function CmsSelect({
             key={option.value}
             value={option.value}
             className={cn(
-              "cursor-pointer rounded-none border-0 py-2 pr-9 pl-3",
-              "font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground",
-              "focus:bg-accent focus:text-white data-highlighted:bg-accent data-highlighted:text-white",
+              "cursor-pointer rounded-[6px] border-0 py-2 pr-9 pl-3",
+              "font-ui text-[11px] font-bold uppercase tracking-[var(--tracking-meta)] text-muted-foreground",
+              "focus:bg-accent focus:text-background data-highlighted:bg-accent data-highlighted:text-background",
               "data-[selected=true]:text-foreground",
             )}
           >
@@ -366,7 +367,7 @@ export function CmsSearchSelect({
 
       <PopoverContent
         sideOffset={0}
-        className="w-(--anchor-width) rounded-none border border-accent bg-white p-0 shadow-none ring-0"
+        className="w-(--anchor-width) rounded-[6px] border border-accent bg-white p-0 shadow-none ring-0"
       >
         {hasOptions ? (
           <>
@@ -380,7 +381,7 @@ export function CmsSearchSelect({
                 placeholder={searchPlaceholder}
                 className={cn(
                   "flex-1 appearance-none border-0 bg-transparent p-0 outline-none",
-                  "font-ui text-[12px] uppercase tracking-[0.04em] text-foreground placeholder:text-border",
+                  "font-ui text-[12px] font-bold uppercase tracking-[var(--tracking-meta)] text-foreground placeholder:text-border",
                   "focus-visible:outline-none focus-visible:ring-0",
                 )}
               />
@@ -397,8 +398,8 @@ export function CmsSearchSelect({
                       onClick={() => handleSelect(option.value)}
                       className={cn(
                         "flex w-full cursor-pointer items-center justify-between gap-2 border-0 py-2 pr-3 pl-3 text-left",
-                        "font-ui text-[11px] uppercase tracking-[0.04em] transition-none",
-                        "hover:bg-accent hover:text-white",
+                        "font-ui text-[11px] font-bold uppercase tracking-[var(--tracking-meta)] transition-none",
+                        "hover:bg-accent hover:text-background",
                         selected
                           ? "bg-card-hover text-foreground"
                           : "bg-white text-muted-foreground",
@@ -410,14 +411,14 @@ export function CmsSearchSelect({
                   );
                 })
               ) : (
-                <div className="px-3 py-3 font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
+                <div className="px-3 py-3 font-ui text-[11px] font-bold uppercase tracking-[var(--tracking-meta)] text-muted-foreground">
                   {searchEmptyText}
                 </div>
               )}
             </div>
           </>
         ) : (
-          <div className="px-3 py-3 font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
+          <div className="px-3 py-3 font-ui text-[11px] font-bold uppercase tracking-[var(--tracking-meta)] text-muted-foreground">
             {loading ? (loadingText ?? emptyText) : emptyText}
           </div>
         )}
@@ -448,12 +449,12 @@ export function CmsCheckbox({
       : "text-foreground";
 
   const boxClass = cn(
-    "size-5 shrink-0 rounded-none border shadow-none ring-0",
+    "size-5 shrink-0 rounded-[5px] border shadow-none ring-0",
     "[&_[data-slot=checkbox-indicator]>svg]:size-3!",
     disabled
       ? "border-border bg-card-hover! cursor-not-allowed"
       : accent
-        ? "border-foreground bg-white data-checked:border-accent! data-checked:bg-accent! [&[data-checked]_[data-slot=checkbox-indicator]]:text-white"
+        ? "border-foreground bg-white data-checked:border-accent! data-checked:bg-accent! [&[data-checked]_[data-slot=checkbox-indicator]]:text-background"
         : "border-foreground bg-white data-checked:bg-foreground! [&[data-checked]_[data-slot=checkbox-indicator]]:text-(--bg-main)",
     "focus-visible:ring-0 focus-visible:border-accent",
   );
@@ -461,7 +462,7 @@ export function CmsCheckbox({
   return (
     <label
       className={cn(
-        "inline-flex items-center gap-3 font-ui text-[12px] uppercase tracking-[0.04em]",
+        "inline-flex items-center gap-3 font-ui text-[12px] font-bold uppercase tracking-[var(--tracking-meta)]",
         disabled ? "cursor-not-allowed" : "cursor-pointer",
         labelColor,
       )}
@@ -499,7 +500,7 @@ export function CmsRadio({
   return (
     <label
       className={cn(
-        "inline-flex items-center gap-3 font-ui text-[12px] uppercase tracking-[0.04em]",
+        "inline-flex items-center gap-3 font-ui text-[12px] font-bold uppercase tracking-[var(--tracking-meta)]",
         disabled ? "cursor-not-allowed" : "cursor-pointer",
         labelColor,
       )}
@@ -550,14 +551,14 @@ export function CmsToggle({
     : "text-muted-foreground";
 
   const trackBase =
-    "relative inline-flex h-6! w-11! shrink-0 items-center rounded-none! shadow-none ring-0 transition-none after:content-none";
+    "relative inline-flex h-6! w-11! shrink-0 items-center rounded-full! shadow-none ring-0 transition-none after:content-none";
   const trackState = checked
     ? accent
       ? "!border border-accent! bg-accent! data-checked:bg-accent!"
       : "!border border-foreground! bg-foreground! data-checked:bg-foreground!"
     : "!border border-border! bg-card-hover! data-unchecked:bg-card-hover!";
 
-  const thumbColor = checked ? (accent ? "bg-white!" : "bg-(--bg-main)!") : "bg-border!";
+  const thumbColor = checked ? (accent ? "bg-background!" : "bg-(--bg-main)!") : "bg-border!";
   const thumbTransform = checked ? "translate-x-5.5!" : "translate-x-0.5!";
 
   const trackClass = cn(
@@ -565,7 +566,7 @@ export function CmsToggle({
     trackState,
     disabled && "opacity-50 cursor-not-allowed",
     "focus-visible:ring-0 focus-visible:border-accent!",
-    `[&_[data-slot=switch-thumb]]:size-4.5! [&_[data-slot=switch-thumb]]:rounded-none! ${[
+    `[&_[data-slot=switch-thumb]]:size-4.5! [&_[data-slot=switch-thumb]]:rounded-full! ${[
       ...thumbColor.split(" "),
       ...thumbTransform.split(" "),
     ]
@@ -576,7 +577,7 @@ export function CmsToggle({
   return (
     <label
       className={cn(
-        "inline-flex items-center gap-3 font-ui text-[11px] uppercase tracking-[0.06em]",
+        "inline-flex items-center gap-3 font-ui text-[11px] font-bold uppercase tracking-[var(--tracking-meta)]",
         disabled ? "cursor-not-allowed" : "cursor-pointer",
         labelColor,
       )}

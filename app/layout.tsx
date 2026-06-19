@@ -1,4 +1,4 @@
-import { Archivo_Black, Geist, IBM_Plex_Mono, Newsreader } from "next/font/google";
+import { Archivo, IBM_Plex_Mono, Spectral } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
 import { buildRootMetadata } from "@/lib/seo";
@@ -9,16 +9,16 @@ import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
-
-const archivoBlack = Archivo_Black({
-  variable: "--font-archivo-black",
-  weight: "400",
+const archivo = Archivo({
+  variable: "--font-archivo",
+  weight: ["400", "500", "600", "700", "800", "900"],
   subsets: ["latin"],
 });
 
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
+const spectral = Spectral({
+  variable: "--font-spectral",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
   subsets: ["latin"],
 });
 
@@ -31,7 +31,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = buildRootMetadata();
 
 export const viewport: Viewport = {
-  themeColor: "#0A0A0A",
+  themeColor: "#111111",
   colorScheme: "light",
 };
 
@@ -46,11 +46,10 @@ export default function RootLayout({
       className={cn(
         "h-full",
         "antialiased",
-        archivoBlack.variable,
-        newsreader.variable,
+        archivo.variable,
+        spectral.variable,
         ibmPlexMono.variable,
         "font-sans",
-        geist.variable,
       )}
     >
       <body className="min-h-full flex flex-col">

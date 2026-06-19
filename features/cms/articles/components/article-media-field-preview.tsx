@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { CmsBody, CmsMetaText } from "@/components/cms/primitives";
 import { CmsMediaImage } from "@/features/cms/media/components/media-image";
+import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 import { extractCmsMediaPathname, resolveCmsMediaPreviewUrl } from "@/lib/media/blob";
 
@@ -94,9 +95,7 @@ function ArticleJsonPreview({ url }: { url: string }) {
           {content}
         </pre>
       ) : (
-        <div className="font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
-          {mediaText.previewLoading}
-        </div>
+        <div className={cmsMetaLabelClass}>{mediaText.previewLoading}</div>
       )}
     </div>
   );

@@ -46,7 +46,7 @@ export function CmsShellSystemState({
         {hasLeftColumn ? (
           <div className="flex min-w-0 flex-col">
             {eyebrow ? (
-              <span className="font-ui text-(length:--text-meta) uppercase tracking-[0.08em] text-accent">
+              <span className="font-ui text-(length:--text-meta) font-extrabold uppercase tracking-[0.1em] text-accent">
                 {eyebrow}
               </span>
             ) : null}
@@ -54,7 +54,7 @@ export function CmsShellSystemState({
               <span
                 aria-hidden
                 className={cn(
-                  "font-display leading-[0.82] tracking-tighter text-foreground",
+                  "font-display font-black leading-[0.82] tracking-[-0.05em] text-foreground",
                   codeSizeMap[size],
                   eyebrow && "mt-2",
                 )}
@@ -65,15 +65,15 @@ export function CmsShellSystemState({
           </div>
         ) : null}
 
-        <div className="relative min-w-0 self-center border-l-4 border-accent pl-6">
-          <h2 className={cn("font-display uppercase text-foreground", titleSizeMap[size])}>
+        <div className="relative min-w-0 self-center border-l-[3px] border-accent pl-6">
+          <h2 className={cn("font-display font-black text-foreground", titleSizeMap[size])}>
             {title}
           </h2>
           {description ? (
             <p
               className={cn(
                 "mt-3 max-w-140 font-editorial italic text-(length:--text-editorial-body) leading-(--lh-editorial)",
-                descriptionTone === "muted" ? "text-muted-foreground" : "text-foreground",
+                descriptionTone === "muted" ? "text-muted-foreground" : "text-body-text",
               )}
             >
               {description}

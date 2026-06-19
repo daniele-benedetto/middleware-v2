@@ -6,6 +6,7 @@ import { CmsBulkActionBar } from "@/components/cms/common";
 import { CmsSearchSelect, CmsSelect } from "@/components/cms/primitives";
 import { CmsListFiltersSheet } from "@/features/cms/shared/components/cms-list-filters-sheet";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
+import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 
 import type { CmsResolvedQuickAction } from "@/features/cms/shared/actions";
@@ -297,9 +298,7 @@ export function ArticlesListToolbar({
 
   return (
     <div className="space-y-3">
-      <div className="font-ui text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
-        {commonText.totalRecords(totalRecords)}
-      </div>
+      <div className={cmsMetaLabelClass}>{commonText.totalRecords(totalRecords)}</div>
 
       <CmsBulkActionBar
         selectedCount={selectedCount}

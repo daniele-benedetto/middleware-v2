@@ -6,17 +6,18 @@ import {
   TooltipProvider as ShadcnTooltipProvider,
   TooltipTrigger as ShadcnTooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cmsMetaLabelAccentClass } from "@/lib/cms/ui/variants";
 import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
 
-const cmsTooltipVariants = cva("rounded-none! px-2.5 py-1.5", {
+const cmsTooltipVariants = cva("rounded-[6px]! px-2.5 py-1.5", {
   variants: {
     variant: {
       "short-dark":
-        "bg-foreground text-(--bg-main) font-ui text-[10px] uppercase tracking-[0.04em] whitespace-nowrap",
+        "bg-foreground text-background font-ui text-[10px] font-bold uppercase tracking-[var(--tracking-meta)] whitespace-nowrap",
       "long-accent":
-        "bg-accent text-white font-editorial italic text-[13px] leading-[1.4] py-2 px-3 max-w-50 " +
+        "bg-accent text-background font-editorial italic text-[13px] leading-[1.4] py-2 px-3 max-w-50 " +
         "[&_[data-slot=tooltip-arrow]]:bg-accent! [&_[data-slot=tooltip-arrow]]:fill-accent!",
     },
   },
@@ -38,7 +39,12 @@ export function CmsTooltip({ label, children, variant, side = "top" }: CmsToolti
       <ShadcnTooltip>
         <ShadcnTooltipTrigger
           render={
-            <span className="cursor-help border-b border-dashed border-accent font-ui text-[11px] uppercase tracking-[0.06em] text-accent" />
+            <span
+              className={cn(
+                "cursor-help border-b border-dashed border-accent",
+                cmsMetaLabelAccentClass,
+              )}
+            />
           }
         >
           {children}

@@ -23,6 +23,12 @@ import {
 } from "@/components/ui/sheet";
 import { CmsMediaImage } from "@/features/cms/media/components/media-image";
 import { formatMediaDateTime, formatMediaSize } from "@/features/cms/media/utils/format";
+import {
+  cmsControlChromeClass,
+  cmsMetaLabelAccentClass,
+  cmsMetaLabelClass,
+  cmsPanelClass,
+} from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMediaAssetUrl } from "@/lib/media/blob";
 import { cn } from "@/lib/utils";
@@ -113,9 +119,9 @@ export function CmsMediaPreviewSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full max-w-180 border-l-[3px] border-foreground p-0">
+      <SheetContent side="right" className="w-full max-w-180 border-l-2 border-foreground p-0">
         <div className="flex h-full flex-col">
-          <div className="flex items-start justify-between gap-4 border-b-[3px] border-foreground bg-background px-5 py-4">
+          <div className="flex items-start justify-between gap-4 border-b-2 border-foreground bg-background px-5 py-4">
             <div>
               <SheetTitle className="text-[16px]! leading-none!">{item.fileName}</SheetTitle>
               <SheetDescription className="mt-2 block break-all text-[10px]!">
@@ -125,8 +131,9 @@ export function CmsMediaPreviewSheet({
             <SheetClose
               aria-label={i18n.cms.common.close}
               className={cn(
-                "inline-flex size-8 shrink-0 items-center justify-center border border-foreground bg-transparent",
-                "transition-colors hover:bg-card-hover",
+                "inline-flex size-8 shrink-0 items-center justify-center bg-transparent",
+                cmsControlChromeClass,
+                "transition-colors hover:bg-surface-hover",
               )}
             >
               <X className="size-3.5" aria-hidden />
@@ -136,7 +143,7 @@ export function CmsMediaPreviewSheet({
           <div className="cms-scroll min-h-0 flex-1 overflow-y-auto bg-(--bg-main) px-5 py-5">
             <div className="space-y-5">
               <section className="space-y-3">
-                <div className="relative overflow-hidden border border-foreground bg-white">
+                <div className={cn("relative overflow-hidden", cmsPanelClass)}>
                   {item.kind === "image" ? (
                     <div className="relative aspect-16/10">
                       <CmsMediaImage
@@ -150,7 +157,7 @@ export function CmsMediaPreviewSheet({
                   ) : item.kind === "audio" ? (
                     <div className="space-y-4 p-4">
                       <CmsMetaText variant="category">{mediaText.audioPreviewLabel}</CmsMetaText>
-                      <div className="border border-foreground bg-card-hover p-4">
+                      <div className="rounded-[8px] border border-foreground bg-card-hover p-4">
                         <audio
                           controls
                           preload="metadata"
@@ -165,15 +172,11 @@ export function CmsMediaPreviewSheet({
                     <div className="space-y-3 p-4">
                       <CmsMetaText variant="category">{mediaText.jsonPreviewLabel}</CmsMetaText>
                       {isPreviewLoading ? (
-                        <div className="font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
-                          {mediaText.previewLoading}
-                        </div>
+                        <div className={cmsMetaLabelClass}>{mediaText.previewLoading}</div>
                       ) : previewError ? (
-                        <div className="font-ui text-[11px] uppercase tracking-[0.04em] text-accent">
-                          {previewError}
-                        </div>
+                        <div className={cmsMetaLabelAccentClass}>{previewError}</div>
                       ) : (
-                        <pre className="max-h-120 overflow-auto bg-card-hover p-4 font-ui text-[12px] leading-[1.55] text-foreground whitespace-pre-wrap wrap-break-word">
+                        <pre className="max-h-120 overflow-auto rounded-[6px] bg-card-hover p-4 font-technical text-[12px] leading-[1.55] text-foreground whitespace-pre-wrap wrap-break-word">
                           {jsonPreview}
                         </pre>
                       )}
@@ -216,7 +219,7 @@ export function CmsMediaPreviewSheet({
                 </div>
               </section>
 
-              <section className="space-y-3 border border-foreground bg-white p-4">
+              <section className={cn("space-y-3 p-4", cmsPanelClass)}>
                 <CmsMetaText variant="category">{mediaText.renameCta}</CmsMetaText>
                 <CmsFormField
                   label={mediaText.uploadNameLabel}

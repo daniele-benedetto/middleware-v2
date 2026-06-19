@@ -43,6 +43,7 @@ import {
   validateFormInput,
 } from "@/features/cms/shared/forms";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
+import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 import {
   createArticleInputSchema,
@@ -570,7 +571,7 @@ function ArticleFormContent({
                   onClick={openSlugEditor}
                   className={cn(
                     "flex h-10 flex-1 items-center border border-foreground bg-white px-3 text-left",
-                    "font-ui text-[12px] uppercase tracking-[0.04em] transition-colors hover:bg-card-hover",
+                    "font-ui text-[12px] font-bold uppercase tracking-[0.08em] transition-colors hover:bg-surface-hover",
                     resolvedSlug ? "text-foreground" : "text-border",
                   )}
                 >
@@ -662,7 +663,12 @@ function ArticleFormContent({
                 />
               </div>
             ) : (
-              <div className="border border-dashed border-border px-3 py-2 font-ui text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
+              <div
+                className={cn(
+                  "rounded-[6px] border border-dashed border-border px-3 py-2",
+                  cmsMetaLabelClass,
+                )}
+              >
                 {articleFormText.createStatusHint}
               </div>
             )}
