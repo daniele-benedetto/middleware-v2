@@ -128,4 +128,3 @@ Read/download flow:
 - `README.md`: operational setup and API baseline.
 - `AGENTS.md`: repo-specific engineering rules.
 - `docs/cms-ui.md`: CMS visual system and component governance.
-- `docs/cms-smoke-checklist.md`: guard and role smoke checks.

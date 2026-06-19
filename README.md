@@ -79,7 +79,6 @@ CMS governance addendum:
 
 - Architecture overview: `docs/architecture.md`.
 - CMS UI guide and component governance: `docs/cms-ui.md`.
-- CMS smoke checklist: `docs/cms-smoke-checklist.md`.
 - PR architecture checks are enforced in `.github/pull_request_template.md`.
 - Required local gates for CMS changes: `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 

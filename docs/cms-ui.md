@@ -224,4 +224,3 @@ Tokens fondazionali (palette, alpha, filetti, spacing, type scale, line-heights,
 
 - Canonical document: `docs/cms-ui.md`
 - Summary and onboarding context: `README.md`
-- CMS guard/permission smoke checklist: `docs/cms-smoke-checklist.md`
