@@ -1,8 +1,9 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
-import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
+import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import { CmsArticleListPanel } from "@/components/cms/common/article-list-panel";
 import {
   CmsActionButton,
@@ -52,6 +53,7 @@ type UserFormContentProps = {
     data: UpdateUserInput;
     nextRole?: "ADMIN" | "EDITOR";
   }) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
   onMutationError: (error: unknown) => void;
   onValidationError: (message: string) => void;
 };
@@ -71,6 +73,7 @@ export function CmsUserFormScreen({
   const createMutation = useUserCreate();
   const updateMutation = useUserUpdate();
   const updateRoleMutation = useUserUpdateRole();
+  const deleteMutation = trpc.users.delete.useMutation();
 
   if (mode === "edit" && !userId) {
     return (
@@ -98,7 +101,10 @@ export function CmsUserFormScreen({
       user={userQuery.data}
       currentUserId={currentUserId}
       isMutating={
-        createMutation.isPending || updateMutation.isPending || updateRoleMutation.isPending
+        createMutation.isPending ||
+        updateMutation.isPending ||
+        updateRoleMutation.isPending ||
+        deleteMutation.isPending
       }
       onCancel={cancel}
       onCreate={async (payload) => {
@@ -127,6 +133,11 @@ export function CmsUserFormScreen({
         await invalidateAfterCmsMutation(trpcUtils, "users.update", { id });
         success(userFormText.updated);
       }}
+      onDelete={async (id) => {
+        await deleteMutation.mutateAsync({ id });
+        await invalidateAfterCmsMutation(trpcUtils, "users.delete", { id });
+        success();
+      }}
       onMutationError={(error) => {
         const mapped = mapCrudDomainError(error, "users");
         cmsToast.error(mapped.description, mapped.title);
@@ -147,6 +158,7 @@ function UserFormContent({
   onCancel,
   onCreate,
   onUpdate,
+  onDelete,
   onMutationError,
   onValidationError,
 }: UserFormContentProps) {
@@ -234,6 +246,17 @@ function UserFormContent({
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
               {text.common.cancel}
             </CmsActionButton>
+            {mode === "edit" && userId && !isCurrentUser ? (
+              <CmsConfirmDialog
+                triggerLabel={text.quickActions.delete}
+                triggerIcon={<Trash2 aria-hidden />}
+                triggerDisabled={isMutating}
+                title={text.quickActions.confirmDeleteTitle}
+                description={text.quickActions.confirmDeleteSingleUser}
+                tone="danger"
+                onConfirm={() => onDelete(userId)}
+              />
+            ) : null}
             <CmsActionButton type="submit" isLoading={isMutating}>
               {mode === "create" ? text.forms.create : text.forms.save}
             </CmsActionButton>
