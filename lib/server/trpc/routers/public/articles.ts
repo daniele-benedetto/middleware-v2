@@ -20,9 +20,15 @@ import { parseOutput } from "@/lib/server/validation/output";
 export const publicArticlesRouter = router({
   getBySlug: publicReadProcedure.input(publicArticleSlugInputSchema).query(async ({ input }) => {
     return parseOutput(
-      await publicArticlesService.getBySlug(input.issueSlug, input.articleSlug),
+      await publicArticlesService.getBySlug(input.slug),
       publicArticleDetailDtoSchema,
     );
+  }),
+  listPublished: publicReadProcedure.query(async () => {
+    return parseOutput(await publicArticlesService.listPublished(), publicArticlesListDtoSchema);
+  }),
+  listWithAudio: publicReadProcedure.query(async () => {
+    return parseOutput(await publicArticlesService.listWithAudio(), publicArticlesListDtoSchema);
   }),
   listByIssue: publicReadProcedure
     .input(publicArticleByIssueInputSchema)

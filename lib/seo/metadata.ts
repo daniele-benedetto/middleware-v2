@@ -177,7 +177,7 @@ export function buildCmsMetadata(input: Omit<PageMetadataInput, "index"> = {}): 
 }
 
 export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
-  const path = `/articles/${input.slug}`;
+  const path = `/articoli/${input.slug}`;
   const canonical = getCanonicalUrl(path);
   const description = input.description ?? seoConfig.defaultDescription;
   const image = input.imageUrl ? resolveImageUrl(input.imageUrl) : getOpenGraphImageUrl();

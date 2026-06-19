@@ -111,7 +111,7 @@ Read/download flow:
 - If Redis is missing or unavailable in production, rate-limited CMS writes fail closed.
 - Local development and tests may fall back to in-memory rate-limit counters.
 - Resource deletion is hard delete.
-- `Article.slug` is unique per issue and normalized before persistence.
+- `Article.slug` is globally unique and normalized before persistence to support canonical `/articoli/:slug` URLs.
 - `publishedAt` must only be set when an article status is `PUBLISHED`.
 - `contentRich` and `audioChunks` should remain backward-compatible versioned payloads.
 

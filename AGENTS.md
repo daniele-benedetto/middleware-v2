@@ -40,7 +40,7 @@
 - Better Auth ID strategy: `User.id` is DB-generated UUID; `Session/Account/Verification.id` is adapter-managed string.
 - Access model: `ADMIN` can manage users and assign roles; `EDITOR` can manage all editorial resources but cannot access user-management endpoints.
 - Delete policy: hard delete for all resources.
-- Article URL strategy: slug is unique per issue (`@@unique([issueId, slug])`).
+- Article URL strategy: article slug is globally unique (`@@unique([slug])`) for canonical `/articoli/:slug` URLs.
 - Editorial status stays minimal for now: `DRAFT`, `PUBLISHED`, `ARCHIVED`.
 - Data invariant to enforce in API layer: `publishedAt` must be set only for `PUBLISHED` articles.
 

@@ -10,7 +10,7 @@ describe("mapTrpcErrorToCmsUiMessage", () => {
   const domainCases = [
     {
       code: "CONFLICT" as const,
-      reason: "ARTICLE_SLUG_EXISTS_IN_ISSUE" as const,
+      reason: "ARTICLE_SLUG_EXISTS" as const,
       title: i18n.cms.lists.articles.domainErrors.slugConflictTitle,
       description: i18n.cms.lists.articles.domainErrors.slugConflictDescription,
     },

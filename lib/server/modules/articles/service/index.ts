@@ -235,8 +235,8 @@ export const articlesService = {
         throw new ApiError(
           409,
           "CONFLICT",
-          "Article slug already exists for this issue",
-          createCmsDomainErrorDetails("ARTICLE_SLUG_EXISTS_IN_ISSUE"),
+          "Article slug already exists",
+          createCmsDomainErrorDetails("ARTICLE_SLUG_EXISTS"),
         );
       }
 
@@ -283,8 +283,8 @@ export const articlesService = {
         throw new ApiError(
           409,
           "CONFLICT",
-          "Article slug already exists for this issue",
-          createCmsDomainErrorDetails("ARTICLE_SLUG_EXISTS_IN_ISSUE"),
+          "Article slug already exists",
+          createCmsDomainErrorDetails("ARTICLE_SLUG_EXISTS"),
         );
       }
 

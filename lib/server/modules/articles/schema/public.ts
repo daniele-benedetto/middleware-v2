@@ -1,8 +1,7 @@
 import { z } from "zod";
 
 export const publicArticleSlugInputSchema = z.object({
-  issueSlug: z.string().trim().min(1),
-  articleSlug: z.string().trim().min(1),
+  slug: z.string().trim().min(1),
 });
 
 export const publicArticleByIssueInputSchema = z.object({

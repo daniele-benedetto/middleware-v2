@@ -124,7 +124,7 @@ describe("articlesService", () => {
     ).rejects.toMatchObject({
       status: 409,
       code: "CONFLICT",
-      details: { reason: "ARTICLE_SLUG_EXISTS_IN_ISSUE" },
+      details: { reason: "ARTICLE_SLUG_EXISTS" },
     });
   });
 

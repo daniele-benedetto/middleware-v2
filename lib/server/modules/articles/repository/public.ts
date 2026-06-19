@@ -56,14 +56,29 @@ const PUBLIC_ARTICLE_DETAIL_SELECT = {
 } as const satisfies Prisma.ArticleSelect;
 
 export const publicArticlesRepository = {
-  async getBySlug(issueSlug: string, articleSlug: string) {
+  async getBySlug(slug: string) {
     return prisma.article.findFirst({
       where: {
-        ...PUBLIC_ARTICLE_WHERE,
-        slug: articleSlug,
-        issue: { ...PUBLIC_ISSUE_WHERE, slug: issueSlug },
+        slug,
+        status: "PUBLISHED",
+        publishedAt: { not: null },
+        issue: PUBLIC_ISSUE_WHERE,
       },
       select: PUBLIC_ARTICLE_DETAIL_SELECT,
+    });
+  },
+  async listPublished() {
+    return prisma.article.findMany({
+      where: PUBLIC_ARTICLE_WHERE,
+      orderBy: { publishedAt: "desc" },
+      select: PUBLIC_ARTICLE_SUMMARY_SELECT,
+    });
+  },
+  async listWithAudio() {
+    return prisma.article.findMany({
+      where: { ...PUBLIC_ARTICLE_WHERE, audioUrl: { not: null } },
+      orderBy: { publishedAt: "desc" },
+      select: PUBLIC_ARTICLE_SUMMARY_SELECT,
     });
   },
   async listByIssueSlug(issueSlug: string) {

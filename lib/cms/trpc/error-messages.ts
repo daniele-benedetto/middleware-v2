@@ -151,12 +151,25 @@ function mapDomainError(
   const text = i18n.cms.trpcErrors.domain;
   const articleText = i18n.cms.lists.articles.domainErrors;
 
-  if (code === "CONFLICT" && reason === "ARTICLE_SLUG_EXISTS_IN_ISSUE") {
+  if (
+    code === "CONFLICT" &&
+    (reason === "ARTICLE_SLUG_EXISTS" || reason === "ARTICLE_SLUG_EXISTS_IN_ISSUE")
+  ) {
     return {
       code,
       reason,
       title: articleText.slugConflictTitle,
       description: articleText.slugConflictDescription,
+      retryable: false,
+    };
+  }
+
+  if (code === "CONFLICT" && reason === "PAGE_SLUG_EXISTS") {
+    return {
+      code,
+      reason,
+      title: text.pageSlugExistsTitle,
+      description: text.pageSlugExistsDescription,
       retryable: false,
     };
   }

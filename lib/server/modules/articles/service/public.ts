@@ -82,8 +82,8 @@ const toPublicArticleSummaryDtos = (articles: PublicArticleSummaryRecord[]) =>
   articles.map(toPublicArticleSummaryDto);
 
 export const publicArticlesService = {
-  async getBySlug(issueSlug: string, articleSlug: string) {
-    const article = await publicArticlesRepository.getBySlug(issueSlug, articleSlug);
+  async getBySlug(slug: string) {
+    const article = await publicArticlesRepository.getBySlug(slug);
 
     if (!article) {
       throw new ApiError(404, "NOT_FOUND", "Article not found");
@@ -109,6 +109,14 @@ export const publicArticlesService = {
   },
   async search(query: string, limit: number) {
     const articles = await publicArticlesRepository.search(query, limit);
+    return toPublicArticleSummaryDtos(articles as PublicArticleSummaryRecord[]);
+  },
+  async listPublished() {
+    const articles = await publicArticlesRepository.listPublished();
+    return toPublicArticleSummaryDtos(articles as PublicArticleSummaryRecord[]);
+  },
+  async listWithAudio() {
+    const articles = await publicArticlesRepository.listWithAudio();
     return toPublicArticleSummaryDtos(articles as PublicArticleSummaryRecord[]);
   },
 };
