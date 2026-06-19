@@ -1,6 +1,5 @@
 export { CmsBulkActionBar } from "@/components/cms/common/bulk-action-bar";
 export { CmsConfirmDialog } from "@/components/cms/common/confirm-dialog";
-export { CmsDashboardLoadingState } from "@/components/cms/common/dashboard-loading-state";
 export { CmsEmptyState } from "@/components/cms/common/empty-state";
 export { CmsErrorState } from "@/components/cms/common/error-state";
 export { CmsForbiddenState } from "@/components/cms/common/forbidden-state";

@@ -42,7 +42,6 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
   const mobileSheetRef = useRef<HTMLDivElement | null>(null);
 
   const isActive = (href: string) => {
-    if (href === "/cms") return pathname === "/cms";
     return pathname.startsWith(href);
   };
 
@@ -61,7 +60,13 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
   };
 
   const brandBlock = (
-    <CmsBrand size="sm" priority wordmarkAs="h3" to="/cms" onClick={() => setIsMenuOpen(false)} />
+    <CmsBrand
+      size="sm"
+      priority
+      wordmarkAs="h3"
+      to="/cms/issues"
+      onClick={() => setIsMenuOpen(false)}
+    />
   );
 
   const navigationLinks = (onNavigate?: () => void) => (

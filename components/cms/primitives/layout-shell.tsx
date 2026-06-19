@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 type CmsLayoutShellProps = {
   sidebar: ReactNode;
-  topbar: ReactNode;
+  topbar?: ReactNode;
   children: ReactNode;
 };
 
@@ -14,7 +14,9 @@ export function CmsLayoutShell({ sidebar, topbar, children }: CmsLayoutShellProp
           {sidebar}
         </aside>
         <div className="flex min-w-0 flex-col max-md:min-h-screen md:h-full md:min-h-0">
-          <header className="shrink-0 border-b-2 border-foreground">{topbar}</header>
+          {topbar ? (
+            <header className="shrink-0 border-b-2 border-foreground">{topbar}</header>
+          ) : null}
           <main className="flex min-h-0 min-w-0 flex-1 flex-col p-6 max-md:p-4 md:overflow-hidden">
             {children}
           </main>
