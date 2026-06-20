@@ -45,7 +45,6 @@ export function PublicHomePage({ currentIssue, publishedIssues }: PublicHomePage
               range={section.title}
               marker={index === 0 ? "outline" : "solid"}
               articles={section.articles}
-              variant={index === 0 ? "compact" : "prominent"}
               headerTopBorder={index !== 0 || sections.editorial.length === 0}
             />
           ))}

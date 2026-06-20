@@ -15,10 +15,9 @@ import type { CSSProperties } from "react";
 type IssueSectionGridProps = {
   title: string;
   articles: HomeIssueArticle[];
-  variant: "compact" | "prominent";
 };
 
-export function IssueSectionGrid({ title, articles, variant }: IssueSectionGridProps) {
+export function IssueSectionGrid({ title, articles }: IssueSectionGridProps) {
   const [expanded, setExpanded] = useState(false);
   const text = i18n.public.home.sectionGrid;
   const hasHiddenArticles = articles.length > HOME_SECTION_VISIBLE_ARTICLES_LIMIT;
@@ -37,12 +36,7 @@ export function IssueSectionGrid({ title, articles, variant }: IssueSectionGridP
             style={{ "--home-grid-columns": row.length } as CSSProperties}
           >
             {row.map((article) => (
-              <IssueArticleCard
-                key={article.id}
-                article={article}
-                variant={variant}
-                label={title}
-              />
+              <IssueArticleCard key={article.id} article={article} label={title} />
             ))}
           </div>
         ))}

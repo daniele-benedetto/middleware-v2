@@ -60,9 +60,9 @@ Su mobile ogni pattern deve degradare in lista a una colonna. Il planner deve es
 
 ## 8. Articoli senza immagine
 
-**Problema:** le card senza immagine possono apparire povere o sbilanciate rispetto alle altre.
+**Problema:** le card senza immagine possono apparire povere o sbilanciate rispetto alle altre. Inoltre le card di categorie diverse, come interviste e contributi, non devono divergere in UI solo per il tipo categoria.
 
-**Proposta:** usare una variante tipografica testuale quando manca `imageUrl`, con titolo piu grande, excerpt piu visibile e nessun placeholder fotografico obbligatorio.
+**Proposta:** usare una sola UI card per tutte le categorie, basata sulla variante contributi: numero grande, label categoria, eventuale immagine, titolo, excerpt e metadata. Quando manca `imageUrl`, non mostrare placeholder fotografici; usare invece una variante tipografica pulita con titolo leggermente piu grande ed excerpt piu visibile.
 
 ## 9. Mix immagini si/no nella stessa categoria
 

@@ -7,34 +7,23 @@ import type { HomeIssueArticle } from "@/components/public/home/home-view-model"
 
 type IssueArticleCardProps = {
   article: HomeIssueArticle;
-  variant: "compact" | "prominent";
   label: string;
 };
 
-export function IssueArticleCard({ article, variant, label }: IssueArticleCardProps) {
+export function IssueArticleCard({ article, label }: IssueArticleCardProps) {
   const text = i18n.public.home.articleCard;
+  const hasImage = Boolean(article.imageUrl);
 
   return (
     <article className="flex flex-col border-r border-b border-foreground px-6.5 py-6.5 transition-[background,box-shadow] duration-(--motion-fast) hover:bg-surface-hover hover:shadow-[var(--interactive-rail-shadow)] md:px-7">
-      {variant === "prominent" ? (
-        <div className="mb-4 flex items-start justify-between">
-          <span className="font-heading text-[52px] leading-[0.78] font-black tracking-[-0.04em] text-accent">
-            {String(article.position).padStart(2, "0")}
-          </span>
-          <span className="mt-1.5 font-heading text-[11px] font-bold tracking-[0.12em] text-muted uppercase">
-            {label}
-          </span>
-        </div>
-      ) : (
-        <div className="mb-3.5 flex items-center gap-2.75">
-          <span className="font-heading text-sm font-black text-accent">
-            {String(article.position).padStart(2, "0")}
-          </span>
-          <span className="font-heading text-[11px] font-bold tracking-[0.12em] text-accent uppercase">
-            {label}
-          </span>
-        </div>
-      )}
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <span className="font-heading text-[52px] leading-[0.78] font-black tracking-[-0.04em] text-accent">
+          {String(article.position).padStart(2, "0")}
+        </span>
+        <span className="mt-1.5 text-right font-heading text-[11px] font-bold tracking-[0.12em] text-muted uppercase">
+          {label}
+        </span>
+      </div>
 
       {article.imageUrl ? (
         <div className="relative mb-4.5 h-37.5 overflow-hidden border border-foreground grayscale">
@@ -48,11 +37,15 @@ export function IssueArticleCard({ article, variant, label }: IssueArticleCardPr
         </div>
       ) : null}
 
-      <h3 className="font-heading text-[22px] leading-[1.1] font-bold tracking-[-0.02em] text-foreground md:text-2xl md:leading-[1.08]">
+      <h3
+        className={`font-heading leading-[1.1] font-bold tracking-[-0.02em] text-foreground md:leading-[1.08] ${hasImage ? "text-[22px] md:text-2xl" : "text-[26px] md:text-[30px]"}`}
+      >
         <StyledTitle title={article.title} titleStyled={article.titleStyled} />
       </h3>
       {article.excerpt ? (
-        <p className="mt-3.25 font-editorial text-[15px] leading-normal text-body-text">
+        <p
+          className={`font-editorial leading-normal text-body-text ${hasImage ? "mt-3.25 text-[15px]" : "mt-4 text-[16px]"}`}
+        >
           {article.excerpt}
         </p>
       ) : null}

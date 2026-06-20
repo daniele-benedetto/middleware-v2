@@ -10,7 +10,6 @@ type IssueSectionProps = {
   range?: string;
   marker: "outline" | "solid";
   articles: HomeIssueArticle[];
-  variant: "compact" | "prominent";
   headerTopBorder?: boolean;
 };
 
@@ -21,7 +20,6 @@ export function IssueSection({
   range,
   marker,
   articles,
-  variant,
   headerTopBorder,
 }: IssueSectionProps) {
   if (articles.length === 0) {
@@ -37,7 +35,7 @@ export function IssueSection({
         marker={marker}
         topBorder={headerTopBorder}
       />
-      <IssueSectionGrid title={title} articles={articles} variant={variant} />
+      <IssueSectionGrid title={title} articles={articles} />
     </section>
   );
 }
