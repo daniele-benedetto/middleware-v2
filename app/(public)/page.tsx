@@ -1,11 +1,14 @@
-import { PublicFooter, PublicHeader } from "@/components/public";
+import { PublicHomePage } from "@/components/public/home";
+import { getCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
+import { getPublishedIssues } from "@/lib/public/server/issues";
 
-export default function PublicHomePage() {
-  return (
-    <main id="top" className="flex flex-1 flex-col bg-background text-foreground">
-      <PublicHeader />
-      <div className="flex-1" />
-      <PublicFooter />
-    </main>
-  );
+export const dynamic = "force-dynamic";
+
+export default async function Page() {
+  const [currentIssue, publishedIssues] = await Promise.all([
+    getCurrentIssueDetail(),
+    getPublishedIssues(),
+  ]);
+
+  return <PublicHomePage currentIssue={currentIssue} publishedIssues={publishedIssues} />;
 }

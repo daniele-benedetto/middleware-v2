@@ -50,7 +50,7 @@ export function PublicHeader({ className }: PublicHeaderProps) {
   return (
     <>
       <header
-        className={cn("sticky top-0 z-50 border-b-2 border-foreground bg-transparent", className)}
+        className={cn("sticky top-0 z-50 border-b-2 border-foreground bg-background", className)}
       >
         <div className={publicHeaderBarClassName}>
           <PublicBrand priority />

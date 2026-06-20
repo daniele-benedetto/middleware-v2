@@ -15,34 +15,57 @@ export const publicIt = {
     quote: "La conoscenza è legata alla lotta. Conosce veramente chi veramente odia.",
     quoteSource: "In memoria di Mario Tronti.",
     items: [
-      { number: "01", label: "Uscite", href: "/uscite" },
-      { number: "02", label: "Archivio", href: "/archivio" },
-      { number: "03", label: "Podcast", href: "/podcast" },
-      { number: "04", label: "Chi siamo", href: "/chi-siamo" },
+      { number: "01", label: "Numero corrente", href: "#top" },
+      { number: "02", label: "Archivio", href: "#archivio" },
+      { number: "03", label: "Chi siamo", href: "#footer" },
+      { number: "04", label: "Contatti", href: "#footer" },
     ],
+  },
+  home: {
+    hero: {
+      issueLabel: (order: number) => `Numero ${String(order).padStart(2, "0")}`,
+    },
+    editorial: {
+      kicker: "Editoriale — l'apertura del numero",
+      cta: "Apri l'editoriale",
+      ctaArrow: "→",
+    },
+    archive: {
+      title: "Altri numeri",
+      description: "l'archivio è organizzato per numeri, non per articoli sciolti",
+      cta: "Apri il numero →",
+      countLabel: (count: number) => `${count} ${count === 1 ? "pezzo" : "pezzi"}`,
+    },
+    articleCard: {
+      readingTimeLabel: (minutes: number) => `${minutes} min`,
+      audioLabel: "Audio",
+    },
+    empty: {
+      kicker: "Numero corrente",
+      title: "Nessun numero pubblicato",
+      description:
+        "Quando un numero sarà pubblicato nel CMS, la home verrà composta dai suoi contenuti.",
+    },
   },
   footer: {
     sections: {
       title: "Sezioni",
       links: [
-        { label: "Uscite", href: "/uscite" },
-        { label: "Archivio", href: "/archivio" },
-        { label: "Categorie", href: "/categorie" },
-        { label: "Tag", href: "/tag" },
-        { label: "Podcast", href: "/podcast" },
-        { label: "Chi siamo", href: "/chi-siamo" },
-        { label: "Privacy policy", href: "/privacy-policy" },
-        { label: "Cookie policy", href: "/cookie-policy" },
+        { label: "Numero corrente", href: "#top" },
+        { label: "Archivio", href: "#archivio" },
+        { label: "Chi siamo", href: "#footer" },
+        { label: "Contatti", href: "#footer" },
       ],
     },
     social: {
       title: "Social",
       links: [
         { label: "Instagram", href: "#footer" },
-        { label: "Facebook", href: "#footer" },
+        { label: "Telegram", href: "#footer" },
+        { label: "Mastodon", href: "#footer" },
       ],
     },
-    legal: "© 2025 Middleware — Laboratorio di inchiesta",
+    legal: "© 2025 Middleware — rivista politico-editoriale",
     issueMeta: "I contenuti sono liberamente utilizzabili.",
   },
 } as const;

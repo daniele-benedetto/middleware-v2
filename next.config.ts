@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
     authInterrupts: true,
   },
   images: {
+    localPatterns: [
+      {
+        pathname: "/api/public/media/blob",
+      },
+    ],
     remotePatterns: [
       {
         protocol: "https",
@@ -16,6 +21,13 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "**.public.blob.vercel-storage.com",
+        port: "",
+        pathname: "/**",
+        search: "",
+      },
+      {
+        protocol: "https",
+        hostname: "**.private.blob.vercel-storage.com",
         port: "",
         pathname: "/**",
         search: "",
