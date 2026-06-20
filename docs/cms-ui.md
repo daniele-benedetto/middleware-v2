@@ -212,6 +212,30 @@ Rule:
 - Prefer these primitives over repeating inline typography/surface/action classes.
 - Ogni pagina lista CMS deve coprire tutti gli stati: loading → empty → data → error → forbidden.
 
+## Issue Home Blocks Editor
+
+- The issue form uses a visual editor for `Issue.homeBlocks`; JSON is not the primary editorial interface.
+- The editor must preserve controlled freedom: editors can reorder blocks, select articles, choose featured articles for multi-article blocks, and edit block copy only where allowed by rules.
+- The editor exposes a suggested layout generator. If blocks already exist, generation must require confirmation because it replaces the current regia.
+- Blocks support `source=manual` and `source=remainder`. `manual` uses selected articles; `remainder` resolves automatically to articles not already used by manual blocks and hides manual article controls.
+- Drag and drop supports block ordering, selected-article ordering, and dragging available articles into a block. Checkbox assignment remains available as a fallback. Dragging an available article moves it into the target block and must preserve the one-article-one-block invariant.
+- Article lists should show category badges when available so editors can distinguish editorials, contributions, and interviews without opening article records.
+- The compact preview is editorial, not a pixel-perfect public rendering. It should show block order, block type, title, description, assigned articles, and featured status.
+- Diagnostics must be non-invasive. Use a collapsed panel for warnings such as empty blocks and unused articles; do not place persistent warning copy above the editor workflow.
+- Keep single-article rules visible through UI behavior: `opening`, `rupture`, and `closing` accept one article; `opening` and `rupture` hide title, description, and featured controls.
+- Advanced JSON can exist only as a collapsed, read-only debug aid. It must not become the primary editing interface.
+
+### Issue home browser QA
+
+- Open `/cms/issues/[id]/edit` and verify the visual regia editor loads with existing `homeBlocks`.
+- Use `Genera layout suggerito`; with existing blocks, confirm the overwrite dialog appears before replacing the current regia.
+- Drag blocks and selected articles; verify order updates in preview and persists after save/reload.
+- Select and deselect articles; verify selected articles disappear from other block availability lists.
+- Change a multi-article block to `opening` or `rupture`; verify it keeps one article and hides title, description, and featured controls.
+- Change a block to `closing`; verify it keeps one article but still permits title and description.
+- Save, reload the CMS page, and verify the compact preview, diagnostics, and read-only JSON match persisted data.
+- Visit `/` and verify the public home renders the same block order and featured choices.
+
 ## UI done checklist (per page)
 
 - loading state

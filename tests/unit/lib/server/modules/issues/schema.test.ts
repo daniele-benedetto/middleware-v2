@@ -21,6 +21,104 @@ describe("issues schemas", () => {
     expect(updateIssueInputSchema.safeParse({}).success).toBe(false);
   });
 
+  it("rejects duplicate article assignments across home blocks", () => {
+    const articleId = "00000000-0000-4000-8000-000000000001";
+
+    expect(
+      createIssueInputSchema.safeParse({
+        title: "Issue 01",
+        homeBlocks: [
+          {
+            id: "campo",
+            type: "constellation",
+            articleIds: [articleId],
+            featuredArticleId: articleId,
+          },
+          {
+            id: "sequenza",
+            type: "sequence",
+            articleIds: [articleId],
+            featuredArticleId: articleId,
+          },
+        ],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("allows empty remainder home blocks", () => {
+    expect(
+      createIssueInputSchema.safeParse({
+        title: "Issue 01",
+        homeBlocks: [
+          {
+            id: "resto",
+            type: "sequence",
+            source: "remainder",
+            title: "Resto",
+            description: null,
+            articleIds: [],
+            featuredArticleId: null,
+          },
+        ],
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rejects opening blocks with copy or multiple articles", () => {
+    expect(
+      createIssueInputSchema.safeParse({
+        title: "Issue 01",
+        homeBlocks: [
+          {
+            id: "apertura",
+            type: "opening",
+            title: "Apertura",
+            description: null,
+            articleIds: [
+              "00000000-0000-4000-8000-000000000001",
+              "00000000-0000-4000-8000-000000000002",
+            ],
+            featuredArticleId: "00000000-0000-4000-8000-000000000001",
+          },
+        ],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects rupture copy and allows closing copy", () => {
+    expect(
+      createIssueInputSchema.safeParse({
+        title: "Issue 01",
+        homeBlocks: [
+          {
+            id: "rottura",
+            type: "rupture",
+            title: "Rottura",
+            description: null,
+            articleIds: ["00000000-0000-4000-8000-000000000001"],
+            featuredArticleId: "00000000-0000-4000-8000-000000000001",
+          },
+        ],
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createIssueInputSchema.safeParse({
+        title: "Issue 01",
+        homeBlocks: [
+          {
+            id: "chiusura",
+            type: "closing",
+            title: "Chiusura",
+            description: "Copy",
+            articleIds: ["00000000-0000-4000-8000-000000000001"],
+            featuredArticleId: "00000000-0000-4000-8000-000000000001",
+          },
+        ],
+      }).success,
+    ).toBe(true);
+  });
+
   it("rejects duplicate ids during issue reorder", () => {
     expect(
       reorderIssuesInputSchema.safeParse({

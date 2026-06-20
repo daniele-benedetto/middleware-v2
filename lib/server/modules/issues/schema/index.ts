@@ -7,16 +7,46 @@ export const issueTitleStyledSegmentSchema = z.object({
 
 export const issueTitleStyledSchema = z.array(issueTitleStyledSegmentSchema).min(1);
 
-export const issueHomeBlockSchema = z.object({
-  id: z.string().trim().min(1),
-  type: z.enum(["opening", "constellation", "rupture", "sequence", "closing"]),
-  title: z.string().trim().nullable().optional(),
-  description: z.string().trim().nullable().optional(),
-  articleIds: z.array(z.string().uuid()).min(1),
-  featuredArticleId: z.string().uuid().nullable().optional(),
-});
+export const issueHomeBlockSchema = z
+  .object({
+    id: z.string().trim().min(1),
+    type: z.enum(["opening", "constellation", "rupture", "sequence", "closing"]),
+    source: z.enum(["manual", "remainder"]).default("manual"),
+    title: z.string().trim().nullable().optional(),
+    description: z.string().trim().nullable().optional(),
+    articleIds: z.array(z.string().uuid()),
+    featuredArticleId: z.string().uuid().nullable().optional(),
+  })
+  .refine((block) => block.source === "remainder" || block.articleIds.length > 0, {
+    message: "manual home blocks must include at least one article",
+    path: ["articleIds"],
+  })
+  .refine(
+    (block) =>
+      !["opening", "rupture", "closing"].includes(block.type) || block.articleIds.length <= 1,
+    {
+      message: "opening, rupture and closing blocks can include at most one article",
+      path: ["articleIds"],
+    },
+  )
+  .refine((block) => block.type !== "opening" || (!block.title && !block.description), {
+    message: "opening blocks cannot include title or description",
+    path: ["title"],
+  })
+  .refine((block) => block.type !== "rupture" || (!block.title && !block.description), {
+    message: "rupture blocks cannot include title or description",
+    path: ["title"],
+  });
 
-export const issueHomeBlocksSchema = z.array(issueHomeBlockSchema);
+export const issueHomeBlocksSchema = z.array(issueHomeBlockSchema).refine(
+  (blocks) => {
+    const articleIds = blocks.flatMap((block) => block.articleIds);
+    return new Set(articleIds).size === articleIds.length;
+  },
+  {
+    message: "articles can be assigned to one home block only",
+  },
+);
 
 export const createIssueInputSchema = z.object({
   title: z.string().trim().min(1),

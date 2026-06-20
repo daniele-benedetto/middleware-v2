@@ -115,6 +115,20 @@ Read/download flow:
 - `publishedAt` must only be set when an article status is `PUBLISHED`.
 - `contentRich` and `audioChunks` should remain backward-compatible versioned payloads.
 
+## Issue Home Regia
+
+- Public home composition is issue-centric. `Issue.homeBlocks` is the editorial source of truth for the current issue home layout.
+- Articles remain content entities with category, tags, author, media, and publication metadata. They do not own home placement state.
+- `Issue.homeBlocks` is a validated JSON array. Each block stores `id`, `type`, `source`, optional `title`, optional `description`, `articleIds`, and optional `featuredArticleId`.
+- Block `source` is `manual` by default. `remainder` blocks resolve automatically to articles in the issue that are not used by manual blocks.
+- Supported block types are `opening`, `constellation`, `rupture`, `sequence`, and `closing`.
+- One article can be assigned to one home block only. The server schema rejects duplicate article assignments across blocks.
+- `opening`, `rupture`, and `closing` are single-article blocks.
+- `opening` and `rupture` cannot include block title or description. Their article is the editorial payload.
+- `closing` can include title and description while still allowing only one article.
+- The public renderer composes `NarrativeHomeBlock` objects from `Issue.homeBlocks`. If no valid blocks exist, it falls back to issue article order with an `opening` block followed by a `constellation` block.
+- Shared helper rules for editing and layout generation live in `lib/issues/home-block-rules.ts`. Server validation remains in `lib/server/modules/issues/schema/index.ts`; keep both aligned when block rules change.
+
 ## Decision Boundaries
 
 - Put business rules in `service`.

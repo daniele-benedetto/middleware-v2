@@ -43,6 +43,10 @@ type IssueDetailRecord = IssueRecord & {
     status: ArticleStatus;
     isFeatured: boolean;
     position: number;
+    category: {
+      name: string;
+      slug: string;
+    } | null;
   }>;
 };
 
@@ -72,6 +76,8 @@ const toIssueDetailDto = (issue: IssueDetailRecord): IssueDetailDto => {
       status: article.status,
       isFeatured: article.isFeatured,
       position: article.position,
+      categoryName: article.category?.name ?? null,
+      categorySlug: article.category?.slug ?? null,
     })),
   };
 };

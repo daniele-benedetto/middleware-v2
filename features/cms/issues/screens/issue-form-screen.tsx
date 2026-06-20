@@ -11,7 +11,6 @@ import {
   CmsFormField,
   CmsPageHeader,
   CmsRichTextEditor,
-  CmsTextarea,
   CmsStyledTitleEditor,
   CmsTextInput,
   createStyledTitleValue,
@@ -22,6 +21,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { IssueArticlesPanel } from "@/features/cms/issues/components/issue-articles-panel";
+import { IssueHomeBlocksEditor } from "@/features/cms/issues/components/issue-home-blocks-editor";
 import {
   useIssueById,
   useIssueCreate,
@@ -30,6 +30,7 @@ import {
   type IssueDetail,
   type UpdateIssueInput,
 } from "@/features/cms/issues/hooks/use-issue-crud";
+import { generateSuggestedHomeBlocks } from "@/features/cms/issues/lib/generate-suggested-home-blocks";
 import {
   mapCrudDomainError,
   useCmsFormNavigation,
@@ -42,25 +43,9 @@ import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
 
+import type { IssueHomeBlocks } from "@/lib/server/modules/issues/schema";
+
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
-
-function stringifyHomeBlocks(value: unknown) {
-  if (!value) {
-    return "[]";
-  }
-
-  return JSON.stringify(value, null, 2);
-}
-
-function parseHomeBlocks(value: string) {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return null;
-  }
-
-  return JSON.parse(trimmed) as unknown;
-}
 
 type IssueFormScreenProps = {
   mode: "create" | "edit";
@@ -271,9 +256,7 @@ function IssueFormContent({
   );
   const title = getStyledTitlePlainText(titleStyled);
   const [description, setDescription] = useState<unknown>(issue?.description ?? emptyContentDoc);
-  const [homeBlocksText, setHomeBlocksText] = useState(() =>
-    stringifyHomeBlocks(issue?.homeBlocks),
-  );
+  const [homeBlocks, setHomeBlocks] = useState<IssueHomeBlocks>(() => issue?.homeBlocks ?? []);
   const [isActive, setIsActive] = useState(issue?.isActive ?? true);
   const [publishedAt, setPublishedAt] = useState<Date | null>(
     issue?.publishedAt ? new Date(issue.publishedAt) : null,
@@ -302,6 +285,10 @@ function IssueFormContent({
     .filter((article): article is NonNullable<typeof article> => Boolean(article));
   const isBusy = isMutating || isArticleOrderPending;
 
+  const generateSuggestedBlocks = () => {
+    setHomeBlocks(generateSuggestedHomeBlocks(orderedArticles));
+  };
+
   const openSlugEditor = () => {
     setManualSlug(resolvedSlug);
     setIsSlugEditing(true);
@@ -320,14 +307,7 @@ function IssueFormContent({
     }
 
     const slugPayload = hasManualSlugOverride ? manualSlug : resolvedSlug || undefined;
-    let homeBlocks: unknown;
-
-    try {
-      homeBlocks = parseHomeBlocks(homeBlocksText);
-    } catch {
-      onValidationError(issueFormText.invalidHomeBlocksJson);
-      return;
-    }
+    const homeBlocksPayload = homeBlocks.length > 0 ? homeBlocks : null;
 
     try {
       if (mode === "create") {
@@ -338,7 +318,7 @@ function IssueFormContent({
             titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
             slug: slugPayload,
             description,
-            homeBlocks,
+            homeBlocks: homeBlocksPayload,
             isActive,
             publishedAt: publishedAt ?? undefined,
           },
@@ -361,7 +341,7 @@ function IssueFormContent({
           titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
           slug: slugPayload,
           description,
-          homeBlocks,
+          homeBlocks: homeBlocksPayload,
           isActive,
           publishedAt,
         },
@@ -510,17 +490,14 @@ function IssueFormContent({
             />
           </CmsFormField>
 
-          <CmsFormField
-            label={issueFormText.homeBlocksLabel}
-            htmlFor="issue-home-blocks"
-            hint={issueFormText.homeBlocksHint}
-          >
-            <CmsTextarea
-              id="issue-home-blocks"
-              value={homeBlocksText}
-              className="min-h-90 font-technical text-[12px] leading-[1.45]"
-              spellCheck={false}
-              onChange={(event) => setHomeBlocksText(event.target.value)}
+          <CmsFormField label={issueFormText.homeBlocksLabel} htmlFor="issue-home-blocks">
+            <IssueHomeBlocksEditor
+              value={homeBlocks}
+              articles={orderedArticles}
+              disabled={isBusy}
+              text={issueFormText.homeBlocksEditor}
+              onChange={setHomeBlocks}
+              onGenerateSuggested={generateSuggestedBlocks}
             />
           </CmsFormField>
         </div>

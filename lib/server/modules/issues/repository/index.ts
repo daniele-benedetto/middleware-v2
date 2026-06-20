@@ -98,6 +98,12 @@ export const issuesRepository = {
             status: true,
             isFeatured: true,
             position: true,
+            category: {
+              select: {
+                name: true,
+                slug: true,
+              },
+            },
           },
           orderBy: { position: "asc" },
         },

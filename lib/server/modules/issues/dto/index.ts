@@ -23,6 +23,8 @@ export const issueArticleSummaryDtoSchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
   isFeatured: z.boolean(),
   position: z.number().int(),
+  categoryName: z.string().nullable(),
+  categorySlug: z.string().nullable(),
 });
 
 export const issueDetailDtoSchema = issueDtoSchema.extend({
