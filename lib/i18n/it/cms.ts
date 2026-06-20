@@ -256,6 +256,10 @@ export const cmsIt = {
         updated: "Uscita aggiornata.",
         invalidPublishedAt: "Data pubblicazione non valida.",
         activeLabel: "Uscita attiva",
+        homeLayoutSection: "Layout home",
+        homeLayoutLabel: "Layout del numero",
+        homeLayoutHint:
+          "Dossier costruisce una prima pagina monografica: apertura forte, percorso guidato e categorie usate solo come label.",
         titleStyledHint: "Seleziona una parola o una porzione del titolo, poi clicca Accent.",
         titleStyledAccentAction: "Accent",
         titleStyledEditorAriaLabel: "Editor titolo uscita",

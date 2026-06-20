@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
+  IssueHomeLayout,
   ListIssuesQuery,
   ReorderIssuesInput,
   UpdateIssueInput,
@@ -15,6 +16,7 @@ export type CreateIssuePersistInput = {
   titleStyled?: unknown;
   slug: string;
   description?: unknown;
+  homeLayout?: IssueHomeLayout;
   isActive?: boolean;
   publishedAt?: Date | null;
 };
@@ -57,6 +59,7 @@ export const issuesRepository = {
         titleStyled: true,
         slug: true,
         description: true,
+        homeLayout: true,
         isActive: true,
         sortOrder: true,
         publishedAt: true,
@@ -83,6 +86,7 @@ export const issuesRepository = {
         titleStyled: true,
         slug: true,
         description: true,
+        homeLayout: true,
         isActive: true,
         sortOrder: true,
         publishedAt: true,
@@ -114,6 +118,7 @@ export const issuesRepository = {
       slug: input.slug,
       description:
         input.description === undefined ? undefined : (input.description as Prisma.InputJsonValue),
+      homeLayout: input.homeLayout,
       isActive: input.isActive,
       publishedAt: input.publishedAt ?? null,
     };
@@ -136,6 +141,7 @@ export const issuesRepository = {
           : input.description === null
             ? Prisma.JsonNull
             : (input.description as Prisma.InputJsonValue),
+      homeLayout: input.homeLayout,
       isActive: input.isActive,
       publishedAt: input.publishedAt,
     };
@@ -161,6 +167,7 @@ export const issuesRepository = {
           : input.description === null
             ? Prisma.JsonNull
             : (input.description as Prisma.InputJsonValue),
+      homeLayout: input.homeLayout,
       isActive: input.isActive,
       publishedAt: input.publishedAt,
     };
@@ -234,6 +241,7 @@ export const issuesRepository = {
           titleStyled: true,
           slug: true,
           description: true,
+          homeLayout: true,
           isActive: true,
           sortOrder: true,
           publishedAt: true,

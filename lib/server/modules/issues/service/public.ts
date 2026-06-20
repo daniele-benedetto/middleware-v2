@@ -11,7 +11,7 @@ import type {
   PublicIssueDetailDto,
   PublicIssueDto,
 } from "@/lib/server/modules/issues/dto/public";
-import type { IssueTitleStyled } from "@/lib/server/modules/issues/schema";
+import type { IssueHomeLayout, IssueTitleStyled } from "@/lib/server/modules/issues/schema";
 
 type PublicIssueRecord = {
   id: string;
@@ -19,6 +19,7 @@ type PublicIssueRecord = {
   titleStyled: unknown;
   slug: string;
   description: unknown;
+  homeLayout: IssueHomeLayout;
   publishedAt: Date | null;
   _count?: { articles: number };
 };
@@ -62,6 +63,7 @@ const toPublicIssueDto = (issue: PublicIssueRecord): PublicIssueDto => {
     titleStyled: (issue.titleStyled as IssueTitleStyled | null) ?? null,
     slug: issue.slug,
     description: issue.description ?? null,
+    homeLayout: issue.homeLayout,
     publishedAt: issue.publishedAt.toISOString(),
     articlesCount: issue._count?.articles ?? 0,
   };

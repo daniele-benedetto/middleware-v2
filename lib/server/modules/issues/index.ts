@@ -8,6 +8,7 @@ export { issuesPolicy } from "@/lib/server/modules/issues/policy";
 export { issuesRepository } from "@/lib/server/modules/issues/repository";
 export {
   createIssueInputSchema,
+  issueHomeLayoutSchema,
   issueTitleStyledSchema,
   listIssuesQuerySchema,
   reorderIssuesInputSchema,
@@ -15,6 +16,7 @@ export {
 } from "@/lib/server/modules/issues/schema";
 export type {
   CreateIssueInput,
+  IssueHomeLayout,
   IssueTitleStyled,
   ListIssuesQuery,
   ReorderIssuesInput,

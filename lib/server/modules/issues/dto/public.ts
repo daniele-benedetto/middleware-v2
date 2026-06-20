@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+import { issueHomeLayoutSchema, issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 
 export const publicIssueArticleSummaryDtoSchema = z.object({
   id: z.string().uuid(),
@@ -25,6 +25,7 @@ export const publicIssueDtoSchema = z.object({
   titleStyled: issueTitleStyledSchema.nullable(),
   slug: z.string(),
   description: z.unknown().nullable(),
+  homeLayout: issueHomeLayoutSchema,
   publishedAt: z.string(),
   articlesCount: z.number().int(),
 });

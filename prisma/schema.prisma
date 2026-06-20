@@ -24,6 +24,10 @@ enum PageStatus {
   ARCHIVED
 }
 
+enum IssueHomeLayout {
+  DOSSIER
+}
+
 enum AuditLogOutcome {
   SUCCESS
   FAILURE
@@ -111,16 +115,17 @@ model Verification {
 }
 
 model Issue {
-  id          String    @id @default(uuid())
+  id          String          @id @default(uuid())
   title       String
   titleStyled Json?
-  slug        String    @unique
+  slug        String          @unique
   description Json?
-  isActive    Boolean   @default(true)
-  sortOrder   Int       @default(0)
+  homeLayout  IssueHomeLayout @default(DOSSIER)
+  isActive    Boolean         @default(true)
+  sortOrder   Int             @default(0)
   publishedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   articles Article[]
 

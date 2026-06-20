@@ -11,6 +11,7 @@ import {
   CmsFormField,
   CmsPageHeader,
   CmsRichTextEditor,
+  CmsSelect,
   CmsStyledTitleEditor,
   CmsTextInput,
   createStyledTitleValue,
@@ -42,6 +43,8 @@ import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
 
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
+
+const issueHomeLayoutOptions = [{ value: "DOSSIER", label: "Dossier / Inchiesta" }];
 
 type IssueFormScreenProps = {
   mode: "create" | "edit";
@@ -244,6 +247,7 @@ function IssueFormContent({
     slug: fieldText.slug,
     description: fieldText.description,
     publishedAt: fieldText.publishedAt,
+    homeLayout: issueFormText.homeLayoutLabel,
   };
 
   const [titleStyled, setTitleStyled] = useState(() =>
@@ -251,6 +255,7 @@ function IssueFormContent({
   );
   const title = getStyledTitlePlainText(titleStyled);
   const [description, setDescription] = useState<unknown>(issue?.description ?? emptyContentDoc);
+  const [homeLayout, setHomeLayout] = useState(issue?.homeLayout ?? "DOSSIER");
   const [isActive, setIsActive] = useState(issue?.isActive ?? true);
   const [publishedAt, setPublishedAt] = useState<Date | null>(
     issue?.publishedAt ? new Date(issue.publishedAt) : null,
@@ -307,6 +312,7 @@ function IssueFormContent({
             titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
             slug: slugPayload,
             description,
+            homeLayout,
             isActive,
             publishedAt: publishedAt ?? undefined,
           },
@@ -329,6 +335,7 @@ function IssueFormContent({
           titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
           slug: slugPayload,
           description,
+          homeLayout,
           isActive,
           publishedAt,
         },
@@ -500,6 +507,24 @@ function IssueFormContent({
                 />
               </CmsFormField>
             </div>
+          </section>
+
+          <section className="space-y-3">
+            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+              {issueFormText.homeLayoutSection}
+            </div>
+
+            <CmsFormField
+              label={issueFormText.homeLayoutLabel}
+              htmlFor="issue-home-layout"
+              hint={issueFormText.homeLayoutHint}
+            >
+              <CmsSelect
+                value={homeLayout}
+                onValueChange={(value) => setHomeLayout(value as typeof homeLayout)}
+                options={issueHomeLayoutOptions}
+              />
+            </CmsFormField>
           </section>
 
           {mode === "edit" ? (

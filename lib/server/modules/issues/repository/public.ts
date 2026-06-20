@@ -16,6 +16,7 @@ const PUBLIC_ISSUE_LIST_SELECT = {
   titleStyled: true,
   slug: true,
   description: true,
+  homeLayout: true,
   publishedAt: true,
   _count: {
     select: {

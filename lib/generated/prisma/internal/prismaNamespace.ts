@@ -1419,6 +1419,7 @@ export const IssueScalarFieldEnum = {
   titleStyled: 'titleStyled',
   slug: 'slug',
   description: 'description',
+  homeLayout: 'homeLayout',
   isActive: 'isActive',
   sortOrder: 'sortOrder',
   publishedAt: 'publishedAt',
@@ -1640,6 +1641,20 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
  * Reference to a field of type 'QueryMode'
  */
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'IssueHomeLayout'
+ */
+export type EnumIssueHomeLayoutFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IssueHomeLayout'>
+    
+
+
+/**
+ * Reference to a field of type 'IssueHomeLayout[]'
+ */
+export type ListEnumIssueHomeLayoutFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IssueHomeLayout[]'>
     
 
 

@@ -14,6 +14,7 @@ import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { IssueDetailDto, IssueDto } from "@/lib/server/modules/issues/dto";
 import type {
   CreateIssueInput,
+  IssueHomeLayout,
   IssueTitleStyled,
   ListIssuesQuery,
   ReorderIssuesInput,
@@ -26,6 +27,7 @@ type IssueRecord = {
   titleStyled: unknown;
   slug: string;
   description: unknown;
+  homeLayout: IssueHomeLayout;
   isActive: boolean;
   sortOrder: number;
   publishedAt: Date | null;
@@ -51,6 +53,7 @@ const toIssueDto = (issue: IssueRecord): IssueDto => {
     titleStyled: (issue.titleStyled as IssueTitleStyled | null) ?? null,
     slug: issue.slug,
     description: issue.description ?? null,
+    homeLayout: issue.homeLayout,
     isActive: issue.isActive,
     sortOrder: issue.sortOrder,
     publishedAt: issue.publishedAt?.toISOString() ?? null,
@@ -121,6 +124,7 @@ export const issuesService = {
           titleStyled: input.titleStyled ?? null,
           slug: candidateSlug,
           description: input.description,
+          homeLayout: input.homeLayout,
           isActive: input.isActive,
           publishedAt: input.publishedAt ?? null,
         });

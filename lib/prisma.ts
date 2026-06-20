@@ -46,17 +46,23 @@ function hasCurrentSchema(client: PrismaClient | undefined) {
           Article?: {
             fields?: Array<{ name?: string }>;
           };
+          Issue?: {
+            fields?: Array<{ name?: string }>;
+          };
           Author?: unknown;
         };
       };
     }
   )._runtimeDataModel?.models;
 
-  const runtimeFields = runtimeModels?.Article?.fields;
+  const articleRuntimeFields = runtimeModels?.Article?.fields;
+  const issueRuntimeFields = runtimeModels?.Issue?.fields;
 
-  if (Array.isArray(runtimeFields)) {
+  if (Array.isArray(articleRuntimeFields) && Array.isArray(issueRuntimeFields)) {
     return (
-      Boolean(runtimeModels?.Author) && runtimeFields.some((field) => field?.name === "excerptRich")
+      Boolean(runtimeModels?.Author) &&
+      articleRuntimeFields.some((field) => field?.name === "excerptRich") &&
+      issueRuntimeFields.some((field) => field?.name === "homeLayout")
     );
   }
 
@@ -69,7 +75,11 @@ function hasCurrentSchema(client: PrismaClient | undefined) {
   )._engineConfig?.inlineSchema;
 
   if (typeof inlineSchema === "string") {
-    return inlineSchema.includes("model Author") && inlineSchema.includes("excerptRich");
+    return (
+      inlineSchema.includes("model Author") &&
+      inlineSchema.includes("excerptRich") &&
+      inlineSchema.includes("homeLayout")
+    );
   }
 
   return true;

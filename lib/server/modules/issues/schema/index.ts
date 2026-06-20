@@ -7,11 +7,14 @@ export const issueTitleStyledSegmentSchema = z.object({
 
 export const issueTitleStyledSchema = z.array(issueTitleStyledSegmentSchema).min(1);
 
+export const issueHomeLayoutSchema = z.enum(["DOSSIER"]);
+
 export const createIssueInputSchema = z.object({
   title: z.string().trim().min(1),
   titleStyled: issueTitleStyledSchema.nullable().optional(),
   slug: z.string().trim().min(1).optional(),
   description: z.unknown().optional(),
+  homeLayout: issueHomeLayoutSchema.default("DOSSIER"),
   isActive: z.boolean().default(true),
   publishedAt: z.coerce.date().nullable().optional(),
 });
@@ -21,6 +24,7 @@ export const updateIssueInputSchema = createIssueInputSchema
   .extend({
     titleStyled: issueTitleStyledSchema.nullable().optional(),
     description: z.unknown().nullable().optional(),
+    homeLayout: issueHomeLayoutSchema.optional(),
     isActive: z.boolean().optional(),
     publishedAt: z.coerce.date().nullable().optional(),
   })
@@ -49,6 +53,7 @@ export const listIssuesQuerySchema = z.object({
 });
 
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
+export type IssueHomeLayout = z.infer<typeof issueHomeLayoutSchema>;
 export type IssueTitleStyled = z.infer<typeof issueTitleStyledSchema>;
 export type UpdateIssueInput = z.infer<typeof updateIssueInputSchema>;
 export type ReorderIssuesInput = z.infer<typeof reorderIssuesInputSchema>;
