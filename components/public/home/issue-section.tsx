@@ -1,5 +1,5 @@
 import { HomeSectionHeader } from "@/components/public/home/home-section-header";
-import { IssueArticleCard } from "@/components/public/home/issue-article-card";
+import { IssueSectionGrid } from "@/components/public/home/issue-section-grid";
 
 import type { HomeIssueArticle } from "@/components/public/home/home-view-model";
 
@@ -37,11 +37,7 @@ export function IssueSection({
         marker={marker}
         topBorder={headerTopBorder}
       />
-      <div className="grid border-l border-foreground [grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))] md:[grid-template-columns:repeat(auto-fit,minmax(370px,1fr))]">
-        {articles.map((article) => (
-          <IssueArticleCard key={article.id} article={article} variant={variant} label={title} />
-        ))}
-      </div>
+      <IssueSectionGrid title={title} articles={articles} variant={variant} />
     </section>
   );
 }

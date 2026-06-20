@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildHomeIssueSections,
+  getHomeGridPattern,
+  getHomeGridRows,
   sortHomeArticles,
   type HomeIssueArticle,
 } from "@/components/public/home/home-view-model";
@@ -102,6 +104,28 @@ describe("home view model", () => {
 
     expect(sections.sections).toMatchObject([
       { id: "senza-categoria", title: "Senza categoria", articles: [uncategorized] },
+    ]);
+  });
+
+  it("returns deterministic grid patterns up to ten articles", () => {
+    expect(getHomeGridPattern(0)).toEqual([]);
+    expect(getHomeGridPattern(1)).toEqual([1]);
+    expect(getHomeGridPattern(2)).toEqual([2]);
+    expect(getHomeGridPattern(3)).toEqual([3]);
+    expect(getHomeGridPattern(4)).toEqual([4]);
+    expect(getHomeGridPattern(5)).toEqual([3, 2]);
+    expect(getHomeGridPattern(6)).toEqual([3, 3]);
+    expect(getHomeGridPattern(7)).toEqual([3, 4]);
+    expect(getHomeGridPattern(8)).toEqual([4, 4]);
+    expect(getHomeGridPattern(9)).toEqual([3, 3, 3]);
+    expect(getHomeGridPattern(10)).toEqual([5, 5]);
+  });
+
+  it("caps grid planning to ten articles before show-all expansion", () => {
+    expect(getHomeGridPattern(11)).toEqual([5, 5]);
+    expect(getHomeGridRows(Array.from({ length: 10 }, (_, index) => index))).toEqual([
+      [0, 1, 2, 3, 4],
+      [5, 6, 7, 8, 9],
     ]);
   });
 });

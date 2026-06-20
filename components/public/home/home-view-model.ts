@@ -17,6 +17,21 @@ export type HomeIssueSection = {
   articles: HomeIssueArticle[];
 };
 
+export const HOME_SECTION_VISIBLE_ARTICLES_LIMIT = 10;
+
+const HOME_GRID_PATTERNS: Record<number, number[]> = {
+  1: [1],
+  2: [2],
+  3: [3],
+  4: [4],
+  5: [3, 2],
+  6: [3, 3],
+  7: [3, 4],
+  8: [4, 4],
+  9: [3, 3, 3],
+  10: [5, 5],
+};
+
 const EDITORIAL_CATEGORY_SLUGS = new Set(["editoriale", "editoriali"]);
 const UNCATEGORIZED_SECTION_ID = "senza-categoria";
 const UNCATEGORIZED_SECTION_TITLE = "Senza categoria";
@@ -56,6 +71,25 @@ export function sortHomeArticles(articles: HomeIssueArticle[]) {
     }
 
     return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
+  });
+}
+
+export function getHomeGridPattern(articleCount: number) {
+  if (articleCount <= 0) {
+    return [];
+  }
+
+  return HOME_GRID_PATTERNS[Math.min(articleCount, HOME_SECTION_VISIBLE_ARTICLES_LIMIT)];
+}
+
+export function getHomeGridRows<T>(items: T[]) {
+  const pattern = getHomeGridPattern(items.length);
+  let cursor = 0;
+
+  return pattern.map((rowSize) => {
+    const row = items.slice(cursor, cursor + rowSize);
+    cursor += rowSize;
+    return row;
   });
 }
 

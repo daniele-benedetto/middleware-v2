@@ -40,6 +40,10 @@ export const publicIt = {
       readingTimeLabel: (minutes: number) => `${minutes} min`,
       audioLabel: "Audio",
     },
+    sectionGrid: {
+      showAll: (count: number) => `Vedi tutti (${count})`,
+      showLess: "Riduci",
+    },
     empty: {
       kicker: "Numero corrente",
       title: "Nessun numero pubblicato",
