@@ -11,7 +11,11 @@ import {
   CmsFormField,
   CmsPageHeader,
   CmsRichTextEditor,
+  CmsStyledTitleEditor,
   CmsTextInput,
+  createStyledTitleValue,
+  getStyledTitlePlainText,
+  hasStyledTitleAccent,
   cmsToast,
 } from "@/components/cms/primitives";
 import { Calendar } from "@/components/ui/calendar";
@@ -236,12 +240,16 @@ function IssueFormContent({
   const fieldText = formText.fields;
   const issueFieldLabels = {
     title: fieldText.title,
+    titleStyled: fieldText.titleStyled,
     slug: fieldText.slug,
     description: fieldText.description,
     publishedAt: fieldText.publishedAt,
   };
 
-  const [title, setTitle] = useState(issue?.title ?? "");
+  const [titleStyled, setTitleStyled] = useState(() =>
+    createStyledTitleValue(issue?.title ?? "", issue?.titleStyled),
+  );
+  const title = getStyledTitlePlainText(titleStyled);
   const [description, setDescription] = useState<unknown>(issue?.description ?? emptyContentDoc);
   const [isActive, setIsActive] = useState(issue?.isActive ?? true);
   const [publishedAt, setPublishedAt] = useState<Date | null>(
@@ -296,6 +304,7 @@ function IssueFormContent({
           createIssueInputSchema,
           {
             title,
+            titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
             slug: slugPayload,
             description,
             isActive,
@@ -317,6 +326,7 @@ function IssueFormContent({
         updateIssueInputSchema,
         {
           title,
+          titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
           slug: slugPayload,
           description,
           isActive,
@@ -395,13 +405,23 @@ function IssueFormContent({
 
       <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-5 overflow-y-auto pb-6 lg:pr-6">
-          <CmsFormField label={fieldText.title} htmlFor="issue-title" required>
-            <CmsTextInput
+          <CmsFormField
+            label={fieldText.title}
+            htmlFor="issue-title"
+            hint={issueFormText.titleStyledHint}
+            required
+          >
+            <CmsStyledTitleEditor
               id="issue-title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
+              value={titleStyled}
+              onChange={setTitleStyled}
+              placeholder={fieldText.title}
+              accentLabel={issueFormText.titleStyledAccentAction}
+              ariaLabel={issueFormText.titleStyledEditorAriaLabel}
             />
           </CmsFormField>
+
+          <input type="hidden" name="title" value={title} />
 
           <CmsFormField label={fieldText.slug} htmlFor="issue-slug" hint={slugHint}>
             <div className="flex items-center gap-2">

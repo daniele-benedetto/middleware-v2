@@ -11,12 +11,20 @@ const mediaRepositoryMock = vi.hoisted(() => ({
   delete: vi.fn(),
 }));
 
+const publicMediaRepositoryMock = vi.hoisted(() => ({
+  listPublishedArticleImageUrls: vi.fn(),
+}));
+
 vi.mock("@/lib/server/modules/articles/repository", () => ({
   articlesRepository: articlesRepositoryMock,
 }));
 
 vi.mock("@/lib/server/modules/media/repository", () => ({
   mediaRepository: mediaRepositoryMock,
+}));
+
+vi.mock("@/lib/server/modules/media/repository/public", () => ({
+  publicMediaRepository: publicMediaRepositoryMock,
 }));
 
 import {
@@ -26,6 +34,7 @@ import {
 } from "@vercel/blob";
 
 import { mediaService } from "@/lib/server/modules/media/service";
+import { publicMediaService } from "@/lib/server/modules/media/service/public";
 import { createErrorInstance } from "@/tests/helpers/create-error-instance";
 
 function createBlobRecord(overrides: Record<string, unknown> = {}) {
@@ -192,5 +201,40 @@ describe("mediaService", () => {
     expect(mediaRepositoryMock.delete).toHaveBeenCalledWith(current.url, current);
     expect(articlesRepositoryMock.clearMediaUrl).toHaveBeenCalledWith(current.url);
     expect(result).toEqual({ success: true, articleIds: ["article-1", "article-2"] });
+  });
+});
+
+describe("publicMediaService", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("authorizes only exact published article image pathnames", async () => {
+    publicMediaRepositoryMock.listPublishedArticleImageUrls.mockResolvedValue([
+      {
+        imageUrl: "https://store.private.blob.vercel-storage.com/covers/hero-image.jpg",
+      },
+      {
+        imageUrl: "/api/cms/media/blob?pathname=covers%2Fsecond-image.jpg",
+      },
+    ]);
+
+    await expect(
+      publicMediaService.canServePublishedArticleImage("covers/hero-image.jpg"),
+    ).resolves.toBe(true);
+    await expect(
+      publicMediaService.canServePublishedArticleImage("covers/second-image.jpg"),
+    ).resolves.toBe(true);
+    await expect(publicMediaService.canServePublishedArticleImage("hero-image.jpg")).resolves.toBe(
+      false,
+    );
+  });
+
+  it("rejects non-image pathnames before consulting published records", async () => {
+    await expect(publicMediaService.canServePublishedArticleImage("data/file.json")).resolves.toBe(
+      false,
+    );
+
+    expect(publicMediaRepositoryMock.listPublishedArticleImageUrls).not.toHaveBeenCalled();
   });
 });

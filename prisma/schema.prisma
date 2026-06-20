@@ -113,6 +113,7 @@ model Verification {
 model Issue {
   id          String    @id @default(uuid())
   title       String
+  titleStyled Json?
   slug        String    @unique
   description Json?
   isActive    Boolean   @default(true)
@@ -169,6 +170,7 @@ model Article {
   publishedAt DateTime?
 
   title       String
+  titleStyled Json?
   slug        String
   excerpt     String?
   excerptRich Json?

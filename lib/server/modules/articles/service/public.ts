@@ -1,5 +1,6 @@
 import "server-only";
 
+import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicArticlesRepository } from "@/lib/server/modules/articles/repository/public";
 
@@ -7,11 +8,13 @@ import type {
   PublicArticleDetailDto,
   PublicArticleSummaryDto,
 } from "@/lib/server/modules/articles/dto/public";
+import type { ArticleTitleStyled } from "@/lib/server/modules/articles/schema";
 
 type PublicArticleSummaryRecord = {
   id: string;
   slug: string;
   title: string;
+  titleStyled: unknown;
   excerpt: string | null;
   imageUrl: string | null;
   audioUrl: string | null;
@@ -49,8 +52,9 @@ const toPublicArticleSummaryDto = (
     id: article.id,
     slug: article.slug,
     title: article.title,
+    titleStyled: (article.titleStyled as ArticleTitleStyled | null) ?? null,
     excerpt: article.excerpt,
-    imageUrl: article.imageUrl,
+    imageUrl: resolvePublicMediaUrl(article.imageUrl),
     hasAudio: Boolean(article.audioUrl),
     isFeatured: article.isFeatured,
     publishedAt: article.publishedAt.toISOString(),

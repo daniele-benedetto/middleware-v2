@@ -59,6 +59,7 @@ export type IssueMaxAggregateOutputType = {
 export type IssueCountAggregateOutputType = {
   id: number
   title: number
+  titleStyled: number
   slug: number
   description: number
   isActive: number
@@ -103,6 +104,7 @@ export type IssueMaxAggregateInputType = {
 export type IssueCountAggregateInputType = {
   id?: true
   title?: true
+  titleStyled?: true
   slug?: true
   description?: true
   isActive?: true
@@ -202,6 +204,7 @@ export type IssueGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type IssueGroupByOutputType = {
   id: string
   title: string
+  titleStyled: runtime.JsonValue | null
   slug: string
   description: runtime.JsonValue | null
   isActive: boolean
@@ -237,6 +240,7 @@ export type IssueWhereInput = {
   NOT?: Prisma.IssueWhereInput | Prisma.IssueWhereInput[]
   id?: Prisma.StringFilter<"Issue"> | string
   title?: Prisma.StringFilter<"Issue"> | string
+  titleStyled?: Prisma.JsonNullableFilter<"Issue">
   slug?: Prisma.StringFilter<"Issue"> | string
   description?: Prisma.JsonNullableFilter<"Issue">
   isActive?: Prisma.BoolFilter<"Issue"> | boolean
@@ -250,6 +254,7 @@ export type IssueWhereInput = {
 export type IssueOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -267,6 +272,7 @@ export type IssueWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.IssueWhereInput[]
   NOT?: Prisma.IssueWhereInput | Prisma.IssueWhereInput[]
   title?: Prisma.StringFilter<"Issue"> | string
+  titleStyled?: Prisma.JsonNullableFilter<"Issue">
   description?: Prisma.JsonNullableFilter<"Issue">
   isActive?: Prisma.BoolFilter<"Issue"> | boolean
   sortOrder?: Prisma.IntFilter<"Issue"> | number
@@ -279,6 +285,7 @@ export type IssueWhereUniqueInput = Prisma.AtLeast<{
 export type IssueOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -299,6 +306,7 @@ export type IssueScalarWhereWithAggregatesInput = {
   NOT?: Prisma.IssueScalarWhereWithAggregatesInput | Prisma.IssueScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Issue"> | string
   title?: Prisma.StringWithAggregatesFilter<"Issue"> | string
+  titleStyled?: Prisma.JsonNullableWithAggregatesFilter<"Issue">
   slug?: Prisma.StringWithAggregatesFilter<"Issue"> | string
   description?: Prisma.JsonNullableWithAggregatesFilter<"Issue">
   isActive?: Prisma.BoolWithAggregatesFilter<"Issue"> | boolean
@@ -311,6 +319,7 @@ export type IssueScalarWhereWithAggregatesInput = {
 export type IssueCreateInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
@@ -324,6 +333,7 @@ export type IssueCreateInput = {
 export type IssueUncheckedCreateInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
@@ -337,6 +347,7 @@ export type IssueUncheckedCreateInput = {
 export type IssueUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -350,6 +361,7 @@ export type IssueUpdateInput = {
 export type IssueUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -363,6 +375,7 @@ export type IssueUncheckedUpdateInput = {
 export type IssueCreateManyInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
@@ -375,6 +388,7 @@ export type IssueCreateManyInput = {
 export type IssueUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -387,6 +401,7 @@ export type IssueUpdateManyMutationInput = {
 export type IssueUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -399,6 +414,7 @@ export type IssueUncheckedUpdateManyInput = {
 export type IssueCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -468,6 +484,7 @@ export type IssueUpdateOneRequiredWithoutArticlesNestedInput = {
 export type IssueCreateWithoutArticlesInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
@@ -480,6 +497,7 @@ export type IssueCreateWithoutArticlesInput = {
 export type IssueUncheckedCreateWithoutArticlesInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
@@ -508,6 +526,7 @@ export type IssueUpdateToOneWithWhereWithoutArticlesInput = {
 export type IssueUpdateWithoutArticlesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -520,6 +539,7 @@ export type IssueUpdateWithoutArticlesInput = {
 export type IssueUncheckedUpdateWithoutArticlesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -563,6 +583,7 @@ export type IssueCountOutputTypeCountArticlesArgs<ExtArgs extends runtime.Types.
 export type IssueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   description?: boolean
   isActive?: boolean
@@ -577,6 +598,7 @@ export type IssueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
 export type IssueSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   description?: boolean
   isActive?: boolean
@@ -589,6 +611,7 @@ export type IssueSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 export type IssueSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   description?: boolean
   isActive?: boolean
@@ -601,6 +624,7 @@ export type IssueSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 export type IssueSelectScalar = {
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   description?: boolean
   isActive?: boolean
@@ -610,7 +634,7 @@ export type IssueSelectScalar = {
   updatedAt?: boolean
 }
 
-export type IssueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "description" | "isActive" | "sortOrder" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["issue"]>
+export type IssueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleStyled" | "slug" | "description" | "isActive" | "sortOrder" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["issue"]>
 export type IssueInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   articles?: boolean | Prisma.Issue$articlesArgs<ExtArgs>
   _count?: boolean | Prisma.IssueCountOutputTypeDefaultArgs<ExtArgs>
@@ -626,6 +650,7 @@ export type $IssuePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     title: string
+    titleStyled: runtime.JsonValue | null
     slug: string
     description: runtime.JsonValue | null
     isActive: boolean
@@ -1059,6 +1084,7 @@ export interface Prisma__IssueClient<T, Null = never, ExtArgs extends runtime.Ty
 export interface IssueFieldRefs {
   readonly id: Prisma.FieldRef<"Issue", 'String'>
   readonly title: Prisma.FieldRef<"Issue", 'String'>
+  readonly titleStyled: Prisma.FieldRef<"Issue", 'Json'>
   readonly slug: Prisma.FieldRef<"Issue", 'String'>
   readonly description: Prisma.FieldRef<"Issue", 'Json'>
   readonly isActive: Prisma.FieldRef<"Issue", 'Boolean'>

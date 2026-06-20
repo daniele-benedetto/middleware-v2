@@ -1,11 +1,14 @@
 import { z } from "zod";
 
+import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+
 const articleSummaryDtoShape = {
   id: z.string().uuid(),
   issueId: z.string().uuid(),
   categoryId: z.string().uuid(),
   authorId: z.string().uuid().nullable(),
   title: z.string(),
+  titleStyled: issueTitleStyledSchema.nullable(),
   slug: z.string(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
   publishedAt: z.string().nullable(),

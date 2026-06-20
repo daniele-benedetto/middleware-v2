@@ -1,8 +1,11 @@
 import { z } from "zod";
 
+import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+
 export const issueDtoSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
+  titleStyled: issueTitleStyledSchema.nullable(),
   slug: z.string(),
   description: z.unknown().nullable(),
   isActive: z.boolean(),

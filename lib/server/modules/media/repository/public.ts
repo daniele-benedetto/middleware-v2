@@ -1,0 +1,25 @@
+import "server-only";
+
+import { Prisma } from "@/lib/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
+
+const PUBLIC_ISSUE_WHERE = {
+  isActive: true,
+  publishedAt: { not: null },
+} as const satisfies Prisma.IssueWhereInput;
+
+const PUBLIC_ARTICLE_IMAGE_WHERE = {
+  status: "PUBLISHED",
+  publishedAt: { not: null },
+  imageUrl: { not: null },
+  issue: PUBLIC_ISSUE_WHERE,
+} as const satisfies Prisma.ArticleWhereInput;
+
+export const publicMediaRepository = {
+  async listPublishedArticleImageUrls() {
+    return prisma.article.findMany({
+      where: PUBLIC_ARTICLE_IMAGE_WHERE,
+      select: { imageUrl: true },
+    });
+  },
+};

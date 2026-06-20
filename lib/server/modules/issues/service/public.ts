@@ -1,5 +1,7 @@
 import "server-only";
 
+import { resolvePublicMediaUrl } from "@/lib/media/blob";
+import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicIssuesRepository } from "@/lib/server/modules/issues/repository/public";
 
@@ -9,10 +11,12 @@ import type {
   PublicIssueDetailDto,
   PublicIssueDto,
 } from "@/lib/server/modules/issues/dto/public";
+import type { IssueTitleStyled } from "@/lib/server/modules/issues/schema";
 
 type PublicIssueRecord = {
   id: string;
   title: string;
+  titleStyled: unknown;
   slug: string;
   description: unknown;
   publishedAt: Date | null;
@@ -23,14 +27,24 @@ type PublicIssueArticleRecord = {
   id: string;
   slug: string;
   title: string;
+  titleStyled: unknown;
   excerpt: string | null;
   imageUrl: string | null;
   audioUrl: string | null;
   isFeatured: boolean;
   position: number;
+  contentRich: unknown;
   publishedAt: Date | null;
   category?: { slug: string; name: string } | null;
   author?: { name: string | null } | null;
+};
+
+const WORDS_PER_MINUTE = 220;
+
+const calculateReadingTimeMinutes = (contentRich: unknown) => {
+  const text = extractPlainText(contentRich);
+  const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+  return Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
 };
 
 type PublicIssueDetailRecord = PublicIssueRecord & {
@@ -45,6 +59,7 @@ const toPublicIssueDto = (issue: PublicIssueRecord): PublicIssueDto => {
   return {
     id: issue.id,
     title: issue.title,
+    titleStyled: (issue.titleStyled as IssueTitleStyled | null) ?? null,
     slug: issue.slug,
     description: issue.description ?? null,
     publishedAt: issue.publishedAt.toISOString(),
@@ -63,11 +78,13 @@ const toPublicIssueArticleSummaryDto = (
     id: article.id,
     slug: article.slug,
     title: article.title,
+    titleStyled: (article.titleStyled as IssueTitleStyled | null) ?? null,
     excerpt: article.excerpt,
-    imageUrl: article.imageUrl,
+    imageUrl: resolvePublicMediaUrl(article.imageUrl),
     hasAudio: Boolean(article.audioUrl),
     isFeatured: article.isFeatured,
     position: article.position,
+    readingTimeMinutes: calculateReadingTimeMinutes(article.contentRich),
     publishedAt: article.publishedAt.toISOString(),
     categorySlug: article.category?.slug ?? null,
     categoryName: article.category?.name ?? null,

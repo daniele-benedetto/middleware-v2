@@ -15,6 +15,7 @@ import type {
   UpdateArticlePersistInput,
 } from "@/lib/server/modules/articles/repository";
 import type {
+  ArticleTitleStyled,
   CreateArticleInput,
   ListArticlesQuery,
   ReorderArticlesInput,
@@ -38,6 +39,7 @@ type ArticleRecord = {
   categoryId: string;
   authorId: string | null;
   title: string;
+  titleStyled: unknown;
   slug: string;
   status: ArticleStatus;
   publishedAt: Date | null;
@@ -143,6 +145,7 @@ const toArticleDto = (article: ArticleRecord): ArticleDto => {
     categoryId: article.categoryId,
     authorId: article.authorId,
     title: article.title,
+    titleStyled: (article.titleStyled as ArticleTitleStyled | null) ?? null,
     slug: article.slug,
     status: article.status,
     publishedAt: article.publishedAt?.toISOString() ?? null,

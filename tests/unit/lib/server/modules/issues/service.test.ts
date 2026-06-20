@@ -21,6 +21,7 @@ function createIssueRecord(overrides: Record<string, unknown> = {}) {
   return {
     id: "issue-1",
     title: "Issue 01",
+    titleStyled: null,
     slug: "issue-01",
     description: null,
     isActive: true,
@@ -53,6 +54,7 @@ describe("issuesService", () => {
 
     expect(issuesRepositoryMock.create).toHaveBeenNthCalledWith(1, {
       title: "Issue 01",
+      titleStyled: null,
       slug: "issue-01",
       description: null,
       isActive: true,
@@ -60,6 +62,7 @@ describe("issuesService", () => {
     });
     expect(issuesRepositoryMock.create).toHaveBeenNthCalledWith(2, {
       title: "Issue 01",
+      titleStyled: null,
       slug: "issue-01-1",
       description: null,
       isActive: true,

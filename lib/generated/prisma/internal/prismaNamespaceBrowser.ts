@@ -155,6 +155,7 @@ export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[k
 export const IssueScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  titleStyled: 'titleStyled',
   slug: 'slug',
   description: 'description',
   isActive: 'isActive',
@@ -203,6 +204,7 @@ export const ArticleScalarFieldEnum = {
   position: 'position',
   publishedAt: 'publishedAt',
   title: 'title',
+  titleStyled: 'titleStyled',
   slug: 'slug',
   excerpt: 'excerpt',
   excerptRich: 'excerptRich',

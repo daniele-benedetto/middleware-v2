@@ -80,6 +80,7 @@ export type ArticleCountAggregateOutputType = {
   position: number
   publishedAt: number
   title: number
+  titleStyled: number
   slug: number
   excerpt: number
   excerptRich: number
@@ -147,6 +148,7 @@ export type ArticleCountAggregateInputType = {
   position?: true
   publishedAt?: true
   title?: true
+  titleStyled?: true
   slug?: true
   excerpt?: true
   excerptRich?: true
@@ -255,6 +257,7 @@ export type ArticleGroupByOutputType = {
   position: number
   publishedAt: Date | null
   title: string
+  titleStyled: runtime.JsonValue | null
   slug: string
   excerpt: string | null
   excerptRich: runtime.JsonValue | null
@@ -299,6 +302,7 @@ export type ArticleWhereInput = {
   position?: Prisma.IntFilter<"Article"> | number
   publishedAt?: Prisma.DateTimeNullableFilter<"Article"> | Date | string | null
   title?: Prisma.StringFilter<"Article"> | string
+  titleStyled?: Prisma.JsonNullableFilter<"Article">
   slug?: Prisma.StringFilter<"Article"> | string
   excerpt?: Prisma.StringNullableFilter<"Article"> | string | null
   excerptRich?: Prisma.JsonNullableFilter<"Article">
@@ -324,6 +328,7 @@ export type ArticleOrderByWithRelationInput = {
   position?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
   slug?: Prisma.SortOrder
   excerpt?: Prisma.SortOrderInput | Prisma.SortOrder
   excerptRich?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -354,6 +359,7 @@ export type ArticleWhereUniqueInput = Prisma.AtLeast<{
   position?: Prisma.IntFilter<"Article"> | number
   publishedAt?: Prisma.DateTimeNullableFilter<"Article"> | Date | string | null
   title?: Prisma.StringFilter<"Article"> | string
+  titleStyled?: Prisma.JsonNullableFilter<"Article">
   excerpt?: Prisma.StringNullableFilter<"Article"> | string | null
   excerptRich?: Prisma.JsonNullableFilter<"Article">
   contentRich?: Prisma.JsonFilter<"Article">
@@ -378,6 +384,7 @@ export type ArticleOrderByWithAggregationInput = {
   position?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
   slug?: Prisma.SortOrder
   excerpt?: Prisma.SortOrderInput | Prisma.SortOrder
   excerptRich?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -407,6 +414,7 @@ export type ArticleScalarWhereWithAggregatesInput = {
   position?: Prisma.IntWithAggregatesFilter<"Article"> | number
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Article"> | Date | string | null
   title?: Prisma.StringWithAggregatesFilter<"Article"> | string
+  titleStyled?: Prisma.JsonNullableWithAggregatesFilter<"Article">
   slug?: Prisma.StringWithAggregatesFilter<"Article"> | string
   excerpt?: Prisma.StringNullableWithAggregatesFilter<"Article"> | string | null
   excerptRich?: Prisma.JsonNullableWithAggregatesFilter<"Article">
@@ -425,6 +433,7 @@ export type ArticleCreateInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -450,6 +459,7 @@ export type ArticleUncheckedCreateInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -469,6 +479,7 @@ export type ArticleUpdateInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -494,6 +505,7 @@ export type ArticleUncheckedUpdateInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -516,6 +528,7 @@ export type ArticleCreateManyInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -534,6 +547,7 @@ export type ArticleUpdateManyMutationInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -555,6 +569,7 @@ export type ArticleUncheckedUpdateManyInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -591,6 +606,7 @@ export type ArticleCountOrderByAggregateInput = {
   position?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   excerpt?: Prisma.SortOrder
   excerptRich?: Prisma.SortOrder
@@ -802,6 +818,7 @@ export type ArticleCreateWithoutAuthorInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -825,6 +842,7 @@ export type ArticleUncheckedCreateWithoutAuthorInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -876,6 +894,7 @@ export type ArticleScalarWhereInput = {
   position?: Prisma.IntFilter<"Article"> | number
   publishedAt?: Prisma.DateTimeNullableFilter<"Article"> | Date | string | null
   title?: Prisma.StringFilter<"Article"> | string
+  titleStyled?: Prisma.JsonNullableFilter<"Article">
   slug?: Prisma.StringFilter<"Article"> | string
   excerpt?: Prisma.StringNullableFilter<"Article"> | string | null
   excerptRich?: Prisma.JsonNullableFilter<"Article">
@@ -894,6 +913,7 @@ export type ArticleCreateWithoutIssueInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -917,6 +937,7 @@ export type ArticleUncheckedCreateWithoutIssueInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -962,6 +983,7 @@ export type ArticleCreateWithoutCategoryInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -985,6 +1007,7 @@ export type ArticleUncheckedCreateWithoutCategoryInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1030,6 +1053,7 @@ export type ArticleCreateWithoutTagsInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1054,6 +1078,7 @@ export type ArticleUncheckedCreateWithoutTagsInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1088,6 +1113,7 @@ export type ArticleUpdateWithoutTagsInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1112,6 +1138,7 @@ export type ArticleUncheckedUpdateWithoutTagsInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1132,6 +1159,7 @@ export type ArticleCreateManyAuthorInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1150,6 +1178,7 @@ export type ArticleUpdateWithoutAuthorInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1173,6 +1202,7 @@ export type ArticleUncheckedUpdateWithoutAuthorInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1194,6 +1224,7 @@ export type ArticleUncheckedUpdateManyWithoutAuthorInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1214,6 +1245,7 @@ export type ArticleCreateManyIssueInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1232,6 +1264,7 @@ export type ArticleUpdateWithoutIssueInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1255,6 +1288,7 @@ export type ArticleUncheckedUpdateWithoutIssueInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1276,6 +1310,7 @@ export type ArticleUncheckedUpdateManyWithoutIssueInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1296,6 +1331,7 @@ export type ArticleCreateManyCategoryInput = {
   position?: number
   publishedAt?: Date | string | null
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   excerpt?: string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1314,6 +1350,7 @@ export type ArticleUpdateWithoutCategoryInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1337,6 +1374,7 @@ export type ArticleUncheckedUpdateWithoutCategoryInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1358,6 +1396,7 @@ export type ArticleUncheckedUpdateManyWithoutCategoryInput = {
   position?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1410,6 +1449,7 @@ export type ArticleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   position?: boolean
   publishedAt?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   excerpt?: boolean
   excerptRich?: boolean
@@ -1436,6 +1476,7 @@ export type ArticleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   position?: boolean
   publishedAt?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   excerpt?: boolean
   excerptRich?: boolean
@@ -1460,6 +1501,7 @@ export type ArticleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   position?: boolean
   publishedAt?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   excerpt?: boolean
   excerptRich?: boolean
@@ -1484,6 +1526,7 @@ export type ArticleSelectScalar = {
   position?: boolean
   publishedAt?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   excerpt?: boolean
   excerptRich?: boolean
@@ -1495,7 +1538,7 @@ export type ArticleSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ArticleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issueId" | "categoryId" | "authorId" | "status" | "isFeatured" | "position" | "publishedAt" | "title" | "slug" | "excerpt" | "excerptRich" | "contentRich" | "imageUrl" | "audioUrl" | "audioChunks" | "createdAt" | "updatedAt", ExtArgs["result"]["article"]>
+export type ArticleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issueId" | "categoryId" | "authorId" | "status" | "isFeatured" | "position" | "publishedAt" | "title" | "titleStyled" | "slug" | "excerpt" | "excerptRich" | "contentRich" | "imageUrl" | "audioUrl" | "audioChunks" | "createdAt" | "updatedAt", ExtArgs["result"]["article"]>
 export type ArticleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   issue?: boolean | Prisma.IssueDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
@@ -1532,6 +1575,7 @@ export type $ArticlePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     position: number
     publishedAt: Date | null
     title: string
+    titleStyled: runtime.JsonValue | null
     slug: string
     excerpt: string | null
     excerptRich: runtime.JsonValue | null
@@ -1977,6 +2021,7 @@ export interface ArticleFieldRefs {
   readonly position: Prisma.FieldRef<"Article", 'Int'>
   readonly publishedAt: Prisma.FieldRef<"Article", 'DateTime'>
   readonly title: Prisma.FieldRef<"Article", 'String'>
+  readonly titleStyled: Prisma.FieldRef<"Article", 'Json'>
   readonly slug: Prisma.FieldRef<"Article", 'String'>
   readonly excerpt: Prisma.FieldRef<"Article", 'String'>
   readonly excerptRich: Prisma.FieldRef<"Article", 'Json'>

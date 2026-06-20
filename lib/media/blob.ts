@@ -163,6 +163,11 @@ export function buildCmsMediaAssetUrl(
   return `/api/cms/media/blob?${searchParams.toString()}`;
 }
 
+export function buildPublicMediaAssetUrl(pathname: string) {
+  const searchParams = new URLSearchParams({ pathname });
+  return `/api/public/media/blob?${searchParams.toString()}`;
+}
+
 export function extractCmsMediaPathname(value: string) {
   const trimmedValue = value.trim();
 
@@ -201,6 +206,20 @@ export function resolveCmsMediaPreviewUrl(value: string) {
 
   if (pathname) {
     return buildCmsMediaAssetUrl(pathname);
+  }
+
+  return value;
+}
+
+export function resolvePublicMediaUrl(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const pathname = extractCmsMediaPathname(value);
+
+  if (pathname) {
+    return buildPublicMediaAssetUrl(pathname);
   }
 
   return value;

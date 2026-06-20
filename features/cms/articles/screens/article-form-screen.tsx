@@ -17,7 +17,11 @@ import {
   CmsRichTextEditor,
   CmsSearchSelect,
   CmsSelect,
+  CmsStyledTitleEditor,
   CmsTextInput,
+  createStyledTitleValue,
+  getStyledTitlePlainText,
+  hasStyledTitleAccent,
   cmsToast,
 } from "@/components/cms/primitives";
 import { CmsArticleFormLoading } from "@/features/cms/articles/components/article-form-loading";
@@ -59,6 +63,7 @@ import type {
   IssuesListInitialData,
   TagsListInitialData,
 } from "@/features/cms/shared/types/initial-data";
+import type { ArticleTitleStyled } from "@/lib/server/modules/articles/schema";
 
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
 const noAuthorValue = "__none";
@@ -154,12 +159,17 @@ function getArticleFormDefaultValues(article?: ArticleDetail): ArticleFormValues
   };
 }
 
-function buildCreateArticlePayload(values: ArticleFormValues, resolvedSlug: string) {
+function buildCreateArticlePayload(
+  values: ArticleFormValues,
+  resolvedSlug: string,
+  titleStyled: ArticleTitleStyled | null,
+) {
   return {
     issueId: values.issueId,
     categoryId: values.categoryId,
     authorId: values.authorId === noAuthorValue ? null : values.authorId,
     title: values.title,
+    titleStyled,
     slug: resolvedSlug,
     excerptRich: values.excerptRich,
     contentRich: values.contentRich,
@@ -174,12 +184,14 @@ function buildUpdateArticlePayload(
   values: ArticleFormValues,
   article: ArticleDetail | undefined,
   resolvedSlug: string,
+  titleStyled: ArticleTitleStyled | null,
 ) {
   return {
     issueId: values.issueId,
     categoryId: values.categoryId,
     authorId: values.authorId === noAuthorValue ? null : values.authorId,
     title: values.title,
+    titleStyled,
     slug: resolvedSlug,
     excerptRich: values.excerptRich,
     contentRich: values.contentRich,
@@ -385,6 +397,7 @@ function ArticleFormContent({
     categoryId: fieldText.category,
     authorId: fieldText.author,
     title: fieldText.title,
+    titleStyled: fieldText.title,
     slug: fieldText.slug,
     excerptRich: fieldText.excerpt,
     imageUrl: fieldText.imageUrl,
@@ -397,10 +410,14 @@ function ArticleFormContent({
     audioChunks: fieldText.audioChunksUrl,
   };
 
-  const { control, getValues, handleSubmit, setValue } = useForm<ArticleFormValues>({
+  const { control, getValues, handleSubmit, register, setValue } = useForm<ArticleFormValues>({
     resolver: zodResolver(articleFormStateSchema),
     defaultValues: getArticleFormDefaultValues(article),
   });
+
+  const [titleStyled, setTitleStyled] = useState(() =>
+    createStyledTitleValue(article?.title ?? "", article?.titleStyled),
+  );
 
   const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
   const [isAudioPickerOpen, setIsAudioPickerOpen] = useState(false);
@@ -411,7 +428,7 @@ function ArticleFormContent({
   );
   const [isSlugEditing, setIsSlugEditing] = useState(false);
 
-  const title = useWatch({ control, name: "title" }) ?? "";
+  const title = getStyledTitlePlainText(titleStyled);
   const manualSlug = useWatch({ control, name: "slug" }) ?? "";
   const imageUrl = useWatch({ control, name: "imageUrl" }) ?? "";
   const audioUrl = useWatch({ control, name: "audioUrl" }) ?? "";
@@ -468,12 +485,26 @@ function ArticleFormContent({
     setValue("tagIds", nextTagIds, { shouldDirty: true, shouldValidate: true });
   };
 
+  const handleTitleChange = (nextTitleStyled: ArticleTitleStyled) => {
+    setTitleStyled(nextTitleStyled);
+    setValue("title", getStyledTitlePlainText(nextTitleStyled), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+
   const handleValidSubmit = async (values: ArticleFormValues) => {
+    const titleStyledPayload = hasStyledTitleAccent(titleStyled) ? titleStyled : null;
+
     try {
       if (mode === "create") {
         const validation = validateFormInput(
           createArticleInputSchema,
-          buildCreateArticlePayload(values, hasManualSlugOverride ? values.slug : autoSlug),
+          buildCreateArticlePayload(
+            values,
+            hasManualSlugOverride ? values.slug : autoSlug,
+            titleStyledPayload,
+          ),
           payloadFieldLabels,
         );
 
@@ -488,7 +519,12 @@ function ArticleFormContent({
 
       const validation = validateFormInput(
         updateArticleInputSchema,
-        buildUpdateArticlePayload(values, article, hasManualSlugOverride ? values.slug : autoSlug),
+        buildUpdateArticlePayload(
+          values,
+          article,
+          hasManualSlugOverride ? values.slug : autoSlug,
+          titleStyledPayload,
+        ),
         payloadFieldLabels,
       );
 
@@ -551,20 +587,21 @@ function ArticleFormContent({
 
       <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-5 overflow-y-auto pb-6 lg:pr-6">
-          <CmsFormField label={fieldText.title} htmlFor="article-title" required>
-            <Controller
-              name="title"
-              control={control}
-              render={({ field, fieldState }) => (
-                <CmsTextInput
-                  id="article-title"
-                  value={field.value}
-                  state={fieldState.error ? "error" : undefined}
-                  onBlur={field.onBlur}
-                  onChange={(event) => field.onChange(event.target.value)}
-                />
-              )}
+          <CmsFormField
+            label={fieldText.title}
+            htmlFor="article-title"
+            hint={articleFormText.titleStyledHint}
+            required
+          >
+            <CmsStyledTitleEditor
+              id="article-title"
+              value={titleStyled}
+              onChange={handleTitleChange}
+              placeholder={fieldText.title}
+              accentLabel={articleFormText.titleStyledAccentAction}
+              ariaLabel={articleFormText.titleStyledEditorAriaLabel}
             />
+            <input type="hidden" {...register("title")} />
           </CmsFormField>
 
           <CmsFormField label={fieldText.slug} htmlFor="article-slug" required hint={slugHint}>

@@ -13,6 +13,7 @@ export {
   updateArticleInputSchema,
 } from "@/lib/server/modules/articles/schema";
 export type {
+  ArticleTitleStyled,
   CreateArticleInput,
   ListArticlesQuery,
   ReorderArticlesInput,

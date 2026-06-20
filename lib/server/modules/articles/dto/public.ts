@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+
 export const publicArticleTagDtoSchema = z.object({
   id: z.string().uuid(),
   slug: z.string(),
@@ -10,6 +12,7 @@ const publicArticleBaseShape = {
   id: z.string().uuid(),
   slug: z.string(),
   title: z.string(),
+  titleStyled: issueTitleStyledSchema.nullable(),
   excerpt: z.string().nullable(),
   imageUrl: z.string().nullable(),
   hasAudio: z.boolean(),

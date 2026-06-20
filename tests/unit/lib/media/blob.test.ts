@@ -1,5 +1,6 @@
 import {
   buildCmsMediaAssetUrl,
+  buildPublicMediaAssetUrl,
   buildCmsMediaUploadAccept,
   buildMediaPathname,
   extractCmsMediaPathname,
@@ -9,6 +10,7 @@ import {
   parseMediaPathname,
   resolveCmsMediaContentTypeFromExtension,
   resolveCmsMediaPreviewUrl,
+  resolvePublicMediaUrl,
   sanitizeMediaBaseName,
 } from "@/lib/media/blob";
 
@@ -81,5 +83,15 @@ describe("media/blob helpers", () => {
     expect(resolveCmsMediaPreviewUrl("https://example.com/plain-url")).toBe(
       "https://example.com/plain-url",
     );
+  });
+
+  it("resolves public media URLs through the public blob route when possible", () => {
+    expect(resolvePublicMediaUrl("covers/hero-image.jpg")).toBe(
+      buildPublicMediaAssetUrl("covers/hero-image.jpg"),
+    );
+    expect(resolvePublicMediaUrl("https://example.com/plain-url")).toBe(
+      "https://example.com/plain-url",
+    );
+    expect(resolvePublicMediaUrl(null)).toBeNull();
   });
 });

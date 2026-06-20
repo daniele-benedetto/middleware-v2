@@ -13,6 +13,7 @@ const PUBLISHED_ARTICLE_WHERE = {
 const PUBLIC_ISSUE_LIST_SELECT = {
   id: true,
   title: true,
+  titleStyled: true,
   slug: true,
   description: true,
   publishedAt: true,
@@ -27,11 +28,13 @@ const PUBLIC_ISSUE_DETAIL_ARTICLE_SELECT = {
   id: true,
   slug: true,
   title: true,
+  titleStyled: true,
   excerpt: true,
   imageUrl: true,
   audioUrl: true,
   isFeatured: true,
   position: true,
+  contentRich: true,
   publishedAt: true,
   category: {
     select: { slug: true, name: true },

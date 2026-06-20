@@ -12,6 +12,7 @@ import type {
 
 export type CreateIssuePersistInput = {
   title: string;
+  titleStyled?: unknown;
   slug: string;
   description?: unknown;
   isActive?: boolean;
@@ -53,6 +54,7 @@ export const issuesRepository = {
       select: {
         id: true,
         title: true,
+        titleStyled: true,
         slug: true,
         description: true,
         isActive: true,
@@ -78,6 +80,7 @@ export const issuesRepository = {
       select: {
         id: true,
         title: true,
+        titleStyled: true,
         slug: true,
         description: true,
         isActive: true,
@@ -106,6 +109,8 @@ export const issuesRepository = {
   async create(input: CreateIssuePersistInput) {
     const data: Prisma.IssueUncheckedCreateInput = {
       title: input.title,
+      titleStyled:
+        input.titleStyled === undefined ? undefined : (input.titleStyled as Prisma.InputJsonValue),
       slug: input.slug,
       description:
         input.description === undefined ? undefined : (input.description as Prisma.InputJsonValue),
@@ -118,6 +123,12 @@ export const issuesRepository = {
   async update(id: string, input: UpdateIssueInput) {
     const data: Prisma.IssueUncheckedUpdateInput = {
       title: input.title,
+      titleStyled:
+        input.titleStyled === undefined
+          ? undefined
+          : input.titleStyled === null
+            ? Prisma.JsonNull
+            : (input.titleStyled as Prisma.InputJsonValue),
       slug: input.slug,
       description:
         input.description === undefined
@@ -137,6 +148,12 @@ export const issuesRepository = {
   async updateWithArticleOrder(id: string, input: UpdateIssueInput, orderedArticleIds?: string[]) {
     const data: Prisma.IssueUncheckedUpdateInput = {
       title: input.title,
+      titleStyled:
+        input.titleStyled === undefined
+          ? undefined
+          : input.titleStyled === null
+            ? Prisma.JsonNull
+            : (input.titleStyled as Prisma.InputJsonValue),
       slug: input.slug,
       description:
         input.description === undefined
@@ -214,6 +231,7 @@ export const issuesRepository = {
         select: {
           id: true,
           title: true,
+          titleStyled: true,
           slug: true,
           description: true,
           isActive: true,

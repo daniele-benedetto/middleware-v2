@@ -29,6 +29,12 @@ export { CmsMetaRow } from "@/components/cms/primitives/meta-row";
 export { CmsPageHeader } from "@/components/cms/primitives/page-header";
 export { CmsRichTextEditor } from "@/components/cms/primitives/rich-text-editor-lazy";
 export { CmsSectionDivider } from "@/components/cms/primitives/section-divider";
+export {
+  CmsStyledTitleEditor,
+  createStyledTitleValue,
+  getStyledTitlePlainText,
+  hasStyledTitleAccent,
+} from "@/components/cms/primitives/styled-title-editor";
 export { CmsSurface } from "@/components/cms/primitives/surface";
 export {
   CmsBlockquote,

@@ -16,6 +16,7 @@ export type CreateArticlePersistInput = {
   categoryId: string;
   authorId?: string | null;
   title: string;
+  titleStyled?: unknown;
   slug: string;
   excerpt?: string;
   excerptRich?: unknown;
@@ -37,6 +38,7 @@ const ARTICLE_DETAIL_SELECT = {
   categoryId: true,
   authorId: true,
   title: true,
+  titleStyled: true,
   slug: true,
   status: true,
   publishedAt: true,
@@ -115,6 +117,7 @@ export const articlesRepository = {
         categoryId: true,
         authorId: true,
         title: true,
+        titleStyled: true,
         slug: true,
         status: true,
         publishedAt: true,
@@ -161,6 +164,8 @@ export const articlesRepository = {
       categoryId: input.categoryId,
       authorId: input.authorId ?? null,
       title: input.title,
+      titleStyled:
+        input.titleStyled === undefined ? undefined : (input.titleStyled as Prisma.InputJsonValue),
       slug: input.slug,
       excerpt: input.excerpt,
       excerptRich:
@@ -203,6 +208,12 @@ export const articlesRepository = {
       categoryId: input.categoryId,
       authorId: input.authorId,
       title: input.title,
+      titleStyled:
+        input.titleStyled === undefined
+          ? undefined
+          : input.titleStyled === null
+            ? Prisma.JsonNull
+            : (input.titleStyled as Prisma.InputJsonValue),
       slug: input.slug,
       excerpt: input.excerpt,
       excerptRich:

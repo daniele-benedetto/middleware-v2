@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 
 const articleBaseInputSchema = z.object({
@@ -7,6 +9,7 @@ const articleBaseInputSchema = z.object({
   categoryId: z.string().uuid(),
   authorId: z.string().uuid().nullable().optional(),
   title: z.string().trim().min(1),
+  titleStyled: issueTitleStyledSchema.nullable().optional(),
   slug: z.string().trim().min(1),
   excerptRich: z.unknown().optional(),
   contentRich: z.unknown(),
@@ -64,6 +67,7 @@ export const listArticlesQuerySchema = z.object({
 });
 
 export type CreateArticleInput = z.infer<typeof createArticleInputSchema>;
+export type ArticleTitleStyled = z.infer<typeof issueTitleStyledSchema>;
 export type UpdateArticleInput = z.infer<typeof updateArticleInputSchema>;
 export type SyncArticleTagsInput = z.infer<typeof syncArticleTagsInputSchema>;
 export type ReorderArticlesInput = z.infer<typeof reorderArticlesInputSchema>;

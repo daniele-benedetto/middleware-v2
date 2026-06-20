@@ -1,7 +1,15 @@
 import { z } from "zod";
 
+export const issueTitleStyledSegmentSchema = z.object({
+  text: z.string().min(1),
+  tone: z.enum(["default", "primary"]).default("default"),
+});
+
+export const issueTitleStyledSchema = z.array(issueTitleStyledSegmentSchema).min(1);
+
 export const createIssueInputSchema = z.object({
   title: z.string().trim().min(1),
+  titleStyled: issueTitleStyledSchema.nullable().optional(),
   slug: z.string().trim().min(1).optional(),
   description: z.unknown().optional(),
   isActive: z.boolean().default(true),
@@ -11,6 +19,7 @@ export const createIssueInputSchema = z.object({
 export const updateIssueInputSchema = createIssueInputSchema
   .partial()
   .extend({
+    titleStyled: issueTitleStyledSchema.nullable().optional(),
     description: z.unknown().nullable().optional(),
     isActive: z.boolean().optional(),
     publishedAt: z.coerce.date().nullable().optional(),
@@ -40,6 +49,7 @@ export const listIssuesQuerySchema = z.object({
 });
 
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
+export type IssueTitleStyled = z.infer<typeof issueTitleStyledSchema>;
 export type UpdateIssueInput = z.infer<typeof updateIssueInputSchema>;
 export type ReorderIssuesInput = z.infer<typeof reorderIssuesInputSchema>;
 export type ListIssuesQuery = z.infer<typeof listIssuesQuerySchema>;

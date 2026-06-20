@@ -18,6 +18,7 @@ const PUBLIC_ARTICLE_SUMMARY_SELECT = {
   id: true,
   slug: true,
   title: true,
+  titleStyled: true,
   excerpt: true,
   imageUrl: true,
   audioUrl: true,
