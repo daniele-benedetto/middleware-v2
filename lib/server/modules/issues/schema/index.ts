@@ -7,14 +7,23 @@ export const issueTitleStyledSegmentSchema = z.object({
 
 export const issueTitleStyledSchema = z.array(issueTitleStyledSegmentSchema).min(1);
 
-export const issueHomeLayoutSchema = z.enum(["DOSSIER"]);
+export const issueHomeBlockSchema = z.object({
+  id: z.string().trim().min(1),
+  type: z.enum(["opening", "constellation", "rupture", "sequence", "closing"]),
+  title: z.string().trim().nullable().optional(),
+  description: z.string().trim().nullable().optional(),
+  articleIds: z.array(z.string().uuid()).min(1),
+  featuredArticleId: z.string().uuid().nullable().optional(),
+});
+
+export const issueHomeBlocksSchema = z.array(issueHomeBlockSchema);
 
 export const createIssueInputSchema = z.object({
   title: z.string().trim().min(1),
   titleStyled: issueTitleStyledSchema.nullable().optional(),
   slug: z.string().trim().min(1).optional(),
   description: z.unknown().optional(),
-  homeLayout: issueHomeLayoutSchema.default("DOSSIER"),
+  homeBlocks: issueHomeBlocksSchema.nullable().optional(),
   isActive: z.boolean().default(true),
   publishedAt: z.coerce.date().nullable().optional(),
 });
@@ -24,7 +33,7 @@ export const updateIssueInputSchema = createIssueInputSchema
   .extend({
     titleStyled: issueTitleStyledSchema.nullable().optional(),
     description: z.unknown().nullable().optional(),
-    homeLayout: issueHomeLayoutSchema.optional(),
+    homeBlocks: issueHomeBlocksSchema.nullable().optional(),
     isActive: z.boolean().optional(),
     publishedAt: z.coerce.date().nullable().optional(),
   })
@@ -53,7 +62,8 @@ export const listIssuesQuerySchema = z.object({
 });
 
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
-export type IssueHomeLayout = z.infer<typeof issueHomeLayoutSchema>;
+export type IssueHomeBlock = z.infer<typeof issueHomeBlockSchema>;
+export type IssueHomeBlocks = z.infer<typeof issueHomeBlocksSchema>;
 export type IssueTitleStyled = z.infer<typeof issueTitleStyledSchema>;
 export type UpdateIssueInput = z.infer<typeof updateIssueInputSchema>;
 export type ReorderIssuesInput = z.infer<typeof reorderIssuesInputSchema>;

@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-import { issueHomeLayoutSchema, issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+import { issueHomeBlocksSchema, issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+
+const publicIssueArticleTagDtoSchema = z.object({
+  id: z.string().uuid(),
+  slug: z.string(),
+  name: z.string(),
+});
 
 export const publicIssueArticleSummaryDtoSchema = z.object({
   id: z.string().uuid(),
@@ -17,6 +23,7 @@ export const publicIssueArticleSummaryDtoSchema = z.object({
   categorySlug: z.string().nullable(),
   categoryName: z.string().nullable(),
   authorName: z.string().nullable(),
+  tags: z.array(publicIssueArticleTagDtoSchema),
 });
 
 export const publicIssueDtoSchema = z.object({
@@ -25,7 +32,7 @@ export const publicIssueDtoSchema = z.object({
   titleStyled: issueTitleStyledSchema.nullable(),
   slug: z.string(),
   description: z.unknown().nullable(),
-  homeLayout: issueHomeLayoutSchema,
+  homeBlocks: issueHomeBlocksSchema.nullable(),
   publishedAt: z.string(),
   articlesCount: z.number().int(),
 });

@@ -5,70 +5,14 @@ import type { PublicIssueListItem } from "@/lib/public/server/issues";
 
 export type HomeIssueArticle = PublicCurrentIssueDetail["articles"][number];
 
-export type HomeIssueSections = {
-  editorial: HomeIssueArticle[];
-  sections: HomeIssueSection[];
-};
-
-export type DossierHomeSections = {
-  lead: HomeIssueArticle | null;
-  bridge: HomeIssueArticle | null;
-  voices: HomeIssueArticle[];
-  analysis: HomeIssueArticle[];
-  closing: HomeIssueArticle | null;
-};
-
-export type HomeIssueSection = {
+export type NarrativeHomeBlock = {
   id: string;
-  title: string;
-  categorySlug: string | null;
+  type: "opening" | "constellation" | "rupture" | "sequence" | "closing";
+  title: string | null;
+  description: string | null;
   articles: HomeIssueArticle[];
+  featuredArticle: HomeIssueArticle | null;
 };
-
-export const HOME_SECTION_VISIBLE_ARTICLES_LIMIT = 10;
-
-const HOME_GRID_PATTERNS: Record<number, number[]> = {
-  1: [1],
-  2: [2],
-  3: [3],
-  4: [4],
-  5: [3, 2],
-  6: [3, 3],
-  7: [3, 4],
-  8: [4, 4],
-  9: [3, 3, 3],
-  10: [5, 5],
-};
-
-const EDITORIAL_CATEGORY_SLUGS = new Set(["editoriale", "editoriali"]);
-const EDITORIAL_SECTION_ID = "editoriali";
-const EDITORIAL_SECTION_TITLE = "Editoriali";
-const UNCATEGORIZED_SECTION_ID = "senza-categoria";
-const UNCATEGORIZED_SECTION_TITLE = "Senza categoria";
-
-function normalizeCategory(value: string | null) {
-  return value?.trim().toLowerCase() ?? "";
-}
-
-function isCategory(article: HomeIssueArticle, accepted: ReadonlySet<string>) {
-  return (
-    accepted.has(normalizeCategory(article.categorySlug)) ||
-    accepted.has(normalizeCategory(article.categoryName))
-  );
-}
-
-function getSectionId(article: HomeIssueArticle) {
-  const categorySlug = normalizeCategory(article.categorySlug);
-  const categoryName = normalizeCategory(article.categoryName);
-
-  return categorySlug || categoryName.replace(/\s+/g, "-") || UNCATEGORIZED_SECTION_ID;
-}
-
-function getSectionTitle(article: HomeIssueArticle) {
-  return (
-    article.categoryName?.trim() || article.categorySlug?.trim() || UNCATEGORIZED_SECTION_TITLE
-  );
-}
 
 export function sortHomeArticles(articles: HomeIssueArticle[]) {
   return [...articles].sort((a, b) => {
@@ -84,100 +28,99 @@ export function sortHomeArticles(articles: HomeIssueArticle[]) {
   });
 }
 
-export function getHomeGridPattern(articleCount: number) {
-  if (articleCount <= 0) {
-    return [];
-  }
-
-  return HOME_GRID_PATTERNS[Math.min(articleCount, HOME_SECTION_VISIBLE_ARTICLES_LIMIT)];
-}
-
-export function getHomeGridRows<T>(items: T[]) {
-  const pattern = getHomeGridPattern(items.length);
-  let cursor = 0;
-
-  return pattern.map((rowSize) => {
-    const row = items.slice(cursor, cursor + rowSize);
-    cursor += rowSize;
-    return row;
-  });
-}
-
-export function buildHomeIssueSections(issue: PublicCurrentIssueDetail | null): HomeIssueSections {
-  const articles = issue?.articles ?? [];
-  const editorial = sortHomeArticles(
-    articles.filter((article) => isCategory(article, EDITORIAL_CATEGORY_SLUGS)),
-  );
-  const remainingEditorialArticles = editorial.slice(1);
-  const groupedSections = new Map<string, HomeIssueSection>();
-
-  for (const article of articles) {
-    if (isCategory(article, EDITORIAL_CATEGORY_SLUGS)) {
-      continue;
-    }
-
-    const id = getSectionId(article);
-    const section = groupedSections.get(id);
-
-    if (section) {
-      section.articles.push(article);
-      continue;
-    }
-
-    groupedSections.set(id, {
-      id,
-      title: getSectionTitle(article),
-      categorySlug: article.categorySlug,
-      articles: [article],
-    });
-  }
-
-  const sections = [...groupedSections.values()]
-    .map((section) => ({ ...section, articles: sortHomeArticles(section.articles) }))
-    .sort((a, b) => {
-      const aPosition = Math.min(...a.articles.map((article) => article.position));
-      const bPosition = Math.min(...b.articles.map((article) => article.position));
-
-      if (aPosition !== bPosition) {
-        return aPosition - bPosition;
-      }
-
-      return a.title.localeCompare(b.title, "it");
-    });
-
-  if (remainingEditorialArticles.length > 0) {
-    sections.unshift({
-      id: EDITORIAL_SECTION_ID,
-      title: EDITORIAL_SECTION_TITLE,
-      categorySlug: EDITORIAL_SECTION_ID,
-      articles: remainingEditorialArticles,
-    });
-  }
-
-  return { editorial, sections };
-}
-
-export function buildDossierHomeSections(
-  issue: PublicCurrentIssueDetail | null,
-): DossierHomeSections {
-  const articles = [...(issue?.articles ?? [])].sort((a, b) => {
+function sortByPosition(articles: HomeIssueArticle[]) {
+  return [...articles].sort((a, b) => {
     if (a.position !== b.position) {
       return a.position - b.position;
     }
 
     return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
   });
-  const [lead, bridge, ...remaining] = articles;
-  const closing = remaining.length > 0 ? remaining[remaining.length - 1] : null;
-  const body = closing ? remaining.slice(0, -1) : remaining;
+}
 
-  return {
-    lead: lead ?? null,
-    bridge: bridge ?? null,
-    voices: body.slice(0, 3),
-    analysis: body.slice(3, 5),
-    closing,
-  };
+function compactText(value: string | null | undefined) {
+  const text = value?.trim();
+  return text || null;
+}
+
+function composeConfiguredBlocks(issue: PublicCurrentIssueDetail): NarrativeHomeBlock[] {
+  const articlesById = new Map(issue.articles.map((article) => [article.id, article]));
+  const blocks: NarrativeHomeBlock[] = [];
+
+  for (const block of issue.homeBlocks ?? []) {
+    const articles = block.articleIds
+      .map((articleId) => articlesById.get(articleId))
+      .filter((article): article is HomeIssueArticle => Boolean(article));
+
+    const fallbackArticle = articles[0];
+
+    if (!fallbackArticle) {
+      continue;
+    }
+
+    const preferredArticle =
+      (block.featuredArticleId ? articlesById.get(block.featuredArticleId) : null) ??
+      articles.find((article) => article.isFeatured) ??
+      fallbackArticle;
+
+    blocks.push({
+      id: block.id,
+      type: block.type,
+      title: compactText(block.title),
+      description: compactText(block.description),
+      articles,
+      featuredArticle:
+        preferredArticle && articles.some((article) => article.id === preferredArticle.id)
+          ? preferredArticle
+          : fallbackArticle,
+    });
+  }
+
+  return blocks;
+}
+
+function composeFallbackBlocks(issue: PublicCurrentIssueDetail): NarrativeHomeBlock[] {
+  const articles = sortByPosition(issue.articles);
+  const [lead, ...rest] = articles;
+
+  if (!lead) {
+    return [];
+  }
+
+  const blocks: NarrativeHomeBlock[] = [
+    {
+      id: "opening",
+      type: "opening",
+      title: null,
+      description: null,
+      articles: [lead],
+      featuredArticle: lead,
+    },
+  ];
+
+  if (rest.length > 0) {
+    blocks.push({
+      id: "constellation",
+      type: "constellation",
+      title: null,
+      description: null,
+      articles: rest,
+      featuredArticle: rest.find((article) => article.isFeatured) ?? rest[0],
+    });
+  }
+
+  return blocks;
+}
+
+export function composeNarrativeHomeBlocks(
+  issue: PublicCurrentIssueDetail | null,
+): NarrativeHomeBlock[] {
+  if (!issue || issue.articles.length === 0) {
+    return [];
+  }
+
+  const configuredBlocks = composeConfiguredBlocks(issue);
+  return configuredBlocks.length > 0 ? configuredBlocks : composeFallbackBlocks(issue);
 }
 
 export function getIssuePlainDescription(issue: PublicCurrentIssueDetail | PublicIssueListItem) {

@@ -25,6 +25,7 @@ export type CreateArticlePersistInput = {
   audioUrl?: string;
   audioChunks?: unknown;
   tagIds?: string[];
+  isFeatured?: boolean;
 };
 
 export type UpdateArticlePersistInput = UpdateArticleInput & {
@@ -174,6 +175,7 @@ export const articlesRepository = {
       imageUrl: input.imageUrl,
       audioUrl: input.audioUrl,
       audioChunks: input.audioChunks as Prisma.InputJsonValue | undefined,
+      isFeatured: input.isFeatured,
     };
 
     const tagIds = Array.from(new Set(input.tagIds ?? []));

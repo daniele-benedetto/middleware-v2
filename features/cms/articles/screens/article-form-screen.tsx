@@ -177,6 +177,7 @@ function buildCreateArticlePayload(
     audioUrl: values.audioUrl || undefined,
     audioChunks: values.audioChunksUrl || undefined,
     tagIds: values.tagIds.length > 0 ? values.tagIds : undefined,
+    isFeatured: values.isFeatured,
   };
 }
 

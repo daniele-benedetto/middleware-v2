@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
-  IssueHomeLayout,
   ListIssuesQuery,
   ReorderIssuesInput,
   UpdateIssueInput,
@@ -16,7 +15,7 @@ export type CreateIssuePersistInput = {
   titleStyled?: unknown;
   slug: string;
   description?: unknown;
-  homeLayout?: IssueHomeLayout;
+  homeBlocks?: unknown;
   isActive?: boolean;
   publishedAt?: Date | null;
 };
@@ -59,7 +58,7 @@ export const issuesRepository = {
         titleStyled: true,
         slug: true,
         description: true,
-        homeLayout: true,
+        homeBlocks: true,
         isActive: true,
         sortOrder: true,
         publishedAt: true,
@@ -86,7 +85,7 @@ export const issuesRepository = {
         titleStyled: true,
         slug: true,
         description: true,
-        homeLayout: true,
+        homeBlocks: true,
         isActive: true,
         sortOrder: true,
         publishedAt: true,
@@ -118,7 +117,8 @@ export const issuesRepository = {
       slug: input.slug,
       description:
         input.description === undefined ? undefined : (input.description as Prisma.InputJsonValue),
-      homeLayout: input.homeLayout,
+      homeBlocks:
+        input.homeBlocks === undefined ? undefined : (input.homeBlocks as Prisma.InputJsonValue),
       isActive: input.isActive,
       publishedAt: input.publishedAt ?? null,
     };
@@ -141,7 +141,12 @@ export const issuesRepository = {
           : input.description === null
             ? Prisma.JsonNull
             : (input.description as Prisma.InputJsonValue),
-      homeLayout: input.homeLayout,
+      homeBlocks:
+        input.homeBlocks === undefined
+          ? undefined
+          : input.homeBlocks === null
+            ? Prisma.JsonNull
+            : (input.homeBlocks as Prisma.InputJsonValue),
       isActive: input.isActive,
       publishedAt: input.publishedAt,
     };
@@ -167,7 +172,12 @@ export const issuesRepository = {
           : input.description === null
             ? Prisma.JsonNull
             : (input.description as Prisma.InputJsonValue),
-      homeLayout: input.homeLayout,
+      homeBlocks:
+        input.homeBlocks === undefined
+          ? undefined
+          : input.homeBlocks === null
+            ? Prisma.JsonNull
+            : (input.homeBlocks as Prisma.InputJsonValue),
       isActive: input.isActive,
       publishedAt: input.publishedAt,
     };
@@ -241,7 +251,7 @@ export const issuesRepository = {
           titleStyled: true,
           slug: true,
           description: true,
-          homeLayout: true,
+          homeBlocks: true,
           isActive: true,
           sortOrder: true,
           publishedAt: true,

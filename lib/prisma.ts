@@ -43,10 +43,10 @@ function hasCurrentSchema(client: PrismaClient | undefined) {
     client as PrismaClient & {
       _runtimeDataModel?: {
         models?: {
-          Article?: {
+          Issue?: {
             fields?: Array<{ name?: string }>;
           };
-          Issue?: {
+          Article?: {
             fields?: Array<{ name?: string }>;
           };
           Author?: unknown;
@@ -62,7 +62,7 @@ function hasCurrentSchema(client: PrismaClient | undefined) {
     return (
       Boolean(runtimeModels?.Author) &&
       articleRuntimeFields.some((field) => field?.name === "excerptRich") &&
-      issueRuntimeFields.some((field) => field?.name === "homeLayout")
+      issueRuntimeFields.some((field) => field?.name === "homeBlocks")
     );
   }
 
@@ -78,7 +78,7 @@ function hasCurrentSchema(client: PrismaClient | undefined) {
     return (
       inlineSchema.includes("model Author") &&
       inlineSchema.includes("excerptRich") &&
-      inlineSchema.includes("homeLayout")
+      inlineSchema.includes("homeBlocks")
     );
   }
 

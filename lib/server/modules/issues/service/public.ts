@@ -11,7 +11,7 @@ import type {
   PublicIssueDetailDto,
   PublicIssueDto,
 } from "@/lib/server/modules/issues/dto/public";
-import type { IssueHomeLayout, IssueTitleStyled } from "@/lib/server/modules/issues/schema";
+import type { IssueHomeBlocks, IssueTitleStyled } from "@/lib/server/modules/issues/schema";
 
 type PublicIssueRecord = {
   id: string;
@@ -19,7 +19,7 @@ type PublicIssueRecord = {
   titleStyled: unknown;
   slug: string;
   description: unknown;
-  homeLayout: IssueHomeLayout;
+  homeBlocks: unknown;
   publishedAt: Date | null;
   _count?: { articles: number };
 };
@@ -38,6 +38,7 @@ type PublicIssueArticleRecord = {
   publishedAt: Date | null;
   category?: { slug: string; name: string } | null;
   author?: { name: string | null } | null;
+  tags?: Array<{ tag: { id: string; slug: string; name: string } }>;
 };
 
 const WORDS_PER_MINUTE = 220;
@@ -63,7 +64,7 @@ const toPublicIssueDto = (issue: PublicIssueRecord): PublicIssueDto => {
     titleStyled: (issue.titleStyled as IssueTitleStyled | null) ?? null,
     slug: issue.slug,
     description: issue.description ?? null,
-    homeLayout: issue.homeLayout,
+    homeBlocks: (issue.homeBlocks as IssueHomeBlocks | null) ?? null,
     publishedAt: issue.publishedAt.toISOString(),
     articlesCount: issue._count?.articles ?? 0,
   };
@@ -91,6 +92,7 @@ const toPublicIssueArticleSummaryDto = (
     categorySlug: article.category?.slug ?? null,
     categoryName: article.category?.name ?? null,
     authorName: article.author?.name ?? null,
+    tags: (article.tags ?? []).map((relation) => relation.tag),
   };
 };
 

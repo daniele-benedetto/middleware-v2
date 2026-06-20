@@ -20,6 +20,7 @@ const articleBaseInputSchema = z.object({
 
 export const createArticleInputSchema = articleBaseInputSchema.extend({
   tagIds: z.array(z.string().uuid()).optional(),
+  isFeatured: z.boolean().optional(),
 });
 
 export const updateArticleInputSchema = articleBaseInputSchema

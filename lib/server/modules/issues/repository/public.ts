@@ -16,7 +16,7 @@ const PUBLIC_ISSUE_LIST_SELECT = {
   titleStyled: true,
   slug: true,
   description: true,
-  homeLayout: true,
+  homeBlocks: true,
   publishedAt: true,
   _count: {
     select: {
@@ -42,6 +42,13 @@ const PUBLIC_ISSUE_DETAIL_ARTICLE_SELECT = {
   },
   author: {
     select: { name: true },
+  },
+  tags: {
+    select: {
+      tag: {
+        select: { id: true, slug: true, name: true },
+      },
+    },
   },
 } as const satisfies Prisma.ArticleSelect;
 

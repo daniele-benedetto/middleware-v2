@@ -35,13 +35,6 @@ export const PageStatus = {
 export type PageStatus = (typeof PageStatus)[keyof typeof PageStatus]
 
 
-export const IssueHomeLayout = {
-  DOSSIER: 'DOSSIER'
-} as const
-
-export type IssueHomeLayout = (typeof IssueHomeLayout)[keyof typeof IssueHomeLayout]
-
-
 export const AuditLogOutcome = {
   SUCCESS: 'SUCCESS',
   FAILURE: 'FAILURE'

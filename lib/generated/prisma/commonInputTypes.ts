@@ -216,13 +216,6 @@ export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
 }
 
-export type EnumIssueHomeLayoutFilter<$PrismaModel = never> = {
-  equals?: $Enums.IssueHomeLayout | Prisma.EnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  in?: $Enums.IssueHomeLayout[] | Prisma.ListEnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  notIn?: $Enums.IssueHomeLayout[] | Prisma.ListEnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumIssueHomeLayoutFilter<$PrismaModel> | $Enums.IssueHomeLayout
-}
-
 export type IntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -232,16 +225,6 @@ export type IntFilter<$PrismaModel = never> = {
   gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
   gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
   not?: Prisma.NestedIntFilter<$PrismaModel> | number
-}
-
-export type EnumIssueHomeLayoutWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.IssueHomeLayout | Prisma.EnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  in?: $Enums.IssueHomeLayout[] | Prisma.ListEnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  notIn?: $Enums.IssueHomeLayout[] | Prisma.ListEnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumIssueHomeLayoutWithAggregatesFilter<$PrismaModel> | $Enums.IssueHomeLayout
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumIssueHomeLayoutFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumIssueHomeLayoutFilter<$PrismaModel>
 }
 
 export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -565,23 +548,6 @@ export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
-}
-
-export type NestedEnumIssueHomeLayoutFilter<$PrismaModel = never> = {
-  equals?: $Enums.IssueHomeLayout | Prisma.EnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  in?: $Enums.IssueHomeLayout[] | Prisma.ListEnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  notIn?: $Enums.IssueHomeLayout[] | Prisma.ListEnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumIssueHomeLayoutFilter<$PrismaModel> | $Enums.IssueHomeLayout
-}
-
-export type NestedEnumIssueHomeLayoutWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.IssueHomeLayout | Prisma.EnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  in?: $Enums.IssueHomeLayout[] | Prisma.ListEnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  notIn?: $Enums.IssueHomeLayout[] | Prisma.ListEnumIssueHomeLayoutFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumIssueHomeLayoutWithAggregatesFilter<$PrismaModel> | $Enums.IssueHomeLayout
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumIssueHomeLayoutFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumIssueHomeLayoutFilter<$PrismaModel>
 }
 
 export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {

@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  buildDossierHomeSections,
-  buildHomeIssueSections,
-  getHomeGridPattern,
-  getHomeGridRows,
+  composeNarrativeHomeBlocks,
   sortHomeArticles,
   type HomeIssueArticle,
 } from "@/components/public/home/home-view-model";
@@ -26,16 +23,21 @@ const article = (overrides: Partial<HomeIssueArticle>): HomeIssueArticle => ({
   categorySlug: "categoria",
   categoryName: "Categoria",
   authorName: null,
+  tags: [],
   ...overrides,
 });
 
-const issue = (articles: HomeIssueArticle[]): PublicCurrentIssueDetail =>
+const issue = (
+  articles: HomeIssueArticle[],
+  homeBlocks: PublicCurrentIssueDetail["homeBlocks"] = null,
+): PublicCurrentIssueDetail =>
   ({
     id: crypto.randomUUID(),
     title: "Issue",
     titleStyled: null,
     slug: "issue",
     description: null,
+    homeBlocks,
     publishedAt: "2026-01-01T00:00:00.000Z",
     articlesCount: articles.length,
     articles,
@@ -43,147 +45,103 @@ const issue = (articles: HomeIssueArticle[]): PublicCurrentIssueDetail =>
 
 describe("home view model", () => {
   it("sorts articles by featured flag, position, then published date", () => {
-    const first = article({ id: crypto.randomUUID(), position: 4, isFeatured: true });
-    const second = article({
+    const featured = article({ id: crypto.randomUUID(), isFeatured: true, position: 4 });
+    const older = article({
+      id: crypto.randomUUID(),
+      position: 1,
+      publishedAt: "2026-01-01T00:00:00.000Z",
+    });
+    const newer = article({
       id: crypto.randomUUID(),
       position: 1,
       publishedAt: "2026-01-02T00:00:00.000Z",
     });
-    const third = article({
-      id: crypto.randomUUID(),
-      position: 1,
-      publishedAt: "2026-01-03T00:00:00.000Z",
-    });
 
-    expect(sortHomeArticles([third, second, first])).toEqual([first, second, third]);
+    expect(sortHomeArticles([newer, older, featured])).toEqual([featured, older, newer]);
   });
 
-  it("keeps editorial articles separate and groups the remaining articles by category", () => {
-    const editorial = article({
-      categorySlug: "editoriale",
-      categoryName: "Editoriale",
-      position: 1,
-    });
-    const interview = article({
-      categorySlug: "interviste",
-      categoryName: "Interviste",
-      position: 2,
-    });
-    const essay = article({ categorySlug: "saggi", categoryName: "Saggi", position: 3 });
+  it("composes issue-level homeBlocks preserving editorial copy and featured article", () => {
+    const lead = article({ id: crypto.randomUUID(), title: "Lead", position: 1 });
+    const coreA = article({ id: crypto.randomUUID(), title: "Core A", position: 2 });
+    const coreB = article({ id: crypto.randomUUID(), title: "Core B", position: 3 });
+    const sequenceA = article({ id: crypto.randomUUID(), title: "Sequence A", position: 4 });
+    const sequenceB = article({ id: crypto.randomUUID(), title: "Sequence B", position: 5 });
 
-    const sections = buildHomeIssueSections(issue([essay, editorial, interview]));
-
-    expect(sections.editorial).toEqual([editorial]);
-    expect(sections.sections).toMatchObject([
-      { id: "interviste", title: "Interviste", articles: [interview] },
-      { id: "saggi", title: "Saggi", articles: [essay] },
+    expect(
+      composeNarrativeHomeBlocks(
+        issue(
+          [sequenceB, coreB, lead, sequenceA, coreA],
+          [
+            {
+              id: "apertura",
+              type: "opening",
+              title: "Apertura editoriale",
+              description: null,
+              articleIds: [lead.id],
+              featuredArticleId: lead.id,
+            },
+            {
+              id: "campo",
+              type: "constellation",
+              title: "Campo di tensione",
+              description: "Testo deciso dentro l'uscita.",
+              articleIds: [coreA.id, coreB.id],
+              featuredArticleId: coreB.id,
+            },
+            {
+              id: "sequenza",
+              type: "sequence",
+              title: "Sequenza narrativa",
+              description: null,
+              articleIds: [sequenceA.id, sequenceB.id],
+              featuredArticleId: sequenceA.id,
+            },
+          ],
+        ),
+      ),
+    ).toMatchObject([
+      {
+        id: "apertura",
+        type: "opening",
+        title: "Apertura editoriale",
+        articles: [{ title: "Lead" }],
+        featuredArticle: { title: "Lead" },
+      },
+      {
+        id: "campo",
+        type: "constellation",
+        title: "Campo di tensione",
+        description: "Testo deciso dentro l'uscita.",
+        articles: [{ title: "Core A" }, { title: "Core B" }],
+        featuredArticle: { title: "Core B" },
+      },
+      {
+        id: "sequenza",
+        type: "sequence",
+        title: "Sequenza narrativa",
+        articles: [{ title: "Sequence A" }, { title: "Sequence B" }],
+        featuredArticle: { title: "Sequence A" },
+      },
     ]);
   });
 
-  it("uses the first sorted editorial as lead and shows remaining editorials in a section", () => {
-    const lead = article({
-      id: crypto.randomUUID(),
-      categorySlug: "editoriale",
-      categoryName: "Editoriale",
-      isFeatured: true,
-      position: 9,
-      title: "Lead",
-    });
-    const second = article({
-      id: crypto.randomUUID(),
-      categorySlug: "editoriale",
-      categoryName: "Editoriale",
-      position: 2,
-      title: "Second",
-    });
-    const third = article({
-      id: crypto.randomUUID(),
-      categorySlug: "editoriale",
-      categoryName: "Editoriale",
-      position: 3,
-      title: "Third",
-    });
-    const essay = article({ categorySlug: "saggi", categoryName: "Saggi", position: 1 });
-
-    const sections = buildHomeIssueSections(issue([third, essay, second, lead]));
-
-    expect(sections.editorial).toEqual([lead, second, third]);
-    expect(sections.sections).toMatchObject([
-      { id: "editoriali", title: "Editoriali", articles: [second, third] },
-      { id: "saggi", title: "Saggi", articles: [essay] },
-    ]);
-  });
-
-  it("orders dynamic category sections by the lowest article position", () => {
-    const reviews = article({
-      categorySlug: "recensioni",
-      categoryName: "Recensioni",
-      position: 8,
-    });
-    const reports = article({ categorySlug: "reportage", categoryName: "Reportage", position: 2 });
-    const essays = article({ categorySlug: "saggi", categoryName: "Saggi", position: 5 });
-
-    const sections = buildHomeIssueSections(issue([reviews, reports, essays]));
-
-    expect(sections.sections.map((section) => section.id)).toEqual([
-      "reportage",
-      "saggi",
-      "recensioni",
-    ]);
-  });
-
-  it("creates a fallback section for articles without category metadata", () => {
-    const uncategorized = article({ categorySlug: null, categoryName: null });
-
-    const sections = buildHomeIssueSections(issue([uncategorized]));
-
-    expect(sections.sections).toMatchObject([
-      { id: "senza-categoria", title: "Senza categoria", articles: [uncategorized] },
-    ]);
-  });
-
-  it("returns deterministic grid patterns up to ten articles", () => {
-    expect(getHomeGridPattern(0)).toEqual([]);
-    expect(getHomeGridPattern(1)).toEqual([1]);
-    expect(getHomeGridPattern(2)).toEqual([2]);
-    expect(getHomeGridPattern(3)).toEqual([3]);
-    expect(getHomeGridPattern(4)).toEqual([4]);
-    expect(getHomeGridPattern(5)).toEqual([3, 2]);
-    expect(getHomeGridPattern(6)).toEqual([3, 3]);
-    expect(getHomeGridPattern(7)).toEqual([3, 4]);
-    expect(getHomeGridPattern(8)).toEqual([4, 4]);
-    expect(getHomeGridPattern(9)).toEqual([3, 3, 3]);
-    expect(getHomeGridPattern(10)).toEqual([5, 5]);
-  });
-
-  it("caps grid planning to ten articles before show-all expansion", () => {
-    expect(getHomeGridPattern(11)).toEqual([5, 5]);
-    expect(getHomeGridRows(Array.from({ length: 10 }, (_, index) => index))).toEqual([
-      [0, 1, 2, 3, 4],
-      [5, 6, 7, 8, 9],
-    ]);
-  });
-
-  it("builds dossier sections from article position instead of featured priority", () => {
-    const articles = Array.from({ length: 8 }, (_, index) =>
+  it("falls back to opening plus constellation when homeBlocks are not configured", () => {
+    const articles = Array.from({ length: 4 }, (_, index) =>
       article({
         id: crypto.randomUUID(),
         title: `Article ${index + 1}`,
         position: index + 1,
-        isFeatured: [1, 2, 4].includes(index + 1),
+        isFeatured: index === 2,
       }),
     );
 
-    const sections = buildDossierHomeSections(issue([...articles].reverse()));
-
-    expect(sections.lead?.title).toBe("Article 1");
-    expect(sections.bridge?.title).toBe("Article 2");
-    expect(sections.voices.map((item) => item.title)).toEqual([
-      "Article 3",
-      "Article 4",
-      "Article 5",
+    expect(composeNarrativeHomeBlocks(issue([...articles].reverse()))).toMatchObject([
+      { type: "opening", articles: [{ title: "Article 1" }] },
+      {
+        type: "constellation",
+        articles: [{ title: "Article 2" }, { title: "Article 3" }, { title: "Article 4" }],
+        featuredArticle: { title: "Article 3" },
+      },
     ]);
-    expect(sections.analysis.map((item) => item.title)).toEqual(["Article 6", "Article 7"]);
-    expect(sections.closing?.title).toBe("Article 8");
   });
 });

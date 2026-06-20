@@ -11,7 +11,7 @@ import {
   CmsFormField,
   CmsPageHeader,
   CmsRichTextEditor,
-  CmsSelect,
+  CmsTextarea,
   CmsStyledTitleEditor,
   CmsTextInput,
   createStyledTitleValue,
@@ -44,7 +44,23 @@ import { cn } from "@/lib/utils";
 
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
 
-const issueHomeLayoutOptions = [{ value: "DOSSIER", label: "Dossier / Inchiesta" }];
+function stringifyHomeBlocks(value: unknown) {
+  if (!value) {
+    return "[]";
+  }
+
+  return JSON.stringify(value, null, 2);
+}
+
+function parseHomeBlocks(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  return JSON.parse(trimmed) as unknown;
+}
 
 type IssueFormScreenProps = {
   mode: "create" | "edit";
@@ -246,8 +262,8 @@ function IssueFormContent({
     titleStyled: fieldText.titleStyled,
     slug: fieldText.slug,
     description: fieldText.description,
+    homeBlocks: issueFormText.homeBlocksLabel,
     publishedAt: fieldText.publishedAt,
-    homeLayout: issueFormText.homeLayoutLabel,
   };
 
   const [titleStyled, setTitleStyled] = useState(() =>
@@ -255,7 +271,9 @@ function IssueFormContent({
   );
   const title = getStyledTitlePlainText(titleStyled);
   const [description, setDescription] = useState<unknown>(issue?.description ?? emptyContentDoc);
-  const [homeLayout, setHomeLayout] = useState(issue?.homeLayout ?? "DOSSIER");
+  const [homeBlocksText, setHomeBlocksText] = useState(() =>
+    stringifyHomeBlocks(issue?.homeBlocks),
+  );
   const [isActive, setIsActive] = useState(issue?.isActive ?? true);
   const [publishedAt, setPublishedAt] = useState<Date | null>(
     issue?.publishedAt ? new Date(issue.publishedAt) : null,
@@ -302,6 +320,14 @@ function IssueFormContent({
     }
 
     const slugPayload = hasManualSlugOverride ? manualSlug : resolvedSlug || undefined;
+    let homeBlocks: unknown;
+
+    try {
+      homeBlocks = parseHomeBlocks(homeBlocksText);
+    } catch {
+      onValidationError(issueFormText.invalidHomeBlocksJson);
+      return;
+    }
 
     try {
       if (mode === "create") {
@@ -312,7 +338,7 @@ function IssueFormContent({
             titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
             slug: slugPayload,
             description,
-            homeLayout,
+            homeBlocks,
             isActive,
             publishedAt: publishedAt ?? undefined,
           },
@@ -335,7 +361,7 @@ function IssueFormContent({
           titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
           slug: slugPayload,
           description,
-          homeLayout,
+          homeBlocks,
           isActive,
           publishedAt,
         },
@@ -483,6 +509,20 @@ function IssueFormContent({
               fullHeight
             />
           </CmsFormField>
+
+          <CmsFormField
+            label={issueFormText.homeBlocksLabel}
+            htmlFor="issue-home-blocks"
+            hint={issueFormText.homeBlocksHint}
+          >
+            <CmsTextarea
+              id="issue-home-blocks"
+              value={homeBlocksText}
+              className="min-h-90 font-technical text-[12px] leading-[1.45]"
+              spellCheck={false}
+              onChange={(event) => setHomeBlocksText(event.target.value)}
+            />
+          </CmsFormField>
         </div>
 
         <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-6 overflow-y-auto pb-6 lg:border-l lg:border-foreground lg:pl-6">
@@ -507,24 +547,6 @@ function IssueFormContent({
                 />
               </CmsFormField>
             </div>
-          </section>
-
-          <section className="space-y-3">
-            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-              {issueFormText.homeLayoutSection}
-            </div>
-
-            <CmsFormField
-              label={issueFormText.homeLayoutLabel}
-              htmlFor="issue-home-layout"
-              hint={issueFormText.homeLayoutHint}
-            >
-              <CmsSelect
-                value={homeLayout}
-                onValueChange={(value) => setHomeLayout(value as typeof homeLayout)}
-                options={issueHomeLayoutOptions}
-              />
-            </CmsFormField>
           </section>
 
           {mode === "edit" ? (

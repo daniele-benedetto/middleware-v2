@@ -256,14 +256,14 @@ export const cmsIt = {
         updated: "Uscita aggiornata.",
         invalidPublishedAt: "Data pubblicazione non valida.",
         activeLabel: "Uscita attiva",
-        homeLayoutSection: "Layout home",
-        homeLayoutLabel: "Layout del numero",
-        homeLayoutHint:
-          "Dossier costruisce una prima pagina monografica: apertura forte, percorso guidato e categorie usate solo come label.",
         titleStyledHint: "Seleziona una parola o una porzione del titolo, poi clicca Accent.",
         titleStyledAccentAction: "Accent",
         titleStyledEditorAriaLabel: "Editor titolo uscita",
         descriptionEditorAriaLabel: "Editor descrizione uscita",
+        homeBlocksLabel: "Regia prima pagina",
+        homeBlocksHint:
+          "JSON dei blocchi home: type, title, description, articleIds e featuredArticleId. Qui si decide ritmo e gerarchia del numero.",
+        invalidHomeBlocksJson: "JSON regia prima pagina non valido.",
         publishingSection: "Pubblicazione e stato",
         slugPreviewPlaceholder: "Slug generato automaticamente",
         slugManualHint: "Clicca sullo slug per modificarlo manualmente",

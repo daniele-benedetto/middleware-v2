@@ -24,7 +24,7 @@ function createIssueRecord(overrides: Record<string, unknown> = {}) {
     titleStyled: null,
     slug: "issue-01",
     description: null,
-    homeLayout: "DOSSIER",
+    homeBlocks: null,
     isActive: true,
     sortOrder: 1,
     publishedAt: null,
@@ -49,7 +49,6 @@ describe("issuesService", () => {
     const result = await issuesService.create({
       title: "Issue 01",
       description: null,
-      homeLayout: "DOSSIER",
       isActive: true,
       publishedAt: null,
     });
@@ -59,7 +58,7 @@ describe("issuesService", () => {
       titleStyled: null,
       slug: "issue-01",
       description: null,
-      homeLayout: "DOSSIER",
+      homeBlocks: null,
       isActive: true,
       publishedAt: null,
     });
@@ -68,7 +67,7 @@ describe("issuesService", () => {
       titleStyled: null,
       slug: "issue-01-1",
       description: null,
-      homeLayout: "DOSSIER",
+      homeBlocks: null,
       isActive: true,
       publishedAt: null,
     });

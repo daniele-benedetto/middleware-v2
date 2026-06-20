@@ -158,7 +158,7 @@ export const IssueScalarFieldEnum = {
   titleStyled: 'titleStyled',
   slug: 'slug',
   description: 'description',
-  homeLayout: 'homeLayout',
+  homeBlocks: 'homeBlocks',
   isActive: 'isActive',
   sortOrder: 'sortOrder',
   publishedAt: 'publishedAt',
