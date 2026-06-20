@@ -10,6 +10,14 @@ export type HomeIssueSections = {
   sections: HomeIssueSection[];
 };
 
+export type DossierHomeSections = {
+  lead: HomeIssueArticle | null;
+  bridge: HomeIssueArticle | null;
+  voices: HomeIssueArticle[];
+  analysis: HomeIssueArticle[];
+  closing: HomeIssueArticle | null;
+};
+
 export type HomeIssueSection = {
   id: string;
   title: string;
@@ -33,6 +41,8 @@ const HOME_GRID_PATTERNS: Record<number, number[]> = {
 };
 
 const EDITORIAL_CATEGORY_SLUGS = new Set(["editoriale", "editoriali"]);
+const EDITORIAL_SECTION_ID = "editoriali";
+const EDITORIAL_SECTION_TITLE = "Editoriali";
 const UNCATEGORIZED_SECTION_ID = "senza-categoria";
 const UNCATEGORIZED_SECTION_TITLE = "Senza categoria";
 
@@ -98,6 +108,7 @@ export function buildHomeIssueSections(issue: PublicCurrentIssueDetail | null): 
   const editorial = sortHomeArticles(
     articles.filter((article) => isCategory(article, EDITORIAL_CATEGORY_SLUGS)),
   );
+  const remainingEditorialArticles = editorial.slice(1);
   const groupedSections = new Map<string, HomeIssueSection>();
 
   for (const article of articles) {
@@ -121,20 +132,51 @@ export function buildHomeIssueSections(issue: PublicCurrentIssueDetail | null): 
     });
   }
 
+  const sections = [...groupedSections.values()]
+    .map((section) => ({ ...section, articles: sortHomeArticles(section.articles) }))
+    .sort((a, b) => {
+      const aPosition = Math.min(...a.articles.map((article) => article.position));
+      const bPosition = Math.min(...b.articles.map((article) => article.position));
+
+      if (aPosition !== bPosition) {
+        return aPosition - bPosition;
+      }
+
+      return a.title.localeCompare(b.title, "it");
+    });
+
+  if (remainingEditorialArticles.length > 0) {
+    sections.unshift({
+      id: EDITORIAL_SECTION_ID,
+      title: EDITORIAL_SECTION_TITLE,
+      categorySlug: EDITORIAL_SECTION_ID,
+      articles: remainingEditorialArticles,
+    });
+  }
+
+  return { editorial, sections };
+}
+
+export function buildDossierHomeSections(
+  issue: PublicCurrentIssueDetail | null,
+): DossierHomeSections {
+  const articles = [...(issue?.articles ?? [])].sort((a, b) => {
+    if (a.position !== b.position) {
+      return a.position - b.position;
+    }
+
+    return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
+  });
+  const [lead, bridge, ...remaining] = articles;
+  const closing = remaining.length > 0 ? remaining[remaining.length - 1] : null;
+  const body = closing ? remaining.slice(0, -1) : remaining;
+
   return {
-    editorial,
-    sections: [...groupedSections.values()]
-      .map((section) => ({ ...section, articles: sortHomeArticles(section.articles) }))
-      .sort((a, b) => {
-        const aPosition = Math.min(...a.articles.map((article) => article.position));
-        const bPosition = Math.min(...b.articles.map((article) => article.position));
-
-        if (aPosition !== bPosition) {
-          return aPosition - bPosition;
-        }
-
-        return a.title.localeCompare(b.title, "it");
-      }),
+    lead: lead ?? null,
+    bridge: bridge ?? null,
+    voices: body.slice(0, 3),
+    analysis: body.slice(3, 5),
+    closing,
   };
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildDossierHomeSections,
   buildHomeIssueSections,
   getHomeGridPattern,
   getHomeGridRows,
@@ -79,6 +80,40 @@ describe("home view model", () => {
     ]);
   });
 
+  it("uses the first sorted editorial as lead and shows remaining editorials in a section", () => {
+    const lead = article({
+      id: crypto.randomUUID(),
+      categorySlug: "editoriale",
+      categoryName: "Editoriale",
+      isFeatured: true,
+      position: 9,
+      title: "Lead",
+    });
+    const second = article({
+      id: crypto.randomUUID(),
+      categorySlug: "editoriale",
+      categoryName: "Editoriale",
+      position: 2,
+      title: "Second",
+    });
+    const third = article({
+      id: crypto.randomUUID(),
+      categorySlug: "editoriale",
+      categoryName: "Editoriale",
+      position: 3,
+      title: "Third",
+    });
+    const essay = article({ categorySlug: "saggi", categoryName: "Saggi", position: 1 });
+
+    const sections = buildHomeIssueSections(issue([third, essay, second, lead]));
+
+    expect(sections.editorial).toEqual([lead, second, third]);
+    expect(sections.sections).toMatchObject([
+      { id: "editoriali", title: "Editoriali", articles: [second, third] },
+      { id: "saggi", title: "Saggi", articles: [essay] },
+    ]);
+  });
+
   it("orders dynamic category sections by the lowest article position", () => {
     const reviews = article({
       categorySlug: "recensioni",
@@ -127,5 +162,28 @@ describe("home view model", () => {
       [0, 1, 2, 3, 4],
       [5, 6, 7, 8, 9],
     ]);
+  });
+
+  it("builds dossier sections from article position instead of featured priority", () => {
+    const articles = Array.from({ length: 8 }, (_, index) =>
+      article({
+        id: crypto.randomUUID(),
+        title: `Article ${index + 1}`,
+        position: index + 1,
+        isFeatured: [1, 2, 4].includes(index + 1),
+      }),
+    );
+
+    const sections = buildDossierHomeSections(issue([...articles].reverse()));
+
+    expect(sections.lead?.title).toBe("Article 1");
+    expect(sections.bridge?.title).toBe("Article 2");
+    expect(sections.voices.map((item) => item.title)).toEqual([
+      "Article 3",
+      "Article 4",
+      "Article 5",
+    ]);
+    expect(sections.analysis.map((item) => item.title)).toEqual(["Article 6", "Article 7"]);
+    expect(sections.closing?.title).toBe("Article 8");
   });
 });

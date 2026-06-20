@@ -15,17 +15,17 @@ export function CmsSystemScreen({ code, title, description, actions }: CmsSystem
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-275 flex-col px-(--article-padding-x) py-10">
       <div className="flex flex-1 items-center py-12">
-        <div className="grid w-full gap-y-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:gap-x-12">
-          <div className="flex min-w-0 flex-col">
+        <div className="grid w-full items-center gap-y-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:gap-x-12">
+          <div className="flex min-w-0 items-center md:justify-end">
             <span
               aria-hidden
-              className="font-display text-[clamp(100px,20vw,240px)] font-black leading-[0.82] tracking-[-0.05em] text-foreground"
+              className="font-display text-[clamp(100px,20vw,240px)] font-black leading-[0.82] tracking-[-0.05em] text-accent"
             >
               {code}
             </span>
           </div>
 
-          <div className="relative min-w-0 self-center border-l-[3px] border-accent pl-6">
+          <div className="relative min-w-0 border-l-[3px] border-accent pl-6">
             <h1 className="font-display text-(length:--text-display-h1) font-black leading-none tracking-[-0.04em] text-foreground">
               {title}
             </h1>

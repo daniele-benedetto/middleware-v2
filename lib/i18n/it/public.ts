@@ -45,6 +45,7 @@ export const publicIt = {
       showLess: "Riduci",
     },
     empty: {
+      code: "404",
       kicker: "Numero corrente",
       title: "Nessun numero pubblicato",
       description:
