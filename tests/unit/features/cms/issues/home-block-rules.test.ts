@@ -39,6 +39,7 @@ describe("home block rules", () => {
         type: "opening",
         variant: "red",
         title: "Apertura",
+        titleStyled: [{ text: "Apertura", tone: "primary" }],
         description: "Copy",
         articleIds: [
           "00000000-0000-4000-8000-000000000001",
@@ -51,6 +52,7 @@ describe("home block rules", () => {
       type: "opening",
       variant: "red",
       title: null,
+      titleStyled: null,
       description: null,
       articleIds: ["00000000-0000-4000-8000-000000000001"],
       featuredArticleId: "00000000-0000-4000-8000-000000000001",

@@ -267,6 +267,8 @@ export const cmsIt = {
           availableArticles: "Articoli disponibili",
           blockDescription: "Descrizione blocco",
           blockTitle: "Blocco",
+          blockTitleAccentAction: "Accent",
+          blockTitleEditorAriaLabel: "Editor titolo blocco",
           blockDropHint: "Trascina qui gli articoli dalla colonna destra.",
           dropArticlesHint: "Trascina qui un articolo per rimuoverlo dal blocco.",
           duplicateBlock: "Duplica",

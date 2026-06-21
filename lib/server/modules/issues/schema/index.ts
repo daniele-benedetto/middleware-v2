@@ -14,6 +14,7 @@ export const issueHomeBlockSchema = z
     type: z.enum(["opening", "constellation", "rupture", "sequence", "closing"]),
     variant: issueHomeBlockVariantSchema,
     title: z.string().trim().nullable().optional(),
+    titleStyled: issueTitleStyledSchema.nullable().optional(),
     description: z.string().trim().nullable().optional(),
     articleIds: z.array(z.string().uuid()),
     featuredArticleId: z.string().uuid().nullable().optional(),

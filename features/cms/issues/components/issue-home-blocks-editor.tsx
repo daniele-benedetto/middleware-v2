@@ -25,8 +25,11 @@ import {
   CmsFormField,
   CmsMetaText,
   CmsSelect,
-  CmsTextInput,
+  CmsStyledTitleEditor,
   CmsTextarea,
+  createStyledTitleValue,
+  getStyledTitlePlainText,
+  hasStyledTitleAccent,
 } from "@/components/cms/primitives";
 import { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sensors";
 import {
@@ -38,7 +41,11 @@ import {
 } from "@/lib/issues/home-block-rules";
 import { cn } from "@/lib/utils";
 
-import type { IssueHomeBlock, IssueHomeBlocks } from "@/lib/server/modules/issues/schema";
+import type {
+  IssueHomeBlock,
+  IssueHomeBlocks,
+  IssueTitleStyled,
+} from "@/lib/server/modules/issues/schema";
 
 type IssueHomeBlockArticle = {
   id: string;
@@ -55,6 +62,8 @@ type IssueHomeBlocksEditorText = {
   availableArticles: string;
   blockDescription: string;
   blockTitle: string;
+  blockTitleAccentAction: string;
+  blockTitleEditorAriaLabel: string;
   blockDropHint: string;
   dropArticlesHint: string;
   duplicateBlock: string;
@@ -121,8 +130,17 @@ type DroppedArticleData =
   | { type: "block" | "blockArticle"; blockId: string; articleId?: string };
 
 function toNullableText(value: string) {
-  const trimmed = value.trim();
-  return trimmed || null;
+  return value.trim() ? value : null;
+}
+
+function updateBlockTitle(block: IssueHomeBlock, titleStyled: IssueTitleStyled) {
+  const plainTitle = getStyledTitlePlainText(titleStyled);
+
+  return {
+    ...block,
+    title: toNullableText(plainTitle),
+    titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
+  };
 }
 
 function getArticleCategoryLabel(article: IssueHomeBlockArticle) {
@@ -479,15 +497,18 @@ export function IssueHomeBlocksEditor({
                             {showEditorialFields ? (
                               <>
                                 <CmsFormField label={text.blockTitle} htmlFor={`${block.id}-title`}>
-                                  <CmsTextInput
+                                  <CmsStyledTitleEditor
                                     id={`${block.id}-title`}
-                                    value={block.title ?? ""}
+                                    value={createStyledTitleValue(
+                                      block.title ?? "",
+                                      block.titleStyled,
+                                    )}
                                     disabled={disabled}
-                                    onChange={(event) =>
-                                      updateBlock(index, {
-                                        ...block,
-                                        title: toNullableText(event.target.value),
-                                      })
+                                    placeholder={text.blockTitle}
+                                    accentLabel={text.blockTitleAccentAction}
+                                    ariaLabel={text.blockTitleEditorAriaLabel}
+                                    onChange={(nextTitleStyled) =>
+                                      updateBlock(index, updateBlockTitle(block, nextTitleStyled))
                                     }
                                   />
                                 </CmsFormField>

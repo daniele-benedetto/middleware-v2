@@ -3,6 +3,7 @@ import { extractPlainText } from "@/lib/rich-text/plain-text";
 
 import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
 import type { PublicIssueListItem } from "@/lib/public/server/issues";
+import type { IssueTitleStyled } from "@/lib/server/modules/issues/schema";
 
 export type HomeIssueArticle = PublicCurrentIssueDetail["articles"][number];
 
@@ -11,6 +12,7 @@ export type NarrativeHomeBlock = {
   type: "opening" | "constellation" | "rupture" | "sequence" | "closing";
   variant: "black" | "red" | "default";
   title: string | null;
+  titleStyled: IssueTitleStyled | null;
   description: string | null;
   articles: HomeIssueArticle[];
   featuredArticle: HomeIssueArticle | null;

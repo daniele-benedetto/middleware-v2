@@ -20,6 +20,7 @@ export function normalizeHomeBlock(block: IssueHomeBlock): IssueHomeBlock {
   return {
     ...block,
     title: isEditorialSingleBlock(block.type) ? null : block.title,
+    titleStyled: isEditorialSingleBlock(block.type) ? null : block.titleStyled,
     description: isEditorialSingleBlock(block.type) ? null : block.description,
     articleIds,
     featuredArticleId,

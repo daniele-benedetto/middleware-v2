@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { AutoClampText } from "@/components/public/home/auto-clamp-text";
 import {
   type HomeIssueArticle,
   type NarrativeHomeBlock,
@@ -22,6 +23,7 @@ type DossierArticleCardProps = {
     | "standard"
     | "featured"
     | "clusterFeatured"
+    | "sequenceFeatured"
     | "constellationSecondary"
     | "constellationWide"
     | "compact"
@@ -92,6 +94,26 @@ function formatArticleNumber(value: number) {
 
 function getArticleNumber(articleNumbers: Map<string, number>, article: HomeIssueArticle) {
   return articleNumbers.get(article.id) ?? 1;
+}
+
+function BlockTitle({
+  block,
+  primaryClassName,
+}: {
+  block: NarrativeHomeBlock;
+  primaryClassName?: string;
+}) {
+  if (!block.title) {
+    return null;
+  }
+
+  return (
+    <StyledTitle
+      title={block.title}
+      titleStyled={block.titleStyled}
+      primaryClassName={primaryClassName}
+    />
+  );
 }
 
 function getOpeningVariantClasses(variant: NarrativeHomeBlock["variant"]) {
@@ -208,18 +230,25 @@ function DossierArticleCard({
   const isCompact = variant === "compact";
   const isClosing = variant === "closing";
   const isClusterFeatured = variant === "clusterFeatured";
+  const isSequenceFeatured = variant === "sequenceFeatured";
   const isConstellationSecondary = variant === "constellationSecondary";
   const isConstellationWide = variant === "constellationWide";
-  const summary = isClusterFeatured ? (article.contentPreview ?? article.excerpt) : article.excerpt;
+  const showImageAfterTitle = isClusterFeatured || isConstellationSecondary;
+  const summary =
+    isClusterFeatured || isSequenceFeatured
+      ? (article.contentPreview ?? article.excerpt)
+      : article.excerpt;
   const showImage = Boolean(article.imageUrl) && !isCompact;
   const image = showImage ? (
     <div
       className={`relative overflow-hidden border border-foreground grayscale ${
         isClusterFeatured
           ? "mt-5 h-44 md:h-52 lg:h-[min(32vh,260px)]"
-          : isConstellationSecondary || isConstellationWide
-            ? `mt-5 h-30 md:h-34 ${isConstellationWide ? "lg:mt-0 lg:h-full lg:min-h-full" : ""}`
-            : "mt-5 h-45 md:h-52"
+          : isClosing
+            ? "mt-6 h-58 md:h-72 lg:mt-0 lg:h-full lg:min-h-100"
+            : isConstellationSecondary || isConstellationWide
+              ? `mt-5 h-30 md:h-34 ${isConstellationWide ? "lg:mt-0 lg:h-full lg:min-h-full" : ""}`
+              : "mt-5 h-45 md:h-52"
       }`}
     >
       <Image
@@ -236,26 +265,42 @@ function DossierArticleCard({
     <article
       className={`group flex h-full min-h-full overflow-hidden border-foreground bg-background transition-[background,box-shadow] duration-(--motion-fast) hover:bg-surface-hover hover:shadow-(--interactive-rail-shadow) ${
         isClosing
-          ? "border px-6 py-6 md:px-8 md:py-7"
+          ? "border px-6 py-6 md:px-8 md:py-8"
           : "border-r border-b px-6 py-6 md:px-7 md:py-7"
-      } ${isConstellationWide ? "flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.42fr)] lg:items-stretch lg:gap-6" : "flex-col"} ${className}`}
+      } ${
+        isClosing
+          ? "flex-col lg:grid lg:grid-cols-[minmax(0,0.62fr)_minmax(260px,0.38fr)] lg:items-stretch lg:gap-8"
+          : isConstellationWide
+            ? "flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.42fr)] lg:items-stretch lg:gap-6"
+            : "flex-col"
+      } ${className}`}
     >
       <div
         className={
-          isClusterFeatured
-            ? "flex min-h-full min-w-0 flex-col"
-            : isConstellationWide
-              ? "flex min-w-0 flex-col"
-              : undefined
+          isClosing
+            ? "flex h-full min-h-full min-w-0 flex-col"
+            : isClusterFeatured
+              ? "flex h-full min-h-0 min-w-0 flex-col"
+              : isConstellationWide
+                ? "flex h-full min-h-0 min-w-0 flex-col"
+                : "flex h-full min-h-0 min-w-0 flex-col"
         }
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <span
-            className={`font-heading leading-[0.78] font-black tracking-[-0.04em] text-accent ${isClusterFeatured ? "text-[44px] md:text-[56px]" : "text-[48px]"}`}
+            className={`font-heading leading-[0.78] font-black tracking-[-0.04em] text-accent ${
+              isClusterFeatured
+                ? "text-[44px] md:text-[56px]"
+                : isClosing
+                  ? "text-[30px] md:text-[36px]"
+                  : "text-[48px]"
+            }`}
           >
             {formatArticleNumber(number)}
           </span>
-          <span className="mt-1.5 text-right font-heading text-[11px] font-bold tracking-[0.12em] text-muted uppercase">
+          <span
+            className={`mt-1.5 text-right font-heading text-[11px] font-bold tracking-[0.12em] text-muted uppercase ${isClosing ? "max-w-52" : ""}`}
+          >
             {eyebrow}
           </span>
         </div>
@@ -264,35 +309,45 @@ function DossierArticleCard({
           className={`font-heading leading-[1.05] font-black tracking-[-0.032em] text-foreground ${
             isClusterFeatured
               ? "text-[27px] md:text-[32px]"
-              : isConstellationSecondary || isConstellationWide
-                ? "text-[24px] md:text-[28px]"
-                : hasImage && !isCompact
-                  ? "text-[25px] md:text-[30px]"
-                  : "text-[29px] md:text-[36px]"
+              : isClosing
+                ? "max-w-[16ch] text-[30px] md:text-[40px] lg:text-[46px]"
+                : isConstellationSecondary || isConstellationWide
+                  ? "text-[24px] md:text-[28px]"
+                  : hasImage && !isCompact
+                    ? "text-[25px] md:text-[30px]"
+                    : "text-[29px] md:text-[36px]"
           }`}
         >
           <StyledTitle title={article.title} titleStyled={article.titleStyled} />
         </h3>
-        {isClusterFeatured ? image : null}
+        {showImageAfterTitle ? image : null}
         {summary ? (
-          <p
-            className={`mt-4 font-editorial leading-normal text-body-text ${
-              isClusterFeatured
-                ? "line-clamp-[7] text-[17px] md:line-clamp-[9] md:text-[18px] lg:line-clamp-[11]"
-                : isConstellationSecondary || isConstellationWide
-                  ? "line-clamp-4 text-[15.5px] md:text-[16.5px]"
-                  : "text-[16px] md:text-[17px]"
-            }`}
-          >
-            {summary}
-          </p>
+          isClusterFeatured ? (
+            <AutoClampText className="mt-4 flex-1 font-editorial text-[17px] leading-normal text-body-text md:text-[18px]">
+              {summary}
+            </AutoClampText>
+          ) : (
+            <p
+              className={`mt-4 min-h-0 overflow-hidden font-editorial leading-normal text-body-text ${
+                isSequenceFeatured
+                  ? "line-clamp-4 flex-1 text-[16px] md:text-[17px]"
+                  : isClosing
+                    ? "max-w-[54ch] text-[18px] leading-[1.45] md:text-[20px]"
+                    : isConstellationSecondary || isConstellationWide
+                      ? "line-clamp-4 flex-1 text-[15.5px] md:text-[16.5px]"
+                      : "flex-1 text-[16px] md:text-[17px]"
+              }`}
+            >
+              {summary}
+            </p>
+          )
         ) : null}
-        <div className="mt-auto pt-6">
+        <div className={`mt-auto ${isClosing ? "pt-8" : "pt-6"}`}>
           <ArticleMeta article={article} />
         </div>
       </div>
 
-      {isClusterFeatured ? null : image}
+      {showImageAfterTitle ? null : image}
     </article>
   );
 }
@@ -308,51 +363,69 @@ function CoreClusterBlock({
   const secondary = featured
     ? block.articles.filter((article) => article.id !== featured.id)
     : block.articles;
-  const shouldSpanSecondary = (index: number) =>
-    secondary.length === 1 ||
-    (secondary.length > 1 && secondary.length % 2 === 1 && index === secondary.length - 1);
 
   return (
     <section className="scroll-mt-20 px-4 py-9 sm:px-6 lg:px-12 lg:py-12">
-      {block.title || block.description ? (
-        <div className="pb-6">
-          {block.title ? (
-            <h2 className="font-heading text-[clamp(34px,4vw,64px)] leading-[0.9] font-black tracking-[-0.045em] text-foreground uppercase">
-              {block.title}
-            </h2>
-          ) : null}
-          {block.description ? (
-            <p className="mt-4 w-full font-editorial text-[clamp(17px,1.4vw,21px)] leading-normal text-body-text">
-              {block.description}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
-      <div className="grid items-stretch border-l border-t border-foreground md:grid-cols-[minmax(260px,0.42fr)_minmax(0,0.58fr)] lg:grid-cols-[minmax(300px,0.36fr)_minmax(0,0.64fr)]">
+      <BlockSectionIntro block={block} />
+      <div className="grid items-stretch border-l border-t border-foreground md:grid-cols-[minmax(260px,0.42fr)_minmax(0,0.58fr)]">
         {featured ? (
-          <div className="min-h-full">
+          <div className="relative h-full min-h-full">
             <DossierArticleCard
               article={featured}
               eyebrow={articleEyebrow(featured)}
               number={getArticleNumber(articleNumbers, featured)}
               variant="clusterFeatured"
+              className="lg:absolute lg:inset-0"
             />
           </div>
         ) : null}
-        <div className="grid min-h-full md:grid-cols-1 lg:grid-cols-2">
-          {secondary.map((article, index) => (
-            <DossierArticleCard
-              key={article.id}
-              article={article}
-              eyebrow={articleEyebrow(article)}
-              number={getArticleNumber(articleNumbers, article)}
-              variant={shouldSpanSecondary(index) ? "constellationWide" : "constellationSecondary"}
-              className={shouldSpanSecondary(index) ? "lg:col-span-2" : undefined}
-            />
-          ))}
+        <div className="grid h-full min-h-full lg:grid-cols-2">
+          {secondary.map((article, index) => {
+            const spansTwoColumns = secondary.length % 2 === 1 && index === secondary.length - 1;
+
+            return (
+              <DossierArticleCard
+                key={article.id}
+                article={article}
+                eyebrow={articleEyebrow(article)}
+                number={getArticleNumber(articleNumbers, article)}
+                variant={spansTwoColumns ? "constellationWide" : "constellationSecondary"}
+                className={spansTwoColumns ? "lg:col-span-2" : undefined}
+              />
+            );
+          })}
         </div>
       </div>
     </section>
+  );
+}
+
+function BlockSectionIntro({ block }: { block: NarrativeHomeBlock }) {
+  if (!block.title && !block.description) {
+    return null;
+  }
+
+  return (
+    <div className="pb-6">
+      {block.title ? (
+        <h2 className="font-heading text-[clamp(34px,4vw,64px)] leading-[0.9] font-black tracking-[-0.045em] text-foreground uppercase">
+          <BlockTitle block={block} />
+        </h2>
+      ) : null}
+      {block.title ? (
+        <div className="mt-7.5 border-t border-foreground pt-5.5">
+          {block.description ? (
+            <p className="w-full font-editorial text-[clamp(17px,1.4vw,21px)] leading-normal text-body-text">
+              {block.description}
+            </p>
+          ) : null}
+        </div>
+      ) : block.description ? (
+        <p className="mt-4 w-full font-editorial text-[clamp(17px,1.4vw,21px)] leading-normal text-body-text">
+          {block.description}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
@@ -423,52 +496,32 @@ function SequenceBlock({
   block: NarrativeHomeBlock;
   articleNumbers: Map<string, number>;
 }) {
-  const primary = block.featuredArticle ?? block.articles[0] ?? null;
-  const secondary = primary
-    ? block.articles.filter((article) => article.id !== primary.id)
-    : block.articles;
+  const featured = block.featuredArticle ?? block.articles[0] ?? null;
+  const articles = featured
+    ? [
+        featured,
+        ...sortUnpaginatedArticles(block.articles.filter((article) => article.id !== featured.id)),
+      ]
+    : sortUnpaginatedArticles(block.articles);
 
-  if (!primary) {
+  if (articles.length === 0) {
     return null;
   }
 
   return (
     <section className="scroll-mt-20 bg-[#f2eadc] px-4 py-9 sm:px-6 lg:px-12 lg:py-12">
-      {block.title || block.description ? (
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-t border-foreground pt-5">
-          <div>
-            {block.title ? (
-              <p className="font-heading text-[12px] font-extrabold tracking-[0.14em] text-accent uppercase">
-                {block.title}
-              </p>
-            ) : null}
-          </div>
-          {block.description ? (
-            <p className="max-w-[42ch] font-editorial text-[18px] leading-normal text-body-text">
-              {block.description}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
-      <div className="grid gap-5 lg:grid-cols-[0.48fr_0.52fr]">
-        <DossierArticleCard
-          article={primary}
-          eyebrow={blockEyebrow(block, primary)}
-          number={getArticleNumber(articleNumbers, primary)}
-        />
-        {secondary.length > 0 ? (
-          <div className="grid border-l border-t border-foreground md:grid-cols-2">
-            {secondary.map((article) => (
-              <DossierArticleCard
-                key={article.id}
-                article={article}
-                eyebrow={blockEyebrow(block, article)}
-                number={getArticleNumber(articleNumbers, article)}
-                variant="compact"
-              />
-            ))}
-          </div>
-        ) : null}
+      <BlockSectionIntro block={block} />
+      <div className="grid border-l border-t border-foreground md:grid-cols-2 xl:grid-cols-3">
+        {articles.map((article) => (
+          <DossierArticleCard
+            key={article.id}
+            article={article}
+            eyebrow={formatTags(article) || article.categoryName || ""}
+            number={getArticleNumber(articleNumbers, article)}
+            variant={article.id === featured?.id ? "sequenceFeatured" : undefined}
+            className={article.id === featured?.id ? "md:col-span-2 xl:col-span-2" : undefined}
+          />
+        ))}
       </div>
     </section>
   );
@@ -487,44 +540,111 @@ function ClosingBlock({
     return null;
   }
 
+  const variantClasses = getClosingVariantClasses(block.variant);
+
   return (
-    <section className="scroll-mt-20 px-4 py-8 sm:px-6 lg:px-12 lg:py-12">
-      <div className="grid gap-5 lg:grid-cols-[0.36fr_0.64fr] lg:items-stretch">
+    <section
+      className={`scroll-mt-20 px-4 py-9 sm:px-6 lg:px-12 lg:py-14 ${variantClasses.section}`}
+    >
+      <div
+        className={`grid gap-0 border lg:grid-cols-[minmax(280px,0.42fr)_minmax(0,0.58fr)] lg:items-stretch ${variantClasses.shell}`}
+      >
         {block.title || block.description ? (
-          <div className="border border-foreground bg-foreground px-6 py-6 text-background md:px-8 md:py-7">
+          <div
+            className={`flex min-h-full flex-col px-6 py-7 md:px-8 md:py-9 lg:border-r ${variantClasses.panel}`}
+          >
             {block.title ? (
-              <p className="font-heading text-[12px] font-extrabold tracking-[0.14em] text-accent uppercase">
-                {block.title}
-              </p>
+              <h2
+                className={`max-w-[12ch] font-heading text-[clamp(34px,4.4vw,62px)] leading-[0.9] font-black tracking-[-0.045em] uppercase ${variantClasses.title}`}
+              >
+                <BlockTitle block={block} primaryClassName={variantClasses.titleAccent} />
+              </h2>
             ) : null}
-            {block.description ? (
-              <p className="mt-5 max-w-[22ch] font-heading text-[clamp(28px,3.2vw,52px)] leading-[0.94] font-black tracking-[-0.04em]">
+            {block.title ? (
+              <div className={`mt-7 border-t pt-5 ${variantClasses.divider}`}>
+                {block.description ? (
+                  <p
+                    className={`max-w-[38ch] font-editorial text-[17px] leading-[1.45] md:text-[19px] ${variantClasses.description}`}
+                  >
+                    {block.description}
+                  </p>
+                ) : null}
+              </div>
+            ) : block.description ? (
+              <p
+                className={`max-w-[38ch] font-editorial text-[19px] leading-[1.45] md:text-[21px] ${variantClasses.description}`}
+              >
                 {block.description}
               </p>
             ) : null}
           </div>
         ) : null}
-        <DossierArticleCard
-          article={article}
-          eyebrow={blockEyebrow(block, article)}
-          number={getArticleNumber(articleNumbers, article)}
-          variant="closing"
-        />
+        <div className={block.title || block.description ? "" : "lg:col-span-2"}>
+          <DossierArticleCard
+            article={article}
+            eyebrow={blockEyebrow(block, article)}
+            number={getArticleNumber(articleNumbers, article)}
+            variant="closing"
+            className="border-0"
+          />
+        </div>
       </div>
     </section>
   );
 }
 
+function getClosingVariantClasses(variant: NarrativeHomeBlock["variant"]) {
+  switch (variant) {
+    case "red":
+      return {
+        section: "bg-background",
+        shell: "border-accent",
+        panel: "border-accent bg-accent text-background",
+        title: "text-foreground",
+        titleAccent: "text-background",
+        divider: "border-[rgba(17,17,17,0.26)]",
+        description: "text-[#f4ebdd]",
+      };
+    case "default":
+      return {
+        section: "bg-background",
+        shell: "border-foreground",
+        panel: "border-foreground bg-background text-foreground",
+        title: "text-foreground",
+        titleAccent: "text-accent",
+        divider: "border-foreground",
+        description: "text-body-text",
+      };
+    case "black":
+      return {
+        section: "bg-background",
+        shell: "border-foreground",
+        panel: "border-foreground bg-foreground text-background",
+        title: "text-background",
+        titleAccent: "text-accent",
+        divider: "border-[rgba(244,235,221,0.28)]",
+        description: "text-[#f4ebdd]",
+      };
+  }
+}
+
 function getArticleNumbers(blocks: NarrativeHomeBlock[]) {
   const numbers = new Map<string, number>();
 
-  for (const article of blocks.flatMap((block) => block.articles)) {
+  assignArticleNumbers(
+    numbers,
+    blocks.flatMap((block) => block.articles),
+  );
+
+  return numbers;
+}
+
+function assignArticleNumbers(numbers: Map<string, number>, articles: HomeIssueArticle[]) {
+  for (const article of articles) {
     if (!numbers.has(article.id)) {
       numbers.set(article.id, numbers.size + 1);
     }
   }
-
-  return numbers;
 }
 
 function getUnpaginatedArticles(issue: PublicCurrentIssueDetail, blocks: NarrativeHomeBlock[]) {
@@ -587,13 +707,23 @@ export function DossierHome({ issue }: DossierHomeProps) {
     return <UnpaginatedArticleRow id="dossier" articles={issue.articles} />;
   }
 
-  const articleNumbers = getArticleNumbers(blocks);
   const unpaginatedArticles = getUnpaginatedArticles(issue, blocks);
+  const contentBlocks = blocks.filter((block) => block.type !== "closing");
+  const closingBlocks = blocks.filter((block) => block.type === "closing");
+  const articleNumbers = getArticleNumbers(contentBlocks);
+  const unpaginatedStartNumber = articleNumbers.size + 1;
+
+  assignArticleNumbers(articleNumbers, sortUnpaginatedArticles(unpaginatedArticles));
+  assignArticleNumbers(
+    articleNumbers,
+    closingBlocks.flatMap((block) => block.articles),
+  );
 
   return (
     <div className="bg-background">
-      {blocks.map((block) => renderBlock(block, articleNumbers))}
-      <UnpaginatedArticleRow articles={unpaginatedArticles} startNumber={articleNumbers.size + 1} />
+      {contentBlocks.map((block) => renderBlock(block, articleNumbers))}
+      <UnpaginatedArticleRow articles={unpaginatedArticles} startNumber={unpaginatedStartNumber} />
+      {closingBlocks.map((block) => renderBlock(block, articleNumbers))}
     </div>
   );
 }

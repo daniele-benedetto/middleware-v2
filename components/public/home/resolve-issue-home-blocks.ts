@@ -36,6 +36,7 @@ function toNarrativeBlock({
     type: block.type,
     variant: block.variant,
     title: compactText(block.title),
+    titleStyled: block.titleStyled ?? null,
     description: compactText(block.description),
     articles,
     featuredArticle: preferredArticle,

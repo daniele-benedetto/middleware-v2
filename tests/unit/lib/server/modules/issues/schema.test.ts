@@ -66,6 +66,32 @@ describe("issues schemas", () => {
     ).toBe(true);
   });
 
+  it("allows styled titles in home blocks", () => {
+    const parsed = createIssueInputSchema.parse({
+      title: "Issue 01",
+      homeBlocks: [
+        {
+          id: "sequenza",
+          type: "sequence",
+          variant: "default",
+          title: "Titolo blocco",
+          titleStyled: [
+            { text: "Titolo ", tone: "default" },
+            { text: "blocco", tone: "primary" },
+          ],
+          description: null,
+          articleIds: [],
+          featuredArticleId: null,
+        },
+      ],
+    });
+
+    expect(parsed.homeBlocks?.[0]?.titleStyled).toEqual([
+      { text: "Titolo ", tone: "default" },
+      { text: "blocco", tone: "primary" },
+    ]);
+  });
+
   it("rejects opening blocks with copy or multiple articles", () => {
     expect(
       createIssueInputSchema.safeParse({
