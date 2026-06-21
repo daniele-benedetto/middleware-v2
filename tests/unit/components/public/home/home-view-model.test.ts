@@ -72,7 +72,6 @@ describe("home view model", () => {
             {
               id: "apertura",
               type: "opening",
-              source: "manual",
               title: "Apertura editoriale",
               description: null,
               articleIds: [lead.id],
@@ -81,7 +80,6 @@ describe("home view model", () => {
             {
               id: "campo",
               type: "constellation",
-              source: "manual",
               title: "Campo di tensione",
               description: "Testo deciso dentro l'uscita.",
               articleIds: [coreA.id, coreB.id],
@@ -90,7 +88,6 @@ describe("home view model", () => {
             {
               id: "sequenza",
               type: "sequence",
-              source: "manual",
               title: "Sequenza narrativa",
               description: null,
               articleIds: [sequenceA.id, sequenceB.id],
@@ -145,56 +142,30 @@ describe("home view model", () => {
     ]);
   });
 
-  it("resolves remainder blocks with articles not used by manual blocks", () => {
+  it("omits configured blocks with no assigned articles", () => {
     const lead = article({
       id: crypto.randomUUID(),
       title: "Lead",
       publishedAt: "2026-01-01T00:00:00.000Z",
     });
-    const manual = article({
-      id: crypto.randomUUID(),
-      title: "Manual",
-      publishedAt: "2026-01-02T00:00:00.000Z",
-    });
-    const remainderA = article({
-      id: crypto.randomUUID(),
-      title: "Remainder A",
-      publishedAt: "2026-01-03T00:00:00.000Z",
-    });
-    const remainderB = article({
-      id: crypto.randomUUID(),
-      title: "Remainder B",
-      publishedAt: "2026-01-04T00:00:00.000Z",
-    });
 
     expect(
       composeNarrativeHomeBlocks(
         issue(
-          [remainderB, manual, remainderA, lead],
+          [lead],
           [
             {
               id: "apertura",
               type: "opening",
-              source: "manual",
               title: null,
               description: null,
               articleIds: [lead.id],
               featuredArticleId: lead.id,
             },
             {
-              id: "manuale",
+              id: "vuoto",
               type: "constellation",
-              source: "manual",
-              title: "Manuale",
-              description: null,
-              articleIds: [manual.id],
-              featuredArticleId: manual.id,
-            },
-            {
-              id: "resto",
-              type: "sequence",
-              source: "remainder",
-              title: "Resto",
+              title: "Vuoto",
               description: null,
               articleIds: [],
               featuredArticleId: null,
@@ -202,10 +173,6 @@ describe("home view model", () => {
           ],
         ),
       ),
-    ).toMatchObject([
-      { id: "apertura", articles: [{ title: "Lead" }] },
-      { id: "manuale", articles: [{ title: "Manual" }] },
-      { id: "resto", articles: [{ title: "Remainder A" }, { title: "Remainder B" }] },
-    ]);
+    ).toMatchObject([{ id: "apertura", articles: [{ title: "Lead" }] }]);
   });
 });

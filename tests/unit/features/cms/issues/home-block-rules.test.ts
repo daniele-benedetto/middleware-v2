@@ -47,7 +47,6 @@ describe("home block rules", () => {
     ).toEqual({
       id: "opening",
       type: "opening",
-      source: "manual",
       title: null,
       description: null,
       articleIds: ["00000000-0000-4000-8000-000000000001"],

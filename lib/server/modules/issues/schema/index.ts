@@ -11,15 +11,10 @@ export const issueHomeBlockSchema = z
   .object({
     id: z.string().trim().min(1),
     type: z.enum(["opening", "constellation", "rupture", "sequence", "closing"]),
-    source: z.enum(["manual", "remainder"]).default("manual"),
     title: z.string().trim().nullable().optional(),
     description: z.string().trim().nullable().optional(),
     articleIds: z.array(z.string().uuid()),
     featuredArticleId: z.string().uuid().nullable().optional(),
-  })
-  .refine((block) => block.source === "remainder" || block.articleIds.length > 0, {
-    message: "manual home blocks must include at least one article",
-    path: ["articleIds"],
   })
   .refine(
     (block) =>

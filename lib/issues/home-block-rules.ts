@@ -1,9 +1,5 @@
 import type { IssueHomeBlock } from "@/lib/server/modules/issues/schema";
 
-type IssueHomeBlockInput = Omit<IssueHomeBlock, "source"> & {
-  source?: IssueHomeBlock["source"];
-};
-
 export function isSingleArticleBlock(type: IssueHomeBlock["type"]) {
   return type === "opening" || type === "rupture" || type === "closing";
 }
@@ -12,18 +8,7 @@ export function isEditorialSingleBlock(type: IssueHomeBlock["type"]) {
   return type === "opening" || type === "rupture";
 }
 
-export function normalizeHomeBlock(block: IssueHomeBlockInput): IssueHomeBlock {
-  if (block.source === "remainder") {
-    return {
-      ...block,
-      source: "remainder",
-      articleIds: [],
-      featuredArticleId: null,
-      title: isEditorialSingleBlock(block.type) ? null : block.title,
-      description: isEditorialSingleBlock(block.type) ? null : block.description,
-    };
-  }
-
+export function normalizeHomeBlock(block: IssueHomeBlock): IssueHomeBlock {
   const articleIds = isSingleArticleBlock(block.type)
     ? block.articleIds.slice(0, 1)
     : block.articleIds;
@@ -34,7 +19,6 @@ export function normalizeHomeBlock(block: IssueHomeBlockInput): IssueHomeBlock {
 
   return {
     ...block,
-    source: "manual",
     title: isEditorialSingleBlock(block.type) ? null : block.title,
     description: isEditorialSingleBlock(block.type) ? null : block.description,
     articleIds,
@@ -43,14 +27,12 @@ export function normalizeHomeBlock(block: IssueHomeBlockInput): IssueHomeBlock {
 }
 
 export function createHomeBlock(
-  input: Omit<IssueHomeBlock, "featuredArticleId" | "source"> & {
+  input: Omit<IssueHomeBlock, "featuredArticleId"> & {
     featuredArticleId?: string | null;
-    source?: IssueHomeBlock["source"];
   },
 ) {
   return normalizeHomeBlock({
     ...input,
-    source: input.source ?? "manual",
     featuredArticleId: input.featuredArticleId ?? input.articleIds[0] ?? null,
   });
 }
@@ -62,7 +44,6 @@ export function createEmptyHomeBlock(
   return createHomeBlock({
     id,
     type,
-    source: "manual",
     title: null,
     description: null,
     articleIds: [],

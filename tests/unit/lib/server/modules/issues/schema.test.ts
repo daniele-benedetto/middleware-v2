@@ -45,16 +45,15 @@ describe("issues schemas", () => {
     ).toBe(false);
   });
 
-  it("allows empty remainder home blocks", () => {
+  it("allows empty home blocks", () => {
     expect(
       createIssueInputSchema.safeParse({
         title: "Issue 01",
         homeBlocks: [
           {
-            id: "resto",
+            id: "sequenza",
             type: "sequence",
-            source: "remainder",
-            title: "Resto",
+            title: "Sequenza",
             description: null,
             articleIds: [],
             featuredArticleId: null,

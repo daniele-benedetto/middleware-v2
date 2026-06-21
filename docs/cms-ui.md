@@ -217,7 +217,7 @@ Rule:
 - The issue form uses a visual editor for `Issue.homeBlocks`; JSON is not the primary editorial interface.
 - The editor must preserve controlled freedom: editors can reorder blocks, select articles, choose featured articles for multi-article blocks, and edit block copy only where allowed by rules.
 - The editor exposes a suggested layout generator. If blocks already exist, generation must require confirmation because it replaces the current regia.
-- Blocks support `source=manual` and `source=remainder`. `manual` uses selected articles; `remainder` resolves automatically to articles not already used by manual blocks and hides manual article controls.
+- Blocks use only manually selected articles. Empty blocks can be saved as editorial placeholders, but they are not rendered on the public frontend.
 - Drag and drop supports block ordering, selected-article ordering, and dragging available articles into a block. Checkbox assignment remains available as a fallback. Dragging an available article moves it into the target block and must preserve the one-article-one-block invariant.
 - Article lists should show category badges when available so editors can distinguish editorials, contributions, and interviews without opening article records.
 - The compact preview is editorial, not a pixel-perfect public rendering. It should show block order, block type, title, description, assigned articles, and featured status.

@@ -54,18 +54,13 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): NarrativeHome
 
   for (const rawBlock of issue.homeBlocks ?? []) {
     const block = normalizeHomeBlock(rawBlock);
-    const articles =
-      block.source === "remainder"
-        ? sortByPublishDate(issue.articles.filter((article) => !manualArticleIds.has(article.id)))
-        : block.articleIds
-            .filter((articleId) => !manualArticleIds.has(articleId))
-            .map((articleId) => articlesById.get(articleId))
-            .filter((article): article is HomeIssueArticle => Boolean(article));
+    const articles = block.articleIds
+      .filter((articleId) => !manualArticleIds.has(articleId))
+      .map((articleId) => articlesById.get(articleId))
+      .filter((article): article is HomeIssueArticle => Boolean(article));
 
-    if (block.source !== "remainder") {
-      for (const article of articles) {
-        manualArticleIds.add(article.id);
-      }
+    for (const article of articles) {
+      manualArticleIds.add(article.id);
     }
 
     const narrativeBlock = toNarrativeBlock({ block, articles });
@@ -78,11 +73,49 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): NarrativeHome
   return blocks;
 }
 
+function resolveFallbackBlocks(issue: PublicCurrentIssueDetail): NarrativeHomeBlock[] {
+  const [openingArticle, ...constellationArticles] = sortByPublishDate(issue.articles);
+  const blocks: NarrativeHomeBlock[] = [];
+
+  if (openingArticle) {
+    blocks.push({
+      id: "fallback-opening",
+      type: "opening",
+      title: null,
+      description: null,
+      articles: [openingArticle],
+      featuredArticle: openingArticle,
+    });
+  }
+
+  if (constellationArticles.length > 0) {
+    const featuredArticle =
+      constellationArticles.find((article) => article.isFeatured) ??
+      constellationArticles[0] ??
+      null;
+
+    blocks.push({
+      id: "fallback-constellation",
+      type: "constellation",
+      title: null,
+      description: null,
+      articles: constellationArticles,
+      featuredArticle,
+    });
+  }
+
+  return blocks;
+}
+
 export function resolveIssueHomeBlocks(
   issue: PublicCurrentIssueDetail | null,
 ): NarrativeHomeBlock[] {
   if (!issue || issue.articles.length === 0) {
     return [];
+  }
+
+  if (!issue.homeBlocks?.length) {
+    return resolveFallbackBlocks(issue);
   }
 
   return resolveConfiguredBlocks(issue);

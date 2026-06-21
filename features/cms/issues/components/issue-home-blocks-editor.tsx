@@ -69,9 +69,6 @@ type IssueHomeBlocksEditorText = {
   removeBlock: string;
   selectedArticleOrder: string;
   sectionPagination: string;
-  source: string;
-  sourceManual: string;
-  sourceRemainder: string;
   type: string;
   typeConstellation: string;
   typeClosing: string;
@@ -94,11 +91,6 @@ const blockTypeOptions = [
   { value: "rupture", labelKey: "typeRupture" },
   { value: "sequence", labelKey: "typeSequence" },
   { value: "closing", labelKey: "typeClosing" },
-] as const;
-
-const sourceOptions = [
-  { value: "manual", labelKey: "sourceManual" },
-  { value: "remainder", labelKey: "sourceRemainder" },
 ] as const;
 
 const articlePoolDroppableId = "article-pool";
@@ -142,13 +134,7 @@ export function IssueHomeBlocksEditor({
     value: option.value,
     label: text[option.labelKey],
   }));
-  const sourceSelectOptions = sourceOptions.map((option) => ({
-    value: option.value,
-    label: text[option.labelKey],
-  }));
-  const manualUsedArticleIds = new Set(
-    value.flatMap((block) => (block.source === "remainder" ? [] : block.articleIds)),
-  );
+  const manualUsedArticleIds = new Set(value.flatMap((block) => block.articleIds));
   const unassignedArticles = sortedArticles.filter(
     (article) => !manualUsedArticleIds.has(article.id),
   );
@@ -269,7 +255,7 @@ export function IssueHomeBlocksEditor({
       value.map((rawBlock) => {
         const block = normalizeHomeBlock(rawBlock);
 
-        if (block.source === "remainder" || !block.articleIds.includes(articleId)) {
+        if (!block.articleIds.includes(articleId)) {
           return block;
         }
 
@@ -293,10 +279,6 @@ export function IssueHomeBlocksEditor({
     onChange(
       value.map((rawBlock) => {
         const block = normalizeHomeBlock(rawBlock);
-
-        if (block.source === "remainder") {
-          return block;
-        }
 
         if (block.id !== targetBlockId) {
           return block.articleIds.includes(articleId)
@@ -375,8 +357,7 @@ export function IssueHomeBlocksEditor({
                   label: article.title,
                 }));
                 const showEditorialFields = !isEditorialSingleBlock(block.type);
-                const showArticleTools = block.source !== "remainder";
-                const showFeaturedField = showArticleTools && !isSingleArticleBlock(block.type);
+                const showFeaturedField = !isSingleArticleBlock(block.type);
 
                 return (
                   <SortableBlockSection key={block.id} blockId={block.id} disabled={disabled}>
@@ -464,23 +445,6 @@ export function IssueHomeBlocksEditor({
                               />
                             </CmsFormField>
 
-                            <CmsFormField label={text.source} htmlFor={`${block.id}-source`}>
-                              <CmsSelect
-                                value={block.source ?? "manual"}
-                                disabled={disabled}
-                                options={sourceSelectOptions}
-                                onValueChange={(source) =>
-                                  updateBlock(
-                                    index,
-                                    normalizeHomeBlock({
-                                      ...block,
-                                      source: source as IssueHomeBlock["source"],
-                                    }),
-                                  )
-                                }
-                              />
-                            </CmsFormField>
-
                             {showEditorialFields ? (
                               <>
                                 <CmsFormField label={text.blockTitle} htmlFor={`${block.id}-title`}>
@@ -539,32 +503,24 @@ export function IssueHomeBlocksEditor({
                           </div>
 
                           <div className="space-y-3">
-                            {showArticleTools ? (
-                              <div className="space-y-2">
-                                <CmsMetaText variant="category">
-                                  {text.selectedArticleOrder}
-                                </CmsMetaText>
-                                <SelectedArticlesDropZone
-                                  blockId={block.id}
-                                  blockType={block.type}
-                                  selectedArticles={selectedArticles}
-                                  disabled={disabled}
-                                  text={text}
-                                  onMoveUp={(articleIndex) =>
-                                    updateBlock(index, moveArticle(block, articleIndex, -1))
-                                  }
-                                  onMoveDown={(articleIndex) =>
-                                    updateBlock(index, moveArticle(block, articleIndex, 1))
-                                  }
-                                />
-                              </div>
-                            ) : (
-                              <div className="rounded-[6px] border border-dashed border-border bg-card-hover px-3 py-4">
-                                <CmsBody size="sm" tone="muted">
-                                  {text.sourceRemainder}
-                                </CmsBody>
-                              </div>
-                            )}
+                            <div className="space-y-2">
+                              <CmsMetaText variant="category">
+                                {text.selectedArticleOrder}
+                              </CmsMetaText>
+                              <SelectedArticlesDropZone
+                                blockId={block.id}
+                                blockType={block.type}
+                                selectedArticles={selectedArticles}
+                                disabled={disabled}
+                                text={text}
+                                onMoveUp={(articleIndex) =>
+                                  updateBlock(index, moveArticle(block, articleIndex, -1))
+                                }
+                                onMoveDown={(articleIndex) =>
+                                  updateBlock(index, moveArticle(block, articleIndex, 1))
+                                }
+                              />
+                            </div>
                           </div>
                         </div>
                       </>

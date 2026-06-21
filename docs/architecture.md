@@ -119,8 +119,8 @@ Read/download flow:
 
 - Public home composition is issue-centric. `Issue.homeBlocks` is the editorial source of truth for the current issue home layout.
 - Articles remain content entities with category, tags, author, media, and publication metadata. They do not own home placement state.
-- `Issue.homeBlocks` is a validated JSON array. Each block stores `id`, `type`, `source`, optional `title`, optional `description`, `articleIds`, and optional `featuredArticleId`.
-- Block `source` is `manual` by default. `remainder` blocks resolve automatically to articles in the issue that are not used by manual blocks.
+- `Issue.homeBlocks` is a validated JSON array. Each block stores `id`, `type`, optional `title`, optional `description`, `articleIds`, and optional `featuredArticleId`.
+- Blocks use only manually assigned articles. Empty blocks are allowed in CMS state and are skipped by the public renderer.
 - Supported block types are `opening`, `constellation`, `rupture`, `sequence`, and `closing`.
 - One article can be assigned to one home block only. The server schema rejects duplicate article assignments across blocks.
 - `opening`, `rupture`, and `closing` are single-article blocks.
