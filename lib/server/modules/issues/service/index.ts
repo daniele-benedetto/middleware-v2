@@ -4,6 +4,7 @@ import { createCmsDomainErrorDetails } from "@/lib/cms/errors/domain-error-detai
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
 import { issuesRepository } from "@/lib/server/modules/issues/repository";
+import { issueHomeBlocksSchema } from "@/lib/server/modules/issues/schema";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
@@ -53,7 +54,7 @@ const toIssueDto = (issue: IssueRecord): IssueDto => {
     titleStyled: (issue.titleStyled as IssueTitleStyled | null) ?? null,
     slug: issue.slug,
     description: issue.description ?? null,
-    homeBlocks: (issue.homeBlocks as IssueHomeBlocks | null) ?? null,
+    homeBlocks: normalizeIssueHomeBlocks(issue.homeBlocks),
     isActive: issue.isActive,
     sortOrder: issue.sortOrder,
     publishedAt: issue.publishedAt?.toISOString() ?? null,
@@ -61,6 +62,24 @@ const toIssueDto = (issue: IssueRecord): IssueDto => {
     updatedAt: issue.updatedAt.toISOString(),
     articlesCount: issue._count?.articles ?? 0,
   };
+};
+
+const normalizeIssueHomeBlocks = (value: unknown): IssueHomeBlocks | null => {
+  if (!value) {
+    return null;
+  }
+
+  const blocks = Array.isArray(value)
+    ? value.map((block) => {
+        if (!block || typeof block !== "object" || "variant" in block) {
+          return block;
+        }
+
+        return { ...block, variant: "black" };
+      })
+    : value;
+
+  return issueHomeBlocksSchema.parse(blocks);
 };
 
 const toIssueDetailDto = (issue: IssueDetailRecord): IssueDetailDto => {

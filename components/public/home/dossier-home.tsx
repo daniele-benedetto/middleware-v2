@@ -18,7 +18,15 @@ type DossierArticleCardProps = {
   article: HomeIssueArticle;
   eyebrow: string;
   number: number;
-  variant?: "standard" | "featured" | "compact" | "closing";
+  variant?:
+    | "standard"
+    | "featured"
+    | "clusterFeatured"
+    | "constellationSecondary"
+    | "constellationWide"
+    | "compact"
+    | "closing";
+  className?: string;
 };
 
 function formatTags(article: HomeIssueArticle) {
@@ -30,6 +38,10 @@ function formatTags(article: HomeIssueArticle) {
 
 function blockEyebrow(block: NarrativeHomeBlock, article: HomeIssueArticle) {
   return block.title || formatTags(article) || article.categoryName || "";
+}
+
+function articleEyebrow(article: HomeIssueArticle) {
+  return formatTags(article) || article.categoryName || "";
 }
 
 function sortUnpaginatedArticles(articles: HomeIssueArticle[]) {
@@ -47,27 +59,29 @@ function ArticleMeta({
   tone = "light",
 }: {
   article: HomeIssueArticle;
-  tone?: "light" | "dark";
+  tone?: "light" | "dark" | "accent";
 }) {
   const text = i18n.public.home.articleCard;
-  const muted = tone === "dark" ? "text-dark-muted" : "text-muted";
+  const muted =
+    tone === "dark" ? "text-dark-muted" : tone === "accent" ? "text-[#f4ebdd]/80" : "text-muted";
+  const separator = tone === "accent" ? "bg-foreground" : "bg-accent";
+  const items = [
+    article.categoryName,
+    article.authorName,
+    text.readingTimeLabel(article.readingTimeMinutes),
+    article.hasAudio ? text.audioLabel : null,
+  ].filter((item): item is string => Boolean(item));
 
   return (
     <div
       className={`flex flex-wrap items-center gap-3.5 font-heading text-[12.5px] font-semibold ${muted}`}
     >
-      {article.categoryName ? <span>{article.categoryName}</span> : null}
-      {article.authorName ? <span>{article.authorName}</span> : null}
-      <span className="flex items-center gap-1.75">
-        <span className="size-1 rounded-[1px] bg-accent" aria-hidden />
-        {text.readingTimeLabel(article.readingTimeMinutes)}
-      </span>
-      {article.hasAudio ? (
-        <span className="flex items-center gap-1.75">
-          <span className="size-1 rounded-[1px] bg-accent" aria-hidden />
-          {text.audioLabel}
+      {items.map((item, index) => (
+        <span key={`${item}-${index}`} className="flex items-center gap-3.5">
+          {index > 0 ? <span className={`size-1 rounded-[1px] ${separator}`} aria-hidden /> : null}
+          {item}
         </span>
-      ) : null}
+      ))}
     </div>
   );
 }
@@ -80,13 +94,42 @@ function getArticleNumber(articleNumbers: Map<string, number>, article: HomeIssu
   return articleNumbers.get(article.id) ?? 1;
 }
 
-function LeadBlock({
-  block,
-  articleNumbers,
-}: {
-  block: NarrativeHomeBlock;
-  articleNumbers: Map<string, number>;
-}) {
+function getOpeningVariantClasses(variant: NarrativeHomeBlock["variant"]) {
+  switch (variant) {
+    case "red":
+      return {
+        section: "bg-accent text-background",
+        eyebrow: "text-[#f4ebdd]/80",
+        metaTone: "accent" as const,
+        titlePrimary: "text-foreground",
+        excerpt: "text-[#f4ebdd]",
+        description: "text-[#f4ebdd]/80",
+        image: "border-[rgba(244,235,221,0.34)] grayscale",
+      };
+    case "default":
+      return {
+        section: "bg-background text-foreground",
+        eyebrow: "text-muted",
+        metaTone: "light" as const,
+        titlePrimary: "text-accent",
+        excerpt: "text-body-text",
+        description: "text-muted",
+        image: "border-foreground grayscale",
+      };
+    case "black":
+      return {
+        section: "bg-foreground text-background",
+        eyebrow: "text-dark-muted",
+        metaTone: "dark" as const,
+        titlePrimary: "text-accent",
+        excerpt: "text-[#e7ddcb]",
+        description: "text-dark-muted",
+        image: "border-dark-border grayscale",
+      };
+  }
+}
+
+function LeadBlock({ block }: { block: NarrativeHomeBlock }) {
   const article = block.featuredArticle ?? block.articles[0];
 
   if (!article) {
@@ -94,46 +137,50 @@ function LeadBlock({
   }
 
   const tagLine = formatTags(article);
+  const variantClasses = getOpeningVariantClasses(block.variant);
 
   return (
-    <section id="dossier" className="scroll-mt-20 bg-foreground text-background">
+    <section id="dossier" className={`scroll-mt-20 ${variantClasses.section}`}>
       <div className="px-4 py-13 sm:px-6 lg:px-12 lg:pb-15">
-        <div className="mb-7 flex flex-wrap items-center gap-3.5 border-b border-dark-border pb-5.5">
-          <span className="inline-flex size-10.5 items-center justify-center rounded-[8px] bg-accent font-heading text-[17px] font-black text-background">
-            {formatArticleNumber(getArticleNumber(articleNumbers, article))}
-          </span>
-          {block.title ? (
-            <span className="font-heading text-[13px] font-extrabold tracking-[0.14em] text-accent uppercase">
-              {block.title}
-            </span>
-          ) : null}
-          <ArticleMeta article={article} tone="dark" />
-        </div>
-
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:gap-12">
           <div>
             {tagLine ? (
-              <p className="mb-5 font-heading text-[12px] font-extrabold tracking-[0.16em] text-accent uppercase">
+              <p
+                className={`mb-6 font-heading text-[11px] font-bold tracking-[0.14em] uppercase ${variantClasses.eyebrow}`}
+              >
                 {tagLine}
               </p>
             ) : null}
             <h2 className="max-w-[13ch] font-heading text-[clamp(42px,6.6vw,104px)] leading-[0.88] font-black tracking-[-0.052em] text-balance">
-              <StyledTitle title={article.title} titleStyled={article.titleStyled} />
+              <StyledTitle
+                title={article.title}
+                titleStyled={article.titleStyled}
+                primaryClassName={variantClasses.titlePrimary}
+              />
             </h2>
             {article.excerpt ? (
-              <p className="mt-7 max-w-[58ch] font-editorial text-[clamp(19px,1.7vw,25px)] leading-[1.34] text-[#e7ddcb] italic">
+              <p
+                className={`mt-7 max-w-[58ch] font-editorial text-[clamp(19px,1.7vw,25px)] leading-[1.34] italic ${variantClasses.excerpt}`}
+              >
                 {article.excerpt}
               </p>
             ) : null}
             {block.description ? (
-              <p className="mt-5 max-w-[54ch] font-editorial text-[17px] leading-normal text-dark-muted">
+              <p
+                className={`mt-5 max-w-[54ch] font-editorial text-[17px] leading-normal ${variantClasses.description}`}
+              >
                 {block.description}
               </p>
             ) : null}
+            <div className="mt-8">
+              <ArticleMeta article={article} tone={variantClasses.metaTone} />
+            </div>
           </div>
 
           {article.imageUrl ? (
-            <div className="relative min-h-95 overflow-hidden border border-dark-border grayscale lg:min-h-130">
+            <div
+              className={`relative min-h-95 overflow-hidden border lg:min-h-130 ${variantClasses.image}`}
+            >
               <Image
                 src={article.imageUrl}
                 alt=""
@@ -155,55 +202,97 @@ function DossierArticleCard({
   eyebrow,
   number,
   variant = "standard",
+  className = "",
 }: DossierArticleCardProps) {
   const hasImage = Boolean(article.imageUrl);
   const isCompact = variant === "compact";
   const isClosing = variant === "closing";
+  const isClusterFeatured = variant === "clusterFeatured";
+  const isConstellationSecondary = variant === "constellationSecondary";
+  const isConstellationWide = variant === "constellationWide";
+  const summary = isClusterFeatured ? (article.contentPreview ?? article.excerpt) : article.excerpt;
+  const showImage = Boolean(article.imageUrl) && !isCompact;
+  const image = showImage ? (
+    <div
+      className={`relative overflow-hidden border border-foreground grayscale ${
+        isClusterFeatured
+          ? "mt-5 h-44 md:h-52 lg:h-[min(32vh,260px)]"
+          : isConstellationSecondary || isConstellationWide
+            ? `mt-5 h-30 md:h-34 ${isConstellationWide ? "lg:mt-0 lg:h-full lg:min-h-full" : ""}`
+            : "mt-5 h-45 md:h-52"
+      }`}
+    >
+      <Image
+        src={article.imageUrl!}
+        alt=""
+        fill
+        sizes="(min-width: 1024px) 33vw, 100vw"
+        className="object-cover transition-transform duration-(--motion-slow) group-hover:scale-[1.025]"
+      />
+    </div>
+  ) : null;
 
   return (
     <article
-      className={`group flex min-h-full flex-col border-foreground bg-background transition-[background,box-shadow] duration-(--motion-fast) hover:bg-surface-hover hover:shadow-(--interactive-rail-shadow) ${
+      className={`group flex h-full min-h-full overflow-hidden border-foreground bg-background transition-[background,box-shadow] duration-(--motion-fast) hover:bg-surface-hover hover:shadow-(--interactive-rail-shadow) ${
         isClosing
           ? "border px-6 py-6 md:px-8 md:py-7"
           : "border-r border-b px-6 py-6 md:px-7 md:py-7"
-      }`}
+      } ${isConstellationWide ? "flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.42fr)] lg:items-stretch lg:gap-6" : "flex-col"} ${className}`}
     >
-      <div className="mb-5 flex items-start justify-between gap-4">
-        <span className="font-heading text-[48px] leading-[0.78] font-black tracking-[-0.04em] text-accent">
-          {formatArticleNumber(number)}
-        </span>
-        <span className="mt-1.5 text-right font-heading text-[11px] font-bold tracking-[0.12em] text-muted uppercase">
-          {eyebrow}
-        </span>
-      </div>
-
-      {article.imageUrl && !isCompact ? (
-        <div className="relative mb-5 h-45 overflow-hidden border border-foreground grayscale md:h-52">
-          <Image
-            src={article.imageUrl}
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 33vw, 100vw"
-            className="object-cover transition-transform duration-(--motion-slow) group-hover:scale-[1.025]"
-          />
-        </div>
-      ) : null}
-
-      <h3
-        className={`font-heading leading-[1.05] font-black tracking-[-0.032em] text-foreground ${
-          hasImage && !isCompact ? "text-[25px] md:text-[30px]" : "text-[29px] md:text-[36px]"
-        }`}
+      <div
+        className={
+          isClusterFeatured
+            ? "flex min-h-full min-w-0 flex-col"
+            : isConstellationWide
+              ? "flex min-w-0 flex-col"
+              : undefined
+        }
       >
-        <StyledTitle title={article.title} titleStyled={article.titleStyled} />
-      </h3>
-      {article.excerpt ? (
-        <p className="mt-4 font-editorial text-[16px] leading-normal text-body-text md:text-[17px]">
-          {article.excerpt}
-        </p>
-      ) : null}
-      <div className="mt-auto pt-6">
-        <ArticleMeta article={article} />
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <span
+            className={`font-heading leading-[0.78] font-black tracking-[-0.04em] text-accent ${isClusterFeatured ? "text-[44px] md:text-[56px]" : "text-[48px]"}`}
+          >
+            {formatArticleNumber(number)}
+          </span>
+          <span className="mt-1.5 text-right font-heading text-[11px] font-bold tracking-[0.12em] text-muted uppercase">
+            {eyebrow}
+          </span>
+        </div>
+
+        <h3
+          className={`font-heading leading-[1.05] font-black tracking-[-0.032em] text-foreground ${
+            isClusterFeatured
+              ? "text-[27px] md:text-[32px]"
+              : isConstellationSecondary || isConstellationWide
+                ? "text-[24px] md:text-[28px]"
+                : hasImage && !isCompact
+                  ? "text-[25px] md:text-[30px]"
+                  : "text-[29px] md:text-[36px]"
+          }`}
+        >
+          <StyledTitle title={article.title} titleStyled={article.titleStyled} />
+        </h3>
+        {isClusterFeatured ? image : null}
+        {summary ? (
+          <p
+            className={`mt-4 font-editorial leading-normal text-body-text ${
+              isClusterFeatured
+                ? "line-clamp-[7] text-[17px] md:line-clamp-[9] md:text-[18px] lg:line-clamp-[11]"
+                : isConstellationSecondary || isConstellationWide
+                  ? "line-clamp-4 text-[15.5px] md:text-[16.5px]"
+                  : "text-[16px] md:text-[17px]"
+            }`}
+          >
+            {summary}
+          </p>
+        ) : null}
+        <div className="mt-auto pt-6">
+          <ArticleMeta article={article} />
+        </div>
       </div>
+
+      {isClusterFeatured ? null : image}
     </article>
   );
 }
@@ -219,40 +308,46 @@ function CoreClusterBlock({
   const secondary = featured
     ? block.articles.filter((article) => article.id !== featured.id)
     : block.articles;
+  const shouldSpanSecondary = (index: number) =>
+    secondary.length === 1 ||
+    (secondary.length > 1 && secondary.length % 2 === 1 && index === secondary.length - 1);
 
   return (
-    <section className="scroll-mt-20 px-4 py-8 sm:px-6 lg:px-12 lg:py-10">
+    <section className="scroll-mt-20 px-4 py-9 sm:px-6 lg:px-12 lg:py-12">
       {block.title || block.description ? (
-        <div className="mb-0 flex flex-wrap items-end justify-between gap-4 border-t border-foreground py-5">
+        <div className="pb-6">
           {block.title ? (
-            <p className="font-heading text-[12px] font-extrabold tracking-[0.14em] text-accent uppercase">
+            <h2 className="font-heading text-[clamp(34px,4vw,64px)] leading-[0.9] font-black tracking-[-0.045em] text-foreground uppercase">
               {block.title}
-            </p>
+            </h2>
           ) : null}
           {block.description ? (
-            <p className="max-w-[44ch] font-editorial text-[16px] leading-normal text-body-text">
+            <p className="mt-4 w-full font-editorial text-[clamp(17px,1.4vw,21px)] leading-normal text-body-text">
               {block.description}
             </p>
           ) : null}
         </div>
       ) : null}
-      <div className="grid border-l border-foreground lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]">
+      <div className="grid items-stretch border-l border-t border-foreground md:grid-cols-[minmax(260px,0.42fr)_minmax(0,0.58fr)] lg:grid-cols-[minmax(300px,0.36fr)_minmax(0,0.64fr)]">
         {featured ? (
-          <DossierArticleCard
-            article={featured}
-            eyebrow={blockEyebrow(block, featured)}
-            number={getArticleNumber(articleNumbers, featured)}
-            variant="featured"
-          />
+          <div className="min-h-full">
+            <DossierArticleCard
+              article={featured}
+              eyebrow={articleEyebrow(featured)}
+              number={getArticleNumber(articleNumbers, featured)}
+              variant="clusterFeatured"
+            />
+          </div>
         ) : null}
-        <div className="grid md:grid-cols-2">
-          {secondary.map((article) => (
+        <div className="grid min-h-full md:grid-cols-1 lg:grid-cols-2">
+          {secondary.map((article, index) => (
             <DossierArticleCard
               key={article.id}
               article={article}
-              eyebrow={blockEyebrow(block, article)}
+              eyebrow={articleEyebrow(article)}
               number={getArticleNumber(articleNumbers, article)}
-              variant="compact"
+              variant={shouldSpanSecondary(index) ? "constellationWide" : "constellationSecondary"}
+              className={shouldSpanSecondary(index) ? "lg:col-span-2" : undefined}
             />
           ))}
         </div>
@@ -474,7 +569,7 @@ function UnpaginatedArticleRow({
 function renderBlock(block: NarrativeHomeBlock, articleNumbers: Map<string, number>) {
   switch (block.type) {
     case "opening":
-      return <LeadBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
+      return <LeadBlock key={block.id} block={block} />;
     case "constellation":
       return <CoreClusterBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
     case "rupture":

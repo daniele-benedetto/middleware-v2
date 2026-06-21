@@ -14,6 +14,7 @@ export const publicIssueArticleSummaryDtoSchema = z.object({
   title: z.string(),
   titleStyled: issueTitleStyledSchema.nullable(),
   excerpt: z.string().nullable(),
+  contentPreview: z.string().nullable(),
   imageUrl: z.string().nullable(),
   hasAudio: z.boolean(),
   isFeatured: z.boolean(),

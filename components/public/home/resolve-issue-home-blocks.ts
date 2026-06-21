@@ -6,12 +6,6 @@ import type {
 } from "@/components/public/home/home-view-model";
 import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
 
-function sortByPublishDate(articles: HomeIssueArticle[]) {
-  return [...articles].sort((a, b) => {
-    return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
-  });
-}
-
 function compactText(value: string | null | undefined) {
   const text = value?.trim();
   return text || null;
@@ -40,6 +34,7 @@ function toNarrativeBlock({
   return {
     id: block.id,
     type: block.type,
+    variant: block.variant,
     title: compactText(block.title),
     description: compactText(block.description),
     articles,
@@ -73,49 +68,11 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): NarrativeHome
   return blocks;
 }
 
-function resolveFallbackBlocks(issue: PublicCurrentIssueDetail): NarrativeHomeBlock[] {
-  const [openingArticle, ...constellationArticles] = sortByPublishDate(issue.articles);
-  const blocks: NarrativeHomeBlock[] = [];
-
-  if (openingArticle) {
-    blocks.push({
-      id: "fallback-opening",
-      type: "opening",
-      title: null,
-      description: null,
-      articles: [openingArticle],
-      featuredArticle: openingArticle,
-    });
-  }
-
-  if (constellationArticles.length > 0) {
-    const featuredArticle =
-      constellationArticles.find((article) => article.isFeatured) ??
-      constellationArticles[0] ??
-      null;
-
-    blocks.push({
-      id: "fallback-constellation",
-      type: "constellation",
-      title: null,
-      description: null,
-      articles: constellationArticles,
-      featuredArticle,
-    });
-  }
-
-  return blocks;
-}
-
 export function resolveIssueHomeBlocks(
   issue: PublicCurrentIssueDetail | null,
 ): NarrativeHomeBlock[] {
   if (!issue || issue.articles.length === 0) {
     return [];
-  }
-
-  if (!issue.homeBlocks?.length) {
-    return resolveFallbackBlocks(issue);
   }
 
   return resolveConfiguredBlocks(issue);

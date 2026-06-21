@@ -4,6 +4,7 @@ type StyledTitleProps = {
   title: string;
   titleStyled?: IssueTitleStyled | null;
   className?: string;
+  primaryClassName?: string;
 };
 
 const parseTitleMarkers = (title: string): IssueTitleStyled | null => {
@@ -30,7 +31,12 @@ const parseTitleMarkers = (title: string): IssueTitleStyled | null => {
   return segments.some((segment) => segment.tone === "primary") ? segments : null;
 };
 
-export function StyledTitle({ title, titleStyled, className }: StyledTitleProps) {
+export function StyledTitle({
+  title,
+  titleStyled,
+  className,
+  primaryClassName = "text-accent",
+}: StyledTitleProps) {
   const segments = titleStyled?.length
     ? titleStyled
     : (parseTitleMarkers(title) ?? [{ text: title, tone: "default" as const }]);
@@ -40,7 +46,7 @@ export function StyledTitle({ title, titleStyled, className }: StyledTitleProps)
       {segments.map((segment, index) => (
         <span
           key={`${segment.text}-${index}`}
-          className={segment.tone === "primary" ? "text-accent" : undefined}
+          className={segment.tone === "primary" ? primaryClassName : undefined}
         >
           {segment.text}
         </span>

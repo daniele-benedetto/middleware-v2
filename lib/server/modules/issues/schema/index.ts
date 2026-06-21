@@ -6,11 +6,13 @@ export const issueTitleStyledSegmentSchema = z.object({
 });
 
 export const issueTitleStyledSchema = z.array(issueTitleStyledSegmentSchema).min(1);
+export const issueHomeBlockVariantSchema = z.enum(["black", "red", "default"]);
 
 export const issueHomeBlockSchema = z
   .object({
     id: z.string().trim().min(1),
     type: z.enum(["opening", "constellation", "rupture", "sequence", "closing"]),
+    variant: issueHomeBlockVariantSchema,
     title: z.string().trim().nullable().optional(),
     description: z.string().trim().nullable().optional(),
     articleIds: z.array(z.string().uuid()),

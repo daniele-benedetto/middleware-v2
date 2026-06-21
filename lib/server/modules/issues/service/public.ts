@@ -4,6 +4,7 @@ import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicIssuesRepository } from "@/lib/server/modules/issues/repository/public";
+import { issueHomeBlocksSchema } from "@/lib/server/modules/issues/schema";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
@@ -41,11 +42,42 @@ type PublicIssueArticleRecord = {
 };
 
 const WORDS_PER_MINUTE = 220;
+const CONTENT_PREVIEW_MAX_LENGTH = 6000;
 
 const calculateReadingTimeMinutes = (contentRich: unknown) => {
   const text = extractPlainText(contentRich);
   const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
   return Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
+};
+
+const getContentPreview = (contentRich: unknown) => {
+  const text = extractPlainText(contentRich)?.replace(/\s+/g, " ").trim();
+
+  if (!text) {
+    return null;
+  }
+
+  return text.length > CONTENT_PREVIEW_MAX_LENGTH
+    ? text.slice(0, CONTENT_PREVIEW_MAX_LENGTH).trim()
+    : text;
+};
+
+const normalizeIssueHomeBlocks = (value: unknown): IssueHomeBlocks | null => {
+  if (!value) {
+    return null;
+  }
+
+  const blocks = Array.isArray(value)
+    ? value.map((block) => {
+        if (!block || typeof block !== "object" || "variant" in block) {
+          return block;
+        }
+
+        return { ...block, variant: "black" };
+      })
+    : value;
+
+  return issueHomeBlocksSchema.parse(blocks);
 };
 
 type PublicIssueDetailRecord = PublicIssueRecord & {
@@ -63,7 +95,7 @@ const toPublicIssueDto = (issue: PublicIssueRecord): PublicIssueDto => {
     titleStyled: (issue.titleStyled as IssueTitleStyled | null) ?? null,
     slug: issue.slug,
     description: issue.description ?? null,
-    homeBlocks: (issue.homeBlocks as IssueHomeBlocks | null) ?? null,
+    homeBlocks: normalizeIssueHomeBlocks(issue.homeBlocks),
     publishedAt: issue.publishedAt.toISOString(),
     articlesCount: issue._count?.articles ?? 0,
   };
@@ -82,6 +114,7 @@ const toPublicIssueArticleSummaryDto = (
     title: article.title,
     titleStyled: (article.titleStyled as IssueTitleStyled | null) ?? null,
     excerpt: article.excerpt,
+    contentPreview: getContentPreview(article.contentRich),
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
     hasAudio: Boolean(article.audioUrl),
     isFeatured: article.isFeatured,

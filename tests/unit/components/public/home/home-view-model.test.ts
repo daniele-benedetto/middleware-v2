@@ -14,6 +14,7 @@ const article = (overrides: Partial<HomeIssueArticle>): HomeIssueArticle => ({
   title: "Article",
   titleStyled: null,
   excerpt: null,
+  contentPreview: null,
   imageUrl: null,
   hasAudio: false,
   isFeatured: false,
@@ -72,6 +73,7 @@ describe("home view model", () => {
             {
               id: "apertura",
               type: "opening",
+              variant: "red",
               title: "Apertura editoriale",
               description: null,
               articleIds: [lead.id],
@@ -80,6 +82,7 @@ describe("home view model", () => {
             {
               id: "campo",
               type: "constellation",
+              variant: "default",
               title: "Campo di tensione",
               description: "Testo deciso dentro l'uscita.",
               articleIds: [coreA.id, coreB.id],
@@ -88,6 +91,7 @@ describe("home view model", () => {
             {
               id: "sequenza",
               type: "sequence",
+              variant: "default",
               title: "Sequenza narrativa",
               description: null,
               articleIds: [sequenceA.id, sequenceB.id],
@@ -100,6 +104,7 @@ describe("home view model", () => {
       {
         id: "apertura",
         type: "opening",
+        variant: "red",
         title: null,
         articles: [{ title: "Lead" }],
         featuredArticle: { title: "Lead" },
@@ -122,7 +127,7 @@ describe("home view model", () => {
     ]);
   });
 
-  it("falls back to opening plus constellation when homeBlocks are not configured", () => {
+  it("does not compose narrative blocks when homeBlocks are not configured", () => {
     const articles = Array.from({ length: 4 }, (_, index) =>
       article({
         id: crypto.randomUUID(),
@@ -132,14 +137,7 @@ describe("home view model", () => {
       }),
     );
 
-    expect(composeNarrativeHomeBlocks(issue([...articles].reverse()))).toMatchObject([
-      { type: "opening", articles: [{ title: "Article 1" }] },
-      {
-        type: "constellation",
-        articles: [{ title: "Article 2" }, { title: "Article 3" }, { title: "Article 4" }],
-        featuredArticle: { title: "Article 3" },
-      },
-    ]);
+    expect(composeNarrativeHomeBlocks(issue([...articles].reverse()))).toEqual([]);
   });
 
   it("omits configured blocks with no assigned articles", () => {
@@ -157,6 +155,7 @@ describe("home view model", () => {
             {
               id: "apertura",
               type: "opening",
+              variant: "black",
               title: null,
               description: null,
               articleIds: [lead.id],
@@ -165,6 +164,7 @@ describe("home view model", () => {
             {
               id: "vuoto",
               type: "constellation",
+              variant: "default",
               title: "Vuoto",
               description: null,
               articleIds: [],
