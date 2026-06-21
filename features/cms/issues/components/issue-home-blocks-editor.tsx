@@ -2,10 +2,12 @@
 
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   useDraggable,
   useDroppable,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -15,6 +17,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ArrowDown, ArrowUp, Copy, GripVertical, Plus, Trash2 } from "lucide-react";
+import { useState, type HTMLAttributes, type ReactNode } from "react";
 
 import {
   CmsActionButton,
@@ -22,8 +25,8 @@ import {
   CmsFormField,
   CmsMetaText,
   CmsSelect,
-  CmsTextarea,
   CmsTextInput,
+  CmsTextarea,
 } from "@/components/cms/primitives";
 import { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sensors";
 import {
@@ -36,7 +39,6 @@ import {
 import { cn } from "@/lib/utils";
 
 import type { IssueHomeBlock, IssueHomeBlocks } from "@/lib/server/modules/issues/schema";
-import type { HTMLAttributes, ReactNode } from "react";
 
 type IssueHomeBlockArticle = {
   id: string;
@@ -134,6 +136,7 @@ export function IssueHomeBlocksEditor({
   onChange,
 }: IssueHomeBlocksEditorProps) {
   const sensors = useSortableSensors();
+  const [activeDrag, setActiveDrag] = useState<DraggedArticleData | DraggedBlockData | null>(null);
   const sortedArticles = [...articles].sort((a, b) => a.position - b.position);
   const articleById = new Map(sortedArticles.map((article) => [article.id, article]));
   const typeOptions = blockTypeOptions.map((option) => ({
@@ -150,6 +153,10 @@ export function IssueHomeBlocksEditor({
   const unassignedArticles = sortedArticles.filter(
     (article) => !manualUsedArticleIds.has(article.id),
   );
+  const activeArticle =
+    activeDrag?.type === "poolArticle" || activeDrag?.type === "blockArticle"
+      ? articleById.get(activeDrag.articleId)
+      : null;
 
   const updateBlock = (index: number, nextBlock: IssueHomeBlock) => {
     onChange(
@@ -189,7 +196,16 @@ export function IssueHomeBlocksEditor({
     onChange(reorderItems(value, index, nextIndex));
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDrag(event.active.data.current as DraggedArticleData | DraggedBlockData | null);
+  };
+
+  const handleDragCancel = () => {
+    setActiveDrag(null);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDrag(null);
     const { active, over } = event;
 
     if (!over || active.id === over.id) {
@@ -337,7 +353,13 @@ export function IssueHomeBlocksEditor({
         </div>
       ) : null}
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragCancel={handleDragCancel}
+        onDragEnd={handleDragEnd}
+      >
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
           <SortableContext
             items={value.map((block) => block.id)}
@@ -424,7 +446,7 @@ export function IssueHomeBlocksEditor({
                           </div>
                         </div>
 
-                        <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                        <div className="space-y-4">
                           <div className="space-y-4">
                             <CmsFormField label={text.type} htmlFor={`${block.id}-type`}>
                               <CmsSelect
@@ -556,6 +578,9 @@ export function IssueHomeBlocksEditor({
 
           <ArticlePoolPanel articles={unassignedArticles} disabled={disabled} text={text} />
         </div>
+        <DragOverlay dropAnimation={null}>
+          {activeArticle ? <ArticleDragOverlay article={activeArticle} /> : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );
@@ -573,6 +598,56 @@ function ArticleCategoryBadge({ article }: { article: IssueHomeBlockArticle }) {
       {categoryLabel}
     </span>
   );
+}
+
+function ArticleDragCard({
+  article,
+  index,
+  dragHandle,
+  actions,
+  isDragging,
+  overlay,
+}: {
+  article: IssueHomeBlockArticle;
+  index?: number;
+  dragHandle?: ReactNode;
+  actions?: ReactNode;
+  isDragging?: boolean;
+  overlay?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-between gap-3 border border-border bg-white px-3 py-2",
+        overlay && "w-80 border-foreground shadow-(--interactive-rail-shadow)",
+        isDragging && !overlay && "opacity-40",
+      )}
+    >
+      <span className="min-w-0 flex-1">
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="block min-w-0 font-ui text-[12px] font-bold text-foreground">
+            {index === undefined ? String(article.position).padStart(2, "0") : index + 1}.{" "}
+            {article.title}
+          </span>
+          <ArticleCategoryBadge article={article} />
+        </span>
+        <span className="mt-1 block font-ui text-[10px] font-bold tracking-[0.08em] text-muted-foreground uppercase">
+          {article.status}
+          {article.isFeatured ? " / featured" : ""}
+        </span>
+      </span>
+      {(actions ?? dragHandle) ? (
+        <span className="flex shrink-0 gap-1">
+          {dragHandle}
+          {actions}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function ArticleDragOverlay({ article }: { article: IssueHomeBlockArticle }) {
+  return <ArticleDragCard article={article} overlay />;
 }
 
 function SortableBlockSection({
@@ -597,7 +672,7 @@ function SortableBlockSection({
       style={{ transform: CSS.Transform.toString(sectionTransform), transition }}
       className={cn(
         "border border-foreground bg-white p-4",
-        isDragging && "relative z-10 shadow-[var(--interactive-rail-shadow)]",
+        isDragging && "relative z-10 shadow-(--interactive-rail-shadow)",
       )}
     >
       {children({ dragHandleProps: disabled ? {} : { ...attributes, ...listeners } })}
@@ -733,49 +808,30 @@ function DraggableAvailableArticle({
   article: IssueHomeBlockArticle;
   disabled?: boolean;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `pool:${article.id}`,
     data: { type: "poolArticle", articleId: article.id } satisfies DraggedArticleData,
     disabled,
   });
-  const style = transform
-    ? {
-        transform: CSS.Translate.toString(transform),
-      }
-    : undefined;
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "flex items-start gap-3 rounded-[6px] border border-border bg-white p-3 transition-colors hover:border-foreground",
-        disabled && "cursor-not-allowed opacity-60",
-        isDragging && "relative z-10 bg-surface-hover shadow-[var(--interactive-rail-shadow)]",
-      )}
-    >
-      <span className="min-w-0 flex-1">
-        <span className="flex flex-wrap items-center gap-2">
-          <span className="block min-w-0 font-ui text-[12px] font-bold text-foreground">
-            {String(article.position).padStart(2, "0")} / {article.title}
-          </span>
-          <ArticleCategoryBadge article={article} />
-        </span>
-        <span className="mt-1 block font-ui text-[10px] font-bold tracking-[0.08em] text-muted-foreground uppercase">
-          {article.status}
-          {article.isFeatured ? " / featured" : ""}
-        </span>
-      </span>
-      <button
-        type="button"
-        disabled={disabled}
-        aria-label={article.title}
-        className="inline-flex shrink-0 cursor-grab items-center justify-center rounded-[4px] p-1 text-muted-foreground transition-colors hover:bg-card-hover hover:text-foreground disabled:cursor-not-allowed active:cursor-grabbing"
-        {...(!disabled ? attributes : {})}
-        {...(!disabled ? listeners : {})}
-      >
-        <GripVertical className="size-3.5" aria-hidden />
-      </button>
+    <div ref={setNodeRef} className={cn(disabled && "cursor-not-allowed opacity-60")}>
+      <ArticleDragCard
+        article={article}
+        isDragging={isDragging}
+        dragHandle={
+          <button
+            type="button"
+            disabled={disabled}
+            aria-label={article.title}
+            className="inline-flex shrink-0 cursor-grab items-center justify-center rounded-[4px] p-1 text-muted-foreground transition-colors hover:bg-card-hover hover:text-foreground disabled:cursor-not-allowed active:cursor-grabbing"
+            {...(!disabled ? attributes : {})}
+            {...(!disabled ? listeners : {})}
+          >
+            <GripVertical className="size-3.5" aria-hidden />
+          </button>
+        }
+      />
     </div>
   );
 }
@@ -818,49 +874,50 @@ function SortableSelectedArticle({
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(articleTransform), transition }}
-      className={cn(
-        "flex items-center justify-between gap-3 border border-border px-3 py-2",
-        !disabled && "touch-manipulation",
-        isDragging && "relative z-10 bg-surface-hover shadow-[var(--interactive-rail-shadow)]",
-      )}
+      className={cn(!disabled && "touch-manipulation")}
     >
-      <span className="min-w-0 font-ui text-[12px] font-bold text-foreground">
-        {index + 1}. {article.title}
-      </span>
-      <ArticleCategoryBadge article={article} />
-      <span className="flex shrink-0 gap-1">
-        <CmsActionButton
-          type="button"
-          size="xs"
-          variant="ghost"
-          disabled={disabled}
-          aria-label={moveUpLabel}
-          {...(!disabled ? attributes : {})}
-          {...(!disabled ? listeners : {})}
-        >
-          <GripVertical aria-hidden />
-        </CmsActionButton>
-        <CmsActionButton
-          type="button"
-          size="xs"
-          variant="ghost"
-          disabled={disabled || !canMoveUp}
-          aria-label={moveUpLabel}
-          onClick={onMoveUp}
-        >
-          <ArrowUp aria-hidden />
-        </CmsActionButton>
-        <CmsActionButton
-          type="button"
-          size="xs"
-          variant="ghost"
-          disabled={disabled || !canMoveDown}
-          aria-label={moveDownLabel}
-          onClick={onMoveDown}
-        >
-          <ArrowDown aria-hidden />
-        </CmsActionButton>
-      </span>
+      <ArticleDragCard
+        article={article}
+        index={index}
+        isDragging={isDragging}
+        dragHandle={
+          <CmsActionButton
+            type="button"
+            size="xs"
+            variant="ghost"
+            disabled={disabled}
+            aria-label={moveUpLabel}
+            {...(!disabled ? attributes : {})}
+            {...(!disabled ? listeners : {})}
+          >
+            <GripVertical aria-hidden />
+          </CmsActionButton>
+        }
+        actions={
+          <>
+            <CmsActionButton
+              type="button"
+              size="xs"
+              variant="ghost"
+              disabled={disabled || !canMoveUp}
+              aria-label={moveUpLabel}
+              onClick={onMoveUp}
+            >
+              <ArrowUp aria-hidden />
+            </CmsActionButton>
+            <CmsActionButton
+              type="button"
+              size="xs"
+              variant="ghost"
+              disabled={disabled || !canMoveDown}
+              aria-label={moveDownLabel}
+              onClick={onMoveDown}
+            >
+              <ArrowDown aria-hidden />
+            </CmsActionButton>
+          </>
+        }
+      />
     </div>
   );
 }
