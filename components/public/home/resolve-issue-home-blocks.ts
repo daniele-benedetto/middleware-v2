@@ -78,39 +78,6 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): NarrativeHome
   return blocks;
 }
 
-function resolveFallbackBlocks(issue: PublicCurrentIssueDetail): NarrativeHomeBlock[] {
-  const articles = sortByPublishDate(issue.articles);
-  const [lead, ...rest] = articles;
-
-  if (!lead) {
-    return [];
-  }
-
-  const blocks: NarrativeHomeBlock[] = [
-    {
-      id: "opening",
-      type: "opening",
-      title: null,
-      description: null,
-      articles: [lead],
-      featuredArticle: lead,
-    },
-  ];
-
-  if (rest.length > 0) {
-    blocks.push({
-      id: "constellation",
-      type: "constellation",
-      title: null,
-      description: null,
-      articles: rest,
-      featuredArticle: rest.find((article) => article.isFeatured) ?? rest[0],
-    });
-  }
-
-  return blocks;
-}
-
 export function resolveIssueHomeBlocks(
   issue: PublicCurrentIssueDetail | null,
 ): NarrativeHomeBlock[] {
@@ -118,6 +85,5 @@ export function resolveIssueHomeBlocks(
     return [];
   }
 
-  const configuredBlocks = resolveConfiguredBlocks(issue);
-  return configuredBlocks.length > 0 ? configuredBlocks : resolveFallbackBlocks(issue);
+  return resolveConfiguredBlocks(issue);
 }

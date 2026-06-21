@@ -32,6 +32,16 @@ function blockEyebrow(block: NarrativeHomeBlock, article: HomeIssueArticle) {
   return block.title || formatTags(article) || article.categoryName || "";
 }
 
+function sortUnpaginatedArticles(articles: HomeIssueArticle[]) {
+  return [...articles].sort((a, b) => {
+    if (a.isFeatured !== b.isFeatured) {
+      return a.isFeatured ? -1 : 1;
+    }
+
+    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  });
+}
+
 function ArticleMeta({
   article,
   tone = "light",
@@ -422,6 +432,29 @@ function getArticleNumbers(blocks: NarrativeHomeBlock[]) {
   return numbers;
 }
 
+function UnpaginatedArticleRow({ articles }: { articles: HomeIssueArticle[] }) {
+  const orderedArticles = sortUnpaginatedArticles(articles);
+
+  if (orderedArticles.length === 0) {
+    return null;
+  }
+
+  return (
+    <section id="dossier" className="scroll-mt-20 px-4 py-8 sm:px-6 lg:px-12 lg:py-10">
+      <div className="grid border-l border-t border-foreground md:grid-cols-2 xl:grid-cols-3">
+        {orderedArticles.map((article, index) => (
+          <DossierArticleCard
+            key={article.id}
+            article={article}
+            eyebrow={formatTags(article) || article.categoryName || ""}
+            number={index + 1}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function renderBlock(block: NarrativeHomeBlock, articleNumbers: Map<string, number>) {
   switch (block.type) {
     case "opening":
@@ -438,9 +471,10 @@ function renderBlock(block: NarrativeHomeBlock, articleNumbers: Map<string, numb
 }
 export function DossierHome({ issue }: DossierHomeProps) {
   const blocks = composeNarrativeHomeBlocks(issue);
+  const hasHomeBlocks = Boolean(issue.homeBlocks?.length);
 
   if (blocks.length === 0) {
-    return null;
+    return hasHomeBlocks ? null : <UnpaginatedArticleRow articles={issue.articles} />;
   }
 
   const articleNumbers = getArticleNumbers(blocks);
