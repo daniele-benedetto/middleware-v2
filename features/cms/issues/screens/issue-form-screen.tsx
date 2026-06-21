@@ -20,7 +20,6 @@ import {
 } from "@/components/cms/primitives";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { IssueArticlesPanel } from "@/features/cms/issues/components/issue-articles-panel";
 import { IssueHomeBlocksEditor } from "@/features/cms/issues/components/issue-home-blocks-editor";
 import {
   useIssueById,
@@ -35,7 +34,7 @@ import {
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
-import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
+import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { createIssueInputSchema, updateIssueInputSchema } from "@/lib/server/modules/issues/schema";
 import { normalizeSlug } from "@/lib/server/validation/slug";
@@ -137,7 +136,6 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
   const createMutation = useIssueCreate();
   const updateMutation = useIssueUpdate();
   const deleteMutation = trpc.issues.delete.useMutation();
-  const articleReorderMutation = trpc.articles.reorder.useMutation();
 
   if (mode === "edit" && !issueId) {
     return (
@@ -163,7 +161,6 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
       issueId={issueId}
       issue={issueQuery.data}
       isMutating={createMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
-      isArticleOrderPending={articleReorderMutation.isPending}
       onCancel={cancel}
       onCreate={async (payload) => {
         await createMutation.mutateAsync(payload);
@@ -174,20 +171,6 @@ export function CmsIssueFormScreen({ mode, issueId, initialData }: IssueFormScre
         await updateMutation.mutateAsync({ id, data });
         await invalidateAfterCmsMutation(trpcUtils, "issues.update", { id });
         success(issueFormText.updated);
-      }}
-      onReorderArticles={async ({ issueId: currentIssueId, orderedArticleIds }) => {
-        const reorderedItems = await articleReorderMutation.mutateAsync({
-          issueId: currentIssueId,
-          orderedArticleIds,
-        });
-
-        await Promise.all([
-          invalidateAfterCmsMutation(trpcUtils, "articles.reorder", { ids: orderedArticleIds }),
-          invalidateAfterCmsMutation(trpcUtils, "issues.update", { id: currentIssueId }),
-        ]);
-
-        cmsToast.success(text.lists.articles.reorderUpdated);
-        return reorderedItems.map((item) => item.id);
       }}
       onDelete={async (id) => {
         await deleteMutation.mutateAsync({ id });
@@ -210,15 +193,10 @@ type IssueFormContentProps = {
   issueId?: string;
   issue?: IssueDetail;
   isMutating: boolean;
-  isArticleOrderPending: boolean;
   onCancel: () => void;
   onCreate: (payload: CreateIssueInput) => Promise<void>;
   onUpdate: (payload: IssueUpdatePayload) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
-  onReorderArticles: (payload: {
-    issueId: string;
-    orderedArticleIds: string[];
-  }) => Promise<string[]>;
   onMutationError: (error: unknown) => void;
   onValidationError: (message: string) => void;
 };
@@ -228,12 +206,10 @@ function IssueFormContent({
   issueId,
   issue,
   isMutating,
-  isArticleOrderPending,
   onCancel,
   onCreate,
   onUpdate,
   onDelete,
-  onReorderArticles,
   onMutationError,
   onValidationError,
 }: IssueFormContentProps) {
@@ -260,9 +236,6 @@ function IssueFormContent({
   const [publishedAt, setPublishedAt] = useState<Date | null>(
     issue?.publishedAt ? new Date(issue.publishedAt) : null,
   );
-  const [orderedArticleIds, setOrderedArticleIds] = useState<string[]>(
-    issue?.articles.map((article) => article.id) ?? [],
-  );
 
   const initialAutoSlug = useMemo(() => normalizeSlug(issue?.title ?? ""), [issue?.title]);
   const [manualSlug, setManualSlug] = useState(issue?.slug ?? "");
@@ -278,11 +251,8 @@ function IssueFormContent({
     ? issueFormText.slugManualHint
     : formText.generatedFromTitleHint;
 
-  const articlesById = new Map((issue?.articles ?? []).map((article) => [article.id, article]));
-  const orderedArticles = orderedArticleIds
-    .map((id) => articlesById.get(id))
-    .filter((article): article is NonNullable<typeof article> => Boolean(article));
-  const isBusy = isMutating || isArticleOrderPending;
+  const articles = issue?.articles ?? [];
+  const isBusy = isMutating;
 
   const openSlugEditor = () => {
     setManualSlug(resolvedSlug);
@@ -354,25 +324,6 @@ function IssueFormContent({
       });
     } catch (error) {
       onMutationError(error);
-    }
-  };
-
-  const handleArticleReorder = async (nextOrder: string[]) => {
-    if (!issueId) {
-      return;
-    }
-
-    const previousOrder = orderedArticleIds;
-
-    setOrderedArticleIds(nextOrder);
-
-    try {
-      const syncedOrder = await onReorderArticles({ issueId, orderedArticleIds: nextOrder });
-      setOrderedArticleIds(syncedOrder);
-    } catch (error) {
-      setOrderedArticleIds(previousOrder);
-      const mapped = mapTrpcErrorToCmsUiMessage(error);
-      cmsToast.error(mapped.description, mapped.title);
     }
   };
 
@@ -488,7 +439,7 @@ function IssueFormContent({
           <CmsFormField label={issueFormText.homeBlocksLabel} htmlFor="issue-home-blocks">
             <IssueHomeBlocksEditor
               value={homeBlocks}
-              articles={orderedArticles}
+              articles={articles}
               disabled={isBusy}
               text={issueFormText.homeBlocksEditor}
               onChange={setHomeBlocks}
@@ -519,17 +470,6 @@ function IssueFormContent({
               </CmsFormField>
             </div>
           </section>
-
-          {mode === "edit" ? (
-            <section className="flex min-h-0 flex-1 flex-col">
-              <IssueArticlesPanel
-                articles={orderedArticles}
-                disabled={isBusy}
-                className="min-h-0 flex-1"
-                onReorder={handleArticleReorder}
-              />
-            </section>
-          ) : null}
         </div>
       </div>
     </form>

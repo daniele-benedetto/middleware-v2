@@ -191,7 +191,6 @@ function ArticlesListToolbarFields({
       options={[
         { value: "createdAt", label: optionsText.sortCreatedAt },
         { value: "publishedAt", label: optionsText.sortPublishedAt },
-        { value: "position", label: optionsText.sortPosition },
       ]}
     />
   );

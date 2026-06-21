@@ -18,7 +18,6 @@ import type {
   ArticleTitleStyled,
   CreateArticleInput,
   ListArticlesQuery,
-  ReorderArticlesInput,
   SyncArticleTagsInput,
   UpdateArticleInput,
 } from "@/lib/server/modules/articles/schema";
@@ -44,7 +43,6 @@ type ArticleRecord = {
   status: ArticleStatus;
   publishedAt: Date | null;
   isFeatured: boolean;
-  position: number;
   createdAt: Date;
   updatedAt: Date;
   issue?: { title: string } | null;
@@ -150,7 +148,6 @@ const toArticleDto = (article: ArticleRecord): ArticleDto => {
     status: article.status,
     publishedAt: article.publishedAt?.toISOString() ?? null,
     isFeatured: article.isFeatured,
-    position: article.position,
     createdAt: article.createdAt.toISOString(),
     updatedAt: article.updatedAt.toISOString(),
     issueTitle: article.issue?.title ?? null,
@@ -190,15 +187,6 @@ const isUniqueError = (error: unknown): boolean => {
 const isRelationError = (error: unknown): boolean => {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003";
 };
-
-function containsSameIds(left: string[], right: string[]) {
-  if (left.length !== right.length) {
-    return false;
-  }
-
-  const expected = new Set(left);
-  return right.every((id) => expected.has(id));
-}
 
 export const articlesService = {
   async list(query: ListArticlesQuery, pagination: PaginationParams) {
@@ -448,31 +436,5 @@ export const articlesService = {
 
       throw error;
     }
-  },
-  async reorder(input: ReorderArticlesInput) {
-    const currentIssueArticles = await articlesRepository.listIdsByIssue(input.issueId);
-
-    if (currentIssueArticles.length === 0) {
-      throw new ApiError(404, "NOT_FOUND", "No articles found for reorder");
-    }
-
-    const currentIds = currentIssueArticles.map((article) => article.id);
-
-    if (!containsSameIds(currentIds, input.orderedArticleIds)) {
-      throw new ApiError(
-        400,
-        "VALIDATION_ERROR",
-        "orderedArticleIds must include all and only articles from the target issue",
-        createCmsDomainErrorDetails("ARTICLE_REORDER_IDS_MISMATCH"),
-      );
-    }
-
-    const articles = await articlesRepository.reorder(input);
-
-    if (articles.length === 0) {
-      throw new ApiError(404, "NOT_FOUND", "No articles found for reorder");
-    }
-
-    return toArticlesDto(articles);
   },
 };

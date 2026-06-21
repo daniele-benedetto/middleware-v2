@@ -97,7 +97,6 @@ export const issuesRepository = {
             title: true,
             status: true,
             isFeatured: true,
-            position: true,
             category: {
               select: {
                 name: true,
@@ -105,7 +104,7 @@ export const issuesRepository = {
               },
             },
           },
-          orderBy: { position: "asc" },
+          orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }],
         },
         _count: {
           select: {
@@ -162,7 +161,7 @@ export const issuesRepository = {
       data,
     });
   },
-  async updateWithArticleOrder(id: string, input: UpdateIssueInput, orderedArticleIds?: string[]) {
+  async updateWithArticleOrder(id: string, input: UpdateIssueInput) {
     const data: Prisma.IssueUncheckedUpdateInput = {
       title: input.title,
       titleStyled:
@@ -188,42 +187,9 @@ export const issuesRepository = {
       publishedAt: input.publishedAt,
     };
 
-    return prisma.$transaction(async (tx) => {
-      const issue = await tx.issue.update({
-        where: { id },
-        data,
-      });
-
-      if (orderedArticleIds) {
-        const currentIssueArticles = await tx.article.findMany({
-          where: { issueId: id },
-          select: { id: true },
-          orderBy: { position: "asc" },
-        });
-
-        const currentIds = currentIssueArticles.map((article) => article.id);
-        const expected = new Set(currentIds);
-        const sameLength = currentIds.length === orderedArticleIds.length;
-        const sameElements =
-          sameLength &&
-          orderedArticleIds.every((articleId) => expected.has(articleId)) &&
-          currentIds.every((articleId) => orderedArticleIds.includes(articleId));
-
-        if (!sameElements) {
-          throw new Error(ISSUE_ARTICLE_ORDER_MISMATCH);
-        }
-
-        for (const [index, articleId] of orderedArticleIds.entries()) {
-          await tx.article.update({
-            where: { id: articleId },
-            data: {
-              position: index,
-            },
-          });
-        }
-      }
-
-      return issue;
+    return prisma.issue.update({
+      where: { id },
+      data,
     });
   },
   async delete(id: string) {

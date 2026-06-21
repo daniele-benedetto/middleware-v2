@@ -167,7 +167,6 @@ model Article {
   authorId    String?
   status      ArticleStatus @default(DRAFT)
   isFeatured  Boolean       @default(false)
-  position    Int           @default(0)
   publishedAt DateTime?
 
   title       String
@@ -192,7 +191,7 @@ model Article {
   @@unique([issueId, slug])
   @@unique([slug])
   @@index([slug])
-  @@index([issueId, position])
+  @@index([issueId, publishedAt])
   @@index([categoryId])
   @@index([authorId])
   @@index([status, publishedAt])

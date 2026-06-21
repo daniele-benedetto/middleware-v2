@@ -81,9 +81,8 @@ export const categoriesRepository = {
             title: true,
             status: true,
             isFeatured: true,
-            position: true,
           },
-          orderBy: [{ issueId: "asc" }, { position: "asc" }, { createdAt: "asc" }],
+          orderBy: [{ issueId: "asc" }, { publishedAt: "asc" }, { createdAt: "asc" }],
         },
         _count: {
           select: {

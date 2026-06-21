@@ -33,7 +33,6 @@ type PublicIssueArticleRecord = {
   imageUrl: string | null;
   audioUrl: string | null;
   isFeatured: boolean;
-  position: number;
   contentRich: unknown;
   publishedAt: Date | null;
   category?: { slug: string; name: string } | null;
@@ -86,7 +85,6 @@ const toPublicIssueArticleSummaryDto = (
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
     hasAudio: Boolean(article.audioUrl),
     isFeatured: article.isFeatured,
-    position: article.position,
     readingTimeMinutes: calculateReadingTimeMinutes(article.contentRich),
     publishedAt: article.publishedAt.toISOString(),
     categorySlug: article.category?.slug ?? null,

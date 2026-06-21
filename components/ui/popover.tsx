@@ -1,7 +1,6 @@
 "use client";
 
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
-import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -27,12 +26,12 @@ function PopoverContent({
         side={side}
         align={align}
         sideOffset={sideOffset}
-        className="isolate z-[60]"
+        className="isolate z-60"
       >
         <PopoverPrimitive.Popup
           data-slot="popover-content"
           className={cn(
-            "relative isolate z-[60] rounded-[8px] border border-foreground bg-white text-foreground shadow-none outline-none",
+            "relative isolate z-60 rounded-[8px] border border-foreground bg-white text-foreground shadow-none outline-none",
             "data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0",
             "transition-[opacity,transform] duration-150",
             className,

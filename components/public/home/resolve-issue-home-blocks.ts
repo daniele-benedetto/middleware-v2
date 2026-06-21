@@ -6,12 +6,8 @@ import type {
 } from "@/components/public/home/home-view-model";
 import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
 
-function sortByPosition(articles: HomeIssueArticle[]) {
+function sortByPublishDate(articles: HomeIssueArticle[]) {
   return [...articles].sort((a, b) => {
-    if (a.position !== b.position) {
-      return a.position - b.position;
-    }
-
     return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
   });
 }
@@ -60,7 +56,7 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): NarrativeHome
     const block = normalizeHomeBlock(rawBlock);
     const articles =
       block.source === "remainder"
-        ? sortByPosition(issue.articles.filter((article) => !manualArticleIds.has(article.id)))
+        ? sortByPublishDate(issue.articles.filter((article) => !manualArticleIds.has(article.id)))
         : block.articleIds
             .filter((articleId) => !manualArticleIds.has(articleId))
             .map((articleId) => articlesById.get(articleId))
@@ -83,7 +79,7 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): NarrativeHome
 }
 
 function resolveFallbackBlocks(issue: PublicCurrentIssueDetail): NarrativeHomeBlock[] {
-  const articles = sortByPosition(issue.articles);
+  const articles = sortByPublishDate(issue.articles);
   const [lead, ...rest] = articles;
 
   if (!lead) {

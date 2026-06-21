@@ -8,7 +8,6 @@ export { articlesRepository } from "@/lib/server/modules/articles/repository";
 export {
   createArticleInputSchema,
   listArticlesQuerySchema,
-  reorderArticlesInputSchema,
   syncArticleTagsInputSchema,
   updateArticleInputSchema,
 } from "@/lib/server/modules/articles/schema";
@@ -16,7 +15,6 @@ export type {
   ArticleTitleStyled,
   CreateArticleInput,
   ListArticlesQuery,
-  ReorderArticlesInput,
   SyncArticleTagsInput,
   UpdateArticleInput,
 } from "@/lib/server/modules/articles/schema";

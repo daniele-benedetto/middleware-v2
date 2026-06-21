@@ -34,7 +34,6 @@ const PUBLIC_ISSUE_DETAIL_ARTICLE_SELECT = {
   imageUrl: true,
   audioUrl: true,
   isFeatured: true,
-  position: true,
   contentRich: true,
   publishedAt: true,
   category: {
@@ -56,7 +55,7 @@ const PUBLIC_ISSUE_DETAIL_SELECT = {
   ...PUBLIC_ISSUE_LIST_SELECT,
   articles: {
     where: PUBLISHED_ARTICLE_WHERE,
-    orderBy: [{ position: "asc" }, { publishedAt: "asc" }],
+    orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }],
     select: PUBLIC_ISSUE_DETAIL_ARTICLE_SELECT,
   },
 } as const satisfies Prisma.IssueSelect;

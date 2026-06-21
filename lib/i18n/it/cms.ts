@@ -412,7 +412,6 @@ export const cmsIt = {
     sortOrder: "Ordina per: manuale",
     sortPublishedAt: "Ordina per: pubblicazione",
     sortUpdatedAt: "Ordina per: aggiornamento",
-    sortPosition: "Ordina per: posizione manuale",
     desc: "Direzione: decrescente",
     asc: "Direzione: crescente",
   },
@@ -595,7 +594,7 @@ export const cmsIt = {
       previewError: "Impossibile caricare l'anteprima del file.",
       previewUnavailableTitle: "Anteprima non disponibile",
       previewUnavailableDescription:
-        "Questo formato non ha una preview inline nel CMS. Puoi comunque aprirlo in una nuova scheda.",
+        "Questo formato non ha una preview inline. Puoi comunque aprirlo in una nuova scheda.",
       jsonPreviewLabel: "Anteprima JSON",
       metadataPath: "Percorso",
       metadataType: "Tipo",

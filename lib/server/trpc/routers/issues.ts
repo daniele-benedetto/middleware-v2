@@ -31,13 +31,6 @@ const issuesListInputSchema = paginationInputSchema.extend({
   }),
 });
 
-const issueArticleOrderInputSchema = z
-  .array(z.string().uuid())
-  .refine((ids) => new Set(ids).size === ids.length, {
-    message: "orderedArticleIds must be unique",
-  })
-  .optional();
-
 export const issuesRouter = router({
   list: protectedProcedure
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
@@ -75,25 +68,20 @@ export const issuesRouter = router({
     .input(
       issueIdInputSchema.extend({
         data: updateIssueInputSchema,
-        orderedArticleIds: issueArticleOrderInputSchema,
       }),
     )
     .use(
       auditMiddleware<{
         id: string;
         data: z.infer<typeof updateIssueInputSchema>;
-        orderedArticleIds?: string[];
       }>((input) => ({
-        action: input.orderedArticleIds ? "update-reorder" : "update",
+        action: "update",
         resource: "issues",
         resourceId: input.id,
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(
-        await issuesService.update(input.id, input.data, input.orderedArticleIds),
-        issueDtoSchema,
-      );
+      return parseOutput(await issuesService.update(input.id, input.data), issueDtoSchema);
     }),
   delete: writeProcedure
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))

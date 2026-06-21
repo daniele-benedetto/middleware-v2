@@ -33,7 +33,6 @@ type TagDetailRecord = TagRecord & {
       title: string;
       status: ArticleStatus;
       isFeatured: boolean;
-      position: number;
     };
   }>;
 };
@@ -59,7 +58,6 @@ const toTagDetailDto = (tag: TagDetailRecord): TagDetailDto => {
       title: article.title,
       status: article.status,
       isFeatured: article.isFeatured,
-      position: article.position,
     })),
   };
 };

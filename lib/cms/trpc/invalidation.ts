@@ -60,7 +60,6 @@ export type CmsMutationName =
   | "articles.archive"
   | "articles.feature"
   | "articles.unfeature"
-  | "articles.reorder"
   | "pages.create"
   | "pages.update"
   | "pages.delete"

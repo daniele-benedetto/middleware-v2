@@ -88,7 +88,7 @@ export const publicArticlesRepository = {
         ...PUBLIC_ARTICLE_WHERE,
         issue: { ...PUBLIC_ISSUE_WHERE, slug: issueSlug },
       },
-      orderBy: [{ position: "asc" }, { publishedAt: "asc" }],
+      orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }],
       select: PUBLIC_ARTICLE_SUMMARY_SELECT,
     });
   },

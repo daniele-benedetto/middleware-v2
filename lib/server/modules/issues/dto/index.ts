@@ -22,7 +22,6 @@ export const issueArticleSummaryDtoSchema = z.object({
   title: z.string(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
   isFeatured: z.boolean(),
-  position: z.number().int(),
   categoryName: z.string().nullable(),
   categorySlug: z.string().nullable(),
 });

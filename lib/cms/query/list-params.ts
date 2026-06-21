@@ -39,7 +39,7 @@ const issuesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
 const categoriesSortByValues = ["createdAt", "name", "slug"] as const;
 const tagsSortByValues = ["createdAt", "name", "slug"] as const;
 const authorsSortByValues = ["createdAt", "name", "slug"] as const;
-const articlesSortByValues = ["createdAt", "publishedAt", "position"] as const;
+const articlesSortByValues = ["createdAt", "publishedAt"] as const;
 const pagesSortByValues = ["createdAt", "updatedAt", "publishedAt", "title"] as const;
 const usersSortByValues = ["createdAt", "email"] as const;
 

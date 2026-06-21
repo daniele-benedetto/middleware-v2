@@ -74,20 +74,6 @@ describe("issuesService", () => {
     expect(result).toMatchObject({ id: "issue-1", slug: "issue-01" });
   });
 
-  it("maps article order mismatch errors on update", async () => {
-    issuesRepositoryMock.updateWithArticleOrder.mockRejectedValue(
-      new Error("ISSUE_ARTICLE_ORDER_MISMATCH"),
-    );
-
-    await expect(
-      issuesService.update("issue-1", { title: "Issue 01" }, ["article-1"]),
-    ).rejects.toMatchObject({
-      status: 400,
-      code: "VALIDATION_ERROR",
-      details: { reason: "ISSUE_ARTICLE_ORDER_MISMATCH" },
-    });
-  });
-
   it("maps delete relation errors to a domain conflict", async () => {
     issuesRepositoryMock.delete.mockRejectedValue(
       createPrismaKnownRequestError("P2003", "fk constraint"),

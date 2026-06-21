@@ -45,7 +45,7 @@ function buildHomeJsonLd(currentIssue: PublicCurrentIssueDetail | null) {
         url: siteUrl,
         isPartOf: { "@id": `${siteUrl}#website` },
         datePublished: currentIssue.publishedAt,
-        hasPart: currentIssue.articles.map((article) => ({
+        hasPart: currentIssue.articles.map((article, index) => ({
           "@type": "Article",
           headline: article.title,
           description: article.excerpt ?? undefined,
@@ -53,7 +53,7 @@ function buildHomeJsonLd(currentIssue: PublicCurrentIssueDetail | null) {
             ? { "@type": "Organization", name: article.authorName }
             : undefined,
           datePublished: article.publishedAt,
-          position: article.position,
+          position: index + 1,
         })),
       },
     ],

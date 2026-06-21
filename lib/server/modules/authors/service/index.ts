@@ -32,7 +32,6 @@ type AuthorDetailRecord = AuthorRecord & {
     title: string;
     status: ArticleStatus;
     isFeatured: boolean;
-    position: number;
   }>;
 };
 
@@ -67,7 +66,6 @@ const toAuthorDetailDto = (author: AuthorDetailRecord): AuthorDetailDto => {
       title: article.title,
       status: article.status,
       isFeatured: article.isFeatured,
-      position: article.position,
     })),
   };
 };

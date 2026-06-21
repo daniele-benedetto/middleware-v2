@@ -48,8 +48,7 @@ export const publicIt = {
       code: "404",
       kicker: "Numero corrente",
       title: "Nessun numero pubblicato",
-      description:
-        "Quando un numero sarà pubblicato nel CMS, la home verrà composta dai suoi contenuti.",
+      description: "Quando un numero sarà pubblicato, la home verrà composta dai suoi contenuti.",
     },
   },
   footer: {

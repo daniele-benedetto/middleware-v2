@@ -33,7 +33,6 @@ export const updateArticleInputSchema = articleBaseInputSchema
     status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"] satisfies ArticleStatus[]).optional(),
     publishedAt: z.coerce.date().nullable().optional(),
     isFeatured: z.boolean().optional(),
-    position: z.number().int().min(0).optional(),
   })
   .refine((input) => Object.keys(input).length > 0, {
     message: "At least one field is required",
@@ -41,16 +40,6 @@ export const updateArticleInputSchema = articleBaseInputSchema
 
 export const syncArticleTagsInputSchema = z.object({
   tagIds: z.array(z.string().uuid()),
-});
-
-export const reorderArticlesInputSchema = z.object({
-  issueId: z.string().uuid(),
-  orderedArticleIds: z
-    .array(z.string().uuid())
-    .min(1)
-    .refine((ids) => new Set(ids).size === ids.length, {
-      message: "orderedArticleIds must be unique",
-    }),
 });
 
 const featuredQuerySchema = z.enum(["true", "false"]).transform((value) => value === "true");
@@ -63,7 +52,7 @@ export const listArticlesQuerySchema = z.object({
   authorId: z.string().uuid().nullable().optional(),
   featured: featuredQuerySchema.optional(),
   q: z.string().trim().min(1).optional(),
-  sortBy: z.enum(["createdAt", "publishedAt", "position"]).default("createdAt"),
+  sortBy: z.enum(["createdAt", "publishedAt"]).default("createdAt"),
   sortOrder: sortOrderSchema.default("desc"),
 });
 
@@ -71,5 +60,4 @@ export type CreateArticleInput = z.infer<typeof createArticleInputSchema>;
 export type ArticleTitleStyled = z.infer<typeof issueTitleStyledSchema>;
 export type UpdateArticleInput = z.infer<typeof updateArticleInputSchema>;
 export type SyncArticleTagsInput = z.infer<typeof syncArticleTagsInputSchema>;
-export type ReorderArticlesInput = z.infer<typeof reorderArticlesInputSchema>;
 export type ListArticlesQuery = z.infer<typeof listArticlesQuerySchema>;

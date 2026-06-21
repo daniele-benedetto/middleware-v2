@@ -16,7 +16,6 @@ export const categoryArticleSummaryDtoSchema = z.object({
   title: z.string(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
   isFeatured: z.boolean(),
-  position: z.number().int(),
 });
 
 export const categoryDetailDtoSchema = categoryDtoSchema.extend({

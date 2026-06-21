@@ -6,7 +6,6 @@ import { prisma } from "@/lib/prisma";
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
   ListArticlesQuery,
-  ReorderArticlesInput,
   SyncArticleTagsInput,
   UpdateArticleInput,
 } from "@/lib/server/modules/articles/schema";
@@ -44,7 +43,6 @@ const ARTICLE_DETAIL_SELECT = {
   status: true,
   publishedAt: true,
   isFeatured: true,
-  position: true,
   createdAt: true,
   updatedAt: true,
   excerpt: true,
@@ -123,7 +121,6 @@ export const articlesRepository = {
         status: true,
         publishedAt: true,
         isFeatured: true,
-        position: true,
         createdAt: true,
         updatedAt: true,
         issue: {
@@ -237,7 +234,6 @@ export const articlesRepository = {
       status: input.status,
       publishedAt: input.publishedAt,
       isFeatured: input.isFeatured,
-      position: input.position,
     };
 
     return prisma.article.update({
@@ -255,7 +251,7 @@ export const articlesRepository = {
     return prisma.article.findMany({
       where: { issueId },
       select: { id: true },
-      orderBy: { position: "asc" },
+      orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }],
     });
   },
   async syncTags(id: string, input: SyncArticleTagsInput) {
@@ -324,42 +320,6 @@ export const articlesRepository = {
         isFeatured: false,
       },
       select: ARTICLE_DETAIL_SELECT,
-    });
-  },
-  async reorder(input: ReorderArticlesInput) {
-    return prisma.$transaction(async (tx) => {
-      const currentIssueArticles = await tx.article.findMany({
-        where: { issueId: input.issueId },
-        select: { id: true },
-        orderBy: { position: "asc" },
-      });
-
-      const currentOrder = currentIssueArticles.map((article) => article.id);
-      const isSameOrder =
-        currentOrder.length === input.orderedArticleIds.length &&
-        currentOrder.every((articleId, index) => articleId === input.orderedArticleIds[index]);
-
-      if (isSameOrder) {
-        return tx.article.findMany({
-          where: { issueId: input.issueId },
-          orderBy: { position: "asc" },
-        });
-      }
-
-      await Promise.all(
-        input.orderedArticleIds.map((articleId, index) =>
-          tx.article.update({
-            where: { id: articleId },
-            data: { position: index },
-            select: { id: true },
-          }),
-        ),
-      );
-
-      return tx.article.findMany({
-        where: { issueId: input.issueId },
-        orderBy: { position: "asc" },
-      });
     });
   },
   async listMediaReferences(urls: string[]) {

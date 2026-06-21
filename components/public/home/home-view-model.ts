@@ -21,10 +21,6 @@ export function sortHomeArticles(articles: HomeIssueArticle[]) {
       return a.isFeatured ? -1 : 1;
     }
 
-    if (a.position !== b.position) {
-      return a.position - b.position;
-    }
-
     return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
   });
 }

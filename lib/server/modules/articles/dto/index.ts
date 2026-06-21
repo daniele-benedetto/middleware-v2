@@ -13,7 +13,6 @@ const articleSummaryDtoShape = {
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
   publishedAt: z.string().nullable(),
   isFeatured: z.boolean(),
-  position: z.number().int(),
   createdAt: z.string(),
   updatedAt: z.string(),
   issueTitle: z.string().nullable(),

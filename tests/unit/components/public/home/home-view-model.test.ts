@@ -17,7 +17,6 @@ const article = (overrides: Partial<HomeIssueArticle>): HomeIssueArticle => ({
   imageUrl: null,
   hasAudio: false,
   isFeatured: false,
-  position: 1,
   readingTimeMinutes: 1,
   publishedAt: "2026-01-01T00:00:00.000Z",
   categorySlug: "categoria",
@@ -44,16 +43,14 @@ const issue = (
   }) as PublicCurrentIssueDetail;
 
 describe("home view model", () => {
-  it("sorts articles by featured flag, position, then published date", () => {
-    const featured = article({ id: crypto.randomUUID(), isFeatured: true, position: 4 });
+  it("sorts articles by featured flag, then published date", () => {
+    const featured = article({ id: crypto.randomUUID(), isFeatured: true });
     const older = article({
       id: crypto.randomUUID(),
-      position: 1,
       publishedAt: "2026-01-01T00:00:00.000Z",
     });
     const newer = article({
       id: crypto.randomUUID(),
-      position: 1,
       publishedAt: "2026-01-02T00:00:00.000Z",
     });
 
@@ -61,11 +58,11 @@ describe("home view model", () => {
   });
 
   it("composes issue-level homeBlocks preserving editorial copy and featured article", () => {
-    const lead = article({ id: crypto.randomUUID(), title: "Lead", position: 1 });
-    const coreA = article({ id: crypto.randomUUID(), title: "Core A", position: 2 });
-    const coreB = article({ id: crypto.randomUUID(), title: "Core B", position: 3 });
-    const sequenceA = article({ id: crypto.randomUUID(), title: "Sequence A", position: 4 });
-    const sequenceB = article({ id: crypto.randomUUID(), title: "Sequence B", position: 5 });
+    const lead = article({ id: crypto.randomUUID(), title: "Lead" });
+    const coreA = article({ id: crypto.randomUUID(), title: "Core A" });
+    const coreB = article({ id: crypto.randomUUID(), title: "Core B" });
+    const sequenceA = article({ id: crypto.randomUUID(), title: "Sequence A" });
+    const sequenceB = article({ id: crypto.randomUUID(), title: "Sequence B" });
 
     expect(
       composeNarrativeHomeBlocks(
@@ -133,7 +130,7 @@ describe("home view model", () => {
       article({
         id: crypto.randomUUID(),
         title: `Article ${index + 1}`,
-        position: index + 1,
+        publishedAt: `2026-01-0${index + 1}T00:00:00.000Z`,
         isFeatured: index === 2,
       }),
     );
@@ -149,10 +146,26 @@ describe("home view model", () => {
   });
 
   it("resolves remainder blocks with articles not used by manual blocks", () => {
-    const lead = article({ id: crypto.randomUUID(), title: "Lead", position: 1 });
-    const manual = article({ id: crypto.randomUUID(), title: "Manual", position: 2 });
-    const remainderA = article({ id: crypto.randomUUID(), title: "Remainder A", position: 3 });
-    const remainderB = article({ id: crypto.randomUUID(), title: "Remainder B", position: 4 });
+    const lead = article({
+      id: crypto.randomUUID(),
+      title: "Lead",
+      publishedAt: "2026-01-01T00:00:00.000Z",
+    });
+    const manual = article({
+      id: crypto.randomUUID(),
+      title: "Manual",
+      publishedAt: "2026-01-02T00:00:00.000Z",
+    });
+    const remainderA = article({
+      id: crypto.randomUUID(),
+      title: "Remainder A",
+      publishedAt: "2026-01-03T00:00:00.000Z",
+    });
+    const remainderB = article({
+      id: crypto.randomUUID(),
+      title: "Remainder B",
+      publishedAt: "2026-01-04T00:00:00.000Z",
+    });
 
     expect(
       composeNarrativeHomeBlocks(

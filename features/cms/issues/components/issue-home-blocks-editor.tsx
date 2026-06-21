@@ -45,7 +45,6 @@ type IssueHomeBlockArticle = {
   title: string;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   isFeatured: boolean;
-  position: number;
   categoryName?: string | null;
   categorySlug?: string | null;
 };
@@ -137,7 +136,7 @@ export function IssueHomeBlocksEditor({
 }: IssueHomeBlocksEditorProps) {
   const sensors = useSortableSensors();
   const [activeDrag, setActiveDrag] = useState<DraggedArticleData | DraggedBlockData | null>(null);
-  const sortedArticles = [...articles].sort((a, b) => a.position - b.position);
+  const sortedArticles = articles;
   const articleById = new Map(sortedArticles.map((article) => [article.id, article]));
   const typeOptions = blockTypeOptions.map((option) => ({
     value: option.value,
@@ -626,7 +625,7 @@ function ArticleDragCard({
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
           <span className="block min-w-0 font-ui text-[12px] font-bold text-foreground">
-            {index === undefined ? String(article.position).padStart(2, "0") : index + 1}.{" "}
+            {index === undefined ? null : `${index + 1}. `}
             {article.title}
           </span>
           <ArticleCategoryBadge article={article} />
@@ -791,8 +790,13 @@ function ArticlePoolPanel({
           </div>
         ) : (
           <div className="max-h-[calc(100vh-12rem)] space-y-2 overflow-y-auto pr-1">
-            {articles.map((article) => (
-              <DraggableAvailableArticle key={article.id} article={article} disabled={disabled} />
+            {articles.map((article, index) => (
+              <DraggableAvailableArticle
+                key={article.id}
+                article={article}
+                index={index}
+                disabled={disabled}
+              />
             ))}
           </div>
         )}
@@ -803,9 +807,11 @@ function ArticlePoolPanel({
 
 function DraggableAvailableArticle({
   article,
+  index,
   disabled,
 }: {
   article: IssueHomeBlockArticle;
+  index: number;
   disabled?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -818,6 +824,7 @@ function DraggableAvailableArticle({
     <div ref={setNodeRef} className={cn(disabled && "cursor-not-allowed opacity-60")}>
       <ArticleDragCard
         article={article}
+        index={index}
         isDragging={isDragging}
         dragHandle={
           <button

@@ -10,19 +10,13 @@ import {
   articlesService,
   createArticleInputSchema,
   listArticlesQuerySchema,
-  reorderArticlesInputSchema,
   syncArticleTagsInputSchema,
   updateArticleInputSchema,
 } from "@/lib/server/modules/articles";
 import { router } from "@/lib/server/trpc/init";
 import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
-import {
-  protectedProcedure,
-  publishProcedure,
-  reorderProcedure,
-  writeProcedure,
-} from "@/lib/server/trpc/procedures";
+import { protectedProcedure, publishProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
 import { parseOutput } from "@/lib/server/validation/output";
 
@@ -175,12 +169,5 @@ export const articlesRouter = router({
     )
     .mutation(async ({ input }) => {
       return parseOutput(await articlesService.unfeature(input.id), articleDtoSchema);
-    }),
-  reorder: reorderProcedure
-    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
-    .use(auditMiddleware(() => ({ action: "reorder", resource: "articles" })))
-    .input(reorderArticlesInputSchema)
-    .mutation(async ({ input }) => {
-      return parseOutput(await articlesService.reorder(input), articlesListDtoSchema);
     }),
 });

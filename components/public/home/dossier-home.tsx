@@ -17,6 +17,7 @@ type DossierHomeProps = {
 type DossierArticleCardProps = {
   article: HomeIssueArticle;
   eyebrow: string;
+  number: number;
   variant?: "standard" | "featured" | "compact" | "closing";
 };
 
@@ -61,7 +62,21 @@ function ArticleMeta({
   );
 }
 
-function LeadBlock({ block }: { block: NarrativeHomeBlock }) {
+function formatArticleNumber(value: number) {
+  return String(value).padStart(2, "0");
+}
+
+function getArticleNumber(articleNumbers: Map<string, number>, article: HomeIssueArticle) {
+  return articleNumbers.get(article.id) ?? 1;
+}
+
+function LeadBlock({
+  block,
+  articleNumbers,
+}: {
+  block: NarrativeHomeBlock;
+  articleNumbers: Map<string, number>;
+}) {
   const article = block.featuredArticle ?? block.articles[0];
 
   if (!article) {
@@ -75,7 +90,7 @@ function LeadBlock({ block }: { block: NarrativeHomeBlock }) {
       <div className="px-4 py-13 sm:px-6 lg:px-12 lg:pb-15">
         <div className="mb-7 flex flex-wrap items-center gap-3.5 border-b border-dark-border pb-5.5">
           <span className="inline-flex size-10.5 items-center justify-center rounded-[8px] bg-accent font-heading text-[17px] font-black text-background">
-            {String(article.position).padStart(2, "0")}
+            {formatArticleNumber(getArticleNumber(articleNumbers, article))}
           </span>
           {block.title ? (
             <span className="font-heading text-[13px] font-extrabold tracking-[0.14em] text-accent uppercase">
@@ -125,14 +140,19 @@ function LeadBlock({ block }: { block: NarrativeHomeBlock }) {
   );
 }
 
-function DossierArticleCard({ article, eyebrow, variant = "standard" }: DossierArticleCardProps) {
+function DossierArticleCard({
+  article,
+  eyebrow,
+  number,
+  variant = "standard",
+}: DossierArticleCardProps) {
   const hasImage = Boolean(article.imageUrl);
   const isCompact = variant === "compact";
   const isClosing = variant === "closing";
 
   return (
     <article
-      className={`group flex min-h-full flex-col border-foreground bg-background transition-[background,box-shadow] duration-(--motion-fast) hover:bg-surface-hover hover:shadow-[var(--interactive-rail-shadow)] ${
+      className={`group flex min-h-full flex-col border-foreground bg-background transition-[background,box-shadow] duration-(--motion-fast) hover:bg-surface-hover hover:shadow-(--interactive-rail-shadow) ${
         isClosing
           ? "border px-6 py-6 md:px-8 md:py-7"
           : "border-r border-b px-6 py-6 md:px-7 md:py-7"
@@ -140,7 +160,7 @@ function DossierArticleCard({ article, eyebrow, variant = "standard" }: DossierA
     >
       <div className="mb-5 flex items-start justify-between gap-4">
         <span className="font-heading text-[48px] leading-[0.78] font-black tracking-[-0.04em] text-accent">
-          {String(article.position).padStart(2, "0")}
+          {formatArticleNumber(number)}
         </span>
         <span className="mt-1.5 text-right font-heading text-[11px] font-bold tracking-[0.12em] text-muted uppercase">
           {eyebrow}
@@ -178,7 +198,13 @@ function DossierArticleCard({ article, eyebrow, variant = "standard" }: DossierA
   );
 }
 
-function CoreClusterBlock({ block }: { block: NarrativeHomeBlock }) {
+function CoreClusterBlock({
+  block,
+  articleNumbers,
+}: {
+  block: NarrativeHomeBlock;
+  articleNumbers: Map<string, number>;
+}) {
   const featured = block.featuredArticle ?? block.articles[0] ?? null;
   const secondary = featured
     ? block.articles.filter((article) => article.id !== featured.id)
@@ -205,6 +231,7 @@ function CoreClusterBlock({ block }: { block: NarrativeHomeBlock }) {
           <DossierArticleCard
             article={featured}
             eyebrow={blockEyebrow(block, featured)}
+            number={getArticleNumber(articleNumbers, featured)}
             variant="featured"
           />
         ) : null}
@@ -214,6 +241,7 @@ function CoreClusterBlock({ block }: { block: NarrativeHomeBlock }) {
               key={article.id}
               article={article}
               eyebrow={blockEyebrow(block, article)}
+              number={getArticleNumber(articleNumbers, article)}
               variant="compact"
             />
           ))}
@@ -223,7 +251,13 @@ function CoreClusterBlock({ block }: { block: NarrativeHomeBlock }) {
   );
 }
 
-function FeatureBreakBlock({ block }: { block: NarrativeHomeBlock }) {
+function FeatureBreakBlock({
+  block,
+  articleNumbers,
+}: {
+  block: NarrativeHomeBlock;
+  articleNumbers: Map<string, number>;
+}) {
   const article = block.featuredArticle ?? block.articles[0];
 
   if (!article) {
@@ -247,7 +281,7 @@ function FeatureBreakBlock({ block }: { block: NarrativeHomeBlock }) {
         <article className="px-6 py-7 md:px-9 md:py-9">
           <div className="mb-8 flex items-start justify-between gap-4">
             <span className="font-heading text-[56px] leading-[0.78] font-black tracking-[-0.04em] text-accent">
-              {String(article.position).padStart(2, "0")}
+              {formatArticleNumber(getArticleNumber(articleNumbers, article))}
             </span>
             {blockEyebrow(block, article) ? (
               <span className="mt-1.5 max-w-40 text-right font-heading text-[11px] font-bold tracking-[0.12em] text-muted uppercase">
@@ -255,7 +289,7 @@ function FeatureBreakBlock({ block }: { block: NarrativeHomeBlock }) {
               </span>
             ) : null}
           </div>
-          <h2 className="max-w-[14ch] font-heading text-[clamp(38px,5vw,76px)] leading-[0.9] font-black tracking-[-0.05em] text-foreground text-balance">
+          <h2 className="max-w-[14ch] font-heading text-[clamp(38px,5vw,76px)] leading-[0.9] font-black tracking-tighter text-foreground text-balance">
             <StyledTitle title={article.title} titleStyled={article.titleStyled} />
           </h2>
           {article.excerpt ? (
@@ -277,7 +311,13 @@ function FeatureBreakBlock({ block }: { block: NarrativeHomeBlock }) {
   );
 }
 
-function SequenceBlock({ block }: { block: NarrativeHomeBlock }) {
+function SequenceBlock({
+  block,
+  articleNumbers,
+}: {
+  block: NarrativeHomeBlock;
+  articleNumbers: Map<string, number>;
+}) {
   const primary = block.featuredArticle ?? block.articles[0] ?? null;
   const secondary = primary
     ? block.articles.filter((article) => article.id !== primary.id)
@@ -306,7 +346,11 @@ function SequenceBlock({ block }: { block: NarrativeHomeBlock }) {
         </div>
       ) : null}
       <div className="grid gap-5 lg:grid-cols-[0.48fr_0.52fr]">
-        <DossierArticleCard article={primary} eyebrow={blockEyebrow(block, primary)} />
+        <DossierArticleCard
+          article={primary}
+          eyebrow={blockEyebrow(block, primary)}
+          number={getArticleNumber(articleNumbers, primary)}
+        />
         {secondary.length > 0 ? (
           <div className="grid border-l border-t border-foreground md:grid-cols-2">
             {secondary.map((article) => (
@@ -314,6 +358,7 @@ function SequenceBlock({ block }: { block: NarrativeHomeBlock }) {
                 key={article.id}
                 article={article}
                 eyebrow={blockEyebrow(block, article)}
+                number={getArticleNumber(articleNumbers, article)}
                 variant="compact"
               />
             ))}
@@ -324,7 +369,13 @@ function SequenceBlock({ block }: { block: NarrativeHomeBlock }) {
   );
 }
 
-function ClosingBlock({ block }: { block: NarrativeHomeBlock }) {
+function ClosingBlock({
+  block,
+  articleNumbers,
+}: {
+  block: NarrativeHomeBlock;
+  articleNumbers: Map<string, number>;
+}) {
   const article = block.featuredArticle ?? block.articles[0];
 
   if (!article) {
@@ -351,6 +402,7 @@ function ClosingBlock({ block }: { block: NarrativeHomeBlock }) {
         <DossierArticleCard
           article={article}
           eyebrow={blockEyebrow(block, article)}
+          number={getArticleNumber(articleNumbers, article)}
           variant="closing"
         />
       </div>
@@ -358,18 +410,30 @@ function ClosingBlock({ block }: { block: NarrativeHomeBlock }) {
   );
 }
 
-function renderBlock(block: NarrativeHomeBlock) {
+function getArticleNumbers(blocks: NarrativeHomeBlock[]) {
+  const numbers = new Map<string, number>();
+
+  for (const article of blocks.flatMap((block) => block.articles)) {
+    if (!numbers.has(article.id)) {
+      numbers.set(article.id, numbers.size + 1);
+    }
+  }
+
+  return numbers;
+}
+
+function renderBlock(block: NarrativeHomeBlock, articleNumbers: Map<string, number>) {
   switch (block.type) {
     case "opening":
-      return <LeadBlock key={block.id} block={block} />;
+      return <LeadBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
     case "constellation":
-      return <CoreClusterBlock key={block.id} block={block} />;
+      return <CoreClusterBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
     case "rupture":
-      return <FeatureBreakBlock key={block.id} block={block} />;
+      return <FeatureBreakBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
     case "sequence":
-      return <SequenceBlock key={block.id} block={block} />;
+      return <SequenceBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
     case "closing":
-      return <ClosingBlock key={block.id} block={block} />;
+      return <ClosingBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
   }
 }
 export function DossierHome({ issue }: DossierHomeProps) {
@@ -379,5 +443,9 @@ export function DossierHome({ issue }: DossierHomeProps) {
     return null;
   }
 
-  return <div className="bg-background">{blocks.map(renderBlock)}</div>;
+  const articleNumbers = getArticleNumbers(blocks);
+
+  return (
+    <div className="bg-background">{blocks.map((block) => renderBlock(block, articleNumbers))}</div>
+  );
 }

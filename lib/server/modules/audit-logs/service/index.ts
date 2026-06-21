@@ -199,7 +199,6 @@ async function resolveArticleSummary(resourceId: string): Promise<AuditLogResour
       { label: "Autore", value: article.author?.name ?? "-" },
       { label: "Pubblicato", value: formatNullableDate(article.publishedAt) },
       { label: "Featured", value: formatBoolean(article.isFeatured) },
-      { label: "Posizione", value: String(article.position) },
       { label: "Tag", value: String(article._count?.tags ?? 0) },
     ]),
   };

@@ -3,10 +3,7 @@ import "server-only";
 import { createCmsDomainErrorDetails } from "@/lib/cms/errors/domain-error-details";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
-import {
-  ISSUE_ARTICLE_ORDER_MISMATCH,
-  issuesRepository,
-} from "@/lib/server/modules/issues/repository";
+import { issuesRepository } from "@/lib/server/modules/issues/repository";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
@@ -42,7 +39,6 @@ type IssueDetailRecord = IssueRecord & {
     title: string;
     status: ArticleStatus;
     isFeatured: boolean;
-    position: number;
     category: {
       name: string;
       slug: string;
@@ -75,7 +71,6 @@ const toIssueDetailDto = (issue: IssueDetailRecord): IssueDetailDto => {
       title: article.title,
       status: article.status,
       isFeatured: article.isFeatured,
-      position: article.position,
       categoryName: article.category?.name ?? null,
       categorySlug: article.category?.slug ?? null,
     })),
@@ -157,14 +152,14 @@ export const issuesService = {
       createCmsDomainErrorDetails("ISSUE_SLUG_EXISTS"),
     );
   },
-  async update(id: string, input: UpdateIssueInput, orderedArticleIds?: string[]) {
+  async update(id: string, input: UpdateIssueInput) {
     const normalizedInput: UpdateIssueInput = {
       ...input,
       slug: input.slug ? ensureSlug(input.slug) : undefined,
     };
 
     try {
-      await issuesRepository.updateWithArticleOrder(id, normalizedInput, orderedArticleIds);
+      await issuesRepository.updateWithArticleOrder(id, normalizedInput);
       const issue = await issuesRepository.getById(id);
 
       if (!issue) {
@@ -183,15 +178,6 @@ export const issuesService = {
           "CONFLICT",
           "Issue slug already exists",
           createCmsDomainErrorDetails("ISSUE_SLUG_EXISTS"),
-        );
-      }
-
-      if (error instanceof Error && error.message === ISSUE_ARTICLE_ORDER_MISMATCH) {
-        throw new ApiError(
-          400,
-          "VALIDATION_ERROR",
-          "orderedArticleIds must include all and only articles from the target issue",
-          createCmsDomainErrorDetails("ISSUE_ARTICLE_ORDER_MISMATCH"),
         );
       }
 

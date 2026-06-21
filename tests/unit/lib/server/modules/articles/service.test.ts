@@ -12,7 +12,6 @@ const articlesRepositoryMock = vi.hoisted(() => ({
   feature: vi.fn(),
   unfeature: vi.fn(),
   listIdsByIssue: vi.fn(),
-  reorder: vi.fn(),
 }));
 
 vi.mock("@/lib/server/modules/articles/repository", () => ({
@@ -33,7 +32,6 @@ function createArticleRecord(overrides: Record<string, unknown> = {}) {
     status: "DRAFT",
     publishedAt: null,
     isFeatured: false,
-    position: 1,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-02T00:00:00.000Z"),
     issue: { title: "Issue 01" },
@@ -222,27 +220,5 @@ describe("articlesService", () => {
       code: "VALIDATION_ERROR",
       details: { reason: "ARTICLE_INVALID_TAGS" },
     });
-  });
-
-  it("rejects reorder requests whose ids do not match the issue articles", async () => {
-    articlesRepositoryMock.listIdsByIssue.mockResolvedValue([
-      { id: "11111111-1111-1111-1111-111111111111" },
-      { id: "77777777-7777-7777-7777-777777777777" },
-    ]);
-
-    await expect(
-      articlesService.reorder({
-        issueId: "22222222-2222-2222-2222-222222222222",
-        orderedArticleIds: [
-          "11111111-1111-1111-1111-111111111111",
-          "88888888-8888-8888-8888-888888888888",
-        ],
-      }),
-    ).rejects.toMatchObject({
-      status: 400,
-      code: "VALIDATION_ERROR",
-      details: { reason: "ARTICLE_REORDER_IDS_MISMATCH" },
-    });
-    expect(articlesRepositoryMock.reorder).not.toHaveBeenCalled();
   });
 });

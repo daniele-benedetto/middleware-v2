@@ -1463,7 +1463,6 @@ export const ArticleScalarFieldEnum = {
   authorId: 'authorId',
   status: 'status',
   isFeatured: 'isFeatured',
-  position: 'position',
   publishedAt: 'publishedAt',
   title: 'title',
   titleStyled: 'titleStyled',
