@@ -432,7 +432,23 @@ function getArticleNumbers(blocks: NarrativeHomeBlock[]) {
   return numbers;
 }
 
-function UnpaginatedArticleRow({ articles }: { articles: HomeIssueArticle[] }) {
+function getUnpaginatedArticles(issue: PublicCurrentIssueDetail, blocks: NarrativeHomeBlock[]) {
+  const paginatedArticleIds = new Set(
+    blocks.flatMap((block) => block.articles.map((article) => article.id)),
+  );
+
+  return issue.articles.filter((article) => !paginatedArticleIds.has(article.id));
+}
+
+function UnpaginatedArticleRow({
+  articles,
+  id,
+  startNumber = 1,
+}: {
+  articles: HomeIssueArticle[];
+  id?: string;
+  startNumber?: number;
+}) {
   const orderedArticles = sortUnpaginatedArticles(articles);
 
   if (orderedArticles.length === 0) {
@@ -440,14 +456,14 @@ function UnpaginatedArticleRow({ articles }: { articles: HomeIssueArticle[] }) {
   }
 
   return (
-    <section id="dossier" className="scroll-mt-20 px-4 py-8 sm:px-6 lg:px-12 lg:py-10">
+    <section id={id} className="scroll-mt-20 px-4 py-8 sm:px-6 lg:px-12 lg:py-10">
       <div className="grid border-l border-t border-foreground md:grid-cols-2 xl:grid-cols-3">
         {orderedArticles.map((article, index) => (
           <DossierArticleCard
             key={article.id}
             article={article}
             eyebrow={formatTags(article) || article.categoryName || ""}
-            number={index + 1}
+            number={startNumber + index}
           />
         ))}
       </div>
@@ -471,15 +487,18 @@ function renderBlock(block: NarrativeHomeBlock, articleNumbers: Map<string, numb
 }
 export function DossierHome({ issue }: DossierHomeProps) {
   const blocks = composeNarrativeHomeBlocks(issue);
-  const hasHomeBlocks = Boolean(issue.homeBlocks?.length);
 
   if (blocks.length === 0) {
-    return hasHomeBlocks ? null : <UnpaginatedArticleRow articles={issue.articles} />;
+    return <UnpaginatedArticleRow id="dossier" articles={issue.articles} />;
   }
 
   const articleNumbers = getArticleNumbers(blocks);
+  const unpaginatedArticles = getUnpaginatedArticles(issue, blocks);
 
   return (
-    <div className="bg-background">{blocks.map((block) => renderBlock(block, articleNumbers))}</div>
+    <div className="bg-background">
+      {blocks.map((block) => renderBlock(block, articleNumbers))}
+      <UnpaginatedArticleRow articles={unpaginatedArticles} startNumber={articleNumbers.size + 1} />
+    </div>
   );
 }

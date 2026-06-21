@@ -746,13 +746,8 @@ function ArticlePoolPanel({
           </div>
         ) : (
           <div className="max-h-[calc(100vh-12rem)] space-y-2 overflow-y-auto pr-1">
-            {articles.map((article, index) => (
-              <DraggableAvailableArticle
-                key={article.id}
-                article={article}
-                index={index}
-                disabled={disabled}
-              />
+            {articles.map((article) => (
+              <DraggableAvailableArticle key={article.id} article={article} disabled={disabled} />
             ))}
           </div>
         )}
@@ -763,11 +758,9 @@ function ArticlePoolPanel({
 
 function DraggableAvailableArticle({
   article,
-  index,
   disabled,
 }: {
   article: IssueHomeBlockArticle;
-  index: number;
   disabled?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -780,14 +773,13 @@ function DraggableAvailableArticle({
     <div ref={setNodeRef} className={cn(disabled && "cursor-not-allowed opacity-60")}>
       <ArticleDragCard
         article={article}
-        index={index}
         isDragging={isDragging}
         dragHandle={
           <button
             type="button"
             disabled={disabled}
             aria-label={article.title}
-            className="inline-flex shrink-0 cursor-grab items-center justify-center rounded-[4px] p-1 text-muted-foreground transition-colors hover:bg-card-hover hover:text-foreground disabled:cursor-not-allowed active:cursor-grabbing"
+            className="inline-flex shrink-0 cursor-grab items-center justify-center rounded-lg p-1 text-muted-foreground transition-colors hover:bg-card-hover hover:text-foreground disabled:cursor-not-allowed active:cursor-grabbing"
             {...(!disabled ? attributes : {})}
             {...(!disabled ? listeners : {})}
           >
