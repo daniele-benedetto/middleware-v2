@@ -16,7 +16,6 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { ArrowDown, ArrowUp, Copy, GripVertical, Plus, Trash2 } from "lucide-react";
 
-import { CmsConfirmDialog } from "@/components/cms/common";
 import {
   CmsActionButton,
   CmsBody,
@@ -27,7 +26,6 @@ import {
   CmsTextarea,
   CmsTextInput,
 } from "@/components/cms/primitives";
-import { IssueHomeBlocksPreview } from "@/features/cms/issues/components/issue-home-blocks-preview";
 import { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sensors";
 import {
   createEmptyHomeBlock,
@@ -53,33 +51,23 @@ type IssueHomeBlockArticle = {
 
 type IssueHomeBlocksEditorText = {
   addBlock: string;
-  advancedJson: string;
   articleCount: (count: number) => string;
   blockDescription: string;
   blockTitle: string;
-  diagnostics: string;
-  diagnosticsEmptyBlocks: (count: number) => string;
-  diagnosticsNoIssues: string;
-  diagnosticsSummary: (used: number, total: number, unused: number) => string;
-  diagnosticsUnusedArticles: (titles: string) => string;
   dropArticlesHint: string;
   duplicateBlock: string;
   emptyArticles: string;
   featuredArticle: string;
   featuredFallback: string;
-  generateSuggested: string;
-  generateSuggestedConfirmDescription: string;
-  generateSuggestedConfirmTitle: string;
   maxOneArticle: string;
   moveDown: string;
   moveUp: string;
   noBlocks: string;
-  preview: string;
   previewEmpty: string;
-  previewFeatured: string;
   removeBlock: string;
   selectedArticleOrder: string;
   selectedArticles: string;
+  sectionPagination: string;
   source: string;
   sourceManual: string;
   sourceRemainder: string;
@@ -97,7 +85,6 @@ type IssueHomeBlocksEditorProps = {
   disabled?: boolean;
   text: IssueHomeBlocksEditorText;
   onChange: (value: IssueHomeBlocks) => void;
-  onGenerateSuggested?: () => void;
 };
 
 const blockTypeOptions = [
@@ -128,7 +115,6 @@ export function IssueHomeBlocksEditor({
   disabled,
   text,
   onChange,
-  onGenerateSuggested,
 }: IssueHomeBlocksEditorProps) {
   const sensors = useSortableSensors();
   const sortedArticles = [...articles].sort((a, b) => a.position - b.position);
@@ -264,35 +250,9 @@ export function IssueHomeBlocksEditor({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
-          <CmsMetaText variant="category">{text.blockTitle}</CmsMetaText>
-          <CmsBody size="sm" tone="muted">
-            {text.articleCount(value.length)}
-          </CmsBody>
+          <CmsMetaText variant="category">{text.sectionPagination}</CmsMetaText>
         </div>
         <div className="flex flex-wrap gap-2">
-          {onGenerateSuggested ? (
-            value.length > 0 ? (
-              <CmsConfirmDialog
-                triggerLabel={text.generateSuggested}
-                triggerDisabled={disabled || sortedArticles.length === 0}
-                title={text.generateSuggestedConfirmTitle}
-                description={text.generateSuggestedConfirmDescription}
-                confirmLabel={text.generateSuggested}
-                tone="default"
-                onConfirm={onGenerateSuggested}
-              />
-            ) : (
-              <CmsActionButton
-                type="button"
-                size="xs"
-                variant="outline"
-                disabled={disabled || sortedArticles.length === 0}
-                onClick={onGenerateSuggested}
-              >
-                {text.generateSuggested}
-              </CmsActionButton>
-            )
-          ) : null}
           <CmsActionButton
             type="button"
             size="xs"
@@ -313,12 +273,6 @@ export function IssueHomeBlocksEditor({
           </CmsBody>
         </div>
       ) : null}
-
-      <IssueHomeBlocksPreview blocks={value} articles={sortedArticles} text={text} />
-
-      <HomeBlocksDiagnostics blocks={value} articles={sortedArticles} text={text} />
-
-      <HomeBlocksAdvancedJson blocks={value} text={text} />
 
       <DndContext
         sensors={sensors}
@@ -603,105 +557,6 @@ export function IssueHomeBlocksEditor({
         </SortableContext>
       </DndContext>
     </div>
-  );
-}
-
-function HomeBlocksAdvancedJson({
-  blocks,
-  text,
-}: {
-  blocks: IssueHomeBlocks;
-  text: IssueHomeBlocksEditorText;
-}) {
-  if (blocks.length === 0) {
-    return null;
-  }
-
-  return (
-    <details className="border border-border bg-white">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 marker:hidden">
-        <span className="font-ui text-[10px] font-bold tracking-[0.08em] text-foreground uppercase">
-          {text.advancedJson}
-        </span>
-        <span className="font-ui text-[10px] font-bold tracking-[0.08em] text-muted-foreground uppercase">
-          JSON
-        </span>
-      </summary>
-      <div className="border-t border-border p-3">
-        <textarea
-          value={JSON.stringify(blocks, null, 2)}
-          readOnly
-          spellCheck={false}
-          className="min-h-72 w-full resize-y border border-border bg-card-hover p-3 font-technical text-[11px] leading-[1.45] text-foreground outline-none"
-        />
-      </div>
-    </details>
-  );
-}
-
-function HomeBlocksDiagnostics({
-  blocks,
-  articles,
-  text,
-}: {
-  blocks: IssueHomeBlocks;
-  articles: IssueHomeBlockArticle[];
-  text: IssueHomeBlocksEditorText;
-}) {
-  const normalizedBlocks = blocks.map(normalizeHomeBlock);
-  const manualUsedArticleIds = new Set(
-    normalizedBlocks.flatMap((block) => (block.source === "remainder" ? [] : block.articleIds)),
-  );
-  const usedArticleIds = new Set(manualUsedArticleIds);
-
-  if (normalizedBlocks.some((block) => block.source === "remainder")) {
-    for (const article of articles) {
-      if (!manualUsedArticleIds.has(article.id)) {
-        usedArticleIds.add(article.id);
-      }
-    }
-  }
-  const unusedArticles = articles.filter((article) => !usedArticleIds.has(article.id));
-  const emptyBlockCount = normalizedBlocks.filter((block) => block.articleIds.length === 0).length;
-  const hasWarnings = unusedArticles.length > 0 || emptyBlockCount > 0;
-
-  if (articles.length === 0 && blocks.length === 0) {
-    return null;
-  }
-
-  return (
-    <details className="group border border-border bg-white">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 marker:hidden">
-        <span className="font-ui text-[10px] font-bold tracking-[0.08em] text-foreground uppercase">
-          {text.diagnostics}
-        </span>
-        <span className="font-ui text-[10px] font-bold tracking-[0.08em] text-muted-foreground uppercase">
-          {text.diagnosticsSummary(usedArticleIds.size, articles.length, unusedArticles.length)}
-        </span>
-      </summary>
-      <div className="border-t border-border px-4 py-3">
-        {hasWarnings ? (
-          <div className="space-y-2">
-            {emptyBlockCount > 0 ? (
-              <CmsBody size="sm" tone="muted">
-                {text.diagnosticsEmptyBlocks(emptyBlockCount)}
-              </CmsBody>
-            ) : null}
-            {unusedArticles.length > 0 ? (
-              <CmsBody size="sm" tone="muted">
-                {text.diagnosticsUnusedArticles(
-                  unusedArticles.map((article) => article.title).join(", "),
-                )}
-              </CmsBody>
-            ) : null}
-          </div>
-        ) : (
-          <CmsBody size="sm" tone="muted">
-            {text.diagnosticsNoIssues}
-          </CmsBody>
-        )}
-      </div>
-    </details>
   );
 }
 

@@ -30,7 +30,6 @@ import {
   type IssueDetail,
   type UpdateIssueInput,
 } from "@/features/cms/issues/hooks/use-issue-crud";
-import { generateSuggestedHomeBlocks } from "@/features/cms/issues/lib/generate-suggested-home-blocks";
 import {
   mapCrudDomainError,
   useCmsFormNavigation,
@@ -285,10 +284,6 @@ function IssueFormContent({
     .filter((article): article is NonNullable<typeof article> => Boolean(article));
   const isBusy = isMutating || isArticleOrderPending;
 
-  const generateSuggestedBlocks = () => {
-    setHomeBlocks(generateSuggestedHomeBlocks(orderedArticles));
-  };
-
   const openSlugEditor = () => {
     setManualSlug(resolvedSlug);
     setIsSlugEditing(true);
@@ -497,7 +492,6 @@ function IssueFormContent({
               disabled={isBusy}
               text={issueFormText.homeBlocksEditor}
               onChange={setHomeBlocks}
-              onGenerateSuggested={generateSuggestedBlocks}
             />
           </CmsFormField>
         </div>
