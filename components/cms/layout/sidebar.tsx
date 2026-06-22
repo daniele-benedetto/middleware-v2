@@ -98,7 +98,7 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "group flex w-full items-center gap-3 rounded-[6px] border border-foreground bg-white px-3 py-3 text-left",
+          "group flex w-full items-center gap-3 rounded-[6px] border border-foreground bg-card px-3 py-3 text-left",
           "transition-colors hover:bg-card-hover",
           "data-popup-open:border-accent data-popup-open:bg-card-hover data-popup-open:text-accent",
         )}

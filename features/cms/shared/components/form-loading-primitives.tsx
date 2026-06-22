@@ -26,7 +26,7 @@ export function CmsRichTextLoading({
   return (
     <div
       className={cn(
-        "rounded-[8px] border border-foreground bg-white",
+        "rounded-[8px] border border-foreground bg-card",
         fullHeight && "flex min-h-full flex-col",
       )}
     >
@@ -103,7 +103,7 @@ export function CmsSectionLabelLoading({ width = "w-28" }: { width?: string }) {
 
 export function CmsArticlePanelLoading() {
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-[8px] border border-foreground bg-white">
+    <div className="flex h-full min-h-0 flex-col rounded-[8px] border border-foreground bg-card">
       <div className="flex shrink-0 items-center justify-between border-b border-foreground px-3 py-2">
         <Skeleton className="h-2.5 w-24 rounded-[6px] bg-card-hover" />
         <Skeleton className="h-2.5 w-6 rounded-[6px] bg-card-hover" />
@@ -113,7 +113,7 @@ export function CmsArticlePanelLoading() {
           {Array.from({ length: 8 }).map((_, index) => (
             <li
               key={index}
-              className="flex items-center gap-2 px-3 py-2 odd:bg-white even:bg-card-hover"
+              className="flex items-center gap-2 px-3 py-2 odd:bg-card even:bg-card-hover"
             >
               <Skeleton className="h-4 flex-1 rounded-[6px] bg-card-hover" />
               <div className="flex w-7 min-w-7 max-w-7 items-center justify-center">

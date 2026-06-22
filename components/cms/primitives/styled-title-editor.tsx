@@ -307,7 +307,7 @@ export function CmsStyledTitleEditor({
             isAccentActive
               ? "border-accent bg-accent text-background hover:brightness-[0.9]"
               : hasSelection
-                ? "border-foreground bg-white text-foreground hover:bg-card-hover"
+                ? "border-foreground bg-card text-foreground hover:bg-card-hover"
                 : "border-border bg-card-hover text-border",
           )}
         >
@@ -329,7 +329,7 @@ export function CmsStyledTitleEditor({
         contentEditable={!disabled}
         suppressContentEditableWarning
         className={cn(
-          "min-h-10 w-full rounded-[6px] border border-foreground bg-white py-2.5 pr-12 pl-3 font-editorial text-[16px] leading-[1.2] text-body-text outline-none",
+          "min-h-10 w-full rounded-[6px] border border-foreground bg-card py-2.5 pr-12 pl-3 font-editorial text-[16px] leading-[1.2] text-body-text outline-none",
           "focus-visible:border-accent focus-visible:ring-0 focus-visible:outline-none",
           disabled && "cursor-not-allowed border-border bg-card-hover text-border",
         )}

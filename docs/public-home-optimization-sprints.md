@@ -132,7 +132,10 @@ TODO DA FARE POI:
 - Apertura numero invece di badge ui piu moderna e coerente
 - Citazione del menù con ui piu moderna e coerente
 - Animazioni avanzate
-- Cambiare palette colori:
+
+COMPLETATO:
+
+- Palette colori applicata globalmente:
   - #F7F0E7 => Crema
   - #C13814 => Rosso
   - #000000 => Nero

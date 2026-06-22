@@ -8,22 +8,22 @@
 
 ## Core palette
 
-- `--bg-main`: `#F4EBDD`
-- `--bg-hover`: `#E7DDCB`
-- `--ink`: `#111111`
-- `--accent`: `#A23B2A`
+- `--bg-main`: `#F7F0E7`
+- `--bg-hover`: `rgba(0, 0, 0, 0.06)`
+- `--ink`: `#000000`
+- `--accent`: `#C13814`
 - `--white`: `#FFFFFF`
-- `--body-text`: `#3A352D`
-- `--muted-text`: `#6B6357`
-- `--cream-on-dark`: `#CFC6B6`
-- `--dark-border`: `#34302B`
+- `--body-text`: `rgba(0, 0, 0, 0.82)`
+- `--muted-text`: `rgba(0, 0, 0, 0.62)`
+- `--cream-on-dark`: `#F7F0E7`
+- `--dark-border`: `rgba(247, 240, 231, 0.24)`
 
 Approved alpha variants:
 
-- `--ink-70`: `rgba(17,17,17,0.7)` (hairline/occhiello)
-- `--ink-60`: `rgba(17,17,17,0.6)` (testo secondario)
-- `--ink-50`: `rgba(17,17,17,0.5)` (metadati, numeri paragrafo)
-- `--ink-30`: `rgba(17,17,17,0.22)` (filetti, placeholder, disabled)
+- `--ink-70`: `rgba(0, 0, 0, 0.7)` (hairline/occhiello)
+- `--ink-60`: `rgba(0, 0, 0, 0.6)` (testo secondario)
+- `--ink-50`: `rgba(0, 0, 0, 0.5)` (metadati, numeri paragrafo)
+- `--ink-30`: `rgba(0, 0, 0, 0.22)` (filetti, placeholder, disabled)
 
 ## Semantic tokens
 
@@ -35,7 +35,7 @@ CMS feedback visuals are allowed and standardized:
 
 - `--ui-success`: `#1B7F3A`
 - `--ui-warning`: `#B26A00`
-- `--ui-destructive`: `#A23B2A`
+- `--ui-destructive`: `#C13814`
 
 ## Typography roles
 

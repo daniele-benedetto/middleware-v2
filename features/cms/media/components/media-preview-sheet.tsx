@@ -204,7 +204,7 @@ export function CmsMediaPreviewSheet({
                     </div>
                   ) : item.kind === "audio" ? (
                     <div className="space-y-4 p-5">
-                      <div className="rounded-[8px] border border-foreground bg-white p-4">
+                      <div className="rounded-[8px] border border-foreground bg-card p-4">
                         <audio
                           controls
                           preload="metadata"

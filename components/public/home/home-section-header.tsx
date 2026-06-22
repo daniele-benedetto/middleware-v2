@@ -22,7 +22,7 @@ export function HomeSectionHeader({
     >
       <span className={cn("inline-flex items-center gap-2", publicTypography.sectionTitle)}>
         {marker === "outline" ? (
-          <span className="size-3.5 rounded-[3px] border-2 border-accent bg-white" aria-hidden />
+          <span className="size-3.5 rounded-[3px] border-2 border-accent bg-card" aria-hidden />
         ) : null}
         {marker === "solid" ? (
           <span className="size-3.5 rounded-[3px] bg-foreground" aria-hidden />

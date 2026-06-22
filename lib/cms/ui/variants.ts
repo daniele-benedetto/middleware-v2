@@ -19,9 +19,9 @@ export const cmsTinyMetaClass =
 export const cmsTinyActionClass =
   "font-ui text-[10px] font-bold uppercase tracking-[var(--tracking-meta)] text-foreground transition-colors hover:bg-surface-hover";
 
-export const cmsPanelClass = "rounded-[8px] border border-foreground bg-white";
+export const cmsPanelClass = "rounded-[8px] border border-foreground bg-card";
 
-export const cmsControlChromeClass = "rounded-[6px] border border-foreground bg-white";
+export const cmsControlChromeClass = "rounded-[6px] border border-foreground bg-card";
 
 export const cmsInteractiveSurfaceClass =
   "transition-colors hover:bg-surface-hover data-[state=selected]:bg-surface-hover";

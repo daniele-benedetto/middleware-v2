@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: i18n.cms.app.metadataDescription,
     start_url: "/",
     display: "standalone",
-    background_color: "#F4EBDD",
-    theme_color: "#111111",
+    background_color: "#F7F0E7",
+    theme_color: "#000000",
     icons: [
       {
         src: "/brand/web-app-manifest-192x192.png",

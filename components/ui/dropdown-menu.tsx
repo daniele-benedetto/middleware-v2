@@ -52,7 +52,7 @@ function DropdownMenuContent({
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
           className={cn(
-            "z-50 min-w-44 rounded-[8px] border border-foreground bg-white text-foreground",
+            "z-50 min-w-44 rounded-[8px] border border-foreground bg-card text-foreground",
             "outline-none data-open:animate-in data-open:fade-in-0",
             className,
           )}

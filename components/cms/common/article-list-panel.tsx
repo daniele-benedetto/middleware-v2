@@ -157,7 +157,7 @@ function SortableArticleListPanelRow({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(rowTransform), transition }}
       className={cn(
-        "border-b border-foreground last:border-b-0 odd:bg-white even:bg-card-hover",
+        "border-b border-foreground last:border-b-0 odd:bg-card even:bg-card-hover",
         cmsInteractiveSurfaceClass,
         isDragEnabled && "cursor-grab select-none touch-manipulation active:cursor-grabbing",
         isDragging && "relative z-10 bg-surface-hover",

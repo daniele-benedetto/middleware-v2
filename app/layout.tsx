@@ -31,7 +31,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = buildRootMetadata();
 
 export const viewport: Viewport = {
-  themeColor: "#111111",
+  themeColor: "#000000",
   colorScheme: "light",
 };
 

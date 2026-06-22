@@ -38,7 +38,7 @@ export function EditorialAudioPlayer({
   return (
     <div
       className={cn(
-        "max-w-120 rounded-[8px] border border-foreground bg-white px-4.5 py-3.5",
+        "max-w-120 rounded-[8px] border border-foreground bg-card px-4.5 py-3.5",
         className,
       )}
     >

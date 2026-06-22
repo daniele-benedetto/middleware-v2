@@ -78,7 +78,7 @@ export function CmsRichTextEditor({
   return (
     <div
       className={cn(
-        "min-w-0 border border-foreground bg-white",
+        "min-w-0 border border-foreground bg-card",
         fullHeight && "flex min-h-full flex-col",
         disabled && "border-border bg-card-hover text-border",
         className,

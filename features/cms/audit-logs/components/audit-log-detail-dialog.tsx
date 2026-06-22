@@ -361,7 +361,7 @@ export function CmsAuditLogDetailDialog({ auditLogId }: CmsAuditLogDetailDialogP
             {detailQuery.isPending ? (
               <AuditLogDetailSkeleton text={text} />
             ) : detailError ? (
-              <div className="rounded-[8px] border-l-4 border-accent bg-white px-4 py-4">
+              <div className="rounded-[8px] border-l-4 border-accent bg-card px-4 py-4">
                 <div className="font-ui text-[10px] font-extrabold uppercase tracking-widest text-accent">
                   {detailError.title}
                 </div>

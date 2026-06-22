@@ -342,7 +342,7 @@ Notes:
 
 Design direction: editorial, high contrast, no decorative effects.
 
-- Palette (fixed): `#F4EBDD`, `#E7DDCB`, `#111111`, `#A23B2A`, `#FFFFFF`
+- Palette (fixed): `#F7F0E7`, `#C13814`, `#000000`, `#FFFFFF`
 - Ink alpha variants (no gray ramp): `ink-60`, `ink-50`, `ink-30`
 - Typography roles:
   - display/headings: `Archivo`
@@ -351,7 +351,7 @@ Design direction: editorial, high contrast, no decorative effects.
 - Surfaces: controlled `6px`/`8px` radius on controls and CTAs, `box-shadow: none`
 - Strokes: `2px` primary separators, `1px` grid lines, `3px` semantic accent, `3px` reading bar
 - Spacing scale: `4, 8, 12, 16, 20, 24, 32, 48, 72`
-- Selection: background `#A23B2A`, text `#F4EBDD`
+- Selection: background `#C13814`, text `#F7F0E7`
 - Theme policy: light-only for current phase
 
 Implementation reference:

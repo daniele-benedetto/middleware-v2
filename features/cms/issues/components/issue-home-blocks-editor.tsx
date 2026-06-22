@@ -659,7 +659,7 @@ function ArticleDragCard({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-3 border border-border bg-white px-3 py-2",
+        "flex items-center justify-between gap-3 border border-border bg-card px-3 py-2",
         overlay && "w-80 border-foreground shadow-(--interactive-rail-shadow)",
         isDragging && !overlay && "opacity-40",
       )}
@@ -712,7 +712,7 @@ function SortableBlockSection({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(sectionTransform), transition }}
       className={cn(
-        "border border-foreground bg-white p-4",
+        "border border-foreground bg-card p-4",
         isDragging && "relative z-10 shadow-(--interactive-rail-shadow)",
       )}
     >
@@ -753,7 +753,7 @@ function SelectedArticlesDropZone({
       <div
         ref={setNodeRef}
         className={cn(
-          "min-h-24 space-y-2 border border-border bg-white p-3 transition-colors",
+          "min-h-24 space-y-2 border border-border bg-card p-3 transition-colors",
           isOver && "border-foreground bg-surface-hover",
         )}
       >
@@ -825,7 +825,7 @@ function ArticlePoolPanel({
         </div>
 
         {articles.length === 0 ? (
-          <div className="rounded-[6px] border border-dashed border-border bg-white px-3 py-4">
+          <div className="rounded-[6px] border border-dashed border-border bg-card px-3 py-4">
             <CmsBody size="sm" tone="muted">
               {text.emptyArticles}
             </CmsBody>

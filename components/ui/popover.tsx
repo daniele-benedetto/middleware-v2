@@ -31,7 +31,7 @@ function PopoverContent({
         <PopoverPrimitive.Popup
           data-slot="popover-content"
           className={cn(
-            "relative isolate z-60 rounded-[8px] border border-foreground bg-white text-foreground shadow-none outline-none",
+            "relative isolate z-60 rounded-[8px] border border-foreground bg-card text-foreground shadow-none outline-none",
             "data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0",
             "transition-[opacity,transform] duration-150",
             className,

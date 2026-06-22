@@ -41,7 +41,7 @@ export function CmsMediaCard({
         <span
           aria-hidden
           className={cn(
-            "pointer-events-none absolute top-2 right-2 z-10 size-3 rounded-[3px] border bg-white transition-colors",
+            "pointer-events-none absolute top-2 right-2 z-10 size-3 rounded-[3px] border bg-card transition-colors",
             selected ? "border-accent bg-accent" : "border-foreground/40",
           )}
         />

@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 const cmsSurfaceVariants = cva("rounded-[8px]", {
   variants: {
     tone: {
-      card: "bg-white text-foreground",
+      card: "bg-card text-foreground",
       cream: "bg-background text-foreground",
       muted: "bg-card-hover text-foreground",
       dark: "bg-foreground text-background",

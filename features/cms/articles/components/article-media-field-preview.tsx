@@ -91,7 +91,7 @@ function ArticleJsonPreview({ url }: { url: string }) {
           {error}
         </CmsBody>
       ) : content ? (
-        <pre className="max-h-72 overflow-auto bg-white p-4 font-ui text-[12px] leading-[1.55] text-foreground whitespace-pre-wrap wrap-break-word">
+        <pre className="max-h-72 overflow-auto bg-card p-4 font-ui text-[12px] leading-[1.55] text-foreground whitespace-pre-wrap wrap-break-word">
           {content}
         </pre>
       ) : (

@@ -175,7 +175,7 @@ export function CmsMediaUploadDialog({
                 setFile(nextFile);
                 setBaseName(nextFile ? parseMediaPathname(nextFile.name).baseName : "");
               }}
-              className="block w-full cursor-pointer rounded-[6px] border border-foreground bg-white px-3 py-2.5 font-ui text-[12px] font-bold uppercase tracking-[0.08em] text-foreground file:mr-3 file:border-0 file:bg-transparent file:font-ui file:text-[11px] file:font-bold file:uppercase file:tracking-[0.1em] file:text-muted-foreground hover:bg-surface-hover focus-visible:border-accent focus-visible:outline-none"
+              className="block w-full cursor-pointer rounded-[6px] border border-foreground bg-card px-3 py-2.5 font-ui text-[12px] font-bold uppercase tracking-[0.08em] text-foreground file:mr-3 file:border-0 file:bg-transparent file:font-ui file:text-[11px] file:font-bold file:uppercase file:tracking-[0.1em] file:text-muted-foreground hover:bg-surface-hover focus-visible:border-accent focus-visible:outline-none"
             />
           </CmsFormField>
 
@@ -194,7 +194,7 @@ export function CmsMediaUploadDialog({
           </CmsFormField>
 
           {parsedFile ? (
-            <div className="space-y-1.5 rounded-[8px] border border-foreground bg-white px-4 py-3">
+            <div className="space-y-1.5 rounded-[8px] border border-foreground bg-card px-4 py-3">
               <CmsMetaText variant="tiny">{pathname || parsedFile.fileName}</CmsMetaText>
               <CmsMetaText variant="tiny">{mediaText.placeholderLabel}</CmsMetaText>
             </div>

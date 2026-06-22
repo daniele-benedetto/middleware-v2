@@ -36,7 +36,7 @@ const bodyCellBase = "align-middle";
 export const cmsTableClasses = {
   tableContainer: "overflow-visible",
   table: "w-full border-collapse",
-  headerCheckbox: "bg-white",
+  headerCheckbox: "bg-card",
   selectionCell: "w-8 min-w-8 max-w-8 px-0 text-center align-middle",
   selectionCellInner: "flex h-full w-full items-center justify-center",
   headerRow:
@@ -56,7 +56,7 @@ export const cmsTableClasses = {
 
   bodyRow: cn(
     "border-b border-foreground last:border-b-0",
-    "odd:bg-white even:bg-card-hover",
+    "odd:bg-card even:bg-card-hover",
     "data-[state=selected]:bg-card-hover",
   ),
   bodyRowArchived: cn("border-b border-foreground last:border-b-0 bg-card-hover"),

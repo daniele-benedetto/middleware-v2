@@ -19,12 +19,12 @@ function CmsToastCard({ id, label, body, variant }: CmsToastRenderProps) {
   const containerClass = cn(
     "flex w-full min-w-80 max-w-120 items-stretch",
     variant === "success"
-      ? "border border-success bg-white"
+      ? "border border-success bg-card"
       : variant === "error"
-        ? "border border-destructive bg-white"
+        ? "border border-destructive bg-card"
         : variant === "breaking"
-          ? "border border-warning bg-white"
-          : "border border-foreground bg-white",
+          ? "border border-warning bg-card"
+          : "border border-foreground bg-card",
   );
 
   const barClass = cn(

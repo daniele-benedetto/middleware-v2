@@ -55,7 +55,7 @@ export function CmsLoginForm() {
   };
 
   return (
-    <form className="border border-foreground bg-white" onSubmit={onSubmit}>
+    <form className="border border-foreground bg-card" onSubmit={onSubmit}>
       <div className="flex flex-col gap-4 border-b border-border px-4.5 py-5">
         <CmsFormField label={text.emailLabel} htmlFor="email">
           <CmsTextInput

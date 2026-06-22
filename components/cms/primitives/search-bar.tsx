@@ -25,7 +25,7 @@ export function CmsSearchBar({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[6px] bg-white",
+        "overflow-hidden rounded-[6px] bg-card",
         accent
           ? "border border-accent"
           : "border border-foreground focus-within:border focus-within:border-accent",
@@ -84,7 +84,7 @@ export function CmsSearchResultItem({
         "block w-full px-3.5 py-1.75 text-left transition-none",
         "font-ui text-[11px] font-bold uppercase tracking-[0.08em] text-foreground",
         "border-b border-card-hover last:border-b-0",
-        active ? "bg-card-hover" : "bg-white hover:bg-card-hover",
+        active ? "bg-card-hover" : "bg-card hover:bg-card-hover",
       )}
     >
       {title}

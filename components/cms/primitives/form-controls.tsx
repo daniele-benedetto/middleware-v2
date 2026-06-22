@@ -45,7 +45,7 @@ const cmsFormLabelVariants = cva(labelBase, {
 });
 
 const inputBaseReset =
-  "w-full rounded-[6px] bg-white shadow-none outline-none transition-none appearance-none " +
+  "w-full rounded-[6px] bg-card shadow-none outline-none transition-none appearance-none " +
   "placeholder:text-border " +
   "focus-visible:outline-none focus-visible:ring-0 focus-visible:border focus-visible:border-accent " +
   "aria-invalid:ring-0 aria-invalid:border-accent";
@@ -58,9 +58,9 @@ const cmsTextInputVariants = cva(`${inputBaseReset} h-auto leading-[1.2]`, {
       mono: "font-technical text-[13px] tracking-[0.02em] text-foreground",
     },
     state: {
-      default: "border border-foreground bg-white px-3 py-2.5",
-      focus: "border border-accent bg-white px-2.75 py-2.25",
-      filled: "border border-foreground bg-white px-3 py-2.5",
+      default: "border border-foreground bg-card px-3 py-2.5",
+      focus: "border border-accent bg-card px-2.75 py-2.25",
+      filled: "border border-foreground bg-card px-3 py-2.5",
       error: "border border-accent bg-(--ui-error-bg) px-2.75 py-2.25",
       disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3 py-2.5",
     },
@@ -73,9 +73,9 @@ const cmsTextareaVariants = cva(
   {
     variants: {
       state: {
-        default: "border border-foreground bg-white px-3 py-2.5",
-        focus: "border border-accent bg-white px-2.75 py-2.25",
-        filled: "border border-foreground bg-white px-3 py-2.5",
+        default: "border border-foreground bg-card px-3 py-2.5",
+        focus: "border border-accent bg-card px-2.75 py-2.25",
+        filled: "border border-foreground bg-card px-3 py-2.5",
         error: "border border-accent bg-(--ui-error-bg) px-2.75 py-2.25",
         disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3 py-2.5",
       },
@@ -85,7 +85,7 @@ const cmsTextareaVariants = cva(
 );
 
 const cmsSelectTriggerVariants = cva(
-  "w-full rounded-[6px] bg-white shadow-none outline-none transition-none " +
+  "w-full rounded-[6px] bg-card shadow-none outline-none transition-none " +
     "h-auto data-[size=default]:h-auto leading-[1.2] font-ui text-[12px] font-bold uppercase tracking-[var(--tracking-meta)] text-foreground " +
     "data-placeholder:text-border " +
     "focus-visible:outline-none focus-visible:ring-0 focus-visible:border focus-visible:border-accent " +
@@ -94,8 +94,8 @@ const cmsSelectTriggerVariants = cva(
   {
     variants: {
       state: {
-        default: "border border-foreground bg-white px-3 py-2.5",
-        focus: "border border-accent bg-white px-2.75 py-2.25",
+        default: "border border-foreground bg-card px-3 py-2.5",
+        focus: "border border-accent bg-card px-2.75 py-2.25",
         filled: "border border-accent bg-(--bg-main) px-2.75 py-2.25 [&>svg]:text-accent!",
         error: "border border-accent bg-(--ui-error-bg) px-2.75 py-2.25 [&>svg]:text-accent!",
         disabled: "border border-border bg-card-hover text-border cursor-not-allowed px-3 py-2.5",
@@ -265,7 +265,7 @@ export function CmsSelect({
         </ShadcnSelectValue>
       </ShadcnSelectTrigger>
       <ShadcnSelectContent
-        className="rounded-[6px] border border-accent bg-white p-0 shadow-none ring-0"
+        className="rounded-[6px] border border-accent bg-card p-0 shadow-none ring-0"
         align="start"
         alignItemWithTrigger={false}
         sideOffset={0}
@@ -415,11 +415,11 @@ export function CmsSearchSelect({
 
       <PopoverContent
         sideOffset={0}
-        className="w-(--anchor-width) rounded-[6px] border border-accent bg-white p-0 shadow-none ring-0"
+        className="w-(--anchor-width) rounded-[6px] border border-accent bg-card p-0 shadow-none ring-0"
       >
         {hasOptions ? (
           <>
-            <div className="flex items-center gap-2 border-b border-border bg-white px-3 py-2">
+            <div className="flex items-center gap-2 border-b border-border bg-card px-3 py-2">
               <Search className="size-3.5 shrink-0 text-muted-foreground" />
               <input
                 ref={inputRef}
@@ -450,7 +450,7 @@ export function CmsSearchSelect({
                         "hover:bg-accent hover:text-background",
                         selected
                           ? "bg-card-hover text-foreground"
-                          : "bg-white text-muted-foreground",
+                          : "bg-card text-muted-foreground",
                       )}
                     >
                       <span className="line-clamp-1">{option.label}</span>
@@ -502,8 +502,8 @@ export function CmsCheckbox({
     disabled
       ? "border-border bg-card-hover! cursor-not-allowed"
       : accent
-        ? "border-foreground bg-white data-checked:border-accent! data-checked:bg-accent! [&[data-checked]_[data-slot=checkbox-indicator]]:text-background"
-        : "border-foreground bg-white data-checked:bg-foreground! [&[data-checked]_[data-slot=checkbox-indicator]]:text-(--bg-main)",
+        ? "border-foreground bg-card data-checked:border-accent! data-checked:bg-accent! [&[data-checked]_[data-slot=checkbox-indicator]]:text-background"
+        : "border-foreground bg-card data-checked:bg-foreground! [&[data-checked]_[data-slot=checkbox-indicator]]:text-(--bg-main)",
     "focus-visible:ring-0 focus-visible:border-accent",
   );
 
@@ -566,7 +566,7 @@ export function CmsRadio({
             "size-5 shrink-0 rounded-full shadow-none ring-0",
             disabled
               ? "border! border-border! bg-card-hover!"
-              : "border! border-border! bg-white! data-checked:border-2! data-checked:border-accent! data-checked:bg-white!",
+              : "border! border-border! bg-card! data-checked:border-2! data-checked:border-accent! data-checked:bg-card!",
             "focus-visible:ring-0",
             "[&_[data-slot=radio-group-indicator]>span]:size-2! [&_[data-slot=radio-group-indicator]>span]:bg-accent!",
           )}

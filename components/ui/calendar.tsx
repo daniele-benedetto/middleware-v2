@@ -12,7 +12,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: D
       locale={it}
       navLayout="around"
       showOutsideDays={showOutsideDays}
-      className={cn("rounded-[8px] bg-white", className)}
+      className={cn("rounded-[8px] bg-card", className)}
       classNames={{
         root: "w-full",
         months: "flex flex-col gap-0",
@@ -24,11 +24,11 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: D
         nav: "contents",
         button_previous: cn(
           buttonVariants({ variant: "outline", size: "icon-xs" }),
-          "col-start-1 row-start-1 h-full w-8 self-stretch rounded-tl-[8px] rounded-tr-none rounded-br-none rounded-bl-none border-t-0 border-r border-b border-l-0 border-foreground bg-white p-0 text-foreground hover:bg-surface-hover hover:text-foreground",
+          "col-start-1 row-start-1 h-full w-8 self-stretch rounded-tl-[8px] rounded-tr-none rounded-br-none rounded-bl-none border-t-0 border-r border-b border-l-0 border-foreground bg-card p-0 text-foreground hover:bg-surface-hover hover:text-foreground",
         ),
         button_next: cn(
           buttonVariants({ variant: "outline", size: "icon-xs" }),
-          "col-start-3 row-start-1 h-full w-8 justify-self-end self-stretch rounded-tl-none rounded-tr-[8px] rounded-br-none rounded-bl-none border-t-0 border-r-0 border-b border-l border-foreground bg-white p-0 text-foreground hover:bg-surface-hover hover:text-foreground",
+          "col-start-3 row-start-1 h-full w-8 justify-self-end self-stretch rounded-tl-none rounded-tr-[8px] rounded-br-none rounded-bl-none border-t-0 border-r-0 border-b border-l border-foreground bg-card p-0 text-foreground hover:bg-surface-hover hover:text-foreground",
         ),
         month_grid: "col-span-3 row-start-2 w-full border-collapse px-3 py-3",
         weekdays: "grid grid-cols-7 border-b border-border",
