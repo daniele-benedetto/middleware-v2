@@ -339,8 +339,10 @@ body {
   background: var(--ink);
 }
 
-.cms-scroll:hover::-webkit-scrollbar-thumb {
-  background: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .cms-scroll:hover::-webkit-scrollbar-thumb {
+    background: var(--ink);
+  }
 }
 
 .cms-scroll::-webkit-scrollbar-corner,

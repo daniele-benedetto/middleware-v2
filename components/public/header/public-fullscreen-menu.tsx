@@ -45,7 +45,7 @@ export function PublicFullscreenMenu({ id, onClose, closeButtonRef }: PublicFull
               key={item.number}
               href={item.href}
               onClick={onClose}
-              className="flex items-baseline gap-4 border-b border-dark-line py-3 transition-colors duration-(--motion-fast) hover:border-accent hover:text-accent sm:gap-5.5 sm:py-3.5"
+              className="flex items-baseline gap-4 border-b border-dark-line py-3 transition-colors duration-(--motion-fast) sm:gap-5.5 sm:py-3.5 md:hover:border-accent md:hover:text-accent"
             >
               <span className="font-heading text-[15px] font-bold tracking-[0.1em] text-accent">
                 {item.number}

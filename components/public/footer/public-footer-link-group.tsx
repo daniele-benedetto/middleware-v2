@@ -22,7 +22,7 @@ export function PublicFooterLinkGroup({ title, links }: PublicFooterLinkGroupPro
           <Link
             key={link.label}
             href={link.href}
-            className="transition-colors duration-(--motion-fast) hover:text-background hover:underline hover:underline-offset-3"
+            className="transition-colors duration-(--motion-fast) md:hover:text-background md:hover:underline md:hover:underline-offset-3"
           >
             {link.label}
           </Link>

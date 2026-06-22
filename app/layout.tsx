@@ -52,7 +52,7 @@ export default function RootLayout({
         "font-sans",
       )}
     >
-      <body className="flex min-h-full flex-col scrollbar-thin scrollbar-track-background scrollbar-thumb-border hover:scrollbar-thumb-foreground">
+      <body className="flex min-h-full flex-col scrollbar-thin scrollbar-track-background scrollbar-thumb-border md:hover:scrollbar-thumb-foreground">
         <TrpcProvider>{children}</TrpcProvider>
         <Toaster />
       </body>

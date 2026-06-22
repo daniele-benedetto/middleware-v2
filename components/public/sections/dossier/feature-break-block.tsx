@@ -55,7 +55,7 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
         aria-label={article.title}
         className={cn(
           publicInteraction.cardBase,
-          "grid hover:shadow-(--interactive-rail-shadow) md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
+          "grid md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
           variantClasses.section,
           showBorder ? "border border-current" : "",
         )}

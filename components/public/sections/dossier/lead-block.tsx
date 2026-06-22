@@ -38,7 +38,7 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
           aria-label={article.title}
           className={cn(
             publicInteraction.cardBase,
-            "grid gap-8 border-l-4 border-transparent pl-4 hover:border-accent focus-visible:border-accent sm:pl-5 md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] md:gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:gap-12",
+            "grid gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] md:gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:gap-12",
           )}
         >
           <div>
