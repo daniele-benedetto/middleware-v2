@@ -8,7 +8,18 @@ const seasons = {
 } as const;
 
 export function formatIssueNumber(positionFromOldest: number): string {
-  return `N°${String(positionFromOldest).padStart(2, "0")}`;
+  return `N. ${String(positionFromOldest).padStart(2, "0")}`;
+}
+
+export function formatIssueMonthYearLong(publishedAt: string): string {
+  const date = new Date(publishedAt);
+  const formatter = new Intl.DateTimeFormat("it-IT", {
+    month: "long",
+    timeZone: "UTC",
+    year: "numeric",
+  });
+
+  return formatter.format(date);
 }
 
 export function formatIssueSeasonShort(publishedAt: string): string {

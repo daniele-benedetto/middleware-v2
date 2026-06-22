@@ -7,7 +7,7 @@ export function formatTags(article: HomeIssueArticle) {
   return article.tags
     .slice(0, 3)
     .map((tag) => tag.name)
-    .join(" / ");
+    .join("\u00A0/\u00A0");
 }
 
 export function blockEyebrow(block: NarrativeHomeBlock, article: HomeIssueArticle) {

@@ -132,6 +132,7 @@ TODO DA FARE POI:
 - Apertura numero invece di badge ui piu moderna e coerente
 - Citazione del menù con ui piu moderna e coerente
 - Animazioni avanzate
+- Transizioni di pagina
 
 COMPLETATO:
 

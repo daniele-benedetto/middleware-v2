@@ -79,9 +79,9 @@ export function DossierArticleCard({
             : "flex h-full min-h-0 min-w-0 flex-col"
         }
       >
-        <div className="mb-5 flex items-start justify-between gap-4">
+        <div className="mb-5 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4">
           <span
-            className={`font-heading leading-[0.78] font-black tracking-[-0.04em] text-accent ${
+            className={`shrink-0 font-heading leading-[0.78] font-black tracking-[-0.04em] text-accent ${
               isClusterFeatured
                 ? "text-[40px] sm:text-[48px] md:text-[56px]"
                 : isClosing
@@ -91,13 +91,7 @@ export function DossierArticleCard({
           >
             {formatArticleNumber(number)}
           </span>
-          <span
-            className={cn(
-              publicTypography.articleEyebrow,
-              "text-muted",
-              isClosing ? "md:max-w-52" : "md:max-w-[24ch]",
-            )}
-          >
+          <span className={cn(publicTypography.articleEyebrow, "min-w-0 text-muted")}>
             {eyebrow}
           </span>
         </div>

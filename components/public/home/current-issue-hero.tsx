@@ -1,38 +1,69 @@
-import { publicTypography } from "@/components/public/primitives";
 import { StyledTitle } from "@/components/public/styled-title";
-import { cn } from "@/lib/utils";
+import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
 type CurrentIssueHeroProps = {
   issue: PublicCurrentIssueDetail;
   description: string | null;
-  issueLabel: string;
+  issueNumber: string;
 };
 
-export function CurrentIssueHero({ issue, description, issueLabel }: CurrentIssueHeroProps) {
+function getArticleCountLabel(count: number) {
+  return `${count} ${count === 1 ? "articolo" : "articoli"}`;
+}
+
+function IssueMetaRail({
+  issue,
+  issueNumber,
+}: Pick<CurrentIssueHeroProps, "issue" | "issueNumber">) {
+  const metaItems = [
+    issueNumber,
+    formatIssueMonthYearLong(issue.publishedAt),
+    getArticleCountLabel(issue.articles.length),
+  ];
+
   return (
-    <section className="w-full px-4 pt-8 pb-8 sm:px-6 sm:pt-10 md:pt-12 lg:px-12 lg:pb-10">
+    <div className="flex flex-wrap items-center gap-3 font-heading text-[13px] font-semibold text-muted sm:text-[14px]">
+      {metaItems.map((item, index) => (
+        <span key={item} className="flex items-center gap-3">
+          {index > 0 ? <span className="size-1 rounded-[1px] bg-accent" aria-hidden /> : null}
+          {item}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export function CurrentIssueHero({ issue, description, issueNumber }: CurrentIssueHeroProps) {
+  return (
+    <section className="relative isolate w-full overflow-hidden border-y-2 border-foreground bg-background px-4 py-7 sm:px-6 sm:py-9 lg:px-12 lg:py-14">
       <div
-        className={cn(
-          "mb-5 inline-flex max-w-full items-center gap-2 rounded-[6px] bg-accent px-3 py-1.5 text-background sm:mb-6 sm:text-xs",
-          publicTypography.smallKicker,
-          "font-extrabold",
-        )}
+        className="pointer-events-none absolute top-5 right-5 z-0 font-heading text-[clamp(108px,26vw,390px)] leading-[0.72] font-black tracking-[-0.035em] text-accent/15 select-none [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]"
+        aria-hidden
       >
-        <span className="size-2 rounded-xs bg-background" aria-hidden />
-        <span className="min-w-0 break-words">{issueLabel}</span>
+        {issueNumber}
       </div>
-      <h1 className="max-w-[20ch] font-heading text-[clamp(38px,8.2vw,124px)] leading-[0.94] font-black tracking-[-0.038em] text-foreground sm:leading-[0.92]">
-        <StyledTitle title={issue.title} titleStyled={issue.titleStyled} />
-      </h1>
-      {description ? (
-        <div className="mt-8 border-t border-foreground pt-6">
-          <p className={cn("w-full text-body-text", publicTypography.editorialLead)}>
-            {description}
-          </p>
-        </div>
-      ) : null}
+
+      <div className="relative z-10 w-full">
+        <h1 className="w-full font-heading text-[clamp(48px,9.5vw,138px)] leading-[0.86] font-black tracking-[-0.06em] text-foreground">
+          <StyledTitle title={issue.title} titleStyled={issue.titleStyled} />
+        </h1>
+        {description ? (
+          <div className="mt-8 w-full border-t-2 border-foreground pt-5">
+            <p className="font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] text-body-text italic">
+              {description}
+            </p>
+            <div className="mt-6">
+              <IssueMetaRail issue={issue} issueNumber={issueNumber} />
+            </div>
+          </div>
+        ) : (
+          <div className="mt-7">
+            <IssueMetaRail issue={issue} issueNumber={issueNumber} />
+          </div>
+        )}
+      </div>
     </section>
   );
 }

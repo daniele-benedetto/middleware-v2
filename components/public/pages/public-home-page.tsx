@@ -9,6 +9,7 @@ import {
 } from "@/components/public/home/home-view-model";
 import { DossierHome } from "@/components/public/sections/dossier/dossier-home";
 import { i18n } from "@/lib/i18n";
+import { formatIssueNumber } from "@/lib/public/format/issue";
 import { buildHomeJsonLd } from "@/lib/seo/home-json-ld";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
@@ -43,7 +44,7 @@ export function PublicHomePage({
             <CurrentIssueHero
               issue={currentIssue}
               description={getIssuePlainDescription(currentIssue)}
-              issueLabel={getIssueOrderLabel(publishedIssues, currentIssue, text.hero.issueLabel)}
+              issueNumber={getIssueOrderLabel(publishedIssues, currentIssue, formatIssueNumber)}
             />
             <DossierHome issue={currentIssue} />
           </>

@@ -39,29 +39,35 @@ export function PublicFullscreenMenu({ id, onClose, closeButtonRef }: PublicFull
       </div>
 
       <nav className="flex w-full flex-1 flex-col justify-center px-4 py-7 sm:px-6 sm:py-8 lg:px-12">
-        {text.items.map((item) => (
-          <Link
-            key={item.number}
-            href={item.href}
-            onClick={onClose}
-            className="flex items-baseline gap-4 border-b border-dark-line py-3 transition-colors duration-(--motion-fast) hover:border-accent hover:text-accent sm:gap-5.5 sm:py-3.5"
+        <div>
+          {text.items.map((item) => (
+            <Link
+              key={item.number}
+              href={item.href}
+              onClick={onClose}
+              className="flex items-baseline gap-4 border-b border-dark-line py-3 transition-colors duration-(--motion-fast) hover:border-accent hover:text-accent sm:gap-5.5 sm:py-3.5"
+            >
+              <span className="font-heading text-[15px] font-bold tracking-[0.1em] text-accent">
+                {item.number}
+              </span>
+              <span className={publicTypography.menuItem}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div className="relative mt-9.5 w-full md:w-1/3">
+          <blockquote
+            className={cn(
+              "relative max-w-none text-cream-on-dark italic",
+              "font-editorial text-[clamp(19px,2vw,28px)] leading-[1.22]",
+            )}
           >
-            <span className="font-heading text-[15px] font-bold tracking-[0.1em] text-accent">
-              {item.number}
-            </span>
-            <span className={publicTypography.menuItem}>{item.label}</span>
-          </Link>
-        ))}
-        <figure className="mt-9.5 max-w-[46ch]">
-          <blockquote className={cn("text-dark-muted italic", publicTypography.editorialSmall)}>
-            “{text.quote}”
+            {text.quote}
           </blockquote>
-          <figcaption
-            className={cn("mt-3 text-dark-muted italic", publicTypography.editorialSmall)}
-          >
+          <p className="mt-4 font-heading text-[11px] font-bold tracking-[0.14em] text-dark-muted uppercase">
             {text.quoteSource}
-          </figcaption>
-        </figure>
+          </p>
+        </div>
       </nav>
     </div>
   );
