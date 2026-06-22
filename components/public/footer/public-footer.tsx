@@ -7,7 +7,7 @@ export function PublicFooter() {
   const text = i18n.public.footer;
 
   return (
-    <footer id="footer" className="border-t-[3px] border-accent bg-foreground text-background">
+    <footer id="footer" className="bg-foreground text-background">
       <div className="grid w-full grid-cols-1 gap-9 px-4 pt-13 pb-10 sm:px-6 md:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] lg:px-12">
         <PublicFooterBrand />
         <PublicFooterLinkGroup title={text.sections.title} links={text.sections.links} />

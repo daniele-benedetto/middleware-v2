@@ -38,30 +38,32 @@ export function PublicHomePage({
       />
       <HomeScrollProgress />
       <PublicHeader />
-      {currentIssue ? (
-        <>
-          <CurrentIssueHero
-            issue={currentIssue}
-            description={getIssuePlainDescription(currentIssue)}
-            issueLabel={getIssueOrderLabel(publishedIssues, currentIssue, text.hero.issueLabel)}
+      <div id="main-content" tabIndex={-1} className="flex flex-col focus:outline-none">
+        {currentIssue ? (
+          <>
+            <CurrentIssueHero
+              issue={currentIssue}
+              description={getIssuePlainDescription(currentIssue)}
+              issueLabel={getIssueOrderLabel(publishedIssues, currentIssue, text.hero.issueLabel)}
+            />
+            <DossierHome issue={currentIssue} />
+          </>
+        ) : (
+          <PublicSystemScreen
+            code={text.empty.code}
+            kicker={text.empty.kicker}
+            title={text.empty.title}
+            description={text.empty.description}
           />
-          <DossierHome issue={currentIssue} />
-        </>
-      ) : (
-        <PublicSystemScreen
-          code={text.empty.code}
-          kicker={text.empty.kicker}
-          title={text.empty.title}
-          description={text.empty.description}
+        )}
+        <ArchiveSection
+          title={text.archive.title}
+          description={text.archive.description}
+          issues={archiveIssues}
+          countLabel={text.archive.countLabel}
+          cta={text.archive.cta}
         />
-      )}
-      <ArchiveSection
-        title={text.archive.title}
-        description={text.archive.description}
-        issues={archiveIssues}
-        countLabel={text.archive.countLabel}
-        cta={text.archive.cta}
-      />
+      </div>
       <PublicFooter />
     </main>
   );

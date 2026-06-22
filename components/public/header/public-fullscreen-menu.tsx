@@ -27,7 +27,7 @@ export function PublicFullscreenMenu({ id, onClose, closeButtonRef }: PublicFull
       className="fixed inset-0 z-100 flex flex-col overflow-y-auto bg-foreground text-background"
     >
       <div className={`${publicHeaderBarClassName} border-b-2 border-dark-border`}>
-        <PublicBrand tone="dark" priority onClick={onClose} />
+        <PublicBrand tone="dark" onClick={onClose} />
         <PublicMenuButton
           ref={closeButtonRef}
           label={text.close}

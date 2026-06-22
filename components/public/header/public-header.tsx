@@ -13,6 +13,15 @@ type PublicHeaderProps = {
   className?: string;
 };
 
+const focusableSelector = [
+  "a[href]",
+  "button:not([disabled])",
+  "textarea:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",");
+
 export function PublicHeader({ className }: PublicHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = useId();
@@ -33,6 +42,35 @@ export function PublicHeader({ className }: PublicHeaderProps) {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setMenuOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const menu = document.getElementById(menuId);
+      const focusableElements = Array.from(
+        menu?.querySelectorAll<HTMLElement>(focusableSelector) ?? [],
+      ).filter((element) => element.offsetParent !== null || element === closeButtonRef.current);
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements.at(-1);
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement?.focus();
+        return;
+      }
+
+      if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
       }
     };
 
@@ -43,7 +81,7 @@ export function PublicHeader({ className }: PublicHeaderProps) {
       window.removeEventListener("keydown", handleKeyDown);
       menuButton?.focus();
     };
-  }, [menuOpen]);
+  }, [menuId, menuOpen]);
 
   const closeMenu = () => setMenuOpen(false);
 
