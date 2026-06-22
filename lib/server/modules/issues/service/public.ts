@@ -42,7 +42,7 @@ type PublicIssueArticleRecord = {
 };
 
 const WORDS_PER_MINUTE = 220;
-const CONTENT_PREVIEW_MAX_LENGTH = 6000;
+export const CONTENT_PREVIEW_MAX_LENGTH = 900;
 
 const calculateReadingTimeMinutes = (contentRich: unknown) => {
   const text = extractPlainText(contentRich);
@@ -135,6 +135,10 @@ const toPublicIssueDetailDto = (issue: PublicIssueDetailRecord): PublicIssueDeta
 };
 
 export const publicIssuesService = {
+  async listPublishedItems(pagination: PaginationParams) {
+    const issues = await publicIssuesRepository.listPublished(pagination);
+    return issues.map(toPublicIssueDto);
+  },
   async listPublished(pagination: PaginationParams) {
     const [issues, total] = await Promise.all([
       publicIssuesRepository.listPublished(pagination),

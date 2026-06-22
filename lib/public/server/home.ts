@@ -53,12 +53,10 @@ async function getCurrentIssue() {
 
 async function getPublishedIssueList() {
   try {
-    const result = await publicIssuesService.listPublished({
+    return (await publicIssuesService.listPublishedItems({
       page: 1,
       pageSize: PUBLIC_HOME_ISSUES_PAGE_SIZE,
-    });
-
-    return result.items as PublicIssueListItem[];
+    })) as PublicIssueListItem[];
   } catch (error) {
     console.error("public.getPublicHomeData published issues failed", error);
     return [];

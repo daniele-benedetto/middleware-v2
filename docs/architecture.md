@@ -70,6 +70,8 @@ CMS page/request
 - The public home uses `lib/public/server/home.ts` as its single data loader for page rendering and metadata.
 - Public home data is cached with `unstable_cache` and `PUBLIC_HOME_REVALIDATE_SECONDS` because issue publishing is infrequent.
 - The public home loader calls the public issue service directly, not the request-bound tRPC caller, so it is safe to reuse across requests.
+- The public home loader uses `publicIssuesService.listPublishedItems()` for archive cards, avoiding the `countPublished()` query used by paginated API responses.
+- Article `contentPreview` is derived and capped server-side before serialization; fully removing `contentRich` from home queries requires persisted derived fields such as `readingTimeMinutes` and `contentPreview`.
 - The public home cache tag is `PUBLIC_HOME_CACHE_TAG` (`public-home`); use `revalidateTag(PUBLIC_HOME_CACHE_TAG)` when CMS publish flows need immediate public refresh.
 
 ## Auth And Roles
