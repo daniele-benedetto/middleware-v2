@@ -43,24 +43,11 @@ type PublicIssueArticleRecord = {
 };
 
 const WORDS_PER_MINUTE = 220;
-export const CONTENT_PREVIEW_MAX_LENGTH = 900;
 
 const calculateReadingTimeMinutes = (contentRich: unknown) => {
   const text = extractPlainText(contentRich);
   const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
   return Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
-};
-
-const getContentPreview = (contentRich: unknown) => {
-  const text = extractPlainText(contentRich)?.replace(/\s+/g, " ").trim();
-
-  if (!text) {
-    return null;
-  }
-
-  return text.length > CONTENT_PREVIEW_MAX_LENGTH
-    ? text.slice(0, CONTENT_PREVIEW_MAX_LENGTH).trim()
-    : text;
 };
 
 const normalizeIssueHomeBlocks = (value: unknown): IssueHomeBlocks | null => {
@@ -115,7 +102,6 @@ const toPublicIssueArticleSummaryDto = (
     title: article.title,
     titleStyled: (article.titleStyled as IssueTitleStyled | null) ?? null,
     excerpt: article.excerpt,
-    contentPreview: getContentPreview(article.contentRich),
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
     imageAlt: article.imageAlt,
     hasAudio: Boolean(article.audioUrl),

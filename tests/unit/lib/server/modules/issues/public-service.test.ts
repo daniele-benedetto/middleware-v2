@@ -9,10 +9,7 @@ vi.mock("@/lib/server/modules/issues/repository/public", () => ({
   publicIssuesRepository: publicIssuesRepositoryMock,
 }));
 
-import {
-  CONTENT_PREVIEW_MAX_LENGTH,
-  publicIssuesService,
-} from "@/lib/server/modules/issues/service/public";
+import { publicIssuesService } from "@/lib/server/modules/issues/service/public";
 
 function createIssueRecord(overrides: Record<string, unknown> = {}) {
   return {
@@ -69,17 +66,12 @@ describe("publicIssuesService", () => {
     expect(publicIssuesRepositoryMock.countPublished).not.toHaveBeenCalled();
   });
 
-  it("truncates derived content preview for public issue detail payloads", async () => {
-    const longText = "word ".repeat(CONTENT_PREVIEW_MAX_LENGTH).trim();
+  it("maps public issue detail article metadata", async () => {
     publicIssuesRepositoryMock.getCurrent.mockResolvedValue(
       createIssueRecord({
         articles: [
           createArticleRecord({
             imageAlt: "Descrizione editoriale immagine",
-            contentRich: {
-              type: "doc",
-              content: [{ type: "paragraph", content: [{ type: "text", text: longText }] }],
-            },
           }),
         ],
       }),
@@ -87,9 +79,7 @@ describe("publicIssuesService", () => {
 
     const result = await publicIssuesService.getCurrent();
 
-    expect(result.articles[0]?.contentPreview).toBe(
-      longText.slice(0, CONTENT_PREVIEW_MAX_LENGTH).trim(),
-    );
+    expect(result.articles[0]?.excerpt).toBe("Excerpt");
     expect(result.articles[0]?.imageAlt).toBe("Descrizione editoriale immagine");
   });
 });

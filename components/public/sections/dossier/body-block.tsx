@@ -27,7 +27,7 @@ export function BodyBlock({ block, articleNumbers }: BodyBlockProps) {
     />
   ) : null;
   const secondaryCards = (
-    <div className="grid h-full min-h-full">
+    <div className="grid h-full md:auto-rows-fr">
       {secondary.map((article) => (
         <DossierArticleCard
           key={article.id}
