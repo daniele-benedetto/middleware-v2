@@ -1,7 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { publicInteraction, publicTypography } from "@/components/public/primitives";
+import {
+  publicContentClassName,
+  publicInteraction,
+  publicTypography,
+} from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import {
   formatArticleNumber,
@@ -32,7 +36,7 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
 
   return (
     <section id="dossier" className={`mb-10 scroll-mt-20 lg:mb-12 ${variantClasses.section}`}>
-      <div className="px-4 py-10 sm:px-6 md:py-12 lg:px-12">
+      <div className={`${publicContentClassName} py-10 md:py-12`}>
         <Link
           href={articleHref}
           aria-label={article.title}

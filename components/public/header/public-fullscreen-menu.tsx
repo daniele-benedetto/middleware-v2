@@ -3,7 +3,7 @@ import Link from "next/link";
 import { publicHeaderBarClassName } from "@/components/public/header/constants";
 import { PublicBrand } from "@/components/public/header/public-brand";
 import { PublicMenuButton } from "@/components/public/header/public-menu-button";
-import { publicTypography } from "@/components/public/primitives";
+import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +38,7 @@ export function PublicFullscreenMenu({ id, onClose, closeButtonRef }: PublicFull
         />
       </div>
 
-      <nav className="flex w-full flex-1 flex-col justify-center px-4 py-7 sm:px-6 sm:py-8 lg:px-12">
+      <nav className={`${publicContentClassName} flex flex-1 flex-col justify-center py-7 sm:py-8`}>
         <div>
           {text.items.map((item) => (
             <Link

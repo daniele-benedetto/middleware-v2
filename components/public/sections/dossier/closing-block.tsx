@@ -1,7 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { publicInteraction, publicTypography } from "@/components/public/primitives";
+import {
+  publicContentClassName,
+  publicInteraction,
+  publicTypography,
+} from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import { BlockTitle } from "@/components/public/sections/dossier/block-title";
 import {
@@ -47,8 +51,10 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
   ) : null;
 
   return (
-    <section className="px-4 py-10 sm:px-6 md:py-12 lg:px-12">
-      <div className="grid gap-8 md:grid-cols-[minmax(220px,0.38fr)_minmax(0,0.62fr)] md:gap-10 lg:grid-cols-[minmax(240px,0.38fr)_minmax(0,0.62fr)] lg:gap-12">
+    <section className="py-10 md:py-12">
+      <div
+        className={`${publicContentClassName} grid gap-8 md:grid-cols-[minmax(220px,0.38fr)_minmax(0,0.62fr)] md:gap-10 lg:grid-cols-[minmax(240px,0.38fr)_minmax(0,0.62fr)] lg:gap-12`}
+      >
         <aside className={`p-6 md:p-8 lg:p-9 ${variantClasses.section} ${editorialPanelBorder}`}>
           {blockHasCopy ? (
             <div>

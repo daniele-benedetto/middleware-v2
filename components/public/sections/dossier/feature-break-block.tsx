@@ -1,7 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { publicInteraction, publicTypography } from "@/components/public/primitives";
+import {
+  publicContentClassName,
+  publicInteraction,
+  publicTypography,
+} from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import {
   blockEyebrow,
@@ -49,56 +53,58 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
   ) : null;
 
   return (
-    <section className="scroll-mt-20 px-4 py-10 sm:px-6 md:py-12 lg:px-12">
-      <Link
-        href={articleHref}
-        aria-label={article.title}
-        className={cn(
-          publicInteraction.cardBase,
-          "grid md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
-          variantClasses.section,
-          showBorder ? "border border-current" : "",
-        )}
-      >
-        {imageOnRight ? null : image}
-        <article className="px-5 py-5 sm:px-6 sm:py-6 md:p-8 lg:p-9">
-          <div className="mb-6 flex items-start justify-between gap-4">
-            <span className={cn(publicTypography.articleNumberLg, variantClasses.titlePrimary)}>
-              {formatArticleNumber(getArticleNumber(articleNumbers, article))}
-            </span>
-            {eyebrow ? (
-              <span className={cn(publicTypography.articleEyebrow, variantClasses.eyebrow)}>
-                {eyebrow}
+    <section className="scroll-mt-20 py-10 md:py-12">
+      <div className={publicContentClassName}>
+        <Link
+          href={articleHref}
+          aria-label={article.title}
+          className={cn(
+            publicInteraction.cardBase,
+            "grid md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
+            variantClasses.section,
+            showBorder ? "border border-current" : "",
+          )}
+        >
+          {imageOnRight ? null : image}
+          <article className="px-5 py-5 sm:px-6 sm:py-6 md:p-8 lg:p-9">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <span className={cn(publicTypography.articleNumberLg, variantClasses.titlePrimary)}>
+                {formatArticleNumber(getArticleNumber(articleNumbers, article))}
               </span>
+              {eyebrow ? (
+                <span className={cn(publicTypography.articleEyebrow, variantClasses.eyebrow)}>
+                  {eyebrow}
+                </span>
+              ) : null}
+            </div>
+            <h2 className={cn(publicTypography.featureArticleTitle, "max-w-[14ch] text-balance")}>
+              <StyledTitle
+                title={article.title}
+                titleStyled={article.titleStyled}
+                primaryClassName={variantClasses.titlePrimary}
+              />
+            </h2>
+            {article.excerpt ? (
+              <p
+                className={`mt-6 max-w-[54ch] font-editorial text-[19px] leading-[1.38] md:text-[22px] ${variantClasses.excerpt}`}
+              >
+                {article.excerpt}
+              </p>
             ) : null}
-          </div>
-          <h2 className={cn(publicTypography.featureArticleTitle, "max-w-[14ch] text-balance")}>
-            <StyledTitle
-              title={article.title}
-              titleStyled={article.titleStyled}
-              primaryClassName={variantClasses.titlePrimary}
-            />
-          </h2>
-          {article.excerpt ? (
-            <p
-              className={`mt-6 max-w-[54ch] font-editorial text-[19px] leading-[1.38] md:text-[22px] ${variantClasses.excerpt}`}
-            >
-              {article.excerpt}
-            </p>
-          ) : null}
-          {block.description ? (
-            <p
-              className={`mt-5 max-w-[48ch] font-editorial text-[17px] leading-normal ${variantClasses.description}`}
-            >
-              {block.description}
-            </p>
-          ) : null}
-          <div className="mt-7">
-            <ArticleMeta article={article} tone={variantClasses.metaTone} />
-          </div>
-        </article>
-        {imageOnRight ? image : null}
-      </Link>
+            {block.description ? (
+              <p
+                className={`mt-5 max-w-[48ch] font-editorial text-[17px] leading-normal ${variantClasses.description}`}
+              >
+                {block.description}
+              </p>
+            ) : null}
+            <div className="mt-7">
+              <ArticleMeta article={article} tone={variantClasses.metaTone} />
+            </div>
+          </article>
+          {imageOnRight ? image : null}
+        </Link>
+      </div>
     </section>
   );
 }

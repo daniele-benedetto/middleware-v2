@@ -1,3 +1,4 @@
+import { publicContentClassName } from "@/components/public/primitives";
 import { BlockSectionIntro } from "@/components/public/sections/dossier/block-section-intro";
 import { DossierArticleCard } from "@/components/public/sections/dossier/dossier-article-card";
 import {
@@ -44,11 +45,15 @@ export function BodyBlock({ block, articleNumbers }: BodyBlockProps) {
     : "md:grid-cols-[minmax(260px,0.42fr)_minmax(0,0.58fr)]";
 
   return (
-    <section className="scroll-mt-20 px-4 py-10 sm:px-6 md:py-12 lg:px-12">
-      <BlockSectionIntro block={block} />
-      <div className={`grid items-stretch border-l border-t border-foreground ${gridColumnsClass}`}>
-        {featuredOnRight ? secondaryCards : featuredCard}
-        {featuredOnRight ? featuredCard : secondaryCards}
+    <section className="scroll-mt-20 py-10 md:py-12">
+      <div className={publicContentClassName}>
+        <BlockSectionIntro block={block} />
+        <div
+          className={`grid items-stretch border-l border-t border-foreground ${gridColumnsClass}`}
+        >
+          {featuredOnRight ? secondaryCards : featuredCard}
+          {featuredOnRight ? featuredCard : secondaryCards}
+        </div>
       </div>
     </section>
   );

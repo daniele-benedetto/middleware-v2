@@ -1,4 +1,4 @@
-import { publicTypography } from "@/components/public/primitives";
+import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { StyledTitle } from "@/components/public/styled-title";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 
@@ -38,32 +38,34 @@ function IssueMetaRail({
 
 export function CurrentIssueHero({ issue, description, issueNumber }: CurrentIssueHeroProps) {
   return (
-    <section className="relative isolate w-full overflow-hidden border-y-2 border-foreground bg-background px-4 py-7 sm:px-6 sm:py-9 lg:px-12 lg:py-14">
-      <div
-        className={`${publicTypography.issueBackgroundNumber} pointer-events-none absolute top-5 right-5 z-0 text-accent/15 select-none [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]`}
-        aria-hidden
-      >
-        {issueNumber}
-      </div>
+    <section className="relative isolate w-full overflow-hidden border-b-2 border-foreground bg-background">
+      <div className={`${publicContentClassName} relative py-7 sm:py-9 lg:py-14`}>
+        <div
+          className={`${publicTypography.issueBackgroundNumber} pointer-events-none absolute top-5 right-5 z-0 text-accent/15 select-none [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]`}
+          aria-hidden
+        >
+          {issueNumber}
+        </div>
 
-      <div className="relative z-10 w-full">
-        <h1 className={`${publicTypography.homeHeroTitle} w-full text-foreground`}>
-          <StyledTitle title={issue.title} titleStyled={issue.titleStyled} />
-        </h1>
-        {description ? (
-          <div className="mt-8 w-full border-t-2 border-foreground pt-5">
-            <p className="font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] text-body-text italic">
-              {description}
-            </p>
-            <div className="mt-6">
+        <div className="relative z-10 w-full">
+          <h1 className={`${publicTypography.homeHeroTitle} w-full text-foreground`}>
+            <StyledTitle title={issue.title} titleStyled={issue.titleStyled} />
+          </h1>
+          {description ? (
+            <div className="mt-8 w-full border-t-2 border-foreground pt-5">
+              <p className="font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] text-body-text italic">
+                {description}
+              </p>
+              <div className="mt-6">
+                <IssueMetaRail issue={issue} issueNumber={issueNumber} />
+              </div>
+            </div>
+          ) : (
+            <div className="mt-7">
               <IssueMetaRail issue={issue} issueNumber={issueNumber} />
             </div>
-          </div>
-        ) : (
-          <div className="mt-7">
-            <IssueMetaRail issue={issue} issueNumber={issueNumber} />
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </section>
   );

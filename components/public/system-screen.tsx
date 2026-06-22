@@ -1,4 +1,4 @@
-import { publicTypography } from "@/components/public/primitives";
+import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
@@ -19,8 +19,10 @@ export function PublicSystemScreen({
   actions,
 }: PublicSystemScreenProps) {
   return (
-    <section className="flex flex-1 items-center border-b-2 border-foreground px-4 py-16 sm:px-6 lg:px-12">
-      <div className="grid w-full items-center gap-y-10 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-x-12">
+    <section className="flex flex-1 items-center border-b-2 border-foreground py-16">
+      <div
+        className={`${publicContentClassName} grid items-center gap-y-10 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-x-12`}
+      >
         <div className="flex min-w-0 items-center md:justify-end">
           <span aria-hidden className={cn(publicTypography.systemCode, "text-accent")}>
             {code}
