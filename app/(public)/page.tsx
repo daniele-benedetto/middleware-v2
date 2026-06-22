@@ -7,13 +7,15 @@ import type { Metadata } from "next";
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { currentIssue, currentIssueDescription, leadImage } = await getPublicHomeData();
+  const { currentIssue, currentIssueDescription, leadImage, leadImageAlt } =
+    await getPublicHomeData();
 
   return buildPageMetadata({
     title: currentIssue?.title,
     description: currentIssueDescription,
     path: "/",
     openGraphImage: leadImage,
+    openGraphImageAlt: leadImageAlt,
     twitterImage: leadImage,
   });
 }

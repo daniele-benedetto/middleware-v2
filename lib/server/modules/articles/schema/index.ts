@@ -14,6 +14,7 @@ const articleBaseInputSchema = z.object({
   excerptRich: z.unknown().optional(),
   contentRich: z.unknown(),
   imageUrl: z.string().trim().url().optional(),
+  imageAlt: z.string().trim().max(240).optional(),
   audioUrl: z.string().trim().url().optional(),
   audioChunks: z.unknown().optional(),
 });
@@ -28,6 +29,7 @@ export const updateArticleInputSchema = articleBaseInputSchema
   .extend({
     excerptRich: z.unknown().nullable().optional(),
     imageUrl: z.string().trim().url().nullable().optional(),
+    imageAlt: z.string().trim().max(240).nullable().optional(),
     audioUrl: z.string().trim().url().nullable().optional(),
     audioChunks: z.unknown().nullable().optional(),
     status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"] satisfies ArticleStatus[]).optional(),

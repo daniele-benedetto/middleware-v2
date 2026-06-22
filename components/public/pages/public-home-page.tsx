@@ -9,7 +9,7 @@ import {
 } from "@/components/public/home/home-view-model";
 import { DossierHome } from "@/components/public/sections/dossier/dossier-home";
 import { i18n } from "@/lib/i18n";
-import { getCanonicalUrl, seoConfig } from "@/lib/seo";
+import { buildHomeJsonLd } from "@/lib/seo/home-json-ld";
 
 import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
 import type { PublicIssueListItem } from "@/lib/public/server/issues";
@@ -17,50 +17,14 @@ import type { PublicIssueListItem } from "@/lib/public/server/issues";
 type PublicHomePageProps = {
   currentIssue: PublicCurrentIssueDetail | null;
   publishedIssues: PublicIssueListItem[];
+  canonicalPath?: string;
 };
 
-function buildHomeJsonLd(currentIssue: PublicCurrentIssueDetail | null) {
-  const siteUrl = getCanonicalUrl("/");
-  const website = {
-    "@type": "WebSite",
-    "@id": `${siteUrl}#website`,
-    name: seoConfig.siteName,
-    url: siteUrl,
-    inLanguage: "it-IT",
-  };
-
-  if (!currentIssue) {
-    return { "@context": "https://schema.org", "@graph": [website] };
-  }
-
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      website,
-      {
-        "@type": "CollectionPage",
-        "@id": `${siteUrl}#current-issue`,
-        name: currentIssue.title,
-        description: getIssuePlainDescription(currentIssue),
-        url: siteUrl,
-        isPartOf: { "@id": `${siteUrl}#website` },
-        datePublished: currentIssue.publishedAt,
-        hasPart: currentIssue.articles.map((article, index) => ({
-          "@type": "Article",
-          headline: article.title,
-          description: article.excerpt ?? undefined,
-          author: article.authorName
-            ? { "@type": "Organization", name: article.authorName }
-            : undefined,
-          datePublished: article.publishedAt,
-          position: index + 1,
-        })),
-      },
-    ],
-  };
-}
-
-export function PublicHomePage({ currentIssue, publishedIssues }: PublicHomePageProps) {
+export function PublicHomePage({
+  currentIssue,
+  publishedIssues,
+  canonicalPath = "/",
+}: PublicHomePageProps) {
   const text = i18n.public.home;
   const archiveIssues = getArchiveIssues(publishedIssues, currentIssue);
 
@@ -68,7 +32,9 @@ export function PublicHomePage({ currentIssue, publishedIssues }: PublicHomePage
     <main id="top" className="flex flex-1 flex-col bg-background font-heading text-foreground">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildHomeJsonLd(currentIssue)) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(buildHomeJsonLd(currentIssue, canonicalPath)),
+        }}
       />
       <HomeScrollProgress />
       <PublicHeader />

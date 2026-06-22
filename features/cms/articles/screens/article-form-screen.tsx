@@ -95,6 +95,7 @@ const articleFormStateSchema = z.object({
   excerptRich: z.unknown(),
   contentRich: z.unknown(),
   imageUrl: z.string().trim().refine(isValidOptionalUrl),
+  imageAlt: z.string().trim().max(240),
   audioUrl: z.string().trim().refine(isValidOptionalUrl),
   audioChunksUrl: z.string().trim().refine(isValidOptionalUrl),
   tagIds: z.array(z.string().uuid()),
@@ -151,6 +152,7 @@ function getArticleFormDefaultValues(article?: ArticleDetail): ArticleFormValues
     excerptRich: article?.excerptRich ?? emptyContentDoc,
     contentRich: article?.contentRich ?? emptyContentDoc,
     imageUrl: article?.imageUrl ?? "",
+    imageAlt: article?.imageAlt ?? "",
     audioUrl: article?.audioUrl ?? "",
     audioChunksUrl: extractAudioChunksUrl(article?.audioChunks),
     tagIds: article?.tagIds ?? [],
@@ -174,6 +176,7 @@ function buildCreateArticlePayload(
     excerptRich: values.excerptRich,
     contentRich: values.contentRich,
     imageUrl: values.imageUrl || undefined,
+    imageAlt: values.imageAlt || undefined,
     audioUrl: values.audioUrl || undefined,
     audioChunks: values.audioChunksUrl || undefined,
     tagIds: values.tagIds.length > 0 ? values.tagIds : undefined,
@@ -197,6 +200,7 @@ function buildUpdateArticlePayload(
     excerptRich: values.excerptRich,
     contentRich: values.contentRich,
     imageUrl: values.imageUrl ? values.imageUrl : null,
+    imageAlt: values.imageAlt ? values.imageAlt : null,
     audioUrl: values.audioUrl ? values.audioUrl : null,
     audioChunks: values.audioChunksUrl
       ? values.audioChunksUrl
@@ -402,6 +406,7 @@ function ArticleFormContent({
     slug: fieldText.slug,
     excerptRich: fieldText.excerpt,
     imageUrl: fieldText.imageUrl,
+    imageAlt: fieldText.imageAlt,
     audioUrl: fieldText.audioUrl,
     audioChunksUrl: fieldText.audioChunksUrl,
   };
@@ -432,6 +437,7 @@ function ArticleFormContent({
   const title = getStyledTitlePlainText(titleStyled);
   const manualSlug = useWatch({ control, name: "slug" }) ?? "";
   const imageUrl = useWatch({ control, name: "imageUrl" }) ?? "";
+  const imageAlt = useWatch({ control, name: "imageAlt" }) ?? "";
   const audioUrl = useWatch({ control, name: "audioUrl" }) ?? "";
   const audioChunksUrl = useWatch({ control, name: "audioChunksUrl" }) ?? "";
   const selectedTagIds = useWatch({ control, name: "tagIds" }) ?? [];
@@ -856,15 +862,35 @@ function ArticleFormContent({
                         variant="ghost"
                         size="xs"
                         disabled={isMutating}
-                        onClick={() =>
-                          setValue("imageUrl", "", { shouldDirty: true, shouldValidate: true })
-                        }
+                        onClick={() => {
+                          setValue("imageUrl", "", { shouldDirty: true, shouldValidate: true });
+                          setValue("imageAlt", "", { shouldDirty: true, shouldValidate: true });
+                        }}
                       >
                         {articleFormText.clearMediaField}
                       </CmsActionButton>
                     ) : null}
                   </div>
                 </div>
+              </CmsFormField>
+
+              <CmsFormField
+                label={fieldText.imageAlt}
+                htmlFor="article-image-alt"
+                hint={articleFormText.imageAltHint}
+              >
+                <CmsTextInput
+                  id="article-image-alt"
+                  value={imageAlt}
+                  disabled={isMutating || !imageUrl}
+                  placeholder={fieldText.imageAlt}
+                  onChange={(event) =>
+                    setValue("imageAlt", event.target.value, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                />
               </CmsFormField>
 
               <CmsFormField label={fieldText.audioUrl} htmlFor="article-audio-url">

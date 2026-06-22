@@ -32,6 +32,7 @@ type PublicIssueArticleRecord = {
   titleStyled: unknown;
   excerpt: string | null;
   imageUrl: string | null;
+  imageAlt: string | null;
   audioUrl: string | null;
   isFeatured: boolean;
   contentRich: unknown;
@@ -116,6 +117,7 @@ const toPublicIssueArticleSummaryDto = (
     excerpt: article.excerpt,
     contentPreview: getContentPreview(article.contentRich),
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
+    imageAlt: article.imageAlt,
     hasAudio: Boolean(article.audioUrl),
     isFeatured: article.isFeatured,
     readingTimeMinutes: calculateReadingTimeMinutes(article.contentRich),

@@ -109,6 +109,13 @@ Read/download flow:
 2. `app/api/cms/media/blob/route.ts` checks session and role before reading any blob.
 3. The route fetches the private blob and streams it back with `cache-control: private, no-store, max-age=0`.
 
+Editorial image semantics:
+
+- Blob stores the media asset; it is not the source of public accessibility text.
+- Article image alt text is stored on `Article.imageAlt` because the same asset can have different editorial meaning in different contexts.
+- Public renderers should use `article.imageAlt ?? ""` for article images; empty alt remains the fallback for decorative or not-yet-described images.
+- SEO metadata and structured data may reuse `imageAlt` when an article image is selected.
+
 ## Runtime Invariants
 
 - Single environment for now: one production deployment and one production database, no staging split assumed.

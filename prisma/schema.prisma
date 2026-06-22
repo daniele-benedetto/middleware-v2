@@ -177,6 +177,7 @@ model Article {
   contentRich Json
 
   imageUrl    String?
+  imageAlt    String?
   audioUrl    String?
   audioChunks Json?
 

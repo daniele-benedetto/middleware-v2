@@ -19,6 +19,7 @@ export type PublicHomeData = {
   publishedIssues: PublicIssueListItem[];
   currentIssueDescription?: string;
   leadImage?: string;
+  leadImageAlt?: string;
 };
 
 function getCurrentIssueDescription(currentIssue: PublicCurrentIssueDetail | null) {
@@ -35,7 +36,12 @@ function getCurrentIssueDescription(currentIssue: PublicCurrentIssueDetail | nul
 }
 
 function getLeadImage(currentIssue: PublicCurrentIssueDetail | null) {
-  return currentIssue?.articles.find((article) => article.imageUrl)?.imageUrl ?? undefined;
+  const article = currentIssue?.articles.find((item) => item.imageUrl);
+
+  return {
+    url: article?.imageUrl ?? undefined,
+    alt: article?.imageAlt ?? undefined,
+  };
 }
 
 async function getCurrentIssue() {
@@ -68,12 +74,14 @@ async function loadPublicHomeData(): Promise<PublicHomeData> {
     getCurrentIssue(),
     getPublishedIssueList(),
   ]);
+  const leadImage = getLeadImage(currentIssue);
 
   return {
     currentIssue,
     publishedIssues,
     currentIssueDescription: getCurrentIssueDescription(currentIssue),
-    leadImage: getLeadImage(currentIssue),
+    leadImage: leadImage.url,
+    leadImageAlt: leadImage.alt,
   };
 }
 

@@ -36,6 +36,7 @@ function createArticleRecord(overrides: Record<string, unknown> = {}) {
     titleStyled: null,
     excerpt: "Excerpt",
     imageUrl: null,
+    imageAlt: null,
     audioUrl: null,
     isFeatured: false,
     contentRich: {
@@ -74,6 +75,7 @@ describe("publicIssuesService", () => {
       createIssueRecord({
         articles: [
           createArticleRecord({
+            imageAlt: "Descrizione editoriale immagine",
             contentRich: {
               type: "doc",
               content: [{ type: "paragraph", content: [{ type: "text", text: longText }] }],
@@ -88,5 +90,6 @@ describe("publicIssuesService", () => {
     expect(result.articles[0]?.contentPreview).toBe(
       longText.slice(0, CONTENT_PREVIEW_MAX_LENGTH).trim(),
     );
+    expect(result.articles[0]?.imageAlt).toBe("Descrizione editoriale immagine");
   });
 });

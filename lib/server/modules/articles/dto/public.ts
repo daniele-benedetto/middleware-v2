@@ -15,6 +15,7 @@ const publicArticleBaseShape = {
   titleStyled: issueTitleStyledSchema.nullable(),
   excerpt: z.string().nullable(),
   imageUrl: z.string().nullable(),
+  imageAlt: z.string().nullable(),
   hasAudio: z.boolean(),
   isFeatured: z.boolean(),
   publishedAt: z.string(),

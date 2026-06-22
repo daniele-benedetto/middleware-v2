@@ -8,6 +8,7 @@ type PageMetadataInput = {
   path?: string;
   index?: boolean;
   openGraphImage?: string;
+  openGraphImageAlt?: string;
   twitterImage?: string;
 };
 
@@ -135,6 +136,7 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
     path = "/",
     index = true,
     openGraphImage = getOpenGraphImageUrl(),
+    openGraphImageAlt,
     twitterImage = getTwitterImageUrl(),
   } = input;
   const canonical = getCanonicalUrl(path);
@@ -161,7 +163,7 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
           url: resolvedImage,
           width: 1200,
           height: 630,
-          alt: title ?? seoConfig.defaultTitle,
+          alt: openGraphImageAlt ?? title ?? seoConfig.defaultTitle,
         },
       ],
     },

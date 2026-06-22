@@ -17,6 +17,7 @@ type PublicArticleSummaryRecord = {
   titleStyled: unknown;
   excerpt: string | null;
   imageUrl: string | null;
+  imageAlt: string | null;
   audioUrl: string | null;
   isFeatured: boolean;
   publishedAt: Date | null;
@@ -55,6 +56,7 @@ const toPublicArticleSummaryDto = (
     titleStyled: (article.titleStyled as ArticleTitleStyled | null) ?? null,
     excerpt: article.excerpt,
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
+    imageAlt: article.imageAlt,
     hasAudio: Boolean(article.audioUrl),
     isFeatured: article.isFeatured,
     publishedAt: article.publishedAt.toISOString(),

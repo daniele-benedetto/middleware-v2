@@ -36,6 +36,7 @@ export type ArticleMinAggregateOutputType = {
   slug: string | null
   excerpt: string | null
   imageUrl: string | null
+  imageAlt: string | null
   audioUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -53,6 +54,7 @@ export type ArticleMaxAggregateOutputType = {
   slug: string | null
   excerpt: string | null
   imageUrl: string | null
+  imageAlt: string | null
   audioUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -73,6 +75,7 @@ export type ArticleCountAggregateOutputType = {
   excerptRich: number
   contentRich: number
   imageUrl: number
+  imageAlt: number
   audioUrl: number
   audioChunks: number
   createdAt: number
@@ -93,6 +96,7 @@ export type ArticleMinAggregateInputType = {
   slug?: true
   excerpt?: true
   imageUrl?: true
+  imageAlt?: true
   audioUrl?: true
   createdAt?: true
   updatedAt?: true
@@ -110,6 +114,7 @@ export type ArticleMaxAggregateInputType = {
   slug?: true
   excerpt?: true
   imageUrl?: true
+  imageAlt?: true
   audioUrl?: true
   createdAt?: true
   updatedAt?: true
@@ -130,6 +135,7 @@ export type ArticleCountAggregateInputType = {
   excerptRich?: true
   contentRich?: true
   imageUrl?: true
+  imageAlt?: true
   audioUrl?: true
   audioChunks?: true
   createdAt?: true
@@ -224,6 +230,7 @@ export type ArticleGroupByOutputType = {
   excerptRich: runtime.JsonValue | null
   contentRich: runtime.JsonValue
   imageUrl: string | null
+  imageAlt: string | null
   audioUrl: string | null
   audioChunks: runtime.JsonValue | null
   createdAt: Date
@@ -266,6 +273,7 @@ export type ArticleWhereInput = {
   excerptRich?: Prisma.JsonNullableFilter<"Article">
   contentRich?: Prisma.JsonFilter<"Article">
   imageUrl?: Prisma.StringNullableFilter<"Article"> | string | null
+  imageAlt?: Prisma.StringNullableFilter<"Article"> | string | null
   audioUrl?: Prisma.StringNullableFilter<"Article"> | string | null
   audioChunks?: Prisma.JsonNullableFilter<"Article">
   createdAt?: Prisma.DateTimeFilter<"Article"> | Date | string
@@ -291,6 +299,7 @@ export type ArticleOrderByWithRelationInput = {
   excerptRich?: Prisma.SortOrderInput | Prisma.SortOrder
   contentRich?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageAlt?: Prisma.SortOrderInput | Prisma.SortOrder
   audioUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   audioChunks?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -320,6 +329,7 @@ export type ArticleWhereUniqueInput = Prisma.AtLeast<{
   excerptRich?: Prisma.JsonNullableFilter<"Article">
   contentRich?: Prisma.JsonFilter<"Article">
   imageUrl?: Prisma.StringNullableFilter<"Article"> | string | null
+  imageAlt?: Prisma.StringNullableFilter<"Article"> | string | null
   audioUrl?: Prisma.StringNullableFilter<"Article"> | string | null
   audioChunks?: Prisma.JsonNullableFilter<"Article">
   createdAt?: Prisma.DateTimeFilter<"Article"> | Date | string
@@ -345,6 +355,7 @@ export type ArticleOrderByWithAggregationInput = {
   excerptRich?: Prisma.SortOrderInput | Prisma.SortOrder
   contentRich?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageAlt?: Prisma.SortOrderInput | Prisma.SortOrder
   audioUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   audioChunks?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -372,6 +383,7 @@ export type ArticleScalarWhereWithAggregatesInput = {
   excerptRich?: Prisma.JsonNullableWithAggregatesFilter<"Article">
   contentRich?: Prisma.JsonWithAggregatesFilter<"Article">
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"Article"> | string | null
+  imageAlt?: Prisma.StringNullableWithAggregatesFilter<"Article"> | string | null
   audioUrl?: Prisma.StringNullableWithAggregatesFilter<"Article"> | string | null
   audioChunks?: Prisma.JsonNullableWithAggregatesFilter<"Article">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Article"> | Date | string
@@ -390,6 +402,7 @@ export type ArticleCreateInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -415,6 +428,7 @@ export type ArticleUncheckedCreateInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -434,6 +448,7 @@ export type ArticleUpdateInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -459,6 +474,7 @@ export type ArticleUncheckedUpdateInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -481,6 +497,7 @@ export type ArticleCreateManyInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -499,6 +516,7 @@ export type ArticleUpdateManyMutationInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -520,6 +538,7 @@ export type ArticleUncheckedUpdateManyInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -556,6 +575,7 @@ export type ArticleCountOrderByAggregateInput = {
   excerptRich?: Prisma.SortOrder
   contentRich?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  imageAlt?: Prisma.SortOrder
   audioUrl?: Prisma.SortOrder
   audioChunks?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -574,6 +594,7 @@ export type ArticleMaxOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   excerpt?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  imageAlt?: Prisma.SortOrder
   audioUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -591,6 +612,7 @@ export type ArticleMinOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   excerpt?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  imageAlt?: Prisma.SortOrder
   audioUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -757,6 +779,7 @@ export type ArticleCreateWithoutAuthorInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -780,6 +803,7 @@ export type ArticleUncheckedCreateWithoutAuthorInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -831,6 +855,7 @@ export type ArticleScalarWhereInput = {
   excerptRich?: Prisma.JsonNullableFilter<"Article">
   contentRich?: Prisma.JsonFilter<"Article">
   imageUrl?: Prisma.StringNullableFilter<"Article"> | string | null
+  imageAlt?: Prisma.StringNullableFilter<"Article"> | string | null
   audioUrl?: Prisma.StringNullableFilter<"Article"> | string | null
   audioChunks?: Prisma.JsonNullableFilter<"Article">
   createdAt?: Prisma.DateTimeFilter<"Article"> | Date | string
@@ -849,6 +874,7 @@ export type ArticleCreateWithoutIssueInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -872,6 +898,7 @@ export type ArticleUncheckedCreateWithoutIssueInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -917,6 +944,7 @@ export type ArticleCreateWithoutCategoryInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -940,6 +968,7 @@ export type ArticleUncheckedCreateWithoutCategoryInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -985,6 +1014,7 @@ export type ArticleCreateWithoutTagsInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -1009,6 +1039,7 @@ export type ArticleUncheckedCreateWithoutTagsInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -1043,6 +1074,7 @@ export type ArticleUpdateWithoutTagsInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1067,6 +1099,7 @@ export type ArticleUncheckedUpdateWithoutTagsInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1087,6 +1120,7 @@ export type ArticleCreateManyAuthorInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -1105,6 +1139,7 @@ export type ArticleUpdateWithoutAuthorInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1128,6 +1163,7 @@ export type ArticleUncheckedUpdateWithoutAuthorInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1149,6 +1185,7 @@ export type ArticleUncheckedUpdateManyWithoutAuthorInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1169,6 +1206,7 @@ export type ArticleCreateManyIssueInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -1187,6 +1225,7 @@ export type ArticleUpdateWithoutIssueInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1210,6 +1249,7 @@ export type ArticleUncheckedUpdateWithoutIssueInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1231,6 +1271,7 @@ export type ArticleUncheckedUpdateManyWithoutIssueInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1251,6 +1292,7 @@ export type ArticleCreateManyCategoryInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
+  imageAlt?: string | null
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -1269,6 +1311,7 @@ export type ArticleUpdateWithoutCategoryInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1292,6 +1335,7 @@ export type ArticleUncheckedUpdateWithoutCategoryInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1313,6 +1357,7 @@ export type ArticleUncheckedUpdateManyWithoutCategoryInput = {
   excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1365,6 +1410,7 @@ export type ArticleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   excerptRich?: boolean
   contentRich?: boolean
   imageUrl?: boolean
+  imageAlt?: boolean
   audioUrl?: boolean
   audioChunks?: boolean
   createdAt?: boolean
@@ -1391,6 +1437,7 @@ export type ArticleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   excerptRich?: boolean
   contentRich?: boolean
   imageUrl?: boolean
+  imageAlt?: boolean
   audioUrl?: boolean
   audioChunks?: boolean
   createdAt?: boolean
@@ -1415,6 +1462,7 @@ export type ArticleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   excerptRich?: boolean
   contentRich?: boolean
   imageUrl?: boolean
+  imageAlt?: boolean
   audioUrl?: boolean
   audioChunks?: boolean
   createdAt?: boolean
@@ -1439,13 +1487,14 @@ export type ArticleSelectScalar = {
   excerptRich?: boolean
   contentRich?: boolean
   imageUrl?: boolean
+  imageAlt?: boolean
   audioUrl?: boolean
   audioChunks?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ArticleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issueId" | "categoryId" | "authorId" | "status" | "isFeatured" | "publishedAt" | "title" | "titleStyled" | "slug" | "excerpt" | "excerptRich" | "contentRich" | "imageUrl" | "audioUrl" | "audioChunks" | "createdAt" | "updatedAt", ExtArgs["result"]["article"]>
+export type ArticleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issueId" | "categoryId" | "authorId" | "status" | "isFeatured" | "publishedAt" | "title" | "titleStyled" | "slug" | "excerpt" | "excerptRich" | "contentRich" | "imageUrl" | "imageAlt" | "audioUrl" | "audioChunks" | "createdAt" | "updatedAt", ExtArgs["result"]["article"]>
 export type ArticleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   issue?: boolean | Prisma.IssueDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
@@ -1487,6 +1536,7 @@ export type $ArticlePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     excerptRich: runtime.JsonValue | null
     contentRich: runtime.JsonValue
     imageUrl: string | null
+    imageAlt: string | null
     audioUrl: string | null
     audioChunks: runtime.JsonValue | null
     createdAt: Date
@@ -1932,6 +1982,7 @@ export interface ArticleFieldRefs {
   readonly excerptRich: Prisma.FieldRef<"Article", 'Json'>
   readonly contentRich: Prisma.FieldRef<"Article", 'Json'>
   readonly imageUrl: Prisma.FieldRef<"Article", 'String'>
+  readonly imageAlt: Prisma.FieldRef<"Article", 'String'>
   readonly audioUrl: Prisma.FieldRef<"Article", 'String'>
   readonly audioChunks: Prisma.FieldRef<"Article", 'Json'>
   readonly createdAt: Prisma.FieldRef<"Article", 'DateTime'>

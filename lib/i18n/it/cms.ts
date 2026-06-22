@@ -114,6 +114,7 @@ export const cmsIt = {
       excerpt: "Excerpt",
       content: "Contenuto",
       imageUrl: "Image URL",
+      imageAlt: "Testo alternativo immagine",
       audioUrl: "Audio URL",
       audioChunksUrl: "JSON URL",
       audioChunksJson: "audioChunks (JSON)",
@@ -166,6 +167,8 @@ export const cmsIt = {
         openAudioLibrary: "Libreria audio",
         openJsonLibrary: "Libreria JSON",
         clearMediaField: "Rimuovi URL",
+        imageAltHint:
+          "Descrivi il contenuto informativo dell'immagine. Lascia vuoto solo se e puramente decorativa.",
         imagePlaceholderTitle: "Nessuna immagine selezionata",
         imagePlaceholderDescription:
           "Apri la libreria immagini per scegliere un asset esistente o caricarne uno nuovo.",

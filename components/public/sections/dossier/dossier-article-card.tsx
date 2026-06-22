@@ -52,7 +52,7 @@ export function DossierArticleCard({
     >
       <Image
         src={article.imageUrl!}
-        alt=""
+        alt={article.imageAlt ?? ""}
         fill
         sizes="(min-width: 768px) 38vw, 100vw"
         className="object-cover transition-transform duration-(--motion-slow) group-hover:scale-[1.025]"

@@ -36,7 +36,7 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
     <div className="relative min-h-48 overflow-hidden border border-foreground grayscale sm:min-h-52 md:min-h-64 lg:min-h-[min(34vh,360px)]">
       <Image
         src={article.imageUrl}
-        alt=""
+        alt={article.imageAlt ?? ""}
         fill
         sizes="(min-width: 768px) 34vw, 100vw"
         className="object-cover"

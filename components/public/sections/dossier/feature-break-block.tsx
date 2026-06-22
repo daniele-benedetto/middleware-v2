@@ -38,7 +38,7 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
     >
       <Image
         src={article.imageUrl}
-        alt=""
+        alt={article.imageAlt ?? ""}
         fill
         sizes="(min-width: 768px) 42vw, 100vw"
         className="object-cover"

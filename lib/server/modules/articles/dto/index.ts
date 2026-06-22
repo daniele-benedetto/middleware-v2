@@ -31,6 +31,7 @@ export const articleDetailDtoSchema = z.object({
   audioChunks: z.unknown().nullable(),
   excerpt: z.string().nullable(),
   imageUrl: z.string().nullable(),
+  imageAlt: z.string().nullable(),
   tagIds: z.array(z.string().uuid()),
 });
 

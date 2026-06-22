@@ -75,7 +75,7 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
             >
               <Image
                 src={article.imageUrl}
-                alt=""
+                alt={article.imageAlt ?? ""}
                 fill
                 sizes="(min-width: 768px) 45vw, 100vw"
                 className="object-cover"

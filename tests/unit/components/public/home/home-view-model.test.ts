@@ -16,6 +16,7 @@ const article = (overrides: Partial<HomeIssueArticle>): HomeIssueArticle => ({
   excerpt: null,
   contentPreview: null,
   imageUrl: null,
+  imageAlt: null,
   hasAudio: false,
   isFeatured: false,
   readingTimeMinutes: 1,

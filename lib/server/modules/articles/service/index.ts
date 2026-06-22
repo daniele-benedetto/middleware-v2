@@ -56,6 +56,7 @@ type ArticleDetailRecord = ArticleRecord & {
   excerptRich: unknown;
   contentRich: unknown;
   imageUrl: string | null;
+  imageAlt: string | null;
   audioUrl: string | null;
   audioChunks: unknown;
   tags?: Array<{ tagId: string }>;
@@ -166,6 +167,7 @@ const toArticleDetailDto = (article: ArticleDetailRecord): ArticleDetailDto => {
       (article.excerpt ? createRichTextDocFromPlainText(article.excerpt) : null),
     contentRich: article.contentRich,
     imageUrl: article.imageUrl,
+    imageAlt: article.imageAlt,
     audioUrl: article.audioUrl,
     audioChunks: (article.audioChunks ?? null) as ArticleDetailDto["audioChunks"],
     tagIds: (article.tags ?? []).map((relation) => relation.tagId),

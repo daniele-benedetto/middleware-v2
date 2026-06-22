@@ -21,6 +21,7 @@ export type CreateArticlePersistInput = {
   excerptRich?: unknown;
   contentRich: unknown;
   imageUrl?: string;
+  imageAlt?: string;
   audioUrl?: string;
   audioChunks?: unknown;
   tagIds?: string[];
@@ -49,6 +50,7 @@ const ARTICLE_DETAIL_SELECT = {
   excerptRich: true,
   contentRich: true,
   imageUrl: true,
+  imageAlt: true,
   audioUrl: true,
   audioChunks: true,
   issue: {
@@ -170,6 +172,7 @@ export const articlesRepository = {
         input.excerptRich === undefined ? undefined : (input.excerptRich as Prisma.InputJsonValue),
       contentRich: input.contentRich as Prisma.InputJsonValue,
       imageUrl: input.imageUrl,
+      imageAlt: input.imageAlt,
       audioUrl: input.audioUrl,
       audioChunks: input.audioChunks as Prisma.InputJsonValue | undefined,
       isFeatured: input.isFeatured,
@@ -224,6 +227,7 @@ export const articlesRepository = {
       contentRich:
         input.contentRich === undefined ? undefined : (input.contentRich as Prisma.InputJsonValue),
       imageUrl: input.imageUrl,
+      imageAlt: input.imageAlt,
       audioUrl: input.audioUrl,
       audioChunks:
         input.audioChunks === undefined

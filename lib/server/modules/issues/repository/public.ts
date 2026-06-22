@@ -32,6 +32,7 @@ const PUBLIC_ISSUE_DETAIL_ARTICLE_SELECT = {
   titleStyled: true,
   excerpt: true,
   imageUrl: true,
+  imageAlt: true,
   audioUrl: true,
   isFeatured: true,
   contentRich: true,
