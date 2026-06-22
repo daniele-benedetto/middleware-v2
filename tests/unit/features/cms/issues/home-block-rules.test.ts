@@ -11,7 +11,7 @@ describe("home block rules", () => {
     expect(isSingleArticleBlock("opening")).toBe(true);
     expect(isSingleArticleBlock("rupture")).toBe(true);
     expect(isSingleArticleBlock("closing")).toBe(true);
-    expect(isSingleArticleBlock("constellation")).toBe(false);
+    expect(isSingleArticleBlock("body")).toBe(false);
   });
 
   it("keeps closing copy while stripping opening and rupture copy", () => {

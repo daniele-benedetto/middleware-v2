@@ -79,11 +79,10 @@ type IssueHomeBlocksEditorText = {
   selectedArticleOrder: string;
   sectionPagination: string;
   type: string;
-  typeConstellation: string;
+  typeBody: string;
   typeClosing: string;
   typeOpening: string;
   typeRupture: string;
-  typeSequence: string;
   variant: string;
   variantBlack: string;
   variantDefault: string;
@@ -100,9 +99,8 @@ type IssueHomeBlocksEditorProps = {
 
 const blockTypeOptions = [
   { value: "opening", labelKey: "typeOpening" },
-  { value: "constellation", labelKey: "typeConstellation" },
+  { value: "body", labelKey: "typeBody" },
   { value: "rupture", labelKey: "typeRupture" },
-  { value: "sequence", labelKey: "typeSequence" },
   { value: "closing", labelKey: "typeClosing" },
 ] as const;
 

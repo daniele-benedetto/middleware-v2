@@ -9,7 +9,7 @@ type AutoClampTextProps = {
 
 export function AutoClampText({ children, className = "" }: AutoClampTextProps) {
   const ref = useRef<HTMLParagraphElement>(null);
-  const [lineClamp, setLineClamp] = useState<number | null>(null);
+  const [text, setText] = useState(children);
 
   useLayoutEffect(() => {
     const element = ref.current;
@@ -18,44 +18,55 @@ export function AutoClampText({ children, className = "" }: AutoClampTextProps) 
       return;
     }
 
-    const updateLineClamp = () => {
-      const styles = window.getComputedStyle(element);
-      const lineHeight = Number.parseFloat(styles.lineHeight);
+    const updateText = () => {
+      const availableHeight = element.clientHeight;
 
-      if (!Number.isFinite(lineHeight) || lineHeight <= 0) {
-        setLineClamp(null);
+      if (availableHeight <= 0) {
+        setText(children);
         return;
       }
 
-      const nextLineClamp = Math.max(1, Math.floor(element.clientHeight / lineHeight));
-      setLineClamp((currentLineClamp) =>
-        currentLineClamp === nextLineClamp ? currentLineClamp : nextLineClamp,
-      );
+      element.textContent = children;
+
+      if (element.scrollHeight <= availableHeight + 1) {
+        setText(children);
+        return;
+      }
+
+      let low = 0;
+      let high = children.length;
+      let nextText = "...";
+
+      while (low <= high) {
+        const middle = Math.floor((low + high) / 2);
+        const candidate = `${children.slice(0, middle).trimEnd()}...`;
+
+        element.textContent = candidate;
+
+        if (element.scrollHeight <= availableHeight + 1) {
+          nextText = candidate;
+          low = middle + 1;
+        } else {
+          high = middle - 1;
+        }
+      }
+
+      setText((currentText) => (currentText === nextText ? currentText : nextText));
     };
 
-    updateLineClamp();
+    updateText();
 
-    const resizeObserver = new ResizeObserver(updateLineClamp);
+    const resizeObserver = new ResizeObserver(updateText);
     resizeObserver.observe(element);
 
+    void document.fonts?.ready.then(updateText);
+
     return () => resizeObserver.disconnect();
-  }, []);
+  }, [children]);
 
   return (
-    <p
-      ref={ref}
-      className={`min-h-0 overflow-hidden ${className}`}
-      style={
-        lineClamp
-          ? {
-              display: "-webkit-box",
-              WebkitBoxOrient: "vertical",
-              WebkitLineClamp: lineClamp,
-            }
-          : undefined
-      }
-    >
-      {children}
+    <p ref={ref} className={`min-h-0 overflow-hidden ${className}`}>
+      {text}
     </p>
   );
 }

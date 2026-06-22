@@ -62,13 +62,11 @@ describe("home view model", () => {
     const lead = article({ id: crypto.randomUUID(), title: "Lead" });
     const coreA = article({ id: crypto.randomUUID(), title: "Core A" });
     const coreB = article({ id: crypto.randomUUID(), title: "Core B" });
-    const sequenceA = article({ id: crypto.randomUUID(), title: "Sequence A" });
-    const sequenceB = article({ id: crypto.randomUUID(), title: "Sequence B" });
 
     expect(
       composeNarrativeHomeBlocks(
         issue(
-          [sequenceB, coreB, lead, sequenceA, coreA],
+          [coreB, lead, coreA],
           [
             {
               id: "apertura",
@@ -81,21 +79,12 @@ describe("home view model", () => {
             },
             {
               id: "campo",
-              type: "constellation",
+              type: "body",
               variant: "default",
               title: "Campo di tensione",
               description: "Testo deciso dentro l'uscita.",
               articleIds: [coreA.id, coreB.id],
               featuredArticleId: coreB.id,
-            },
-            {
-              id: "sequenza",
-              type: "sequence",
-              variant: "default",
-              title: "Sequenza narrativa",
-              description: null,
-              articleIds: [sequenceA.id, sequenceB.id],
-              featuredArticleId: sequenceA.id,
             },
           ],
         ),
@@ -111,18 +100,11 @@ describe("home view model", () => {
       },
       {
         id: "campo",
-        type: "constellation",
+        type: "body",
         title: "Campo di tensione",
         description: "Testo deciso dentro l'uscita.",
         articles: [{ title: "Core A" }, { title: "Core B" }],
         featuredArticle: { title: "Core B" },
-      },
-      {
-        id: "sequenza",
-        type: "sequence",
-        title: "Sequenza narrativa",
-        articles: [{ title: "Sequence A" }, { title: "Sequence B" }],
-        featuredArticle: { title: "Sequence A" },
       },
     ]);
   });
@@ -163,7 +145,7 @@ describe("home view model", () => {
             },
             {
               id: "vuoto",
-              type: "constellation",
+              type: "body",
               variant: "default",
               title: "Vuoto",
               description: null,

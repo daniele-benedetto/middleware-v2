@@ -39,7 +39,7 @@ export function createHomeBlock(
 }
 
 export function createEmptyHomeBlock(
-  type: IssueHomeBlock["type"] = "constellation",
+  type: IssueHomeBlock["type"] = "body",
   id = `${type}-${Date.now().toString(36)}`,
 ) {
   return createHomeBlock({

@@ -23,9 +23,7 @@ type DossierArticleCardProps = {
     | "standard"
     | "featured"
     | "clusterFeatured"
-    | "sequenceFeatured"
     | "constellationSecondary"
-    | "constellationWide"
     | "compact"
     | "closing";
   className?: string;
@@ -230,14 +228,9 @@ function DossierArticleCard({
   const isCompact = variant === "compact";
   const isClosing = variant === "closing";
   const isClusterFeatured = variant === "clusterFeatured";
-  const isSequenceFeatured = variant === "sequenceFeatured";
   const isConstellationSecondary = variant === "constellationSecondary";
-  const isConstellationWide = variant === "constellationWide";
   const showImageAfterTitle = isClusterFeatured || isConstellationSecondary;
-  const summary =
-    isClusterFeatured || isSequenceFeatured
-      ? (article.contentPreview ?? article.excerpt)
-      : article.excerpt;
+  const summary = isClusterFeatured ? (article.contentPreview ?? article.excerpt) : article.excerpt;
   const showImage = Boolean(article.imageUrl) && !isCompact;
   const image = showImage ? (
     <div
@@ -246,8 +239,8 @@ function DossierArticleCard({
           ? "mt-5 h-44 md:h-52 lg:h-[min(32vh,260px)]"
           : isClosing
             ? "mt-6 h-58 md:h-72 lg:mt-0 lg:h-full lg:min-h-100"
-            : isConstellationSecondary || isConstellationWide
-              ? `mt-5 h-30 md:h-34 ${isConstellationWide ? "lg:mt-0 lg:h-full lg:min-h-full" : ""}`
+            : isConstellationSecondary
+              ? "mt-5 h-30 md:h-34"
               : "mt-5 h-45 md:h-52"
       }`}
     >
@@ -270,9 +263,7 @@ function DossierArticleCard({
       } ${
         isClosing
           ? "flex-col lg:grid lg:grid-cols-[minmax(0,0.62fr)_minmax(260px,0.38fr)] lg:items-stretch lg:gap-8"
-          : isConstellationWide
-            ? "flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.42fr)] lg:items-stretch lg:gap-6"
-            : "flex-col"
+          : "flex-col"
       } ${className}`}
     >
       <div
@@ -281,9 +272,7 @@ function DossierArticleCard({
             ? "flex h-full min-h-full min-w-0 flex-col"
             : isClusterFeatured
               ? "flex h-full min-h-0 min-w-0 flex-col"
-              : isConstellationWide
-                ? "flex h-full min-h-0 min-w-0 flex-col"
-                : "flex h-full min-h-0 min-w-0 flex-col"
+              : "flex h-full min-h-0 min-w-0 flex-col"
         }
       >
         <div className="mb-5 flex items-start justify-between gap-4">
@@ -311,7 +300,7 @@ function DossierArticleCard({
               ? "text-[27px] md:text-[32px]"
               : isClosing
                 ? "max-w-[16ch] text-[30px] md:text-[40px] lg:text-[46px]"
-                : isConstellationSecondary || isConstellationWide
+                : isConstellationSecondary
                   ? "text-[24px] md:text-[28px]"
                   : hasImage && !isCompact
                     ? "text-[25px] md:text-[30px]"
@@ -329,13 +318,11 @@ function DossierArticleCard({
           ) : (
             <p
               className={`mt-4 min-h-0 overflow-hidden font-editorial leading-normal text-body-text ${
-                isSequenceFeatured
-                  ? "line-clamp-4 flex-1 text-[16px] md:text-[17px]"
-                  : isClosing
-                    ? "max-w-[54ch] text-[18px] leading-[1.45] md:text-[20px]"
-                    : isConstellationSecondary || isConstellationWide
-                      ? "line-clamp-4 flex-1 text-[15.5px] md:text-[16.5px]"
-                      : "flex-1 text-[16px] md:text-[17px]"
+                isClosing
+                  ? "max-w-[54ch] text-[18px] leading-[1.45] md:text-[20px]"
+                  : isConstellationSecondary
+                    ? "line-clamp-4 flex-1 text-[15.5px] md:text-[16.5px]"
+                    : "flex-1 text-[16px] md:text-[17px]"
               }`}
             >
               {summary}
@@ -352,7 +339,7 @@ function DossierArticleCard({
   );
 }
 
-function CoreClusterBlock({
+function BodyBlock({
   block,
   articleNumbers,
 }: {
@@ -379,21 +366,16 @@ function CoreClusterBlock({
             />
           </div>
         ) : null}
-        <div className="grid h-full min-h-full lg:grid-cols-2">
-          {secondary.map((article, index) => {
-            const spansTwoColumns = secondary.length % 2 === 1 && index === secondary.length - 1;
-
-            return (
-              <DossierArticleCard
-                key={article.id}
-                article={article}
-                eyebrow={articleEyebrow(article)}
-                number={getArticleNumber(articleNumbers, article)}
-                variant={spansTwoColumns ? "constellationWide" : "constellationSecondary"}
-                className={spansTwoColumns ? "lg:col-span-2" : undefined}
-              />
-            );
-          })}
+        <div className="grid h-full min-h-full">
+          {secondary.map((article) => (
+            <DossierArticleCard
+              key={article.id}
+              article={article}
+              eyebrow={articleEyebrow(article)}
+              number={getArticleNumber(articleNumbers, article)}
+              variant="constellationSecondary"
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -489,44 +471,6 @@ function FeatureBreakBlock({
   );
 }
 
-function SequenceBlock({
-  block,
-  articleNumbers,
-}: {
-  block: NarrativeHomeBlock;
-  articleNumbers: Map<string, number>;
-}) {
-  const featured = block.featuredArticle ?? block.articles[0] ?? null;
-  const articles = featured
-    ? [
-        featured,
-        ...sortUnpaginatedArticles(block.articles.filter((article) => article.id !== featured.id)),
-      ]
-    : sortUnpaginatedArticles(block.articles);
-
-  if (articles.length === 0) {
-    return null;
-  }
-
-  return (
-    <section className="scroll-mt-20 bg-[#f2eadc] px-4 py-9 sm:px-6 lg:px-12 lg:py-12">
-      <BlockSectionIntro block={block} />
-      <div className="grid border-l border-t border-foreground md:grid-cols-2 xl:grid-cols-3">
-        {articles.map((article) => (
-          <DossierArticleCard
-            key={article.id}
-            article={article}
-            eyebrow={formatTags(article) || article.categoryName || ""}
-            number={getArticleNumber(articleNumbers, article)}
-            variant={article.id === featured?.id ? "sequenceFeatured" : undefined}
-            className={article.id === featured?.id ? "md:col-span-2 xl:col-span-2" : undefined}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function ClosingBlock({
   block,
   articleNumbers,
@@ -540,92 +484,83 @@ function ClosingBlock({
     return null;
   }
 
-  const variantClasses = getClosingVariantClasses(block.variant);
+  const tagLine = formatTags(article);
+  const variantClasses = getOpeningVariantClasses(block.variant);
+  const blockHasCopy = Boolean(block.title || block.description);
 
   return (
-    <section
-      className={`scroll-mt-20 px-4 py-9 sm:px-6 lg:px-12 lg:py-14 ${variantClasses.section}`}
-    >
-      <div
-        className={`grid gap-0 border lg:grid-cols-[minmax(280px,0.42fr)_minmax(0,0.58fr)] lg:items-stretch ${variantClasses.shell}`}
-      >
-        {block.title || block.description ? (
-          <div
-            className={`flex min-h-full flex-col px-6 py-7 md:px-8 md:py-9 lg:border-r ${variantClasses.panel}`}
-          >
-            {block.title ? (
-              <h2
-                className={`max-w-[12ch] font-heading text-[clamp(34px,4.4vw,62px)] leading-[0.9] font-black tracking-[-0.045em] uppercase ${variantClasses.title}`}
+    <section className={`scroll-mt-20 ${variantClasses.section}`}>
+      <div className="px-4 py-11 sm:px-6 lg:px-12 lg:py-14">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.94fr)_minmax(320px,0.78fr)] lg:items-start lg:gap-12">
+          <article>
+            <div className="mb-6 flex items-start justify-between gap-4">
+              {tagLine ? (
+                <p
+                  className={`font-heading text-[11px] font-bold tracking-[0.14em] uppercase ${variantClasses.eyebrow}`}
+                >
+                  {tagLine}
+                </p>
+              ) : null}
+              <span className="font-heading text-[42px] leading-[0.78] font-black tracking-[-0.04em] text-accent md:text-[52px]">
+                {formatArticleNumber(getArticleNumber(articleNumbers, article))}
+              </span>
+            </div>
+
+            <h2 className="max-w-[14ch] font-heading text-[clamp(40px,5.8vw,92px)] leading-[0.88] font-black tracking-[-0.052em] text-balance">
+              <StyledTitle
+                title={article.title}
+                titleStyled={article.titleStyled}
+                primaryClassName={variantClasses.titlePrimary}
+              />
+            </h2>
+            {article.excerpt ? (
+              <p
+                className={`mt-7 max-w-[58ch] font-editorial text-[clamp(19px,1.55vw,24px)] leading-[1.36] italic ${variantClasses.excerpt}`}
               >
-                <BlockTitle block={block} primaryClassName={variantClasses.titleAccent} />
-              </h2>
+                {article.excerpt}
+              </p>
             ) : null}
-            {block.title ? (
-              <div className={`mt-7 border-t pt-5 ${variantClasses.divider}`}>
+            <div className="mt-8">
+              <ArticleMeta article={article} tone={variantClasses.metaTone} />
+            </div>
+          </article>
+
+          <aside className="lg:pt-2">
+            {blockHasCopy ? (
+              <div className="border-t border-current/35 pt-6">
+                {block.title ? (
+                  <h3 className="max-w-[12ch] font-heading text-[clamp(34px,4.1vw,64px)] leading-[0.9] font-black tracking-[-0.045em] uppercase">
+                    <BlockTitle block={block} primaryClassName={variantClasses.titlePrimary} />
+                  </h3>
+                ) : null}
                 {block.description ? (
                   <p
-                    className={`max-w-[38ch] font-editorial text-[17px] leading-[1.45] md:text-[19px] ${variantClasses.description}`}
+                    className={`mt-5 max-w-[44ch] font-editorial text-[18px] leading-[1.44] md:text-[20px] ${variantClasses.description}`}
                   >
                     {block.description}
                   </p>
                 ) : null}
               </div>
-            ) : block.description ? (
-              <p
-                className={`max-w-[38ch] font-editorial text-[19px] leading-[1.45] md:text-[21px] ${variantClasses.description}`}
-              >
-                {block.description}
-              </p>
             ) : null}
-          </div>
-        ) : null}
-        <div className={block.title || block.description ? "" : "lg:col-span-2"}>
-          <DossierArticleCard
-            article={article}
-            eyebrow={blockEyebrow(block, article)}
-            number={getArticleNumber(articleNumbers, article)}
-            variant="closing"
-            className="border-0"
-          />
+
+            {article.imageUrl ? (
+              <div
+                className={`relative ${blockHasCopy ? "mt-7" : ""} min-h-82 overflow-hidden border md:min-h-96 lg:min-h-[min(48vh,520px)] ${variantClasses.image}`}
+              >
+                <Image
+                  src={article.imageUrl}
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 38vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            ) : null}
+          </aside>
         </div>
       </div>
     </section>
   );
-}
-
-function getClosingVariantClasses(variant: NarrativeHomeBlock["variant"]) {
-  switch (variant) {
-    case "red":
-      return {
-        section: "bg-background",
-        shell: "border-accent",
-        panel: "border-accent bg-accent text-background",
-        title: "text-foreground",
-        titleAccent: "text-background",
-        divider: "border-[rgba(17,17,17,0.26)]",
-        description: "text-[#f4ebdd]",
-      };
-    case "default":
-      return {
-        section: "bg-background",
-        shell: "border-foreground",
-        panel: "border-foreground bg-background text-foreground",
-        title: "text-foreground",
-        titleAccent: "text-accent",
-        divider: "border-foreground",
-        description: "text-body-text",
-      };
-    case "black":
-      return {
-        section: "bg-background",
-        shell: "border-foreground",
-        panel: "border-foreground bg-foreground text-background",
-        title: "text-background",
-        titleAccent: "text-accent",
-        divider: "border-[rgba(244,235,221,0.28)]",
-        description: "text-[#f4ebdd]",
-      };
-  }
 }
 
 function getArticleNumbers(blocks: NarrativeHomeBlock[]) {
@@ -690,12 +625,10 @@ function renderBlock(block: NarrativeHomeBlock, articleNumbers: Map<string, numb
   switch (block.type) {
     case "opening":
       return <LeadBlock key={block.id} block={block} />;
-    case "constellation":
-      return <CoreClusterBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
+    case "body":
+      return <BodyBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
     case "rupture":
       return <FeatureBreakBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
-    case "sequence":
-      return <SequenceBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
     case "closing":
       return <ClosingBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
   }

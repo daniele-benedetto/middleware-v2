@@ -11,7 +11,7 @@ export const issueHomeBlockVariantSchema = z.enum(["black", "red", "default"]);
 export const issueHomeBlockSchema = z
   .object({
     id: z.string().trim().min(1),
-    type: z.enum(["opening", "constellation", "rupture", "sequence", "closing"]),
+    type: z.enum(["opening", "body", "rupture", "closing"]),
     variant: issueHomeBlockVariantSchema,
     title: z.string().trim().nullable().optional(),
     titleStyled: issueTitleStyledSchema.nullable().optional(),

@@ -121,12 +121,12 @@ Read/download flow:
 - Articles remain content entities with category, tags, author, media, and publication metadata. They do not own home placement state.
 - `Issue.homeBlocks` is a validated JSON array. Each block stores `id`, `type`, optional `title`, optional `description`, `articleIds`, and optional `featuredArticleId`.
 - Blocks use only manually assigned articles. Empty blocks are allowed in CMS state and are skipped by the public renderer.
-- Supported block types are `opening`, `constellation`, `rupture`, `sequence`, and `closing`.
+- Supported block types are `opening`, `body`, `rupture`, and `closing`.
 - One article can be assigned to one home block only. The server schema rejects duplicate article assignments across blocks.
 - `opening`, `rupture`, and `closing` are single-article blocks.
 - `opening` and `rupture` cannot include block title or description. Their article is the editorial payload.
 - `closing` can include title and description while still allowing only one article.
-- The public renderer composes `NarrativeHomeBlock` objects from `Issue.homeBlocks`. If no valid blocks exist, it falls back to issue article order with an `opening` block followed by a `constellation` block.
+- The public renderer composes `NarrativeHomeBlock` objects from `Issue.homeBlocks`. If no valid blocks exist, it falls back to issue article order with an `opening` block followed by a `body` block.
 - Shared helper rules for editing and layout generation live in `lib/issues/home-block-rules.ts`. Server validation remains in `lib/server/modules/issues/schema/index.ts`; keep both aligned when block rules change.
 
 ## Decision Boundaries

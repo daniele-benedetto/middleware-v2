@@ -30,14 +30,14 @@ describe("issues schemas", () => {
         homeBlocks: [
           {
             id: "campo",
-            type: "constellation",
+            type: "body",
             variant: "default",
             articleIds: [articleId],
             featuredArticleId: articleId,
           },
           {
-            id: "sequenza",
-            type: "sequence",
+            id: "chiusura",
+            type: "closing",
             variant: "default",
             articleIds: [articleId],
             featuredArticleId: articleId,
@@ -53,6 +53,25 @@ describe("issues schemas", () => {
         title: "Issue 01",
         homeBlocks: [
           {
+            id: "corpo",
+            type: "body",
+            variant: "default",
+            title: "Corpo",
+            description: null,
+            articleIds: [],
+            featuredArticleId: null,
+          },
+        ],
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rejects sequence home blocks", () => {
+    expect(
+      createIssueInputSchema.safeParse({
+        title: "Issue 01",
+        homeBlocks: [
+          {
             id: "sequenza",
             type: "sequence",
             variant: "default",
@@ -63,7 +82,7 @@ describe("issues schemas", () => {
           },
         ],
       }).success,
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("allows styled titles in home blocks", () => {
@@ -71,8 +90,8 @@ describe("issues schemas", () => {
       title: "Issue 01",
       homeBlocks: [
         {
-          id: "sequenza",
-          type: "sequence",
+          id: "corpo",
+          type: "body",
           variant: "default",
           title: "Titolo blocco",
           titleStyled: [
