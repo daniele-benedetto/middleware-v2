@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { publicTypography } from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import {
   formatArticleNumber,
@@ -8,6 +9,7 @@ import {
 } from "@/components/public/sections/dossier/dossier-format";
 import { getNarrativeVariantClasses } from "@/components/public/sections/dossier/dossier-variant";
 import { StyledTitle } from "@/components/public/styled-title";
+import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 
@@ -32,15 +34,11 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] md:gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:gap-12">
           <div>
             <div className="mb-6 flex items-start justify-between gap-4">
-              <span
-                className={`font-heading text-[40px] leading-[0.78] font-black tracking-[-0.04em] sm:text-[48px] md:text-[56px] ${variantClasses.titlePrimary}`}
-              >
+              <span className={cn(publicTypography.articleNumberLg, variantClasses.titlePrimary)}>
                 {formatArticleNumber(getArticleNumber(articleNumbers, article))}
               </span>
               {tagLine ? (
-                <p
-                  className={`mt-1.5 max-w-[52vw] text-right font-heading text-[11px] font-bold tracking-[0.14em] break-words uppercase md:max-w-[24ch] ${variantClasses.eyebrow}`}
-                >
+                <p className={cn(publicTypography.articleEyebrowWide, variantClasses.eyebrow)}>
                   {tagLine}
                 </p>
               ) : null}

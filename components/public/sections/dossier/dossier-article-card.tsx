@@ -1,9 +1,11 @@
 import Image from "next/image";
 
 import { AutoClampText } from "@/components/public/home/auto-clamp-text";
+import { publicTypography } from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { StyledTitle } from "@/components/public/styled-title";
+import { cn } from "@/lib/utils";
 
 import type { HomeIssueArticle } from "@/components/public/home/home-view-model";
 
@@ -90,7 +92,11 @@ export function DossierArticleCard({
             {formatArticleNumber(number)}
           </span>
           <span
-            className={`mt-1.5 max-w-[52vw] text-right font-heading text-[11px] font-bold tracking-[0.12em] break-words text-muted uppercase ${isClosing ? "md:max-w-52" : "md:max-w-[24ch]"}`}
+            className={cn(
+              publicTypography.articleEyebrow,
+              "text-muted",
+              isClosing ? "md:max-w-52" : "md:max-w-[24ch]",
+            )}
           >
             {eyebrow}
           </span>

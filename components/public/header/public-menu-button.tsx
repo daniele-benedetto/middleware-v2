@@ -2,6 +2,7 @@ import { forwardRef } from "react";
 
 import { publicHeaderButtonClassName } from "@/components/public/header/constants";
 import { PublicMenuIcon } from "@/components/public/header/public-menu-icon";
+import { publicTypography } from "@/components/public/primitives";
 import { cn } from "@/lib/utils";
 
 type PublicMenuButtonProps = {
@@ -35,7 +36,7 @@ export const PublicMenuButton = forwardRef<HTMLButtonElement, PublicMenuButtonPr
           className,
         )}
       >
-        <span className="text-[17px] font-extrabold tracking-[0.08em] uppercase">{label}</span>
+        <span className={cn(publicTypography.label, "text-[17px]")}>{label}</span>
         <PublicMenuIcon variant={icon} />
       </button>
     );

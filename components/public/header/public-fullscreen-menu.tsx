@@ -3,7 +3,9 @@ import Link from "next/link";
 import { publicHeaderBarClassName } from "@/components/public/header/constants";
 import { PublicBrand } from "@/components/public/header/public-brand";
 import { PublicMenuButton } from "@/components/public/header/public-menu-button";
+import { publicTypography } from "@/components/public/primitives";
 import { i18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 import type { RefObject } from "react";
 
@@ -42,21 +44,21 @@ export function PublicFullscreenMenu({ id, onClose, closeButtonRef }: PublicFull
             key={item.number}
             href={item.href}
             onClick={onClose}
-            className="flex items-baseline gap-4 border-b border-[#2c2926] py-3 transition-colors duration-(--motion-fast) hover:border-accent hover:text-accent sm:gap-5.5 sm:py-3.5"
+            className="flex items-baseline gap-4 border-b border-dark-line py-3 transition-colors duration-(--motion-fast) hover:border-accent hover:text-accent sm:gap-5.5 sm:py-3.5"
           >
             <span className="font-heading text-[15px] font-bold tracking-[0.1em] text-accent">
               {item.number}
             </span>
-            <span className="font-heading text-[clamp(34px,8vw,82px)] leading-[0.95] font-black tracking-[-0.03em]">
-              {item.label}
-            </span>
+            <span className={publicTypography.menuItem}>{item.label}</span>
           </Link>
         ))}
         <figure className="mt-9.5 max-w-[46ch]">
-          <blockquote className="font-sans text-[16px] leading-normal text-dark-muted italic">
+          <blockquote className={cn("text-dark-muted italic", publicTypography.editorialSmall)}>
             “{text.quote}”
           </blockquote>
-          <figcaption className="mt-3 font-sans text-[15px] leading-normal text-dark-muted italic">
+          <figcaption
+            className={cn("mt-3 text-dark-muted italic", publicTypography.editorialSmall)}
+          >
             {text.quoteSource}
           </figcaption>
         </figure>

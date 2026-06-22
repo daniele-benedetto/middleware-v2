@@ -10,7 +10,7 @@ type ArticleMetaProps = {
 export function ArticleMeta({ article, tone = "light" }: ArticleMetaProps) {
   const text = i18n.public.home.articleCard;
   const muted =
-    tone === "dark" ? "text-dark-muted" : tone === "accent" ? "text-[#f4ebdd]/80" : "text-muted";
+    tone === "dark" ? "text-dark-muted" : tone === "accent" ? "text-cream-muted" : "text-muted";
   const separator = tone === "accent" ? "bg-foreground" : "bg-accent";
   const items = [
     article.categoryName,

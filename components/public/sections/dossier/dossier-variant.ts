@@ -5,12 +5,12 @@ export function getNarrativeVariantClasses(variant: NarrativeHomeBlock["variant"
     case "red":
       return {
         section: "bg-accent text-background",
-        eyebrow: "text-[#f4ebdd]/80",
+        eyebrow: "text-cream-muted",
         metaTone: "accent" as const,
         titlePrimary: "text-foreground",
-        excerpt: "text-[#f4ebdd]",
-        description: "text-[#f4ebdd]/80",
-        image: "border-[rgba(244,235,221,0.34)] grayscale",
+        excerpt: "text-cream-soft",
+        description: "text-cream-muted",
+        image: "border-cream-border-muted grayscale",
       };
     case "default":
       return {
@@ -28,7 +28,7 @@ export function getNarrativeVariantClasses(variant: NarrativeHomeBlock["variant"
         eyebrow: "text-dark-muted",
         metaTone: "dark" as const,
         titlePrimary: "text-accent",
-        excerpt: "text-[#e7ddcb]",
+        excerpt: "text-cream-warm",
         description: "text-dark-muted",
         image: "border-dark-border grayscale",
       };

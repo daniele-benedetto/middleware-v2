@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { publicTypography } from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import { BlockTitle } from "@/components/public/sections/dossier/block-title";
 import {
@@ -10,6 +11,7 @@ import {
 import { getNarrativeVariantClasses } from "@/components/public/sections/dossier/dossier-variant";
 import { StyledTitle } from "@/components/public/styled-title";
 import { i18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 
@@ -76,13 +78,11 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
           {image}
           <div className="px-6 pt-6 pb-6 md:px-8 md:pt-7 md:pb-8">
             <div className="mb-5 flex items-start justify-between gap-4">
-              <span className="font-heading text-[40px] leading-[0.78] font-black tracking-[-0.04em] text-accent sm:text-[48px] md:text-[56px]">
+              <span className={cn(publicTypography.articleNumberLg, "text-accent")}>
                 {formatArticleNumber(getArticleNumber(articleNumbers, article))}
               </span>
               {tagLine ? (
-                <p className="mt-1.5 max-w-[52vw] text-right font-heading text-[11px] font-bold tracking-[0.14em] break-words text-muted uppercase md:max-w-[24ch]">
-                  {tagLine}
-                </p>
+                <p className={cn(publicTypography.articleEyebrowWide, "text-muted")}>{tagLine}</p>
               ) : null}
             </div>
 

@@ -1,5 +1,8 @@
 import Link from "next/link";
 
+import { publicTypography } from "@/components/public/primitives";
+import { cn } from "@/lib/utils";
+
 type PublicFooterLink = {
   label: string;
   href: string;
@@ -13,9 +16,7 @@ type PublicFooterLinkGroupProps = {
 export function PublicFooterLinkGroup({ title, links }: PublicFooterLinkGroupProps) {
   return (
     <div>
-      <h4 className="mb-3.5 font-heading text-xs font-bold tracking-[0.1em] text-accent uppercase">
-        {title}
-      </h4>
+      <h4 className={cn("mb-3.5 text-accent", publicTypography.kicker, "font-bold")}>{title}</h4>
       <div className="flex flex-col gap-2.25 text-sm text-cream-on-dark">
         {links.map((link) => (
           <Link

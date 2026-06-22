@@ -1,4 +1,6 @@
+import { publicTypography } from "@/components/public/primitives";
 import { BlockTitle } from "@/components/public/sections/dossier/block-title";
+import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 
@@ -17,13 +19,13 @@ export function BlockSectionIntro({ block }: { block: NarrativeHomeBlock }) {
       {block.title ? (
         <div className="mt-6 border-t border-foreground pt-5">
           {block.description ? (
-            <p className="w-full font-editorial text-[clamp(17px,1.4vw,21px)] leading-normal text-body-text">
+            <p className={cn("w-full text-body-text", publicTypography.editorialBody)}>
               {block.description}
             </p>
           ) : null}
         </div>
       ) : block.description ? (
-        <p className="mt-4 w-full font-editorial text-[clamp(17px,1.4vw,21px)] leading-normal text-body-text">
+        <p className={cn("mt-4 w-full text-body-text", publicTypography.editorialBody)}>
           {block.description}
         </p>
       ) : null}

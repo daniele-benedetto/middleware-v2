@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { publicTypography } from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import {
   blockEyebrow,
@@ -8,6 +9,7 @@ import {
 } from "@/components/public/sections/dossier/dossier-format";
 import { getNarrativeVariantClasses } from "@/components/public/sections/dossier/dossier-variant";
 import { StyledTitle } from "@/components/public/styled-title";
+import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 
@@ -52,15 +54,11 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
         {imageOnRight ? null : image}
         <article className="px-5 py-5 sm:px-6 sm:py-6 md:p-8 lg:p-9">
           <div className="mb-6 flex items-start justify-between gap-4">
-            <span
-              className={`font-heading text-[40px] leading-[0.78] font-black tracking-[-0.04em] sm:text-[48px] md:text-[56px] ${variantClasses.titlePrimary}`}
-            >
+            <span className={cn(publicTypography.articleNumberLg, variantClasses.titlePrimary)}>
               {formatArticleNumber(getArticleNumber(articleNumbers, article))}
             </span>
             {eyebrow ? (
-              <span
-                className={`mt-1.5 max-w-[52vw] text-right font-heading text-[11px] font-bold tracking-[0.12em] break-words uppercase md:max-w-[24ch] ${variantClasses.eyebrow}`}
-              >
+              <span className={cn(publicTypography.articleEyebrow, variantClasses.eyebrow)}>
                 {eyebrow}
               </span>
             ) : null}

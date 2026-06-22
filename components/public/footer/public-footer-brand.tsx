@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { publicTypography } from "@/components/public/primitives";
 import { i18n } from "@/lib/i18n";
 
 export function PublicFooterBrand() {
@@ -14,9 +15,7 @@ export function PublicFooterBrand() {
         height={31}
         className="size-7.75 shrink-0 object-contain"
       />
-      <span className="font-heading text-xl leading-none font-extrabold tracking-[-0.02em] lowercase">
-        {text.wordmark}
-      </span>
+      <span className={publicTypography.footerBrand}>{text.wordmark}</span>
     </div>
   );
 }

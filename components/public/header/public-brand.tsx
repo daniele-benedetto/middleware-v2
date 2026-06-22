@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { publicTypography } from "@/components/public/primitives";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +37,7 @@ export function PublicBrand({
       />
       <span
         className={cn(
-          "font-heading text-[22px] leading-none font-extrabold tracking-[-0.02em] lowercase",
+          publicTypography.brand,
           tone === "dark" ? "text-background" : "text-foreground",
         )}
       >
