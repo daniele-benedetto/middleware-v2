@@ -1,0 +1,62 @@
+import {
+  type NarrativeHomeBlock,
+  composeNarrativeHomeBlocks,
+} from "@/components/public/home/home-view-model";
+import { BodyBlock } from "@/components/public/sections/dossier/body-block";
+import { ClosingBlock } from "@/components/public/sections/dossier/closing-block";
+import {
+  assignArticleNumbers,
+  getArticleNumbers,
+  getUnpaginatedArticles,
+  sortUnpaginatedArticles,
+} from "@/components/public/sections/dossier/dossier-view-model";
+import { FeatureBreakBlock } from "@/components/public/sections/dossier/feature-break-block";
+import { LeadBlock } from "@/components/public/sections/dossier/lead-block";
+import { UnpaginatedArticleRow } from "@/components/public/sections/dossier/unpaginated-article-row";
+
+import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
+
+type DossierHomeProps = {
+  issue: PublicCurrentIssueDetail;
+};
+
+function renderBlock(block: NarrativeHomeBlock, articleNumbers: Map<string, number>) {
+  switch (block.type) {
+    case "opening":
+      return <LeadBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
+    case "body":
+      return <BodyBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
+    case "rupture":
+      return <FeatureBreakBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
+    case "closing":
+      return <ClosingBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
+  }
+}
+
+export function DossierHome({ issue }: DossierHomeProps) {
+  const blocks = composeNarrativeHomeBlocks(issue);
+
+  if (blocks.length === 0) {
+    return <UnpaginatedArticleRow id="dossier" articles={issue.articles} />;
+  }
+
+  const unpaginatedArticles = getUnpaginatedArticles(issue, blocks);
+  const contentBlocks = blocks.filter((block) => block.type !== "closing");
+  const closingBlocks = blocks.filter((block) => block.type === "closing");
+  const articleNumbers = getArticleNumbers(contentBlocks);
+  const unpaginatedStartNumber = articleNumbers.size + 1;
+
+  assignArticleNumbers(articleNumbers, sortUnpaginatedArticles(unpaginatedArticles));
+  assignArticleNumbers(
+    articleNumbers,
+    closingBlocks.flatMap((block) => block.articles),
+  );
+
+  return (
+    <div className="bg-background">
+      {contentBlocks.map((block) => renderBlock(block, articleNumbers))}
+      <UnpaginatedArticleRow articles={unpaginatedArticles} startNumber={unpaginatedStartNumber} />
+      {closingBlocks.map((block) => renderBlock(block, articleNumbers))}
+    </div>
+  );
+}
