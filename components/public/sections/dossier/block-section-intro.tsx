@@ -12,7 +12,7 @@ export function BlockSectionIntro({ block }: { block: NarrativeHomeBlock }) {
   return (
     <div className="pb-6 lg:pb-7">
       {block.title ? (
-        <h2 className="font-heading text-[clamp(34px,4vw,64px)] leading-[0.9] font-black tracking-[-0.045em] text-foreground uppercase">
+        <h2 className={cn(publicTypography.blockTitle, "text-foreground")}>
           <BlockTitle block={block} />
         </h2>
       ) : null}

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { publicTypography } from "@/components/public/primitives";
+import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import {
   formatArticleNumber,
@@ -36,7 +36,10 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
         <Link
           href={articleHref}
           aria-label={article.title}
-          className="group grid cursor-pointer gap-8 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-accent md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] md:gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:gap-12"
+          className={cn(
+            publicInteraction.cardBase,
+            "grid gap-8 border-l-4 border-transparent pl-4 hover:border-accent focus-visible:border-accent sm:pl-5 md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] md:gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:gap-12",
+          )}
         >
           <div>
             <div className="mb-6 flex items-start justify-between gap-4">
@@ -49,7 +52,7 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
                 </p>
               ) : null}
             </div>
-            <h2 className="max-w-[13ch] font-heading text-[clamp(42px,6.6vw,104px)] leading-[0.88] font-black tracking-[-0.052em] text-balance">
+            <h2 className={cn(publicTypography.leadArticleTitle, "max-w-[13ch] text-balance")}>
               <StyledTitle
                 title={article.title}
                 titleStyled={article.titleStyled}
@@ -84,7 +87,7 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
                 alt={article.imageAlt ?? ""}
                 fill
                 sizes="(min-width: 768px) 45vw, 100vw"
-                className="object-cover transition-transform duration-(--motion-slow) ease-(--easing-standard) group-hover:scale-[1.035] group-focus-visible:scale-[1.035]"
+                className={cn("object-cover", publicInteraction.imageZoom)}
                 priority
               />
             </div>

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { HomeSectionHeader } from "@/components/public/home/home-section-header";
 import { getIssuePlainDescription } from "@/components/public/home/home-view-model";
-import { publicTypography } from "@/components/public/primitives";
+import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import { formatIssueSeasonLong } from "@/lib/public/format/issue";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +38,10 @@ export function ArchiveSection({
             <Link
               key={issue.id}
               href={`/uscite/${issue.slug}`}
-              className="flex flex-col border-r border-b border-foreground px-6.5 py-6 transition-[background,box-shadow] duration-(--motion-fast) hover:bg-surface-hover hover:shadow-[var(--interactive-rail-shadow)]"
+              className={cn(
+                publicInteraction.cardSurface,
+                "flex flex-col border-r border-b border-foreground px-6.5 py-6",
+              )}
             >
               <div className="mb-4.5 flex items-center justify-between">
                 <span className={cn(publicTypography.label, "text-accent")}>

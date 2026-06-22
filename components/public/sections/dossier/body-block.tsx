@@ -19,15 +19,12 @@ export function BodyBlock({ block, articleNumbers }: BodyBlockProps) {
     : block.articles;
   const featuredOnRight = block.featuredPlacement === "right";
   const featuredCard = featured ? (
-    <div className="relative h-full min-h-full">
-      <DossierArticleCard
-        article={featured}
-        eyebrow={articleEyebrow(featured)}
-        number={getArticleNumber(articleNumbers, featured)}
-        variant="clusterFeatured"
-        className="md:absolute md:inset-0"
-      />
-    </div>
+    <DossierArticleCard
+      article={featured}
+      eyebrow={articleEyebrow(featured)}
+      number={getArticleNumber(articleNumbers, featured)}
+      variant="clusterFeatured"
+    />
   ) : null;
   const secondaryCards = (
     <div className="grid h-full min-h-full">

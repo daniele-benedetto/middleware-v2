@@ -11,6 +11,20 @@ export const publicTypography = {
   meta: "font-heading text-xs font-semibold",
   sectionTitle:
     "font-heading text-[clamp(22px,2.6vw,30px)] leading-none font-black tracking-[-0.02em]",
+  homeHeroTitle:
+    "font-heading text-[clamp(48px,9.5vw,138px)] leading-[0.86] font-black tracking-[-0.06em]",
+  issueBackgroundNumber:
+    "font-heading text-[clamp(108px,26vw,390px)] leading-[0.72] font-black tracking-[-0.035em]",
+  blockTitle:
+    "font-heading text-[clamp(34px,4vw,64px)] leading-[0.9] font-black tracking-[-0.045em] uppercase",
+  leadArticleTitle:
+    "font-heading text-[clamp(42px,6.6vw,104px)] leading-[0.88] font-black tracking-[-0.052em]",
+  featureArticleTitle:
+    "font-heading text-[clamp(38px,5vw,76px)] leading-[0.9] font-black tracking-tighter",
+  closingPanelTitle:
+    "font-heading text-[clamp(34px,4.2vw,68px)] leading-[0.9] font-black tracking-[-0.046em] uppercase",
+  closingArticleTitle:
+    "font-heading text-[clamp(32px,4.6vw,72px)] leading-[0.92] font-black tracking-[-0.048em]",
   issueCardTitle: "font-heading text-[21px] leading-[1.12] font-bold tracking-[-0.02em]",
   editorialSmall: "font-editorial text-[15px] leading-normal",
   editorialBody: "font-editorial text-[clamp(17px,1.4vw,21px)] leading-normal",

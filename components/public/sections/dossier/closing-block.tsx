@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { publicTypography } from "@/components/public/primitives";
+import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import { BlockTitle } from "@/components/public/sections/dossier/block-title";
 import {
@@ -41,7 +41,7 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
         alt={article.imageAlt ?? ""}
         fill
         sizes="(min-width: 768px) 34vw, 100vw"
-        className="object-cover transition-transform duration-(--motion-slow) ease-(--easing-standard) group-hover:scale-[1.035] group-focus-visible:scale-[1.035]"
+        className={cn("object-cover", publicInteraction.imageZoom)}
       />
     </div>
   ) : null;
@@ -53,7 +53,7 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
           {blockHasCopy ? (
             <div>
               {block.title ? (
-                <h2 className="max-w-[11ch] font-heading text-[clamp(34px,4.2vw,68px)] leading-[0.9] font-black tracking-[-0.046em] uppercase text-balance">
+                <h2 className={cn(publicTypography.closingPanelTitle, "max-w-[11ch] text-balance")}>
                   <BlockTitle block={block} primaryClassName={variantClasses.titlePrimary} />
                 </h2>
               ) : null}
@@ -79,7 +79,10 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
         <Link
           href={articleHref}
           aria-label={article.title}
-          className="group min-w-0 cursor-pointer border border-foreground bg-background text-foreground transition-[background,box-shadow] duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-accent hover:bg-surface-hover hover:shadow-(--interactive-rail-shadow)"
+          className={cn(
+            publicInteraction.cardSurface,
+            "min-w-0 border border-foreground bg-background text-foreground",
+          )}
         >
           {image}
           <div className="px-6 pt-6 pb-6 md:px-8 md:pt-7 md:pb-8">
@@ -92,7 +95,7 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
               ) : null}
             </div>
 
-            <h3 className="w-full font-heading text-[clamp(32px,4.6vw,72px)] leading-[0.92] font-black tracking-[-0.048em] text-balance">
+            <h3 className={cn(publicTypography.closingArticleTitle, "w-full text-balance")}>
               <StyledTitle
                 title={article.title}
                 titleStyled={article.titleStyled}

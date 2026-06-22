@@ -1,4 +1,5 @@
 export { StyledTitle } from "@/components/public/styled-title";
+export { publicInteraction } from "@/components/public/primitives/interaction";
 export {
   PublicEditorialText,
   PublicKicker,

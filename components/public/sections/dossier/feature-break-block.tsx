@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { publicTypography } from "@/components/public/primitives";
+import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import {
   blockEyebrow,
@@ -43,7 +43,7 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
         alt={article.imageAlt ?? ""}
         fill
         sizes="(min-width: 768px) 42vw, 100vw"
-        className="object-cover transition-transform duration-(--motion-slow) ease-(--easing-standard) group-hover:scale-[1.035] group-focus-visible:scale-[1.035]"
+        className={cn("object-cover", publicInteraction.imageZoom)}
       />
     </div>
   ) : null;
@@ -53,7 +53,12 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
       <Link
         href={articleHref}
         aria-label={article.title}
-        className={`group grid cursor-pointer transition-[background,box-shadow] duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-accent hover:shadow-(--interactive-rail-shadow) md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] ${variantClasses.section} ${showBorder ? "border border-current" : ""}`}
+        className={cn(
+          publicInteraction.cardBase,
+          "grid hover:shadow-(--interactive-rail-shadow) md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
+          variantClasses.section,
+          showBorder ? "border border-current" : "",
+        )}
       >
         {imageOnRight ? null : image}
         <article className="px-5 py-5 sm:px-6 sm:py-6 md:p-8 lg:p-9">
@@ -67,7 +72,7 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
               </span>
             ) : null}
           </div>
-          <h2 className="max-w-[14ch] font-heading text-[clamp(38px,5vw,76px)] leading-[0.9] font-black tracking-tighter text-balance">
+          <h2 className={cn(publicTypography.featureArticleTitle, "max-w-[14ch] text-balance")}>
             <StyledTitle
               title={article.title}
               titleStyled={article.titleStyled}

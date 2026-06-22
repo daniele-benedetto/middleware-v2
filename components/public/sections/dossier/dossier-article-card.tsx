@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { AutoClampText } from "@/components/public/home/auto-clamp-text";
-import { publicTypography } from "@/components/public/primitives";
+import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { StyledTitle } from "@/components/public/styled-title";
@@ -57,7 +57,7 @@ export function DossierArticleCard({
         alt={article.imageAlt ?? ""}
         fill
         sizes="(min-width: 768px) 38vw, 100vw"
-        className="object-cover transition-transform duration-(--motion-slow) ease-(--easing-standard) group-hover:scale-[1.035] group-focus-visible:scale-[1.035]"
+        className={cn("object-cover", publicInteraction.imageZoom)}
       />
     </div>
   ) : null;
@@ -66,15 +66,17 @@ export function DossierArticleCard({
     <Link
       href={articleHref}
       aria-label={article.title}
-      className={`group flex h-full min-h-full cursor-pointer overflow-hidden border-foreground bg-background transition-[background,box-shadow] duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-accent hover:bg-surface-hover hover:shadow-(--interactive-rail-shadow) ${
+      className={cn(
+        publicInteraction.cardSurface,
+        "flex h-full min-h-full overflow-hidden border-foreground bg-background",
         isClosing
           ? "border px-5 py-5 sm:px-6 sm:py-6 md:px-8 md:py-8"
-          : "border-r border-b px-5 py-5 sm:px-6 sm:py-6 md:px-7 md:py-7"
-      } ${
+          : "border-r border-b px-5 py-5 sm:px-6 sm:py-6 md:px-7 md:py-7",
         isClosing
           ? "flex-col md:grid md:grid-cols-[minmax(0,0.62fr)_minmax(240px,0.38fr)] md:items-stretch md:gap-8"
-          : "flex-col"
-      } ${className}`}
+          : "flex-col",
+        className,
+      )}
     >
       <article className="contents">
         <div

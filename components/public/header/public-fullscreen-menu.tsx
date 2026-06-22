@@ -55,7 +55,7 @@ export function PublicFullscreenMenu({ id, onClose, closeButtonRef }: PublicFull
           ))}
         </div>
 
-        <div className="relative mt-9.5 w-full md:w-1/3">
+        <div className="relative mt-9.5 w-full border-l-4 border-accent pl-5 md:w-1/3">
           <blockquote
             className={cn(
               "relative max-w-none text-cream-on-dark italic",

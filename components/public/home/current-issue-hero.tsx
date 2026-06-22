@@ -1,3 +1,4 @@
+import { publicTypography } from "@/components/public/primitives";
 import { StyledTitle } from "@/components/public/styled-title";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 
@@ -39,14 +40,14 @@ export function CurrentIssueHero({ issue, description, issueNumber }: CurrentIss
   return (
     <section className="relative isolate w-full overflow-hidden border-y-2 border-foreground bg-background px-4 py-7 sm:px-6 sm:py-9 lg:px-12 lg:py-14">
       <div
-        className="pointer-events-none absolute top-5 right-5 z-0 font-heading text-[clamp(108px,26vw,390px)] leading-[0.72] font-black tracking-[-0.035em] text-accent/15 select-none [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]"
+        className={`${publicTypography.issueBackgroundNumber} pointer-events-none absolute top-5 right-5 z-0 text-accent/15 select-none [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]`}
         aria-hidden
       >
         {issueNumber}
       </div>
 
       <div className="relative z-10 w-full">
-        <h1 className="w-full font-heading text-[clamp(48px,9.5vw,138px)] leading-[0.86] font-black tracking-[-0.06em] text-foreground">
+        <h1 className={`${publicTypography.homeHeroTitle} w-full text-foreground`}>
           <StyledTitle title={issue.title} titleStyled={issue.titleStyled} />
         </h1>
         {description ? (
