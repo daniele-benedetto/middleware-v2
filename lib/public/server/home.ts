@@ -6,8 +6,7 @@ import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicIssuesService } from "@/lib/server/modules/issues/service/public";
 
-import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
-import type { PublicIssueListItem } from "@/lib/public/server/issues";
+import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 
 export const PUBLIC_HOME_REVALIDATE_SECONDS = 60 * 60;
 export const PUBLIC_HOME_CACHE_TAG = "public-home";

@@ -4,7 +4,7 @@ import type {
   HomeIssueArticle,
   NarrativeHomeBlock,
 } from "@/components/public/home/home-view-model";
-import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
+import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
 function compactText(value: string | null | undefined) {
   const text = value?.trim();

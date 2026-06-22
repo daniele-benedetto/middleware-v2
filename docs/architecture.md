@@ -20,7 +20,13 @@ Use it as the entrypoint before diving into the deeper audit, UI, or checklist d
 - `app/(auth)/cms/login/*`: login route.
 - `features/cms/*`: domain screens, hooks, and feature-scoped components.
 - `components/cms/*`: shared CMS primitives, layout parts, and common UI states.
+- `components/public/primitives/*`: public visual atoms and class helpers, with no data fetching.
+- `components/public/compounds/*`: small public UI assemblies composed from primitives.
+- `components/public/sections/*`: route-agnostic public page sections such as the issue dossier.
+- `components/public/pages/*`: public page-level compositions used by App Router entrypoints.
 - `lib/cms/*`: frontend shared auth, query, invalidation, and error-mapping helpers.
+- `lib/public/server/*`: cache-safe public data loaders for static/ISR page rendering.
+- `lib/public/types/*`: type-only public DTO aliases shared by loaders and components.
 - `lib/server/trpc/*`: transport, context, procedure builders, middleware, and routers.
 - `lib/server/modules/<resource>/*`: per-domain `schema`, `dto`, `policy`, `repository`, `service`.
 - `prisma/schema.prisma`: data model.
@@ -71,8 +77,62 @@ CMS page/request
 - Public home data is cached with `unstable_cache` and `PUBLIC_HOME_REVALIDATE_SECONDS` because issue publishing is infrequent.
 - The public home loader calls the public issue service directly, not the request-bound tRPC caller, so it is safe to reuse across requests.
 - The public home loader uses `publicIssuesService.listPublishedItems()` for archive cards, avoiding the `countPublished()` query used by paginated API responses.
+- Public issue pages use `lib/public/server/issue-page.ts`; they are generated from published issue slugs and share the same one-hour ISR policy.
+- Public route segment `revalidate` exports must stay literal numbers, such as `3600`, because Next.js validates segment config statically.
+- Public loaders must not call `getTrpcCaller()` because it depends on request headers and makes otherwise static pages request-bound.
 - Article `contentPreview` is derived and capped server-side before serialization; fully removing `contentRich` from home queries requires persisted derived fields such as `readingTimeMinutes` and `contentPreview`.
 - The public home cache tag is `PUBLIC_HOME_CACHE_TAG` (`public-home`); use `revalidateTag(PUBLIC_HOME_CACHE_TAG)` when CMS publish flows need immediate public refresh.
+- The public issue cache tag is `PUBLIC_ISSUE_PAGE_CACHE_TAG` (`public-issue`); use `revalidateTag(PUBLIC_ISSUE_PAGE_CACHE_TAG)` when published issue pages need immediate refresh.
+
+## Public Frontend Composition
+
+- App Router files under `app/(public)/*` stay thin: load data, build metadata, handle `notFound()`, and render a page component.
+- Page-level public compositions live in `components/public/pages/*`; reuse them when two routes share the same layout, as `/` and `/uscite/[slug]` do with `PublicHomePage`.
+- Sections live in `components/public/sections/*` when they represent a route-agnostic content band or editorial block.
+- Compounds live in `components/public/compounds/*` when a small assembly is reusable across sections but is not a full section by itself.
+- Primitives live in `components/public/primitives/*` when they are visual atoms, typography helpers, or token-backed classes with no route or data knowledge.
+- Shared public view-model helpers can live beside the section/page that owns the shape. Keep them deterministic and data-only.
+- Public components should receive already-shaped props and should not import server loaders.
+- Prefer CSS and small vanilla client components for baseline interaction. Add GSAP only for a concrete editorial motion requirement that cannot be served well by CSS.
+
+Minimal route pattern for a new public page:
+
+```tsx
+import { SomePublicPage } from "@/components/public/pages";
+import { getSomePublicData } from "@/lib/public/server/some-page";
+
+export const revalidate = 3600;
+
+export async function generateMetadata() {
+  const data = await getSomePublicData();
+  return buildPageMetadata({ title: data.title, path: "/some-page" });
+}
+
+export default async function Page() {
+  const data = await getSomePublicData();
+  return <SomePublicPage data={data} />;
+}
+```
+
+Minimal section pattern:
+
+```tsx
+import { publicTypography } from "@/components/public/primitives";
+
+type EditorialSectionProps = {
+  title: string;
+  description?: string;
+};
+
+export function EditorialSection({ title, description }: EditorialSectionProps) {
+  return (
+    <section>
+      <h2 className={publicTypography.sectionTitle}>{title}</h2>
+      {description ? <p className={publicTypography.body}>{description}</p> : null}
+    </section>
+  );
+}
+```
 
 ## Auth And Roles
 
@@ -149,6 +209,7 @@ Editorial image semantics:
 - Put database access in `repository`.
 - Keep routers and App Router pages orchestration-only.
 - Keep shared CMS UI in `components/cms` and domain-specific composition in `features/cms`.
+- Keep shared public UI in `components/public`, separated by primitive/compound/section/page responsibility.
 - Prefer extending existing shared helpers over duplicating list/query/error logic per resource.
 
 ## Related Docs

@@ -1,8 +1,7 @@
 import { resolveIssueHomeBlocks } from "@/components/public/home/resolve-issue-home-blocks";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 
-import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
-import type { PublicIssueListItem } from "@/lib/public/server/issues";
+import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 import type { IssueTitleStyled } from "@/lib/server/modules/issues/schema";
 
 export type HomeIssueArticle = PublicCurrentIssueDetail["articles"][number];

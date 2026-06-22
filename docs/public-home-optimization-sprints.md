@@ -113,6 +113,8 @@ Done quando:
 
 Obiettivo: rendere sostenibile la creazione delle prossime pagine.
 
+Stato: completato il 2026-06-22.
+
 - Aggiornare `docs/architecture.md` con la struttura pubblica finale se cambia in modo significativo.
 - Documentare regole di composizione componenti pubblici.
 - Definire quando creare una primitive, un compound o una section.
@@ -123,7 +125,7 @@ Done quando:
 
 - Un nuovo sviluppatore puo creare una pagina pubblica senza copiare blocchi dalla home.
 - La documentazione attiva resta snella e aggiornata.
-- `pnpm typecheck`, `pnpm lint`, `pnpm test:run` e `pnpm build` passano prima della chiusura complessiva.
+- `pnpm typecheck`, `pnpm lint`, `pnpm test:run`, `pnpm build` e `pnpm format:check` passano prima della chiusura complessiva.
 
 TODO DA FARE POI:
 

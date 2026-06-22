@@ -6,7 +6,7 @@ import {
   type HomeIssueArticle,
 } from "@/components/public/home/home-view-model";
 
-import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
+import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
 const article = (overrides: Partial<HomeIssueArticle>): HomeIssueArticle => ({
   id: crypto.randomUUID(),

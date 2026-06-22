@@ -2,7 +2,7 @@ import { publicTypography } from "@/components/public/primitives";
 import { StyledTitle } from "@/components/public/styled-title";
 import { cn } from "@/lib/utils";
 
-import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
+import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
 type CurrentIssueHeroProps = {
   issue: PublicCurrentIssueDetail;

@@ -14,7 +14,7 @@ import { FeatureBreakBlock } from "@/components/public/sections/dossier/feature-
 import { LeadBlock } from "@/components/public/sections/dossier/lead-block";
 import { UnpaginatedArticleRow } from "@/components/public/sections/dossier/unpaginated-article-row";
 
-import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
+import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
 type DossierHomeProps = {
   issue: PublicCurrentIssueDetail;

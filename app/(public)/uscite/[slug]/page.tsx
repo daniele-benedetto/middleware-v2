@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { PublicHomePage } from "@/components/public/home";
+import { PublicHomePage } from "@/components/public/pages";
 import { getPublicIssuePageData, getPublicIssueStaticParams } from "@/lib/public/server/issue-page";
 import { buildPageMetadata } from "@/lib/seo";
 

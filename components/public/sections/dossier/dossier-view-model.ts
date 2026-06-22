@@ -3,7 +3,7 @@ import {
   type NarrativeHomeBlock,
 } from "@/components/public/home/home-view-model";
 
-import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
+import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
 export function sortUnpaginatedArticles(articles: HomeIssueArticle[]) {
   return [...articles].sort((a, b) => {

@@ -6,7 +6,7 @@ import { publicTypography } from "@/components/public/primitives";
 import { formatIssueSeasonLong } from "@/lib/public/format/issue";
 import { cn } from "@/lib/utils";
 
-import type { PublicIssueListItem } from "@/lib/public/server/issues";
+import type { PublicIssueListItem } from "@/lib/public/types/issues";
 
 type ArchiveSectionProps = {
   title: string;

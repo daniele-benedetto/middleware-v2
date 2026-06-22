@@ -11,8 +11,7 @@ import { DossierHome } from "@/components/public/sections/dossier/dossier-home";
 import { i18n } from "@/lib/i18n";
 import { buildHomeJsonLd } from "@/lib/seo/home-json-ld";
 
-import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
-import type { PublicIssueListItem } from "@/lib/public/server/issues";
+import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 
 type PublicHomePageProps = {
   currentIssue: PublicCurrentIssueDetail | null;

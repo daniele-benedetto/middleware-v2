@@ -1,7 +1,7 @@
 import { getIssuePlainDescription } from "@/components/public/home/home-view-model";
 import { getCanonicalUrl, seoConfig } from "@/lib/seo";
 
-import type { PublicCurrentIssueDetail } from "@/lib/public/server/current-issue-detail";
+import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
 export function buildHomeJsonLd(currentIssue: PublicCurrentIssueDetail | null, path = "/") {
   const siteUrl = getCanonicalUrl(path);
