@@ -61,4 +61,25 @@ describe("home block rules", () => {
       featuredPlacement: "left",
     });
   });
+
+  it("keeps rupture image placement while stripping copy", () => {
+    expect(
+      normalizeHomeBlock({
+        id: "rupture",
+        type: "rupture",
+        variant: "red",
+        title: "Rottura",
+        titleStyled: [{ text: "Rottura", tone: "primary" }],
+        description: "Copy",
+        articleIds: ["00000000-0000-4000-8000-000000000001"],
+        featuredArticleId: "00000000-0000-4000-8000-000000000001",
+        featuredPlacement: "right",
+      }),
+    ).toMatchObject({
+      title: null,
+      titleStyled: null,
+      description: null,
+      featuredPlacement: "right",
+    });
+  });
 });

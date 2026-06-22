@@ -17,7 +17,7 @@ export function HomeSectionHeader({
     <div
       className={`flex items-center gap-4 border-b-2 border-foreground py-3.5 max-md:flex-wrap ${topBorder ? "border-t-2" : ""}`}
     >
-      <span className="inline-flex items-center gap-2.25 font-heading text-[clamp(22px,2.6vw,30px)] leading-none font-black tracking-[-0.02em]">
+      <span className="inline-flex items-center gap-2 font-heading text-[clamp(22px,2.6vw,30px)] leading-none font-black tracking-[-0.02em]">
         {marker === "outline" ? (
           <span className="size-3.5 rounded-[3px] border-2 border-accent bg-white" aria-hidden />
         ) : null}
@@ -27,7 +27,7 @@ export function HomeSectionHeader({
         {title}
       </span>
       {description ? (
-        <span className="font-editorial text-[14.5px] text-muted italic">{description}</span>
+        <span className="font-editorial text-[15px] text-muted italic">{description}</span>
       ) : null}
       {range ? (
         <span className="ml-auto font-heading text-xs font-bold tracking-[0.06em] text-muted max-md:ml-0">

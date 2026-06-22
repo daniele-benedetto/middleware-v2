@@ -8,6 +8,10 @@ export function isEditorialSingleBlock(type: IssueHomeBlock["type"]) {
   return type === "opening" || type === "rupture";
 }
 
+function supportsFeaturedPlacement(type: IssueHomeBlock["type"]) {
+  return type === "body" || type === "rupture";
+}
+
 export function normalizeHomeBlock(block: IssueHomeBlock): IssueHomeBlock {
   const articleIds = isSingleArticleBlock(block.type)
     ? block.articleIds.slice(0, 1)
@@ -24,7 +28,7 @@ export function normalizeHomeBlock(block: IssueHomeBlock): IssueHomeBlock {
     description: isEditorialSingleBlock(block.type) ? null : block.description,
     articleIds,
     featuredArticleId,
-    featuredPlacement: block.type === "body" ? block.featuredPlacement : "left",
+    featuredPlacement: supportsFeaturedPlacement(block.type) ? block.featuredPlacement : "left",
   };
 }
 

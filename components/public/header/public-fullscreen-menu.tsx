@@ -36,18 +36,18 @@ export function PublicFullscreenMenu({ id, onClose, closeButtonRef }: PublicFull
         />
       </div>
 
-      <nav className="flex w-full flex-1 flex-col justify-center px-4 py-8 sm:px-6 lg:px-12">
+      <nav className="flex w-full flex-1 flex-col justify-center px-4 py-7 sm:px-6 sm:py-8 lg:px-12">
         {text.items.map((item) => (
           <Link
             key={item.number}
             href={item.href}
             onClick={onClose}
-            className="flex items-baseline gap-5.5 border-b border-[#2c2926] py-3.5 transition-colors duration-(--motion-fast) hover:border-accent hover:text-accent"
+            className="flex items-baseline gap-4 border-b border-[#2c2926] py-3 transition-colors duration-(--motion-fast) hover:border-accent hover:text-accent sm:gap-5.5 sm:py-3.5"
           >
             <span className="font-heading text-[15px] font-bold tracking-[0.1em] text-accent">
               {item.number}
             </span>
-            <span className="font-heading text-[clamp(40px,8vw,82px)] leading-[0.95] font-black tracking-[-0.03em]">
+            <span className="font-heading text-[clamp(34px,8vw,82px)] leading-[0.95] font-black tracking-[-0.03em]">
               {item.label}
             </span>
           </Link>

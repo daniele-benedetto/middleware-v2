@@ -40,6 +40,9 @@ export const publicIt = {
       readingTimeLabel: (minutes: number) => `${minutes} min`,
       audioLabel: "Audio",
     },
+    closing: {
+      fallback: "Ultimo movimento del dossier.",
+    },
     sectionGrid: {
       showAll: (count: number) => `Vedi tutti (${count})`,
       showLess: "Riduci",

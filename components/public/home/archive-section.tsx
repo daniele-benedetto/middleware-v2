@@ -26,7 +26,7 @@ export function ArchiveSection({
   }
 
   return (
-    <section id="archivio" className="scroll-mt-20 px-4 pt-2 pb-16 sm:px-6 lg:px-12">
+    <section id="archivio" className="scroll-mt-20 px-4 py-12 sm:px-6 lg:px-12 lg:py-14">
       <HomeSectionHeader title={title} description={description} />
       <div className="grid border-l border-foreground [grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))]">
         {issues.map((issue) => {
@@ -53,7 +53,7 @@ export function ArchiveSection({
                 {issue.title}
               </h3>
               {issueDescription ? (
-                <p className="mt-3 font-editorial text-[14.5px] leading-normal text-body-text">
+                <p className="mt-3 font-editorial text-[15px] leading-normal text-body-text">
                   {issueDescription}
                 </p>
               ) : null}

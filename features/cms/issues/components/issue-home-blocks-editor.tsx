@@ -107,7 +107,7 @@ const blockTypeOptions = [
   { value: "closing", labelKey: "typeClosing" },
 ] as const;
 
-const openingVariantOptions = [
+const narrativeVariantOptions = [
   { value: "black", labelKey: "variantBlack" },
   { value: "red", labelKey: "variantRed" },
   { value: "default", labelKey: "variantDefault" },
@@ -168,7 +168,7 @@ export function IssueHomeBlocksEditor({
     value: option.value,
     label: text[option.labelKey],
   }));
-  const variantOptions = openingVariantOptions.map((option) => ({
+  const variantOptions = narrativeVariantOptions.map((option) => ({
     value: option.value,
     label: text[option.labelKey],
   }));
@@ -377,6 +377,7 @@ export function IssueHomeBlocksEditor({
       ) : null}
 
       <DndContext
+        id="issue-home-blocks-editor"
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
@@ -400,8 +401,10 @@ export function IssueHomeBlocksEditor({
                 }));
                 const showEditorialFields = !isEditorialSingleBlock(block.type);
                 const showFeaturedField = !isSingleArticleBlock(block.type);
-                const showVariantField = block.type === "opening";
-                const showFeaturedPlacementField = block.type === "body";
+                const showVariantField =
+                  block.type === "opening" || block.type === "rupture" || block.type === "closing";
+                const showFeaturedPlacementField =
+                  block.type === "body" || block.type === "rupture";
 
                 return (
                   <SortableBlockSection key={block.id} blockId={block.id} disabled={disabled}>
