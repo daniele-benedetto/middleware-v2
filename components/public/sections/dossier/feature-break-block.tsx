@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { publicTypography } from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
@@ -27,6 +28,7 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
 
   const variantClasses = getNarrativeVariantClasses(block.variant);
   const eyebrow = blockEyebrow(block, article);
+  const articleHref = `/articoli/${article.slug}`;
   const showBorder = block.variant === "default";
   const imageOnRight = block.featuredPlacement === "right";
   const imageBorderClass = imageOnRight
@@ -34,22 +36,24 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
     : "border-b md:border-r md:border-b-0";
   const image = article.imageUrl ? (
     <div
-      className={`relative min-h-70 sm:min-h-76 md:min-h-full ${showBorder ? `${imageBorderClass} ${variantClasses.image}` : "grayscale"}`}
+      className={`relative min-h-70 overflow-hidden sm:min-h-76 md:min-h-full ${showBorder ? `${imageBorderClass} ${variantClasses.image}` : "grayscale"}`}
     >
       <Image
         src={article.imageUrl}
         alt={article.imageAlt ?? ""}
         fill
         sizes="(min-width: 768px) 42vw, 100vw"
-        className="object-cover"
+        className="object-cover transition-transform duration-(--motion-slow) ease-(--easing-standard) group-hover:scale-[1.035] group-focus-visible:scale-[1.035]"
       />
     </div>
   ) : null;
 
   return (
     <section className="scroll-mt-20 px-4 py-10 sm:px-6 md:py-12 lg:px-12">
-      <div
-        className={`grid md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] ${variantClasses.section} ${showBorder ? "border border-current" : ""}`}
+      <Link
+        href={articleHref}
+        aria-label={article.title}
+        className={`group grid cursor-pointer transition-[background,box-shadow] duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-accent hover:shadow-(--interactive-rail-shadow) md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] ${variantClasses.section} ${showBorder ? "border border-current" : ""}`}
       >
         {imageOnRight ? null : image}
         <article className="px-5 py-5 sm:px-6 sm:py-6 md:p-8 lg:p-9">
@@ -89,7 +93,7 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
           </div>
         </article>
         {imageOnRight ? image : null}
-      </div>
+      </Link>
     </section>
   );
 }

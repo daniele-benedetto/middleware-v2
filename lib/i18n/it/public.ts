@@ -72,7 +72,7 @@ export const publicIt = {
         { label: "Mastodon", href: "#footer" },
       ],
     },
-    legal: "© 2025 Middleware — rivista politico-editoriale",
+    legal: `© ${new Date().getFullYear()} Middleware — Laboratorio di inchiesta`,
     issueMeta: "I contenuti sono liberamente utilizzabili.",
   },
 } as const;

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { publicTypography } from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
@@ -32,6 +33,7 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
   const blockHasCopy = Boolean(block.title || block.description);
   const closingText = i18n.public.home.closing;
   const editorialPanelBorder = block.variant === "default" ? "border border-foreground" : "";
+  const articleHref = `/articoli/${article.slug}`;
   const image = article.imageUrl ? (
     <div className="relative min-h-48 overflow-hidden border border-foreground grayscale sm:min-h-52 md:min-h-64 lg:min-h-[min(34vh,360px)]">
       <Image
@@ -39,7 +41,7 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
         alt={article.imageAlt ?? ""}
         fill
         sizes="(min-width: 768px) 34vw, 100vw"
-        className="object-cover"
+        className="object-cover transition-transform duration-(--motion-slow) ease-(--easing-standard) group-hover:scale-[1.035] group-focus-visible:scale-[1.035]"
       />
     </div>
   ) : null;
@@ -74,7 +76,11 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
           )}
         </aside>
 
-        <article className="min-w-0 border border-foreground bg-background text-foreground">
+        <Link
+          href={articleHref}
+          aria-label={article.title}
+          className="group min-w-0 cursor-pointer border border-foreground bg-background text-foreground transition-[background,box-shadow] duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-accent hover:bg-surface-hover hover:shadow-(--interactive-rail-shadow)"
+        >
           {image}
           <div className="px-6 pt-6 pb-6 md:px-8 md:pt-7 md:pb-8">
             <div className="mb-5 flex items-start justify-between gap-4">
@@ -103,7 +109,7 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
               <ArticleMeta article={article} />
             </div>
           </div>
-        </article>
+        </Link>
       </div>
     </section>
   );

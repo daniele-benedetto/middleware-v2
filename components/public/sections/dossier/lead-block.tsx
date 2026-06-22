@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { publicTypography } from "@/components/public/primitives";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
@@ -27,11 +28,16 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
 
   const tagLine = formatTags(article);
   const variantClasses = getNarrativeVariantClasses(block.variant);
+  const articleHref = `/articoli/${article.slug}`;
 
   return (
     <section id="dossier" className={`mb-10 scroll-mt-20 lg:mb-12 ${variantClasses.section}`}>
       <div className="px-4 py-10 sm:px-6 md:py-12 lg:px-12">
-        <div className="grid gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] md:gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:gap-12">
+        <Link
+          href={articleHref}
+          aria-label={article.title}
+          className="group grid cursor-pointer gap-8 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-accent md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] md:gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:gap-12"
+        >
           <div>
             <div className="mb-6 flex items-start justify-between gap-4">
               <span className={cn(publicTypography.articleNumberLg, variantClasses.titlePrimary)}>
@@ -78,12 +84,12 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
                 alt={article.imageAlt ?? ""}
                 fill
                 sizes="(min-width: 768px) 45vw, 100vw"
-                className="object-cover"
+                className="object-cover transition-transform duration-(--motion-slow) ease-(--easing-standard) group-hover:scale-[1.035] group-focus-visible:scale-[1.035]"
                 priority
               />
             </div>
           ) : null}
-        </div>
+        </Link>
       </div>
     </section>
   );
