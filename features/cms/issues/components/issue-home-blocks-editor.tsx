@@ -70,6 +70,9 @@ type IssueHomeBlocksEditorText = {
   emptyArticles: string;
   featuredArticle: string;
   featuredFallback: string;
+  featuredPlacement: string;
+  featuredPlacementLeft: string;
+  featuredPlacementRight: string;
   maxOneArticle: string;
   moveDown: string;
   moveUp: string;
@@ -108,6 +111,11 @@ const openingVariantOptions = [
   { value: "black", labelKey: "variantBlack" },
   { value: "red", labelKey: "variantRed" },
   { value: "default", labelKey: "variantDefault" },
+] as const;
+
+const featuredPlacementOptions = [
+  { value: "left", labelKey: "featuredPlacementLeft" },
+  { value: "right", labelKey: "featuredPlacementRight" },
 ] as const;
 
 const articlePoolDroppableId = "article-pool";
@@ -161,6 +169,10 @@ export function IssueHomeBlocksEditor({
     label: text[option.labelKey],
   }));
   const variantOptions = openingVariantOptions.map((option) => ({
+    value: option.value,
+    label: text[option.labelKey],
+  }));
+  const placementOptions = featuredPlacementOptions.map((option) => ({
     value: option.value,
     label: text[option.labelKey],
   }));
@@ -389,6 +401,7 @@ export function IssueHomeBlocksEditor({
                 const showEditorialFields = !isEditorialSingleBlock(block.type);
                 const showFeaturedField = !isSingleArticleBlock(block.type);
                 const showVariantField = block.type === "opening";
+                const showFeaturedPlacementField = block.type === "body";
 
                 return (
                   <SortableBlockSection key={block.id} blockId={block.id} disabled={disabled}>
@@ -545,6 +558,26 @@ export function IssueHomeBlocksEditor({
                                     updateBlock(index, {
                                       ...block,
                                       featuredArticleId: featuredArticleId || null,
+                                    })
+                                  }
+                                />
+                              </CmsFormField>
+                            ) : null}
+
+                            {showFeaturedPlacementField ? (
+                              <CmsFormField
+                                label={text.featuredPlacement}
+                                htmlFor={`${block.id}-featured-placement`}
+                              >
+                                <CmsSelect
+                                  value={block.featuredPlacement}
+                                  disabled={disabled}
+                                  options={placementOptions}
+                                  onValueChange={(featuredPlacement) =>
+                                    updateBlock(index, {
+                                      ...block,
+                                      featuredPlacement:
+                                        featuredPlacement as IssueHomeBlock["featuredPlacement"],
                                     })
                                   }
                                 />

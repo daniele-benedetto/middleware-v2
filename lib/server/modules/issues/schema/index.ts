@@ -7,6 +7,7 @@ export const issueTitleStyledSegmentSchema = z.object({
 
 export const issueTitleStyledSchema = z.array(issueTitleStyledSegmentSchema).min(1);
 export const issueHomeBlockVariantSchema = z.enum(["black", "red", "default"]);
+export const issueHomeBlockFeaturedPlacementSchema = z.enum(["left", "right"]);
 
 export const issueHomeBlockSchema = z
   .object({
@@ -18,6 +19,7 @@ export const issueHomeBlockSchema = z
     description: z.string().trim().nullable().optional(),
     articleIds: z.array(z.string().uuid()),
     featuredArticleId: z.string().uuid().nullable().optional(),
+    featuredPlacement: issueHomeBlockFeaturedPlacementSchema.default("left"),
   })
   .refine(
     (block) =>

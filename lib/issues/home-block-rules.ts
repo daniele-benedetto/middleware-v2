@@ -24,6 +24,7 @@ export function normalizeHomeBlock(block: IssueHomeBlock): IssueHomeBlock {
     description: isEditorialSingleBlock(block.type) ? null : block.description,
     articleIds,
     featuredArticleId,
+    featuredPlacement: block.type === "body" ? block.featuredPlacement : "left",
   };
 }
 
@@ -50,6 +51,7 @@ export function createEmptyHomeBlock(
     description: null,
     articleIds: [],
     featuredArticleId: null,
+    featuredPlacement: "left",
   });
 }
 

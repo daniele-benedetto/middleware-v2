@@ -48,22 +48,42 @@ describe("issues schemas", () => {
   });
 
   it("allows empty home blocks", () => {
-    expect(
-      createIssueInputSchema.safeParse({
-        title: "Issue 01",
-        homeBlocks: [
-          {
-            id: "corpo",
-            type: "body",
-            variant: "default",
-            title: "Corpo",
-            description: null,
-            articleIds: [],
-            featuredArticleId: null,
-          },
-        ],
-      }).success,
-    ).toBe(true);
+    const parsed = createIssueInputSchema.parse({
+      title: "Issue 01",
+      homeBlocks: [
+        {
+          id: "corpo",
+          type: "body",
+          variant: "default",
+          title: "Corpo",
+          description: null,
+          articleIds: [],
+          featuredArticleId: null,
+        },
+      ],
+    });
+
+    expect(parsed.homeBlocks?.[0]?.featuredPlacement).toBe("left");
+  });
+
+  it("allows body featured placement on the right", () => {
+    const parsed = createIssueInputSchema.parse({
+      title: "Issue 01",
+      homeBlocks: [
+        {
+          id: "corpo",
+          type: "body",
+          variant: "default",
+          title: "Corpo",
+          description: null,
+          articleIds: [],
+          featuredArticleId: null,
+          featuredPlacement: "right",
+        },
+      ],
+    });
+
+    expect(parsed.homeBlocks?.[0]?.featuredPlacement).toBe("right");
   });
 
   it("rejects sequence home blocks", () => {

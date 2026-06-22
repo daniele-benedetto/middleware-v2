@@ -1,7 +1,7 @@
 "use client";
 
 import { Highlighter } from "lucide-react";
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -176,6 +176,26 @@ const extractSegmentsFromDom = (root: HTMLElement): IssueTitleStyled => {
   return normalizeSegments(segments);
 };
 
+const renderSegmentsToDom = (root: HTMLElement, segments: IssueTitleStyled) => {
+  root.replaceChildren();
+
+  for (const segment of segments) {
+    if (!segment.text) {
+      continue;
+    }
+
+    const span = document.createElement("span");
+    span.dataset.tone = segment.tone;
+    span.textContent = segment.text;
+
+    if (segment.tone === "primary") {
+      span.className = "text-accent";
+    }
+
+    root.appendChild(span);
+  }
+};
+
 const getSelectionRange = (root: HTMLElement): SelectionRange | null => {
   const selection = window.getSelection();
   if (!selection || selection.rangeCount === 0) {
@@ -212,12 +232,25 @@ export function CmsStyledTitleEditor({
 }: CmsStyledTitleEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const selectionRef = useRef<SelectionRange | null>(null);
+  const valueSignatureRef = useRef<string | null>(null);
   const [selectionRange, setSelectionRange] = useState<SelectionRange | null>(null);
   const [isFocused, setIsFocused] = useState(false);
   const plainText = getPlainText(value);
+  const valueSignature = JSON.stringify(value);
   const hasSelection = Boolean(selectionRange && selectionRange.start !== selectionRange.end);
   const selectedTone = getSelectionTone(value, selectionRange);
   const isAccentActive = selectedTone === "primary";
+
+  useLayoutEffect(() => {
+    const editor = editorRef.current;
+
+    if (!editor || valueSignatureRef.current === valueSignature) {
+      return;
+    }
+
+    renderSegmentsToDom(editor, value);
+    valueSignatureRef.current = valueSignature;
+  }, [value, valueSignature]);
 
   const captureSelection = () => {
     const editor = editorRef.current;
@@ -236,7 +269,9 @@ export function CmsStyledTitleEditor({
       return;
     }
 
-    onChange(extractSegmentsFromDom(editor));
+    const nextValue = extractSegmentsFromDom(editor);
+    valueSignatureRef.current = JSON.stringify(nextValue);
+    onChange(nextValue);
   };
 
   const toggleAccent = () => {
@@ -310,17 +345,7 @@ export function CmsStyledTitleEditor({
           event.preventDefault();
           document.execCommand("insertText", false, event.clipboardData.getData("text/plain"));
         }}
-      >
-        {value.map((segment, index) => (
-          <span
-            key={`${segment.text}-${index}`}
-            data-tone={segment.tone}
-            className={segment.tone === "primary" ? "text-accent" : undefined}
-          >
-            {segment.text}
-          </span>
-        ))}
-      </div>
+      />
     </div>
   );
 }

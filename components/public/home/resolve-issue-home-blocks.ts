@@ -40,6 +40,7 @@ function toNarrativeBlock({
     description: compactText(block.description),
     articles,
     featuredArticle: preferredArticle,
+    featuredPlacement: block.featuredPlacement,
   };
 }
 

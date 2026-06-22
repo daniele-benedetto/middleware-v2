@@ -122,6 +122,7 @@ Read/download flow:
 - `Issue.homeBlocks` is a validated JSON array. Each block stores `id`, `type`, optional `title`, optional `description`, `articleIds`, and optional `featuredArticleId`.
 - Blocks use only manually assigned articles. Empty blocks are allowed in CMS state and are skipped by the public renderer.
 - Supported block types are `opening`, `body`, `rupture`, and `closing`.
+- `body` blocks can set `featuredPlacement` to `left` or `right`; `right` also makes the featured article last in that block's numbering order.
 - One article can be assigned to one home block only. The server schema rejects duplicate article assignments across blocks.
 - `opening`, `rupture`, and `closing` are single-article blocks.
 - `opening` and `rupture` cannot include block title or description. Their article is the editorial payload.

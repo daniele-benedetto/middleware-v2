@@ -28,8 +28,9 @@ describe("home block rules", () => {
         description: "Copy",
         articleIds: ["00000000-0000-4000-8000-000000000001"],
         featuredArticleId: null,
+        featuredPlacement: "right",
       }),
-    ).toMatchObject({ title: "Chiusura", description: "Copy" });
+    ).toMatchObject({ title: "Chiusura", description: "Copy", featuredPlacement: "left" });
   });
 
   it("trims opening blocks to one article and removes copy", () => {
@@ -46,6 +47,7 @@ describe("home block rules", () => {
           "00000000-0000-4000-8000-000000000002",
         ],
         featuredArticleId: "00000000-0000-4000-8000-000000000002",
+        featuredPlacement: "right",
       }),
     ).toEqual({
       id: "opening",
@@ -56,6 +58,7 @@ describe("home block rules", () => {
       description: null,
       articleIds: ["00000000-0000-4000-8000-000000000001"],
       featuredArticleId: "00000000-0000-4000-8000-000000000001",
+      featuredPlacement: "left",
     });
   });
 });

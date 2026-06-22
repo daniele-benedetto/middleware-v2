@@ -16,6 +16,7 @@ export type NarrativeHomeBlock = {
   description: string | null;
   articles: HomeIssueArticle[];
   featuredArticle: HomeIssueArticle | null;
+  featuredPlacement: "left" | "right";
 };
 
 export function sortHomeArticles(articles: HomeIssueArticle[]) {

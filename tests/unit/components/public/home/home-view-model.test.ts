@@ -76,6 +76,7 @@ describe("home view model", () => {
               description: null,
               articleIds: [lead.id],
               featuredArticleId: lead.id,
+              featuredPlacement: "left",
             },
             {
               id: "campo",
@@ -85,6 +86,7 @@ describe("home view model", () => {
               description: "Testo deciso dentro l'uscita.",
               articleIds: [coreA.id, coreB.id],
               featuredArticleId: coreB.id,
+              featuredPlacement: "right",
             },
           ],
         ),
@@ -105,6 +107,7 @@ describe("home view model", () => {
         description: "Testo deciso dentro l'uscita.",
         articles: [{ title: "Core A" }, { title: "Core B" }],
         featuredArticle: { title: "Core B" },
+        featuredPlacement: "right",
       },
     ]);
   });
@@ -142,6 +145,7 @@ describe("home view model", () => {
               description: null,
               articleIds: [lead.id],
               featuredArticleId: lead.id,
+              featuredPlacement: "left",
             },
             {
               id: "vuoto",
@@ -151,6 +155,7 @@ describe("home view model", () => {
               description: null,
               articleIds: [],
               featuredArticleId: null,
+              featuredPlacement: "left",
             },
           ],
         ),

@@ -350,33 +350,40 @@ function BodyBlock({
   const secondary = featured
     ? block.articles.filter((article) => article.id !== featured.id)
     : block.articles;
+  const featuredOnRight = block.featuredPlacement === "right";
+  const featuredCard = featured ? (
+    <div className="relative h-full min-h-full">
+      <DossierArticleCard
+        article={featured}
+        eyebrow={articleEyebrow(featured)}
+        number={getArticleNumber(articleNumbers, featured)}
+        variant="clusterFeatured"
+        className="lg:absolute lg:inset-0"
+      />
+    </div>
+  ) : null;
+  const secondaryCards = (
+    <div className="grid h-full min-h-full">
+      {secondary.map((article) => (
+        <DossierArticleCard
+          key={article.id}
+          article={article}
+          eyebrow={articleEyebrow(article)}
+          number={getArticleNumber(articleNumbers, article)}
+          variant="constellationSecondary"
+        />
+      ))}
+    </div>
+  );
 
   return (
     <section className="scroll-mt-20 px-4 py-9 sm:px-6 lg:px-12 lg:py-12">
       <BlockSectionIntro block={block} />
-      <div className="grid items-stretch border-l border-t border-foreground md:grid-cols-[minmax(260px,0.42fr)_minmax(0,0.58fr)]">
-        {featured ? (
-          <div className="relative h-full min-h-full">
-            <DossierArticleCard
-              article={featured}
-              eyebrow={articleEyebrow(featured)}
-              number={getArticleNumber(articleNumbers, featured)}
-              variant="clusterFeatured"
-              className="lg:absolute lg:inset-0"
-            />
-          </div>
-        ) : null}
-        <div className="grid h-full min-h-full">
-          {secondary.map((article) => (
-            <DossierArticleCard
-              key={article.id}
-              article={article}
-              eyebrow={articleEyebrow(article)}
-              number={getArticleNumber(articleNumbers, article)}
-              variant="constellationSecondary"
-            />
-          ))}
-        </div>
+      <div
+        className={`grid items-stretch border-l border-t border-foreground md:grid-cols-[minmax(260px,0.42fr)_minmax(0,0.58fr)] ${featuredOnRight ? "md:grid-cols-[minmax(0,0.58fr)_minmax(260px,0.42fr)]" : ""}`}
+      >
+        {featuredOnRight ? secondaryCards : featuredCard}
+        {featuredOnRight ? featuredCard : secondaryCards}
       </div>
     </section>
   );
@@ -566,12 +573,20 @@ function ClosingBlock({
 function getArticleNumbers(blocks: NarrativeHomeBlock[]) {
   const numbers = new Map<string, number>();
 
-  assignArticleNumbers(
-    numbers,
-    blocks.flatMap((block) => block.articles),
-  );
+  assignArticleNumbers(numbers, blocks.flatMap(getBlockNumberingArticles));
 
   return numbers;
+}
+
+function getBlockNumberingArticles(block: NarrativeHomeBlock) {
+  if (block.type !== "body" || block.featuredPlacement !== "right" || !block.featuredArticle) {
+    return block.articles;
+  }
+
+  return [
+    ...block.articles.filter((article) => article.id !== block.featuredArticle?.id),
+    block.featuredArticle,
+  ];
 }
 
 function assignArticleNumbers(numbers: Map<string, number>, articles: HomeIssueArticle[]) {
