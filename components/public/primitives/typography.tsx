@@ -32,9 +32,9 @@ export const publicTypography = {
   articleNumberLg:
     "font-heading text-[40px] leading-[0.78] font-black tracking-[-0.04em] sm:text-[48px] md:text-[56px]",
   articleEyebrow:
-    "mt-1.5 block max-w-full overflow-x-auto text-right font-heading text-[11px] font-bold tracking-[0.12em] whitespace-nowrap uppercase [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+    "mt-1.5 block max-w-full text-right font-heading text-[11px] leading-snug font-bold tracking-[0.12em] break-words whitespace-normal uppercase",
   articleEyebrowWide:
-    "mt-1.5 block max-w-full overflow-x-auto text-right font-heading text-[11px] font-bold tracking-[0.14em] whitespace-nowrap uppercase [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+    "mt-1.5 block max-w-full text-right font-heading text-[11px] leading-snug font-bold tracking-[0.14em] break-words whitespace-normal uppercase",
   systemCode:
     "font-heading text-[clamp(100px,24vw,260px)] leading-[0.78] font-black tracking-[-0.065em]",
   systemTitle:
