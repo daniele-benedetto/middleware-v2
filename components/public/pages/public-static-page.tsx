@@ -1,4 +1,3 @@
-import { PublicFooter, PublicHeader } from "@/components/public";
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { PublicRichText } from "@/components/public/rich-text";
 import { StyledTitle } from "@/components/public/styled-title";
@@ -24,7 +23,6 @@ function StaticPageMetaRail({ page }: PublicStaticPageProps) {
 export function PublicStaticPage({ page }: PublicStaticPageProps) {
   return (
     <main id="top" className="flex flex-1 flex-col bg-background font-heading text-foreground">
-      <PublicHeader />
       <article id="main-content" tabIndex={-1} className="focus:outline-none">
         <header className="relative isolate w-full overflow-hidden bg-background">
           <div className={`${publicContentClassName} relative pt-7 sm:pt-9 lg:pt-14`}>
@@ -62,7 +60,6 @@ export function PublicStaticPage({ page }: PublicStaticPageProps) {
           </div>
         </div>
       </article>
-      <PublicFooter />
     </main>
   );
 }

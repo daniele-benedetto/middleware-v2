@@ -1,4 +1,4 @@
-import { PublicFooter, PublicHeader, PublicSystemScreen } from "@/components/public";
+import { PublicSystemScreen } from "@/components/public";
 import { getArchiveIssueViewModels } from "@/components/public/sections/archive/archive-view-model";
 import { IssuesArchiveGrid } from "@/components/public/sections/archive/issues-archive-grid";
 import { IssuesArchiveHero } from "@/components/public/sections/archive/issues-archive-hero";
@@ -16,7 +16,6 @@ export function PublicIssuesArchivePage({ issues }: PublicIssuesArchivePageProps
 
   return (
     <main className="flex flex-1 flex-col bg-background font-heading text-foreground">
-      <PublicHeader />
       {issueViewModels.length > 0 ? (
         <>
           <IssuesArchiveHero
@@ -34,7 +33,6 @@ export function PublicIssuesArchivePage({ issues }: PublicIssuesArchivePageProps
           description={text.empty.description}
         />
       )}
-      <PublicFooter />
     </main>
   );
 }

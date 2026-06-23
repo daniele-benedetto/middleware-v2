@@ -1,4 +1,4 @@
-import { PublicFooter, PublicHeader, PublicSystemScreen } from "@/components/public";
+import { PublicSystemScreen } from "@/components/public";
 import { ArchiveSection } from "@/components/public/home/archive-section";
 import { CurrentIssueHero } from "@/components/public/home/current-issue-hero";
 import { HomeScrollProgress } from "@/components/public/home/home-scroll-progress";
@@ -26,7 +26,6 @@ export function PublicIssuePage({ issue, publishedIssues }: PublicIssuePageProps
   return (
     <main className="flex flex-1 flex-col bg-background font-heading text-foreground">
       <HomeScrollProgress />
-      <PublicHeader />
       <div tabIndex={-1} className="flex flex-col focus:outline-none">
         {issue ? (
           <>
@@ -55,7 +54,6 @@ export function PublicIssuePage({ issue, publishedIssues }: PublicIssuePageProps
           />
         )}
       </div>
-      <PublicFooter />
     </main>
   );
 }

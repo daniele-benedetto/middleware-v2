@@ -282,22 +282,6 @@ body {
   animation: 750ms var(--easing-standard) 650ms both page-transition-in;
 }
 
-::view-transition-group(public-header),
-::view-transition-group(public-footer),
-::view-transition-new(public-header),
-::view-transition-new(public-footer) {
-  animation: none;
-}
-
-::view-transition-group(public-header) {
-  z-index: 100;
-}
-
-::view-transition-old(public-header),
-::view-transition-old(public-footer) {
-  display: none;
-}
-
 @keyframes page-transition-out {
   to {
     opacity: 0;
