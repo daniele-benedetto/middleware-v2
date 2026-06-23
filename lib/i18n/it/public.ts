@@ -31,9 +31,9 @@ export const publicIt = {
     },
     archive: {
       title: "Altri numeri",
-      description: "l'archivio è organizzato per numeri, non per articoli sciolti",
-      cta: "Apri il numero →",
-      countLabel: (count: number) => `${count} ${count === 1 ? "pezzo" : "pezzi"}`,
+      description: "",
+      archiveLabel: "Archivio Magazine →",
+      countLabel: (count: number) => `${count} ${count === 1 ? "articolo" : "articoli"}`,
     },
     articleCard: {
       readingTimeLabel: (minutes: number) => `${minutes} min`,
@@ -67,6 +67,14 @@ export const publicIt = {
       kicker: "Archivio",
       title: "Nessuna uscita pubblicata",
       description: "Quando i numeri saranno pubblicati, compariranno qui in ordine cronologico.",
+    },
+  },
+  issuePage: {
+    empty: {
+      code: "404",
+      kicker: "Uscita",
+      title: "Numero non trovato",
+      description: "Il numero richiesto non è disponibile nell'archivio.",
     },
   },
   footer: {

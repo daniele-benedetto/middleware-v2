@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { publicTypography } from "@/components/public/primitives";
 import { cn } from "@/lib/utils";
 
@@ -5,6 +7,10 @@ type HomeSectionHeaderProps = {
   title: string;
   description?: string;
   range?: string;
+  action?: {
+    label: string;
+    href: string;
+  };
   marker?: "outline" | "solid" | "none";
   topBorder?: boolean;
 };
@@ -13,6 +19,7 @@ export function HomeSectionHeader({
   title,
   description,
   range,
+  action,
   marker = "none",
   topBorder = true,
 }: HomeSectionHeaderProps) {
@@ -38,6 +45,14 @@ export function HomeSectionHeader({
         <span className="ml-auto font-heading text-xs font-bold tracking-[0.06em] text-muted max-md:ml-0">
           {range}
         </span>
+      ) : null}
+      {action ? (
+        <Link
+          href={action.href}
+          className="ml-auto font-heading text-xs font-bold tracking-[0.06em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground max-md:ml-0"
+        >
+          {action.label}
+        </Link>
       ) : null}
     </div>
   );

@@ -10,43 +10,41 @@ import {
 import { DossierHome } from "@/components/public/sections/dossier/dossier-home";
 import { i18n } from "@/lib/i18n";
 import { formatIssueNumber } from "@/lib/public/format/issue";
-import { buildHomeJsonLd } from "@/lib/seo/home-json-ld";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 
-type PublicHomePageProps = {
-  currentIssue: PublicCurrentIssueDetail | null;
+type PublicIssuePageProps = {
+  issue: PublicCurrentIssueDetail | null;
   publishedIssues: PublicIssueListItem[];
-  canonicalPath?: string;
 };
 
-export function PublicHomePage({
-  currentIssue,
-  publishedIssues,
-  canonicalPath = "/",
-}: PublicHomePageProps) {
-  const text = i18n.public.home;
-  const archiveIssues = getArchiveIssues(publishedIssues, currentIssue);
+export function PublicIssuePage({ issue, publishedIssues }: PublicIssuePageProps) {
+  const text = i18n.public.issuePage;
+  const archiveText = i18n.public.home.archive;
+  const archiveIssues = getArchiveIssues(publishedIssues, issue).slice(0, 3);
 
   return (
     <main className="flex flex-1 flex-col bg-background font-heading text-foreground">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildHomeJsonLd(currentIssue, canonicalPath)),
-        }}
-      />
       <HomeScrollProgress />
       <PublicHeader />
       <div tabIndex={-1} className="flex flex-col focus:outline-none">
-        {currentIssue ? (
+        {issue ? (
           <>
             <CurrentIssueHero
-              issue={currentIssue}
-              description={getIssuePlainDescription(currentIssue)}
-              issueNumber={getIssueOrderLabel(publishedIssues, currentIssue, formatIssueNumber)}
+              issue={issue}
+              description={getIssuePlainDescription(issue)}
+              issueNumber={getIssueOrderLabel(publishedIssues, issue, formatIssueNumber)}
             />
-            <DossierHome issue={currentIssue} />
+            <DossierHome issue={issue} />
+            <ArchiveSection
+              title={archiveText.title}
+              description={archiveText.description}
+              archiveHref="/uscite"
+              archiveLabel={archiveText.archiveLabel}
+              issues={archiveIssues}
+              allIssues={publishedIssues}
+              countLabel={archiveText.countLabel}
+            />
           </>
         ) : (
           <PublicSystemScreen
@@ -56,15 +54,6 @@ export function PublicHomePage({
             description={text.empty.description}
           />
         )}
-        <ArchiveSection
-          title={text.archive.title}
-          description={text.archive.description}
-          archiveHref="/uscite"
-          archiveLabel={text.archive.archiveLabel}
-          issues={archiveIssues}
-          allIssues={publishedIssues}
-          countLabel={text.archive.countLabel}
-        />
       </div>
       <PublicFooter />
     </main>

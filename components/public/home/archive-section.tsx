@@ -2,12 +2,9 @@ import Link from "next/link";
 
 import { HomeSectionHeader } from "@/components/public/home/home-section-header";
 import { getIssuePlainDescription } from "@/components/public/home/home-view-model";
-import {
-  publicContentClassName,
-  publicInteraction,
-  publicTypography,
-} from "@/components/public/primitives";
-import { formatIssueSeasonLong } from "@/lib/public/format/issue";
+import { publicContentClassName, publicInteraction } from "@/components/public/primitives";
+import { StyledTitle } from "@/components/public/styled-title";
+import { formatIssueMonthYearLong, formatIssueNumber } from "@/lib/public/format/issue";
 import { cn } from "@/lib/utils";
 
 import type { PublicIssueListItem } from "@/lib/public/types/issues";
@@ -15,61 +12,160 @@ import type { PublicIssueListItem } from "@/lib/public/types/issues";
 type ArchiveSectionProps = {
   title: string;
   description: string;
+  archiveHref: string;
+  archiveLabel: string;
   issues: PublicIssueListItem[];
+  allIssues: PublicIssueListItem[];
   countLabel: (count: number) => string;
-  cta: string;
 };
+
+type ArchiveCardVariant = "default" | "red" | "black";
+
+const archiveCardVariantClasses: Record<
+  ArchiveCardVariant,
+  {
+    surface: string;
+    backgroundNumber: string;
+    title: string;
+    titlePrimary: string;
+    description: string;
+    meta: string;
+    separator: string;
+    border: string;
+  }
+> = {
+  default: {
+    surface: "bg-background text-foreground",
+    backgroundNumber: "text-accent/15 [-webkit-text-stroke:0.35px_rgba(0,0,0,0.22)]",
+    title: "text-foreground",
+    titlePrimary: "text-accent",
+    description: "text-body-text",
+    meta: "text-muted",
+    separator: "bg-accent",
+    border: "border-foreground",
+  },
+  red: {
+    surface: "bg-accent text-background",
+    backgroundNumber: "text-foreground/15 [-webkit-text-stroke:0.35px_rgba(255,248,235,0.24)]",
+    title: "text-background",
+    titlePrimary: "text-foreground",
+    description: "text-cream-soft",
+    meta: "text-cream-muted",
+    separator: "bg-foreground",
+    border: "border-foreground",
+  },
+  black: {
+    surface: "bg-foreground text-background",
+    backgroundNumber: "text-accent/20 [-webkit-text-stroke:0.35px_rgba(255,248,235,0.18)]",
+    title: "text-background",
+    titlePrimary: "text-accent",
+    description: "text-cream-warm",
+    meta: "text-dark-muted",
+    separator: "bg-accent",
+    border: "border-dark-border",
+  },
+};
+
+function getIssueNumbers(issues: PublicIssueListItem[]) {
+  const oldestFirst = [...issues].sort(
+    (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
+  );
+
+  return new Map(oldestFirst.map((issue, index) => [issue.id, formatIssueNumber(index)]));
+}
 
 export function ArchiveSection({
   title,
   description,
+  archiveHref,
+  archiveLabel,
   issues,
+  allIssues,
   countLabel,
-  cta,
 }: ArchiveSectionProps) {
   if (issues.length === 0) {
     return null;
   }
 
+  const issueNumbers = getIssueNumbers(allIssues);
+  const variants: ArchiveCardVariant[] = ["default", "red", "black"];
+
   return (
     <section className="scroll-mt-20 py-12 lg:py-14">
       <div className={publicContentClassName}>
-        <HomeSectionHeader title={title} description={description} />
-        <div className="grid border-l border-foreground grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))]">
-          {issues.map((issue) => {
+        <HomeSectionHeader
+          title={title}
+          description={description}
+          action={{ label: archiveLabel, href: archiveHref }}
+        />
+        <div className="grid md:grid-cols-2 xl:grid-cols-3">
+          {issues.map((issue, index) => {
             const issueDescription = getIssuePlainDescription(issue);
+            const issueNumber = issueNumbers.get(issue.id) ?? formatIssueNumber(0);
+            const variantClasses = archiveCardVariantClasses[variants[index % variants.length]];
+            const publishedAtLabel = formatIssueMonthYearLong(issue.publishedAt);
 
             return (
               <Link
                 key={issue.id}
                 href={`/uscite/${issue.slug}`}
                 className={cn(
-                  publicInteraction.cardSurface,
-                  "flex flex-col border-r border-b border-foreground px-6.5 py-6",
+                  publicInteraction.cardBase,
+                  "relative isolate flex min-h-96 flex-col overflow-hidden px-5 py-6 sm:px-6 sm:py-7 lg:min-h-112 lg:px-7 lg:py-8",
+                  variantClasses.surface,
                 )}
               >
-                <div className="mb-4.5 flex items-center justify-between">
-                  <span className={cn(publicTypography.label, "text-accent")}>
-                    {formatIssueSeasonLong(issue.publishedAt)}
-                  </span>
-                  <div className="grid grid-cols-2 gap-0.75" aria-hidden>
-                    <span className="size-2.75 rounded-[2px] bg-accent" />
-                    <span className="size-2.75 rounded-[2px] bg-foreground" />
-                    <span className="size-2.75 rounded-[2px] bg-foreground" />
-                    <span className="size-2.75 rounded-[2px] bg-accent" />
-                  </div>
-                </div>
-                <h3 className={publicTypography.issueCardTitle}>{issue.title}</h3>
+                <span
+                  className={cn(
+                    "pointer-events-none absolute top-4 right-4 -z-10 font-heading text-[clamp(96px,13vw,180px)] leading-[0.72] font-black tracking-[-0.05em] select-none",
+                    variantClasses.backgroundNumber,
+                  )}
+                  aria-hidden
+                >
+                  {issueNumber}
+                </span>
+
+                <h3
+                  className={cn(
+                    "font-heading text-[clamp(30px,3.8vw,52px)] leading-[0.9] font-black tracking-[-0.048em] text-balance",
+                    variantClasses.title,
+                  )}
+                >
+                  <StyledTitle
+                    title={issue.title}
+                    titleStyled={issue.titleStyled}
+                    primaryClassName={variantClasses.titlePrimary}
+                  />
+                </h3>
                 {issueDescription ? (
-                  <p className={cn("mt-3 text-body-text", publicTypography.editorialSmall)}>
+                  <p
+                    className={cn(
+                      "mt-5 font-editorial text-[16px] leading-normal italic lg:text-[17px]",
+                      variantClasses.description,
+                    )}
+                  >
                     {issueDescription}
                   </p>
                 ) : null}
-                <div className="mt-auto flex flex-wrap items-center gap-2.75 border-t border-line-section pt-5.5 font-heading text-xs font-semibold text-muted">
-                  <span>{formatIssueSeasonLong(issue.publishedAt)}</span>
-                  <span className="size-0.75 rounded-[1px] bg-muted" aria-hidden />
+
+                <div
+                  className={cn(
+                    "mt-auto flex flex-wrap items-center gap-3 border-t pt-5 font-heading text-xs font-semibold",
+                    variantClasses.border,
+                    variantClasses.meta,
+                  )}
+                >
+                  <span>{issueNumber}</span>
+                  <span
+                    className={cn("size-1 rounded-[1px]", variantClasses.separator)}
+                    aria-hidden
+                  />
+                  <span>{publishedAtLabel}</span>
+                  <span
+                    className={cn("size-1 rounded-[1px]", variantClasses.separator)}
+                    aria-hidden
+                  />
                   <span>{countLabel(issue.articlesCount)}</span>
-                  <span className="ml-auto font-bold text-accent">{cta}</span>
                 </div>
               </Link>
             );

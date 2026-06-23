@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { PublicHomePage } from "@/components/public/pages";
+import { PublicIssuePage as PublicIssuePageView } from "@/components/public/pages";
 import { getPublicIssuePageData, getPublicIssueStaticParams } from "@/lib/public/server/issue-page";
 import { buildPageMetadata } from "@/lib/seo";
 
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: PublicIssuePageProps): Promis
   });
 }
 
-export default async function PublicIssuePage({ params }: PublicIssuePageProps) {
+export default async function PublicIssueRoute({ params }: PublicIssuePageProps) {
   const { slug } = await params;
   const { issue, publishedIssues } = await getPublicIssuePageData(slug);
 
@@ -50,11 +50,5 @@ export default async function PublicIssuePage({ params }: PublicIssuePageProps) 
     notFound();
   }
 
-  return (
-    <PublicHomePage
-      currentIssue={issue}
-      publishedIssues={publishedIssues}
-      canonicalPath={getIssuePath(issue.slug)}
-    />
-  );
+  return <PublicIssuePageView issue={issue} publishedIssues={publishedIssues} />;
 }
