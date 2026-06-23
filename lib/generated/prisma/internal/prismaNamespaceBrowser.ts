@@ -232,8 +232,11 @@ export type ArticleTagScalarFieldEnum = (typeof ArticleTagScalarFieldEnum)[keyof
 export const PageScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  titleStyled: 'titleStyled',
   slug: 'slug',
   status: 'status',
+  excerpt: 'excerpt',
+  excerptRich: 'excerptRich',
   contentRich: 'contentRich',
   publishedAt: 'publishedAt',
   createdAt: 'createdAt',

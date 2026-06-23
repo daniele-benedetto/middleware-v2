@@ -216,8 +216,11 @@ model ArticleTag {
 model Page {
   id          String     @id @default(uuid())
   title       String
+  titleStyled Json?
   slug        String     @unique
   status      PageStatus @default(DRAFT)
+  excerpt     String?
+  excerptRich Json?
   contentRich Json
   publishedAt DateTime?
   createdAt   DateTime   @default(now())

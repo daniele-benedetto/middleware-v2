@@ -8,18 +8,27 @@ import type { ListPagesQuery, UpdatePageInput } from "@/lib/server/modules/pages
 
 export type CreatePagePersistInput = {
   title: string;
+  titleStyled?: unknown | null;
   slug: string;
+  excerpt?: string | null;
+  excerptRich?: unknown | null;
   contentRich: unknown;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   publishedAt?: Date | null;
 };
 
-export type UpdatePagePersistInput = UpdatePageInput;
+export type UpdatePagePersistInput = Omit<UpdatePageInput, "excerptRich"> & {
+  excerpt?: string | null;
+  excerptRich?: unknown | null;
+};
 
 const PAGE_DETAIL_SELECT = {
   id: true,
   title: true,
+  titleStyled: true,
   slug: true,
+  excerpt: true,
+  excerptRich: true,
   status: true,
   contentRich: true,
   publishedAt: true,
@@ -30,7 +39,9 @@ const PAGE_DETAIL_SELECT = {
 const PAGE_LIST_SELECT = {
   id: true,
   title: true,
+  titleStyled: true,
   slug: true,
+  excerpt: true,
   status: true,
   publishedAt: true,
   createdAt: true,
@@ -76,7 +87,18 @@ export const pagesRepository = {
     return prisma.page.create({
       data: {
         title: input.title,
+        titleStyled:
+          input.titleStyled === undefined
+            ? undefined
+            : (input.titleStyled as Prisma.InputJsonValue),
         slug: input.slug,
+        excerpt: input.excerpt,
+        excerptRich:
+          input.excerptRich === undefined
+            ? undefined
+            : input.excerptRich === null
+              ? Prisma.JsonNull
+              : (input.excerptRich as Prisma.InputJsonValue),
         status: input.status,
         contentRich: input.contentRich as Prisma.InputJsonValue,
         publishedAt: input.publishedAt,
@@ -89,7 +111,18 @@ export const pagesRepository = {
       where: { id },
       data: {
         title: input.title,
+        titleStyled:
+          input.titleStyled === undefined
+            ? undefined
+            : (input.titleStyled as Prisma.InputJsonValue),
         slug: input.slug,
+        excerpt: input.excerpt,
+        excerptRich:
+          input.excerptRich === undefined
+            ? undefined
+            : input.excerptRich === null
+              ? Prisma.JsonNull
+              : (input.excerptRich as Prisma.InputJsonValue),
         status: input.status,
         contentRich:
           input.contentRich === undefined

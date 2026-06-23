@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+
 import type { PageStatus } from "@/lib/generated/prisma/enums";
 
 const pageStatusSchema = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"] satisfies PageStatus[]);
@@ -7,7 +9,9 @@ const sortOrderSchema = z.enum(["asc", "desc"]);
 
 export const createPageInputSchema = z.object({
   title: z.string().trim().min(1),
+  titleStyled: issueTitleStyledSchema.nullable().optional(),
   slug: z.string().trim().min(1),
+  excerptRich: z.unknown().nullable().optional(),
   contentRich: z.unknown(),
   status: pageStatusSchema.default("DRAFT"),
   publishedAt: z.coerce.date().nullable().optional(),
@@ -31,5 +35,6 @@ export const listPagesQuerySchema = z.object({
 });
 
 export type CreatePageInput = z.infer<typeof createPageInputSchema>;
+export type PageTitleStyled = z.infer<typeof issueTitleStyledSchema>;
 export type UpdatePageInput = z.infer<typeof updatePageInputSchema>;
 export type ListPagesQuery = z.infer<typeof listPagesQuerySchema>;

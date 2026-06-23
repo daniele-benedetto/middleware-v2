@@ -29,6 +29,7 @@ export type PageMinAggregateOutputType = {
   title: string | null
   slug: string | null
   status: $Enums.PageStatus | null
+  excerpt: string | null
   publishedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -39,6 +40,7 @@ export type PageMaxAggregateOutputType = {
   title: string | null
   slug: string | null
   status: $Enums.PageStatus | null
+  excerpt: string | null
   publishedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -47,8 +49,11 @@ export type PageMaxAggregateOutputType = {
 export type PageCountAggregateOutputType = {
   id: number
   title: number
+  titleStyled: number
   slug: number
   status: number
+  excerpt: number
+  excerptRich: number
   contentRich: number
   publishedAt: number
   createdAt: number
@@ -62,6 +67,7 @@ export type PageMinAggregateInputType = {
   title?: true
   slug?: true
   status?: true
+  excerpt?: true
   publishedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -72,6 +78,7 @@ export type PageMaxAggregateInputType = {
   title?: true
   slug?: true
   status?: true
+  excerpt?: true
   publishedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -80,8 +87,11 @@ export type PageMaxAggregateInputType = {
 export type PageCountAggregateInputType = {
   id?: true
   title?: true
+  titleStyled?: true
   slug?: true
   status?: true
+  excerpt?: true
+  excerptRich?: true
   contentRich?: true
   publishedAt?: true
   createdAt?: true
@@ -164,8 +174,11 @@ export type PageGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type PageGroupByOutputType = {
   id: string
   title: string
+  titleStyled: runtime.JsonValue | null
   slug: string
   status: $Enums.PageStatus
+  excerpt: string | null
+  excerptRich: runtime.JsonValue | null
   contentRich: runtime.JsonValue
   publishedAt: Date | null
   createdAt: Date
@@ -196,8 +209,11 @@ export type PageWhereInput = {
   NOT?: Prisma.PageWhereInput | Prisma.PageWhereInput[]
   id?: Prisma.StringFilter<"Page"> | string
   title?: Prisma.StringFilter<"Page"> | string
+  titleStyled?: Prisma.JsonNullableFilter<"Page">
   slug?: Prisma.StringFilter<"Page"> | string
   status?: Prisma.EnumPageStatusFilter<"Page"> | $Enums.PageStatus
+  excerpt?: Prisma.StringNullableFilter<"Page"> | string | null
+  excerptRich?: Prisma.JsonNullableFilter<"Page">
   contentRich?: Prisma.JsonFilter<"Page">
   publishedAt?: Prisma.DateTimeNullableFilter<"Page"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Page"> | Date | string
@@ -207,8 +223,11 @@ export type PageWhereInput = {
 export type PageOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
   slug?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  excerpt?: Prisma.SortOrderInput | Prisma.SortOrder
+  excerptRich?: Prisma.SortOrderInput | Prisma.SortOrder
   contentRich?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -222,7 +241,10 @@ export type PageWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.PageWhereInput[]
   NOT?: Prisma.PageWhereInput | Prisma.PageWhereInput[]
   title?: Prisma.StringFilter<"Page"> | string
+  titleStyled?: Prisma.JsonNullableFilter<"Page">
   status?: Prisma.EnumPageStatusFilter<"Page"> | $Enums.PageStatus
+  excerpt?: Prisma.StringNullableFilter<"Page"> | string | null
+  excerptRich?: Prisma.JsonNullableFilter<"Page">
   contentRich?: Prisma.JsonFilter<"Page">
   publishedAt?: Prisma.DateTimeNullableFilter<"Page"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Page"> | Date | string
@@ -232,8 +254,11 @@ export type PageWhereUniqueInput = Prisma.AtLeast<{
 export type PageOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
   slug?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  excerpt?: Prisma.SortOrderInput | Prisma.SortOrder
+  excerptRich?: Prisma.SortOrderInput | Prisma.SortOrder
   contentRich?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -249,8 +274,11 @@ export type PageScalarWhereWithAggregatesInput = {
   NOT?: Prisma.PageScalarWhereWithAggregatesInput | Prisma.PageScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Page"> | string
   title?: Prisma.StringWithAggregatesFilter<"Page"> | string
+  titleStyled?: Prisma.JsonNullableWithAggregatesFilter<"Page">
   slug?: Prisma.StringWithAggregatesFilter<"Page"> | string
   status?: Prisma.EnumPageStatusWithAggregatesFilter<"Page"> | $Enums.PageStatus
+  excerpt?: Prisma.StringNullableWithAggregatesFilter<"Page"> | string | null
+  excerptRich?: Prisma.JsonNullableWithAggregatesFilter<"Page">
   contentRich?: Prisma.JsonWithAggregatesFilter<"Page">
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Page"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Page"> | Date | string
@@ -260,8 +288,11 @@ export type PageScalarWhereWithAggregatesInput = {
 export type PageCreateInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   status?: $Enums.PageStatus
+  excerpt?: string | null
+  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   publishedAt?: Date | string | null
   createdAt?: Date | string
@@ -271,8 +302,11 @@ export type PageCreateInput = {
 export type PageUncheckedCreateInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   status?: $Enums.PageStatus
+  excerpt?: string | null
+  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   publishedAt?: Date | string | null
   createdAt?: Date | string
@@ -282,8 +316,11 @@ export type PageUncheckedCreateInput = {
 export type PageUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPageStatusFieldUpdateOperationsInput | $Enums.PageStatus
+  excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -293,8 +330,11 @@ export type PageUpdateInput = {
 export type PageUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPageStatusFieldUpdateOperationsInput | $Enums.PageStatus
+  excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -304,8 +344,11 @@ export type PageUncheckedUpdateInput = {
 export type PageCreateManyInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   status?: $Enums.PageStatus
+  excerpt?: string | null
+  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   publishedAt?: Date | string | null
   createdAt?: Date | string
@@ -315,8 +358,11 @@ export type PageCreateManyInput = {
 export type PageUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPageStatusFieldUpdateOperationsInput | $Enums.PageStatus
+  excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -326,8 +372,11 @@ export type PageUpdateManyMutationInput = {
 export type PageUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumPageStatusFieldUpdateOperationsInput | $Enums.PageStatus
+  excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -337,8 +386,11 @@ export type PageUncheckedUpdateManyInput = {
 export type PageCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  excerpt?: Prisma.SortOrder
+  excerptRich?: Prisma.SortOrder
   contentRich?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -350,6 +402,7 @@ export type PageMaxOrderByAggregateInput = {
   title?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  excerpt?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -360,6 +413,7 @@ export type PageMinOrderByAggregateInput = {
   title?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  excerpt?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -374,8 +428,11 @@ export type EnumPageStatusFieldUpdateOperationsInput = {
 export type PageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   status?: boolean
+  excerpt?: boolean
+  excerptRich?: boolean
   contentRich?: boolean
   publishedAt?: boolean
   createdAt?: boolean
@@ -385,8 +442,11 @@ export type PageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 export type PageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   status?: boolean
+  excerpt?: boolean
+  excerptRich?: boolean
   contentRich?: boolean
   publishedAt?: boolean
   createdAt?: boolean
@@ -396,8 +456,11 @@ export type PageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
 export type PageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   status?: boolean
+  excerpt?: boolean
+  excerptRich?: boolean
   contentRich?: boolean
   publishedAt?: boolean
   createdAt?: boolean
@@ -407,15 +470,18 @@ export type PageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
 export type PageSelectScalar = {
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   status?: boolean
+  excerpt?: boolean
+  excerptRich?: boolean
   contentRich?: boolean
   publishedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type PageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "status" | "contentRich" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["page"]>
+export type PageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleStyled" | "slug" | "status" | "excerpt" | "excerptRich" | "contentRich" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["page"]>
 
 export type $PagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Page"
@@ -423,8 +489,11 @@ export type $PagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     title: string
+    titleStyled: runtime.JsonValue | null
     slug: string
     status: $Enums.PageStatus
+    excerpt: string | null
+    excerptRich: runtime.JsonValue | null
     contentRich: runtime.JsonValue
     publishedAt: Date | null
     createdAt: Date
@@ -854,8 +923,11 @@ export interface Prisma__PageClient<T, Null = never, ExtArgs extends runtime.Typ
 export interface PageFieldRefs {
   readonly id: Prisma.FieldRef<"Page", 'String'>
   readonly title: Prisma.FieldRef<"Page", 'String'>
+  readonly titleStyled: Prisma.FieldRef<"Page", 'Json'>
   readonly slug: Prisma.FieldRef<"Page", 'String'>
   readonly status: Prisma.FieldRef<"Page", 'PageStatus'>
+  readonly excerpt: Prisma.FieldRef<"Page", 'String'>
+  readonly excerptRich: Prisma.FieldRef<"Page", 'Json'>
   readonly contentRich: Prisma.FieldRef<"Page", 'Json'>
   readonly publishedAt: Prisma.FieldRef<"Page", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Page", 'DateTime'>

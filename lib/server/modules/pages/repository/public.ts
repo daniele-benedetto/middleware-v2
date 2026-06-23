@@ -11,7 +11,9 @@ const PUBLIC_PAGE_WHERE = {
 const PUBLIC_PAGE_SELECT = {
   id: true,
   title: true,
+  titleStyled: true,
   slug: true,
+  excerpt: true,
   contentRich: true,
   publishedAt: true,
   updatedAt: true,

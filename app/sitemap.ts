@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { PUBLIC_STATIC_PAGE_SLUGS, getPublicStaticPagePath } from "@/lib/public/pages/static-pages";
 import { getCanonicalUrl } from "@/lib/seo";
 
 import type { MetadataRoute } from "next";
@@ -19,12 +20,20 @@ async function getHomeLastModified() {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const homeLastModified = await getHomeLastModified();
+  const staticPages = PUBLIC_STATIC_PAGE_SLUGS.map((slug) => ({
+    url: getCanonicalUrl(getPublicStaticPagePath(slug)),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
   return [
     {
       url: getCanonicalUrl("/"),
-      lastModified: await getHomeLastModified(),
+      lastModified: homeLastModified,
       changeFrequency: "weekly",
       priority: 1,
     },
+    ...staticPages,
   ];
 }

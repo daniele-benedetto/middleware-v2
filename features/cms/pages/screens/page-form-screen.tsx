@@ -13,7 +13,11 @@ import {
   CmsPageHeader,
   CmsRichTextEditor,
   CmsSelect,
+  CmsStyledTitleEditor,
   CmsTextInput,
+  createStyledTitleValue,
+  getStyledTitlePlainText,
+  hasStyledTitleAccent,
   cmsToast,
 } from "@/components/cms/primitives";
 import { CmsPageFormLoading } from "@/features/cms/pages/components/page-form-loading";
@@ -30,12 +34,15 @@ import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
 
+import type { PageTitleStyled } from "@/lib/server/modules/pages/schema";
+
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
 const pageStatusOptions = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
 
 const pageFormStateSchema = z.object({
   title: z.string().trim().min(1),
   slug: z.string().trim(),
+  excerptRich: z.unknown(),
   contentRich: z.unknown(),
   status: z.enum(pageStatusOptions),
 });
@@ -66,6 +73,7 @@ function getPageFormDefaultValues(page?: PageDetail): PageFormValues {
   return {
     title: page?.title ?? "",
     slug: page?.slug ?? "",
+    excerptRich: page?.excerptRich ?? emptyContentDoc,
     contentRich: page?.contentRich ?? emptyContentDoc,
     status: page?.status ?? "DRAFT",
   };
@@ -84,12 +92,15 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
   const [hasManualSlugOverride, setHasManualSlugOverride] = useState(mode === "edit");
   const [isSlugEditing, setIsSlugEditing] = useState(false);
   const page = pageQuery.data;
+  const [titleStyled, setTitleStyled] = useState<PageTitleStyled>(() =>
+    createStyledTitleValue(page?.title ?? "", page?.titleStyled),
+  );
   const form = useForm<PageFormValues>({
     resolver: zodResolver(pageFormStateSchema),
     defaultValues: getPageFormDefaultValues(page),
   });
   const { control, handleSubmit, setValue } = form;
-  const watchedTitle = useWatch({ control, name: "title" });
+  const watchedTitle = getStyledTitlePlainText(titleStyled);
   const watchedSlug = useWatch({ control, name: "slug" });
   const resolvedSlug = normalizeSlug(watchedSlug || watchedTitle || "");
   const slugPreview = resolvedSlug || pageFormText.slugPreviewPlaceholder;
@@ -124,6 +135,14 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
   const isSubmitting =
     createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
+  const handleTitleChange = (nextTitleStyled: PageTitleStyled) => {
+    setTitleStyled(nextTitleStyled);
+    setValue("title", getStyledTitlePlainText(nextTitleStyled), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+
   const handleDelete = async () => {
     if (!pageId) return;
 
@@ -138,6 +157,7 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
   };
 
   const onSubmit = handleSubmit(async (values) => {
+    const titleStyledPayload = hasStyledTitleAccent(titleStyled) ? titleStyled : null;
     const slug = normalizeSlug(values.slug || values.title);
 
     if (!slug) {
@@ -149,7 +169,9 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
       if (mode === "create") {
         await createMutation.mutateAsync({
           title: values.title,
+          titleStyled: titleStyledPayload,
           slug,
+          excerptRich: values.excerptRich,
           contentRich: values.contentRich,
           status: "DRAFT",
           publishedAt: null,
@@ -161,7 +183,9 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
           id: pageId,
           data: {
             title: values.title,
+            titleStyled: titleStyledPayload,
             slug,
+            excerptRich: values.excerptRich,
             contentRich: values.contentRich,
             status: values.status,
             publishedAt: resolvePublishedAtForStatus(values.status, page?.publishedAt ?? null),
@@ -209,20 +233,21 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
 
       <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-5 overflow-y-auto pb-6 lg:pr-6">
-          <CmsFormField label={formText.fields.title} htmlFor="page-title" required>
-            <Controller
-              name="title"
-              control={control}
-              render={({ field, fieldState }) => (
-                <CmsTextInput
-                  id="page-title"
-                  value={field.value}
-                  state={fieldState.error ? "error" : undefined}
-                  onBlur={field.onBlur}
-                  onChange={(event) => field.onChange(event.target.value)}
-                />
-              )}
+          <CmsFormField
+            label={formText.fields.title}
+            htmlFor="page-title"
+            hint={pageFormText.titleStyledHint}
+            required
+          >
+            <CmsStyledTitleEditor
+              id="page-title"
+              value={titleStyled}
+              onChange={handleTitleChange}
+              placeholder={formText.fields.title}
+              accentLabel={pageFormText.titleStyledAccentAction}
+              ariaLabel={pageFormText.titleStyledEditorAriaLabel}
             />
+            <input type="hidden" {...form.register("title")} />
           </CmsFormField>
 
           <CmsFormField label={formText.fields.slug} htmlFor="page-slug" required hint={slugHint}>
@@ -273,6 +298,20 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
                 {formText.regenerateSlug}
               </button>
             </div>
+          </CmsFormField>
+
+          <CmsFormField label={formText.fields.excerpt} htmlFor="page-excerpt-rich">
+            <Controller
+              name="excerptRich"
+              control={control}
+              render={({ field }) => (
+                <CmsRichTextEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  ariaLabel={pageFormText.excerptEditorAriaLabel}
+                />
+              )}
+            />
           </CmsFormField>
 
           <CmsFormField

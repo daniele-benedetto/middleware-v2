@@ -2,7 +2,9 @@ import "server-only";
 
 import { createCmsDomainErrorDetails } from "@/lib/cms/errors/domain-error-details";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
+import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 import { pagesRepository } from "@/lib/server/modules/pages/repository";
 import { assertPublishedAtConsistency } from "@/lib/server/validation/published";
 import { normalizeSlug } from "@/lib/server/validation/slug";
@@ -17,13 +19,16 @@ import type {
 import type {
   CreatePageInput,
   ListPagesQuery,
+  PageTitleStyled,
   UpdatePageInput,
 } from "@/lib/server/modules/pages/schema";
 
 type PageRecord = {
   id: string;
   title: string;
+  titleStyled: unknown;
   slug: string;
+  excerpt: string | null;
   status: PageStatus;
   publishedAt: Date | null;
   createdAt: Date;
@@ -31,6 +36,7 @@ type PageRecord = {
 };
 
 type PageDetailRecord = PageRecord & {
+  excerptRich: unknown;
   contentRich: unknown;
 };
 
@@ -44,18 +50,69 @@ const ensureSlug = (value: string): string => {
   return slug;
 };
 
+function createRichTextDocFromPlainText(value: string): unknown {
+  const paragraphs = value
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => ({
+      type: "paragraph",
+      content: [{ type: "text", text: line }],
+    }));
+
+  return {
+    type: "doc",
+    content: paragraphs.length > 0 ? paragraphs : [{ type: "paragraph" }],
+  };
+}
+
+function toCreateExcerptPersist(
+  input: CreatePageInput,
+): Pick<CreatePagePersistInput, "excerpt" | "excerptRich"> {
+  if (input.excerptRich === undefined) {
+    return {};
+  }
+
+  return {
+    excerpt: extractPlainText(input.excerptRich) ?? undefined,
+    excerptRich: input.excerptRich,
+  };
+}
+
+function toUpdateExcerptPersist(
+  input: UpdatePageInput,
+): Pick<UpdatePagePersistInput, "excerpt" | "excerptRich"> {
+  if (input.excerptRich === undefined) {
+    return {};
+  }
+
+  return {
+    excerpt: extractPlainText(input.excerptRich),
+    excerptRich: input.excerptRich,
+  };
+}
+
 const toPageDto = (page: PageRecord): PageDto => ({
   id: page.id,
   title: page.title,
+  titleStyled: parsePageTitleStyled(page.titleStyled),
   slug: page.slug,
+  excerpt: page.excerpt,
   status: page.status,
   publishedAt: page.publishedAt?.toISOString() ?? null,
   createdAt: page.createdAt.toISOString(),
   updatedAt: page.updatedAt.toISOString(),
 });
 
+function parsePageTitleStyled(value: unknown): PageTitleStyled | null {
+  const result = issueTitleStyledSchema.nullable().safeParse(value);
+  return result.success ? result.data : null;
+}
+
 const toPageDetailDto = (page: PageDetailRecord): PageDetailDto => ({
   ...toPageDto(page),
+  excerptRich:
+    page.excerptRich ?? (page.excerpt ? createRichTextDocFromPlainText(page.excerpt) : null),
   contentRich: page.contentRich,
 });
 
@@ -105,6 +162,7 @@ export const pagesService = {
     const normalizedInput: CreatePagePersistInput = {
       ...input,
       slug: ensureSlug(input.slug),
+      ...toCreateExcerptPersist(input),
       publishedAt,
     };
 
@@ -125,6 +183,7 @@ export const pagesService = {
     const normalizedInput: UpdatePagePersistInput = {
       ...input,
       slug: input.slug ? ensureSlug(input.slug) : undefined,
+      ...toUpdateExcerptPersist(input),
     };
     const nextStatus = normalizedInput.status ?? current.status;
     const nextPublishedAt =
