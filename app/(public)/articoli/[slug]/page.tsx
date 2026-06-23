@@ -4,13 +4,12 @@ import { PublicArticlePage } from "@/components/public/pages";
 import {
   getPublicArticlePageData,
   getPublicArticleStaticParams,
-  PUBLIC_ARTICLE_PAGE_REVALIDATE_SECONDS,
 } from "@/lib/public/server/article-page";
 import { buildArticleMetadata, buildPageMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
-export const revalidate = PUBLIC_ARTICLE_PAGE_REVALIDATE_SECONDS;
+export const revalidate = 3600;
 
 type PublicArticleRouteProps = {
   params: Promise<{ slug: string }>;
