@@ -10,10 +10,9 @@ import type { ArchiveIssueViewModel } from "@/components/public/sections/archive
 type IssueArchiveCardProps = {
   issue: ArchiveIssueViewModel;
   countLabel: (count: number) => string;
-  cta: string;
 };
 
-export function IssueArchiveCard({ issue, countLabel, cta }: IssueArchiveCardProps) {
+export function IssueArchiveCard({ issue, countLabel }: IssueArchiveCardProps) {
   const publishedAtLabel = formatIssueMonthYearLong(issue.publishedAt);
 
   return (
@@ -49,7 +48,6 @@ export function IssueArchiveCard({ issue, countLabel, cta }: IssueArchiveCardPro
             <span>{publishedAtLabel}</span>
             <span className="size-1 rounded-[1px] bg-accent" aria-hidden />
             <span>{countLabel(issue.articlesCount)}</span>
-            <span className="ml-auto font-bold text-accent">{cta}</span>
           </div>
         </div>
       </div>

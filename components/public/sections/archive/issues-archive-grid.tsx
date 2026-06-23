@@ -6,10 +6,9 @@ import type { ArchiveIssueViewModel } from "@/components/public/sections/archive
 type IssuesArchiveGridProps = {
   issues: ArchiveIssueViewModel[];
   countLabel: (count: number) => string;
-  cta: string;
 };
 
-export function IssuesArchiveGrid({ issues, countLabel, cta }: IssuesArchiveGridProps) {
+export function IssuesArchiveGrid({ issues, countLabel }: IssuesArchiveGridProps) {
   if (issues.length === 0) {
     return null;
   }
@@ -19,7 +18,7 @@ export function IssuesArchiveGrid({ issues, countLabel, cta }: IssuesArchiveGrid
       <div className={publicContentClassName}>
         <div className="grid gap-8 lg:gap-10">
           {issues.map((issue) => (
-            <IssueArchiveCard key={issue.id} issue={issue} countLabel={countLabel} cta={cta} />
+            <IssueArchiveCard key={issue.id} issue={issue} countLabel={countLabel} />
           ))}
         </div>
       </div>

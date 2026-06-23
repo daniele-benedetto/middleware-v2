@@ -62,10 +62,7 @@ export const publicIt = {
       totalLabel: (count: number) =>
         `${count} ${count === 1 ? "numero pubblicato" : "numeri pubblicati"}`,
     },
-    grid: {
-      cta: "Apri il numero →",
-    },
-    countLabel: (count: number) => `${count} ${count === 1 ? "pezzo" : "pezzi"}`,
+    countLabel: (count: number) => `${count} ${count === 1 ? "articolo" : "articoli"}`,
     empty: {
       code: "00",
       kicker: "Archivio",

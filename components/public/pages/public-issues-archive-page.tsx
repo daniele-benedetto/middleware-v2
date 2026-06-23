@@ -24,11 +24,7 @@ export function PublicIssuesArchivePage({ issues }: PublicIssuesArchivePageProps
             description={text.hero.description}
             totalLabel={text.hero.totalLabel(issueViewModels.length)}
           />
-          <IssuesArchiveGrid
-            issues={issueViewModels}
-            countLabel={text.countLabel}
-            cta={text.grid.cta}
-          />
+          <IssuesArchiveGrid issues={issueViewModels} countLabel={text.countLabel} />
         </>
       ) : (
         <PublicSystemScreen
