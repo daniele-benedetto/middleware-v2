@@ -88,8 +88,10 @@ export function PublicHeader({ className }: PublicHeaderProps) {
   return (
     <>
       <header
-        className={cn("sticky top-0 z-50 border-b-2 border-foreground bg-background", className)}
-        style={{ viewTransitionName: "public-header" }}
+        className={cn(
+          "fixed inset-x-0 top-0 z-50 border-b-2 border-foreground bg-background",
+          className,
+        )}
       >
         <div className={publicHeaderBarClassName}>
           <PublicBrand priority />
@@ -104,6 +106,7 @@ export function PublicHeader({ className }: PublicHeaderProps) {
           />
         </div>
       </header>
+      <div className="h-15.75 shrink-0" aria-hidden />
 
       {menuOpen ? (
         <PublicFullscreenMenu id={menuId} onClose={closeMenu} closeButtonRef={closeButtonRef} />
