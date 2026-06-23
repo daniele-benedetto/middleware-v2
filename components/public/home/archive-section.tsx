@@ -74,6 +74,30 @@ function getIssueNumbers(issues: PublicIssueListItem[]) {
   return new Map(oldestFirst.map((issue, index) => [issue.id, formatIssueNumber(index)]));
 }
 
+function getArchiveGridClassName(count: number) {
+  if (count === 1) {
+    return "grid";
+  }
+
+  if (count === 2) {
+    return "grid md:grid-cols-2";
+  }
+
+  if (count === 3) {
+    return "grid md:grid-cols-2 xl:grid-cols-3";
+  }
+
+  return "grid md:grid-cols-2 xl:grid-cols-3";
+}
+
+function getArchiveCardClassName(index: number, count: number) {
+  if (count === 3 && index === 2) {
+    return "md:col-span-2 xl:col-span-1";
+  }
+
+  return undefined;
+}
+
 export function ArchiveSection({
   title,
   description,
@@ -98,7 +122,7 @@ export function ArchiveSection({
           description={description}
           action={{ label: archiveLabel, href: archiveHref }}
         />
-        <div className="grid md:grid-cols-2 xl:grid-cols-3">
+        <div className={getArchiveGridClassName(issues.length)}>
           {issues.map((issue, index) => {
             const issueDescription = getIssuePlainDescription(issue);
             const issueNumber = issueNumbers.get(issue.id) ?? formatIssueNumber(0);
@@ -113,11 +137,12 @@ export function ArchiveSection({
                   publicInteraction.cardBase,
                   "relative isolate flex min-h-96 flex-col overflow-hidden px-5 py-6 sm:px-6 sm:py-7 lg:min-h-112 lg:px-7 lg:py-8",
                   variantClasses.surface,
+                  getArchiveCardClassName(index, issues.length),
                 )}
               >
                 <span
                   className={cn(
-                    "pointer-events-none absolute top-4 right-4 -z-10 font-heading text-[clamp(96px,13vw,180px)] leading-[0.72] font-black tracking-[-0.05em] select-none",
+                    "pointer-events-none absolute top-4 right-4 -z-10 font-heading text-[clamp(96px,13vw,180px)] leading-[0.72] font-black tracking-tighter select-none",
                     variantClasses.backgroundNumber,
                   )}
                   aria-hidden
