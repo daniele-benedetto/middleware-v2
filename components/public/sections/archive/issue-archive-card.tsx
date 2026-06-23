@@ -13,6 +13,7 @@ type IssueArchiveCardProps = {
   issue: ArchiveIssueViewModel;
   countLabel: (count: number) => string;
   variant: IssueArchiveCardVariant;
+  className?: string;
 };
 
 const archiveCoverVariantClasses: Record<
@@ -29,7 +30,7 @@ const archiveCoverVariantClasses: Record<
   }
 > = {
   default: {
-    surface: "border-foreground bg-background text-foreground",
+    surface: "bg-background text-foreground",
     backgroundNumber: "text-accent/15 [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]",
     title: "text-foreground",
     titlePrimary: "text-accent",
@@ -39,7 +40,7 @@ const archiveCoverVariantClasses: Record<
     border: "border-foreground",
   },
   red: {
-    surface: "border-foreground bg-accent text-background",
+    surface: "bg-accent text-background",
     backgroundNumber: "text-foreground/15 [-webkit-text-stroke:0.45px_rgba(255,248,235,0.24)]",
     title: "text-background",
     titlePrimary: "text-foreground",
@@ -49,7 +50,7 @@ const archiveCoverVariantClasses: Record<
     border: "border-foreground",
   },
   black: {
-    surface: "border-foreground bg-foreground text-background",
+    surface: "bg-foreground text-background",
     backgroundNumber: "text-accent/20 [-webkit-text-stroke:0.45px_rgba(255,248,235,0.18)]",
     title: "text-background",
     titlePrimary: "text-accent",
@@ -60,7 +61,7 @@ const archiveCoverVariantClasses: Record<
   },
 };
 
-export function IssueArchiveCard({ issue, countLabel, variant }: IssueArchiveCardProps) {
+export function IssueArchiveCard({ issue, countLabel, variant, className }: IssueArchiveCardProps) {
   const publishedAtLabel = formatIssueMonthYearLong(issue.publishedAt);
   const variantClasses = archiveCoverVariantClasses[variant];
 
@@ -69,8 +70,9 @@ export function IssueArchiveCard({ issue, countLabel, variant }: IssueArchiveCar
       href={`/uscite/${issue.slug}`}
       className={cn(
         publicInteraction.cardBase,
-        "relative isolate block overflow-hidden border-2 px-5 py-7 sm:px-6 sm:py-9 md:px-8 md:py-10 lg:px-10 lg:py-12",
+        "relative isolate block overflow-hidden px-5 py-7 sm:px-6 sm:py-9 md:px-8 md:py-10 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:px-12 lg:py-14 xl:px-16",
         variantClasses.surface,
+        className,
       )}
     >
       <span

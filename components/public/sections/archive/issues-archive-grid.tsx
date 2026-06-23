@@ -1,5 +1,5 @@
-import { publicContentClassName } from "@/components/public/primitives";
 import { IssueArchiveCard } from "@/components/public/sections/archive/issue-archive-card";
+import { IssuesArchiveRail } from "@/components/public/sections/archive/issues-archive-rail";
 
 import type { ArchiveIssueViewModel } from "@/components/public/sections/archive/archive-view-model";
 import type { IssueArchiveCardVariant } from "@/components/public/sections/archive/issue-archive-card";
@@ -17,19 +17,16 @@ export function IssuesArchiveGrid({ issues, countLabel }: IssuesArchiveGridProps
   const variants: IssueArchiveCardVariant[] = ["default", "red", "black"];
 
   return (
-    <section className="scroll-mt-20 py-10 lg:py-12">
-      <div className={publicContentClassName}>
-        <div className="grid gap-8 lg:gap-10">
-          {issues.map((issue, index) => (
-            <IssueArchiveCard
-              key={issue.id}
-              issue={issue}
-              countLabel={countLabel}
-              variant={variants[index % variants.length]}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
+    <IssuesArchiveRail>
+      {issues.map((issue, index) => (
+        <IssueArchiveCard
+          key={issue.id}
+          issue={issue}
+          countLabel={countLabel}
+          variant={variants[index % variants.length]}
+          className="w-full lg:w-screen lg:shrink-0"
+        />
+      ))}
+    </IssuesArchiveRail>
   );
 }
