@@ -18,7 +18,6 @@ export const publicIt = {
       { number: "01", label: "Numero corrente", href: "/" },
       { number: "02", label: "Archivio", href: "/uscite" },
       { number: "03", label: "Chi siamo", href: "/chi-siamo" },
-      { number: "04", label: "Contatti", href: "#footer" },
     ],
   },
   home: {
@@ -77,7 +76,6 @@ export const publicIt = {
         { label: "Numero corrente", href: "/" },
         { label: "Archivio", href: "/uscite" },
         { label: "Chi siamo", href: "/chi-siamo" },
-        { label: "Contatti", href: "#footer" },
       ],
     },
     legalPages: {
