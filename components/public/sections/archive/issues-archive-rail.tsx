@@ -24,6 +24,7 @@ export function IssuesArchiveRail({ children }: IssuesArchiveRailProps) {
 
     const desktopQuery = window.matchMedia("(min-width: 1024px)");
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let disposed = false;
 
     const reset = () => {
       if (frameRef.current !== null) {
@@ -50,6 +51,10 @@ export function IssuesArchiveRail({ children }: IssuesArchiveRailProps) {
     };
 
     const requestUpdate = () => {
+      if (disposed) {
+        return;
+      }
+
       if (frameRef.current !== null) {
         return;
       }
@@ -61,12 +66,21 @@ export function IssuesArchiveRail({ children }: IssuesArchiveRailProps) {
     };
 
     update();
+
+    const resizeObserver = new ResizeObserver(requestUpdate);
+    resizeObserver.observe(section);
+    resizeObserver.observe(track);
+
+    document.fonts?.ready.then(requestUpdate).catch(() => undefined);
+
     window.addEventListener("scroll", requestUpdate, { passive: true });
     window.addEventListener("resize", requestUpdate);
     desktopQuery.addEventListener("change", requestUpdate);
     reducedMotionQuery.addEventListener("change", requestUpdate);
 
     return () => {
+      disposed = true;
+      resizeObserver.disconnect();
       reset();
       window.removeEventListener("scroll", requestUpdate);
       window.removeEventListener("resize", requestUpdate);
@@ -78,7 +92,7 @@ export function IssuesArchiveRail({ children }: IssuesArchiveRailProps) {
   return (
     <section
       ref={sectionRef}
-      className="scroll-mt-20 py-10 md:py-0"
+      className="scroll-mt-20 py-0"
       style={sectionHeight ? { height: `${sectionHeight}px` } : undefined}
     >
       <div className="lg:sticky lg:top-16 lg:flex lg:h-[calc(100vh-4rem)] lg:items-stretch lg:overflow-hidden">
