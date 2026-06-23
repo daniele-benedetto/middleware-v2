@@ -7,46 +7,114 @@ import { cn } from "@/lib/utils";
 
 import type { ArchiveIssueViewModel } from "@/components/public/sections/archive/archive-view-model";
 
+export type IssueArchiveCardVariant = "default" | "red" | "black";
+
 type IssueArchiveCardProps = {
   issue: ArchiveIssueViewModel;
   countLabel: (count: number) => string;
+  variant: IssueArchiveCardVariant;
 };
 
-export function IssueArchiveCard({ issue, countLabel }: IssueArchiveCardProps) {
+const archiveCoverVariantClasses: Record<
+  IssueArchiveCardVariant,
+  {
+    surface: string;
+    backgroundNumber: string;
+    title: string;
+    titlePrimary: string;
+    description: string;
+    meta: string;
+    separator: string;
+    border: string;
+  }
+> = {
+  default: {
+    surface: "border-foreground bg-background text-foreground",
+    backgroundNumber: "text-accent/15 [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]",
+    title: "text-foreground",
+    titlePrimary: "text-accent",
+    description: "text-body-text",
+    meta: "text-muted",
+    separator: "bg-accent",
+    border: "border-foreground",
+  },
+  red: {
+    surface: "border-foreground bg-accent text-background",
+    backgroundNumber: "text-foreground/15 [-webkit-text-stroke:0.45px_rgba(255,248,235,0.24)]",
+    title: "text-background",
+    titlePrimary: "text-foreground",
+    description: "text-cream-soft",
+    meta: "text-cream-muted",
+    separator: "bg-foreground",
+    border: "border-foreground",
+  },
+  black: {
+    surface: "border-foreground bg-foreground text-background",
+    backgroundNumber: "text-accent/20 [-webkit-text-stroke:0.45px_rgba(255,248,235,0.18)]",
+    title: "text-background",
+    titlePrimary: "text-accent",
+    description: "text-cream-warm",
+    meta: "text-dark-muted",
+    separator: "bg-accent",
+    border: "border-dark-border",
+  },
+};
+
+export function IssueArchiveCard({ issue, countLabel, variant }: IssueArchiveCardProps) {
   const publishedAtLabel = formatIssueMonthYearLong(issue.publishedAt);
+  const variantClasses = archiveCoverVariantClasses[variant];
 
   return (
     <Link
       href={`/uscite/${issue.slug}`}
       className={cn(
-        publicInteraction.cardSurface,
-        "relative isolate block overflow-hidden border-2 border-foreground bg-background px-5 py-7 sm:px-6 sm:py-9 md:px-8 md:py-10 lg:px-10 lg:py-12",
+        publicInteraction.cardBase,
+        "relative isolate block overflow-hidden border-2 px-5 py-7 sm:px-6 sm:py-9 md:px-8 md:py-10 lg:px-10 lg:py-12",
+        variantClasses.surface,
       )}
     >
       <span
-        className={`${publicTypography.issueBackgroundNumber} pointer-events-none absolute top-5 right-5 -z-10 text-accent/15 select-none [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]`}
+        className={cn(
+          publicTypography.issueBackgroundNumber,
+          "pointer-events-none absolute top-5 right-5 -z-10 select-none",
+          variantClasses.backgroundNumber,
+        )}
         aria-hidden
       >
         {issue.issueNumber}
       </span>
 
       <div className="relative z-10 w-full">
-        <h3 className={`${publicTypography.homeHeroTitle} w-full text-foreground`}>
-          <StyledTitle title={issue.title} titleStyled={issue.titleStyled} />
+        <h3 className={cn(publicTypography.homeHeroTitle, "w-full", variantClasses.title)}>
+          <StyledTitle
+            title={issue.title}
+            titleStyled={issue.titleStyled}
+            primaryClassName={variantClasses.titlePrimary}
+          />
         </h3>
 
-        <div className="mt-8 w-full border-t-2 border-foreground pt-5">
+        <div className={cn("mt-8 w-full border-t-2 pt-5", variantClasses.border)}>
           {issue.descriptionPlain ? (
-            <p className="font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] text-body-text italic">
+            <p
+              className={cn(
+                "font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] italic",
+                variantClasses.description,
+              )}
+            >
               {issue.descriptionPlain}
             </p>
           ) : null}
 
-          <div className="mt-6 flex flex-wrap items-center gap-3 font-heading text-[13px] font-semibold text-muted sm:text-[14px]">
+          <div
+            className={cn(
+              "mt-6 flex flex-wrap items-center gap-3 font-heading text-[13px] font-semibold sm:text-[14px]",
+              variantClasses.meta,
+            )}
+          >
             <span>{issue.issueNumber}</span>
-            <span className="size-1 rounded-[1px] bg-accent" aria-hidden />
+            <span className={cn("size-1 rounded-[1px]", variantClasses.separator)} aria-hidden />
             <span>{publishedAtLabel}</span>
-            <span className="size-1 rounded-[1px] bg-accent" aria-hidden />
+            <span className={cn("size-1 rounded-[1px]", variantClasses.separator)} aria-hidden />
             <span>{countLabel(issue.articlesCount)}</span>
           </div>
         </div>
