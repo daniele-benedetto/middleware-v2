@@ -46,6 +46,7 @@ export default function RootLayout({
       className={cn(
         "h-full",
         "antialiased",
+        "motion-safe:scroll-smooth",
         archivo.variable,
         spectral.variable,
         ibmPlexMono.variable,
