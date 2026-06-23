@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 
+import { revalidatePublicIssueContent } from "@/lib/public/server/revalidation";
 import {
   createIssueInputSchema,
   issueDetailDtoSchema,
@@ -61,7 +62,9 @@ export const issuesRouter = router({
     .use(auditMiddleware(() => ({ action: "create", resource: "issues" })))
     .input(createIssueInputSchema)
     .mutation(async ({ input }) => {
-      return parseOutput(await issuesService.create(input), issueDtoSchema);
+      const issue = parseOutput(await issuesService.create(input), issueDtoSchema);
+      revalidatePublicIssueContent();
+      return issue;
     }),
   update: writeProcedure
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
@@ -81,7 +84,9 @@ export const issuesRouter = router({
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await issuesService.update(input.id, input.data), issueDtoSchema);
+      const issue = parseOutput(await issuesService.update(input.id, input.data), issueDtoSchema);
+      revalidatePublicIssueContent();
+      return issue;
     }),
   delete: writeProcedure
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
@@ -95,6 +100,7 @@ export const issuesRouter = router({
     )
     .mutation(async ({ input }) => {
       await issuesService.delete(input.id);
+      revalidatePublicIssueContent();
       return { success: true };
     }),
   reorder: reorderProcedure
@@ -102,6 +108,8 @@ export const issuesRouter = router({
     .use(auditMiddleware(() => ({ action: "reorder", resource: "issues" })))
     .input(reorderIssuesInputSchema)
     .mutation(async ({ input }) => {
-      return parseOutput(await issuesService.reorder(input), issuesListDtoSchema);
+      const issues = parseOutput(await issuesService.reorder(input), issuesListDtoSchema);
+      revalidatePublicIssueContent();
+      return issues;
     }),
 });

@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 
+import { revalidatePublicArticleContent } from "@/lib/public/server/revalidation";
 import {
   articleDetailDtoSchema,
   articleDtoSchema,
@@ -61,7 +62,9 @@ export const articlesRouter = router({
     .use(auditMiddleware(() => ({ action: "create", resource: "articles" })))
     .input(createArticleInputSchema)
     .mutation(async ({ input }) => {
-      return parseOutput(await articlesService.create(input), articleDtoSchema);
+      const article = parseOutput(await articlesService.create(input), articleDtoSchema);
+      revalidatePublicArticleContent();
+      return article;
     }),
   update: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
@@ -74,7 +77,12 @@ export const articlesRouter = router({
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await articlesService.update(input.id, input.data), articleDtoSchema);
+      const article = parseOutput(
+        await articlesService.update(input.id, input.data),
+        articleDtoSchema,
+      );
+      revalidatePublicArticleContent();
+      return article;
     }),
   delete: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
@@ -88,6 +96,7 @@ export const articlesRouter = router({
     )
     .mutation(async ({ input }) => {
       await articlesService.delete(input.id);
+      revalidatePublicArticleContent();
       return { success: true };
     }),
   syncTags: writeProcedure
@@ -103,7 +112,12 @@ export const articlesRouter = router({
       ),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await articlesService.syncTags(input.id, input.data), articleDtoSchema);
+      const article = parseOutput(
+        await articlesService.syncTags(input.id, input.data),
+        articleDtoSchema,
+      );
+      revalidatePublicArticleContent();
+      return article;
     }),
   publish: publishProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
@@ -116,7 +130,9 @@ export const articlesRouter = router({
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await articlesService.publish(input.id), articleDtoSchema);
+      const article = parseOutput(await articlesService.publish(input.id), articleDtoSchema);
+      revalidatePublicArticleContent();
+      return article;
     }),
   unpublish: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
@@ -129,7 +145,9 @@ export const articlesRouter = router({
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await articlesService.unpublish(input.id), articleDtoSchema);
+      const article = parseOutput(await articlesService.unpublish(input.id), articleDtoSchema);
+      revalidatePublicArticleContent();
+      return article;
     }),
   archive: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
@@ -142,7 +160,9 @@ export const articlesRouter = router({
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await articlesService.archive(input.id), articleDtoSchema);
+      const article = parseOutput(await articlesService.archive(input.id), articleDtoSchema);
+      revalidatePublicArticleContent();
+      return article;
     }),
   feature: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
@@ -155,7 +175,9 @@ export const articlesRouter = router({
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await articlesService.feature(input.id), articleDtoSchema);
+      const article = parseOutput(await articlesService.feature(input.id), articleDtoSchema);
+      revalidatePublicArticleContent();
+      return article;
     }),
   unfeature: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
@@ -168,6 +190,8 @@ export const articlesRouter = router({
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await articlesService.unfeature(input.id), articleDtoSchema);
+      const article = parseOutput(await articlesService.unfeature(input.id), articleDtoSchema);
+      revalidatePublicArticleContent();
+      return article;
     }),
 });

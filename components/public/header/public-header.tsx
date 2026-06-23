@@ -89,6 +89,7 @@ export function PublicHeader({ className }: PublicHeaderProps) {
     <>
       <header
         className={cn("sticky top-0 z-50 border-b-2 border-foreground bg-background", className)}
+        style={{ viewTransitionName: "public-header" }}
       >
         <div className={publicHeaderBarClassName}>
           <PublicBrand priority />

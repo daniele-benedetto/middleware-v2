@@ -1,7 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 
 import { publicTypography } from "@/components/public/primitives";
+import { PublicLink as Link } from "@/components/public/public-link";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 

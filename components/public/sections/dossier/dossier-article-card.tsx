@@ -1,7 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 
 import { publicInteraction, publicTypography } from "@/components/public/primitives";
+import { PublicLink as Link } from "@/components/public/public-link";
 import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { StyledTitle } from "@/components/public/styled-title";

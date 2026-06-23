@@ -8,10 +8,9 @@ const PUBLIC_ISSUE_WHERE = {
   publishedAt: { not: null },
 } as const satisfies Prisma.IssueWhereInput;
 
-const PUBLIC_ARTICLE_IMAGE_WHERE = {
+const PUBLIC_ARTICLE_MEDIA_WHERE = {
   status: "PUBLISHED",
   publishedAt: { not: null },
-  imageUrl: { not: null },
   issue: PUBLIC_ISSUE_WHERE,
 } as const satisfies Prisma.ArticleWhereInput;
 
@@ -21,10 +20,13 @@ const PUBLIC_PAGE_WHERE = {
 } as const satisfies Prisma.PageWhereInput;
 
 export const publicMediaRepository = {
-  async listPublishedArticleImageUrls() {
+  async listPublishedArticleMediaUrls() {
     return prisma.article.findMany({
-      where: PUBLIC_ARTICLE_IMAGE_WHERE,
-      select: { imageUrl: true },
+      where: {
+        ...PUBLIC_ARTICLE_MEDIA_WHERE,
+        OR: [{ imageUrl: { not: null } }, { audioUrl: { not: null } }],
+      },
+      select: { imageUrl: true, audioUrl: true },
     });
   },
   async listPublishedPageContent() {

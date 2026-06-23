@@ -1,0 +1,229 @@
+import "server-only";
+
+import { unstable_cache } from "next/cache";
+
+import { normalizeHomeBlock } from "@/lib/issues/home-block-rules";
+import { extractPlainText } from "@/lib/rich-text/plain-text";
+import { ApiError } from "@/lib/server/http/api-error";
+import { publicArticlesService } from "@/lib/server/modules/articles/service/public";
+import { publicIssuesService } from "@/lib/server/modules/issues/service/public";
+
+import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
+import type { PublicIssueArticleSummaryDto } from "@/lib/server/modules/issues/dto/public";
+import type { PublicIssueDetailDto } from "@/lib/server/modules/issues/dto/public";
+
+export const PUBLIC_ARTICLE_PAGE_REVALIDATE_SECONDS = 60 * 60;
+export const PUBLIC_ARTICLE_PAGE_CACHE_TAG = "public-article";
+
+export type PublicRelatedIssueArticle = {
+  article: PublicIssueArticleSummaryDto;
+  number: number;
+};
+
+export type PublicArticlePageData = {
+  article: PublicArticleDetailDto | null;
+  articleNumber: number | null;
+  relatedArticles: PublicRelatedIssueArticle[];
+  description?: string;
+};
+
+type NarrativeBlock = {
+  type: "opening" | "body" | "rupture" | "closing";
+  articles: PublicIssueArticleSummaryDto[];
+  featuredArticle: PublicIssueArticleSummaryDto | null;
+  featuredPlacement: "left" | "right";
+};
+
+function getArticleDescription(article: PublicArticleDetailDto | null) {
+  if (!article) return undefined;
+  if (article.excerpt) return article.excerpt;
+
+  const description = extractPlainText(article.excerptRich ?? article.contentRich);
+  return description || undefined;
+}
+
+async function getArticleBySlug(slug: string) {
+  try {
+    return await publicArticlesService.getBySlug(slug);
+  } catch (error) {
+    if (error instanceof ApiError && error.code === "NOT_FOUND") {
+      return null;
+    }
+
+    console.error("public.getPublicArticlePageData article failed", { slug, error });
+    return null;
+  }
+}
+
+function sortUnpaginatedArticles(articles: PublicIssueArticleSummaryDto[]) {
+  return [...articles].sort((a, b) => {
+    if (a.isFeatured !== b.isFeatured) {
+      return a.isFeatured ? -1 : 1;
+    }
+
+    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  });
+}
+
+function getBlockNumberingArticles(block: NarrativeBlock) {
+  if (block.type !== "body" || block.featuredPlacement !== "right" || !block.featuredArticle) {
+    return block.articles;
+  }
+
+  return [
+    ...block.articles.filter((item) => item.id !== block.featuredArticle?.id),
+    block.featuredArticle,
+  ];
+}
+
+function resolveNarrativeBlocks(issue: PublicIssueDetailDto): NarrativeBlock[] {
+  const articlesById = new Map(issue.articles.map((item) => [item.id, item]));
+  const manualArticleIds = new Set<string>();
+  const blocks: NarrativeBlock[] = [];
+
+  for (const rawBlock of issue.homeBlocks ?? []) {
+    const block = normalizeHomeBlock(rawBlock);
+    const articles = block.articleIds
+      .filter((articleId) => !manualArticleIds.has(articleId))
+      .map((articleId) => articlesById.get(articleId))
+      .filter((item): item is PublicIssueArticleSummaryDto => Boolean(item));
+    const fallbackArticle = articles[0];
+
+    if (!fallbackArticle) {
+      continue;
+    }
+
+    for (const item of articles) {
+      manualArticleIds.add(item.id);
+    }
+
+    const featuredArticle =
+      (block.featuredArticleId
+        ? articles.find((item) => item.id === block.featuredArticleId)
+        : null) ??
+      articles.find((item) => item.isFeatured) ??
+      fallbackArticle;
+
+    blocks.push({
+      type: block.type,
+      articles,
+      featuredArticle,
+      featuredPlacement: block.featuredPlacement,
+    });
+  }
+
+  return blocks;
+}
+
+function buildNumberedIssueArticles(issue: PublicIssueDetailDto) {
+  const blocks = resolveNarrativeBlocks(issue);
+
+  if (blocks.length === 0) {
+    return sortUnpaginatedArticles(issue.articles).map((item, index) => ({
+      article: item,
+      number: index + 1,
+    }));
+  }
+
+  const contentBlocks = blocks.filter((block) => block.type !== "closing");
+  const closingBlocks = blocks.filter((block) => block.type === "closing");
+  const numberedArticles: PublicRelatedIssueArticle[] = [];
+  const numberedIds = new Set<string>();
+  const addArticles = (articles: PublicIssueArticleSummaryDto[]) => {
+    for (const item of articles) {
+      if (numberedIds.has(item.id)) {
+        continue;
+      }
+
+      numberedIds.add(item.id);
+      numberedArticles.push({ article: item, number: numberedArticles.length + 1 });
+    }
+  };
+
+  addArticles(contentBlocks.flatMap(getBlockNumberingArticles));
+  addArticles(sortUnpaginatedArticles(issue.articles.filter((item) => !numberedIds.has(item.id))));
+  addArticles(closingBlocks.flatMap((block) => block.articles));
+
+  return numberedArticles;
+}
+
+function getContextualArticles(
+  article: PublicArticleDetailDto,
+  numberedArticles: PublicRelatedIssueArticle[],
+) {
+  const currentIndex = numberedArticles.findIndex((item) => item.article.id === article.id);
+
+  if (currentIndex < 0) {
+    return {
+      articleNumber: null,
+      relatedArticles: [],
+    };
+  }
+
+  const windowSize = 4;
+  const end = Math.min(numberedArticles.length, Math.max(currentIndex + 3, windowSize));
+  const start = Math.max(0, end - windowSize);
+
+  return {
+    articleNumber: numberedArticles[currentIndex]?.number ?? null,
+    relatedArticles: numberedArticles
+      .slice(start, end)
+      .filter((item) => item.article.id !== article.id),
+  };
+}
+
+async function getIssueArticleContext(article: PublicArticleDetailDto | null) {
+  if (!article) {
+    return {
+      articleNumber: null,
+      relatedArticles: [],
+    };
+  }
+
+  try {
+    const issue = await publicIssuesService.getBySlug(article.issueSlug);
+    return getContextualArticles(article, buildNumberedIssueArticles(issue));
+  } catch (error) {
+    console.error("public.getPublicArticlePageData issue context failed", {
+      issueSlug: article.issueSlug,
+      error,
+    });
+    return {
+      articleNumber: null,
+      relatedArticles: [],
+    };
+  }
+}
+
+async function loadPublicArticlePageData(slug: string): Promise<PublicArticlePageData> {
+  const article = await getArticleBySlug(slug);
+  const { articleNumber, relatedArticles } = await getIssueArticleContext(article);
+
+  return {
+    article,
+    articleNumber,
+    relatedArticles,
+    description: getArticleDescription(article),
+  };
+}
+
+export const getPublicArticlePageData = unstable_cache(
+  loadPublicArticlePageData,
+  ["public-article-page-data"],
+  {
+    revalidate: PUBLIC_ARTICLE_PAGE_REVALIDATE_SECONDS,
+    tags: [PUBLIC_ARTICLE_PAGE_CACHE_TAG],
+  },
+);
+
+export const getPublicArticleStaticParams = unstable_cache(
+  async () => {
+    const articles = await publicArticlesService.listPublished();
+    return articles.map((article) => ({ slug: article.slug }));
+  },
+  ["public-article-static-params"],
+  {
+    revalidate: PUBLIC_ARTICLE_PAGE_REVALIDATE_SECONDS,
+    tags: [PUBLIC_ARTICLE_PAGE_CACHE_TAG],
+  },
+);

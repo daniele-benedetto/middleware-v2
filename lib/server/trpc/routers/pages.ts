@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 
+import { revalidatePublicPageContent } from "@/lib/public/server/revalidation";
 import {
   createPageInputSchema,
   listPagesQuerySchema,
@@ -60,7 +61,9 @@ export const pagesRouter = router({
     .use(auditMiddleware(() => ({ action: "create", resource: "pages" })))
     .input(createPageInputSchema)
     .mutation(async ({ input }) => {
-      return parseOutput(await pagesService.create(input), pageDtoSchema);
+      const page = parseOutput(await pagesService.create(input), pageDtoSchema);
+      revalidatePublicPageContent();
+      return page;
     }),
   update: writeProcedure
     .use(requireRoleMiddleware(pagesPolicy.allowedRoles))
@@ -73,7 +76,9 @@ export const pagesRouter = router({
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await pagesService.update(input.id, input.data), pageDtoSchema);
+      const page = parseOutput(await pagesService.update(input.id, input.data), pageDtoSchema);
+      revalidatePublicPageContent();
+      return page;
     }),
   delete: writeProcedure
     .use(requireRoleMiddleware(pagesPolicy.allowedRoles))
@@ -87,6 +92,7 @@ export const pagesRouter = router({
     )
     .mutation(async ({ input }) => {
       await pagesService.delete(input.id);
+      revalidatePublicPageContent();
       return { success: true };
     }),
   publish: writeProcedure
@@ -100,7 +106,9 @@ export const pagesRouter = router({
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await pagesService.publish(input.id), pageDtoSchema);
+      const page = parseOutput(await pagesService.publish(input.id), pageDtoSchema);
+      revalidatePublicPageContent();
+      return page;
     }),
   unpublish: writeProcedure
     .use(requireRoleMiddleware(pagesPolicy.allowedRoles))
@@ -113,7 +121,9 @@ export const pagesRouter = router({
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await pagesService.unpublish(input.id), pageDtoSchema);
+      const page = parseOutput(await pagesService.unpublish(input.id), pageDtoSchema);
+      revalidatePublicPageContent();
+      return page;
     }),
   archive: writeProcedure
     .use(requireRoleMiddleware(pagesPolicy.allowedRoles))
@@ -126,6 +136,8 @@ export const pagesRouter = router({
       })),
     )
     .mutation(async ({ input }) => {
-      return parseOutput(await pagesService.archive(input.id), pageDtoSchema);
+      const page = parseOutput(await pagesService.archive(input.id), pageDtoSchema);
+      revalidatePublicPageContent();
+      return page;
     }),
 });

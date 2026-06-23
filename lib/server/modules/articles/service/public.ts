@@ -77,7 +77,7 @@ const toPublicArticleDetailDto = (article: PublicArticleDetailRecord): PublicArt
     ...toPublicArticleSummaryDto(article),
     excerptRich: article.excerptRich ?? null,
     contentRich: article.contentRich,
-    audioUrl: article.audioUrl,
+    audioUrl: resolvePublicMediaUrl(article.audioUrl),
     audioChunks: article.audioChunks ?? null,
     updatedAt: article.updatedAt.toISOString(),
     tags: (article.tags ?? []).map((entry) => entry.tag),

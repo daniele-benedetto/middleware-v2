@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import { publicInteraction, publicTypography } from "@/components/public/primitives";
+import { PublicLink as Link } from "@/components/public/public-link";
 import { StyledTitle } from "@/components/public/styled-title";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 import { cn } from "@/lib/utils";

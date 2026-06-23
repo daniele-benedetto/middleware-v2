@@ -1,5 +1,7 @@
+import { PublicPageTransition } from "@/components/public/public-page-transition";
+
 import type { ReactNode } from "react";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
-  return <div className="flex min-h-svh flex-1 flex-col">{children}</div>;
+  return <PublicPageTransition>{children}</PublicPageTransition>;
 }

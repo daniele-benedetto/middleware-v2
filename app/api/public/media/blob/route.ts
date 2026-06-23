@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     return new Response("Missing pathname", { status: 400 });
   }
 
-  const canServe = await publicMediaService.canServePublishedImage(pathname);
+  const canServe = await publicMediaService.canServePublishedMedia(pathname);
 
   if (!canServe) {
     return new Response("Not found", { status: 404 });
@@ -33,7 +33,12 @@ export async function GET(request: Request) {
       useCache: true,
     });
 
-    if (!result || result.statusCode !== 200 || !result.blob.contentType.startsWith("image/")) {
+    if (
+      !result ||
+      result.statusCode !== 200 ||
+      (!result.blob.contentType.startsWith("image/") &&
+        !result.blob.contentType.startsWith("audio/"))
+    ) {
       return new Response("Not found", { status: 404 });
     }
 

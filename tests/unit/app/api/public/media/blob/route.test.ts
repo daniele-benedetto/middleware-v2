@@ -4,6 +4,7 @@ const blobStorageMock = vi.hoisted(() => ({
 
 const publicMediaServiceMock = vi.hoisted(() => ({
   publicMediaService: {
+    canServePublishedMedia: vi.fn(),
     canServePublishedImage: vi.fn(),
   },
 }));
@@ -27,7 +28,7 @@ import { publicMediaService } from "@/lib/server/modules/media/service/public";
 import { createErrorInstance } from "@/tests/helpers/create-error-instance";
 
 const getBlobMock = vi.mocked(get);
-const canServePublishedImageMock = vi.mocked(publicMediaService.canServePublishedImage);
+const canServePublishedMediaMock = vi.mocked(publicMediaService.canServePublishedMedia);
 
 function createRequest(pathname?: string) {
   const url = new URL("https://example.com/api/public/media/blob");
@@ -52,7 +53,7 @@ function createBlobStream(body: string) {
 describe("GET /api/public/media/blob", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    canServePublishedImageMock.mockResolvedValue(true);
+    canServePublishedMediaMock.mockResolvedValue(true);
   });
 
   it("returns 400 when pathname is missing", async () => {
@@ -64,7 +65,7 @@ describe("GET /api/public/media/blob", () => {
   });
 
   it("returns 404 without proxying when the pathname is not publicly authorized", async () => {
-    canServePublishedImageMock.mockResolvedValue(false);
+    canServePublishedMediaMock.mockResolvedValue(false);
 
     const response = await GET(createRequest("covers/private.jpg"));
 
@@ -95,7 +96,7 @@ describe("GET /api/public/media/blob", () => {
 
     const response = await GET(createRequest("covers/hero image.JPG"));
 
-    expect(canServePublishedImageMock).toHaveBeenCalledWith("covers/hero image.JPG");
+    expect(canServePublishedMediaMock).toHaveBeenCalledWith("covers/hero image.JPG");
     expect(getBlobMock).toHaveBeenCalledWith("covers/hero image.JPG", {
       access: cmsMediaBlobAccess,
       useCache: true,
@@ -120,7 +121,35 @@ describe("GET /api/public/media/blob", () => {
     expect(await response.text()).toBe("Not found");
   });
 
-  it("does not serve authorized non-image blobs", async () => {
+  it("returns the authorized private audio stream with public cache headers", async () => {
+    getBlobMock.mockResolvedValue({
+      statusCode: 200,
+      stream: createBlobStream("audio-bytes"),
+      headers: new Headers({
+        "content-type": "audio/mpeg",
+      }),
+      blob: {
+        url: "https://store.blob.vercel-storage.com/audio/story.mp3",
+        downloadUrl: "https://store.blob.vercel-storage.com/audio/story.mp3?download=1",
+        contentType: "audio/mpeg",
+        pathname: "audio/story.mp3",
+        contentDisposition: "inline",
+        cacheControl: "public, max-age=3600",
+        size: 1024,
+        etag: "etag-1",
+        uploadedAt: new Date("2026-01-01T00:00:00.000Z"),
+      },
+    });
+
+    const response = await GET(createRequest("audio/story.mp3"));
+
+    expect(canServePublishedMediaMock).toHaveBeenCalledWith("audio/story.mp3");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("audio/mpeg");
+    expect(await response.text()).toBe("audio-bytes");
+  });
+
+  it("does not serve authorized non-media blobs", async () => {
     getBlobMock.mockResolvedValue({
       statusCode: 200,
       stream: createBlobStream("json-bytes"),

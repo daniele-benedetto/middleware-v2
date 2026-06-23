@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import { publicTypography } from "@/components/public/primitives";
+import { PublicLink as Link } from "@/components/public/public-link";
 import { cn } from "@/lib/utils";
 
 type PublicFooterLink = {

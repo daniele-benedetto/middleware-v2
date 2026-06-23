@@ -93,14 +93,6 @@ export const publicIt = {
         { label: "Cookie policy", href: "/cookie-policy" },
       ],
     },
-    social: {
-      title: "Social",
-      links: [
-        { label: "Instagram", href: "#footer" },
-        { label: "Telegram", href: "#footer" },
-        { label: "Mastodon", href: "#footer" },
-      ],
-    },
     legal: `© ${new Date().getFullYear()} Middleware — Laboratorio di inchiesta`,
     issueMeta: "I contenuti sono liberamente utilizzabili.",
   },

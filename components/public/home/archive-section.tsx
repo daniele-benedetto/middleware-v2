@@ -1,8 +1,7 @@
-import Link from "next/link";
-
 import { HomeSectionHeader } from "@/components/public/home/home-section-header";
 import { getIssuePlainDescription } from "@/components/public/home/home-view-model";
 import { publicContentClassName, publicInteraction } from "@/components/public/primitives";
+import { PublicLink as Link } from "@/components/public/public-link";
 import { StyledTitle } from "@/components/public/styled-title";
 import { formatIssueMonthYearLong, formatIssueNumber } from "@/lib/public/format/issue";
 import { cn } from "@/lib/utils";

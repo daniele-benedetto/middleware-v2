@@ -1,3 +1,4 @@
+export { PublicArticlePage } from "@/components/public/pages/public-article-page";
 export { PublicHomePage } from "@/components/public/pages/public-home-page";
 export { PublicIssuePage } from "@/components/public/pages/public-issue-page";
 export { PublicIssuesArchivePage } from "@/components/public/pages/public-issues-archive-page";

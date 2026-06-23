@@ -31,29 +31,40 @@ function contentReferencesImagePathname(value: unknown, pathname: string): boole
 }
 
 export const publicMediaService = {
+  async canServePublishedMedia(pathname: string) {
+    const kind = inferMediaKind(pathname);
+
+    if (kind !== "image" && kind !== "audio") {
+      return false;
+    }
+
+    const [articles, pages] = await Promise.all([
+      publicMediaRepository.listPublishedArticleMediaUrls(),
+      publicMediaRepository.listPublishedPageContent(),
+    ]);
+
+    const isArticleMedia = articles.some((article) => {
+      return (
+        extractCmsMediaPathname(article.imageUrl ?? "") === pathname ||
+        extractCmsMediaPathname(article.audioUrl ?? "") === pathname
+      );
+    });
+
+    if (isArticleMedia) {
+      return true;
+    }
+
+    return (
+      kind === "image" &&
+      pages.some((page) => contentReferencesImagePathname(page.contentRich, pathname))
+    );
+  },
   async canServePublishedImage(pathname: string) {
     if (inferMediaKind(pathname) !== "image") {
       return false;
     }
 
-    const [articles, pages] = await Promise.all([
-      publicMediaRepository.listPublishedArticleImageUrls(),
-      publicMediaRepository.listPublishedPageContent(),
-    ]);
-
-    const isArticleImage = articles.some((article) => {
-      if (!article.imageUrl) {
-        return false;
-      }
-
-      return extractCmsMediaPathname(article.imageUrl) === pathname;
-    });
-
-    if (isArticleImage) {
-      return true;
-    }
-
-    return pages.some((page) => contentReferencesImagePathname(page.contentRich, pathname));
+    return this.canServePublishedMedia(pathname);
   },
   async canServePublishedArticleImage(pathname: string) {
     return this.canServePublishedImage(pathname);

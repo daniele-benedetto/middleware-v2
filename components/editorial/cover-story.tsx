@@ -1,5 +1,4 @@
-import Link from "next/link";
-
+import { PublicLink as Link } from "@/components/public/public-link";
 import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
