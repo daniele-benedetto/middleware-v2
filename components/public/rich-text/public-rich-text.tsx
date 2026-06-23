@@ -184,7 +184,7 @@ export function PublicRichText({ value, className }: PublicRichTextProps) {
     <div
       className={cn(
         publicTypography.editorialBody,
-        "space-y-7 [&_a]:underline [&_blockquote_p]:text-[clamp(22px,3vw,34px)] [&_blockquote_p]:leading-[1.12] [&_code]:bg-surface [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-ui [&_li]:my-2 [&_strong]:font-bold",
+        "min-w-0 space-y-7 break-words [overflow-wrap:anywhere] [&_a]:break-words [&_a]:underline [&_blockquote_p]:text-[clamp(22px,3vw,34px)] [&_blockquote_p]:leading-[1.12] [&_code]:break-words [&_code]:bg-surface [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-ui [&_code]:[overflow-wrap:anywhere] [&_li]:my-2 [&_strong]:font-bold",
         className,
       )}
     >

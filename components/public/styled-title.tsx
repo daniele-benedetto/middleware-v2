@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 import type { IssueTitleStyled } from "@/lib/server/modules/issues/schema";
 
 type StyledTitleProps = {
@@ -42,7 +44,7 @@ export function StyledTitle({
     : (parseTitleMarkers(title) ?? [{ text: title, tone: "default" as const }]);
 
   return (
-    <span className={className}>
+    <span className={cn("break-words [overflow-wrap:anywhere]", className)}>
       {segments.map((segment, index) => (
         <span
           key={`${segment.text}-${index}`}
