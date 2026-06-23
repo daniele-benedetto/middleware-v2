@@ -12,7 +12,7 @@ const mediaRepositoryMock = vi.hoisted(() => ({
 }));
 
 const publicMediaRepositoryMock = vi.hoisted(() => ({
-  listPublishedArticleImageUrls: vi.fn(),
+  listPublishedArticleMediaUrls: vi.fn(),
   listPublishedPageContent: vi.fn(),
 }));
 
@@ -212,7 +212,7 @@ describe("publicMediaService", () => {
   });
 
   it("authorizes only exact published article image pathnames", async () => {
-    publicMediaRepositoryMock.listPublishedArticleImageUrls.mockResolvedValue([
+    publicMediaRepositoryMock.listPublishedArticleMediaUrls.mockResolvedValue([
       {
         imageUrl: "https://store.private.blob.vercel-storage.com/covers/hero-image.jpg",
       },
@@ -233,7 +233,7 @@ describe("publicMediaService", () => {
   });
 
   it("authorizes images referenced by published page rich text", async () => {
-    publicMediaRepositoryMock.listPublishedArticleImageUrls.mockResolvedValue([]);
+    publicMediaRepositoryMock.listPublishedArticleMediaUrls.mockResolvedValue([]);
     publicMediaRepositoryMock.listPublishedPageContent.mockResolvedValue([
       {
         contentRich: {
@@ -257,7 +257,7 @@ describe("publicMediaService", () => {
       false,
     );
 
-    expect(publicMediaRepositoryMock.listPublishedArticleImageUrls).not.toHaveBeenCalled();
+    expect(publicMediaRepositoryMock.listPublishedArticleMediaUrls).not.toHaveBeenCalled();
     expect(publicMediaRepositoryMock.listPublishedPageContent).not.toHaveBeenCalled();
   });
 });
