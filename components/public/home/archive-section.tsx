@@ -32,10 +32,10 @@ export function ArchiveSection({
   }
 
   return (
-    <section id="archivio" className="scroll-mt-20 py-12 lg:py-14">
+    <section className="scroll-mt-20 py-12 lg:py-14">
       <div className={publicContentClassName}>
         <HomeSectionHeader title={title} description={description} />
-        <div className="grid border-l border-foreground [grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))]">
+        <div className="grid border-l border-foreground grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))]">
           {issues.map((issue) => {
             const issueDescription = getIssuePlainDescription(issue);
 

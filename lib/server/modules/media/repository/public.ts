@@ -15,11 +15,22 @@ const PUBLIC_ARTICLE_IMAGE_WHERE = {
   issue: PUBLIC_ISSUE_WHERE,
 } as const satisfies Prisma.ArticleWhereInput;
 
+const PUBLIC_PAGE_WHERE = {
+  status: "PUBLISHED",
+  publishedAt: { not: null },
+} as const satisfies Prisma.PageWhereInput;
+
 export const publicMediaRepository = {
   async listPublishedArticleImageUrls() {
     return prisma.article.findMany({
       where: PUBLIC_ARTICLE_IMAGE_WHERE,
       select: { imageUrl: true },
+    });
+  },
+  async listPublishedPageContent() {
+    return prisma.page.findMany({
+      where: PUBLIC_PAGE_WHERE,
+      select: { contentRich: true },
     });
   },
 };

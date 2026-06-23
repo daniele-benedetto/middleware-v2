@@ -4,7 +4,7 @@ const blobStorageMock = vi.hoisted(() => ({
 
 const publicMediaServiceMock = vi.hoisted(() => ({
   publicMediaService: {
-    canServePublishedArticleImage: vi.fn(),
+    canServePublishedImage: vi.fn(),
   },
 }));
 
@@ -27,9 +27,7 @@ import { publicMediaService } from "@/lib/server/modules/media/service/public";
 import { createErrorInstance } from "@/tests/helpers/create-error-instance";
 
 const getBlobMock = vi.mocked(get);
-const canServePublishedArticleImageMock = vi.mocked(
-  publicMediaService.canServePublishedArticleImage,
-);
+const canServePublishedImageMock = vi.mocked(publicMediaService.canServePublishedImage);
 
 function createRequest(pathname?: string) {
   const url = new URL("https://example.com/api/public/media/blob");
@@ -54,7 +52,7 @@ function createBlobStream(body: string) {
 describe("GET /api/public/media/blob", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    canServePublishedArticleImageMock.mockResolvedValue(true);
+    canServePublishedImageMock.mockResolvedValue(true);
   });
 
   it("returns 400 when pathname is missing", async () => {
@@ -66,7 +64,7 @@ describe("GET /api/public/media/blob", () => {
   });
 
   it("returns 404 without proxying when the pathname is not publicly authorized", async () => {
-    canServePublishedArticleImageMock.mockResolvedValue(false);
+    canServePublishedImageMock.mockResolvedValue(false);
 
     const response = await GET(createRequest("covers/private.jpg"));
 
@@ -97,7 +95,7 @@ describe("GET /api/public/media/blob", () => {
 
     const response = await GET(createRequest("covers/hero image.JPG"));
 
-    expect(canServePublishedArticleImageMock).toHaveBeenCalledWith("covers/hero image.JPG");
+    expect(canServePublishedImageMock).toHaveBeenCalledWith("covers/hero image.JPG");
     expect(getBlobMock).toHaveBeenCalledWith("covers/hero image.JPG", {
       access: cmsMediaBlobAccess,
       useCache: true,

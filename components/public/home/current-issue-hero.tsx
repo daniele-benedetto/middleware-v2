@@ -38,7 +38,7 @@ function IssueMetaRail({
 
 export function CurrentIssueHero({ issue, description, issueNumber }: CurrentIssueHeroProps) {
   return (
-    <section className="relative isolate w-full overflow-hidden border-b-2 border-foreground bg-background">
+    <section className="relative isolate w-full overflow-hidden bg-background">
       <div className={`${publicContentClassName} relative py-7 sm:py-9 lg:py-14`}>
         <div
           className={`${publicTypography.issueBackgroundNumber} pointer-events-none absolute top-5 right-5 z-0 text-accent/15 select-none [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]`}

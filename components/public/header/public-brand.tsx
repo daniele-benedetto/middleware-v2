@@ -12,12 +12,7 @@ type PublicBrandProps = {
   priority?: boolean;
 };
 
-export function PublicBrand({
-  href = "#top",
-  onClick,
-  tone = "light",
-  priority,
-}: PublicBrandProps) {
+export function PublicBrand({ href = "/", onClick, tone = "light", priority }: PublicBrandProps) {
   const text = i18n.public.brand;
 
   return (

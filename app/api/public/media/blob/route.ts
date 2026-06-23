@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     return new Response("Missing pathname", { status: 400 });
   }
 
-  const canServe = await publicMediaService.canServePublishedArticleImage(pathname);
+  const canServe = await publicMediaService.canServePublishedImage(pathname);
 
   if (!canServe) {
     return new Response("Not found", { status: 404 });

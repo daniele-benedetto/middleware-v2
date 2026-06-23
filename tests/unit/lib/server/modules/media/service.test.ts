@@ -13,6 +13,7 @@ const mediaRepositoryMock = vi.hoisted(() => ({
 
 const publicMediaRepositoryMock = vi.hoisted(() => ({
   listPublishedArticleImageUrls: vi.fn(),
+  listPublishedPageContent: vi.fn(),
 }));
 
 vi.mock("@/lib/server/modules/articles/repository", () => ({
@@ -207,6 +208,7 @@ describe("mediaService", () => {
 describe("publicMediaService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    publicMediaRepositoryMock.listPublishedPageContent.mockResolvedValue([]);
   });
 
   it("authorizes only exact published article image pathnames", async () => {
@@ -230,11 +232,32 @@ describe("publicMediaService", () => {
     );
   });
 
+  it("authorizes images referenced by published page rich text", async () => {
+    publicMediaRepositoryMock.listPublishedArticleImageUrls.mockResolvedValue([]);
+    publicMediaRepositoryMock.listPublishedPageContent.mockResolvedValue([
+      {
+        contentRich: {
+          type: "doc",
+          content: [
+            {
+              type: "image",
+              attrs: { src: "/api/cms/media/blob?pathname=pages%2Fabout.jpg" },
+            },
+          ],
+        },
+      },
+    ]);
+
+    await expect(publicMediaService.canServePublishedImage("pages/about.jpg")).resolves.toBe(true);
+    await expect(publicMediaService.canServePublishedImage("pages/other.jpg")).resolves.toBe(false);
+  });
+
   it("rejects non-image pathnames before consulting published records", async () => {
     await expect(publicMediaService.canServePublishedArticleImage("data/file.json")).resolves.toBe(
       false,
     );
 
     expect(publicMediaRepositoryMock.listPublishedArticleImageUrls).not.toHaveBeenCalled();
+    expect(publicMediaRepositoryMock.listPublishedPageContent).not.toHaveBeenCalled();
   });
 });

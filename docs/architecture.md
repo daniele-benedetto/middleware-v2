@@ -78,16 +78,19 @@ CMS page/request
 - The public home loader calls the public issue service directly, not the request-bound tRPC caller, so it is safe to reuse across requests.
 - The public home loader uses `publicIssuesService.listPublishedItems()` for archive cards, avoiding the `countPublished()` query used by paginated API responses.
 - Public issue pages use `lib/public/server/issue-page.ts`; they are generated from published issue slugs and share the same one-hour ISR policy.
+- Public static CMS pages use `lib/public/server/page.ts`; only slugs listed in `PUBLIC_STATIC_PAGE_SLUGS` are routed publicly at top level.
 - Public route segment `revalidate` exports must stay literal numbers, such as `3600`, because Next.js validates segment config statically.
 - Public loaders must not call `getTrpcCaller()` because it depends on request headers and makes otherwise static pages request-bound.
 - Article `contentPreview` is derived and capped server-side before serialization; fully removing `contentRich` from home queries requires persisted derived fields such as `readingTimeMinutes` and `contentPreview`.
 - The public home cache tag is `PUBLIC_HOME_CACHE_TAG` (`public-home`); use `revalidateTag(PUBLIC_HOME_CACHE_TAG)` when CMS publish flows need immediate public refresh.
 - The public issue cache tag is `PUBLIC_ISSUE_PAGE_CACHE_TAG` (`public-issue`); use `revalidateTag(PUBLIC_ISSUE_PAGE_CACHE_TAG)` when published issue pages need immediate refresh.
+- The public static page cache tag is `PUBLIC_PAGE_CACHE_TAG` (`public-page`); use it when CMS page publishing needs immediate refresh.
 
 ## Public Frontend Composition
 
 - App Router files under `app/(public)/*` stay thin: load data, build metadata, handle `notFound()`, and render a page component.
 - Page-level public compositions live in `components/public/pages/*`; reuse them when two routes share the same layout, as `/` and `/uscite/[slug]` do with `PublicHomePage`.
+- CMS-authored public page bodies render TipTap JSON server-side through `components/public/rich-text/*`; do not ship the CMS editor to public routes.
 - Sections live in `components/public/sections/*` when they represent a route-agnostic content band or editorial block.
 - Compounds live in `components/public/compounds/*` when a small assembly is reusable across sections but is not a full section by itself.
 - Primitives live in `components/public/primitives/*` when they are visual atoms, typography helpers, or token-backed classes with no route or data knowledge.

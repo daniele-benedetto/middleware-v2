@@ -35,7 +35,7 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
   const articleHref = `/articoli/${article.slug}`;
 
   return (
-    <section id="dossier" className={`mb-10 scroll-mt-20 lg:mb-12 ${variantClasses.section}`}>
+    <section className={`mb-10 scroll-mt-20 lg:mb-12 ${variantClasses.section}`}>
       <div className={`${publicContentClassName} py-10 md:py-12`}>
         <Link
           href={articleHref}

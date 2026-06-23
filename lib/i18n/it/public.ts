@@ -15,9 +15,9 @@ export const publicIt = {
     quote: "La conoscenza è legata alla lotta. Conosce veramente chi veramente odia.",
     quoteSource: "In memoria di Mario Tronti.",
     items: [
-      { number: "01", label: "Numero corrente", href: "#top" },
-      { number: "02", label: "Archivio", href: "#archivio" },
-      { number: "03", label: "Chi siamo", href: "#footer" },
+      { number: "01", label: "Numero corrente", href: "/" },
+      { number: "02", label: "Archivio", href: "/uscite" },
+      { number: "03", label: "Chi siamo", href: "/chi-siamo" },
       { number: "04", label: "Contatti", href: "#footer" },
     ],
   },
@@ -54,14 +54,40 @@ export const publicIt = {
       description: "Quando un numero sarà pubblicato, la home verrà composta dai suoi contenuti.",
     },
   },
+  issuesArchive: {
+    hero: {
+      title: "Archivio [[Magazine]]",
+      description:
+        "Ogni numero nasce attorno a un campo di tensione. Non raccoglie articoli sciolti, ma costruisce un'inchiesta monografica: un attraversamento di conflitti, linguaggi e immaginari che prova a far emergere ciò che nel presente resta disperso, opaco, conteso. L'archivio custodisce queste uscite come dossier da riaprire, mappe parziali per leggere le forme del potere, del lavoro, della cultura e della trasformazione sociale.",
+      totalLabel: (count: number) =>
+        `${count} ${count === 1 ? "numero pubblicato" : "numeri pubblicati"}`,
+    },
+    grid: {
+      cta: "Apri il numero →",
+    },
+    countLabel: (count: number) => `${count} ${count === 1 ? "pezzo" : "pezzi"}`,
+    empty: {
+      code: "00",
+      kicker: "Archivio",
+      title: "Nessuna uscita pubblicata",
+      description: "Quando i numeri saranno pubblicati, compariranno qui in ordine cronologico.",
+    },
+  },
   footer: {
     sections: {
       title: "Sezioni",
       links: [
-        { label: "Numero corrente", href: "#top" },
-        { label: "Archivio", href: "#archivio" },
-        { label: "Chi siamo", href: "#footer" },
+        { label: "Numero corrente", href: "/" },
+        { label: "Archivio", href: "/uscite" },
+        { label: "Chi siamo", href: "/chi-siamo" },
         { label: "Contatti", href: "#footer" },
+      ],
+    },
+    legalPages: {
+      title: "Legale",
+      links: [
+        { label: "Privacy policy", href: "/privacy-policy" },
+        { label: "Cookie policy", href: "/cookie-policy" },
       ],
     },
     social: {

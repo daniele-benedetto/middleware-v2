@@ -37,7 +37,7 @@ export function DossierHome({ issue }: DossierHomeProps) {
   const blocks = composeNarrativeHomeBlocks(issue);
 
   if (blocks.length === 0) {
-    return <UnpaginatedArticleRow id="dossier" articles={issue.articles} />;
+    return <UnpaginatedArticleRow articles={issue.articles} />;
   }
 
   const unpaginatedArticles = getUnpaginatedArticles(issue, blocks);

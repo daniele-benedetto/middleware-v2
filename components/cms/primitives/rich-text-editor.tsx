@@ -1,5 +1,6 @@
 "use client";
 
+import { mergeAttributes, Node } from "@tiptap/core";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
@@ -7,6 +8,7 @@ import {
   Code,
   Heading2,
   Heading3,
+  ImageIcon,
   Italic,
   List,
   ListOrdered,
@@ -15,8 +17,11 @@ import {
   Strikethrough,
   Undo2,
 } from "lucide-react";
+import { useState } from "react";
 
+import { CmsMediaPickerDialog } from "@/features/cms/media/components/media-picker-dialog";
 import { i18n } from "@/lib/i18n";
+import { resolveCmsMediaPreviewUrl } from "@/lib/media/blob";
 import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
@@ -32,6 +37,40 @@ type CmsRichTextEditorProps = {
 
 const emptyDoc = { type: "doc", content: [{ type: "paragraph" }] };
 
+const CmsImage = Node.create({
+  name: "image",
+  group: "block",
+  atom: true,
+  draggable: true,
+
+  addAttributes() {
+    return {
+      src: { default: null },
+      alt: { default: null },
+      title: { default: null },
+    };
+  },
+
+  parseHTML() {
+    return [{ tag: "img[src]" }];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    const src =
+      typeof HTMLAttributes.src === "string"
+        ? resolveCmsMediaPreviewUrl(HTMLAttributes.src)
+        : HTMLAttributes.src;
+
+    return [
+      "img",
+      mergeAttributes(HTMLAttributes, {
+        src,
+        style: "display:block;width:100%;max-width:100%;height:auto;",
+      }),
+    ];
+  },
+});
+
 const proseBaseClasses = cn(
   "prose prose-sm max-w-none font-editorial text-[16px] text-foreground leading-[1.6]",
   "min-w-0 break-words [overflow-wrap:anywhere] focus:outline-none",
@@ -41,6 +80,7 @@ const proseBaseClasses = cn(
   "[&_p]:mb-2 [&_p:last-child]:mb-0",
   "[&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6",
   "[&_blockquote]:border-l-2 [&_blockquote]:border-foreground [&_blockquote]:pl-3 [&_blockquote]:italic",
+  "[&_img]:my-4 [&_img]:block [&_img]:h-auto [&_img]:w-full [&_img]:max-w-full [&_img]:border [&_img]:border-foreground",
   "[&_code]:break-words [&_code]:font-ui [&_code]:text-[13px] [&_code]:bg-card-hover [&_code]:px-1 [&_code]:py-0.5",
   "[&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_pre]:bg-card-hover [&_pre]:p-3 [&_pre]:font-ui [&_pre]:text-[13px]",
   "[&_pre_code]:whitespace-pre-wrap [&_pre_code]:break-words [&_pre_code]:[overflow-wrap:anywhere]",
@@ -58,9 +98,10 @@ export function CmsRichTextEditor({
 }: CmsRichTextEditorProps) {
   const text = i18n.cms.richText;
   const proseClasses = cn(proseBaseClasses, fullHeight ? "min-h-full" : "min-h-40");
+  const [imagePickerOpen, setImagePickerOpen] = useState(false);
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [StarterKit, CmsImage],
     content: (value ?? emptyDoc) as never,
     editable: !disabled,
     immediatelyRender: false,
@@ -84,7 +125,11 @@ export function CmsRichTextEditor({
         className,
       )}
     >
-      <CmsRichTextToolbar editor={editor} disabled={disabled} />
+      <CmsRichTextToolbar
+        editor={editor}
+        disabled={disabled}
+        onOpenImagePicker={() => setImagePickerOpen(true)}
+      />
       <EditorContent
         editor={editor}
         className={cn(
@@ -92,6 +137,25 @@ export function CmsRichTextEditor({
           fullHeight && "flex-1 [&_.ProseMirror]:min-h-full",
           "[&_.ProseMirror]:min-w-0",
         )}
+      />
+      <CmsMediaPickerDialog
+        open={imagePickerOpen}
+        onOpenChange={setImagePickerOpen}
+        title={text.imageLibraryTitle}
+        description={text.imageLibraryDescription}
+        selectActionLabel={text.selectImage}
+        allowedKinds={["image"]}
+        selectionMode="select-inline"
+        onSelectUrl={(url) => {
+          editor
+            ?.chain()
+            .focus()
+            .insertContent({
+              type: "image",
+              attrs: { src: resolveCmsMediaPreviewUrl(url), alt: "" },
+            })
+            .run();
+        }}
       />
     </div>
   );
@@ -126,7 +190,15 @@ function ToolbarButton({ onClick, active, disabled, label, children }: ToolbarBu
   );
 }
 
-function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disabled?: boolean }) {
+function CmsRichTextToolbar({
+  editor,
+  disabled,
+  onOpenImagePicker,
+}: {
+  editor: Editor | null;
+  disabled?: boolean;
+  onOpenImagePicker: () => void;
+}) {
   const text = i18n.cms.richText;
   const isDisabled = disabled || !editor;
 
@@ -209,6 +281,10 @@ function CmsRichTextToolbar({ editor, disabled }: { editor: Editor | null; disab
         disabled={isDisabled}
       >
         <Quote className="h-3.5 w-3.5" />
+      </ToolbarButton>
+
+      <ToolbarButton label={text.image} onClick={onOpenImagePicker} disabled={isDisabled}>
+        <ImageIcon className="h-3.5 w-3.5" />
       </ToolbarButton>
 
       <ToolbarSeparator />

@@ -19,10 +19,10 @@ import {
   CmsSelect,
   CmsStyledTitleEditor,
   CmsTextInput,
+  cmsToast,
   createStyledTitleValue,
   getStyledTitlePlainText,
   hasStyledTitleAccent,
-  cmsToast,
 } from "@/components/cms/primitives";
 import { CmsArticleFormLoading } from "@/features/cms/articles/components/article-form-loading";
 import { ArticleMediaFieldPreview } from "@/features/cms/articles/components/article-media-field-preview";
@@ -32,8 +32,8 @@ import {
   useArticleCreate,
   useArticleSyncTags,
   useArticleUpdate,
-  useCategoryOptions,
   useAuthorOptions,
+  useCategoryOptions,
   useIssueOptions,
   useTagOptions,
   type ArticleDetail,
@@ -58,8 +58,8 @@ import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
 
 import type {
-  CategoriesListInitialData,
   AuthorsListInitialData,
+  CategoriesListInitialData,
   IssuesListInitialData,
   TagsListInitialData,
 } from "@/features/cms/shared/types/initial-data";

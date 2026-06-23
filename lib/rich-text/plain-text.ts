@@ -1,6 +1,7 @@
 type RichTextNode = {
   text?: unknown;
   type?: unknown;
+  attrs?: unknown;
   content?: unknown;
 };
 
@@ -31,6 +32,13 @@ function collectFragments(value: unknown, fragments: string[]) {
 
   if (node.type === "hardBreak") {
     fragments.push("\n");
+  }
+
+  if (node.type === "image" && node.attrs && typeof node.attrs === "object") {
+    const alt = (node.attrs as { alt?: unknown }).alt;
+    if (typeof alt === "string" && alt.trim()) {
+      fragments.push(alt);
+    }
   }
 
   if (node.content !== undefined) {

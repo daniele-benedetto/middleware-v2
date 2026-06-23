@@ -78,12 +78,11 @@ export function ArticleTagsMultiSelect({
         <PopoverTrigger
           render={
             <button
-              id="article-tags"
               type="button"
               disabled={disabled || loading}
               className={cn(
                 "flex min-h-10 w-full items-center justify-between rounded-[6px] border border-foreground bg-card px-3 text-left",
-                "font-ui text-[12px] font-bold uppercase tracking-[var(--tracking-meta)] transition-colors hover:bg-surface-hover",
+                "font-ui text-[12px] font-bold uppercase tracking-(--tracking-meta) transition-colors hover:bg-surface-hover",
                 (disabled || loading) &&
                   "cursor-not-allowed border-border bg-card-hover text-border hover:bg-card-hover",
               )}
@@ -119,7 +118,7 @@ export function ArticleTagsMultiSelect({
                           onClick={() => onChange(tag.id, !checked)}
                           className={cn(
                             "flex w-full items-center justify-between border-b border-card-hover px-3.5 py-2 text-left last:border-b-0",
-                            "font-ui text-[11px] font-bold uppercase tracking-[var(--tracking-meta)]",
+                            "font-ui text-[11px] font-bold uppercase tracking-(--tracking-meta)",
                             checked
                               ? "bg-card-hover text-foreground"
                               : "bg-card text-muted-foreground hover:bg-surface-hover hover:text-foreground",

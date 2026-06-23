@@ -29,7 +29,7 @@ export function PublicHomePage({
   const archiveIssues = getArchiveIssues(publishedIssues, currentIssue);
 
   return (
-    <main id="top" className="flex flex-1 flex-col bg-background font-heading text-foreground">
+    <main className="flex flex-1 flex-col bg-background font-heading text-foreground">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -38,7 +38,7 @@ export function PublicHomePage({
       />
       <HomeScrollProgress />
       <PublicHeader />
-      <div id="main-content" tabIndex={-1} className="flex flex-col focus:outline-none">
+      <div tabIndex={-1} className="flex flex-col focus:outline-none">
         {currentIssue ? (
           <>
             <CurrentIssueHero

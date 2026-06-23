@@ -34,6 +34,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 1,
     },
+    {
+      url: getCanonicalUrl("/uscite"),
+      lastModified: homeLastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
     ...staticPages,
   ];
 }
