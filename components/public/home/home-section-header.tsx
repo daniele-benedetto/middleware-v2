@@ -48,7 +48,7 @@ export function HomeSectionHeader({
       {action ? (
         <Link
           href={action.href}
-          className="ml-auto font-heading text-xs font-bold tracking-[0.06em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground max-md:ml-0"
+          className="ml-auto text-right font-heading text-xs font-bold tracking-[0.06em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"
         >
           {action.label}
         </Link>

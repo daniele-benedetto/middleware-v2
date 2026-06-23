@@ -161,35 +161,38 @@ export function ArchiveSection({
                     primaryClassName={variantClasses.titlePrimary}
                   />
                 </h3>
-                {issueDescription ? (
-                  <p
+
+                <div className={cn("mt-6 w-full border-t-2 pt-5", variantClasses.border)}>
+                  {issueDescription ? (
+                    <p
+                      className={cn(
+                        "font-editorial text-[16px] leading-normal italic lg:text-[17px]",
+                        variantClasses.description,
+                      )}
+                    >
+                      {issueDescription}
+                    </p>
+                  ) : null}
+
+                  <div
                     className={cn(
-                      "mt-5 font-editorial text-[16px] leading-normal italic lg:text-[17px]",
-                      variantClasses.description,
+                      "flex flex-wrap items-center gap-3 font-heading text-xs font-semibold",
+                      issueDescription ? "mt-6" : "",
+                      variantClasses.meta,
                     )}
                   >
-                    {issueDescription}
-                  </p>
-                ) : null}
-
-                <div
-                  className={cn(
-                    "mt-auto flex flex-wrap items-center gap-3 border-t pt-5 font-heading text-xs font-semibold",
-                    variantClasses.border,
-                    variantClasses.meta,
-                  )}
-                >
-                  <span>{issueNumber}</span>
-                  <span
-                    className={cn("size-1 rounded-[1px]", variantClasses.separator)}
-                    aria-hidden
-                  />
-                  <span>{publishedAtLabel}</span>
-                  <span
-                    className={cn("size-1 rounded-[1px]", variantClasses.separator)}
-                    aria-hidden
-                  />
-                  <span>{countLabel(issue.articlesCount)}</span>
+                    <span>{issueNumber}</span>
+                    <span
+                      className={cn("size-1 rounded-[1px]", variantClasses.separator)}
+                      aria-hidden
+                    />
+                    <span>{publishedAtLabel}</span>
+                    <span
+                      className={cn("size-1 rounded-[1px]", variantClasses.separator)}
+                      aria-hidden
+                    />
+                    <span>{countLabel(issue.articlesCount)}</span>
+                  </div>
                 </div>
               </Link>
             );

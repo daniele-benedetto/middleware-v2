@@ -82,7 +82,7 @@ export function IssuesArchiveRail({ children }: IssuesArchiveRailProps) {
       style={sectionHeight ? { height: `${sectionHeight}px` } : undefined}
     >
       <div className="lg:sticky lg:top-16 lg:flex lg:h-[calc(100vh-4rem)] lg:items-stretch lg:overflow-hidden">
-        <div ref={trackRef} className="grid gap-8 will-change-transform lg:flex lg:gap-0">
+        <div ref={trackRef} className="grid gap-0 will-change-transform lg:flex">
           {children}
         </div>
       </div>

@@ -275,26 +275,26 @@ body {
 }
 
 ::view-transition-old(.page-transition) {
-  animation: 650ms var(--easing-standard) both page-transition-out;
+  animation: 320ms var(--easing-standard) both page-transition-out;
 }
 
 ::view-transition-new(.page-transition) {
-  animation: 750ms var(--easing-standard) 650ms both page-transition-in;
+  animation: 420ms var(--easing-standard) 220ms both page-transition-in;
 }
 
 @keyframes page-transition-out {
   to {
     opacity: 0;
-    filter: blur(2px);
-    transform: translateY(24px);
+    filter: blur(1.5px);
+    transform: translateY(18px);
   }
 }
 
 @keyframes page-transition-in {
   from {
     opacity: 0;
-    filter: blur(2px);
-    transform: translateY(24px);
+    filter: blur(1.5px);
+    transform: translateY(18px);
   }
 
   to {
