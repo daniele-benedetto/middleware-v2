@@ -12,8 +12,8 @@ const mediaRepositoryMock = vi.hoisted(() => ({
 }));
 
 const publicMediaRepositoryMock = vi.hoisted(() => ({
-  listPublishedArticleMediaUrls: vi.fn(),
-  listPublishedPageContent: vi.fn(),
+  hasPublishedArticleMedia: vi.fn(),
+  hasPublishedPageImage: vi.fn(),
 }));
 
 vi.mock("@/lib/server/modules/articles/repository", () => ({
@@ -208,48 +208,43 @@ describe("mediaService", () => {
 describe("publicMediaService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    publicMediaRepositoryMock.listPublishedPageContent.mockResolvedValue([]);
+    publicMediaRepositoryMock.hasPublishedArticleMedia.mockResolvedValue(false);
+    publicMediaRepositoryMock.hasPublishedPageImage.mockResolvedValue(false);
   });
 
-  it("authorizes only exact published article image pathnames", async () => {
-    publicMediaRepositoryMock.listPublishedArticleMediaUrls.mockResolvedValue([
-      {
-        imageUrl: "https://store.private.blob.vercel-storage.com/covers/hero-image.jpg",
-      },
-      {
-        imageUrl: "/api/cms/media/blob?pathname=covers%2Fsecond-image.jpg",
-      },
-    ]);
+  it("authorizes published article image pathnames through targeted repository lookup", async () => {
+    publicMediaRepositoryMock.hasPublishedArticleMedia.mockResolvedValue(true);
 
     await expect(
       publicMediaService.canServePublishedArticleImage("covers/hero-image.jpg"),
     ).resolves.toBe(true);
-    await expect(
-      publicMediaService.canServePublishedArticleImage("covers/second-image.jpg"),
-    ).resolves.toBe(true);
-    await expect(publicMediaService.canServePublishedArticleImage("hero-image.jpg")).resolves.toBe(
-      false,
+
+    expect(publicMediaRepositoryMock.hasPublishedArticleMedia).toHaveBeenCalledWith(
+      "covers/hero-image.jpg",
     );
   });
 
   it("authorizes images referenced by published page rich text", async () => {
-    publicMediaRepositoryMock.listPublishedArticleMediaUrls.mockResolvedValue([]);
-    publicMediaRepositoryMock.listPublishedPageContent.mockResolvedValue([
-      {
-        contentRich: {
-          type: "doc",
-          content: [
-            {
-              type: "image",
-              attrs: { src: "/api/cms/media/blob?pathname=pages%2Fabout.jpg" },
-            },
-          ],
-        },
-      },
-    ]);
+    publicMediaRepositoryMock.hasPublishedPageImage
+      .mockResolvedValueOnce(true)
+      .mockResolvedValue(false);
 
     await expect(publicMediaService.canServePublishedImage("pages/about.jpg")).resolves.toBe(true);
     await expect(publicMediaService.canServePublishedImage("pages/other.jpg")).resolves.toBe(false);
+
+    expect(publicMediaRepositoryMock.hasPublishedPageImage).toHaveBeenCalledWith("pages/about.jpg");
+    expect(publicMediaRepositoryMock.hasPublishedPageImage).toHaveBeenCalledWith("pages/other.jpg");
+  });
+
+  it("does not consult published page content for audio pathnames", async () => {
+    publicMediaRepositoryMock.hasPublishedArticleMedia.mockResolvedValue(true);
+
+    await expect(publicMediaService.canServePublishedMedia("audio/story.mp3")).resolves.toBe(true);
+
+    expect(publicMediaRepositoryMock.hasPublishedArticleMedia).toHaveBeenCalledWith(
+      "audio/story.mp3",
+    );
+    expect(publicMediaRepositoryMock.hasPublishedPageImage).not.toHaveBeenCalled();
   });
 
   it("rejects non-image pathnames before consulting published records", async () => {
@@ -257,7 +252,7 @@ describe("publicMediaService", () => {
       false,
     );
 
-    expect(publicMediaRepositoryMock.listPublishedArticleMediaUrls).not.toHaveBeenCalled();
-    expect(publicMediaRepositoryMock.listPublishedPageContent).not.toHaveBeenCalled();
+    expect(publicMediaRepositoryMock.hasPublishedArticleMedia).not.toHaveBeenCalled();
+    expect(publicMediaRepositoryMock.hasPublishedPageImage).not.toHaveBeenCalled();
   });
 });

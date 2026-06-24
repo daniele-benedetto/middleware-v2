@@ -14,25 +14,42 @@ const PUBLIC_ARTICLE_MEDIA_WHERE = {
   issue: PUBLIC_ISSUE_WHERE,
 } as const satisfies Prisma.ArticleWhereInput;
 
-const PUBLIC_PAGE_WHERE = {
-  status: "PUBLISHED",
-  publishedAt: { not: null },
-} as const satisfies Prisma.PageWhereInput;
+function getPathnameSearchCandidates(pathname: string) {
+  return [...new Set([pathname, encodeURIComponent(pathname)])];
+}
 
 export const publicMediaRepository = {
-  async listPublishedArticleMediaUrls() {
-    return prisma.article.findMany({
+  async hasPublishedArticleMedia(pathname: string) {
+    const candidates = getPathnameSearchCandidates(pathname);
+    const article = await prisma.article.findFirst({
       where: {
         ...PUBLIC_ARTICLE_MEDIA_WHERE,
-        OR: [{ imageUrl: { not: null } }, { audioUrl: { not: null } }],
+        OR: candidates.flatMap((candidate) => [
+          { imageUrl: { contains: candidate } },
+          { audioUrl: { contains: candidate } },
+        ]),
       },
-      select: { imageUrl: true, audioUrl: true },
+      select: { id: true },
     });
+
+    return Boolean(article);
   },
-  async listPublishedPageContent() {
-    return prisma.page.findMany({
-      where: PUBLIC_PAGE_WHERE,
-      select: { contentRich: true },
-    });
+  async hasPublishedPageImage(pathname: string) {
+    const candidates = getPathnameSearchCandidates(pathname);
+    const results = await Promise.all(
+      candidates.map(
+        (candidate) =>
+          prisma.$queryRaw<Array<{ id: string }>>`
+          SELECT "id"
+          FROM "pages"
+          WHERE "status" = 'PUBLISHED'
+            AND "publishedAt" IS NOT NULL
+            AND "contentRich"::text LIKE ${`%${candidate}%`}
+          LIMIT 1
+        `,
+      ),
+    );
+
+    return results.some((rows) => rows.length > 0);
   },
 };
