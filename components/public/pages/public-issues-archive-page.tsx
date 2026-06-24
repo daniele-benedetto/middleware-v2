@@ -3,6 +3,7 @@ import { getArchiveIssueViewModels } from "@/components/public/sections/archive/
 import { IssuesArchiveGrid } from "@/components/public/sections/archive/issues-archive-grid";
 import { IssuesArchiveHero } from "@/components/public/sections/archive/issues-archive-hero";
 import { i18n } from "@/lib/i18n";
+import { buildIssuesArchiveJsonLd } from "@/lib/seo";
 
 import type { PublicIssueListItem } from "@/lib/public/types/issues";
 
@@ -16,6 +17,12 @@ export function PublicIssuesArchivePage({ issues }: PublicIssuesArchivePageProps
 
   return (
     <main className="flex flex-1 flex-col bg-background font-heading text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(buildIssuesArchiveJsonLd()),
+        }}
+      />
       {issueViewModels.length > 0 ? (
         <>
           <IssuesArchiveHero

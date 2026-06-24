@@ -1,4 +1,5 @@
 import { seoConfig } from "@/lib/seo/config";
+import { resolveAbsoluteUrl, toIsoDate } from "@/lib/seo/url";
 
 import type { Metadata } from "next";
 
@@ -23,27 +24,6 @@ type ArticleMetadataInput = {
   tags?: string[];
 };
 
-function toAbsoluteUrl(path: string): string {
-  return new URL(path, seoConfig.siteUrl).toString();
-}
-
-function resolveImageUrl(pathOrUrl: string): string {
-  if (pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://")) {
-    return pathOrUrl;
-  }
-
-  return toAbsoluteUrl(pathOrUrl);
-}
-
-function toIsoDate(value: string | Date | null | undefined): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
-}
-
 function resolveRobots(index: boolean): Metadata["robots"] {
   return {
     index,
@@ -62,19 +42,19 @@ function getDefaultKeywords(): string[] {
 }
 
 export function getCanonicalUrl(path = "/"): string {
-  return toAbsoluteUrl(path);
+  return resolveAbsoluteUrl(path);
 }
 
 export function getSitemapUrl(): string {
-  return toAbsoluteUrl("/sitemap.xml");
+  return resolveAbsoluteUrl("/sitemap.xml");
 }
 
 export function getOpenGraphImageUrl(): string {
-  return toAbsoluteUrl("/brand/og-default-1200x630.png");
+  return resolveAbsoluteUrl("/brand/og-default-1200x630.png");
 }
 
 export function getTwitterImageUrl(): string {
-  return toAbsoluteUrl("/brand/twitter-default-1200x630.png");
+  return resolveAbsoluteUrl("/brand/twitter-default-1200x630.png");
 }
 
 export function buildRootMetadata(): Metadata {
@@ -140,8 +120,8 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
     twitterImage = getTwitterImageUrl(),
   } = input;
   const canonical = getCanonicalUrl(path);
-  const resolvedImage = resolveImageUrl(openGraphImage);
-  const resolvedTwitterImage = resolveImageUrl(twitterImage);
+  const resolvedImage = resolveAbsoluteUrl(openGraphImage);
+  const resolvedTwitterImage = resolveAbsoluteUrl(twitterImage);
 
   return {
     title,
@@ -188,7 +168,7 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
   const path = `/articoli/${input.slug}`;
   const canonical = getCanonicalUrl(path);
   const description = input.description ?? seoConfig.defaultDescription;
-  const image = input.imageUrl ? resolveImageUrl(input.imageUrl) : getOpenGraphImageUrl();
+  const image = input.imageUrl ? resolveAbsoluteUrl(input.imageUrl) : getOpenGraphImageUrl();
   const publishedTime = toIsoDate(input.publishedAt);
   const modifiedTime = toIsoDate(input.updatedAt);
 

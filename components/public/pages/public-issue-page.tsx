@@ -10,6 +10,7 @@ import {
 import { DossierHome } from "@/components/public/sections/dossier/dossier-home";
 import { i18n } from "@/lib/i18n";
 import { formatIssueNumber } from "@/lib/public/format/issue";
+import { buildIssuePageJsonLd } from "@/lib/seo";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 
@@ -25,6 +26,14 @@ export function PublicIssuePage({ issue, publishedIssues }: PublicIssuePageProps
 
   return (
     <main className="flex flex-1 flex-col bg-background font-heading text-foreground">
+      {issue ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(buildIssuePageJsonLd(issue)),
+          }}
+        />
+      ) : null}
       <HomeScrollProgress />
       <div tabIndex={-1} className="flex flex-col focus:outline-none">
         {issue ? (

@@ -4,11 +4,19 @@ const LOCAL_FALLBACK_URL = "http://localhost:3000";
 
 function normalizeSiteUrl(rawValue: string | undefined): URL {
   if (!rawValue) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Missing SITE_URL for production SEO metadata");
+    }
+
     return new URL(LOCAL_FALLBACK_URL);
   }
 
   const trimmed = rawValue.trim();
   if (!trimmed) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Missing SITE_URL for production SEO metadata");
+    }
+
     return new URL(LOCAL_FALLBACK_URL);
   }
 
@@ -18,6 +26,10 @@ function normalizeSiteUrl(rawValue: string | undefined): URL {
   try {
     return new URL(candidate);
   } catch {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Invalid SITE_URL for production SEO metadata");
+    }
+
     return new URL(LOCAL_FALLBACK_URL);
   }
 }

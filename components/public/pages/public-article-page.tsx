@@ -4,6 +4,7 @@ import { PublicRichText } from "@/components/public/rich-text";
 import { DossierArticleCard } from "@/components/public/sections/dossier/dossier-article-card";
 import { formatTags } from "@/components/public/sections/dossier/dossier-format";
 import { StyledTitle } from "@/components/public/styled-title";
+import { buildArticlePageJsonLd } from "@/lib/seo";
 
 import type { PublicRelatedIssueArticle } from "@/lib/public/server/article-page";
 import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
@@ -128,6 +129,12 @@ export function PublicArticlePage({
 }: PublicArticlePageProps) {
   return (
     <main id="top" className="flex flex-1 flex-col bg-background font-heading text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(buildArticlePageJsonLd(article, article.excerpt)),
+        }}
+      />
       <article id="main-content" tabIndex={-1} className="focus:outline-none">
         <header className="relative isolate w-full overflow-hidden bg-background">
           <div className={`${publicContentClassName} relative py-7 sm:py-9 lg:py-14`}>

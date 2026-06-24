@@ -1,6 +1,8 @@
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { PublicRichText } from "@/components/public/rich-text";
 import { StyledTitle } from "@/components/public/styled-title";
+import { getPublicStaticPagePath, isPublicStaticPageSlug } from "@/lib/public/pages/static-pages";
+import { buildStaticPageJsonLd } from "@/lib/seo";
 
 import type { PublicPageDto } from "@/lib/server/modules/pages/dto/public";
 
@@ -21,8 +23,18 @@ function StaticPageMetaRail({ page }: PublicStaticPageProps) {
 }
 
 export function PublicStaticPage({ page }: PublicStaticPageProps) {
+  const canonicalPath = isPublicStaticPageSlug(page.slug)
+    ? getPublicStaticPagePath(page.slug)
+    : "/";
+
   return (
     <main id="top" className="flex flex-1 flex-col bg-background font-heading text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(buildStaticPageJsonLd(page.title, canonicalPath)),
+        }}
+      />
       <article id="main-content" tabIndex={-1} className="focus:outline-none">
         <header className="relative isolate w-full overflow-hidden bg-background">
           <div className={`${publicContentClassName} relative pt-7 sm:pt-9 lg:pt-14`}>
