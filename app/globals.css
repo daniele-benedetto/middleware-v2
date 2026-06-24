@@ -279,6 +279,29 @@ body {
    keeps its position below it. Only the page content (.page-transition) animates.
    NB: do NOT set `:root { view-transition-name: none }` — that drops the root
    snapshot entirely and makes the header disappear during the transition. */
+/* The header is position: sticky, so it can't be anchored via the root snapshot
+   (sticky elements interact with scroll and changing page height during a
+   transition). Per the View Transitions guide, lift it into its own snapshot and
+   anchor it: static group, hide the old snapshot to avoid a double-header flash,
+   keep the new one static. This is what stops the header vanishing/fading. */
+[data-public-header] {
+  view-transition-name: public-header;
+}
+
+::view-transition-group(public-header) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(public-header) {
+  display: none;
+}
+
+::view-transition-new(public-header) {
+  animation: none;
+}
+
+/* Background and footer stay put; only the page content animates. */
 ::view-transition-group(root),
 ::view-transition-group(public-footer),
 ::view-transition-old(root),
@@ -302,11 +325,11 @@ body {
 }
 
 ::view-transition-old(.page-transition) {
-  animation: 350ms var(--easing-standard) both page-transition-out;
+  animation: 400ms var(--easing-standard) both page-transition-out;
 }
 
 ::view-transition-new(.page-transition) {
-  animation: 500ms var(--easing-standard) 320ms both page-transition-in;
+  animation: 570ms var(--easing-standard) 360ms both page-transition-in;
 }
 
 @keyframes page-transition-out {
