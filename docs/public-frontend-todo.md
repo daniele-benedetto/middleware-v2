@@ -82,4 +82,4 @@ Tracciati per non perderli; vanno fatti con verifica manuale, non a tavolino:
 - Nessun `dangerouslySetInnerHTML` / superficie XSS nel rich text; link via `resolveSafeRichTextLinkHref` + `rel="noopener noreferrer"`.
 - Disciplina LCP `next/image` corretta: `priority` su hero articolo e solo sul primo blocco dossier.
 - Boundary client minimi e giustificati con cleanup corretto.
-- ISR corretto: `revalidate = 3600` + `generateStaticParams`; `dynamicParams = false` sul catch-all delle pagine statiche.
+- Caching pubblico via Cache Components (A-3): `'use cache'` + `cacheLife("hours")` nei data loader + `generateStaticParams`; route pubbliche in Partial Prerender (Revalidate 1h / Expire 1d).
