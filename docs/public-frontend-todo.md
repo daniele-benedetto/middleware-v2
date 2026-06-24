@@ -25,10 +25,10 @@ Priorità: `[ALTA]` · `[MEDIA]` · `[BASSA]`.
       Solo i controlli e `<audio>` devono stare nel client. Estrarre una shell server e un client
       `AudioControls` più piccolo. Verificabile con build/typecheck.
 
-- [ ] **A11Y-6 `[MEDIA]`/S — Dichiarare la policy `alt` "immagini decorative". (DECISO: opzione a)**
-      Mantenere `alt={article.imageAlt ?? ""}`; nessuna modifica strutturale al CMS o fallback dal titolo.
-      Azione: rendere la scelta esplicita — commento di policy nel punto centrale (hero/card/blocchi/rich-text)
-      e una riga in `docs/architecture.md` o `docs/cms-ui.md` che dichiara l'alt vuoto come intenzionale (decorativo).
+- [x] **A11Y-6 `[MEDIA]`/S — ✅ FATTO (opzione a).** Policy "alt vuoto = decorativo" resa esplicita e centralizzata
+      in `editorialImageAlt()` (`lib/public/format/image.ts`), con commento di policy. I 5 call site (hero articolo,
+      card dossier, lead/feature-break/closing block) ora usano il helper invece di `imageAlt ?? ""` inline. Output
+      identico. Policy dichiarata anche in `docs/architecture.md` (Media Flow).
 
 - [ ] **A-2 + Transizioni `[MEDIA]`/M — Adottare `next-view-transitions`. (DECISO: opzione 2)**
       Sostituire l'attuale `public-page-transition.tsx` (che forza `scrollTo(0,0)` + `scroll={false}` sui link)

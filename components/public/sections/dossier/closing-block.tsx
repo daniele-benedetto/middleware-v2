@@ -16,6 +16,7 @@ import {
 import { getNarrativeVariantClasses } from "@/components/public/sections/dossier/dossier-variant";
 import { StyledTitle } from "@/components/public/styled-title";
 import { i18n } from "@/lib/i18n";
+import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
@@ -43,7 +44,7 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
     <div className="relative min-h-48 overflow-hidden border border-foreground grayscale sm:min-h-52 md:min-h-64 lg:min-h-[min(34vh,360px)]">
       <Image
         src={article.imageUrl}
-        alt={article.imageAlt ?? ""}
+        alt={editorialImageAlt(article.imageAlt)}
         fill
         sizes="(min-width: 768px) 34vw, 100vw"
         className={cn("object-cover", publicInteraction.imageZoom)}

@@ -14,6 +14,7 @@ import {
 } from "@/components/public/sections/dossier/dossier-format";
 import { getNarrativeVariantClasses } from "@/components/public/sections/dossier/dossier-variant";
 import { StyledTitle } from "@/components/public/styled-title";
+import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
@@ -93,7 +94,7 @@ export function LeadBlock({ block, articleNumbers, priority = false }: LeadBlock
             >
               <Image
                 src={article.imageUrl}
-                alt={article.imageAlt ?? ""}
+                alt={editorialImageAlt(article.imageAlt)}
                 fill
                 sizes="(min-width: 768px) 45vw, 100vw"
                 className={cn("object-cover", publicInteraction.imageZoom)}

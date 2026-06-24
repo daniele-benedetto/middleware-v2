@@ -176,7 +176,7 @@ Editorial image semantics:
 
 - Blob stores the media asset; it is not the source of public accessibility text.
 - Article image alt text is stored on `Article.imageAlt` because the same asset can have different editorial meaning in different contexts.
-- Public renderers should use `article.imageAlt ?? ""` for article images; empty alt remains the fallback for decorative or not-yet-described images.
+- Public renderers MUST resolve article image alt through `editorialImageAlt(article.imageAlt)` (`lib/public/format/image.ts`), the single point that encodes the policy. **Declared policy (A11Y-6):** an editorial image without `imageAlt` is intentionally decorative → `alt=""`; the meaning is already carried by the adjacent heading. This is a deliberate choice, not a missing description.
 - SEO metadata and structured data may reuse `imageAlt` when an article image is selected.
 
 ## Runtime Invariants

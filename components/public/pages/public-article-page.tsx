@@ -6,6 +6,7 @@ import { PublicLink as Link } from "@/components/public/public-link";
 import { PublicRichText } from "@/components/public/rich-text";
 import { formatTags } from "@/components/public/sections/dossier/dossier-format";
 import { i18n } from "@/lib/i18n";
+import { editorialImageAlt } from "@/lib/public/format/image";
 import { buildArticlePageJsonLd } from "@/lib/seo";
 
 import type { PublicRelatedIssueArticle } from "@/lib/public/server/article-page";
@@ -144,7 +145,7 @@ export function PublicArticlePage({
           <figure className="bg-foreground">
             <Image
               src={article.imageUrl}
-              alt={article.imageAlt ?? ""}
+              alt={editorialImageAlt(article.imageAlt)}
               width={1600}
               height={900}
               sizes="100vw"

@@ -5,6 +5,7 @@ import { publicInteraction, publicTypography } from "@/components/public/primiti
 import { PublicLink as Link } from "@/components/public/public-link";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { StyledTitle } from "@/components/public/styled-title";
+import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
 import type { HomeIssueArticle } from "@/components/public/home/home-view-model";
@@ -32,7 +33,7 @@ export function DossierArticleCard({
     <div className="mt-5 overflow-hidden border border-foreground grayscale">
       <Image
         src={article.imageUrl}
-        alt={article.imageAlt ?? ""}
+        alt={editorialImageAlt(article.imageAlt)}
         width={1200}
         height={800}
         sizes="(min-width: 768px) 38vw, 100vw"
