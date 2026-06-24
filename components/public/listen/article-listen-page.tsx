@@ -1,6 +1,7 @@
 import { ArticleListenPlayer } from "@/components/public/listen/article-listen-player";
 import { publicContentClassName } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
+import { i18n } from "@/lib/i18n";
 
 import type { PublicArticleListenPageData } from "@/lib/public/server/article-listen-page";
 
@@ -10,6 +11,7 @@ type ArticleListenPageProps = {
 
 export function ArticleListenPage({ data }: ArticleListenPageProps) {
   const { article, chunks } = data;
+  const text = i18n.public.listenPage;
 
   return (
     <main className="flex flex-1 flex-col bg-surface py-4 font-heading text-foreground sm:py-5 lg:py-6">
@@ -20,11 +22,11 @@ export function ArticleListenPage({ data }: ArticleListenPageProps) {
               href={`/articoli/${article.slug}`}
               className="transition-colors hover:text-accent"
             >
-              Torna all&apos;articolo
+              {text.backToArticle}
             </Link>
           </div>
           <div className="font-heading text-[11px] font-extrabold tracking-[0.14em] text-accent uppercase">
-            Ascolta l&apos;articolo
+            {text.title}
           </div>
         </div>
 

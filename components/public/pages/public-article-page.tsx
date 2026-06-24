@@ -3,6 +3,7 @@ import { publicContentClassName } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { PublicRichText } from "@/components/public/rich-text";
 import { formatTags } from "@/components/public/sections/dossier/dossier-format";
+import { i18n } from "@/lib/i18n";
 import { buildArticlePageJsonLd } from "@/lib/seo";
 
 import type { PublicRelatedIssueArticle } from "@/lib/public/server/article-page";
@@ -32,6 +33,7 @@ function formatArticleNumber(value: number | null) {
 }
 
 function ArticleMetaRail({ article }: ArticleOnlyProps) {
+  const text = i18n.public.articlePage;
   const metaItems = [
     { key: "issue", label: article.issueTitle, href: `/uscite/${article.issueSlug}` },
     { key: "category", label: article.categoryName },
@@ -48,7 +50,7 @@ function ArticleMetaRail({ article }: ArticleOnlyProps) {
           href={`/articoli/${article.slug}/ascolta`}
           className="w-fit border-2 border-foreground bg-foreground px-3 py-2 font-heading text-[11px] font-extrabold tracking-[0.12em] text-background uppercase transition-transform duration-(--motion-fast) hover:scale-[0.98] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
-          Ascolta l&apos;articolo
+          {text.audioCta}
         </Link>
       ) : null}
     </div>
@@ -75,18 +77,20 @@ function ArticleTags({ article }: ArticleOnlyProps) {
 function RelatedArticlesSection({ article, relatedArticles }: RelatedArticlesSectionProps) {
   if (relatedArticles.length === 0) return null;
 
+  const text = i18n.public.articlePage;
+
   return (
     <section className="bg-background py-10 sm:py-14 lg:py-16">
       <div className={publicContentClassName}>
         <div className="mb-5 flex flex-col gap-3 border-t-2 border-foreground pt-4 md:flex-row md:items-center md:justify-between">
           <p className="font-heading text-[13px] font-semibold text-muted sm:text-[14px]">
-            Dal numero: {article.issueTitle}
+            {text.issuePrefix} {article.issueTitle}
           </p>
           <Link
             href={`/uscite/${article.issueSlug}`}
             className="w-fit font-heading text-xs font-bold tracking-[0.06em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"
           >
-            Visualizza il numero
+            {text.viewIssue}
           </Link>
         </div>
 

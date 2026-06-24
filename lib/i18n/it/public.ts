@@ -1,3 +1,5 @@
+const articleCountLabel = (count: number) => `${count} ${count === 1 ? "articolo" : "articoli"}`;
+
 export const publicIt = {
   brand: {
     wordmark: "middleware",
@@ -35,7 +37,7 @@ export const publicIt = {
       title: "Altri numeri",
       description: "",
       archiveLabel: "Archivio Magazine →",
-      countLabel: (count: number) => `${count} ${count === 1 ? "articolo" : "articoli"}`,
+      countLabel: articleCountLabel,
     },
     articleCard: {
       readingTimeLabel: (minutes: number) => `${minutes} min`,
@@ -56,6 +58,11 @@ export const publicIt = {
     },
   },
   issuesArchive: {
+    metadata: {
+      title: "Archivio Magazine",
+      description:
+        "Tutti i numeri pubblicati da Middleware, organizzati come uscite editoriali e dossier completi.",
+    },
     hero: {
       title: "Archivio [[Magazine]]",
       description:
@@ -63,7 +70,7 @@ export const publicIt = {
       totalLabel: (count: number) =>
         `${count} ${count === 1 ? "numero pubblicato" : "numeri pubblicati"}`,
     },
-    countLabel: (count: number) => `${count} ${count === 1 ? "articolo" : "articoli"}`,
+    countLabel: articleCountLabel,
     empty: {
       code: "00",
       kicker: "Archivio",
@@ -78,6 +85,24 @@ export const publicIt = {
       title: "Numero non trovato",
       description: "Il numero richiesto non è disponibile nell'archivio.",
     },
+  },
+  articlePage: {
+    audioCta: "Ascolta l'articolo",
+    audioUnsupported: "Il tuo browser non supporta la riproduzione audio.",
+    issuePrefix: "Dal numero:",
+    viewIssue: "Visualizza il numero",
+  },
+  listenPage: {
+    backToArticle: "Torna all'articolo",
+    title: "Ascolta l'articolo",
+    notFoundTitle: "Audiolettura non trovata",
+    metadataTitle: (title: string) => `Ascolta l'articolo: ${title}`,
+  },
+  staticPage: {
+    updatedPrefix: "Ultimo aggiornamento:",
+  },
+  labels: {
+    articleCount: articleCountLabel,
   },
   footer: {
     sections: {

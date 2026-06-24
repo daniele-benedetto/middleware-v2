@@ -1,6 +1,7 @@
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { publicContentClassName } from "@/components/public/primitives";
 import { PublicRichText } from "@/components/public/rich-text";
+import { i18n } from "@/lib/i18n";
 import { getPublicStaticPagePath, isPublicStaticPageSlug } from "@/lib/public/pages/static-pages";
 import { buildStaticPageJsonLd } from "@/lib/seo";
 
@@ -15,9 +16,11 @@ function formatPageDate(value: string) {
 }
 
 function StaticPageMetaRail({ page }: PublicStaticPageProps) {
+  const text = i18n.public.staticPage;
+
   return (
     <PublicMetaRail
-      items={[{ key: "updated", label: `Ultimo aggiornamento: ${formatPageDate(page.updatedAt)}` }]}
+      items={[{ key: "updated", label: `${text.updatedPrefix} ${formatPageDate(page.updatedAt)}` }]}
     />
   );
 }

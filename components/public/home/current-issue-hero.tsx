@@ -1,4 +1,5 @@
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
+import { i18n } from "@/lib/i18n";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
@@ -10,7 +11,7 @@ type CurrentIssueHeroProps = {
 };
 
 function getArticleCountLabel(count: number) {
-  return `${count} ${count === 1 ? "articolo" : "articoli"}`;
+  return i18n.public.labels.articleCount(count);
 }
 
 function IssueMetaRail({

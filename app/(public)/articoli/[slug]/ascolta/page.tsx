@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { ArticleListenPage } from "@/components/public/listen/article-listen-page";
+import { i18n } from "@/lib/i18n";
 import {
   getPublicArticleListenPageData,
   getPublicArticleListenStaticParams,
@@ -25,23 +26,26 @@ export async function generateMetadata({
   const { slug } = await params;
   const data = await getPublicArticleListenPageData(slug);
   const canonical = getCanonicalUrl(`/articoli/${data?.article.slug ?? slug}`);
+  const text = i18n.public.listenPage;
 
   if (!data) {
     return {
-      title: "Audiolettura non trovata",
+      title: text.notFoundTitle,
       alternates: { canonical },
       robots: { index: false, follow: true, googleBot: { index: false, follow: true } },
     };
   }
 
+  const title = text.metadataTitle(data.article.title);
+
   return {
-    title: `Ascolta l'articolo: ${data.article.title}`,
+    title,
     description: data.article.excerpt ?? undefined,
     alternates: { canonical },
     robots: { index: false, follow: true, googleBot: { index: false, follow: true } },
     openGraph: {
       type: "article",
-      title: `Ascolta l'articolo: ${data.article.title}`,
+      title,
       description: data.article.excerpt ?? undefined,
       url: canonical,
       images: data.article.imageUrl
