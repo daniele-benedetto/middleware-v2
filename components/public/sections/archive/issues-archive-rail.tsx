@@ -66,10 +66,6 @@ export function IssuesArchiveRail({ children, ariaLabel }: IssuesArchiveRailProp
       });
     };
 
-    // A11Y: la track scorre orizzontalmente solo in funzione di scrollY dentro un
-    // contenitore overflow-hidden, quindi lo scroll-into-view nativo del browser non
-    // raggiunge una card focalizzata fuori schermo. Mappiamo il focus sullo scroll:
-    // spostando scrollY della delta mancante la card rientra nella viewport.
     const handleFocusIn = (event: FocusEvent) => {
       if (!desktopQuery.matches || reducedMotionQuery.matches) {
         return;

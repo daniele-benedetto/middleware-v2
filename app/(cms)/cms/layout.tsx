@@ -20,10 +20,6 @@ export const metadata = buildCmsMetadata({
   path: "/cms/issues",
 });
 
-// The CMS is fully session-gated: requireCmsSession() (here and in every page)
-// reads request-time data, which Cache Components require inside a <Suspense>
-// boundary. Wrapping the authenticated shell — children included — covers every
-// CMS page's request-time access with a single boundary.
 async function CmsAuthenticatedShell({ children }: CmsLayoutProps) {
   const session = await requireCmsSession();
   const role = session.user.role;

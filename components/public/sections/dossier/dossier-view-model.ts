@@ -11,10 +11,6 @@ import {
 
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
-// Stable, dossier-scoped facade over the shared `lib/public/issue-numbering`
-// helpers: it keeps the dossier blocks decoupled from the numbering internals
-// and using the public-component vocabulary (HomeIssueArticle/NarrativeHomeBlock).
-
 export function sortUnpaginatedArticles(articles: HomeIssueArticle[]) {
   return sortIssueNumberingFallbackArticles(articles);
 }

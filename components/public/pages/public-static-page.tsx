@@ -32,8 +32,6 @@ function StaticPageMetaRail({ page }: PublicStaticPageProps) {
 }
 
 export function PublicStaticPage({ page }: PublicStaticPageProps) {
-  // Self-referential fallback (matches lib/public/server/page.ts) so an unknown
-  // slug never produces a canonical/breadcrumb pointing at the homepage.
   const canonicalPath = isPublicStaticPageSlug(page.slug)
     ? getPublicStaticPagePath(page.slug)
     : `/${page.slug}`;

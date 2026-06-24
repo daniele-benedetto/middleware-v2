@@ -8,9 +8,6 @@ function normalizeConnectionString(rawValue: string): string {
     const sslmode = url.searchParams.get("sslmode");
     const useLibpqCompat = url.searchParams.get("uselibpqcompat");
 
-    // `pg` currently treats `require` as an alias of `verify-full` and warns that
-    // the alias will change semantics in the next major version. Normalize now so
-    // runtime behavior stays explicit and the warning disappears.
     if (sslmode === "require" && useLibpqCompat !== "true") {
       url.searchParams.set("sslmode", "verify-full");
       return url.toString();

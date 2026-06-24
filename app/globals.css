@@ -278,9 +278,9 @@ body {
   view-transition-name: none;
 }
 
-[data-public-page-content] {
-  view-transition-name: public-page-content;
-}
+/* view-transition-name: public-page-content is assigned by React's
+   <ViewTransition name="public-page-content"> (PublicPageTransition), not here —
+   two elements with the same name would make the browser skip the transition. */
 
 ::view-transition-image-pair(public-page-content) {
   isolation: isolate;
