@@ -2,7 +2,11 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
-import { extractPlainText } from "@/lib/rich-text/plain-text";
+import {
+  getPublicIssueDescription,
+  getPublicIssueLeadImage,
+  getPublicPublishedIssues,
+} from "@/lib/public/server/issues";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicIssuesService } from "@/lib/server/modules/issues/service/public";
 
@@ -11,8 +15,6 @@ import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public
 export const PUBLIC_HOME_REVALIDATE_SECONDS = 60 * 60;
 export const PUBLIC_HOME_CACHE_TAG = "public-home";
 
-const PUBLIC_HOME_ISSUES_PAGE_SIZE = 100;
-
 export type PublicHomeData = {
   currentIssue: PublicCurrentIssueDetail | null;
   publishedIssues: PublicIssueListItem[];
@@ -20,28 +22,6 @@ export type PublicHomeData = {
   leadImage?: string;
   leadImageAlt?: string;
 };
-
-function getCurrentIssueDescription(currentIssue: PublicCurrentIssueDetail | null) {
-  if (!currentIssue) {
-    return undefined;
-  }
-
-  if (typeof currentIssue.description === "string") {
-    return currentIssue.description;
-  }
-
-  const description = extractPlainText(currentIssue.description);
-  return description || undefined;
-}
-
-function getLeadImage(currentIssue: PublicCurrentIssueDetail | null) {
-  const article = currentIssue?.articles.find((item) => item.imageUrl);
-
-  return {
-    url: article?.imageUrl ?? undefined,
-    alt: article?.imageAlt ?? undefined,
-  };
-}
 
 async function getCurrentIssue() {
   try {
@@ -56,29 +36,17 @@ async function getCurrentIssue() {
   }
 }
 
-async function getPublishedIssueList() {
-  try {
-    return (await publicIssuesService.listPublishedItems({
-      page: 1,
-      pageSize: PUBLIC_HOME_ISSUES_PAGE_SIZE,
-    })) as PublicIssueListItem[];
-  } catch (error) {
-    console.error("public.getPublicHomeData published issues failed", error);
-    return [];
-  }
-}
-
 async function loadPublicHomeData(): Promise<PublicHomeData> {
   const [currentIssue, publishedIssues] = await Promise.all([
     getCurrentIssue(),
-    getPublishedIssueList(),
+    getPublicPublishedIssues("public.getPublicHomeData"),
   ]);
-  const leadImage = getLeadImage(currentIssue);
+  const leadImage = getPublicIssueLeadImage(currentIssue);
 
   return {
     currentIssue,
     publishedIssues,
-    currentIssueDescription: getCurrentIssueDescription(currentIssue),
+    currentIssueDescription: getPublicIssueDescription(currentIssue),
     leadImage: leadImage.url,
     leadImageAlt: leadImage.alt,
   };

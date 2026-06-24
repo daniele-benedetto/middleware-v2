@@ -3,6 +3,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 
 import { normalizeHomeBlock } from "@/lib/issues/home-block-rules";
+import { type IssueNumberingBlock, buildNumberedIssueArticles } from "@/lib/public/issue-numbering";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicArticlesService } from "@/lib/server/modules/articles/service/public";
@@ -27,12 +28,7 @@ export type PublicArticlePageData = {
   description?: string;
 };
 
-type NarrativeBlock = {
-  type: "opening" | "body" | "rupture" | "closing";
-  articles: PublicIssueArticleSummaryDto[];
-  featuredArticle: PublicIssueArticleSummaryDto | null;
-  featuredPlacement: "left" | "right";
-};
+type NarrativeBlock = IssueNumberingBlock<PublicIssueArticleSummaryDto>;
 
 function getArticleDescription(article: PublicArticleDetailDto | null) {
   if (!article) return undefined;
@@ -53,27 +49,6 @@ async function getArticleBySlug(slug: string) {
     console.error("public.getPublicArticlePageData article failed", { slug, error });
     return null;
   }
-}
-
-function sortUnpaginatedArticles(articles: PublicIssueArticleSummaryDto[]) {
-  return [...articles].sort((a, b) => {
-    if (a.isFeatured !== b.isFeatured) {
-      return a.isFeatured ? -1 : 1;
-    }
-
-    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-  });
-}
-
-function getBlockNumberingArticles(block: NarrativeBlock) {
-  if (block.type !== "body" || block.featuredPlacement !== "right" || !block.featuredArticle) {
-    return block.articles;
-  }
-
-  return [
-    ...block.articles.filter((item) => item.id !== block.featuredArticle?.id),
-    block.featuredArticle,
-  ];
 }
 
 function resolveNarrativeBlocks(issue: PublicIssueDetailDto): NarrativeBlock[] {
@@ -115,38 +90,6 @@ function resolveNarrativeBlocks(issue: PublicIssueDetailDto): NarrativeBlock[] {
   return blocks;
 }
 
-function buildNumberedIssueArticles(issue: PublicIssueDetailDto) {
-  const blocks = resolveNarrativeBlocks(issue);
-
-  if (blocks.length === 0) {
-    return sortUnpaginatedArticles(issue.articles).map((item, index) => ({
-      article: item,
-      number: index + 1,
-    }));
-  }
-
-  const contentBlocks = blocks.filter((block) => block.type !== "closing");
-  const closingBlocks = blocks.filter((block) => block.type === "closing");
-  const numberedArticles: PublicRelatedIssueArticle[] = [];
-  const numberedIds = new Set<string>();
-  const addArticles = (articles: PublicIssueArticleSummaryDto[]) => {
-    for (const item of articles) {
-      if (numberedIds.has(item.id)) {
-        continue;
-      }
-
-      numberedIds.add(item.id);
-      numberedArticles.push({ article: item, number: numberedArticles.length + 1 });
-    }
-  };
-
-  addArticles(contentBlocks.flatMap(getBlockNumberingArticles));
-  addArticles(sortUnpaginatedArticles(issue.articles.filter((item) => !numberedIds.has(item.id))));
-  addArticles(closingBlocks.flatMap((block) => block.articles));
-
-  return numberedArticles;
-}
-
 function getContextualArticles(
   article: PublicArticleDetailDto,
   numberedArticles: PublicRelatedIssueArticle[],
@@ -182,7 +125,10 @@ async function getIssueArticleContext(article: PublicArticleDetailDto | null) {
 
   try {
     const issue = await publicIssuesService.getBySlug(article.issueSlug);
-    return getContextualArticles(article, buildNumberedIssueArticles(issue));
+    return getContextualArticles(
+      article,
+      buildNumberedIssueArticles(issue.articles, resolveNarrativeBlocks(issue)),
+    );
   } catch (error) {
     console.error("public.getPublicArticlePageData issue context failed", {
       issueSlug: article.issueSlug,

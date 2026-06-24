@@ -2,31 +2,28 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
-import { publicIssuesService } from "@/lib/server/modules/issues/service/public";
+import {
+  PUBLIC_PUBLISHED_ISSUES_PAGE_SIZE,
+  getPublicPublishedIssues,
+} from "@/lib/public/server/issues";
 
 import type { PublicIssueListItem } from "@/lib/public/types/issues";
 
 export const PUBLIC_ISSUES_ARCHIVE_REVALIDATE_SECONDS = 60 * 60;
 export const PUBLIC_ISSUES_ARCHIVE_CACHE_TAG = "public-issues-archive";
-
-const PUBLIC_ISSUES_ARCHIVE_PAGE_SIZE = 100;
+export const PUBLIC_ISSUES_ARCHIVE_PAGE_SIZE = PUBLIC_PUBLISHED_ISSUES_PAGE_SIZE;
 
 export type PublicIssuesArchiveData = {
   issues: PublicIssueListItem[];
 };
 
 async function loadPublicIssuesArchiveData(): Promise<PublicIssuesArchiveData> {
-  try {
-    const issues = (await publicIssuesService.listPublishedItems({
-      page: 1,
-      pageSize: PUBLIC_ISSUES_ARCHIVE_PAGE_SIZE,
-    })) as PublicIssueListItem[];
+  const issues = await getPublicPublishedIssues(
+    "public.getPublicIssuesArchiveData",
+    PUBLIC_ISSUES_ARCHIVE_PAGE_SIZE,
+  );
 
-    return { issues };
-  } catch (error) {
-    console.error("public.getPublicIssuesArchiveData published issues failed", error);
-    return { issues: [] };
-  }
+  return { issues };
 }
 
 export const getPublicIssuesArchiveData = unstable_cache(
