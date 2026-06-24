@@ -274,11 +274,11 @@ body {
   color: var(--bg-main);
 }
 
-::view-transition-old(.page-transition) {
+::view-transition-old(root) {
   animation: 320ms var(--easing-standard) both page-transition-out;
 }
 
-::view-transition-new(.page-transition) {
+::view-transition-new(root) {
   animation: 420ms var(--easing-standard) 220ms both page-transition-in;
 }
 

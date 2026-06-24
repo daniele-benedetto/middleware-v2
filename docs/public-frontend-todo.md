@@ -34,10 +34,15 @@ Priorità: `[ALTA]` · `[MEDIA]` · `[BASSA]`.
       card dossier, lead/feature-break/closing block) ora usano il helper invece di `imageAlt ?? ""` inline. Output
       identico. Policy dichiarata anche in `docs/architecture.md` (Media Flow).
 
-- [ ] **A-2 + Transizioni `[MEDIA]`/M — Adottare `next-view-transitions`. (DECISO: opzione 2)**
-      Sostituire l'attuale `public-page-transition.tsx` (che forza `scrollTo(0,0)` + `scroll={false}` sui link)
-      con il provider/`<Link>` di `next-view-transitions`. Passi: 1. Aggiungere la dipendenza e verificarne la compatibilità con la versione esatta di Next 16 in uso. 2. Avvolgere l'albero `(public)` con il provider; animazioni via CSS `::view-transition-old/new(...)`. 3. **Rimuovere lo `scrollTo(0,0)` forzato** e togliere `scroll={false}` indiscriminato dai `PublicLink`
-      → lasciare a Next la scroll restoration nativa (questo chiude A-2: scroll su back/forward). 4. Smoke test: forward, back/forward, reduced-motion.
+- [x] **A-2 + Transizioni `[MEDIA]`/M — ✅ FATTO (codice; smoke test browser a te). `next-view-transitions@0.3.5`.**
+      Compatibilità verificata: usa solo API pubbliche (`next/link`, `next/navigation`, hook React); l'unico
+      riferimento interno è un import **type-only** (`app-router-context.shared-runtime`) presente in Next 16.2.9.
+      Modifiche: 1. `<ViewTransitions>` hoisted in `app/(public)/layout.tsx` per avvolgere **tutto** l'albero
+      (header/footer inclusi, altrimenti il `Link` della libreria lancia fuori dal provider). 2. `PublicLink` ora
+      wrappa il `Link` della libreria. 3. **Rimossi** lo `scrollTo(0,0)` forzato e il `scroll={false}` indiscriminato
+      → scroll restoration nativa di Next (chiude A-2). 4. `public-page-transition.tsx` eliminato (non più necessario). 5. CSS `::view-transition-old/new(.page-transition)` → `(root)` (la libreria usa il `startViewTransition`
+      nativo, gruppo `root`). Verificato con typecheck + lint + `pnpm build` (route pubbliche ancora SSG/ISR).
+      _Resta da fare a te: smoke test in browser — forward, back/forward, reduced-motion._
 
 - [ ] **A-3 `[BASSA]`/L — `unstable_cache` → `use cache`. (DECISO: BACKLOG, no driver)**
       Resta in backlog: `unstable_cache` è deprecato ma funzionante. Il costo reale non è nei 6 file pubblici
@@ -65,8 +70,8 @@ Tracciati per non perderli; vanno fatti con verifica manuale, non a tavolino:
 
 ## Note / non-problemi — verificati, nessuna azione
 
-- A-5: `ViewTransition` è ancora API React instabile (`public-page-transition.tsx`); non danneggia l'LCP iniziale
-  (si attiva solo sugli update). Da monitorare nei futuri upgrade Next/React.
+- A-5: superato da A-2. Non si usa più l'API React `<ViewTransition>` (instabile): le transizioni passano da
+  `next-view-transitions` (wrapper su `document.startViewTransition` nativo). `public-page-transition.tsx` rimosso.
 - Le chiavi `unstable_cache` per slug sono corrette: gli argomenti sono inclusi nella cache key. Nessuna collisione.
 - Nessun `dangerouslySetInnerHTML` / superficie XSS nel rich text; link via `resolveSafeRichTextLinkHref` + `rel="noopener noreferrer"`.
 - Disciplina LCP `next/image` corretta: `priority` su hero articolo e solo sul primo blocco dossier.
