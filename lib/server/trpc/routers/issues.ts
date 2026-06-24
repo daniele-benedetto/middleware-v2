@@ -14,6 +14,7 @@ import {
   reorderIssuesInputSchema,
   updateIssueInputSchema,
 } from "@/lib/server/modules/issues";
+import { publicIssueDetailDtoSchema } from "@/lib/server/modules/issues/dto/public";
 import { router } from "@/lib/server/trpc/init";
 import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
@@ -56,6 +57,12 @@ export const issuesRouter = router({
     .input(issueIdInputSchema)
     .query(async ({ input }) => {
       return parseOutput(await issuesService.getById(input.id), issueDetailDtoSchema);
+    }),
+  getPreviewById: protectedProcedure
+    .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
+    .input(issueIdInputSchema)
+    .query(async ({ input }) => {
+      return parseOutput(await issuesService.getPreviewById(input.id), publicIssueDetailDtoSchema);
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))

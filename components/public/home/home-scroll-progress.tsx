@@ -46,8 +46,6 @@ export function HomeScrollProgress() {
       bar.style.setProperty("--scroll-progress", "0");
     };
 
-    // Re-evaluate when the OS reduced-motion preference changes mid-session,
-    // not only at mount.
     const applyPreference = () => {
       if (prefersReducedMotion.matches) {
         disable();

@@ -345,6 +345,7 @@ export const cmsIt = {
   },
   quickActions: {
     edit: "Modifica",
+    preview: "Anteprima",
     delete: "Elimina",
     setAdmin: "Imposta ADMIN",
     setEditor: "Imposta EDITOR",

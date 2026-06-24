@@ -31,11 +31,13 @@ type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
 
 type IssueDetailOutput = RouterOutputs["issues"]["getById"];
+type IssuePreviewOutput = RouterOutputs["issues"]["getPreviewById"];
 type CategoryDetailOutput = RouterOutputs["categories"]["getById"];
 type TagDetailOutput = RouterOutputs["tags"]["getById"];
 type AuthorDetailOutput = RouterOutputs["authors"]["getById"];
 type UserDetailOutput = RouterOutputs["users"]["getById"];
 type ArticleDetailOutput = RouterOutputs["articles"]["getById"];
+type ArticlePreviewOutput = RouterOutputs["articles"]["getPreviewById"];
 type PageDetailOutput = RouterOutputs["pages"]["getById"];
 type PagesListOutput = RouterOutputs["pages"]["list"];
 
@@ -95,6 +97,11 @@ export async function prefetchIssueById(id: string): Promise<IssueDetailOutput> 
   return caller.issues.getById({ id });
 }
 
+export async function prefetchIssuePreviewById(id: string): Promise<IssuePreviewOutput> {
+  const caller = await getTrpcCaller();
+  return caller.issues.getPreviewById({ id });
+}
+
 export async function prefetchCategoryById(id: string): Promise<CategoryDetailOutput> {
   const caller = await getTrpcCaller();
   return caller.categories.getById({ id });
@@ -118,6 +125,11 @@ export async function prefetchUserById(id: string): Promise<UserDetailOutput> {
 export async function prefetchArticleById(id: string): Promise<ArticleDetailOutput> {
   const caller = await getTrpcCaller();
   return caller.articles.getById({ id });
+}
+
+export async function prefetchArticlePreviewById(id: string): Promise<ArticlePreviewOutput> {
+  const caller = await getTrpcCaller();
+  return caller.articles.getPreviewById({ id });
 }
 
 export async function prefetchPageById(id: string): Promise<PageDetailOutput> {

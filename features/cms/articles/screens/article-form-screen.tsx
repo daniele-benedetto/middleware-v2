@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Save, Trash2, X } from "lucide-react";
+import { Eye, Plus, Save, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -560,6 +560,11 @@ function ArticleFormContent({
     }
   };
 
+  const openPreview = () => {
+    if (!articleId) return;
+    window.open(`/cms/articles/${articleId}/preview`, "_blank", "noreferrer");
+  };
+
   return (
     <form
       className="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -570,15 +575,21 @@ function ArticleFormContent({
         actions={
           <div className="flex items-center gap-2">
             {mode === "edit" && articleId ? (
-              <CmsConfirmDialog
-                triggerLabel={text.quickActions.delete}
-                triggerIcon={<Trash2 aria-hidden />}
-                triggerDisabled={isMutating}
-                title={text.quickActions.confirmDeleteTitle}
-                description={text.quickActions.confirmDeleteSingleArticle}
-                tone="danger"
-                onConfirm={() => onDelete(articleId)}
-              />
+              <>
+                <CmsActionButton variant="outline" onClick={openPreview} disabled={isMutating}>
+                  <Eye aria-hidden />
+                  {text.quickActions.preview}
+                </CmsActionButton>
+                <CmsConfirmDialog
+                  triggerLabel={text.quickActions.delete}
+                  triggerIcon={<Trash2 aria-hidden />}
+                  triggerDisabled={isMutating}
+                  title={text.quickActions.confirmDeleteTitle}
+                  description={text.quickActions.confirmDeleteSingleArticle}
+                  tone="danger"
+                  onConfirm={() => onDelete(articleId)}
+                />
+              </>
             ) : null}
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
               <X aria-hidden />

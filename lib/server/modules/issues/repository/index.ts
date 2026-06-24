@@ -114,6 +114,69 @@ export const issuesRepository = {
       },
     });
   },
+  async getPreviewById(id: string) {
+    return prisma.issue.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        titleStyled: true,
+        slug: true,
+        description: true,
+        homeBlocks: true,
+        isActive: true,
+        sortOrder: true,
+        publishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        articles: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            titleStyled: true,
+            excerpt: true,
+            imageUrl: true,
+            imageAlt: true,
+            audioUrl: true,
+            isFeatured: true,
+            contentRich: true,
+            publishedAt: true,
+            createdAt: true,
+            updatedAt: true,
+            category: {
+              select: {
+                slug: true,
+                name: true,
+              },
+            },
+            author: {
+              select: {
+                name: true,
+              },
+            },
+            tags: {
+              select: {
+                tag: {
+                  select: {
+                    id: true,
+                    slug: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }],
+        },
+        _count: {
+          select: {
+            articles: true,
+          },
+        },
+      },
+    });
+  },
   async create(input: CreateIssuePersistInput) {
     const data: Prisma.IssueUncheckedCreateInput = {
       title: input.title,

@@ -2,6 +2,8 @@ import "server-only";
 
 import { createCmsDomainErrorDetails } from "@/lib/cms/errors/domain-error-details";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { resolvePublicMediaUrl } from "@/lib/media/blob";
+import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { issuesRepository } from "@/lib/server/modules/issues/repository";
 import { issueHomeBlocksSchema } from "@/lib/server/modules/issues/schema";
@@ -10,6 +12,7 @@ import { normalizeSlug } from "@/lib/server/validation/slug";
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { IssueDetailDto, IssueDto } from "@/lib/server/modules/issues/dto";
+import type { PublicIssueDetailDto } from "@/lib/server/modules/issues/dto/public";
 import type {
   CreateIssueInput,
   IssueHomeBlocks,
@@ -45,6 +48,40 @@ type IssueDetailRecord = IssueRecord & {
       slug: string;
     } | null;
   }>;
+};
+
+type IssuePreviewRecord = IssueRecord & {
+  articles?: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    titleStyled: unknown;
+    excerpt: string | null;
+    imageUrl: string | null;
+    imageAlt: string | null;
+    audioUrl: string | null;
+    isFeatured: boolean;
+    contentRich: unknown;
+    publishedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    category: {
+      name: string;
+      slug: string;
+    } | null;
+    author: {
+      name: string | null;
+    } | null;
+    tags?: Array<{ tag: { id: string; slug: string; name: string } }>;
+  }>;
+};
+
+const WORDS_PER_MINUTE = 220;
+
+const calculateReadingTimeMinutes = (contentRich: unknown) => {
+  const text = extractPlainText(contentRich);
+  const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+  return Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
 };
 
 const toIssueDto = (issue: IssueRecord): IssueDto => {
@@ -96,6 +133,40 @@ const toIssueDetailDto = (issue: IssueDetailRecord): IssueDetailDto => {
   };
 };
 
+const toPreviewPublishedAt = (publishedAt: Date | null, fallback: Date) => {
+  return (publishedAt ?? fallback).toISOString();
+};
+
+const toPublicIssuePreviewDto = (issue: IssuePreviewRecord): PublicIssueDetailDto => {
+  return {
+    id: issue.id,
+    title: issue.title,
+    titleStyled: (issue.titleStyled as IssueTitleStyled | null) ?? null,
+    slug: issue.slug,
+    description: issue.description ?? null,
+    homeBlocks: normalizeIssueHomeBlocks(issue.homeBlocks),
+    publishedAt: toPreviewPublishedAt(issue.publishedAt, issue.updatedAt),
+    articlesCount: issue._count?.articles ?? 0,
+    articles: (issue.articles ?? []).map((article) => ({
+      id: article.id,
+      slug: article.slug,
+      title: article.title,
+      titleStyled: (article.titleStyled as IssueTitleStyled | null) ?? null,
+      excerpt: article.excerpt,
+      imageUrl: resolvePublicMediaUrl(article.imageUrl),
+      imageAlt: article.imageAlt,
+      hasAudio: Boolean(article.audioUrl),
+      isFeatured: article.isFeatured,
+      readingTimeMinutes: calculateReadingTimeMinutes(article.contentRich),
+      publishedAt: toPreviewPublishedAt(article.publishedAt, article.updatedAt),
+      categorySlug: article.category?.slug ?? null,
+      categoryName: article.category?.name ?? null,
+      authorName: article.author?.name ?? null,
+      tags: (article.tags ?? []).map((relation) => relation.tag),
+    })),
+  };
+};
+
 const ensureSlug = (value: string): string => {
   const slug = normalizeSlug(value);
 
@@ -131,6 +202,15 @@ export const issuesService = {
     }
 
     return toIssueDetailDto(issue as IssueDetailRecord);
+  },
+  async getPreviewById(id: string) {
+    const issue = await issuesRepository.getPreviewById(id);
+
+    if (!issue) {
+      throw new ApiError(404, "NOT_FOUND", "Issue not found");
+    }
+
+    return toPublicIssuePreviewDto(issue as IssuePreviewRecord);
   },
   async create(input: CreateIssueInput) {
     const baseSlug = ensureSlug(input.slug ?? input.title);

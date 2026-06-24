@@ -2,6 +2,7 @@ import "server-only";
 
 import { createCmsDomainErrorDetails } from "@/lib/cms/errors/domain-error-details";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import { ApiError } from "@/lib/server/http/api-error";
 import { articlesRepository } from "@/lib/server/modules/articles/repository";
 import { assertPublishedAtConsistency } from "@/lib/server/validation/published";
@@ -10,6 +11,7 @@ import { normalizeSlug } from "@/lib/server/validation/slug";
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { ArticleDetailDto, ArticleDto } from "@/lib/server/modules/articles/dto";
+import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
 import type {
   CreateArticlePersistInput,
   UpdateArticlePersistInput,
@@ -45,8 +47,8 @@ type ArticleRecord = {
   isFeatured: boolean;
   createdAt: Date;
   updatedAt: Date;
-  issue?: { title: string } | null;
-  category?: { name: string } | null;
+  issue?: { slug?: string; title: string } | null;
+  category?: { slug?: string; name: string } | null;
   author?: { name: string } | null;
   _count?: { tags: number };
 };
@@ -59,7 +61,7 @@ type ArticleDetailRecord = ArticleRecord & {
   imageAlt: string | null;
   audioUrl: string | null;
   audioChunks: unknown;
-  tags?: Array<{ tagId: string }>;
+  tags?: Array<{ tagId: string; tag?: { id: string; slug: string; name: string } }>;
 };
 
 function collectRichTextFragments(value: unknown, fragments: string[]) {
@@ -174,6 +176,46 @@ const toArticleDetailDto = (article: ArticleDetailRecord): ArticleDetailDto => {
   };
 };
 
+const toPreviewPublishedAt = (article: ArticleDetailRecord) => {
+  return (article.publishedAt ?? article.updatedAt ?? article.createdAt).toISOString();
+};
+
+const toPublicArticlePreviewDto = (article: ArticleDetailRecord): PublicArticleDetailDto => {
+  if (!article.issue?.slug || !article.category?.slug) {
+    throw new ApiError(500, "INTERNAL_ERROR", "Article preview missing required relations");
+  }
+
+  return {
+    id: article.id,
+    slug: article.slug,
+    title: article.title,
+    titleStyled: (article.titleStyled as ArticleTitleStyled | null) ?? null,
+    excerpt: article.excerpt,
+    imageUrl: resolvePublicMediaUrl(article.imageUrl),
+    imageAlt: article.imageAlt,
+    hasAudio: Boolean(article.audioUrl),
+    isFeatured: article.isFeatured,
+    publishedAt: toPreviewPublishedAt(article),
+    issueId: article.issueId,
+    issueSlug: article.issue.slug,
+    issueTitle: article.issue.title,
+    categoryId: article.categoryId,
+    categorySlug: article.category.slug,
+    categoryName: article.category.name,
+    authorId: article.authorId,
+    authorName: article.author?.name ?? null,
+    tagsCount: article._count?.tags ?? 0,
+    excerptRich: article.excerptRich ?? null,
+    contentRich: article.contentRich,
+    audioUrl: resolvePublicMediaUrl(article.audioUrl),
+    audioChunks: article.audioChunks ?? null,
+    updatedAt: article.updatedAt.toISOString(),
+    tags: (article.tags ?? [])
+      .map((entry) => entry.tag)
+      .filter((tag): tag is { id: string; slug: string; name: string } => Boolean(tag)),
+  };
+};
+
 const toArticlesDto = (articles: ArticleRecord[]): ArticleDto[] => {
   return articles.map(toArticleDto);
 };
@@ -210,6 +252,15 @@ export const articlesService = {
     }
 
     return toArticleDetailDto(article as ArticleDetailRecord);
+  },
+  async getPreviewById(id: string) {
+    const article = await articlesRepository.getById(id);
+
+    if (!article) {
+      throw new ApiError(404, "NOT_FOUND", "Article not found");
+    }
+
+    return toPublicArticlePreviewDto(article as ArticleDetailRecord);
   },
   async create(input: CreateArticleInput) {
     const normalizedInput: CreateArticlePersistInput = {

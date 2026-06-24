@@ -14,6 +14,7 @@ import {
   syncArticleTagsInputSchema,
   updateArticleInputSchema,
 } from "@/lib/server/modules/articles";
+import { publicArticleDetailDtoSchema } from "@/lib/server/modules/articles/dto/public";
 import { router } from "@/lib/server/trpc/init";
 import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
@@ -56,6 +57,15 @@ export const articlesRouter = router({
     .input(articleIdInputSchema)
     .query(async ({ input }) => {
       return parseOutput(await articlesService.getById(input.id), articleDetailDtoSchema);
+    }),
+  getPreviewById: protectedProcedure
+    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
+    .input(articleIdInputSchema)
+    .query(async ({ input }) => {
+      return parseOutput(
+        await articlesService.getPreviewById(input.id),
+        publicArticleDetailDtoSchema,
+      );
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))

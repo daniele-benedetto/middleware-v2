@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Plus, Save, Trash2, X } from "lucide-react";
+import { Calendar as CalendarIcon, Eye, Plus, Save, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
@@ -327,6 +327,11 @@ function IssueFormContent({
     }
   };
 
+  const openPreview = () => {
+    if (!issueId) return;
+    window.open(`/cms/issues/${issueId}/preview`, "_blank", "noreferrer");
+  };
+
   return (
     <form
       className="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -340,15 +345,21 @@ function IssueFormContent({
         actions={
           <div className="flex items-center gap-2">
             {mode === "edit" && issueId ? (
-              <CmsConfirmDialog
-                triggerLabel={text.quickActions.delete}
-                triggerIcon={<Trash2 aria-hidden />}
-                triggerDisabled={isBusy}
-                title={text.quickActions.confirmDeleteTitle}
-                description={text.quickActions.confirmDeleteSingleIssue}
-                tone="danger"
-                onConfirm={() => onDelete(issueId)}
-              />
+              <>
+                <CmsActionButton variant="outline" onClick={openPreview} disabled={isBusy}>
+                  <Eye aria-hidden />
+                  {text.quickActions.preview}
+                </CmsActionButton>
+                <CmsConfirmDialog
+                  triggerLabel={text.quickActions.delete}
+                  triggerIcon={<Trash2 aria-hidden />}
+                  triggerDisabled={isBusy}
+                  title={text.quickActions.confirmDeleteTitle}
+                  description={text.quickActions.confirmDeleteSingleIssue}
+                  tone="danger"
+                  onConfirm={() => onDelete(issueId)}
+                />
+              </>
             ) : null}
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isBusy}>
               <X aria-hidden />

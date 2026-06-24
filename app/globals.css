@@ -274,19 +274,36 @@ body {
   color: var(--bg-main);
 }
 
-::view-transition-old(root) {
-  animation: 320ms var(--easing-standard) both page-transition-out;
+:root {
+  view-transition-name: none;
 }
 
-::view-transition-new(root) {
-  animation: 420ms var(--easing-standard) 220ms both page-transition-in;
+[data-public-page-content] {
+  view-transition-name: public-page-content;
+}
+
+::view-transition-image-pair(public-page-content) {
+  isolation: isolate;
+}
+
+::view-transition-old(public-page-content),
+::view-transition-new(public-page-content) {
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(public-page-content) {
+  animation: 240ms var(--easing-standard) both page-transition-out;
+}
+
+::view-transition-new(public-page-content) {
+  animation: 360ms var(--easing-standard) 240ms both page-transition-in;
 }
 
 @keyframes page-transition-out {
   to {
     opacity: 0;
     filter: blur(1.5px);
-    transform: translateY(18px);
+    transform: translateY(20px);
   }
 }
 
@@ -294,7 +311,7 @@ body {
   from {
     opacity: 0;
     filter: blur(1.5px);
-    transform: translateY(18px);
+    transform: translateY(20px);
   }
 
   to {

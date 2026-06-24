@@ -55,11 +55,13 @@ const ARTICLE_DETAIL_SELECT = {
   audioChunks: true,
   issue: {
     select: {
+      slug: true,
       title: true,
     },
   },
   category: {
     select: {
+      slug: true,
       name: true,
     },
   },
@@ -71,6 +73,13 @@ const ARTICLE_DETAIL_SELECT = {
   tags: {
     select: {
       tagId: true,
+      tag: {
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+        },
+      },
     },
   },
   _count: {
