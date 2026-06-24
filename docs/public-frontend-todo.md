@@ -15,10 +15,11 @@ Priorità: `[ALTA]` · `[MEDIA]` · `[BASSA]`.
       `home-view-model.ts`; `dossier-home.tsx` e il test ora chiamano direttamente `resolveIssueHomeBlocks`.
       Rimosso anche l'import circolare residuo (home-view-model non importa più resolve-issue-home-blocks).
 
-- [ ] **A11Y-5 `[MEDIA]`/M — Rail con scroll-jacking e focus tastiera.**
-      `sections/archive/issues-archive-rail.tsx` trasla la track usando `window.scrollY`, non il focus.
-      Un utente da tastiera che tabba verso una card off-screen non riesce a portarla in vista.
-      Aggiungere un fallback (es. `overflow-x-auto` nativo) oppure mappare l'ordine di tab alla posizione di scroll.
+- [x] **A11Y-5 `[MEDIA]`/M — ✅ FATTO (focus → scroll).** Aggiunto un handler `focusin` su `trackRef` in
+      `issues-archive-rail.tsx`: quando una card focalizzata cade fuori dalla viewport orizzontale, fa
+      `window.scrollBy({ top: delta })` della delta mancante, che — essendo la traslazione guidata da `scrollY` —
+      la riporta in vista. Gated sulla stessa condizione del jacking (desktop ≥1024px + motion non ridotto), con
+      cleanup del listener. Preserva il design esistente. _Logica deterministica; consigliata conferma con tab in browser._
 
 - [ ] **Perf-3 `[MEDIA]`/L — Separare la shell statica dell'audio player dal client bundle.**
       Il componente `"use client"` da 447 righe renderizza anche `<h1>` statico, excerpt e pannello chunk.

@@ -66,6 +66,35 @@ export function IssuesArchiveRail({ children, ariaLabel }: IssuesArchiveRailProp
       });
     };
 
+    // A11Y: la track scorre orizzontalmente solo in funzione di scrollY dentro un
+    // contenitore overflow-hidden, quindi lo scroll-into-view nativo del browser non
+    // raggiunge una card focalizzata fuori schermo. Mappiamo il focus sullo scroll:
+    // spostando scrollY della delta mancante la card rientra nella viewport.
+    const handleFocusIn = (event: FocusEvent) => {
+      if (!desktopQuery.matches || reducedMotionQuery.matches) {
+        return;
+      }
+
+      const target = event.target;
+      if (!(target instanceof HTMLElement) || !track.contains(target)) {
+        return;
+      }
+
+      const margin = 24;
+      const rect = target.getBoundingClientRect();
+      let delta = 0;
+
+      if (rect.right > window.innerWidth - margin) {
+        delta = rect.right - window.innerWidth + margin;
+      } else if (rect.left < margin) {
+        delta = rect.left - margin;
+      }
+
+      if (delta !== 0) {
+        window.scrollBy({ top: delta });
+      }
+    };
+
     update();
 
     const resizeObserver = new ResizeObserver(requestUpdate);
@@ -78,6 +107,7 @@ export function IssuesArchiveRail({ children, ariaLabel }: IssuesArchiveRailProp
     window.addEventListener("resize", requestUpdate);
     desktopQuery.addEventListener("change", requestUpdate);
     reducedMotionQuery.addEventListener("change", requestUpdate);
+    track.addEventListener("focusin", handleFocusIn);
 
     return () => {
       disposed = true;
@@ -87,6 +117,7 @@ export function IssuesArchiveRail({ children, ariaLabel }: IssuesArchiveRailProp
       window.removeEventListener("resize", requestUpdate);
       desktopQuery.removeEventListener("change", requestUpdate);
       reducedMotionQuery.removeEventListener("change", requestUpdate);
+      track.removeEventListener("focusin", handleFocusIn);
     };
   }, []);
 
