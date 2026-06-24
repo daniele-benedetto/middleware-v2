@@ -3,10 +3,17 @@ import { Fragment, type ReactNode } from "react";
 
 import { publicTypography } from "@/components/public/primitives";
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
+import {
+  isExternalRichTextLink,
+  isPublicRichTextMarkType,
+  isPublicRichTextNodeType,
+  resolveSafeRichTextLinkHref,
+} from "@/lib/rich-text/public-schema";
 import { cn } from "@/lib/utils";
 
 type RichTextMark = {
   type?: unknown;
+  attrs?: unknown;
 };
 
 type RichTextNode = {
@@ -57,10 +64,33 @@ function renderMarks(children: ReactNode, marks: unknown): ReactNode {
   }
 
   return (marks as RichTextMark[]).reduce<ReactNode>((current, mark, index) => {
+    if (!isPublicRichTextMarkType(mark.type)) return current;
     if (mark.type === "bold") return <strong key={index}>{current}</strong>;
     if (mark.type === "italic") return <em key={index}>{current}</em>;
     if (mark.type === "strike") return <s key={index}>{current}</s>;
     if (mark.type === "code") return <code key={index}>{current}</code>;
+    if (mark.type === "link") {
+      const href = resolveSafeRichTextLinkHref(
+        mark.attrs && typeof mark.attrs === "object"
+          ? (mark.attrs as { href?: unknown }).href
+          : null,
+      );
+
+      if (!href) return current;
+
+      const external = isExternalRichTextLink(href);
+
+      return (
+        <a
+          key={index}
+          href={href}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noopener noreferrer" : undefined}
+        >
+          {current}
+        </a>
+      );
+    }
     return current;
   }, children);
 }
@@ -84,6 +114,10 @@ function renderInlineContent(node: RichTextNode, keyPrefix: string): ReactNode {
 }
 
 function renderBlockNode(node: RichTextNode, key: string): ReactNode {
+  if (!isPublicRichTextNodeType(node.type)) {
+    return <Fragment key={key}>{renderInlineContent(node, key)}</Fragment>;
+  }
+
   if (node.type === "paragraph") {
     return <p key={key}>{renderInlineContent(node, key)}</p>;
   }

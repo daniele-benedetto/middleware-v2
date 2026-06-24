@@ -70,7 +70,7 @@ function ArticleTags({ article }: ArticleOnlyProps) {
   if (!tagLine) return null;
 
   return (
-    <p className="max-w-3xl font-heading text-[11px] leading-snug font-bold tracking-[0.14em] break-words whitespace-normal text-muted uppercase">
+    <p className="max-w-3xl font-heading text-[11px] leading-snug font-bold tracking-[0.14em] wrap-break-word whitespace-normal text-muted uppercase">
       {tagLine}
     </p>
   );
