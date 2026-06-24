@@ -57,9 +57,17 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
   - 6 route pubbliche con `export const revalidate = 3600`.
   - 4 route handler API con `runtime=nodejs` + `dynamic=force-dynamic` da riconciliare.
 
-  **Piano fasato (reversibile — il flag si spegne in 1 riga):**
-  1. **Spike di misura (read-only, ~1h).** Branch isolato: `cacheComponents: true` → `pnpm build` + `pnpm dev`.
-     Next _forza_ errori su ogni accesso dati non-cached: il log È la mappa esatta del lavoro. Zero commit.
+  **✅ Spike Fase 1 ESEGUITO** (flag abilitato temporaneamente, `pnpm build`, poi ripristinato — nessun commit):
+  la build fallisce con **17 errori, tutti di compatibilità config** (si ferma PRIMA della fase runtime). Mappa esatta:
+  - `revalidate` incompatibile → **6 route pubbliche** (`page`, `[slug]`, `articoli/[slug]`, `articoli/[slug]/ascolta`,
+    `uscite`, `uscite/[slug]`). "Please remove it" → la cache va spostata nelle funzioni dati con `cacheLife`.
+  - `dynamic` (×5) + `runtime` (×5) incompatibili → **5 route handler API** (`auth/[...all]`, `cms/media/blob`,
+    `cms/media/upload`, `public/media/blob`, `trpc/[trpc]`). Vanno rimossi (Node è già default).
+  - `dynamicParams` incompatibile → `(public)/[slug]/page.tsx` (×1).
+  - **0 errori runtime `use cache`/`<Suspense>`**: la build si ferma alla validazione config, quindi gli errori di
+    accesso-dati più profondi sono dietro questo primo muro → servirà una **Fase 1-bis** (rimuovere i config, ri-buildare)
+    per scoprirli. Il blast radius resta esattamente gli 11 file mappati; primo muro puramente meccanico.
+  1. ~~Spike di misura~~ ✅ fatto (sopra). Prossimo: Fase 1-bis (rimuovere i config sopra e ri-buildare per la mappa runtime).
   2. **Data layer pubblico (6 file).** Profilo `cacheLife` condiviso; ogni
      `unstable_cache(fn, keys, {revalidate, tags})` → `'use cache'` + `cacheLife(...)` + `cacheTag(TAG)`.
      Opportunità: **tag per-slug** (es. `public-article:${slug}`) per invalidazione granulare invece di
