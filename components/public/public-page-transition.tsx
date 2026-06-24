@@ -8,8 +8,10 @@ type PublicPageTransitionProps = {
 
 export function PublicPageTransition({ children }: PublicPageTransitionProps) {
   return (
-    <ViewTransition name="public-page-content" default="none">
-      {children}
+    <ViewTransition update="page-transition" default="none">
+      <div className="flex min-h-svh w-full max-w-full flex-1 flex-col overflow-x-clip">
+        {children}
+      </div>
     </ViewTransition>
   );
 }

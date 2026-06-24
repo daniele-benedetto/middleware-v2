@@ -15,9 +15,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       </a>
       <PublicHeader />
       <div data-public-page-content>
-        <div className="flex min-h-svh w-full max-w-full flex-1 flex-col overflow-x-clip">
-          <PublicPageTransition>{children}</PublicPageTransition>
-        </div>
+        <PublicPageTransition>{children}</PublicPageTransition>
       </div>
       <div data-public-footer>
         <PublicFooter />

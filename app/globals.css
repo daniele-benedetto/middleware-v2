@@ -278,24 +278,24 @@ body {
   view-transition-name: none;
 }
 
-/* view-transition-name: public-page-content is assigned by React's
-   <ViewTransition name="public-page-content"> (PublicPageTransition), not here —
-   two elements with the same name would make the browser skip the transition. */
+/* The page content is animated by React's <ViewTransition update="page-transition">
+   (PublicPageTransition), which assigns the `page-transition` view-transition-class.
+   Target it with the `.page-transition` class selector. */
 
-::view-transition-image-pair(public-page-content) {
+::view-transition-image-pair(.page-transition) {
   isolation: isolate;
 }
 
-::view-transition-old(public-page-content),
-::view-transition-new(public-page-content) {
+::view-transition-old(.page-transition),
+::view-transition-new(.page-transition) {
   mix-blend-mode: normal;
 }
 
-::view-transition-old(public-page-content) {
+::view-transition-old(.page-transition) {
   animation: 240ms var(--easing-standard) both page-transition-out;
 }
 
-::view-transition-new(public-page-content) {
+::view-transition-new(.page-transition) {
   animation: 360ms var(--easing-standard) 240ms both page-transition-in;
 }
 
