@@ -39,10 +39,45 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
       è stato **annullato** e il file è tornato identico all'originale. Il problema di fondo (scroll-to-top forzato a
       ogni navigazione che disturba il back/forward) resta aperto, ma va affrontato ripensando l'intero sistema di
       transizione, non con una patch puntuale. → vedi la sezione **"Sistemi di page transition per Next 16 (da valutare)"** in fondo.
-- [ ] **A-3 `[BASSA]`/L — `unstable_cache` → `use cache` con Cache Components.**
-      I documenti locali indicano che `unstable_cache` “has been replaced by `use cache` in Next.js 16”.
-      Tutto `lib/public/server/*` lo usa. È la strada moderna, ma è una migrazione reale: richiede
-      `experimental.cacheComponents` e cambiamenti comportamentali nell’app. Backlog, non urgente: il setup attuale è corretto e supportato.
+- [ ] **A-3 `[BASSA]`/L — `unstable_cache` → `use cache` con Cache Components. (BACKLOG — piano pronto)**
+
+  **Scoperta chiave:** non è una migrazione localizzata dei 6 file pubblici. `use cache` **richiede
+  `cacheComponents: true`** in `next.config.ts`, che è un **flag globale**: cambia il comportamento dell'intera
+  app (CMS incluso), non solo `lib/public/server/`. Da `migrating-to-cache-components.md`:
+  - Tutte le pagine diventano **dynamic by default**; `revalidate` / `dynamic` / `fetchCache` vanno sostituiti
+    con `use cache` + `cacheLife`.
+  - **UI state preservation via React `<Activity>`**: lo stato dei componenti (input form, dialog, dropdown,
+    scroll) **persiste** tra le navigazioni invece di smontarsi → rischio regressioni concentrato sul **CMS
+    form-heavy** (tRPC/react-query, dialog, toast). È la parte più delicata.
+  - `runtime = 'edge'` non supportato (qui è sempre `nodejs` → ok).
+
+  **Stato attuale = corretto e supportato.** `unstable_cache` è solo _deprecato_, non rotto: questa è
+  modernizzazione opt-in, non un fix. Procedere solo con un driver concreto.
+
+  **Blast radius mappato nel repo:**
+  - 6 file `lib/public/server/*` con `unstable_cache` (`revalidate: 3600` + `tags`).
+  - 1 file `revalidation.ts` → `revalidateTag(tag, { expire: 0 })`, chiamato dai router tRPC
+    `articles` / `issues` / `pages` su ogni mutazione CMS.
+  - 6 route pubbliche con `export const revalidate = 3600`.
+  - 4 route handler API con `runtime=nodejs` + `dynamic=force-dynamic` da riconciliare.
+
+  **Piano fasato (reversibile — il flag si spegne in 1 riga):**
+  1. **Spike di misura (read-only, ~1h).** Branch isolato: `cacheComponents: true` → `pnpm build` + `pnpm dev`.
+     Next _forza_ errori su ogni accesso dati non-cached: il log È la mappa esatta del lavoro. Zero commit.
+  2. **Data layer pubblico (6 file).** Profilo `cacheLife` condiviso; ogni
+     `unstable_cache(fn, keys, {revalidate, tags})` → `'use cache'` + `cacheLife(...)` + `cacheTag(TAG)`.
+     Opportunità: **tag per-slug** (es. `public-article:${slug}`) per invalidazione granulare invece di
+     invalidare tutti i tag insieme.
+  3. **Route config.** Rimuovere `export const revalidate = 3600` dalle 6 route (la cache vive ora nelle
+     funzioni dati); verificare `generateStaticParams` / `dynamicParams=false`; riconciliare gli handler API.
+  4. **Audit CMS (rischioso).** Test regressioni `<Activity>`: form dopo submit, dialog con focus,
+     dropdown/popover, reset stati. Aggiungere cleanup dove serve.
+  5. **Verifica.** `typecheck` + `lint` + `build` + smoke manuale pubblico/CMS + conferma che la
+     revalidation-on-publish (mutazioni tRPC → `revalidateTag`) funzioni ancora.
+
+  **Effort reale: L (multi-giorno), reversibile.** Raccomandazione: partire dalla Fase 1 (spike) prima di
+  impegnarsi, così si misura il costo reale con dati invece che a stima.
+
 - [x] **A-4 `[BASSA]`/S — ✅ FATTO. `dossier-view-model.ts` documentato come facade intenzionale.**
       Aggiunto un commento che lo descrive come superficie API stabile, dossier-scoped, sopra
       `lib/public/issue-numbering` (mantiene i blocchi disaccoppiati dagli internals della numerazione). Layer mantenuto.
