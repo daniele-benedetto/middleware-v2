@@ -336,7 +336,6 @@ body {
   to {
     opacity: 0;
     filter: blur(1.5px);
-    transform: translateY(20px);
   }
 }
 
@@ -344,13 +343,11 @@ body {
   from {
     opacity: 0;
     filter: blur(1.5px);
-    transform: translateY(20px);
   }
 
   to {
     opacity: 1;
     filter: blur(0);
-    transform: translateY(0);
   }
 }
 
