@@ -24,7 +24,7 @@ export function PublicIssuesArchivePage({ issues }: PublicIssuesArchivePageProps
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildIssuesArchiveJsonLd()),
+          __html: JSON.stringify(buildIssuesArchiveJsonLd(issues)),
         }}
       />
       {issueViewModels.length > 0 ? (

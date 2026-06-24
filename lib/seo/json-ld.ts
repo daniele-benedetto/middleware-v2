@@ -3,7 +3,7 @@ import { seoConfig } from "@/lib/seo/config";
 import { getCanonicalUrl, getOpenGraphImageUrl } from "@/lib/seo/metadata";
 import { resolveAbsoluteUrl, toIsoDate } from "@/lib/seo/url";
 
-import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
+import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
 
 type BreadcrumbItem = {
@@ -24,6 +24,24 @@ export function buildWebsiteJsonLd() {
     name: seoConfig.siteName,
     url: rootUrl,
     inLanguage: "it-IT",
+    publisher: { "@id": `${rootUrl}#organization` },
+  };
+}
+
+export function buildOrganizationJsonLd() {
+  const rootUrl = getRootUrl();
+
+  return {
+    "@type": "Organization",
+    "@id": `${rootUrl}#organization`,
+    name: seoConfig.siteName,
+    url: rootUrl,
+    logo: {
+      "@type": "ImageObject",
+      url: resolveAbsoluteUrl("/brand/apple-icon.png"),
+      width: 180,
+      height: 180,
+    },
   };
 }
 
@@ -52,7 +70,7 @@ export function buildArticleJsonLd(article: PublicArticleDetailDto, description?
     datePublished: toIsoDate(article.publishedAt),
     dateModified: toIsoDate(article.updatedAt),
     author: article.authorName ? { "@type": "Person", name: article.authorName } : undefined,
-    publisher: { "@id": `${getRootUrl()}#website` },
+    publisher: { "@id": `${getRootUrl()}#organization` },
     mainEntityOfPage: articleUrl,
     articleSection: article.categoryName,
     keywords: article.tags.map((tag) => tag.name).join(", ") || undefined,
@@ -101,12 +119,35 @@ export function buildJsonLdGraph(nodes: object[]) {
   };
 }
 
+export function buildArchiveCollectionPageJsonLd(issues: PublicIssueListItem[]) {
+  const archiveUrl = getCanonicalUrl("/uscite");
+
+  return {
+    "@type": "CollectionPage",
+    "@id": `${archiveUrl}#archive`,
+    name: "Archivio",
+    url: archiveUrl,
+    isPartOf: { "@id": `${getRootUrl()}#website` },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: issues.length,
+      itemListElement: issues.map((issue, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: issue.title,
+        url: getCanonicalUrl(`/uscite/${issue.slug}`),
+      })),
+    },
+  };
+}
+
 export function buildArticlePageJsonLd(
   article: PublicArticleDetailDto,
   description?: string | null,
 ) {
   return buildJsonLdGraph([
     buildWebsiteJsonLd(),
+    buildOrganizationJsonLd(),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
       { name: article.issueTitle, path: `/uscite/${article.issueSlug}` },
@@ -119,6 +160,7 @@ export function buildArticlePageJsonLd(
 export function buildIssuePageJsonLd(issue: PublicCurrentIssueDetail) {
   return buildJsonLdGraph([
     buildWebsiteJsonLd(),
+    buildOrganizationJsonLd(),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
       { name: "Archivio", path: "/uscite" },
@@ -128,19 +170,22 @@ export function buildIssuePageJsonLd(issue: PublicCurrentIssueDetail) {
   ]);
 }
 
-export function buildIssuesArchiveJsonLd() {
+export function buildIssuesArchiveJsonLd(issues: PublicIssueListItem[]) {
   return buildJsonLdGraph([
     buildWebsiteJsonLd(),
+    buildOrganizationJsonLd(),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
       { name: "Archivio", path: "/uscite" },
     ]),
+    buildArchiveCollectionPageJsonLd(issues),
   ]);
 }
 
 export function buildStaticPageJsonLd(title: string, path: string) {
   return buildJsonLdGraph([
     buildWebsiteJsonLd(),
+    buildOrganizationJsonLd(),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
       { name: title, path },

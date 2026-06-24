@@ -6,7 +6,7 @@ import {
   buildStaticPageJsonLd,
 } from "@/lib/seo";
 
-import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
+import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
 
 type JsonLdNode = Record<string, unknown>;
@@ -89,14 +89,20 @@ describe("seo json-ld", () => {
     );
   });
 
-  it("builds article page graph with Article and BreadcrumbList", () => {
+  it("builds article page graph with Organization, Article and BreadcrumbList", () => {
     const jsonLd = buildArticlePageJsonLd(article, "Descrizione");
+    const graph = getGraph(jsonLd);
 
-    expect(getGraph(jsonLd).map((node) => node["@type"])).toEqual([
+    expect(graph.map((node) => node["@type"])).toEqual([
       "WebSite",
+      "Organization",
       "BreadcrumbList",
       "Article",
     ]);
+
+    const articleNode = graph.find((node) => node["@type"] === "Article");
+    const publisher = articleNode?.publisher as JsonLdNode | undefined;
+    expect(publisher?.["@id"]).toBe("http://localhost:3000/#organization");
   });
 
   it("builds issue page graph with CollectionPage and BreadcrumbList", () => {
@@ -104,16 +110,37 @@ describe("seo json-ld", () => {
 
     expect(getGraph(jsonLd).map((node) => node["@type"])).toEqual([
       "WebSite",
+      "Organization",
       "BreadcrumbList",
       "CollectionPage",
     ]);
   });
 
-  it("builds breadcrumb json-ld for archive and static pages", () => {
-    const archiveJsonLd = buildIssuesArchiveJsonLd();
+  it("builds archive json-ld with a CollectionPage ItemList of issues", () => {
+    const archiveJsonLd = buildIssuesArchiveJsonLd([
+      {
+        id: issue.id,
+        title: issue.title,
+        titleStyled: null,
+        slug: issue.slug,
+        description: issue.description,
+        publishedAt: issue.publishedAt,
+        articlesCount: issue.articlesCount,
+      } as PublicIssueListItem,
+    ]);
+    const graph = getGraph(archiveJsonLd);
+
+    expect(graph.some((node) => node["@type"] === "BreadcrumbList")).toBe(true);
+
+    const collection = graph.find((node) => node["@type"] === "CollectionPage");
+    const itemList = collection?.mainEntity as JsonLdNode | undefined;
+    const items = itemList?.itemListElement as JsonLdNode[] | undefined;
+    expect(items?.[0]?.url).toBe("http://localhost:3000/uscite/numero-uno");
+  });
+
+  it("builds breadcrumb json-ld for static pages", () => {
     const staticJsonLd = buildStaticPageJsonLd("Chi siamo", "/chi-siamo");
 
-    expect(getGraph(archiveJsonLd).some((node) => node["@type"] === "BreadcrumbList")).toBe(true);
     expect(getGraph(staticJsonLd).some((node) => node["@type"] === "BreadcrumbList")).toBe(true);
   });
 });

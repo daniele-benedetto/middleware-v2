@@ -5,6 +5,7 @@ import {
   articleEyebrow,
   getArticleNumber,
 } from "@/components/public/sections/dossier/dossier-format";
+import { i18n } from "@/lib/i18n";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 
@@ -47,6 +48,7 @@ export function BodyBlock({ block, articleNumbers }: BodyBlockProps) {
   return (
     <section className="scroll-mt-20 py-10 md:py-12">
       <div className={publicContentClassName}>
+        {block.title ? null : <h2 className="sr-only">{i18n.public.home.dossier.articlesLabel}</h2>}
         <BlockSectionIntro block={block} />
         <div
           className={`grid items-stretch border-l border-t border-foreground ${gridColumnsClass}`}

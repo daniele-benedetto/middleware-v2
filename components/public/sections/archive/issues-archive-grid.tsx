@@ -18,16 +18,19 @@ export function IssuesArchiveGrid({ issues, countLabel }: IssuesArchiveGridProps
   const variants: IssueArchiveCardVariant[] = ["default", "red", "black"];
 
   return (
-    <IssuesArchiveRail ariaLabel={i18n.public.issuesArchive.railAriaLabel}>
-      {issues.map((issue, index) => (
-        <IssueArchiveCard
-          key={issue.id}
-          issue={issue}
-          countLabel={countLabel}
-          variant={variants[index % variants.length]}
-          className="w-full lg:w-screen lg:shrink-0"
-        />
-      ))}
-    </IssuesArchiveRail>
+    <>
+      <h2 className="sr-only">{i18n.public.issuesArchive.railAriaLabel}</h2>
+      <IssuesArchiveRail ariaLabel={i18n.public.issuesArchive.railAriaLabel}>
+        {issues.map((issue, index) => (
+          <IssueArchiveCard
+            key={issue.id}
+            issue={issue}
+            countLabel={countLabel}
+            variant={variants[index % variants.length]}
+            className="w-full lg:w-screen lg:shrink-0"
+          />
+        ))}
+      </IssuesArchiveRail>
+    </>
   );
 }

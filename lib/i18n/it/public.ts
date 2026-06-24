@@ -47,6 +47,9 @@ export const publicIt = {
     closing: {
       fallback: "Ultimo movimento del dossier.",
     },
+    dossier: {
+      articlesLabel: "Articoli del numero",
+    },
     sectionGrid: {
       showAll: (count: number) => `Vedi tutti (${count})`,
       showLess: "Riduci",

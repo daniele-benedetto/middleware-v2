@@ -1,7 +1,8 @@
 import { DossierArticleCard } from "@/components/public/compounds";
 import { publicContentClassName } from "@/components/public/primitives";
-import { formatTags } from "@/components/public/sections/dossier/dossier-format";
+import { articleEyebrow } from "@/components/public/sections/dossier/dossier-format";
 import { sortUnpaginatedArticles } from "@/components/public/sections/dossier/dossier-view-model";
+import { i18n } from "@/lib/i18n";
 
 import type { HomeIssueArticle } from "@/components/public/home/home-view-model";
 
@@ -25,12 +26,13 @@ export function UnpaginatedArticleRow({
   return (
     <section id={id} className="scroll-mt-20 py-10 lg:py-12">
       <div className={publicContentClassName}>
+        <h2 className="sr-only">{i18n.public.home.dossier.articlesLabel}</h2>
         <div className="grid border-l border-t border-foreground md:grid-cols-2 xl:grid-cols-3">
           {orderedArticles.map((article, index) => (
             <DossierArticleCard
               key={article.id}
               article={article}
-              eyebrow={formatTags(article) || article.categoryName || ""}
+              eyebrow={articleEyebrow(article)}
               number={startNumber + index}
               variant="constellationSecondary"
             />

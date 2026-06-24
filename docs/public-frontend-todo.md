@@ -114,27 +114,24 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
 
 ## 3. SEO
 
-- [ ] **SEO-1 `[MEDIA]`/M — La gerarchia heading salta da `h1` a `h3`.** Diverse griglie renderizzano card con `<h3>` senza un `<h2>` intermedio:
-  - `sections/archive/issues-archive-grid.tsx` — card sotto l’hero `<h1>` dell’archive, senza `<h2>`
-  - `sections/dossier/unpaginated-article-row.tsx` — griglia di `<h3>` senza heading di sezione
-  - `sections/dossier/body-block.tsx` quando `BlockSectionIntro` ritorna `null`, cioè senza titolo/descrizione e senza `<h2>`
-    Aggiungere un `<h2>` visually-hidden per sezione, oppure demotare i titoli delle card, così l’outline resta continuo.
-- [ ] **SEO-2 `[MEDIA]`/S — L’indice archive ha il JSON-LD più sottile.**
-      `buildIssuesArchiveJsonLd()` (`lib/seo/json-ld.ts`) emette solo `WebSite` + `BreadcrumbList`.
-      Aggiungere un `CollectionPage` / `ItemList` che enumeri le issue: è il contenuto principale della pagina.
-- [ ] **SEO-3 `[MEDIA]`/S — `Article.publisher` punta a un nodo `WebSite`.**
-      `buildArticleJsonLd` imposta `publisher: { "@id": "...#website" }`, ma `#website` è tipizzato come `WebSite`, non `Organization`.
-      Schema.org si aspetta una `Organization`, con `name` e `logo`. Emettere o referenziare un nodo `Organization` corretto.
-      File: `lib/seo/json-ld.ts`.
+- [x] **SEO-1 `[MEDIA]`/M — ✅ FATTO. Gerarchia heading `h1 → h3` colmata** con `<h2>` sr-only per sezione:
+  - `issues-archive-grid.tsx` — `<h2 class="sr-only">` (label `railAriaLabel`) prima della rail.
+  - `unpaginated-article-row.tsx` — `<h2 class="sr-only">` con nuova label i18n `home.dossier.articlesLabel`.
+  - `body-block.tsx` — `<h2 class="sr-only">` di fallback quando il blocco non ha `title` (altrimenti l'h2 visibile
+    di `BlockSectionIntro`). Garantisce esattamente un `<h2>` per sezione.
+- [x] **SEO-2 `[MEDIA]`/S — ✅ FATTO. JSON-LD archivio arricchito.**
+      Aggiunto `buildArchiveCollectionPageJsonLd(issues)`: `CollectionPage` + `ItemList` che enumera le uscite
+      (con `position`/`url`/`name`). `buildIssuesArchiveJsonLd(issues)` ora riceve la lista dal componente.
+- [x] **SEO-3 `[MEDIA]`/S — ✅ FATTO. `Article.publisher` ora punta a una `Organization`.**
+      Aggiunto nodo `buildOrganizationJsonLd()` (`#organization`, `name`, `url`, `logo` 180×180
+      `/brand/apple-icon.png`), referenziato dal publisher dell'articolo e dal `WebSite`; incluso in tutti i grafi.
 - [x] **SEO-4 `[BASSA]`/S — ✅ FATTO (insieme ad A11Y-4).** Titoli colonne footer passati da `<h4>` a `<h2>`
       (`footer/public-footer-link-group.tsx`), stile visivo invariato.
-- [ ] **SEO-5 `[BASSA]`/S — La data “updated” delle pagine statiche non è un `<time>`.**
-      `pages/public-static-page.tsx` passa la data formattata come semplice `label` a `PublicMetaRail`, a differenza della pagina articolo.
-      Passare `dateTime: page.updatedAt` così viene renderizzata come `<time dateTime>`.
-- [ ] **SEO-6 `[BASSA]`/S — Fallback canonical delle pagine statiche.**
-      `getPublicStaticPageData` fa fallback a `canonicalPath = "/"` per uno slug non registrato, producendo un canonical sbagliato verso la homepage.
-      La route imposta `dynamicParams = false`, quindi slug sconosciuti non dovrebbero arrivare al componente.
-      Confermare e rimuovere il fallback rischioso, oppure trasformarlo in 404.
+- [x] **SEO-5 `[BASSA]`/S — ✅ FATTO.** `public-static-page.tsx` ora passa `dateTime: page.updatedAt` al
+      `PublicMetaRail` → la data "Aggiornato il…" è renderizzata come `<time dateTime>`.
+- [x] **SEO-6 `[BASSA]`/S — ✅ FATTO. Fallback canonical reso self-referential.**
+      Verificato: il data layer (`lib/public/server/page.ts`) già usa `/${slug}`; era solo il **componente** a usare
+      `"/"`. Allineato a `` `/${page.slug}` `` → niente più canonical/breadcrumb errato verso la homepage.
 
 ---
 
@@ -203,8 +200,8 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
       Si collega a Perf-3.
 - [ ] **R-8 `[BASSA]`/S — Rimuovere il wrapper passthrough** `composeNarrativeHomeBlocks` in `home-view-model.ts`,
       che inoltra soltanto a `resolveIssueHomeBlocks`.
-- [ ] **R-9 `[BASSA]`/S — `unpaginated-article-row.tsx`** reimplementa inline la logica eyebrow;
-      riusare `articleEyebrow()` da `dossier-format.ts`.
+- [x] **R-9 `[BASSA]`/S — ✅ FATTO (insieme a SEO-1).** `unpaginated-article-row.tsx` ora usa
+      `articleEyebrow()` da `dossier-format.ts` invece di reimplementare `formatTags(...) || categoryName || ""`.
 - [ ] **R-10 `[BASSA]`/S — `rich-text/public-rich-text.tsx`**: aggiungere un piccolo helper `renderChildren`
       per i body identici di `bulletList` / `orderedList` / `listItem` / `blockquote`;
       proteggere la join del testo di `codeBlock` con `typeof child.text === "string"`, per evitare `undefined\n` letterale.

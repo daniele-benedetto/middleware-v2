@@ -20,15 +20,23 @@ function StaticPageMetaRail({ page }: PublicStaticPageProps) {
 
   return (
     <PublicMetaRail
-      items={[{ key: "updated", label: `${text.updatedPrefix} ${formatPageDate(page.updatedAt)}` }]}
+      items={[
+        {
+          key: "updated",
+          label: `${text.updatedPrefix} ${formatPageDate(page.updatedAt)}`,
+          dateTime: page.updatedAt,
+        },
+      ]}
     />
   );
 }
 
 export function PublicStaticPage({ page }: PublicStaticPageProps) {
+  // Self-referential fallback (matches lib/public/server/page.ts) so an unknown
+  // slug never produces a canonical/breadcrumb pointing at the homepage.
   const canonicalPath = isPublicStaticPageSlug(page.slug)
     ? getPublicStaticPagePath(page.slug)
-    : "/";
+    : `/${page.slug}`;
 
   return (
     <main
