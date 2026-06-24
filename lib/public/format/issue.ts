@@ -11,6 +11,27 @@ export function formatIssueNumber(positionFromOldest: number): string {
   return `N. ${String(positionFromOldest).padStart(2, "0")}`;
 }
 
+type IssueOrderItem = { id: string; publishedAt: string };
+
+function sortIssuesOldestFirst<T extends IssueOrderItem>(issues: T[]): T[] {
+  return [...issues].sort(
+    (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
+  );
+}
+
+// Oldest-first index of a single issue (0 when not found).
+export function getIssueOrderIndex(issues: IssueOrderItem[], issueId: string): number {
+  const index = sortIssuesOldestFirst(issues).findIndex((issue) => issue.id === issueId);
+  return index >= 0 ? index : 0;
+}
+
+// Map of issue id -> sequential issue number, ordered oldest-first.
+export function buildIssueNumberMap(issues: IssueOrderItem[]): Map<string, string> {
+  return new Map(
+    sortIssuesOldestFirst(issues).map((issue, index) => [issue.id, formatIssueNumber(index)]),
+  );
+}
+
 export function formatIssueMonthYearLong(publishedAt: string): string {
   const date = new Date(publishedAt);
   const formatter = new Intl.DateTimeFormat("it-IT", {

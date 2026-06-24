@@ -176,24 +176,23 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
 
 - [x] **R-1 `[MEDIA]`/S — ✅ FATTO (commit 46f2e5a).** Eliminati shim e barrel dossier morti → Quick win 0.
 - [x] **R-2 `[MEDIA]`/S — ✅ FATTO (commit 46f2e5a).** Rimosso il re-export inutilizzato di `getBlockNumberingArticles` → Quick win 0.
-- [ ] **R-3 `[MEDIA]`/M — La card archive è implementata due volte.**
+- [ ] **R-3 `[MEDIA]`/M — ⏸️ RINVIATO (rischio visivo). La card archive è implementata due volte.**
       `home/archive-section.tsx` e `sections/archive/issue-archive-card.tsx` definiscono indipendentemente la stessa mappa di stili a 3 varianti,
       già in drift: text-stroke `0.35px` vs `0.45px`, e markup quasi identico per card
       con numero di background / `StyledTitle` / meta row puntinata.
-      Unificare in una sola card e una sola mappa varianti.
-- [ ] **R-4 `[MEDIA]`/S — “Issue number indexing” duplicato 3×.**
-      La logica “ordina oldest-first → mappa id→`formatIssueNumber(index)`” vive in `archive-section.tsx`
-      (`getIssueNumbers`), `archive-view-model.ts` (`getArchiveIssueViewModels`) e `home-view-model.ts`
-      (`getIssueOrderLabel`). Estrarre un helper condiviso.
-- [ ] **R-5 `[MEDIA]`/L — Triplet dei feature block dossier.**
+      Unificare in una sola card e una sola mappa varianti. **Da fare con verifica visiva** (le due card hanno layout
+      diversi — grid vs full-bleed — e il drift di stile va riconciliato deliberatamente, non a tavolino.)
+- [x] **R-4 `[MEDIA]`/S — ✅ FATTO.** Estratti `buildIssueNumberMap(issues)` e `getIssueOrderIndex(issues, id)`
+      in `lib/public/format/issue.ts`; i 3 call site (`archive-section`, `archive-view-model`, `home-view-model`)
+      ora li riusano. Output identico.
+- [ ] **R-5 `[MEDIA]`/L — ⏸️ RINVIATO (rischio visivo). Triplet dei feature block dossier.**
       `lead-block.tsx`, `feature-break-block.tsx`, `closing-block.tsx` — circa 110-130 righe ciascuno —
       condividono uno scheletro parallelo: risoluzione dell’articolo featured, blocco `next/image`,
       header con numero+eyebrow, `StyledTitle`, excerpt, `ArticleMeta`, `aria-labelledby`.
       Una primitiva condivisa `<DossierFeatureLink>` con slot layout/variant ridurrebbe molto il codice.
-      Effort più alto: da fare dopo R-3.
-- [ ] **R-6 `[MEDIA]`/S — `ArticleMeta` e `PublicMetaRail` duplicano** la join con separatore puntinato
-      (`compounds/article-meta.tsx` vs `compounds/public-meta-rail.tsx`).
-      Rendere `PublicMetaRail` l’unica implementazione e far delegare `ArticleMeta`.
+      Effort più alto: da fare dopo R-3, **con verifica visiva** (i 3 blocchi hanno layout/posizionamenti distinti).
+- [x] **R-6 `[MEDIA]`/S — ✅ FATTO.** `ArticleMeta` ora delega a `PublicMetaRail` (passando `className` con
+      `text-xs`+tone e `separatorClassName`); markup renderizzato identico. `PublicMetaRail` è l'unica implementazione.
 - [ ] **R-7 `[BASSA]`/M — Interni dell’audio player.**
       Estrarre `useAudioPlayer(audioRef)` e `useAudioProgress({ articleId, ... })` da `article-listen-player.tsx`;
       unificare i quasi-identici `seekBy` / `handleSeekTo` in un solo `commitSeek(nextTime)`.
@@ -202,16 +201,13 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
       che inoltra soltanto a `resolveIssueHomeBlocks`.
 - [x] **R-9 `[BASSA]`/S — ✅ FATTO (insieme a SEO-1).** `unpaginated-article-row.tsx` ora usa
       `articleEyebrow()` da `dossier-format.ts` invece di reimplementare `formatTags(...) || categoryName || ""`.
-- [ ] **R-10 `[BASSA]`/S — `rich-text/public-rich-text.tsx`**: aggiungere un piccolo helper `renderChildren`
-      per i body identici di `bulletList` / `orderedList` / `listItem` / `blockquote`;
-      proteggere la join del testo di `codeBlock` con `typeof child.text === "string"`, per evitare `undefined\n` letterale.
-- [ ] **R-11 `[BASSA]`/S — `block-section-intro.tsx`** testa `block.title` tre volte dentro una ternaria intricata;
-      calcolare `hasTitle` una volta e ramificare in modo più pulito.
-- [ ] **R-12 `[BASSA]`/S — `dossier-format.ts` `getArticleNumber`** ritorna silenziosamente `1` quando manca un id;
-      aggiungere un commento, o un warn solo in dev, per spiegare il fallback.
-- [ ] **R-13 `[BASSA]`/S — Guard di esaustività.**
-      Aggiungere `default: never` agli `switch` su union chiuse in `dossier-home.tsx` (`renderBlock`) e
-      `dossier-variant.ts`, così un nuovo block type fallisce a compile time.
+- [x] **R-10 `[BASSA]`/S — ✅ FATTO.** Aggiunto helper `renderBlockChildren` per i body identici di
+      `bulletList`/`orderedList`/`listItem`/`blockquote`; join del `codeBlock` protetta con `typeof child.text === "string"`.
+- [x] **R-11 `[BASSA]`/S — ✅ FATTO.** `block-section-intro.tsx` calcola `hasTitle`/`hasDescription` una volta;
+      struttura preservata identica (incluso il divider sotto il titolo quando manca la description).
+- [x] **R-12 `[BASSA]`/S — ✅ FATTO.** Aggiunto commento sul fallback `?? 1` di `getArticleNumber`.
+- [x] **R-13 `[BASSA]`/S — ✅ FATTO.** Aggiunti guard `default: never` agli `switch` di `renderBlock`
+      (`dossier-home.tsx`) e `getNarrativeVariantClasses` (`dossier-variant.ts`).
 
 ---
 

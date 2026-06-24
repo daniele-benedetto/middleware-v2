@@ -3,7 +3,11 @@ import { getIssuePlainDescription } from "@/components/public/home/home-view-mod
 import { publicContentClassName, publicInteraction } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { StyledTitle } from "@/components/public/styled-title";
-import { formatIssueMonthYearLong, formatIssueNumber } from "@/lib/public/format/issue";
+import {
+  buildIssueNumberMap,
+  formatIssueMonthYearLong,
+  formatIssueNumber,
+} from "@/lib/public/format/issue";
 import { cn } from "@/lib/utils";
 
 import type { PublicIssueListItem } from "@/lib/public/types/issues";
@@ -65,14 +69,6 @@ const archiveCardVariantClasses: Record<
   },
 };
 
-function getIssueNumbers(issues: PublicIssueListItem[]) {
-  const oldestFirst = [...issues].sort(
-    (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
-  );
-
-  return new Map(oldestFirst.map((issue, index) => [issue.id, formatIssueNumber(index)]));
-}
-
 function getArchiveGridClassName(count: number) {
   if (count === 1) {
     return "grid";
@@ -110,7 +106,7 @@ export function ArchiveSection({
     return null;
   }
 
-  const issueNumbers = getIssueNumbers(allIssues);
+  const issueNumbers = buildIssueNumberMap(allIssues);
   const variants: ArchiveCardVariant[] = ["default", "red", "black"];
 
   return (

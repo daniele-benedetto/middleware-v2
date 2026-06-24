@@ -1,3 +1,4 @@
+import { PublicMetaRail } from "@/components/public/compounds/public-meta-rail";
 import { i18n } from "@/lib/i18n";
 
 import type { HomeIssueArticle } from "@/components/public/home/home-view-model";
@@ -17,18 +18,15 @@ export function ArticleMeta({ article, tone = "light" }: ArticleMetaProps) {
     article.authorName,
     text.readingTimeLabel(article.readingTimeMinutes),
     article.hasAudio ? text.audioLabel : null,
-  ].filter((item): item is string => Boolean(item));
+  ]
+    .filter((label): label is string => Boolean(label))
+    .map((label, index) => ({ key: `${label}-${index}`, label }));
 
   return (
-    <div
+    <PublicMetaRail
+      items={items}
       className={`flex flex-wrap items-center gap-3 font-heading text-xs font-semibold ${muted}`}
-    >
-      {items.map((item, index) => (
-        <span key={`${item}-${index}`} className="flex items-center gap-3">
-          {index > 0 ? <span className={`size-1 rounded-[1px] ${separator}`} aria-hidden /> : null}
-          {item}
-        </span>
-      ))}
-    </div>
+      separatorClassName={separator}
+    />
   );
 }

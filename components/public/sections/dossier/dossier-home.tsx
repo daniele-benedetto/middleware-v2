@@ -41,6 +41,10 @@ function renderBlock(
       return <FeatureBreakBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
     case "closing":
       return <ClosingBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
+    default: {
+      const exhaustiveCheck: never = block.type;
+      throw new Error(`Unhandled narrative block type: ${String(exhaustiveCheck)}`);
+    }
   }
 }
 

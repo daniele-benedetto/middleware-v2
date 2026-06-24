@@ -5,26 +5,29 @@ import { cn } from "@/lib/utils";
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 
 export function BlockSectionIntro({ block }: { block: NarrativeHomeBlock }) {
-  if (!block.title && !block.description) {
+  const hasTitle = Boolean(block.title);
+  const hasDescription = Boolean(block.description);
+
+  if (!hasTitle && !hasDescription) {
     return null;
   }
 
   return (
     <div className="pb-6 lg:pb-7">
-      {block.title ? (
+      {hasTitle ? (
         <h2 className={cn(publicTypography.blockTitle, "text-foreground")}>
           <BlockTitle block={block} />
         </h2>
       ) : null}
-      {block.title ? (
+      {hasTitle ? (
         <div className="mt-6 border-t border-foreground pt-5">
-          {block.description ? (
+          {hasDescription ? (
             <p className={cn("w-full text-body-text", publicTypography.editorialBody)}>
               {block.description}
             </p>
           ) : null}
         </div>
-      ) : block.description ? (
+      ) : hasDescription ? (
         <p className={cn("mt-4 w-full text-body-text", publicTypography.editorialBody)}>
           {block.description}
         </p>

@@ -1,4 +1,5 @@
 import { resolveIssueHomeBlocks } from "@/components/public/home/resolve-issue-home-blocks";
+import { getIssueOrderIndex } from "@/lib/public/format/issue";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
@@ -54,9 +55,5 @@ export function getIssueOrderLabel(
   currentIssue: PublicCurrentIssueDetail,
   formatter: (order: number) => string,
 ) {
-  const oldestFirst = [...issues].sort(
-    (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
-  );
-  const index = oldestFirst.findIndex((issue) => issue.id === currentIssue.id);
-  return formatter(index >= 0 ? index : 0);
+  return formatter(getIssueOrderIndex(issues, currentIssue.id));
 }

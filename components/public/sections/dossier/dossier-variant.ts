@@ -32,5 +32,9 @@ export function getNarrativeVariantClasses(variant: NarrativeHomeBlock["variant"
         description: "text-dark-muted",
         image: "border-dark-border grayscale",
       };
+    default: {
+      const exhaustiveCheck: never = variant;
+      throw new Error(`Unhandled narrative variant: ${String(exhaustiveCheck)}`);
+    }
   }
 }

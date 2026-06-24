@@ -113,6 +113,10 @@ function renderInlineContent(node: RichTextNode, keyPrefix: string): ReactNode {
   );
 }
 
+function renderBlockChildren(node: RichTextNode, key: string): ReactNode {
+  return getNodeContent(node).map((child, index) => renderBlockNode(child, `${key}-${index}`));
+}
+
 function renderBlockNode(node: RichTextNode, key: string): ReactNode {
   if (!isPublicRichTextNodeType(node.type)) {
     return <Fragment key={key}>{renderInlineContent(node, key)}</Fragment>;
@@ -143,7 +147,7 @@ function renderBlockNode(node: RichTextNode, key: string): ReactNode {
   if (node.type === "bulletList") {
     return (
       <ul key={key} className="list-disc pl-6">
-        {getNodeContent(node).map((child, index) => renderBlockNode(child, `${key}-${index}`))}
+        {renderBlockChildren(node, key)}
       </ul>
     );
   }
@@ -151,23 +155,19 @@ function renderBlockNode(node: RichTextNode, key: string): ReactNode {
   if (node.type === "orderedList") {
     return (
       <ol key={key} className="list-decimal pl-6">
-        {getNodeContent(node).map((child, index) => renderBlockNode(child, `${key}-${index}`))}
+        {renderBlockChildren(node, key)}
       </ol>
     );
   }
 
   if (node.type === "listItem") {
-    return (
-      <li key={key}>
-        {getNodeContent(node).map((child, index) => renderBlockNode(child, `${key}-${index}`))}
-      </li>
-    );
+    return <li key={key}>{renderBlockChildren(node, key)}</li>;
   }
 
   if (node.type === "blockquote") {
     return (
       <blockquote key={key} className="border-l-4 border-accent pl-5 italic">
-        {getNodeContent(node).map((child, index) => renderBlockNode(child, `${key}-${index}`))}
+        {renderBlockChildren(node, key)}
       </blockquote>
     );
   }
@@ -177,7 +177,7 @@ function renderBlockNode(node: RichTextNode, key: string): ReactNode {
       <pre key={key} className="overflow-x-auto bg-foreground p-4 text-background">
         <code>
           {getNodeContent(node)
-            .map((child) => child.text)
+            .map((child) => (typeof child.text === "string" ? child.text : ""))
             .join("\n")}
         </code>
       </pre>

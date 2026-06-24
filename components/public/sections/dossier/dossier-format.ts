@@ -23,5 +23,7 @@ export function formatArticleNumber(value: number) {
 }
 
 export function getArticleNumber(articleNumbers: Map<string, number>, article: HomeIssueArticle) {
+  // Fallback to 1 for articles missing from the numbering map (shouldn't happen
+  // once numbers are assigned for the whole issue); keeps rendering resilient.
   return articleNumbers.get(article.id) ?? 1;
 }
