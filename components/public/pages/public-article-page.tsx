@@ -40,37 +40,33 @@ function ArticleMetaRail({ article }: ArticleOnlyProps) {
   ].filter((item) => item !== null);
 
   return (
-    <div className="flex flex-wrap items-center gap-3 font-heading text-[13px] font-semibold text-muted sm:text-[14px]">
-      {metaItems.map((item, index) => (
-        <span key={item.key} className="flex items-center gap-3">
-          {index > 0 ? <span className="size-1 rounded-[1px] bg-accent" aria-hidden /> : null}
-          {item.dateTime ? (
-            <time dateTime={item.dateTime}>{item.label}</time>
-          ) : item.href ? (
-            <Link href={item.href} className="hover:text-accent">
-              {item.label}
-            </Link>
-          ) : (
-            item.label
-          )}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function ArticleAudio({ article }: ArticleOnlyProps) {
-  if (!article.audioUrl) return null;
-
-  return (
-    <section className="border-y-2 border-foreground bg-background py-5">
-      <div className="mb-3 font-heading text-[12px] font-extrabold tracking-[0.12em] uppercase">
-        Ascolta articolo
+    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-wrap items-center gap-3 font-heading text-[13px] font-semibold text-muted sm:text-[14px]">
+        {metaItems.map((item, index) => (
+          <span key={item.key} className="flex items-center gap-3">
+            {index > 0 ? <span className="size-1 rounded-[1px] bg-accent" aria-hidden /> : null}
+            {item.dateTime ? (
+              <time dateTime={item.dateTime}>{item.label}</time>
+            ) : item.href ? (
+              <Link href={item.href} className="hover:text-accent">
+                {item.label}
+              </Link>
+            ) : (
+              item.label
+            )}
+          </span>
+        ))}
       </div>
-      <audio controls preload="none" src={article.audioUrl} className="w-full">
-        Il tuo browser non supporta la riproduzione audio.
-      </audio>
-    </section>
+
+      {article.audioUrl ? (
+        <Link
+          href={`/articoli/${article.slug}/ascolta`}
+          className="w-fit border-2 border-foreground bg-foreground px-3 py-2 font-heading text-[11px] font-extrabold tracking-[0.12em] text-background uppercase transition-transform duration-(--motion-fast) hover:scale-[0.98] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          Ascolta l&apos;articolo
+        </Link>
+      ) : null}
+    </div>
   );
 }
 
@@ -179,14 +175,8 @@ export function PublicArticlePage({
         ) : null}
 
         <div className="bg-surface py-12 sm:py-16 lg:py-20">
-          <div
-            className={`${publicContentClassName} grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,760px)_minmax(0,1fr)]`}
-          >
-            <aside className="space-y-5 lg:pt-1">
-              <ArticleAudio article={article} />
-            </aside>
-
-            <div className="space-y-10">
+          <div className={publicContentClassName}>
+            <div className="mx-auto max-w-3xl space-y-10">
               <PublicRichText value={article.contentRich} />
             </div>
           </div>
