@@ -193,10 +193,11 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
       Effort più alto: da fare dopo R-3, **con verifica visiva** (i 3 blocchi hanno layout/posizionamenti distinti).
 - [x] **R-6 `[MEDIA]`/S — ✅ FATTO.** `ArticleMeta` ora delega a `PublicMetaRail` (passando `className` con
       `text-xs`+tone e `separatorClassName`); markup renderizzato identico. `PublicMetaRail` è l'unica implementazione.
-- [ ] **R-7 `[BASSA]`/M — Interni dell’audio player.**
-      Estrarre `useAudioPlayer(audioRef)` e `useAudioProgress({ articleId, ... })` da `article-listen-player.tsx`;
-      unificare i quasi-identici `seekBy` / `handleSeekTo` in un solo `commitSeek(nextTime)`.
-      Si collega a Perf-3.
+- [~] **R-7 `[BASSA]`/M — PARZIALE. Interni dell’audio player.**
+  ✅ Fatto: `seekBy` / `handleSeekTo` unificati in un solo `commitSeek(target)` (output/behavior identici).
+  ⏸️ Pendente (rischio, no test + verifica solo in browser): estrarre `useAudioPlayer(audioRef)` e
+  `useAudioProgress({ articleId, ... })`. Da fare con verifica manuale della persistenza progresso (IndexedDB).
+  Si collega a Perf-3.
 - [ ] **R-8 `[BASSA]`/S — Rimuovere il wrapper passthrough** `composeNarrativeHomeBlocks` in `home-view-model.ts`,
       che inoltra soltanto a `resolveIssueHomeBlocks`.
 - [x] **R-9 `[BASSA]`/S — ✅ FATTO (insieme a SEO-1).** `unpaginated-article-row.tsx` ora usa

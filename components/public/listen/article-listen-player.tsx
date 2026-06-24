@@ -128,9 +128,6 @@ export function ArticleListenPlayer({
     chunks[0] ??
     null;
   const activeChunkId = activeChunk?.id ?? null;
-  // Recompute the visible window only when the active chunk changes (crossing a
-  // boundary), not on every ~4/sec timeupdate tick — this keeps ChunkWindow
-  // from re-rendering on each tick.
   const visibleChunks = useMemo(
     () => getVisibleAudioChunks(chunks, activeChunkId),
     [chunks, activeChunkId],
@@ -274,21 +271,17 @@ export function ArticleListenPlayer({
     void persistProgress("paused");
   };
 
-  const seekBy = (seconds: number) => {
-    const nextTime = seekTo(currentTime + seconds);
+  const commitSeek = (target: number) => {
+    const nextTime = seekTo(target);
     if (nextTime === undefined) return;
 
     setHasInteracted(true);
     void persistProgress(isPlaying ? "listening" : "paused", nextTime);
   };
 
-  const handleSeekTo = (seconds: number) => {
-    const nextTime = seekTo(seconds);
-    if (nextTime === undefined) return;
+  const seekBy = (seconds: number) => commitSeek(currentTime + seconds);
 
-    setHasInteracted(true);
-    void persistProgress(isPlaying ? "listening" : "paused", nextTime);
-  };
+  const handleSeekTo = (seconds: number) => commitSeek(seconds);
 
   const restart = () => {
     setHasInteracted(true);
