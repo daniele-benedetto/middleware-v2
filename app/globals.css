@@ -280,7 +280,11 @@ body {
    NB: do NOT set `:root { view-transition-name: none }` — that drops the root
    snapshot entirely and makes the header disappear during the transition. */
 ::view-transition-group(root),
-::view-transition-group(public-footer) {
+::view-transition-group(public-footer),
+::view-transition-old(root),
+::view-transition-new(root),
+::view-transition-old(public-footer),
+::view-transition-new(public-footer) {
   animation: none;
 }
 
@@ -298,11 +302,11 @@ body {
 }
 
 ::view-transition-old(.page-transition) {
-  animation: 460ms var(--easing-standard) both page-transition-out;
+  animation: 350ms var(--easing-standard) both page-transition-out;
 }
 
 ::view-transition-new(.page-transition) {
-  animation: 640ms var(--easing-standard) 420ms both page-transition-in;
+  animation: 500ms var(--easing-standard) 320ms both page-transition-in;
 }
 
 @keyframes page-transition-out {
