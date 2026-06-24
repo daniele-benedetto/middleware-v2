@@ -10,8 +10,6 @@ import { getCanonicalUrl } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
-export const revalidate = 3600;
-
 type PublicArticleListenRouteProps = {
   params: Promise<{ slug: string }>;
 };

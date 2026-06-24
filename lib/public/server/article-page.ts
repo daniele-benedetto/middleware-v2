@@ -1,6 +1,6 @@
 import "server-only";
 
-import { unstable_cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { normalizeHomeBlock } from "@/lib/issues/home-block-rules";
 import { type IssueNumberingBlock, buildNumberedIssueArticles } from "@/lib/public/issue-numbering";
@@ -13,7 +13,6 @@ import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/p
 import type { PublicIssueArticleSummaryDto } from "@/lib/server/modules/issues/dto/public";
 import type { PublicIssueDetailDto } from "@/lib/server/modules/issues/dto/public";
 
-export const PUBLIC_ARTICLE_PAGE_REVALIDATE_SECONDS = 60 * 60;
 export const PUBLIC_ARTICLE_PAGE_CACHE_TAG = "public-article";
 
 export type PublicRelatedIssueArticle = {
@@ -141,7 +140,11 @@ async function getIssueArticleContext(article: PublicArticleDetailDto | null) {
   }
 }
 
-async function loadPublicArticlePageData(slug: string): Promise<PublicArticlePageData> {
+export async function getPublicArticlePageData(slug: string): Promise<PublicArticlePageData> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_ARTICLE_PAGE_CACHE_TAG);
+
   const article = await getArticleBySlug(slug);
   const { articleNumber, relatedArticles } = await getIssueArticleContext(article);
 
@@ -153,23 +156,11 @@ async function loadPublicArticlePageData(slug: string): Promise<PublicArticlePag
   };
 }
 
-export const getPublicArticlePageData = unstable_cache(
-  loadPublicArticlePageData,
-  ["public-article-page-data"],
-  {
-    revalidate: PUBLIC_ARTICLE_PAGE_REVALIDATE_SECONDS,
-    tags: [PUBLIC_ARTICLE_PAGE_CACHE_TAG],
-  },
-);
+export async function getPublicArticleStaticParams() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_ARTICLE_PAGE_CACHE_TAG);
 
-export const getPublicArticleStaticParams = unstable_cache(
-  async () => {
-    const articles = await publicArticlesService.listPublished();
-    return articles.map((article) => ({ slug: article.slug }));
-  },
-  ["public-article-static-params"],
-  {
-    revalidate: PUBLIC_ARTICLE_PAGE_REVALIDATE_SECONDS,
-    tags: [PUBLIC_ARTICLE_PAGE_CACHE_TAG],
-  },
-);
+  const articles = await publicArticlesService.listPublished();
+  return articles.map((article) => ({ slug: article.slug }));
+}

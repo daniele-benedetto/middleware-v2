@@ -1,7 +1,7 @@
 import "server-only";
 
 import { get } from "@vercel/blob";
-import { unstable_cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { parseAudioChunks, type AudioChunk } from "@/lib/audio/audio-chunks";
 import { cmsMediaBlobAccess, extractCmsMediaPathname } from "@/lib/media/blob";
@@ -83,9 +83,13 @@ async function getArticleBySlug(slug: string) {
   }
 }
 
-async function loadPublicArticleListenPageData(
+export async function getPublicArticleListenPageData(
   slug: string,
 ): Promise<PublicArticleListenPageData | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_ARTICLE_LISTEN_PAGE_CACHE_TAG);
+
   const article = await getArticleBySlug(slug);
 
   if (!article?.audioUrl) {
@@ -98,23 +102,11 @@ async function loadPublicArticleListenPageData(
   };
 }
 
-export const getPublicArticleListenPageData = unstable_cache(
-  loadPublicArticleListenPageData,
-  ["public-article-listen-page-data"],
-  {
-    revalidate: PUBLIC_ARTICLE_LISTEN_PAGE_REVALIDATE_SECONDS,
-    tags: [PUBLIC_ARTICLE_LISTEN_PAGE_CACHE_TAG],
-  },
-);
+export async function getPublicArticleListenStaticParams() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_ARTICLE_LISTEN_PAGE_CACHE_TAG);
 
-export const getPublicArticleListenStaticParams = unstable_cache(
-  async () => {
-    const articles = await publicArticlesService.listWithAudio();
-    return articles.map((article) => ({ slug: article.slug }));
-  },
-  ["public-article-listen-static-params"],
-  {
-    revalidate: PUBLIC_ARTICLE_LISTEN_PAGE_REVALIDATE_SECONDS,
-    tags: [PUBLIC_ARTICLE_LISTEN_PAGE_CACHE_TAG],
-  },
-);
+  const articles = await publicArticlesService.listWithAudio();
+  return articles.map((article) => ({ slug: article.slug }));
+}

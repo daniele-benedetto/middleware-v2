@@ -1,6 +1,6 @@
 import "server-only";
 
-import { unstable_cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 import {
   getPublicIssueDescription,
@@ -12,7 +12,6 @@ import { publicIssuesService } from "@/lib/server/modules/issues/service/public"
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 
-export const PUBLIC_ISSUE_PAGE_REVALIDATE_SECONDS = 60 * 60;
 export const PUBLIC_ISSUE_PAGE_CACHE_TAG = "public-issue";
 
 export type PublicIssuePageData = {
@@ -36,7 +35,11 @@ async function getIssueBySlug(slug: string) {
   }
 }
 
-async function loadPublicIssuePageData(slug: string): Promise<PublicIssuePageData> {
+export async function getPublicIssuePageData(slug: string): Promise<PublicIssuePageData> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
+
   const [issue, publishedIssues] = await Promise.all([
     getIssueBySlug(slug),
     getPublicPublishedIssues("public.getPublicIssuePageData"),
@@ -52,23 +55,11 @@ async function loadPublicIssuePageData(slug: string): Promise<PublicIssuePageDat
   };
 }
 
-export const getPublicIssuePageData = unstable_cache(
-  loadPublicIssuePageData,
-  ["public-issue-page-data"],
-  {
-    revalidate: PUBLIC_ISSUE_PAGE_REVALIDATE_SECONDS,
-    tags: [PUBLIC_ISSUE_PAGE_CACHE_TAG],
-  },
-);
+export async function getPublicIssueStaticParams() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
 
-export const getPublicIssueStaticParams = unstable_cache(
-  async () => {
-    const issues = await getPublicPublishedIssues("public.getPublicIssueStaticParams");
-    return issues.map((issue) => ({ slug: issue.slug }));
-  },
-  ["public-issue-static-params"],
-  {
-    revalidate: PUBLIC_ISSUE_PAGE_REVALIDATE_SECONDS,
-    tags: [PUBLIC_ISSUE_PAGE_CACHE_TAG],
-  },
-);
+  const issues = await getPublicPublishedIssues("public.getPublicIssueStaticParams");
+  return issues.map((issue) => ({ slug: issue.slug }));
+}

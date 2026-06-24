@@ -60,7 +60,7 @@
   - `lib/server/validation/*` for shared validation helpers
   - `lib/server/modules/<resource>/*` with `repository`, `service`, `dto`, `schema`, `policy`
 - Mark server-only modules with `import "server-only"` where applicable.
-- For CMS APIs, keep route segment config explicit on tRPC handler: `runtime = "nodejs"`, `dynamic = "force-dynamic"`.
+- Cache Components is enabled (`cacheComponents: true`). Do NOT add `runtime`/`dynamic`/`revalidate`/`fetchCache`/`dynamicParams` route segment configs — they are incompatible with the flag. Node is the default runtime; route handlers are dynamic by default. Cache public data with `'use cache'` + `cacheLife` + `cacheTag` (see `lib/public/server/*`), and wrap request-time data access (session/cookies/`searchParams`/`params`) in `<Suspense>` (see the CMS layouts).
 - Validate procedure input with Zod and validate service output DTOs with `parseOutput` before returning.
 - Keep role authorization policy-driven: use `modules/*/policy` in router middleware, avoid hardcoded role arrays in procedures.
 

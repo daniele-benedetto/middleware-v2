@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { CmsSidebar } from "@/components/cms/layout";
 import { CmsLayoutShell } from "@/components/cms/primitives";
 import { Toaster } from "@/components/ui/sonner";
@@ -18,20 +20,31 @@ export const metadata = buildCmsMetadata({
   path: "/cms/issues",
 });
 
-export default async function CmsLayout({ children }: CmsLayoutProps) {
+// The CMS is fully session-gated: requireCmsSession() (here and in every page)
+// reads request-time data, which Cache Components require inside a <Suspense>
+// boundary. Wrapping the authenticated shell — children included — covers every
+// CMS page's request-time access with a single boundary.
+async function CmsAuthenticatedShell({ children }: CmsLayoutProps) {
   const session = await requireCmsSession();
-
   const role = session.user.role;
 
   return (
+    <CmsLayoutShell
+      sidebar={
+        <CmsSidebar role={role} userName={session.user.name} userEmail={session.user.email} />
+      }
+    >
+      {children}
+    </CmsLayoutShell>
+  );
+}
+
+export default function CmsLayout({ children }: CmsLayoutProps) {
+  return (
     <TrpcProvider>
-      <CmsLayoutShell
-        sidebar={
-          <CmsSidebar role={role} userName={session.user.name} userEmail={session.user.email} />
-        }
-      >
-        {children}
-      </CmsLayoutShell>
+      <Suspense fallback={null}>
+        <CmsAuthenticatedShell>{children}</CmsAuthenticatedShell>
+      </Suspense>
       <Toaster />
     </TrpcProvider>
   );

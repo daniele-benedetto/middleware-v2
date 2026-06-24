@@ -4,8 +4,6 @@ import { buildPageMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
-export const revalidate = 3600;
-
 export async function generateMetadata(): Promise<Metadata> {
   const { currentIssue, currentIssueDescription, leadImage, leadImageAlt } =
     await getPublicHomeData();

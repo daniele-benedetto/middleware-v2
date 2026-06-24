@@ -5,8 +5,6 @@ import { buildPageMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
-export const revalidate = 3600;
-
 const archivePath = "/uscite";
 
 export async function generateMetadata(): Promise<Metadata> {

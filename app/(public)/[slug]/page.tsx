@@ -7,9 +7,6 @@ import { buildPageMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
-export const revalidate = 3600;
-export const dynamicParams = false;
-
 type PublicStaticPageRouteProps = {
   params: Promise<{ slug: string }>;
 };

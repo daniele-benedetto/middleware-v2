@@ -4,9 +4,6 @@ import { cmsMediaBlobAccess, parseMediaPathname } from "@/lib/media/blob";
 import { getAuthSession } from "@/lib/server/auth/session";
 import { mediaPolicy } from "@/lib/server/modules/media";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 function buildContentDisposition(pathname: string, download: boolean) {
   const { fileName } = parseMediaPathname(pathname);
   const encodedFileName = encodeURIComponent(fileName);

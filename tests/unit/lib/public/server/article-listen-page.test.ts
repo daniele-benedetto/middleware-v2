@@ -5,7 +5,8 @@ const publicArticlesServiceMock = vi.hoisted(() => ({
 }));
 
 vi.mock("next/cache", () => ({
-  unstable_cache: (fn: unknown) => fn,
+  cacheLife: () => {},
+  cacheTag: () => {},
 }));
 
 vi.mock("@vercel/blob", () => ({

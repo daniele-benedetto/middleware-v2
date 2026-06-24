@@ -15,9 +15,6 @@ import { mediaPolicy } from "@/lib/server/modules/media";
 
 import type { CmsSupportedMediaKind } from "@/lib/media/blob";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 function validateUploadPathname(pathname: string) {
   const { directory, baseName, extension } = parseMediaPathname(pathname);
 

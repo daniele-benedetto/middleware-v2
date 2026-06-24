@@ -1,6 +1,6 @@
 import "server-only";
 
-import { unstable_cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 import {
   getPublicIssueDescription,
@@ -12,7 +12,6 @@ import { publicIssuesService } from "@/lib/server/modules/issues/service/public"
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 
-export const PUBLIC_HOME_REVALIDATE_SECONDS = 60 * 60;
 export const PUBLIC_HOME_CACHE_TAG = "public-home";
 
 export type PublicHomeData = {
@@ -36,7 +35,11 @@ async function getCurrentIssue() {
   }
 }
 
-async function loadPublicHomeData(): Promise<PublicHomeData> {
+export async function getPublicHomeData(): Promise<PublicHomeData> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_HOME_CACHE_TAG);
+
   const [currentIssue, publishedIssues] = await Promise.all([
     getCurrentIssue(),
     getPublicPublishedIssues("public.getPublicHomeData"),
@@ -51,8 +54,3 @@ async function loadPublicHomeData(): Promise<PublicHomeData> {
     leadImageAlt: leadImage.alt,
   };
 }
-
-export const getPublicHomeData = unstable_cache(loadPublicHomeData, ["public-home-data"], {
-  revalidate: PUBLIC_HOME_REVALIDATE_SECONDS,
-  tags: [PUBLIC_HOME_CACHE_TAG],
-});

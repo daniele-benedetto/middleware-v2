@@ -44,10 +44,16 @@ Priorità: `[ALTA]` · `[MEDIA]` · `[BASSA]`.
       nativo, gruppo `root`). Verificato con typecheck + lint + `pnpm build` (route pubbliche ancora SSG/ISR).
       _Resta da fare a te: smoke test in browser — forward, back/forward, reduced-motion._
 
-- [ ] **A-3 `[BASSA]`/L — `unstable_cache` → `use cache`. (DECISO: BACKLOG, no driver)**
-      Resta in backlog: `unstable_cache` è deprecato ma funzionante. Il costo reale non è nei 6 file pubblici
-      ma nell'avvolgere **ogni pagina CMS** in `<Suspense>` + audit `<Activity>` (multi-giorno, rischio sul
-      form-heavy). Riaprire solo con un driver concreto di performance/correttezza.
+- [x] **A-3 `[L]` — ✅ FATTO (codice; verifica browser CMS a te). `cacheComponents: true` + `use cache`.**
+      Eseguito su branch `feat/cache-components` (non su main). Modifiche: - `cacheComponents: true` in `next.config.ts`. - 6 data loader pubblici: `unstable_cache(...)` → `'use cache'` + `cacheLife("hours")` + `cacheTag(TAG)`
+      (stessi tag → `revalidation.ts` su publish invariato). Rimosse le costanti `*_REVALIDATE_SECONDS` morte. - Rimossi i config incompatibili: `revalidate` (6 route), `dynamicParams=false` (`[slug]`), `runtime`/`dynamic`
+      (5 route handler API). - **Boundary `<Suspense>` invece di "ogni pagina CMS"**: una sola boundary per gruppo basta — la sessione
+      è letta nei _layout_ (`(cms)` e `(cms-preview)`), quindi avvolgendo lì la shell autenticata (children inclusi)
+      si copre l'accesso request-time di tutte le 24 pagine. Più: `<Suspense>` sul gate di login e attorno al
+      `CmsLoginForm` (`useSearchParams`), e boundary esterna su `(cms-preview)` (il provider `ViewTransitions`
+      usa `usePathname` su route `[id]` dinamiche). - Verificato: `typecheck` + `lint` + `pnpm build` (76/76, route pubbliche PPR con Revalidate 1h/Expire 1d) +
+      `test:run` (202/202, mock `next/cache` aggiornato a `cacheLife`/`cacheTag`). - **Resta a te (browser):** audit `<Activity>` sul CMS form-heavy — form dopo submit, dialog/focus,
+      dropdown/popover, reset stati tra navigazioni; + conferma revalidation-on-publish e login/redirect.
 
 ---
 
@@ -64,7 +70,7 @@ Tracciati per non perderli; vanno fatti con verifica manuale, non a tavolino:
 
 1. **Policy `alt` immagini (A11Y-6) → (a)** alt vuoto = decorativo, dichiarato in doc. Nessuna modifica al CMS.
 2. **Page transition (A-2) → (2)** `next-view-transitions`. Rimuovere scroll-hijack, scroll restoration nativa.
-3. **A-3 `use cache` → BACKLOG.** Nessun driver; `unstable_cache` resta finché non emerge una ragione concreta.
+3. **A-3 `use cache` → FATTO** su branch `feat/cache-components` (migrazione completa a Cache Components).
 
 ---
 
@@ -72,7 +78,7 @@ Tracciati per non perderli; vanno fatti con verifica manuale, non a tavolino:
 
 - A-5: superato da A-2. Non si usa più l'API React `<ViewTransition>` (instabile): le transizioni passano da
   `next-view-transitions` (wrapper su `document.startViewTransition` nativo). `public-page-transition.tsx` rimosso.
-- Le chiavi `unstable_cache` per slug sono corrette: gli argomenti sono inclusi nella cache key. Nessuna collisione.
+- Cache key per-slug corretta anche con `use cache`: gli argomenti della funzione sono inclusi automaticamente nella cache key. Nessuna collisione cross-slug.
 - Nessun `dangerouslySetInnerHTML` / superficie XSS nel rich text; link via `resolveSafeRichTextLinkHref` + `rel="noopener noreferrer"`.
 - Disciplina LCP `next/image` corretta: `priority` su hero articolo e solo sul primo blocco dossier.
 - Boundary client minimi e giustificati con cleanup corretto.

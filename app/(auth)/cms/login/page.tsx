@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { CmsLoginForm } from "@/components/cms/auth/login-form";
 import { CmsBrand } from "@/components/cms/primitives";
@@ -17,7 +18,22 @@ export const metadata = buildCmsMetadata({
   path: "/cms/login",
 });
 
-export default async function CmsLoginPage({ searchParams }: CmsLoginPageProps) {
+function CmsLoginShell() {
+  return (
+    <main className="flex min-h-svh items-center justify-center p-6">
+      <div className="flex w-full max-w-110 flex-col items-center gap-6">
+        <CmsBrand size="lg" orientation="horizontal" priority />
+        <div className="w-full">
+          <Suspense fallback={null}>
+            <CmsLoginForm />
+          </Suspense>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+async function CmsLoginGate({ searchParams }: CmsLoginPageProps) {
   const session = await getCmsSession();
   const resolvedSearchParams = await searchParams;
   const requestedNext = resolvedSearchParams.next;
@@ -29,14 +45,13 @@ export default async function CmsLoginPage({ searchParams }: CmsLoginPageProps) 
     redirect(nextPath);
   }
 
+  return <CmsLoginShell />;
+}
+
+export default function CmsLoginPage({ searchParams }: CmsLoginPageProps) {
   return (
-    <main className="flex min-h-svh items-center justify-center p-6">
-      <div className="flex w-full max-w-110 flex-col items-center gap-6">
-        <CmsBrand size="lg" orientation="horizontal" priority />
-        <div className="w-full">
-          <CmsLoginForm />
-        </div>
-      </div>
-    </main>
+    <Suspense fallback={<CmsLoginShell />}>
+      <CmsLoginGate searchParams={searchParams} />
+    </Suspense>
   );
 }

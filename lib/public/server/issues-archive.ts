@@ -1,6 +1,6 @@
 import "server-only";
 
-import { unstable_cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 import {
   PUBLIC_PUBLISHED_ISSUES_PAGE_SIZE,
@@ -9,7 +9,6 @@ import {
 
 import type { PublicIssueListItem } from "@/lib/public/types/issues";
 
-export const PUBLIC_ISSUES_ARCHIVE_REVALIDATE_SECONDS = 60 * 60;
 export const PUBLIC_ISSUES_ARCHIVE_CACHE_TAG = "public-issues-archive";
 export const PUBLIC_ISSUES_ARCHIVE_PAGE_SIZE = PUBLIC_PUBLISHED_ISSUES_PAGE_SIZE;
 
@@ -17,7 +16,11 @@ export type PublicIssuesArchiveData = {
   issues: PublicIssueListItem[];
 };
 
-async function loadPublicIssuesArchiveData(): Promise<PublicIssuesArchiveData> {
+export async function getPublicIssuesArchiveData(): Promise<PublicIssuesArchiveData> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_ISSUES_ARCHIVE_CACHE_TAG);
+
   const issues = await getPublicPublishedIssues(
     "public.getPublicIssuesArchiveData",
     PUBLIC_ISSUES_ARCHIVE_PAGE_SIZE,
@@ -25,12 +28,3 @@ async function loadPublicIssuesArchiveData(): Promise<PublicIssuesArchiveData> {
 
   return { issues };
 }
-
-export const getPublicIssuesArchiveData = unstable_cache(
-  loadPublicIssuesArchiveData,
-  ["public-issues-archive-data-v2"],
-  {
-    revalidate: PUBLIC_ISSUES_ARCHIVE_REVALIDATE_SECONDS,
-    tags: [PUBLIC_ISSUES_ARCHIVE_CACHE_TAG],
-  },
-);

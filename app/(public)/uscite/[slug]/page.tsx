@@ -6,8 +6,6 @@ import { buildPageMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
-export const revalidate = 3600;
-
 type PublicIssuePageProps = {
   params: Promise<{ slug: string }>;
 };

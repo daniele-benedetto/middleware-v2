@@ -3,9 +3,6 @@ import { BlobAccessError, BlobNotFoundError, get } from "@vercel/blob";
 import { cmsMediaBlobAccess, parseMediaPathname } from "@/lib/media/blob";
 import { publicMediaService } from "@/lib/server/modules/media/service/public";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 function buildContentDisposition(pathname: string) {
   const { fileName } = parseMediaPathname(pathname);
   const encodedFileName = encodeURIComponent(fileName);

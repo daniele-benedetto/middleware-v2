@@ -9,8 +9,6 @@ import { buildArticleMetadata, buildPageMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
-export const revalidate = 3600;
-
 type PublicArticleRouteProps = {
   params: Promise<{ slug: string }>;
 };
