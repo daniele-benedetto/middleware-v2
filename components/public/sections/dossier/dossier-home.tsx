@@ -1,7 +1,4 @@
-import {
-  type NarrativeHomeBlock,
-  composeNarrativeHomeBlocks,
-} from "@/components/public/home/home-view-model";
+import { resolveIssueHomeBlocks } from "@/components/public/home/resolve-issue-home-blocks";
 import { BodyBlock } from "@/components/public/sections/dossier/body-block";
 import { ClosingBlock } from "@/components/public/sections/dossier/closing-block";
 import {
@@ -14,6 +11,7 @@ import { FeatureBreakBlock } from "@/components/public/sections/dossier/feature-
 import { LeadBlock } from "@/components/public/sections/dossier/lead-block";
 import { UnpaginatedArticleRow } from "@/components/public/sections/dossier/unpaginated-article-row";
 
+import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
 type DossierHomeProps = {
@@ -49,7 +47,7 @@ function renderBlock(
 }
 
 export function DossierHome({ issue }: DossierHomeProps) {
-  const blocks = composeNarrativeHomeBlocks(issue);
+  const blocks = resolveIssueHomeBlocks(issue);
 
   if (blocks.length === 0) {
     return <UnpaginatedArticleRow articles={issue.articles} />;

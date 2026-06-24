@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  composeNarrativeHomeBlocks,
-  sortHomeArticles,
-  type HomeIssueArticle,
-} from "@/components/public/home/home-view-model";
+import { sortHomeArticles, type HomeIssueArticle } from "@/components/public/home/home-view-model";
+import { resolveIssueHomeBlocks } from "@/components/public/home/resolve-issue-home-blocks";
 
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
@@ -64,7 +61,7 @@ describe("home view model", () => {
     const coreB = article({ id: crypto.randomUUID(), title: "Core B" });
 
     expect(
-      composeNarrativeHomeBlocks(
+      resolveIssueHomeBlocks(
         issue(
           [coreB, lead, coreA],
           [
@@ -122,7 +119,7 @@ describe("home view model", () => {
       }),
     );
 
-    expect(composeNarrativeHomeBlocks(issue([...articles].reverse()))).toEqual([]);
+    expect(resolveIssueHomeBlocks(issue([...articles].reverse()))).toEqual([]);
   });
 
   it("omits configured blocks with no assigned articles", () => {
@@ -133,7 +130,7 @@ describe("home view model", () => {
     });
 
     expect(
-      composeNarrativeHomeBlocks(
+      resolveIssueHomeBlocks(
         issue(
           [lead],
           [

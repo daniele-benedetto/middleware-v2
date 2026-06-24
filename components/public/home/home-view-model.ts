@@ -1,4 +1,3 @@
-import { resolveIssueHomeBlocks } from "@/components/public/home/resolve-issue-home-blocks";
 import { getIssueOrderIndex } from "@/lib/public/format/issue";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 
@@ -27,12 +26,6 @@ export function sortHomeArticles(articles: HomeIssueArticle[]) {
 
     return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
   });
-}
-
-export function composeNarrativeHomeBlocks(
-  issue: PublicCurrentIssueDetail | null,
-): NarrativeHomeBlock[] {
-  return resolveIssueHomeBlocks(issue);
 }
 
 export function getIssuePlainDescription(issue: PublicCurrentIssueDetail | PublicIssueListItem) {
