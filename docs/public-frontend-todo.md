@@ -34,10 +34,11 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
       spostati in `app/(cms)/cms/layout.tsx`, che avvolge le sole pagine CMS interattive. Verificato che
       `(auth)/cms/login` (login form senza trpc/toast) e `(cms-preview)` (toolbar server-only) non ne hanno
       bisogno. Risultato: pagine pubbliche, login e preview renderizzano senza il client tRPC/RQ/superjson/sonner.
-- [x] **A-2 `[MEDIA]`/M — ✅ FATTO (da verificare in browser). Scroll restoration su back/forward.**
-      `components/public/public-page-transition.tsx` ora intercetta `popstate` con un ref e salta lo
-      `scrollTo(0, 0)` forzato sulle navigazioni back/forward, lasciando il ripristino al browser/Next; lo
-      scroll-to-top resta sulle navigazioni forward. ⚠️ Resta da confermare con un test manuale del tasto indietro.
+- [ ] **A-2 `[MEDIA]`/M — ⛔ ROLLBACK. Scroll restoration su back/forward.**
+      Il fix `popstate` su `public-page-transition.tsx` peggiorava sensibilmente la UX delle transizioni, quindi
+      è stato **annullato** e il file è tornato identico all'originale. Il problema di fondo (scroll-to-top forzato a
+      ogni navigazione che disturba il back/forward) resta aperto, ma va affrontato ripensando l'intero sistema di
+      transizione, non con una patch puntuale. → vedi la sezione **"Sistemi di page transition per Next 16 (da valutare)"** in fondo.
 - [ ] **A-3 `[BASSA]`/L — `unstable_cache` → `use cache` con Cache Components.**
       I documenti locali indicano che `unstable_cache` “has been replaced by `use cache` in Next.js 16”.
       Tutto `lib/public/server/*` lo usa. È la strada moderna, ma è una migrazione reale: richiede
@@ -200,4 +201,40 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
   cleanup di listener/observer/rAF corretto in ciascuno.
 - ISR configurato correttamente: `revalidate = 3600` + `generateStaticParams` su route articolo/issue/listen;
   `dynamicParams = false` sul catch-all delle pagine statiche.
+
+---
+
+## Sistemi di page transition per Next 16 (da valutare)
+
+Contesto: l'implementazione attuale (`public-page-transition.tsx` + `public-link.tsx`) usa la `<ViewTransition>`
+nativa di React e **forza `window.scrollTo(0,0)` in `onUpdate`** mentre `PublicLink` mette `scroll={false}` su
+ogni link interno. Questa combinazione è la causa sia del fastidio percepito nella transizione sia del problema di
+scroll restoration su back/forward. Il fix puntuale `popstate` (commit `d18fb72`, poi annullato) peggiorava la UX,
+quindi il tema va affrontato scegliendo **un** sistema strutturato tra i seguenti, non con patch locali.
+
+**Vincolo trasversale (vale per tutte le opzioni):** lasciare a Next la scroll restoration nativa — rimuovere lo
+`scrollTo(0,0)` forzato e non disabilitare `scroll` sui `Link` in modo indiscriminato. Il forced-scroll è ciò che
+ha rotto sia il forward sia il back/forward.
+
+1. **`<ViewTransition>` React (attuale) ma senza hijack dello scroll** — `[BASSA-MEDIA]`/M
+   Mantiene l'API già in uso (sperimentale ma supportata su React 19 / Next 16), definisce le animazioni via CSS
+   `::view-transition-old/new(...)` e i `view-transition-name`, e **rimuove la logica di scroll** lasciando il
+   default di Next. È il delta minimo rispetto a oggi. Rischio: API React ancora instabile (vedi A-5).
+
+2. **`next-view-transitions` (wrapper community)** — `[MEDIA]`/M
+   Provider + `<Link>` che avvolgono `document.startViewTransition()` attorno alle navigazioni App Router.
+   Maturo, pensato per l'App Router, gestisce il timing meglio di una `onUpdate` manuale. Aggiunge una dipendenza
+   e va verificata la compatibilità con la versione esatta di Next 16. Animazioni sempre via CSS view-transition.
+
+3. **`template.tsx` + animazione CSS d'ingresso** — `[BASSA]`/S-M
+   Un `app/(public)/template.tsx` viene **re-montato a ogni navigazione** (a differenza del layout): consente una
+   enter-animation puramente CSS (keyframe su mount) senza JS, senza toccare lo scroll, con bundle ~zero.
+   Opzione più leggera e prevedibile; non fa transizioni "shared element" ma copre il fade/slide di pagina.
+
+4. **Motion / `AnimatePresence`** — `[MEDIA-ALTA]`/L — _sconsigliata salvo necessità di animazioni complesse_
+   Richiede `template.tsx` con `key={pathname}` e workaround noti per le exit-animation nell'App Router, più peso
+   sul client bundle. Da considerare solo se servono coreografie elaborate non esprimibili con le View Transitions.
+
+**Da NON fare** (regressioni già osservate): forzare `scrollTo(0,0)` in `onUpdate`/`useEffect` e mettere
+`scroll={false}` su tutti i `Link`. La gestione scroll è responsabilità del router.
 ```
