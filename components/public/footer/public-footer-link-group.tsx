@@ -14,8 +14,8 @@ type PublicFooterLinkGroupProps = {
 
 export function PublicFooterLinkGroup({ title, links }: PublicFooterLinkGroupProps) {
   return (
-    <div>
-      <h4 className={cn("mb-3.5 text-accent", publicTypography.kicker, "font-bold")}>{title}</h4>
+    <nav aria-label={title}>
+      <h2 className={cn("mb-3.5 text-accent", publicTypography.kicker, "font-bold")}>{title}</h2>
       <div className="flex flex-col gap-2.25 text-sm text-cream-on-dark">
         {links.map((link) => (
           <Link
@@ -27,6 +27,6 @@ export function PublicFooterLinkGroup({ title, links }: PublicFooterLinkGroupPro
           </Link>
         ))}
       </div>
-    </div>
+    </nav>
   );
 }

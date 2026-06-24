@@ -95,8 +95,8 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
       `buildArticleJsonLd` imposta `publisher: { "@id": "...#website" }`, ma `#website` è tipizzato come `WebSite`, non `Organization`.
       Schema.org si aspetta una `Organization`, con `name` e `logo`. Emettere o referenziare un nodo `Organization` corretto.
       File: `lib/seo/json-ld.ts`.
-- [ ] **SEO-4 `[BASSA]`/S — I titoli delle colonne footer sono `<h4>`** senza `h2`/`h3` sopra
-      (`footer/public-footer-link-group.tsx`). Usare un `<h2>` stilizzato oppure renderizzarli come testo non-heading.
+- [x] **SEO-4 `[BASSA]`/S — ✅ FATTO (insieme ad A11Y-4).** Titoli colonne footer passati da `<h4>` a `<h2>`
+      (`footer/public-footer-link-group.tsx`), stile visivo invariato.
 - [ ] **SEO-5 `[BASSA]`/S — La data “updated” delle pagine statiche non è un `<time>`.**
       `pages/public-static-page.tsx` passa la data formattata come semplice `label` a `PublicMetaRail`, a differenza della pagina articolo.
       Passare `dateTime: page.updatedAt` così viene renderizzata come `<time dateTime>`.
@@ -109,23 +109,21 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
 
 ## 4. Accessibilità
 
-- [ ] **A11Y-1 `[ALTA]`/S — Target dello skip link mancante durante il loading** → vedi Quick win 0:
-      aggiungere `id="main-content"` a `loading.tsx`.
-- [ ] **A11Y-2 `[ALTA]`/M — Gap screen-reader nell’audio player**
+- [x] **A11Y-1 `[ALTA]`/S — ✅ FATTO (commit 46f2e5a).** Aggiunto `id="main-content"` al `<main>` di `loading.tsx`.
+- [x] **A11Y-2 `[ALTA]`/M — ✅ FATTO. Gap screen-reader nell’audio player**
       (`components/public/listen/article-listen-player.tsx`):
-  - Aggiungere `aria-valuetext={formatAudioTime(currentTime)}` allo seek `<input type="range">` circa alle righe 340-351:
-    gli screen reader attualmente annunciano il float raw, per esempio “143”, non “02:23”.
-  - Aggiungere una regione `aria-live="polite"` / `role="status"` per tempo trascorso e stato play/pause.
-  - Rendere il messaggio di errore audio `role="alert"` circa alle righe 415-419.
-  - Segnare la chunk attualmente in riproduzione con `aria-current` sui bottoni chunk circa alle righe 70-91:
-    lo stato attivo è solo visivo, tramite opacity/blur.
-  - Aggiungere `aria-pressed={playbackRate === rate}` ai bottoni velocità circa alle righe 390-404.
-- [ ] **A11Y-3 `[MEDIA]`/S — Il focus trap usa `offsetParent !== null`** per rilevare elementi visibili
-      (`header/public-header.tsx` circa riga 63). Dentro un dialog `position: fixed` può filtrare erroneamente i link nav,
-      riducendo il trap al solo bottone di chiusura. Usare `el.checkVisibility()` o `getClientRects().length > 0`.
-- [ ] **A11Y-4 `[MEDIA]`/S — I link footer non hanno un navigation landmark.**
-      `footer/public-footer-link-group.tsx` renderizza `<h4>` + un semplice `<div>` di link.
-      Wrappare ogni gruppo, o l’area link del footer, in `<nav aria-labelledby=...>`.
+  - ✅ `aria-valuetext` sulla seek `<input type="range">` → annuncia `"02:23 di 12:40"` invece del float raw.
+  - ✅ Regione `role="status"` sr-only per lo stato play/pausa (cambia solo allo stato, non a ogni tick → niente spam SR);
+    `role="status"` aggiunto anche al banner "Riprendi da …".
+  - ✅ Messaggio di errore audio reso `role="alert"`.
+  - ✅ `aria-current="true"` sulla chunk attiva + `role="group"`/`aria-label="Testo sincronizzato"` sulla regione.
+  - ✅ `aria-pressed` + `aria-label="Velocità Nx"` sui bottoni velocità.
+- [x] **A11Y-3 `[MEDIA]`/S — ✅ FATTO. Focus trap.** Sostituito `offsetParent !== null` con un helper
+      `isElementVisible` basato su `getClientRects().length > 0` (non soffre del quirk del dialog `fixed`).
+      (`header/public-header.tsx`)
+- [x] **A11Y-4 `[MEDIA]`/S + SEO-4 — ✅ FATTO. Footer landmark + heading.**
+      `footer/public-footer-link-group.tsx`: ogni gruppo ora è `<nav aria-label={title}>` e il titolo è passato
+      da `<h4>` a `<h2>` (stile visivo invariato via `publicTypography.kicker`).
 - [ ] **A11Y-5 `[MEDIA]`/M — Rail con scroll-jacking e focus tastiera.**
       `sections/archive/issues-archive-rail.tsx` trasla la track usando `window.scrollY`, non il focus.
       Un utente da tastiera che tabba verso una card off-screen non riesce a portarla in vista.
@@ -139,12 +137,10 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
       (`compounds/dossier-article-card.tsx`, e anche blocchi lead/closing/feature).
       Un link gigante ingloba l’heading. `aria-labelledby` mitiga, ma il pattern “stretched-link con heading come link”
       è più pulito sia per il link text SEO sia per la semantica del tab.
-- [ ] **A11Y-8 `[BASSA]`/S — Label-in-name, WCAG 2.5.3.**
-      `header/public-menu-button.tsx` ha sia una `label` visibile sia un `aria-label`; assicurarsi che l’aria-label
-      _contenga_ il testo visibile, controllando le stringhe i18n.
-- [ ] **A11Y-9 `[BASSA]`/S — `div` interno con `tabIndex={-1}` ridondante** in
-      `pages/public-issue-dossier-page.tsx` circa alla riga 49, annidato dentro un `<main>` già `tabIndex={-1}`.
-      Rimuoverlo oppure commentare perché è un focus target separato.
+- [x] **A11Y-8 `[BASSA]`/S — ✅ VERIFICATO, nessuna modifica.** WCAG 2.5.3 è soddisfatto (containment
+      case-insensitive): apri "Apri menu" ⊃ visibile "Menu"; chiudi "Chiudi menu" ⊃ visibile "Chiudi".
+- [x] **A11Y-9 `[BASSA]`/S — ✅ FATTO.** Rimossi `tabIndex={-1}` e `focus:outline-none` ridondanti dal `<div>`
+      interno di `pages/public-issue-dossier-page.tsx` (il `<main>` li ha già); mantenuto solo `flex flex-col`.
 
 ---
 

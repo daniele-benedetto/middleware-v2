@@ -62,7 +62,11 @@ function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
   }
 
   return (
-    <div className="grid min-h-65 content-center gap-5 sm:min-h-80">
+    <div
+      className="grid min-h-65 content-center gap-5 sm:min-h-80"
+      role="group"
+      aria-label="Testo sincronizzato"
+    >
       {chunks.map((chunk) => {
         const isActive = chunk.position === "active";
 
@@ -71,6 +75,7 @@ function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
             key={chunk.id}
             type="button"
             onClick={() => onChunkSelect(chunk)}
+            aria-current={isActive ? "true" : undefined}
             className={cn(
               "group w-full cursor-pointer text-left font-editorial transition-[filter,opacity,transform,color] duration-(--motion-slow) focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-accent",
               isActive
@@ -330,8 +335,14 @@ export function ArticleListenPlayer({
         </div>
 
         <div className="mt-6 grid gap-5">
+          <p role="status" className="sr-only">
+            {isPlaying ? "Audiolettura in riproduzione" : "Audiolettura in pausa"}
+          </p>
           {shouldOfferResume && savedProgress ? (
-            <div className="border-2 border-accent bg-accent/10 p-3 font-heading text-[12px] font-bold tracking-[0.08em] uppercase">
+            <div
+              role="status"
+              className="border-2 border-accent bg-accent/10 p-3 font-heading text-[12px] font-bold tracking-[0.08em] uppercase"
+            >
               Riprendi da {formatAudioTime(savedProgress.currentTime)}
             </div>
           ) : null}
@@ -348,6 +359,7 @@ export function ArticleListenPlayer({
               onChange={(event) => handleSeekTo(Number(event.currentTarget.value))}
               className="h-2 w-full cursor-pointer accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Avanzamento audiolettura"
+              aria-valuetext={`${formatAudioTime(currentTime)} di ${formatAudioTime(resolvedDuration)}`}
             />
             <div className="flex items-center justify-between font-heading text-[12px] font-bold tracking-[0.08em] text-muted uppercase">
               <span>{formatAudioTime(currentTime)}</span>
@@ -392,6 +404,8 @@ export function ArticleListenPlayer({
                   key={rate}
                   type="button"
                   onClick={() => setPlaybackRate(rate)}
+                  aria-pressed={playbackRate === rate}
+                  aria-label={`Velocità ${rate}x`}
                   className={cn(
                     "cursor-pointer border-2 border-foreground px-2.5 py-1 font-heading text-[11px] font-extrabold tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent",
                     playbackRate === rate
@@ -406,14 +420,14 @@ export function ArticleListenPlayer({
             <button
               type="button"
               onClick={restart}
-              className="cursor-pointer font-heading text-[11px] font-extrabold tracking-[0.1em] text-muted uppercase transition-colors duration-(--motion-fast) hover:text-accent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="cursor-pointer font-heading text-[11px] font-extrabold tracking-widest text-muted uppercase transition-colors duration-(--motion-fast) hover:text-accent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Ricomincia
             </button>
           </div>
 
           {audioError ? (
-            <p className="font-heading text-[12px] font-bold text-accent uppercase">
+            <p role="alert" className="font-heading text-[12px] font-bold text-accent uppercase">
               Non riesco ad avviare l&apos;audio. Riprova tra poco.
             </p>
           ) : null}

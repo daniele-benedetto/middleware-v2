@@ -46,7 +46,7 @@ export function PublicIssueDossierPage({
     >
       {jsonLd}
       <HomeScrollProgress />
-      <div tabIndex={-1} className="flex flex-col focus:outline-none">
+      <div className="flex flex-col">
         {issue ? (
           <>
             <CurrentIssueHero

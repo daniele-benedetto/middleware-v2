@@ -22,6 +22,13 @@ const focusableSelector = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
+// `offsetParent` is null for elements inside a `position: fixed` ancestor (the
+// menu is `fixed inset-0`) even when visible, which would wrongly drop the nav
+// links from the focus trap. `getClientRects()` is not affected by that quirk.
+function isElementVisible(element: HTMLElement) {
+  return element.getClientRects().length > 0;
+}
+
 export function PublicHeader({ className }: PublicHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = useId();
@@ -60,7 +67,7 @@ export function PublicHeader({ className }: PublicHeaderProps) {
       const menu = document.getElementById(menuId);
       const focusableElements = Array.from(
         menu?.querySelectorAll<HTMLElement>(focusableSelector) ?? [],
-      ).filter((element) => element.offsetParent !== null || element === closeButtonRef.current);
+      ).filter((element) => isElementVisible(element) || element === closeButtonRef.current);
 
       if (focusableElements.length === 0) {
         event.preventDefault();
