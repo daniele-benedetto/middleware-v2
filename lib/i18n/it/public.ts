@@ -1,6 +1,8 @@
 export const publicIt = {
   brand: {
     wordmark: "middleware",
+    description:
+      "Middleware è un laboratorio di inchiesta a Modena: territorio, conflitto sociale, trasformazioni urbane e politica dal basso.",
     logoAlt: "",
     homeAriaLabel: "Torna all'inizio",
   },

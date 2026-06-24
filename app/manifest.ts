@@ -4,9 +4,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: i18n.cms.app.metadataTitle,
-    short_name: i18n.cms.brand.wordmark,
-    description: i18n.cms.app.metadataDescription,
+    name: i18n.public.brand.wordmark,
+    short_name: i18n.public.brand.wordmark,
+    description: i18n.public.brand.description,
     start_url: "/",
     display: "standalone",
     background_color: "#F7F0E7",
