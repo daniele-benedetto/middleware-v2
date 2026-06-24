@@ -19,8 +19,59 @@ async function getHomeLastModified() {
   }
 }
 
+async function getPublishedArticlePages() {
+  try {
+    const articles = await prisma.article.findMany({
+      where: {
+        status: "PUBLISHED",
+        publishedAt: { not: null },
+        issue: {
+          isActive: true,
+          publishedAt: { not: null },
+        },
+      },
+      orderBy: { publishedAt: "desc" },
+      select: { slug: true, publishedAt: true, updatedAt: true },
+    });
+
+    return articles.map((article) => ({
+      url: getCanonicalUrl(`/articoli/${article.slug}`),
+      lastModified: article.updatedAt ?? article.publishedAt ?? undefined,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
+  } catch (error) {
+    console.error("sitemap published articles failed", error);
+    return [];
+  }
+}
+
+async function getPublishedIssuePages() {
+  try {
+    const issues = await prisma.issue.findMany({
+      where: { isActive: true, publishedAt: { not: null } },
+      orderBy: { publishedAt: "desc" },
+      select: { slug: true, publishedAt: true, updatedAt: true },
+    });
+
+    return issues.map((issue) => ({
+      url: getCanonicalUrl(`/uscite/${issue.slug}`),
+      lastModified: issue.updatedAt ?? issue.publishedAt ?? undefined,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
+  } catch (error) {
+    console.error("sitemap published issues failed", error);
+    return [];
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const homeLastModified = await getHomeLastModified();
+  const [homeLastModified, articlePages, issuePages] = await Promise.all([
+    getHomeLastModified(),
+    getPublishedArticlePages(),
+    getPublishedIssuePages(),
+  ]);
   const staticPages = PUBLIC_STATIC_PAGE_SLUGS.map((slug) => ({
     url: getCanonicalUrl(getPublicStaticPagePath(slug)),
     changeFrequency: "monthly" as const,
@@ -40,6 +91,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    ...issuePages,
+    ...articlePages,
     ...staticPages,
   ];
 }
