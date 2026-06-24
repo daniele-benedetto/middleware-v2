@@ -19,6 +19,8 @@ import {
 } from "@/lib/browser/storage/audio-progress-store";
 import { cn } from "@/lib/utils";
 
+import type { ReactNode } from "react";
+
 type ArticleListenPlayerProps = {
   articleId: string;
   articleSlug: string;
@@ -26,7 +28,8 @@ type ArticleListenPlayerProps = {
   articleUpdatedAt: string;
   audioUrl: string;
   chunks: AudioChunk[];
-  excerpt: string | null;
+  header: ReactNode;
+  emptyState: ReactNode;
 };
 
 type ChunkWindowProps = {
@@ -107,7 +110,8 @@ export function ArticleListenPlayer({
   articleUpdatedAt,
   audioUrl,
   chunks,
-  excerpt,
+  header,
+  emptyState,
 }: ArticleListenPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentTimeRef = useRef(0);
@@ -320,19 +324,7 @@ export function ArticleListenPlayer({
       />
 
       <div className="flex min-h-0 flex-col justify-between border-2 border-foreground bg-background p-4 shadow-[8px_8px_0_0_var(--foreground)] sm:p-5 lg:p-6">
-        <div>
-          <p className="font-heading text-[11px] font-extrabold tracking-[0.16em] text-accent uppercase">
-            Audiolettura
-          </p>
-          <h1 className="mt-3 font-heading text-[clamp(34px,5.4vw,72px)] leading-[0.88] font-black tracking-[-0.055em]">
-            {articleTitle}
-          </h1>
-          {excerpt ? (
-            <p className="mt-5 border-t-2 border-foreground pt-4 font-editorial text-[clamp(17px,1.7vw,22px)] leading-[1.32] text-body-text italic">
-              {excerpt}
-            </p>
-          ) : null}
-        </div>
+        {header}
 
         <div className="mt-6 grid gap-5">
           <p role="status" className="sr-only">
@@ -444,16 +436,7 @@ export function ArticleListenPlayer({
             onChunkSelect={(chunk) => handleSeekTo(chunk.start)}
           />
         ) : (
-          <div className="flex h-full min-h-65 items-center">
-            <div className="max-w-2xl">
-              <p className="font-heading text-[11px] font-extrabold tracking-[0.16em] text-accent uppercase">
-                Solo audio
-              </p>
-              <p className="mt-4 font-editorial text-[clamp(28px,5vw,64px)] leading-[1.05] tracking-[-0.035em] text-cream-on-dark">
-                Il testo sincronizzato non è disponibile per questo articolo.
-              </p>
-            </div>
-          </div>
+          emptyState
         )}
       </div>
     </section>

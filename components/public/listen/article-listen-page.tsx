@@ -1,4 +1,6 @@
 import { ArticleListenPlayer } from "@/components/public/listen/article-listen-player";
+import { ListenEmptyState } from "@/components/public/listen/listen-empty-state";
+import { ListenPlayerHeader } from "@/components/public/listen/listen-player-header";
 import { publicContentClassName } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { i18n } from "@/lib/i18n";
@@ -41,7 +43,8 @@ export function ArticleListenPage({ data }: ArticleListenPageProps) {
           articleUpdatedAt={article.updatedAt}
           audioUrl={article.audioUrl ?? ""}
           chunks={chunks}
-          excerpt={article.excerpt}
+          header={<ListenPlayerHeader title={article.title} excerpt={article.excerpt} />}
+          emptyState={<ListenEmptyState />}
         />
       </div>
     </main>

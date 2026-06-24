@@ -21,10 +21,13 @@ Priorità: `[ALTA]` · `[MEDIA]` · `[BASSA]`.
       la riporta in vista. Gated sulla stessa condizione del jacking (desktop ≥1024px + motion non ridotto), con
       cleanup del listener. Preserva il design esistente. _Logica deterministica; consigliata conferma con tab in browser._
 
-- [ ] **Perf-3 `[MEDIA]`/L — Separare la shell statica dell'audio player dal client bundle.**
-      Il componente `"use client"` da 447 righe renderizza anche `<h1>` statico, excerpt e pannello chunk.
-      Solo i controlli e `<audio>` devono stare nel client. Estrarre una shell server e un client
-      `AudioControls` più piccolo. Verificabile con build/typecheck.
+- [x] **Perf-3 `[MEDIA]`/L — ✅ FATTO (shell statica estratta).** La shell statica è ora server-rendered e passata
+      come slot `ReactNode` al client, quindi fuori dal client bundle: `ListenPlayerHeader` (kicker + `<h1>` + excerpt)
+      e `ListenEmptyState` (fallback "Solo audio"), composti in `article-listen-page.tsx` (server) e passati come
+      prop `header`/`emptyState` ad `ArticleListenPlayer`. Il client mantiene `<audio>`, controlli e `ChunkWindow`
+      (dinamici). Nessuna modifica alla logica audio/IndexedDB. Verificato con typecheck + lint + `pnpm build`.
+      _Nota: l'ulteriore split stateful (controlli vs chunk sincronizzati con stato condiviso) resta accoppiato a
+      R-7 e richiede verifica browser → fuori da questo loop._
 
 - [x] **A11Y-6 `[MEDIA]`/S — ✅ FATTO (opzione a).** Policy "alt vuoto = decorativo" resa esplicita e centralizzata
       in `editorialImageAlt()` (`lib/public/format/image.ts`), con commento di policy. I 5 call site (hero articolo,
