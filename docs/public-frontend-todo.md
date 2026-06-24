@@ -67,7 +67,19 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
   - **0 errori runtime `use cache`/`<Suspense>`**: la build si ferma alla validazione config, quindi gli errori di
     accesso-dati più profondi sono dietro questo primo muro → servirà una **Fase 1-bis** (rimuovere i config, ri-buildare)
     per scoprirli. Il blast radius resta esattamente gli 11 file mappati; primo muro puramente meccanico.
-  1. ~~Spike di misura~~ ✅ fatto (sopra). Prossimo: Fase 1-bis (rimuovere i config sopra e ri-buildare per la mappa runtime).
+    **✅ Spike Fase 1-bis ESEGUITO** (config rimossi + `cacheComponents` on, `pnpm build`, poi tutto ripristinato via
+    `git checkout` — zero traccia): rimossi i 17 config, la build **compila** (config wall superato) e arriva alla
+    generazione statica. Primo errore runtime bloccante:
+    > `Route "/cms/users/new": Uncached data was accessed outside of <Suspense>.`
+  - **Il blocco è sul CMS, non sul pubblico.** Le pagine CMS (prima `dynamic="force-dynamic"`) ora tentano il
+    prerender e accedono a dati non-cached (sessione/auth/prefetch tRPC) senza `<Suspense>`. La build esce al primo
+    errore (`/cms/users/new`), ma **tutte** le pagine CMS hanno lo stesso pattern → andranno avvolte in `<Suspense>`
+    (o marcate uncached) una per una. Questo è il grosso del lavoro, e conferma la stima "rischio concentrato sul CMS".
+  - Le route **pubbliche** non hanno ancora generato errori (passano la compilazione; `unstable_cache` va comunque
+    sostituito con `use cache`+`cacheLife`, ma non è il muro). La Fase 1-bis non è esaustiva: la build esce al primo
+    errore, quindi la mappa runtime completa richiederebbe `next build --debug-prerender` o fix iterativi.
+  - **Conclusione spike:** il flag è tecnicamente attivabile; il costo NON è nei 6 file pubblici ma nell'avvolgere
+    ogni pagina CMS in `<Suspense>` + audit `<Activity>`. Confermato `[L]`/backlog finché non c'è un driver.
   2. **Data layer pubblico (6 file).** Profilo `cacheLife` condiviso; ogni
      `unstable_cache(fn, keys, {revalidate, tags})` → `'use cache'` + `cacheLife(...)` + `cacheTag(TAG)`.
      Opportunità: **tag per-slug** (es. `public-article:${slug}`) per invalidazione granulare invece di
