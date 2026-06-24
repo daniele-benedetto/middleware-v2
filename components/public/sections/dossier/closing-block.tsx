@@ -1,12 +1,12 @@
 import Image from "next/image";
 
+import { ArticleMeta } from "@/components/public/compounds";
 import {
   publicContentClassName,
   publicInteraction,
   publicTypography,
 } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
-import { ArticleMeta } from "@/components/public/sections/dossier/article-meta";
 import { BlockTitle } from "@/components/public/sections/dossier/block-title";
 import {
   formatArticleNumber,

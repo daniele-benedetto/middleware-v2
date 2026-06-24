@@ -1,5 +1,5 @@
+import { DossierArticleCard } from "@/components/public/compounds";
 import { publicContentClassName } from "@/components/public/primitives";
-import { DossierArticleCard } from "@/components/public/sections/dossier/dossier-article-card";
 import { formatTags } from "@/components/public/sections/dossier/dossier-format";
 import { sortUnpaginatedArticles } from "@/components/public/sections/dossier/dossier-view-model";
 

@@ -1,15 +1,6 @@
-import { PublicSystemScreen } from "@/components/public";
-import { ArchiveSection } from "@/components/public/home/archive-section";
-import { CurrentIssueHero } from "@/components/public/home/current-issue-hero";
-import { HomeScrollProgress } from "@/components/public/home/home-scroll-progress";
-import {
-  getArchiveIssues,
-  getIssueOrderLabel,
-  getIssuePlainDescription,
-} from "@/components/public/home/home-view-model";
-import { DossierHome } from "@/components/public/sections/dossier/dossier-home";
+import { getArchiveIssues } from "@/components/public/home/home-view-model";
+import { PublicIssueDossierPage } from "@/components/public/pages/public-issue-dossier-page";
 import { i18n } from "@/lib/i18n";
-import { formatIssueNumber } from "@/lib/public/format/issue";
 import { buildHomeJsonLd } from "@/lib/seo/home-json-ld";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
@@ -29,42 +20,20 @@ export function PublicHomePage({
   const archiveIssues = getArchiveIssues(publishedIssues, currentIssue);
 
   return (
-    <main className="flex flex-1 flex-col bg-background font-heading text-foreground">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildHomeJsonLd(currentIssue, canonicalPath)),
-        }}
-      />
-      <HomeScrollProgress />
-      <div tabIndex={-1} className="flex flex-col focus:outline-none">
-        {currentIssue ? (
-          <>
-            <CurrentIssueHero
-              issue={currentIssue}
-              description={getIssuePlainDescription(currentIssue)}
-              issueNumber={getIssueOrderLabel(publishedIssues, currentIssue, formatIssueNumber)}
-            />
-            <DossierHome issue={currentIssue} />
-          </>
-        ) : (
-          <PublicSystemScreen
-            code={text.empty.code}
-            kicker={text.empty.kicker}
-            title={text.empty.title}
-            description={text.empty.description}
-          />
-        )}
-        <ArchiveSection
-          title={text.archive.title}
-          description={text.archive.description}
-          archiveHref="/uscite"
-          archiveLabel={text.archive.archiveLabel}
-          issues={archiveIssues}
-          allIssues={publishedIssues}
-          countLabel={text.archive.countLabel}
+    <PublicIssueDossierPage
+      issue={currentIssue}
+      publishedIssues={publishedIssues}
+      archiveIssues={archiveIssues}
+      empty={text.empty}
+      showArchiveWithoutIssue
+      jsonLd={
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(buildHomeJsonLd(currentIssue, canonicalPath)),
+          }}
         />
-      </div>
-    </main>
+      }
+    />
   );
 }

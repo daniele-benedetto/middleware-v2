@@ -1,6 +1,6 @@
+import { DossierArticleCard } from "@/components/public/compounds";
 import { publicContentClassName } from "@/components/public/primitives";
 import { BlockSectionIntro } from "@/components/public/sections/dossier/block-section-intro";
-import { DossierArticleCard } from "@/components/public/sections/dossier/dossier-article-card";
 import {
   articleEyebrow,
   getArticleNumber,

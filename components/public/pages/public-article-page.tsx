@@ -1,9 +1,8 @@
-import { publicContentClassName, publicTypography } from "@/components/public/primitives";
+import { DossierArticleCard, PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
+import { publicContentClassName } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { PublicRichText } from "@/components/public/rich-text";
-import { DossierArticleCard } from "@/components/public/sections/dossier/dossier-article-card";
 import { formatTags } from "@/components/public/sections/dossier/dossier-format";
-import { StyledTitle } from "@/components/public/styled-title";
 import { buildArticlePageJsonLd } from "@/lib/seo";
 
 import type { PublicRelatedIssueArticle } from "@/lib/public/server/article-page";
@@ -42,22 +41,7 @@ function ArticleMetaRail({ article }: ArticleOnlyProps) {
 
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div className="flex flex-wrap items-center gap-3 font-heading text-[13px] font-semibold text-muted sm:text-[14px]">
-        {metaItems.map((item, index) => (
-          <span key={item.key} className="flex items-center gap-3">
-            {index > 0 ? <span className="size-1 rounded-[1px] bg-accent" aria-hidden /> : null}
-            {item.dateTime ? (
-              <time dateTime={item.dateTime}>{item.label}</time>
-            ) : item.href ? (
-              <Link href={item.href} className="hover:text-accent">
-                {item.label}
-              </Link>
-            ) : (
-              item.label
-            )}
-          </span>
-        ))}
-      </div>
+      <PublicMetaRail items={metaItems} />
 
       {article.audioUrl ? (
         <Link
@@ -136,39 +120,15 @@ export function PublicArticlePage({
         }}
       />
       <article id="main-content" tabIndex={-1} className="focus:outline-none">
-        <header className="relative isolate w-full overflow-hidden bg-background">
-          <div className={`${publicContentClassName} relative py-7 sm:py-9 lg:py-14`}>
-            <div
-              className={`${publicTypography.issueBackgroundNumber} pointer-events-none absolute top-5 right-5 z-0 text-accent/15 select-none [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]`}
-              aria-hidden
-            >
-              {formatArticleNumber(articleNumber)}
-            </div>
-
-            <div className="relative z-10 w-full">
-              <div className="mb-5">
-                <ArticleTags article={article} />
-              </div>
-              <h1 className={`${publicTypography.homeHeroTitle} w-full text-foreground`}>
-                <StyledTitle title={article.title} titleStyled={article.titleStyled} />
-              </h1>
-              {article.excerpt ? (
-                <div className="mt-8 w-full border-t-2 border-foreground pt-5">
-                  <p className="font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] text-body-text italic">
-                    {article.excerpt}
-                  </p>
-                  <div className="mt-6">
-                    <ArticleMetaRail article={article} />
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-7">
-                  <ArticleMetaRail article={article} />
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
+        <PublicPageHero
+          as="header"
+          title={article.title}
+          titleStyled={article.titleStyled}
+          backgroundCode={formatArticleNumber(articleNumber)}
+          description={article.excerpt}
+          eyebrow={<ArticleTags article={article} />}
+          meta={<ArticleMetaRail article={article} />}
+        />
 
         {article.imageUrl ? (
           <figure className="bg-foreground">
@@ -176,7 +136,7 @@ export function PublicArticlePage({
             <img
               src={article.imageUrl}
               alt={article.imageAlt ?? ""}
-              className="mx-auto aspect-[16/9] w-full max-w-400 object-cover"
+              className="mx-auto aspect-video w-full max-w-400 object-cover"
             />
           </figure>
         ) : null}
