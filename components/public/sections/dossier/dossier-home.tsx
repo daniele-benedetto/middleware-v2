@@ -20,10 +20,21 @@ type DossierHomeProps = {
   issue: PublicCurrentIssueDetail;
 };
 
-function renderBlock(block: NarrativeHomeBlock, articleNumbers: Map<string, number>) {
+function renderBlock(
+  block: NarrativeHomeBlock,
+  articleNumbers: Map<string, number>,
+  options: { priority?: boolean } = {},
+) {
   switch (block.type) {
     case "opening":
-      return <LeadBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
+      return (
+        <LeadBlock
+          key={block.id}
+          block={block}
+          articleNumbers={articleNumbers}
+          priority={options.priority}
+        />
+      );
     case "body":
       return <BodyBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
     case "rupture":
@@ -54,7 +65,9 @@ export function DossierHome({ issue }: DossierHomeProps) {
 
   return (
     <div className="bg-background">
-      {contentBlocks.map((block) => renderBlock(block, articleNumbers))}
+      {contentBlocks.map((block, index) =>
+        renderBlock(block, articleNumbers, { priority: index === 0 }),
+      )}
       <UnpaginatedArticleRow articles={unpaginatedArticles} startNumber={unpaginatedStartNumber} />
       {closingBlocks.map((block) => renderBlock(block, articleNumbers))}
     </div>

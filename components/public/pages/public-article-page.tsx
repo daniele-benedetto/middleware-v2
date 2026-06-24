@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { DossierArticleCard, PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { publicContentClassName } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
@@ -140,10 +142,13 @@ export function PublicArticlePage({
 
         {article.imageUrl ? (
           <figure className="bg-foreground">
-            {/* eslint-disable-next-line @next/next/no-img-element -- CMS media is proxied through the app and may be private Blob-backed. */}
-            <img
+            <Image
               src={article.imageUrl}
               alt={article.imageAlt ?? ""}
+              width={1600}
+              height={900}
+              sizes="100vw"
+              priority
               className="mx-auto aspect-video w-full max-w-400 object-cover"
             />
           </figure>

@@ -13,5 +13,6 @@ function shouldDisableNavigationScroll(href: PublicLinkProps["href"]) {
 }
 
 export function PublicLink({ href, scroll, ...props }: PublicLinkProps) {
+  // PublicPageTransition owns scroll restoration for internal navigations.
   return <Link href={href} scroll={scroll ?? !shouldDisableNavigationScroll(href)} {...props} />;
 }

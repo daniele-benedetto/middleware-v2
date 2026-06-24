@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Fragment, type ReactNode } from "react";
 
 import { publicTypography } from "@/components/public/primitives";
@@ -158,11 +159,13 @@ function renderBlockNode(node: RichTextNode, key: string): ReactNode {
 
     return (
       <figure key={key}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- CMS media URLs can come from Blob domains not known at build time. */}
-        <img
+        <Image
           src={image.src}
           alt={image.alt}
           title={image.title}
+          width={1200}
+          height={675}
+          sizes="(min-width: 768px) 768px, 100vw"
           loading="lazy"
           className="aspect-video w-full object-cover"
         />

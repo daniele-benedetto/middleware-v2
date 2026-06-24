@@ -21,9 +21,10 @@ import type { NarrativeHomeBlock } from "@/components/public/home/home-view-mode
 type LeadBlockProps = {
   block: NarrativeHomeBlock;
   articleNumbers: Map<string, number>;
+  priority?: boolean;
 };
 
-export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
+export function LeadBlock({ block, articleNumbers, priority = false }: LeadBlockProps) {
   const article = block.featuredArticle ?? block.articles[0];
 
   if (!article) {
@@ -96,7 +97,7 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
                 fill
                 sizes="(min-width: 768px) 45vw, 100vw"
                 className={cn("object-cover", publicInteraction.imageZoom)}
-                priority
+                priority={priority}
               />
             </div>
           ) : null}
