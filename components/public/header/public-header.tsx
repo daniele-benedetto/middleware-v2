@@ -36,7 +36,15 @@ export function PublicHeader({ className }: PublicHeaderProps) {
 
     const previousOverflow = document.body.style.overflow;
     const menuButton = menuButtonRef.current;
+    const inertElements = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        "[data-public-header], [data-public-page-content], [data-public-footer]",
+      ),
+    );
     document.body.style.overflow = "hidden";
+    inertElements.forEach((element) => {
+      element.inert = true;
+    });
     closeButtonRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -78,6 +86,9 @@ export function PublicHeader({ className }: PublicHeaderProps) {
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      inertElements.forEach((element) => {
+        element.inert = false;
+      });
       window.removeEventListener("keydown", handleKeyDown);
       menuButton?.focus();
     };
@@ -88,6 +99,7 @@ export function PublicHeader({ className }: PublicHeaderProps) {
   return (
     <>
       <header
+        data-public-header
         className={cn("sticky top-0 z-50 border-b-2 border-foreground bg-background", className)}
       >
         <div className={publicHeaderBarClassName}>

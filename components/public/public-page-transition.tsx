@@ -7,27 +7,18 @@ type PublicPageTransitionProps = {
 };
 
 function handlePageUpdate() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return undefined;
+  }
+
   const root = document.documentElement;
   const previousScrollBehavior = root.style.scrollBehavior;
-  const stopScroll = (event: Event) => event.preventDefault();
-  const stopScrollKeys = (event: KeyboardEvent) => {
-    if (["ArrowDown", "ArrowUp", "End", "Home", "PageDown", "PageUp", " "].includes(event.key)) {
-      event.preventDefault();
-    }
-  };
 
-  window.addEventListener("wheel", stopScroll, { passive: false });
-  window.addEventListener("touchmove", stopScroll, { passive: false });
-  window.addEventListener("keydown", stopScrollKeys);
   root.style.scrollBehavior = "auto";
   window.scrollTo(0, 0);
   root.style.scrollBehavior = previousScrollBehavior;
 
-  return () => {
-    window.removeEventListener("wheel", stopScroll);
-    window.removeEventListener("touchmove", stopScroll);
-    window.removeEventListener("keydown", stopScrollKeys);
-  };
+  return undefined;
 }
 
 export function PublicPageTransition({ children }: PublicPageTransitionProps) {

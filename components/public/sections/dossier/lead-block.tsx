@@ -33,13 +33,14 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
   const tagLine = formatTags(article);
   const variantClasses = getNarrativeVariantClasses(block.variant);
   const articleHref = `/articoli/${article.slug}`;
+  const titleId = `lead-article-title-${article.id}`;
 
   return (
     <section className={`mb-10 scroll-mt-20 lg:mb-12 ${variantClasses.section}`}>
       <div className={`${publicContentClassName} py-10 md:py-12`}>
         <Link
           href={articleHref}
-          aria-label={article.title}
+          aria-labelledby={titleId}
           className={cn(
             publicInteraction.cardBase,
             "grid gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] md:gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:gap-12",
@@ -56,7 +57,10 @@ export function LeadBlock({ block, articleNumbers }: LeadBlockProps) {
                 </p>
               ) : null}
             </div>
-            <h2 className={cn(publicTypography.leadArticleTitle, "max-w-[13ch] text-balance")}>
+            <h2
+              id={titleId}
+              className={cn(publicTypography.leadArticleTitle, "max-w-[13ch] text-balance")}
+            >
               <StyledTitle
                 title={article.title}
                 titleStyled={article.titleStyled}

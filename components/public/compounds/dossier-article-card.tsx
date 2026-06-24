@@ -25,6 +25,7 @@ export function DossierArticleCard({
   className = "",
 }: DossierArticleCardProps) {
   const articleHref = `/articoli/${article.slug}`;
+  const titleId = `article-card-title-${article.id}`;
   const isClusterFeatured = variant === "clusterFeatured";
   const summary = article.excerpt;
   const image = article.imageUrl ? (
@@ -43,7 +44,7 @@ export function DossierArticleCard({
   return (
     <Link
       href={articleHref}
-      aria-label={article.title}
+      aria-labelledby={titleId}
       className={cn(
         publicInteraction.cardSurface,
         "flex h-full overflow-hidden border-foreground bg-background",
@@ -69,6 +70,7 @@ export function DossierArticleCard({
           </div>
 
           <h3
+            id={titleId}
             className={`font-heading leading-[1.05] font-black tracking-[-0.032em] text-foreground ${
               isClusterFeatured
                 ? "text-[25px] sm:text-[27px] md:text-[32px]"

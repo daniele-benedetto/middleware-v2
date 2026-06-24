@@ -31,14 +31,18 @@ export function PublicStaticPage({ page }: PublicStaticPageProps) {
     : "/";
 
   return (
-    <main id="top" className="flex flex-1 flex-col bg-background font-heading text-foreground">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
+    >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(buildStaticPageJsonLd(page.title, canonicalPath)),
         }}
       />
-      <article id="main-content" tabIndex={-1} className="focus:outline-none">
+      <article>
         <PublicPageHero
           as="header"
           title={page.title}

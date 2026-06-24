@@ -16,15 +16,19 @@ type PublicFullscreenMenuProps = {
 
 export function PublicFullscreenMenu({ id, onClose, closeButtonRef }: PublicFullscreenMenuProps) {
   const text = i18n.public.menu;
+  const titleId = `${id}-title`;
 
   return (
     <div
       id={id}
       role="dialog"
       aria-modal="true"
-      aria-label={text.dialogAriaLabel}
+      aria-labelledby={titleId}
       className="fixed inset-0 z-100 flex flex-col overflow-y-auto bg-foreground text-background"
     >
+      <h2 id={titleId} className="sr-only">
+        {text.dialogAriaLabel}
+      </h2>
       <div className={`${publicHeaderBarClassName} border-b-2 border-dark-border`}>
         <PublicBrand tone="dark" onClick={onClose} />
         <PublicMenuButton

@@ -33,6 +33,7 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
   const variantClasses = getNarrativeVariantClasses(block.variant);
   const eyebrow = blockEyebrow(block, article);
   const articleHref = `/articoli/${article.slug}`;
+  const titleId = `feature-article-title-${article.id}`;
   const showBorder = block.variant === "default";
   const imageOnRight = block.featuredPlacement === "right";
   const imageBorderClass = imageOnRight
@@ -57,7 +58,7 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
       <div className={publicContentClassName}>
         <Link
           href={articleHref}
-          aria-label={article.title}
+          aria-labelledby={titleId}
           className={cn(
             publicInteraction.cardBase,
             "grid md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
@@ -77,7 +78,10 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
                 </span>
               ) : null}
             </div>
-            <h2 className={cn(publicTypography.featureArticleTitle, "max-w-[14ch] text-balance")}>
+            <h2
+              id={titleId}
+              className={cn(publicTypography.featureArticleTitle, "max-w-[14ch] text-balance")}
+            >
               <StyledTitle
                 title={article.title}
                 titleStyled={article.titleStyled}

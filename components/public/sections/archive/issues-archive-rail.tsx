@@ -6,9 +6,10 @@ import type { ReactNode } from "react";
 
 type IssuesArchiveRailProps = {
   children: ReactNode;
+  ariaLabel?: string;
 };
 
-export function IssuesArchiveRail({ children }: IssuesArchiveRailProps) {
+export function IssuesArchiveRail({ children, ariaLabel }: IssuesArchiveRailProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number | null>(null);
@@ -92,6 +93,7 @@ export function IssuesArchiveRail({ children }: IssuesArchiveRailProps) {
   return (
     <section
       ref={sectionRef}
+      aria-label={ariaLabel}
       className="scroll-mt-20 py-0"
       style={sectionHeight ? { height: `${sectionHeight}px` } : undefined}
     >

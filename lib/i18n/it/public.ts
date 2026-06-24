@@ -9,6 +9,7 @@ export const publicIt = {
     homeAriaLabel: "Torna all'inizio",
   },
   header: {
+    skipToContent: "Salta al contenuto principale",
     openMenu: "Menu",
     openMenuAriaLabel: "Apri menu",
   },
@@ -71,6 +72,7 @@ export const publicIt = {
         `${count} ${count === 1 ? "numero pubblicato" : "numeri pubblicati"}`,
     },
     countLabel: articleCountLabel,
+    railAriaLabel: "Elenco dei numeri pubblicati",
     empty: {
       code: "00",
       kicker: "Archivio",

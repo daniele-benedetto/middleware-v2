@@ -38,6 +38,7 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
   const closingText = i18n.public.home.closing;
   const editorialPanelBorder = block.variant === "default" ? "border border-foreground" : "";
   const articleHref = `/articoli/${article.slug}`;
+  const titleId = `closing-article-title-${article.id}`;
   const image = article.imageUrl ? (
     <div className="relative min-h-48 overflow-hidden border border-foreground grayscale sm:min-h-52 md:min-h-64 lg:min-h-[min(34vh,360px)]">
       <Image
@@ -84,7 +85,7 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
 
         <Link
           href={articleHref}
-          aria-label={article.title}
+          aria-labelledby={titleId}
           className={cn(
             publicInteraction.cardSurface,
             "min-w-0 border border-foreground bg-background text-foreground",
@@ -101,7 +102,10 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
               ) : null}
             </div>
 
-            <h3 className={cn(publicTypography.closingArticleTitle, "w-full text-balance")}>
+            <h3
+              id={titleId}
+              className={cn(publicTypography.closingArticleTitle, "w-full text-balance")}
+            >
               <StyledTitle
                 title={article.title}
                 titleStyled={article.titleStyled}

@@ -39,7 +39,11 @@ export function PublicIssueDossierPage({
   const shouldShowArchive = issue || showArchiveWithoutIssue;
 
   return (
-    <main className="flex flex-1 flex-col bg-background font-heading text-foreground">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
+    >
       {jsonLd}
       <HomeScrollProgress />
       <div tabIndex={-1} className="flex flex-col focus:outline-none">
