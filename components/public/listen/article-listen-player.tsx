@@ -1,7 +1,7 @@
 "use client";
 
 import { PauseIcon, PlayIcon, RotateCcwIcon, RotateCwIcon } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   formatAudioTime,
@@ -127,7 +127,14 @@ export function ArticleListenPlayer({
     chunks.findLast((chunk) => currentTime >= chunk.end) ??
     chunks[0] ??
     null;
-  const visibleChunks = getVisibleAudioChunks(chunks, activeChunk?.id ?? null);
+  const activeChunkId = activeChunk?.id ?? null;
+  // Recompute the visible window only when the active chunk changes (crossing a
+  // boundary), not on every ~4/sec timeupdate tick — this keeps ChunkWindow
+  // from re-rendering on each tick.
+  const visibleChunks = useMemo(
+    () => getVisibleAudioChunks(chunks, activeChunkId),
+    [chunks, activeChunkId],
+  );
   const resolvedDuration = duration > 0 ? duration : (chunks.at(-1)?.end ?? 0);
   const progress = resolvedDuration > 0 ? (currentTime / resolvedDuration) * 100 : 0;
   const shouldOfferResume = savedProgress ? isResumeCandidate(savedProgress) : false;

@@ -30,19 +30,38 @@ export function HomeScrollProgress() {
       }
     };
 
-    if (!prefersReducedMotion.matches) {
+    const enable = () => {
       updateProgress();
       window.addEventListener("scroll", requestUpdate, { passive: true });
       window.addEventListener("resize", requestUpdate);
-    }
+    };
 
-    return () => {
+    const disable = () => {
       if (frameId !== null) {
         window.cancelAnimationFrame(frameId);
+        frameId = null;
       }
-
       window.removeEventListener("scroll", requestUpdate);
       window.removeEventListener("resize", requestUpdate);
+      bar.style.setProperty("--scroll-progress", "0");
+    };
+
+    // Re-evaluate when the OS reduced-motion preference changes mid-session,
+    // not only at mount.
+    const applyPreference = () => {
+      if (prefersReducedMotion.matches) {
+        disable();
+      } else {
+        enable();
+      }
+    };
+
+    applyPreference();
+    prefersReducedMotion.addEventListener("change", applyPreference);
+
+    return () => {
+      prefersReducedMotion.removeEventListener("change", applyPreference);
+      disable();
     };
   }, []);
 

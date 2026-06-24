@@ -28,6 +28,7 @@ export function PublicBrand({ href = "/", onClick, tone = "light", priority }: P
         width={31}
         height={31}
         priority={priority}
+        unoptimized
         className="size-7.75 shrink-0 object-contain"
       />
       <span

@@ -14,16 +14,12 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
 
 ## 0. Quick wins — da fare prima
 
-- [ ] **`[ALTA]`/S** Aggiungere `id="main-content"` al `<main>` in `app/(public)/loading.tsx` — attualmente è solo
-      `<main className="...">`. Lo skip link del layout punta a `#main-content`; durante Suspense/loading il target non esiste, quindi lo skip link resta rotto. → vedi A11Y-1.
-- [ ] **`[MEDIA]`/S** Eliminare i file morti verificati, con zero importatori — tutti i consumer importano da
-      `@/components/public/compounds`:
-  - `components/public/sections/dossier/article-meta.tsx` — shim di re-export
-  - `components/public/sections/dossier/dossier-article-card.tsx` — shim di re-export
-  - `components/public/sections/dossier/index.ts` — barrel senza importatori
-  - `components/public/sections/dossier/dossier-view-model.ts:34` — re-export di `getBlockNumberingArticles`, non usato
-- [ ] **`[BASSA]`/S** Rimuovere le directory placeholder vuote: `components/public/home-v2/`, `components/public/audio/`,
-      `components/public/motion/`, `app/(public)/v2/`. Ricrearle solo quando servono davvero.
+- [x] **`[ALTA]`/S — ✅ FATTO (commit 46f2e5a).** Aggiunto `id="main-content"` al `<main>` di `app/(public)/loading.tsx`.
+- [x] **`[MEDIA]`/S — ✅ FATTO (commit 46f2e5a).** Eliminati i file morti (zero importatori): shim
+      `sections/dossier/article-meta.tsx` + `sections/dossier/dossier-article-card.tsx`, barrel
+      `sections/dossier/index.ts`, e re-export `getBlockNumberingArticles` in `dossier-view-model.ts`.
+- [x] **`[BASSA]`/S — ✅ FATTO (commit 46f2e5a).** Rimosse le directory placeholder vuote
+      `components/public/{home-v2,audio,motion}/` e `app/(public)/v2/`.
 
 ---
 
@@ -92,28 +88,27 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
 
 ## 2. Performance
 
-- [ ] **Perf-1 `[ALTA]`/M** — Stessa correzione di **A-1**: rimuovere i provider tRPC/RQ/superjson/sonner dall’albero pubblico è la più grande riduzione di JS per le pagine pubbliche.
-- [ ] **Perf-2 `[MEDIA]`/M — L’audio player fa re-render circa 4×/sec.**
-      `components/public/listen/article-listen-player.tsx`: `onTimeUpdate` chiama `setCurrentTime` a ogni tick,
-      rieseguendo `getActiveAudioChunk` / `chunks.findLast(...)` / `getVisibleAudioChunks` circa alle righe 120-127 a ogni render.
-      Wrappare il calcolo della chunk attiva/visibile in `useMemo`, con dipendenze `[chunks, currentTime]`.
-      Inoltre, smettere di chiamare `syncDuration` da `onTimeUpdate` una volta nota la durata.
-- [ ] **Perf-3 `[MEDIA]`/L — Separare la shell statica dell’audio player dal client bundle.**
+- [x] **Perf-1 `[ALTA]`/M — ✅ FATTO (= A-1).** Provider tRPC/RQ/superjson/sonner rimossi dall’albero pubblico
+      (spostati nel layout CMS). È la maggiore riduzione di JS sulle pagine pubbliche.
+- [x] **Perf-2 `[MEDIA]`/M — ✅ FATTO. Re-render dell’audio player.**
+      `visibleChunks` ora è in `useMemo` con chiave **`[chunks, activeChunkId]`** (non `currentTime`, che cambia a
+      ogni tick e non darebbe alcun beneficio): `getVisibleAudioChunks` e il re-render di `ChunkWindow` scattano solo
+      al cambio di chunk, non ~4×/sec. (`syncDuration` da `onTimeUpdate` lasciato: è già idempotente e no-op a durata nota.)
+- [ ] **Perf-3 `[MEDIA]`/L — Separare la shell statica dell’audio player dal client bundle.** (resta — refactor strutturale)
       Il componente `"use client"` da 447 righe renderizza anche `<h1>` statico, excerpt e pannello chunk.
       Solo i controlli e `<audio>` devono stare nel client. Estrarre una shell server e un client `AudioControls` più piccolo.
       Si collega a Refactor-7, cioè estrazione degli hook.
-- [ ] **Perf-4 `[BASSA]`/S — Formati immagine.** `next.config.ts` `images` non ha `formats`.
-      Aggiungere `formats: ["image/avif", "image/webp"]` per una compressione migliore sulle immagini editoriali.
-- [ ] **Perf-5 `[BASSA]`/S — Ridurre i pesi dei font.** `app/layout.tsx` carica Archivo con 6 pesi
-      (400–900), Spectral con 3 e IBM Plex Mono con 4. Confermare quali pesi sono davvero usati e rimuovere quelli inutilizzati per ridurre il payload font.
-- [ ] **Perf-6 `[BASSA]`/S — Logo SVG tramite `next/image`.** `public-footer-brand.tsx` /
-      `public-brand.tsx` renderizzano un logo SVG tramite `next/image`, cioè passano dall’optimizer senza benefici per i vettoriali.
-      Inlineare l’SVG oppure passare `unoptimized`.
-- [ ] **Perf-7 `[BASSA]`/S — `loading="lazy"` ridondante** sul `next/image` in
-      `rich-text/public-rich-text.tsx` circa alla riga 203: è già il default.
-- [ ] **Perf-8 `[BASSA]`/S — Listener per reduced motion.** `home/home-scroll-progress.tsx` legge
-      `prefers-reduced-motion` una sola volta al mount, ma non si iscrive ai cambiamenti. La rail dell’archive invece lo fa.
-      Piccola correzione di coerenza.
+- [x] **Perf-4 `[BASSA]`/S — ✅ FATTO.** Aggiunto `formats: ["image/avif", "image/webp"]` in `next.config.ts`.
+- [ ] **Perf-5 `[BASSA]`/S — ⏸️ RINVIATO (non sicuro a tavolino).** I pesi font si applicano in base alla famiglia
+      attiva (Archivo/Spectral/Mono) che cambia per contesto, e `font-medium` (500) / `font-light` (300) compaiono in
+      componenti UI del CMS. Rimuovere un peso senza verifica visiva rischia regressioni tipografiche per guadagno modesto.
+      Candidato plausibile: **Archivo 500** (usato solo in `components/ui/*`, probabilmente in font-sans/Spectral, non Archivo) —
+      ma va confermato visivamente prima di togliere. Lasciato invariato.
+- [x] **Perf-6 `[BASSA]`/S — ✅ FATTO.** `unoptimized` sui loghi SVG in `public-footer-brand.tsx` e `public-brand.tsx`
+      (gli SVG non beneficiano dell’optimizer; inoltre `/brand/*.svg` non rientra nei `localPatterns` del config).
+- [x] **Perf-7 `[BASSA]`/S — ✅ FATTO.** Rimosso `loading="lazy"` ridondante dall’`Image` in `public-rich-text.tsx`.
+- [x] **Perf-8 `[BASSA]`/S — ✅ FATTO.** `home-scroll-progress.tsx` ora si iscrive all’evento `change` di
+      `prefers-reduced-motion` e abilita/disabilita i listener di scroll/resize di conseguenza.
 
 ---
 
@@ -182,8 +177,8 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
 
 ## 5. Refactor / codice morto
 
-- [ ] **R-1 `[MEDIA]`/S — Eliminare shim e barrel dossier morti** → Quick win 0.
-- [ ] **R-2 `[MEDIA]`/S — Rimuovere il re-export inutilizzato di `getBlockNumberingArticles`** → Quick win 0.
+- [x] **R-1 `[MEDIA]`/S — ✅ FATTO (commit 46f2e5a).** Eliminati shim e barrel dossier morti → Quick win 0.
+- [x] **R-2 `[MEDIA]`/S — ✅ FATTO (commit 46f2e5a).** Rimosso il re-export inutilizzato di `getBlockNumberingArticles` → Quick win 0.
 - [ ] **R-3 `[MEDIA]`/M — La card archive è implementata due volte.**
       `home/archive-section.tsx` e `sections/archive/issue-archive-card.tsx` definiscono indipendentemente la stessa mappa di stili a 3 varianti,
       già in drift: text-stroke `0.35px` vs `0.45px`, e markup quasi identico per card

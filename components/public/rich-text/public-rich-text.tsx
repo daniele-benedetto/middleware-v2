@@ -200,7 +200,6 @@ function renderBlockNode(node: RichTextNode, key: string): ReactNode {
           width={1200}
           height={675}
           sizes="(min-width: 768px) 768px, 100vw"
-          loading="lazy"
           className="aspect-video w-full object-cover"
         />
       </figure>

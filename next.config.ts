@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     viewTransition: true,
   },
   images: {
+    formats: ["image/avif", "image/webp"],
     localPatterns: [
       {
         pathname: "/api/public/media/blob",

@@ -13,6 +13,7 @@ export function PublicFooterBrand() {
         alt={text.logoAlt}
         width={31}
         height={31}
+        unoptimized
         className="size-7.75 shrink-0 object-contain"
       />
       <span className={publicTypography.footerBrand}>{text.wordmark}</span>
