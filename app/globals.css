@@ -274,8 +274,14 @@ body {
   color: var(--bg-main);
 }
 
-:root {
-  view-transition-name: none;
+/* Anchor the persistent chrome (header, footer, background): the root snapshot
+   and the named footer stay static, so the header never vanishes and the content
+   keeps its position below it. Only the page content (.page-transition) animates.
+   NB: do NOT set `:root { view-transition-name: none }` — that drops the root
+   snapshot entirely and makes the header disappear during the transition. */
+::view-transition-group(root),
+::view-transition-group(public-footer) {
+  animation: none;
 }
 
 /* The page content is animated by React's <ViewTransition update="page-transition">
@@ -292,11 +298,11 @@ body {
 }
 
 ::view-transition-old(.page-transition) {
-  animation: 240ms var(--easing-standard) both page-transition-out;
+  animation: 460ms var(--easing-standard) both page-transition-out;
 }
 
 ::view-transition-new(.page-transition) {
-  animation: 360ms var(--easing-standard) 240ms both page-transition-in;
+  animation: 640ms var(--easing-standard) 420ms both page-transition-in;
 }
 
 @keyframes page-transition-out {
