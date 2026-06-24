@@ -4,7 +4,6 @@ import {
 } from "@/components/public/home/home-view-model";
 import {
   assignIssueArticleNumbers,
-  getIssueBlockNumberingArticles,
   getIssueContentArticleNumbers,
   getUnpaginatedIssueArticles,
   sortIssueNumberingFallbackArticles,
@@ -30,5 +29,3 @@ export function getUnpaginatedArticles(
 ) {
   return getUnpaginatedIssueArticles(issue.articles, blocks);
 }
-
-export { getIssueBlockNumberingArticles as getBlockNumberingArticles };

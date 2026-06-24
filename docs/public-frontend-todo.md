@@ -1,0 +1,209 @@
+Certo — ecco la versione in italiano del documento che hai caricato:
+
+```md
+# Frontend pubblico — Audit & TODO
+
+Audit di `app/(public)/**` + `components/public/**` e dei livelli SEO/dati che li alimentano, confrontati con le best practice di Next.js 16.2 / React 19. Verificato sui documenti locali in `node_modules/next/dist/docs`.
+
+**Stato generale: buono.** Il sito pubblico è davvero server-first: ci sono solo 5 componenti client in `components/public`, tutti giustificati. Usa `next/image` ovunque, senza `<img>` raw, ha una base SEO completa (`sitemap.ts`, `robots.ts`, `manifest.ts`, `next/font`, `generateMetadata` per route, JSON-LD) e usa ISR (`revalidate = 3600` + `generateStaticParams`) con `unstable_cache` per deduplicare il doppio fetch metadata/pagina. Gli elementi sotto sono miglioramenti, non emergenze. Priorità:
+`[ALTA]` da fare presto · `[MEDIA]` utile da fare · `[BASSA]` rifinitura/nice-to-have.
+
+Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
+
+---
+
+## 0. Quick wins — da fare prima
+
+- [ ] **`[ALTA]`/S** Aggiungere `id="main-content"` al `<main>` in `app/(public)/loading.tsx` — attualmente è solo
+      `<main className="...">`. Lo skip link del layout punta a `#main-content`; durante Suspense/loading il target non esiste, quindi lo skip link resta rotto. → vedi A11Y-1.
+- [ ] **`[MEDIA]`/S** Eliminare i file morti verificati, con zero importatori — tutti i consumer importano da
+      `@/components/public/compounds`:
+  - `components/public/sections/dossier/article-meta.tsx` — shim di re-export
+  - `components/public/sections/dossier/dossier-article-card.tsx` — shim di re-export
+  - `components/public/sections/dossier/index.ts` — barrel senza importatori
+  - `components/public/sections/dossier/dossier-view-model.ts:34` — re-export di `getBlockNumberingArticles`, non usato
+- [ ] **`[BASSA]`/S** Rimuovere le directory placeholder vuote: `components/public/home-v2/`, `components/public/audio/`,
+      `components/public/motion/`, `app/(public)/v2/`. Ricrearle solo quando servono davvero.
+
+---
+
+## 1. Architettura
+
+- [ ] **A-1 `[ALTA]`/M — Le pagine pubbliche caricano inutilmente client tRPC/React Query.**
+      `app/layout.tsx` wrappa tutto l’albero, incluso `(public)`, in `TrpcProvider` (`lib/trpc/provider.tsx`:
+      `@tanstack/react-query` + `@trpc/client` + `superjson`) e `<Toaster>` di sonner. Verificato: **nessun file
+      sotto `components/public` o `app/(public)` usa tRPC/React Query**. Spostare questi provider dentro
+      `app/(cms)/layout.tsx` e in `(auth)` solo se necessario, così le pagine pubbliche statiche renderizzano senza provider.
+      È il maggior guadagno sul client bundle del sito pubblico. Si sovrappone anche a Perf-1.
+- [ ] **A-2 `[MEDIA]`/M — La scroll restoration sembra probabilmente rotta su back/forward.**
+      `components/public/public-link.tsx` imposta `scroll={false}` su ogni link interno, e
+      `components/public/public-page-transition.tsx` forza `scrollTo(0, 0)` a ogni aggiornamento di navigazione.
+      Insieme, questo annulla la scroll restoration del browser/Next: il tasto indietro probabilmente riporta sempre in cima.
+      Verificare in browser; se confermato, forzare lo scroll solo nelle navigazioni _forward_, saltando `popstate`.
+- [ ] **A-3 `[BASSA]`/L — `unstable_cache` → `use cache` con Cache Components.**
+      I documenti locali indicano che `unstable_cache` “has been replaced by `use cache` in Next.js 16”.
+      Tutto `lib/public/server/*` lo usa. È la strada moderna, ma è una migrazione reale: richiede
+      `experimental.cacheComponents` e cambiamenti comportamentali nell’app. Backlog, non urgente: il setup attuale è corretto e supportato.
+- [ ] **A-4 `[BASSA]`/S — `dossier-view-model.ts` è un sottile layer passthrough.**
+      `sortUnpaginatedArticles` / `getArticleNumbers` / `assignArticleNumbers` / `getUnpaginatedArticles` rinominano e inoltrano soltanto funzioni da
+      `lib/public/issue-numbering`, senza aggiungere comportamento. O importare direttamente la sorgente nei blocchi, oppure aggiungere un commento di una riga che lo documenti come superficie API stabile intenzionale del dossier.
+- [ ] **A-5 `[BASSA]`/note — `ViewTransition` è ancora un’API React instabile** (`public-page-transition.tsx`).
+      Non danneggia l’LCP iniziale, perché si attiva solo sugli update, e il boundary client non “contamina” i children:
+      i children arrivano come RSC da un layout server. Da monitorare nei futuri upgrade Next/React.
+- [ ] **A-6 `[BASSA]`/S — Tipo fuorviante in `archive-view-model.ts`.**
+      `Omit<PublicIssueListItem, "descriptionPlain"> & { descriptionPlain: ... }` — `PublicIssueListItem`
+      non sembra esporre `descriptionPlain`, quindi l’`Omit` è un no-op. Verificare rispetto al tipo di output tRPC e modellare esplicitamente l’intento.
+
+---
+
+## 2. Performance
+
+- [ ] **Perf-1 `[ALTA]`/M** — Stessa correzione di **A-1**: rimuovere i provider tRPC/RQ/superjson/sonner dall’albero pubblico è la più grande riduzione di JS per le pagine pubbliche.
+- [ ] **Perf-2 `[MEDIA]`/M — L’audio player fa re-render circa 4×/sec.**
+      `components/public/listen/article-listen-player.tsx`: `onTimeUpdate` chiama `setCurrentTime` a ogni tick,
+      rieseguendo `getActiveAudioChunk` / `chunks.findLast(...)` / `getVisibleAudioChunks` circa alle righe 120-127 a ogni render.
+      Wrappare il calcolo della chunk attiva/visibile in `useMemo`, con dipendenze `[chunks, currentTime]`.
+      Inoltre, smettere di chiamare `syncDuration` da `onTimeUpdate` una volta nota la durata.
+- [ ] **Perf-3 `[MEDIA]`/L — Separare la shell statica dell’audio player dal client bundle.**
+      Il componente `"use client"` da 447 righe renderizza anche `<h1>` statico, excerpt e pannello chunk.
+      Solo i controlli e `<audio>` devono stare nel client. Estrarre una shell server e un client `AudioControls` più piccolo.
+      Si collega a Refactor-7, cioè estrazione degli hook.
+- [ ] **Perf-4 `[BASSA]`/S — Formati immagine.** `next.config.ts` `images` non ha `formats`.
+      Aggiungere `formats: ["image/avif", "image/webp"]` per una compressione migliore sulle immagini editoriali.
+- [ ] **Perf-5 `[BASSA]`/S — Ridurre i pesi dei font.** `app/layout.tsx` carica Archivo con 6 pesi
+      (400–900), Spectral con 3 e IBM Plex Mono con 4. Confermare quali pesi sono davvero usati e rimuovere quelli inutilizzati per ridurre il payload font.
+- [ ] **Perf-6 `[BASSA]`/S — Logo SVG tramite `next/image`.** `public-footer-brand.tsx` /
+      `public-brand.tsx` renderizzano un logo SVG tramite `next/image`, cioè passano dall’optimizer senza benefici per i vettoriali.
+      Inlineare l’SVG oppure passare `unoptimized`.
+- [ ] **Perf-7 `[BASSA]`/S — `loading="lazy"` ridondante** sul `next/image` in
+      `rich-text/public-rich-text.tsx` circa alla riga 203: è già il default.
+- [ ] **Perf-8 `[BASSA]`/S — Listener per reduced motion.** `home/home-scroll-progress.tsx` legge
+      `prefers-reduced-motion` una sola volta al mount, ma non si iscrive ai cambiamenti. La rail dell’archive invece lo fa.
+      Piccola correzione di coerenza.
+
+---
+
+## 3. SEO
+
+- [ ] **SEO-1 `[MEDIA]`/M — La gerarchia heading salta da `h1` a `h3`.** Diverse griglie renderizzano card con `<h3>` senza un `<h2>` intermedio:
+  - `sections/archive/issues-archive-grid.tsx` — card sotto l’hero `<h1>` dell’archive, senza `<h2>`
+  - `sections/dossier/unpaginated-article-row.tsx` — griglia di `<h3>` senza heading di sezione
+  - `sections/dossier/body-block.tsx` quando `BlockSectionIntro` ritorna `null`, cioè senza titolo/descrizione e senza `<h2>`
+    Aggiungere un `<h2>` visually-hidden per sezione, oppure demotare i titoli delle card, così l’outline resta continuo.
+- [ ] **SEO-2 `[MEDIA]`/S — L’indice archive ha il JSON-LD più sottile.**
+      `buildIssuesArchiveJsonLd()` (`lib/seo/json-ld.ts`) emette solo `WebSite` + `BreadcrumbList`.
+      Aggiungere un `CollectionPage` / `ItemList` che enumeri le issue: è il contenuto principale della pagina.
+- [ ] **SEO-3 `[MEDIA]`/S — `Article.publisher` punta a un nodo `WebSite`.**
+      `buildArticleJsonLd` imposta `publisher: { "@id": "...#website" }`, ma `#website` è tipizzato come `WebSite`, non `Organization`.
+      Schema.org si aspetta una `Organization`, con `name` e `logo`. Emettere o referenziare un nodo `Organization` corretto.
+      File: `lib/seo/json-ld.ts`.
+- [ ] **SEO-4 `[BASSA]`/S — I titoli delle colonne footer sono `<h4>`** senza `h2`/`h3` sopra
+      (`footer/public-footer-link-group.tsx`). Usare un `<h2>` stilizzato oppure renderizzarli come testo non-heading.
+- [ ] **SEO-5 `[BASSA]`/S — La data “updated” delle pagine statiche non è un `<time>`.**
+      `pages/public-static-page.tsx` passa la data formattata come semplice `label` a `PublicMetaRail`, a differenza della pagina articolo.
+      Passare `dateTime: page.updatedAt` così viene renderizzata come `<time dateTime>`.
+- [ ] **SEO-6 `[BASSA]`/S — Fallback canonical delle pagine statiche.**
+      `getPublicStaticPageData` fa fallback a `canonicalPath = "/"` per uno slug non registrato, producendo un canonical sbagliato verso la homepage.
+      La route imposta `dynamicParams = false`, quindi slug sconosciuti non dovrebbero arrivare al componente.
+      Confermare e rimuovere il fallback rischioso, oppure trasformarlo in 404.
+
+---
+
+## 4. Accessibilità
+
+- [ ] **A11Y-1 `[ALTA]`/S — Target dello skip link mancante durante il loading** → vedi Quick win 0:
+      aggiungere `id="main-content"` a `loading.tsx`.
+- [ ] **A11Y-2 `[ALTA]`/M — Gap screen-reader nell’audio player**
+      (`components/public/listen/article-listen-player.tsx`):
+  - Aggiungere `aria-valuetext={formatAudioTime(currentTime)}` allo seek `<input type="range">` circa alle righe 340-351:
+    gli screen reader attualmente annunciano il float raw, per esempio “143”, non “02:23”.
+  - Aggiungere una regione `aria-live="polite"` / `role="status"` per tempo trascorso e stato play/pause.
+  - Rendere il messaggio di errore audio `role="alert"` circa alle righe 415-419.
+  - Segnare la chunk attualmente in riproduzione con `aria-current` sui bottoni chunk circa alle righe 70-91:
+    lo stato attivo è solo visivo, tramite opacity/blur.
+  - Aggiungere `aria-pressed={playbackRate === rate}` ai bottoni velocità circa alle righe 390-404.
+- [ ] **A11Y-3 `[MEDIA]`/S — Il focus trap usa `offsetParent !== null`** per rilevare elementi visibili
+      (`header/public-header.tsx` circa riga 63). Dentro un dialog `position: fixed` può filtrare erroneamente i link nav,
+      riducendo il trap al solo bottone di chiusura. Usare `el.checkVisibility()` o `getClientRects().length > 0`.
+- [ ] **A11Y-4 `[MEDIA]`/S — I link footer non hanno un navigation landmark.**
+      `footer/public-footer-link-group.tsx` renderizza `<h4>` + un semplice `<div>` di link.
+      Wrappare ogni gruppo, o l’area link del footer, in `<nav aria-labelledby=...>`.
+- [ ] **A11Y-5 `[MEDIA]`/M — Rail con scroll-jacking e focus tastiera.**
+      `sections/archive/issues-archive-rail.tsx` trasla la track usando `window.scrollY`, non il focus.
+      Un utente da tastiera che tabba verso una card off-screen non riesce a portarla in vista.
+      Aggiungere un fallback, per esempio `overflow-x-auto` nativo, oppure mappare l’ordine di tab alla posizione di scroll.
+- [ ] **A11Y-6 `[MEDIA]`/decisione — Policy sugli `alt` delle immagini.**
+      Ogni immagine editoriale usa `alt={article.imageAlt ?? ""}`: hero, card dossier, blocchi lead/closing/feature e rich text.
+      Alt vuoto = “decorativa”. È coerente e difendibile, perché il significato è già trasmesso da `<h3>`/`<h2>` nella card,
+      ma va reso intenzionale: mantenere l’alt vuoto come policy dichiarata, oppure rendere obbligatorio `imageAlt` nel CMS /
+      aggiungere un fallback derivato dal titolo per immagini lead/hero.
+- [ ] **A11Y-7 `[BASSA]`/M — `<a>` full-card che wrappa `<article>` + heading**
+      (`compounds/dossier-article-card.tsx`, e anche blocchi lead/closing/feature).
+      Un link gigante ingloba l’heading. `aria-labelledby` mitiga, ma il pattern “stretched-link con heading come link”
+      è più pulito sia per il link text SEO sia per la semantica del tab.
+- [ ] **A11Y-8 `[BASSA]`/S — Label-in-name, WCAG 2.5.3.**
+      `header/public-menu-button.tsx` ha sia una `label` visibile sia un `aria-label`; assicurarsi che l’aria-label
+      _contenga_ il testo visibile, controllando le stringhe i18n.
+- [ ] **A11Y-9 `[BASSA]`/S — `div` interno con `tabIndex={-1}` ridondante** in
+      `pages/public-issue-dossier-page.tsx` circa alla riga 49, annidato dentro un `<main>` già `tabIndex={-1}`.
+      Rimuoverlo oppure commentare perché è un focus target separato.
+
+---
+
+## 5. Refactor / codice morto
+
+- [ ] **R-1 `[MEDIA]`/S — Eliminare shim e barrel dossier morti** → Quick win 0.
+- [ ] **R-2 `[MEDIA]`/S — Rimuovere il re-export inutilizzato di `getBlockNumberingArticles`** → Quick win 0.
+- [ ] **R-3 `[MEDIA]`/M — La card archive è implementata due volte.**
+      `home/archive-section.tsx` e `sections/archive/issue-archive-card.tsx` definiscono indipendentemente la stessa mappa di stili a 3 varianti,
+      già in drift: text-stroke `0.35px` vs `0.45px`, e markup quasi identico per card
+      con numero di background / `StyledTitle` / meta row puntinata.
+      Unificare in una sola card e una sola mappa varianti.
+- [ ] **R-4 `[MEDIA]`/S — “Issue number indexing” duplicato 3×.**
+      La logica “ordina oldest-first → mappa id→`formatIssueNumber(index)`” vive in `archive-section.tsx`
+      (`getIssueNumbers`), `archive-view-model.ts` (`getArchiveIssueViewModels`) e `home-view-model.ts`
+      (`getIssueOrderLabel`). Estrarre un helper condiviso.
+- [ ] **R-5 `[MEDIA]`/L — Triplet dei feature block dossier.**
+      `lead-block.tsx`, `feature-break-block.tsx`, `closing-block.tsx` — circa 110-130 righe ciascuno —
+      condividono uno scheletro parallelo: risoluzione dell’articolo featured, blocco `next/image`,
+      header con numero+eyebrow, `StyledTitle`, excerpt, `ArticleMeta`, `aria-labelledby`.
+      Una primitiva condivisa `<DossierFeatureLink>` con slot layout/variant ridurrebbe molto il codice.
+      Effort più alto: da fare dopo R-3.
+- [ ] **R-6 `[MEDIA]`/S — `ArticleMeta` e `PublicMetaRail` duplicano** la join con separatore puntinato
+      (`compounds/article-meta.tsx` vs `compounds/public-meta-rail.tsx`).
+      Rendere `PublicMetaRail` l’unica implementazione e far delegare `ArticleMeta`.
+- [ ] **R-7 `[BASSA]`/M — Interni dell’audio player.**
+      Estrarre `useAudioPlayer(audioRef)` e `useAudioProgress({ articleId, ... })` da `article-listen-player.tsx`;
+      unificare i quasi-identici `seekBy` / `handleSeekTo` in un solo `commitSeek(nextTime)`.
+      Si collega a Perf-3.
+- [ ] **R-8 `[BASSA]`/S — Rimuovere il wrapper passthrough** `composeNarrativeHomeBlocks` in `home-view-model.ts`,
+      che inoltra soltanto a `resolveIssueHomeBlocks`.
+- [ ] **R-9 `[BASSA]`/S — `unpaginated-article-row.tsx`** reimplementa inline la logica eyebrow;
+      riusare `articleEyebrow()` da `dossier-format.ts`.
+- [ ] **R-10 `[BASSA]`/S — `rich-text/public-rich-text.tsx`**: aggiungere un piccolo helper `renderChildren`
+      per i body identici di `bulletList` / `orderedList` / `listItem` / `blockquote`;
+      proteggere la join del testo di `codeBlock` con `typeof child.text === "string"`, per evitare `undefined\n` letterale.
+- [ ] **R-11 `[BASSA]`/S — `block-section-intro.tsx`** testa `block.title` tre volte dentro una ternaria intricata;
+      calcolare `hasTitle` una volta e ramificare in modo più pulito.
+- [ ] **R-12 `[BASSA]`/S — `dossier-format.ts` `getArticleNumber`** ritorna silenziosamente `1` quando manca un id;
+      aggiungere un commento, o un warn solo in dev, per spiegare il fallback.
+- [ ] **R-13 `[BASSA]`/S — Guard di esaustività.**
+      Aggiungere `default: never` agli `switch` su union chiuse in `dossier-home.tsx` (`renderBlock`) e
+      `dossier-variant.ts`, così un nuovo block type fallisce a compile time.
+
+---
+
+## Note / non-problemi — verificati, nessuna azione
+
+- Le chiavi `unstable_cache` per slug sono corrette: gli argomenti sono inclusi automaticamente nella cache key,
+  confermato dalla documentazione. Nessuna collisione cross-slug nonostante i `keyParts` statici.
+- Nessun `dangerouslySetInnerHTML` / superficie XSS nel rich text: tutti i nodi sono renderizzati in modo tipizzato
+  e i link passano da `resolveSafeRichTextLinkHref`, con `rel="noopener noreferrer"` sui link esterni.
+- La disciplina LCP di `next/image` è corretta: `priority` sull’hero dell’articolo e solo sul primo blocco dossier
+  (`dossier-home.tsx` `index === 0`).
+- I boundary dei componenti client sono minimi e tutti giustificati:
+  `public-header`, `public-page-transition`, `home-scroll-progress`, `issues-archive-rail`, `article-listen-player`;
+  cleanup di listener/observer/rAF corretto in ciascuno.
+- ISR configurato correttamente: `revalidate = 3600` + `generateStaticParams` su route articolo/issue/listen;
+  `dynamicParams = false` sul catch-all delle pagine statiche.
+```
