@@ -1,8 +1,10 @@
 import { CmsSidebar } from "@/components/cms/layout";
 import { CmsLayoutShell } from "@/components/cms/primitives";
+import { Toaster } from "@/components/ui/sonner";
 import { requireCmsSession } from "@/lib/cms/auth";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
+import { TrpcProvider } from "@/lib/trpc/provider";
 
 import type { ReactNode } from "react";
 
@@ -22,12 +24,15 @@ export default async function CmsLayout({ children }: CmsLayoutProps) {
   const role = session.user.role;
 
   return (
-    <CmsLayoutShell
-      sidebar={
-        <CmsSidebar role={role} userName={session.user.name} userEmail={session.user.email} />
-      }
-    >
-      {children}
-    </CmsLayoutShell>
+    <TrpcProvider>
+      <CmsLayoutShell
+        sidebar={
+          <CmsSidebar role={role} userName={session.user.name} userEmail={session.user.email} />
+        }
+      >
+        {children}
+      </CmsLayoutShell>
+      <Toaster />
+    </TrpcProvider>
   );
 }

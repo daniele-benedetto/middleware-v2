@@ -1,8 +1,6 @@
 import { Archivo, IBM_Plex_Mono, Spectral } from "next/font/google";
 
-import { Toaster } from "@/components/ui/sonner";
 import { buildRootMetadata } from "@/lib/seo";
-import { TrpcProvider } from "@/lib/trpc/provider";
 import { cn } from "@/lib/utils";
 
 import type { Metadata, Viewport } from "next";
@@ -55,8 +53,7 @@ export default function RootLayout({
       )}
     >
       <body className="flex min-h-full flex-col scrollbar-thin scrollbar-track-background scrollbar-thumb-border md:hover:scrollbar-thumb-foreground">
-        <TrpcProvider>{children}</TrpcProvider>
-        <Toaster />
+        {children}
       </body>
     </html>
   );

@@ -29,30 +29,28 @@ Legenda effort: `S` ≤30min · `M` qualche ora · `L` più grande/strutturale.
 
 ## 1. Architettura
 
-- [ ] **A-1 `[ALTA]`/M — Le pagine pubbliche caricano inutilmente client tRPC/React Query.**
-      `app/layout.tsx` wrappa tutto l’albero, incluso `(public)`, in `TrpcProvider` (`lib/trpc/provider.tsx`:
-      `@tanstack/react-query` + `@trpc/client` + `superjson`) e `<Toaster>` di sonner. Verificato: **nessun file
-      sotto `components/public` o `app/(public)` usa tRPC/React Query**. Spostare questi provider dentro
-      `app/(cms)/layout.tsx` e in `(auth)` solo se necessario, così le pagine pubbliche statiche renderizzano senza provider.
-      È il maggior guadagno sul client bundle del sito pubblico. Si sovrappone anche a Perf-1.
-- [ ] **A-2 `[MEDIA]`/M — La scroll restoration sembra probabilmente rotta su back/forward.**
-      `components/public/public-link.tsx` imposta `scroll={false}` su ogni link interno, e
-      `components/public/public-page-transition.tsx` forza `scrollTo(0, 0)` a ogni aggiornamento di navigazione.
-      Insieme, questo annulla la scroll restoration del browser/Next: il tasto indietro probabilmente riporta sempre in cima.
-      Verificare in browser; se confermato, forzare lo scroll solo nelle navigazioni _forward_, saltando `popstate`.
+- [x] **A-1 `[ALTA]`/M — ✅ FATTO. Le pagine pubbliche caricavano inutilmente client tRPC/React Query.**
+      `TrpcProvider` + `<Toaster>` rimossi da `app/layout.tsx` (ora il root renderizza solo `{children}`) e
+      spostati in `app/(cms)/cms/layout.tsx`, che avvolge le sole pagine CMS interattive. Verificato che
+      `(auth)/cms/login` (login form senza trpc/toast) e `(cms-preview)` (toolbar server-only) non ne hanno
+      bisogno. Risultato: pagine pubbliche, login e preview renderizzano senza il client tRPC/RQ/superjson/sonner.
+- [x] **A-2 `[MEDIA]`/M — ✅ FATTO (da verificare in browser). Scroll restoration su back/forward.**
+      `components/public/public-page-transition.tsx` ora intercetta `popstate` con un ref e salta lo
+      `scrollTo(0, 0)` forzato sulle navigazioni back/forward, lasciando il ripristino al browser/Next; lo
+      scroll-to-top resta sulle navigazioni forward. ⚠️ Resta da confermare con un test manuale del tasto indietro.
 - [ ] **A-3 `[BASSA]`/L — `unstable_cache` → `use cache` con Cache Components.**
       I documenti locali indicano che `unstable_cache` “has been replaced by `use cache` in Next.js 16”.
       Tutto `lib/public/server/*` lo usa. È la strada moderna, ma è una migrazione reale: richiede
       `experimental.cacheComponents` e cambiamenti comportamentali nell’app. Backlog, non urgente: il setup attuale è corretto e supportato.
-- [ ] **A-4 `[BASSA]`/S — `dossier-view-model.ts` è un sottile layer passthrough.**
-      `sortUnpaginatedArticles` / `getArticleNumbers` / `assignArticleNumbers` / `getUnpaginatedArticles` rinominano e inoltrano soltanto funzioni da
-      `lib/public/issue-numbering`, senza aggiungere comportamento. O importare direttamente la sorgente nei blocchi, oppure aggiungere un commento di una riga che lo documenti come superficie API stabile intenzionale del dossier.
+- [x] **A-4 `[BASSA]`/S — ✅ FATTO. `dossier-view-model.ts` documentato come facade intenzionale.**
+      Aggiunto un commento che lo descrive come superficie API stabile, dossier-scoped, sopra
+      `lib/public/issue-numbering` (mantiene i blocchi disaccoppiati dagli internals della numerazione). Layer mantenuto.
 - [ ] **A-5 `[BASSA]`/note — `ViewTransition` è ancora un’API React instabile** (`public-page-transition.tsx`).
       Non danneggia l’LCP iniziale, perché si attiva solo sugli update, e il boundary client non “contamina” i children:
       i children arrivano come RSC da un layout server. Da monitorare nei futuri upgrade Next/React.
-- [ ] **A-6 `[BASSA]`/S — Tipo fuorviante in `archive-view-model.ts`.**
-      `Omit<PublicIssueListItem, "descriptionPlain"> & { descriptionPlain: ... }` — `PublicIssueListItem`
-      non sembra esporre `descriptionPlain`, quindi l’`Omit` è un no-op. Verificare rispetto al tipo di output tRPC e modellare esplicitamente l’intento.
+- [x] **A-6 `[BASSA]`/S — ✅ FATTO. Tipo fuorviante in `archive-view-model.ts` corretto.**
+      Verificato: `PublicIssueListItem` espone `description` (non `descriptionPlain`), quindi l’`Omit` era un
+      no-op. Sostituito con `PublicIssueListItem & { descriptionPlain; issueNumber }` + commento sui due campi derivati.
 
 ---
 

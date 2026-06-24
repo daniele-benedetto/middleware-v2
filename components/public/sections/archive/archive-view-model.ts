@@ -3,7 +3,9 @@ import { formatIssueNumber } from "@/lib/public/format/issue";
 
 import type { PublicIssueListItem } from "@/lib/public/types/issues";
 
-export type ArchiveIssueViewModel = Omit<PublicIssueListItem, "descriptionPlain"> & {
+// Extends the raw API item with two derived fields: a plain-text rendering of
+// the rich `description` and the sequential, oldest-first issue number.
+export type ArchiveIssueViewModel = PublicIssueListItem & {
   descriptionPlain: string | null;
   issueNumber: string;
 };
