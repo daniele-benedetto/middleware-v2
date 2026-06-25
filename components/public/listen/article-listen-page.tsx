@@ -1,7 +1,6 @@
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { ArticleListenPlayer } from "@/components/public/listen/article-listen-player";
 import { ListenEmptyState } from "@/components/public/listen/listen-empty-state";
-import { ListenPlayerHeader } from "@/components/public/listen/listen-player-header";
 import { publicContentClassName } from "@/components/public/primitives";
 import { i18n } from "@/lib/i18n";
 
@@ -21,13 +20,13 @@ export function ArticleListenPage({ data }: ArticleListenPageProps) {
       tabIndex={-1}
       className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
-      <article>
+      <article className="grid min-h-[calc(100svh-112px)] grid-rows-[auto_minmax(0,1fr)]">
         <PublicPageHero
           as="header"
           title={article.title}
           titleStyled={article.titleStyled}
           backgroundCode="AU"
-          description={article.excerpt}
+          containerClassName="pt-7 pb-5 sm:pt-9 sm:pb-6 lg:pt-10 lg:pb-7"
           eyebrow={
             <span className="font-heading text-[11px] font-extrabold tracking-[0.14em] text-accent uppercase">
               {text.title}
@@ -42,8 +41,8 @@ export function ArticleListenPage({ data }: ArticleListenPageProps) {
           }
         />
 
-        <section className="bg-surface py-12 sm:py-16 lg:py-20">
-          <div className={publicContentClassName}>
+        <section className="min-h-0 bg-surface py-4 sm:py-5 lg:py-6">
+          <div className={`${publicContentClassName} h-full min-h-0`}>
             <ArticleListenPlayer
               articleId={article.id}
               articleSlug={article.slug}
@@ -51,7 +50,6 @@ export function ArticleListenPage({ data }: ArticleListenPageProps) {
               articleUpdatedAt={article.updatedAt}
               audioUrl={article.audioUrl ?? ""}
               chunks={chunks}
-              header={<ListenPlayerHeader />}
               emptyState={<ListenEmptyState />}
             />
           </div>

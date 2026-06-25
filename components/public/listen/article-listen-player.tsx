@@ -29,7 +29,6 @@ type ArticleListenPlayerProps = {
   articleUpdatedAt: string;
   audioUrl: string;
   chunks: AudioChunk[];
-  header: ReactNode;
   emptyState: ReactNode;
 };
 
@@ -62,6 +61,21 @@ function isResumeCandidate(record: AudioProgressRecord) {
 
 function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
   const text = i18n.public.listenPage;
+  const chunkRefs = useRef(new Map<string, HTMLButtonElement>());
+  const activeChunk = chunks.find((chunk) => chunk.position === "active");
+
+  useEffect(() => {
+    if (!activeChunk) return;
+
+    const element = chunkRefs.current.get(activeChunk.id);
+    if (!element) return;
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    element.scrollIntoView({
+      block: "center",
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    });
+  }, [activeChunk]);
 
   if (chunks.length === 0) {
     return null;
@@ -69,42 +83,51 @@ function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
 
   return (
     <div
-      className="grid gap-4 border-t-2 border-foreground pt-6 sm:gap-5 sm:pt-8"
+      className="h-full min-h-0 overflow-hidden border-t-2 border-foreground pt-4 sm:pt-5"
       role="group"
       aria-label={text.syncedText}
     >
-      <p className="font-heading text-[11px] font-extrabold tracking-[0.14em] text-accent uppercase">
-        {text.syncedText}
-      </p>
-      {chunks.map((chunk) => {
-        const isActive = chunk.position === "active";
+      <div className="h-full overflow-y-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="grid min-h-full content-center gap-3 py-4 sm:gap-3.5 sm:py-5">
+          {chunks.map((chunk) => {
+            const isActive = chunk.position === "active";
 
-        return (
-          <button
-            key={chunk.id}
-            type="button"
-            onClick={() => onChunkSelect(chunk)}
-            aria-current={isActive ? "true" : undefined}
-            className={cn(
-              "group w-full cursor-pointer text-left font-editorial transition-[opacity,transform,color] duration-(--motion-slow) focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-accent",
-              isActive
-                ? "translate-x-0 text-foreground opacity-100"
-                : "translate-x-0 text-muted opacity-55 hover:text-body-text hover:opacity-85 sm:translate-x-2",
-            )}
-          >
-            <span
-              className={cn(
-                "block leading-[1.18]",
-                isActive
-                  ? "border-l-4 border-accent pl-4 text-[clamp(28px,4.5vw,56px)] font-semibold tracking-[-0.035em]"
-                  : "pl-5 text-[clamp(18px,2vw,26px)] italic",
-              )}
-            >
-              {chunk.text}
-            </span>
-          </button>
-        );
-      })}
+            return (
+              <button
+                key={chunk.id}
+                ref={(element) => {
+                  if (element) {
+                    chunkRefs.current.set(chunk.id, element);
+                    return;
+                  }
+
+                  chunkRefs.current.delete(chunk.id);
+                }}
+                type="button"
+                onClick={() => onChunkSelect(chunk)}
+                aria-current={isActive ? "true" : undefined}
+                className={cn(
+                  "group w-full cursor-pointer text-left font-editorial transition-[opacity,transform,color] duration-(--motion-slow) focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-accent",
+                  isActive
+                    ? "translate-x-0 text-foreground opacity-100"
+                    : "translate-x-0 text-muted opacity-45 hover:text-body-text hover:opacity-80 sm:translate-x-1.5",
+                )}
+              >
+                <span
+                  className={cn(
+                    "block leading-[1.22]",
+                    isActive
+                      ? "border-l-3 border-accent pl-3 text-[clamp(22px,3vw,34px)] font-semibold tracking-[-0.025em]"
+                      : "pl-4 text-[clamp(15px,1.45vw,19px)] italic",
+                  )}
+                >
+                  {chunk.text}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -116,7 +139,6 @@ export function ArticleListenPlayer({
   articleUpdatedAt,
   audioUrl,
   chunks,
-  header,
   emptyState,
 }: ArticleListenPlayerProps) {
   const text = i18n.public.listenPage;
@@ -130,7 +152,7 @@ export function ArticleListenPlayer({
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
-  const [savedProgress, setSavedProgress] = useState<AudioProgressRecord | null>(null);
+  const [, setSavedProgress] = useState<AudioProgressRecord | null>(null);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [audioError, setAudioError] = useState(false);
   const activeChunk =
@@ -144,8 +166,6 @@ export function ArticleListenPlayer({
     [chunks, activeChunkId],
   );
   const resolvedDuration = duration > 0 ? duration : (chunks.at(-1)?.end ?? 0);
-  const progress = resolvedDuration > 0 ? (currentTime / resolvedDuration) * 100 : 0;
-  const shouldOfferResume = savedProgress ? isResumeCandidate(savedProgress) : false;
 
   const persistProgress = useCallback(
     async (status: AudioProgressStatus = "listening", timeOverride?: number) => {
@@ -304,7 +324,7 @@ export function ArticleListenPlayer({
   };
 
   return (
-    <section className="mx-auto grid w-full max-w-3xl gap-8 sm:gap-10">
+    <section className="mx-auto grid h-full min-h-0 w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)] gap-4 sm:gap-5">
       <audio
         ref={audioRef}
         src={audioUrl}
@@ -330,23 +350,13 @@ export function ArticleListenPlayer({
         }}
       />
 
-      <div className="grid gap-6 border-2 border-foreground bg-background p-4 sm:gap-7 sm:p-6 lg:p-8">
-        {header}
-
-        <div className="grid gap-5">
+      <div className="grid gap-3 sm:gap-4">
+        <div className="grid gap-3">
           <p role="status" className="sr-only">
             {isPlaying ? text.playingStatus : text.pausedStatus}
           </p>
-          {shouldOfferResume && savedProgress ? (
-            <div
-              role="status"
-              className="border-l-4 border-accent bg-accent/10 px-4 py-3 font-heading text-[12px] font-bold tracking-[0.08em] uppercase"
-            >
-              {text.resumeFrom(formatAudioTime(savedProgress.currentTime))}
-            </div>
-          ) : null}
 
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             <input
               type="range"
               min={0}
@@ -356,27 +366,24 @@ export function ArticleListenPlayer({
               disabled={resolvedDuration <= 0}
               onInput={(event) => handleSeekTo(Number(event.currentTarget.value))}
               onChange={(event) => handleSeekTo(Number(event.currentTarget.value))}
-              className="h-2 w-full cursor-pointer accent-accent disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-1.5 w-full cursor-pointer accent-accent disabled:cursor-not-allowed disabled:opacity-50"
               aria-label={text.progressAriaLabel}
               aria-valuetext={text.progressValueText(
                 formatAudioTime(currentTime),
                 formatAudioTime(resolvedDuration),
               )}
             />
-            <div className="flex items-center justify-between font-heading text-[12px] font-bold tracking-[0.08em] text-muted uppercase">
+            <div className="flex items-center justify-between font-heading text-[11px] font-bold tracking-[0.08em] text-muted uppercase">
               <span>{formatAudioTime(currentTime)}</span>
               <span>{formatAudioTime(resolvedDuration)}</span>
             </div>
-            <div className="h-1 bg-foreground/15" aria-hidden>
-              <div className="h-full bg-accent" style={{ width: `${progress}%` }} />
-            </div>
           </div>
 
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-5">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-4">
             <button
               type="button"
               onClick={() => seekBy(-15)}
-              className="flex h-12 cursor-pointer items-center justify-center border-2 border-foreground bg-surface font-heading text-xs font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:h-14"
+              className="flex h-10 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[11px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:h-11"
               aria-label={text.seekBackward}
             >
               <RotateCcwIcon className="mr-2 size-4" /> 15
@@ -384,22 +391,22 @@ export function ArticleListenPlayer({
             <button
               type="button"
               onClick={togglePlayback}
-              className="flex size-20 cursor-pointer items-center justify-center bg-foreground text-background transition-transform duration-(--motion-fast) hover:scale-[0.98] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-accent sm:size-24"
+              className="flex size-16 cursor-pointer items-center justify-center bg-foreground text-background transition-transform duration-(--motion-fast) hover:scale-[0.98] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-accent sm:size-18"
               aria-label={isPlaying ? text.pause : text.play}
             >
-              {isPlaying ? <PauseIcon className="size-8" /> : <PlayIcon className="ml-1 size-8" />}
+              {isPlaying ? <PauseIcon className="size-6" /> : <PlayIcon className="ml-1 size-6" />}
             </button>
             <button
               type="button"
               onClick={() => seekBy(15)}
-              className="flex h-12 cursor-pointer items-center justify-center border-2 border-foreground bg-surface font-heading text-xs font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:h-14"
+              className="flex h-10 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[11px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:h-11"
               aria-label={text.seekForward}
             >
               15 <RotateCwIcon className="ml-2 size-4" />
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t-2 border-foreground pt-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-foreground/20 pt-3">
             <div className="flex gap-2">
               {[1, 1.25, 1.5].map((rate) => (
                 <button
@@ -409,10 +416,10 @@ export function ArticleListenPlayer({
                   aria-pressed={playbackRate === rate}
                   aria-label={text.speed(rate)}
                   className={cn(
-                    "cursor-pointer border-2 border-foreground px-2.5 py-1 font-heading text-[11px] font-extrabold tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                    "cursor-pointer border border-foreground px-2 py-0.5 font-heading text-[10px] font-extrabold tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent",
                     playbackRate === rate
                       ? "bg-foreground text-background"
-                      : "bg-background hover:bg-accent/10",
+                      : "bg-surface hover:bg-accent/10",
                   )}
                 >
                   {rate}x
@@ -422,7 +429,7 @@ export function ArticleListenPlayer({
             <button
               type="button"
               onClick={restart}
-              className="cursor-pointer font-heading text-[11px] font-extrabold tracking-widest text-muted uppercase transition-colors duration-(--motion-fast) hover:text-accent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="cursor-pointer font-heading text-[10px] font-extrabold tracking-widest text-muted uppercase transition-colors duration-(--motion-fast) hover:text-accent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               {text.restart}
             </button>
@@ -436,7 +443,7 @@ export function ArticleListenPlayer({
         </div>
       </div>
 
-      <div className="bg-surface">
+      <div className="min-h-0 bg-surface">
         {visibleChunks.length > 0 ? (
           <ChunkWindow
             chunks={visibleChunks}
