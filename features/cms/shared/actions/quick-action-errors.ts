@@ -36,9 +36,14 @@ export function mapBulkQuickActionError(result: BulkExecutionResult): CmsUiError
   );
 
   if (allSameError) {
+    const summary = text.partialExecutionCompactSummary(
+      result.failed,
+      result.success + result.failed,
+    );
+
     return {
       ...firstError,
-      description: `${firstError.description} (${result.failed} errori su ${result.success + result.failed} elementi).`,
+      description: `${firstError.description} (${summary}).`,
     };
   }
 

@@ -15,6 +15,7 @@ type ArticleMediaFieldPreviewProps = {
 };
 
 function ArticleImagePreview({ url }: { url: string }) {
+  const mediaText = i18n.cms.lists.media;
   const pathname = extractCmsMediaPathname(url);
 
   return (
@@ -22,7 +23,7 @@ function ArticleImagePreview({ url }: { url: string }) {
       {pathname ? (
         <CmsMediaImage
           pathname={pathname}
-          alt="Article image preview"
+          alt={mediaText.articleImagePreviewAlt}
           sizes="(max-width: 1024px) 100vw, 40vw"
           className="object-cover"
         />
@@ -30,7 +31,7 @@ function ArticleImagePreview({ url }: { url: string }) {
         <Image
           fill
           src={url}
-          alt="Article image preview"
+          alt={mediaText.articleImagePreviewAlt}
           sizes="(max-width: 1024px) 100vw, 40vw"
           unoptimized
           className="object-cover"
@@ -41,10 +42,12 @@ function ArticleImagePreview({ url }: { url: string }) {
 }
 
 function ArticleAudioPreview({ url }: { url: string }) {
+  const mediaText = i18n.cms.lists.media;
+
   return (
     <div className="border border-foreground bg-card-hover p-4">
       <audio controls preload="metadata" className="w-full" src={resolveCmsMediaPreviewUrl(url)}>
-        Audio preview
+        {mediaText.audioPreviewLabel}
       </audio>
     </div>
   );

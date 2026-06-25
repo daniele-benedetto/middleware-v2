@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { PublicArticlePage } from "@/components/public/pages";
+import { i18n } from "@/lib/i18n";
 import {
   getPublicArticlePageData,
   getPublicArticleStaticParams,
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: PublicArticleRouteProps): Pro
 
   if (!article) {
     return buildPageMetadata({
-      title: "Articolo non trovato",
+      title: i18n.public.metadata.articleNotFound,
       path: `/articoli/${slug}`,
       index: false,
     });

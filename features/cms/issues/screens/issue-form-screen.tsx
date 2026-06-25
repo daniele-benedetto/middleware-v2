@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Eye, Plus, Save, Trash2, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import {
@@ -29,11 +29,13 @@ import {
   type IssueDetail,
   type UpdateIssueInput,
 } from "@/features/cms/issues/hooks/use-issue-crud";
+import { publishLivePreviewMessage } from "@/features/cms/preview/use-live-preview";
 import {
   mapCrudDomainError,
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
+import { createLivePreviewSessionId, toIssueLivePreviewSnapshot } from "@/lib/cms/preview/live";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { createIssueInputSchema, updateIssueInputSchema } from "@/lib/server/modules/issues/schema";
@@ -41,6 +43,7 @@ import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
 
+import type { PublicIssueArticleSummaryDto } from "@/lib/server/modules/issues/dto/public";
 import type { IssueHomeBlocks } from "@/lib/server/modules/issues/schema";
 
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
@@ -94,7 +97,9 @@ function IssuePublishedDatePicker({
             <CalendarIcon className="size-3.5 shrink-0" />
             <span className="truncate">{formattedValue}</span>
           </span>
-          <span className="shrink-0 text-[10px] tracking-[0.08em] text-muted-foreground">Data</span>
+          <span className="shrink-0 text-[10px] tracking-[0.08em] text-muted-foreground">
+            {i18n.cms.forms.dateShort}
+          </span>
         </PopoverTrigger>
         <PopoverContent className="w-[20rem] rounded-[8px] border border-foreground bg-card p-0 shadow-none">
           <Calendar
@@ -229,6 +234,11 @@ function IssueFormContent({
   const [titleStyled, setTitleStyled] = useState(() =>
     createStyledTitleValue(issue?.title ?? "", issue?.titleStyled),
   );
+  const [previewSessionId] = useState(() =>
+    mode === "edit" && issueId ? issueId : createLivePreviewSessionId(),
+  );
+  const [previewOpenCount, setPreviewOpenCount] = useState(0);
+  const handledPreviewOpenCount = useRef(0);
   const title = getStyledTitlePlainText(titleStyled);
   const [description, setDescription] = useState<unknown>(issue?.description ?? emptyContentDoc);
   const [homeBlocks, setHomeBlocks] = useState<IssueHomeBlocks>(() => issue?.homeBlocks ?? []);
@@ -251,8 +261,30 @@ function IssueFormContent({
     ? issueFormText.slugManualHint
     : formText.generatedFromTitleHint;
 
-  const articles = issue?.articles ?? [];
+  const articles = useMemo(() => issue?.articles ?? [], [issue?.articles]);
   const isBusy = isMutating;
+
+  const previewArticles = useMemo<PublicIssueArticleSummaryDto[]>(
+    () =>
+      articles.map((article) => ({
+        id: article.id,
+        slug: normalizeSlug(article.title) || article.id,
+        title: article.title,
+        titleStyled: null,
+        excerpt: null,
+        imageUrl: null,
+        imageAlt: null,
+        hasAudio: false,
+        isFeatured: article.isFeatured,
+        readingTimeMinutes: 1,
+        publishedAt: new Date().toISOString(),
+        categorySlug: article.categorySlug,
+        categoryName: article.categoryName,
+        authorName: null,
+        tags: [],
+      })),
+    [articles],
+  );
 
   const openSlugEditor = () => {
     setManualSlug(resolvedSlug);
@@ -328,9 +360,62 @@ function IssueFormContent({
   };
 
   const openPreview = () => {
-    if (!issueId) return;
-    window.open(`/cms/issues/${issueId}/preview`, "_blank", "noreferrer");
+    const previewPath =
+      mode === "edit" && issueId
+        ? `/cms/issues/${issueId}/preview`
+        : `/cms/issues/new/preview?session=${encodeURIComponent(previewSessionId)}`;
+    window.open(previewPath, "_blank", "noreferrer");
+    setPreviewOpenCount((count) => count + 1);
   };
+
+  useEffect(() => {
+    const statusLabel = i18n.cms.preview.issueStatus(isActive, Boolean(publishedAt));
+
+    const publishSnapshot = () =>
+      publishLivePreviewMessage(previewSessionId, {
+        type: "issue-preview",
+        snapshot: toIssueLivePreviewSnapshot({
+          id: issueId,
+          title,
+          titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
+          slug: resolvedSlug,
+          description,
+          homeBlocks: homeBlocks.length > 0 ? homeBlocks : null,
+          articles: previewArticles,
+          statusLabel,
+          publicAvailable: Boolean(issue?.isActive && issue.publishedAt),
+        }),
+      });
+
+    publishSnapshot();
+
+    if (previewOpenCount !== handledPreviewOpenCount.current) {
+      handledPreviewOpenCount.current = previewOpenCount;
+      const firstRetry = window.setTimeout(publishSnapshot, 250);
+      const secondRetry = window.setTimeout(publishSnapshot, 1000);
+
+      return () => {
+        window.clearTimeout(firstRetry);
+        window.clearTimeout(secondRetry);
+      };
+    }
+
+    return undefined;
+  }, [
+    description,
+    homeBlocks,
+    isActive,
+    issue?.isActive,
+    issue?.publishedAt,
+    issueId,
+    previewOpenCount,
+    previewArticles,
+    previewSessionId,
+    publishedAt,
+    resolvedSlug,
+    title,
+    titleStyled,
+  ]);
 
   return (
     <form
@@ -360,7 +445,12 @@ function IssueFormContent({
                   onConfirm={() => onDelete(issueId)}
                 />
               </>
-            ) : null}
+            ) : (
+              <CmsActionButton variant="outline" onClick={openPreview} disabled={isBusy}>
+                <Eye aria-hidden />
+                {text.quickActions.preview}
+              </CmsActionButton>
+            )}
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isBusy}>
               <X aria-hidden />
               {text.common.cancel}

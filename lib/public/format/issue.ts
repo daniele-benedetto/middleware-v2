@@ -1,14 +1,9 @@
-const months = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+import { i18n } from "@/lib/i18n";
 
-const seasons = {
-  spring: "Primavera",
-  summer: "Estate",
-  autumn: "Autunno",
-  winter: "Inverno",
-} as const;
+const { monthsShort, seasons } = i18n.public.issueFormat;
 
 export function formatIssueNumber(positionFromOldest: number): string {
-  return `N. ${String(positionFromOldest).padStart(2, "0")}`;
+  return i18n.public.issueFormat.number(positionFromOldest);
 }
 
 type IssueOrderItem = { id: string; publishedAt: string };
@@ -47,7 +42,7 @@ export function formatIssueSeasonShort(publishedAt: string): string {
   const date = new Date(publishedAt);
   const month = date.getUTCMonth();
   const year = date.getUTCFullYear();
-  return `${months[month]} ${year}`;
+  return `${monthsShort[month]} ${year}`;
 }
 
 export function formatIssueSeasonLong(publishedAt: string): string {

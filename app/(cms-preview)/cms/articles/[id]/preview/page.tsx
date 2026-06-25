@@ -1,5 +1,5 @@
-import { CmsPreviewToolbar } from "@/components/cms/preview/preview-toolbar";
-import { PublicArticlePage } from "@/components/public/pages";
+import { ArticleLivePreviewPage } from "@/features/cms/preview/article-live-preview-page";
+import { toArticleLivePreviewSnapshot } from "@/lib/cms/preview/live";
 import {
   prefetchCmsDetailOrNotFound,
   resolveCmsRouteEntityIdOrNotFound,
@@ -9,6 +9,7 @@ import {
   prefetchArticlePreviewById,
   prefetchIssuePreviewById,
 } from "@/lib/cms/trpc/server-prefetch";
+import { i18n } from "@/lib/i18n";
 import { normalizeHomeBlock } from "@/lib/issues/home-block-rules";
 import { type IssueNumberingBlock, buildNumberedIssueArticles } from "@/lib/public/issue-numbering";
 import { buildCmsMetadata } from "@/lib/seo";
@@ -20,13 +21,14 @@ import type { Metadata } from "next";
 
 type CmsArticlePreviewPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ session?: string }>;
 };
 
 type IssuePreview = Awaited<ReturnType<typeof prefetchIssuePreviewById>>;
 type NarrativeBlock = IssueNumberingBlock<PublicIssueArticleSummaryDto>;
 
 export const metadata: Metadata = buildCmsMetadata({
-  title: "Anteprima articolo",
+  title: i18n.cms.forms.resources.articles.previewMetadataTitle,
   path: "/cms/articles/[id]/preview",
 });
 
@@ -94,9 +96,9 @@ function getArticlePreviewContext(article: PublicArticleDetailDto, issue: IssueP
 
 function getArticleStatusLabel(status: "DRAFT" | "PUBLISHED" | "ARCHIVED") {
   const labels = {
-    DRAFT: "Bozza",
-    PUBLISHED: "Pubblicato",
-    ARCHIVED: "Archiviato",
+    DRAFT: i18n.cms.lists.articles.statusDraft,
+    PUBLISHED: i18n.cms.lists.articles.statusPublished,
+    ARCHIVED: i18n.cms.lists.articles.statusArchived,
   } as const;
 
   return labels[status];
@@ -114,21 +116,35 @@ export default async function CmsArticlePreviewPage({ params }: CmsArticlePrevie
   const isPublic = cmsArticle.status === "PUBLISHED" && Boolean(cmsArticle.publishedAt);
 
   return (
-    <>
-      <CmsPreviewToolbar
-        resourceLabel="Articolo"
-        title={article.title}
-        statusLabel={getArticleStatusLabel(cmsArticle.status)}
-        editHref={`/cms/articles/${id}/edit`}
-        refreshHref={`/cms/articles/${id}/preview`}
-        publicHref={`/articoli/${article.slug}`}
-        publicAvailable={isPublic}
-      />
-      <PublicArticlePage
-        article={article}
-        articleNumber={articleNumber}
-        relatedArticles={relatedArticles}
-      />
-    </>
+    <ArticleLivePreviewPage
+      sessionId={id}
+      initialSnapshot={toArticleLivePreviewSnapshot({
+        id: article.id,
+        issueId: article.issueId,
+        issueSlug: article.issueSlug,
+        issueTitle: article.issueTitle,
+        categoryId: article.categoryId,
+        categorySlug: article.categorySlug,
+        categoryName: article.categoryName,
+        authorId: article.authorId,
+        authorName: article.authorName,
+        title: article.title,
+        titleStyled: article.titleStyled,
+        slug: article.slug,
+        excerptRich: article.excerptRich,
+        contentRich: article.contentRich,
+        imageUrl: article.imageUrl,
+        imageAlt: article.imageAlt,
+        audioUrl: article.audioUrl,
+        audioChunks: article.audioChunks,
+        tags: article.tags,
+        statusLabel: getArticleStatusLabel(cmsArticle.status),
+        publicAvailable: isPublic,
+      })}
+      articleNumber={articleNumber}
+      relatedArticles={relatedArticles}
+      editHref={`/cms/articles/${id}/edit`}
+      refreshHref={`/cms/articles/${id}/preview`}
+    />
   );
 }

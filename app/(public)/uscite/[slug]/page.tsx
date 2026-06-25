@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { PublicIssuePage as PublicIssuePageView } from "@/components/public/pages";
+import { i18n } from "@/lib/i18n";
 import { getPublicIssuePageData, getPublicIssueStaticParams } from "@/lib/public/server/issue-page";
 import { buildPageMetadata } from "@/lib/seo";
 
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: PublicIssuePageProps): Promis
 
   if (!issue) {
     return buildPageMetadata({
-      title: "Uscita non trovata",
+      title: i18n.public.metadata.issueNotFound,
       path: getIssuePath(slug),
       index: false,
     });

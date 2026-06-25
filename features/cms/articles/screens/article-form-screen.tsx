@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, Plus, Save, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
@@ -41,11 +41,13 @@ import {
   type UpdateArticleInput,
 } from "@/features/cms/articles/hooks/use-article-crud";
 import { CmsMediaPickerDialog } from "@/features/cms/media/components/media-picker-dialog";
+import { publishLivePreviewMessage } from "@/features/cms/preview/use-live-preview";
 import {
   mapCrudDomainError,
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
+import { createLivePreviewSessionId, toArticleLivePreviewSnapshot } from "@/lib/cms/preview/live";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
@@ -424,6 +426,11 @@ function ArticleFormContent({
   const [titleStyled, setTitleStyled] = useState(() =>
     createStyledTitleValue(article?.title ?? "", article?.titleStyled),
   );
+  const [previewSessionId] = useState(() =>
+    mode === "edit" && articleId ? articleId : createLivePreviewSessionId(),
+  );
+  const [previewOpenCount, setPreviewOpenCount] = useState(0);
+  const handledPreviewOpenCount = useRef(0);
 
   const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
   const [isAudioPickerOpen, setIsAudioPickerOpen] = useState(false);
@@ -435,6 +442,7 @@ function ArticleFormContent({
   const [isSlugEditing, setIsSlugEditing] = useState(false);
 
   const title = getStyledTitlePlainText(titleStyled);
+  const formValues = useWatch({ control });
   const manualSlug = useWatch({ control, name: "slug" }) ?? "";
   const imageUrl = useWatch({ control, name: "imageUrl" }) ?? "";
   const imageAlt = useWatch({ control, name: "imageAlt" }) ?? "";
@@ -458,11 +466,14 @@ function ArticleFormContent({
     })),
   ];
 
-  const statusOptions = [
-    { value: "DRAFT", label: listText.statusDraft },
-    { value: "PUBLISHED", label: listText.statusPublished },
-    { value: "ARCHIVED", label: listText.statusArchived },
-  ];
+  const statusOptions = useMemo(
+    () => [
+      { value: "DRAFT", label: listText.statusDraft },
+      { value: "PUBLISHED", label: listText.statusPublished },
+      { value: "ARCHIVED", label: listText.statusArchived },
+    ],
+    [listText.statusArchived, listText.statusDraft, listText.statusPublished],
+  );
 
   const autoSlug = normalizeSlug(title);
   const resolvedSlug = hasManualSlugOverride ? manualSlug : autoSlug;
@@ -561,9 +572,88 @@ function ArticleFormContent({
   };
 
   const openPreview = () => {
-    if (!articleId) return;
-    window.open(`/cms/articles/${articleId}/preview`, "_blank", "noreferrer");
+    const previewPath =
+      mode === "edit" && articleId
+        ? `/cms/articles/${articleId}/preview`
+        : `/cms/articles/new/preview?session=${encodeURIComponent(previewSessionId)}`;
+    window.open(previewPath, "_blank", "noreferrer");
+    setPreviewOpenCount((count) => count + 1);
   };
+
+  useEffect(() => {
+    const values = getValues();
+    const selectedIssue = issuesAvailable.find((item) => item.id === values.issueId);
+    const selectedCategory = categoriesAvailable.find((item) => item.id === values.categoryId);
+    const selectedAuthor = authorsAvailable.find((item) => item.id === values.authorId);
+    const selectedTags = tagsAvailable.filter((tag) => values.tagIds.includes(tag.id));
+    const statusLabel =
+      mode === "create"
+        ? articleFormText.createTitle
+        : (statusOptions.find((item) => item.value === values.status)?.label ?? values.status);
+
+    const publishSnapshot = () =>
+      publishLivePreviewMessage(previewSessionId, {
+        type: "article-preview",
+        snapshot: toArticleLivePreviewSnapshot({
+          id: articleId,
+          issueId: values.issueId,
+          issueSlug: selectedIssue?.slug ?? "anteprima-uscita",
+          issueTitle: selectedIssue?.title ?? articleFormText.previewIssueTitle,
+          categoryId: values.categoryId,
+          categorySlug: selectedCategory ? normalizeSlug(selectedCategory.name) : "anteprima",
+          categoryName: selectedCategory?.name ?? articleFormText.previewCategoryName,
+          authorId: values.authorId === noAuthorValue ? null : values.authorId,
+          authorName: selectedAuthor?.name ?? null,
+          title,
+          titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
+          slug: resolvedSlug,
+          excerptRich: values.excerptRich,
+          contentRich: values.contentRich,
+          imageUrl: values.imageUrl || null,
+          imageAlt: values.imageAlt || null,
+          audioUrl: values.audioUrl || null,
+          audioChunks: values.audioChunksUrl || null,
+          tags: selectedTags,
+          statusLabel,
+          publicAvailable: article?.status === "PUBLISHED" && Boolean(article.publishedAt),
+        }),
+      });
+
+    publishSnapshot();
+
+    if (previewOpenCount !== handledPreviewOpenCount.current) {
+      handledPreviewOpenCount.current = previewOpenCount;
+      const firstRetry = window.setTimeout(publishSnapshot, 250);
+      const secondRetry = window.setTimeout(publishSnapshot, 1000);
+
+      return () => {
+        window.clearTimeout(firstRetry);
+        window.clearTimeout(secondRetry);
+      };
+    }
+
+    return undefined;
+  }, [
+    article?.publishedAt,
+    article?.status,
+    articleFormText.createTitle,
+    articleFormText.previewCategoryName,
+    articleFormText.previewIssueTitle,
+    articleId,
+    authorsAvailable,
+    categoriesAvailable,
+    formValues,
+    getValues,
+    issuesAvailable,
+    mode,
+    previewOpenCount,
+    previewSessionId,
+    resolvedSlug,
+    statusOptions,
+    tagsAvailable,
+    title,
+    titleStyled,
+  ]);
 
   return (
     <form
@@ -590,7 +680,12 @@ function ArticleFormContent({
                   onConfirm={() => onDelete(articleId)}
                 />
               </>
-            ) : null}
+            ) : (
+              <CmsActionButton variant="outline" onClick={openPreview} disabled={isMutating}>
+                <Eye aria-hidden />
+                {text.quickActions.preview}
+              </CmsActionButton>
+            )}
             <CmsActionButton variant="outline" onClick={onCancel} disabled={isMutating}>
               <X aria-hidden />
               {text.common.cancel}

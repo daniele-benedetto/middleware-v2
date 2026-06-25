@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 type CmsPreviewToolbarAction = {
@@ -68,9 +69,10 @@ export function CmsPreviewToolbar({
   publicHref,
   publicAvailable,
 }: CmsPreviewToolbarProps) {
+  const text = i18n.cms.preview;
   const publicAction = publicHref
     ? {
-        label: publicAvailable ? "Apri pagina pubblica" : "Pagina pubblica non disponibile",
+        label: publicAvailable ? text.openPublic : text.publicUnavailable,
         href: publicHref,
         external: publicAvailable,
         disabled: !publicAvailable,
@@ -82,14 +84,12 @@ export function CmsPreviewToolbar({
       <div className="flex min-h-16 flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-2 font-ui text-[10px] font-extrabold tracking-[0.12em] uppercase text-white/70">
-            <span className="border border-white bg-white px-2 py-1 text-black">
-              Modalita preview
-            </span>
+            <span className="border border-white bg-white px-2 py-1 text-black">{text.mode}</span>
             <span>{resourceLabel}</span>
             <span aria-hidden>·</span>
             <span>{statusLabel}</span>
             <span aria-hidden>·</span>
-            <span>Visibile solo nel CMS</span>
+            <span>{text.cmsOnly}</span>
           </div>
           <p className="truncate font-heading text-base font-black tracking-[-0.02em] sm:text-lg">
             {title}
@@ -97,10 +97,8 @@ export function CmsPreviewToolbar({
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <ToolbarAction action={{ label: "Torna alla modifica", href: editHref }} primary />
-          <ToolbarAction
-            action={{ label: "Aggiorna anteprima", href: refreshHref, reload: true }}
-          />
+          <ToolbarAction action={{ label: text.edit, href: editHref }} primary />
+          <ToolbarAction action={{ label: text.refresh, href: refreshHref, reload: true }} />
           {publicAction ? <ToolbarAction action={publicAction} /> : null}
         </div>
       </div>

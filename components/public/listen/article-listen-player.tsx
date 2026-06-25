@@ -17,6 +17,7 @@ import {
   type AudioProgressRecord,
   type AudioProgressStatus,
 } from "@/lib/browser/storage/audio-progress-store";
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
@@ -60,6 +61,8 @@ function isResumeCandidate(record: AudioProgressRecord) {
 }
 
 function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
+  const text = i18n.public.listenPage;
+
   if (chunks.length === 0) {
     return null;
   }
@@ -68,7 +71,7 @@ function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
     <div
       className="grid min-h-65 content-center gap-5 sm:min-h-80"
       role="group"
-      aria-label="Testo sincronizzato"
+      aria-label={text.syncedText}
     >
       {chunks.map((chunk) => {
         const isActive = chunk.position === "active";
@@ -113,6 +116,7 @@ export function ArticleListenPlayer({
   header,
   emptyState,
 }: ArticleListenPlayerProps) {
+  const text = i18n.public.listenPage;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentTimeRef = useRef(0);
   const durationRef = useRef(0);
@@ -328,14 +332,14 @@ export function ArticleListenPlayer({
 
         <div className="mt-6 grid gap-5">
           <p role="status" className="sr-only">
-            {isPlaying ? "Audiolettura in riproduzione" : "Audiolettura in pausa"}
+            {isPlaying ? text.playingStatus : text.pausedStatus}
           </p>
           {shouldOfferResume && savedProgress ? (
             <div
               role="status"
               className="border-2 border-accent bg-accent/10 p-3 font-heading text-[12px] font-bold tracking-[0.08em] uppercase"
             >
-              Riprendi da {formatAudioTime(savedProgress.currentTime)}
+              {text.resumeFrom(formatAudioTime(savedProgress.currentTime))}
             </div>
           ) : null}
 
@@ -350,8 +354,11 @@ export function ArticleListenPlayer({
               onInput={(event) => handleSeekTo(Number(event.currentTarget.value))}
               onChange={(event) => handleSeekTo(Number(event.currentTarget.value))}
               className="h-2 w-full cursor-pointer accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label="Avanzamento audiolettura"
-              aria-valuetext={`${formatAudioTime(currentTime)} di ${formatAudioTime(resolvedDuration)}`}
+              aria-label={text.progressAriaLabel}
+              aria-valuetext={text.progressValueText(
+                formatAudioTime(currentTime),
+                formatAudioTime(resolvedDuration),
+              )}
             />
             <div className="flex items-center justify-between font-heading text-[12px] font-bold tracking-[0.08em] text-muted uppercase">
               <span>{formatAudioTime(currentTime)}</span>
@@ -367,7 +374,7 @@ export function ArticleListenPlayer({
               type="button"
               onClick={() => seekBy(-15)}
               className="flex h-12 cursor-pointer items-center justify-center border-2 border-foreground bg-surface font-heading text-xs font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              aria-label="Torna indietro di 15 secondi"
+              aria-label={text.seekBackward}
             >
               <RotateCcwIcon className="mr-2 size-4" /> 15
             </button>
@@ -375,7 +382,7 @@ export function ArticleListenPlayer({
               type="button"
               onClick={togglePlayback}
               className="flex size-18 cursor-pointer items-center justify-center bg-foreground text-background transition-transform duration-(--motion-fast) hover:scale-[0.98] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-accent sm:size-20"
-              aria-label={isPlaying ? "Metti in pausa" : "Avvia audiolettura"}
+              aria-label={isPlaying ? text.pause : text.play}
             >
               {isPlaying ? <PauseIcon className="size-7" /> : <PlayIcon className="ml-1 size-7" />}
             </button>
@@ -383,7 +390,7 @@ export function ArticleListenPlayer({
               type="button"
               onClick={() => seekBy(15)}
               className="flex h-12 cursor-pointer items-center justify-center border-2 border-foreground bg-surface font-heading text-xs font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              aria-label="Vai avanti di 15 secondi"
+              aria-label={text.seekForward}
             >
               15 <RotateCwIcon className="ml-2 size-4" />
             </button>
@@ -397,7 +404,7 @@ export function ArticleListenPlayer({
                   type="button"
                   onClick={() => setPlaybackRate(rate)}
                   aria-pressed={playbackRate === rate}
-                  aria-label={`Velocità ${rate}x`}
+                  aria-label={text.speed(rate)}
                   className={cn(
                     "cursor-pointer border-2 border-foreground px-2.5 py-1 font-heading text-[11px] font-extrabold tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent",
                     playbackRate === rate
@@ -414,13 +421,13 @@ export function ArticleListenPlayer({
               onClick={restart}
               className="cursor-pointer font-heading text-[11px] font-extrabold tracking-widest text-muted uppercase transition-colors duration-(--motion-fast) hover:text-accent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              Ricomincia
+              {text.restart}
             </button>
           </div>
 
           {audioError ? (
             <p role="alert" className="font-heading text-[12px] font-bold text-accent uppercase">
-              Non riesco ad avviare l&apos;audio. Riprova tra poco.
+              {text.playbackError}
             </p>
           ) : null}
         </div>
@@ -428,7 +435,7 @@ export function ArticleListenPlayer({
 
       <div className="relative min-h-90 overflow-hidden border-2 border-foreground bg-foreground p-5 text-background shadow-[8px_8px_0_0_var(--accent)] sm:p-8 lg:min-h-0 lg:p-10">
         <div className="absolute top-4 right-4 font-heading text-[11px] font-extrabold tracking-[0.14em] text-cream-muted uppercase">
-          Testo sincronizzato
+          {text.syncedText}
         </div>
         {visibleChunks.length > 0 ? (
           <ChunkWindow

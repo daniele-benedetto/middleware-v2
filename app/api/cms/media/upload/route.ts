@@ -1,6 +1,7 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 
+import { i18n } from "@/lib/i18n";
 import {
   buildMediaPathname,
   cmsMediaDefaultKinds,
@@ -16,20 +17,21 @@ import { mediaPolicy } from "@/lib/server/modules/media";
 import type { CmsSupportedMediaKind } from "@/lib/media/blob";
 
 function validateUploadPathname(pathname: string) {
+  const text = i18n.cms.lists.media;
   const { directory, baseName, extension } = parseMediaPathname(pathname);
 
   if (directory) {
-    throw new Error("Nested upload paths are not supported from this form");
+    throw new Error(text.uploadNestedPathUnsupported);
   }
 
   if (!extension) {
-    throw new Error("A file extension is required");
+    throw new Error(text.uploadExtensionRequired);
   }
 
   const sanitizedBaseName = sanitizeMediaBaseName(baseName);
 
   if (!sanitizedBaseName) {
-    throw new Error("A valid file name is required");
+    throw new Error(text.uploadFileNameRequired);
   }
 
   const normalizedPathname = buildMediaPathname({
@@ -38,11 +40,11 @@ function validateUploadPathname(pathname: string) {
   });
 
   if (normalizedPathname !== pathname) {
-    throw new Error("Invalid file name");
+    throw new Error(text.uploadFileNameInvalid);
   }
 
   if (inferMediaKind(normalizedPathname) === "other") {
-    throw new Error("Unsupported file extension");
+    throw new Error(text.uploadExtensionUnsupported);
   }
 }
 
@@ -70,6 +72,7 @@ function resolveAllowedKinds(clientPayload: string | null): CmsSupportedMediaKin
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
+  const text = i18n.cms.lists.media;
   const body = (await request.json()) as HandleUploadBody;
 
   try {
@@ -80,7 +83,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         const session = await getAuthSession(request);
 
         if (!session || !mediaPolicy.allowedRoles.includes(session.user.role)) {
-          throw new Error("Not authorized");
+          throw new Error(text.uploadUnauthorized);
         }
 
         validateUploadPathname(pathname);
@@ -89,7 +92,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         const mediaKind = inferMediaKind(pathname);
 
         if (mediaKind === "other" || !allowedKinds.includes(mediaKind)) {
-          throw new Error("Unsupported file type for this upload");
+          throw new Error(text.uploadTypeUnsupported);
         }
 
         return {
@@ -105,7 +108,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json(jsonResponse);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Upload failed" },
+      { error: error instanceof Error ? error.message : text.uploadFailed },
       { status: 400 },
     );
   }

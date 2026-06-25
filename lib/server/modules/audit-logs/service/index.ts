@@ -3,6 +3,7 @@ import "server-only";
 import { BlobNotFoundError } from "@vercel/blob";
 
 import { Prisma } from "@/lib/generated/prisma/client";
+import { i18n } from "@/lib/i18n";
 import { ApiError } from "@/lib/server/http/api-error";
 import { articlesRepository } from "@/lib/server/modules/articles/repository";
 import { auditLogsRepository } from "@/lib/server/modules/audit-logs/repository";
@@ -57,7 +58,7 @@ function isAuditLogStorageUnavailable(error: unknown) {
 }
 
 function formatBoolean(value: boolean) {
-  return value ? "Si" : "No";
+  return value ? i18n.cms.common.yes : i18n.cms.common.no;
 }
 
 function formatNullableDate(value: Date | null | undefined) {
@@ -69,11 +70,13 @@ function buildFields(fields: Array<AuditLogResourceField | null>): AuditLogResou
 }
 
 function buildMissingResourceSummary(label: string, resourceId: string): AuditLogResourceSummary {
+  const text = i18n.cms.lists.auditLogs;
+
   return {
-    title: `${label} non disponibile`,
-    description: "La risorsa non esiste piu oppure non e accessibile nello stato corrente.",
+    title: text.resourceMissingTitle(label),
+    description: text.resourceMissingDescription,
     missing: true,
-    fields: [{ label: "ID", value: resourceId }],
+    fields: [{ label: text.fields.id, value: resourceId }],
   };
 }
 
@@ -98,6 +101,7 @@ async function resolveActorDisplayName(actorId: string | null, actorEmail: strin
 }
 
 async function resolveCategorySummary(resourceId: string): Promise<AuditLogResourceSummary> {
+  const text = i18n.cms.lists.auditLogs;
   const category = await categoriesRepository.getById(resourceId);
 
   if (!category) {
@@ -106,18 +110,19 @@ async function resolveCategorySummary(resourceId: string): Promise<AuditLogResou
 
   return {
     title: category.name,
-    description: "Categoria editoriale corrente.",
+    description: text.resourceCategoryDescription,
     missing: false,
     fields: buildFields([
-      { label: "ID", value: category.id },
-      { label: "Slug", value: category.slug },
-      { label: "Attiva", value: formatBoolean(category.isActive) },
-      { label: "Articoli collegati", value: String(category._count?.articles ?? 0) },
+      { label: text.fields.id, value: category.id },
+      { label: text.fields.slug, value: category.slug },
+      { label: text.fields.active, value: formatBoolean(category.isActive) },
+      { label: text.fields.linkedArticles, value: String(category._count?.articles ?? 0) },
     ]),
   };
 }
 
 async function resolveTagSummary(resourceId: string): Promise<AuditLogResourceSummary> {
+  const text = i18n.cms.lists.auditLogs;
   const tag = await tagsRepository.getById(resourceId);
 
   if (!tag) {
@@ -126,40 +131,42 @@ async function resolveTagSummary(resourceId: string): Promise<AuditLogResourceSu
 
   return {
     title: tag.name,
-    description: "Tag editoriale corrente.",
+    description: text.resourceTagDescription,
     missing: false,
     fields: buildFields([
-      { label: "ID", value: tag.id },
-      { label: "Slug", value: tag.slug },
-      { label: "Attivo", value: formatBoolean(tag.isActive) },
-      { label: "Articoli collegati", value: String(tag._count?.articles ?? 0) },
+      { label: text.fields.id, value: tag.id },
+      { label: text.fields.slug, value: tag.slug },
+      { label: text.fields.activeMasculine, value: formatBoolean(tag.isActive) },
+      { label: text.fields.linkedArticles, value: String(tag._count?.articles ?? 0) },
     ]),
   };
 }
 
 async function resolveIssueSummary(resourceId: string): Promise<AuditLogResourceSummary> {
+  const text = i18n.cms.lists.auditLogs;
   const issue = await issuesRepository.getById(resourceId);
 
   if (!issue) {
-    return buildMissingResourceSummary("Issue", resourceId);
+    return buildMissingResourceSummary(text.resourceIssueLabel, resourceId);
   }
 
   return {
     title: issue.title,
-    description: "Issue editoriale corrente.",
+    description: text.resourceIssueDescription,
     missing: false,
     fields: buildFields([
-      { label: "ID", value: issue.id },
-      { label: "Slug", value: issue.slug },
-      { label: "Attiva", value: formatBoolean(issue.isActive) },
-      { label: "Ordine", value: String(issue.sortOrder) },
-      { label: "Pubblicata", value: formatNullableDate(issue.publishedAt) },
-      { label: "Articoli collegati", value: String(issue._count?.articles ?? 0) },
+      { label: text.fields.id, value: issue.id },
+      { label: text.fields.slug, value: issue.slug },
+      { label: text.fields.active, value: formatBoolean(issue.isActive) },
+      { label: text.fields.order, value: String(issue.sortOrder) },
+      { label: text.fields.published, value: formatNullableDate(issue.publishedAt) },
+      { label: text.fields.linkedArticles, value: String(issue._count?.articles ?? 0) },
     ]),
   };
 }
 
 async function resolveUserSummary(resourceId: string): Promise<AuditLogResourceSummary> {
+  const text = i18n.cms.lists.auditLogs;
   const user = await usersRepository.getById(resourceId);
 
   if (!user) {
@@ -168,18 +175,19 @@ async function resolveUserSummary(resourceId: string): Promise<AuditLogResourceS
 
   return {
     title: user.email,
-    description: user.name ?? "Utente CMS corrente.",
+    description: user.name ?? text.resourceUserDescription,
     missing: false,
     fields: buildFields([
-      { label: "ID", value: user.id },
-      user.name ? { label: "Nome", value: user.name } : null,
-      { label: "Ruolo", value: user.role },
-      { label: "Email verificata", value: formatBoolean(user.emailVerified) },
+      { label: text.fields.id, value: user.id },
+      user.name ? { label: text.fields.name, value: user.name } : null,
+      { label: text.fields.role, value: user.role },
+      { label: text.fields.verifiedEmail, value: formatBoolean(user.emailVerified) },
     ]),
   };
 }
 
 async function resolveArticleSummary(resourceId: string): Promise<AuditLogResourceSummary> {
+  const text = i18n.cms.lists.auditLogs;
   const article = await articlesRepository.getById(resourceId);
 
   if (!article) {
@@ -188,35 +196,36 @@ async function resolveArticleSummary(resourceId: string): Promise<AuditLogResour
 
   return {
     title: article.title,
-    description: "Articolo editoriale corrente.",
+    description: text.resourceArticleDescription,
     missing: false,
     fields: buildFields([
-      { label: "ID", value: article.id },
-      { label: "Slug", value: article.slug },
-      { label: "Stato", value: article.status },
-      { label: "Issue", value: article.issue.title },
-      { label: "Categoria", value: article.category.name },
-      { label: "Autore", value: article.author?.name ?? "-" },
-      { label: "Pubblicato", value: formatNullableDate(article.publishedAt) },
-      { label: "Featured", value: formatBoolean(article.isFeatured) },
-      { label: "Tag", value: String(article._count?.tags ?? 0) },
+      { label: text.fields.id, value: article.id },
+      { label: text.fields.slug, value: article.slug },
+      { label: text.fields.status, value: article.status },
+      { label: text.fields.issue, value: article.issue.title },
+      { label: text.fields.category, value: article.category.name },
+      { label: text.fields.author, value: article.author?.name ?? "-" },
+      { label: text.fields.publishedMasculine, value: formatNullableDate(article.publishedAt) },
+      { label: text.fields.featured, value: formatBoolean(article.isFeatured) },
+      { label: text.fields.tags, value: String(article._count?.tags ?? 0) },
     ]),
   };
 }
 
 async function resolveMediaSummary(resourceId: string): Promise<AuditLogResourceSummary> {
+  const text = i18n.cms.lists.auditLogs;
   try {
     const media = await mediaRepository.head(resourceId);
 
     return {
       title: media.pathname,
-      description: "Asset Vercel Blob corrente.",
+      description: text.resourceMediaDescription,
       missing: false,
       fields: buildFields([
-        { label: "URL", value: media.url },
-        { label: "Tipo", value: media.contentType ?? "-" },
-        { label: "Dimensione", value: String(media.size) },
-        { label: "Caricato", value: media.uploadedAt.toISOString() },
+        { label: text.fields.url, value: media.url },
+        { label: text.fields.type, value: media.contentType ?? "-" },
+        { label: text.fields.size, value: String(media.size) },
+        { label: text.fields.uploaded, value: media.uploadedAt.toISOString() },
       ]),
     };
   } catch (error) {

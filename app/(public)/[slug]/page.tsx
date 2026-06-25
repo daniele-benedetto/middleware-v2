@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { PublicStaticPage } from "@/components/public/pages";
+import { i18n } from "@/lib/i18n";
 import { PUBLIC_STATIC_PAGE_SLUGS } from "@/lib/public/pages/static-pages";
 import { getPublicStaticPageData } from "@/lib/public/server/page";
 import { buildPageMetadata } from "@/lib/seo";
@@ -20,7 +21,11 @@ export async function generateMetadata({ params }: PublicStaticPageRouteProps): 
   const { page, description, canonicalPath } = await getPublicStaticPageData(slug);
 
   if (!page) {
-    return buildPageMetadata({ title: "Pagina non trovata", path: `/${slug}`, index: false });
+    return buildPageMetadata({
+      title: i18n.public.metadata.staticPageNotFound,
+      path: `/${slug}`,
+      index: false,
+    });
   }
 
   return buildPageMetadata({
