@@ -18,14 +18,16 @@ import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
+import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 
 type LeadBlockProps = {
   block: NarrativeHomeBlock;
+  variant: IssueHomeVariant;
   articleNumbers: Map<string, number>;
   priority?: boolean;
 };
 
-export function LeadBlock({ block, articleNumbers, priority = false }: LeadBlockProps) {
+export function LeadBlock({ block, variant, articleNumbers, priority = false }: LeadBlockProps) {
   const article = block.featuredArticle ?? block.articles[0];
 
   if (!article) {
@@ -33,7 +35,7 @@ export function LeadBlock({ block, articleNumbers, priority = false }: LeadBlock
   }
 
   const tagLine = formatTags(article);
-  const variantClasses = getNarrativeVariantClasses(block.variant);
+  const variantClasses = getNarrativeVariantClasses(variant);
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `lead-article-title-${article.id}`;
 

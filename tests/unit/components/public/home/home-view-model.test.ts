@@ -35,6 +35,7 @@ const issue = (
     slug: "issue",
     description: null,
     homeBlocks,
+    homeVariant: "black",
     publishedAt: "2026-01-01T00:00:00.000Z",
     articlesCount: articles.length,
     articles,
@@ -68,7 +69,6 @@ describe("home view model", () => {
             {
               id: "apertura",
               type: "opening",
-              variant: "red",
               title: "Apertura editoriale",
               description: null,
               articleIds: [lead.id],
@@ -78,7 +78,6 @@ describe("home view model", () => {
             {
               id: "campo",
               type: "body",
-              variant: "default",
               title: "Campo di tensione",
               description: "Testo deciso dentro l'uscita.",
               articleIds: [coreA.id, coreB.id],
@@ -92,7 +91,6 @@ describe("home view model", () => {
       {
         id: "apertura",
         type: "opening",
-        variant: "red",
         title: null,
         articles: [{ title: "Lead" }],
         featuredArticle: { title: "Lead" },
@@ -137,7 +135,6 @@ describe("home view model", () => {
             {
               id: "apertura",
               type: "opening",
-              variant: "black",
               title: null,
               description: null,
               articleIds: [lead.id],
@@ -147,7 +144,6 @@ describe("home view model", () => {
             {
               id: "vuoto",
               type: "body",
-              variant: "default",
               title: "Vuoto",
               description: null,
               articleIds: [],

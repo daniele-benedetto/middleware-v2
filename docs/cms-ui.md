@@ -215,7 +215,7 @@ Rule:
 ## Issue Home Blocks Editor
 
 - The issue form uses a visual editor for `Issue.homeBlocks`; JSON is not the primary editorial interface.
-- The editor must preserve controlled freedom: editors can reorder blocks, select articles, choose featured articles for multi-article blocks, and edit block copy only where allowed by rules.
+- The editor must preserve controlled freedom: editors can reorder blocks, select articles, choose featured articles for multi-article blocks, and edit block copy only where allowed by rules. The visual variant is selected once at issue level from the form sidebar, not per block.
 - The editor exposes a suggested layout generator. If blocks already exist, generation must require confirmation because it replaces the current regia.
 - Blocks use only manually selected articles. Empty blocks can be saved as editorial placeholders, but they are not rendered on the public frontend.
 - Drag and drop supports block ordering, selected-article ordering, and dragging available articles into a block. Checkbox assignment remains available as a fallback. Dragging an available article moves it into the target block and must preserve the one-article-one-block invariant.

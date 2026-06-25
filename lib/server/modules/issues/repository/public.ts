@@ -17,6 +17,7 @@ const PUBLIC_ISSUE_LIST_SELECT = {
   slug: true,
   description: true,
   homeBlocks: true,
+  homeVariant: true,
   publishedAt: true,
   _count: {
     select: {

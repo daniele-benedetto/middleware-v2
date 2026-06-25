@@ -18,24 +18,26 @@ import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
+import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 
 type FeatureBreakBlockProps = {
   block: NarrativeHomeBlock;
+  variant: IssueHomeVariant;
   articleNumbers: Map<string, number>;
 };
 
-export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockProps) {
+export function FeatureBreakBlock({ block, variant, articleNumbers }: FeatureBreakBlockProps) {
   const article = block.featuredArticle ?? block.articles[0];
 
   if (!article) {
     return null;
   }
 
-  const variantClasses = getNarrativeVariantClasses(block.variant);
+  const variantClasses = getNarrativeVariantClasses(variant);
   const eyebrow = blockEyebrow(block, article);
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `feature-article-title-${article.id}`;
-  const showBorder = block.variant === "default";
+  const showBorder = variant === "default";
   const imageOnRight = block.featuredPlacement === "right";
   const imageBorderClass = imageOnRight
     ? "border-t md:border-t-0 md:border-l"
@@ -64,7 +66,6 @@ export function FeatureBreakBlock({ block, articleNumbers }: FeatureBreakBlockPr
             publicInteraction.cardBase,
             "grid md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
             variantClasses.section,
-            showBorder ? "border border-current" : "",
           )}
         >
           {imageOnRight ? null : image}

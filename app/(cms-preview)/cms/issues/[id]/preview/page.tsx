@@ -44,6 +44,7 @@ export default async function CmsIssuePreviewPage({ params }: CmsIssuePreviewPag
         slug: issue.slug,
         description: issue.description,
         homeBlocks: issue.homeBlocks,
+        homeVariant: issue.homeVariant,
         articles: issue.articles,
         statusLabel: getIssueStatusLabel(cmsIssue),
         publicAvailable: isPublic,

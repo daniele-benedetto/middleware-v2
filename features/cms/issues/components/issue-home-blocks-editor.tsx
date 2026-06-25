@@ -86,10 +86,6 @@ type IssueHomeBlocksEditorText = {
   typeClosing: string;
   typeOpening: string;
   typeRupture: string;
-  variant: string;
-  variantBlack: string;
-  variantDefault: string;
-  variantRed: string;
 };
 
 type IssueHomeBlocksEditorProps = {
@@ -105,12 +101,6 @@ const blockTypeOptions = [
   { value: "body", labelKey: "typeBody" },
   { value: "rupture", labelKey: "typeRupture" },
   { value: "closing", labelKey: "typeClosing" },
-] as const;
-
-const narrativeVariantOptions = [
-  { value: "black", labelKey: "variantBlack" },
-  { value: "red", labelKey: "variantRed" },
-  { value: "default", labelKey: "variantDefault" },
 ] as const;
 
 const featuredPlacementOptions = [
@@ -165,10 +155,6 @@ export function IssueHomeBlocksEditor({
   const sortedArticles = articles;
   const articleById = new Map(sortedArticles.map((article) => [article.id, article]));
   const typeOptions = blockTypeOptions.map((option) => ({
-    value: option.value,
-    label: text[option.labelKey],
-  }));
-  const variantOptions = narrativeVariantOptions.map((option) => ({
     value: option.value,
     label: text[option.labelKey],
   }));
@@ -401,8 +387,6 @@ export function IssueHomeBlocksEditor({
                 }));
                 const showEditorialFields = !isEditorialSingleBlock(block.type);
                 const showFeaturedField = !isSingleArticleBlock(block.type);
-                const showVariantField =
-                  block.type === "opening" || block.type === "rupture" || block.type === "closing";
                 const showFeaturedPlacementField =
                   block.type === "body" || block.type === "rupture";
 
@@ -491,22 +475,6 @@ export function IssueHomeBlocksEditor({
                                 }
                               />
                             </CmsFormField>
-
-                            {showVariantField ? (
-                              <CmsFormField label={text.variant} htmlFor={`${block.id}-variant`}>
-                                <CmsSelect
-                                  value={block.variant}
-                                  disabled={disabled}
-                                  options={variantOptions}
-                                  onValueChange={(nextVariant) =>
-                                    updateBlock(index, {
-                                      ...block,
-                                      variant: nextVariant as IssueHomeBlock["variant"],
-                                    })
-                                  }
-                                />
-                              </CmsFormField>
-                            ) : null}
 
                             {showEditorialFields ? (
                               <>

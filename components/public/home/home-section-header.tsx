@@ -13,7 +13,6 @@ type HomeSectionHeaderProps = {
     href: string;
   };
   marker?: "outline" | "solid" | "none";
-  topBorder?: boolean;
   headingLevel?: 2 | 3 | 4;
 };
 
@@ -24,7 +23,10 @@ function SectionTitle({
   headingLevel: 2 | 3 | 4;
   children: ReactNode;
 }) {
-  const className = cn("inline-flex items-center gap-2", publicTypography.sectionTitle);
+  const className = cn(
+    "inline-flex items-center gap-2 text-balance",
+    "font-heading text-[clamp(34px,4.8vw,72px)] leading-[0.9] font-black tracking-[-0.048em]",
+  );
 
   if (headingLevel === 4) {
     return <h4 className={className}>{children}</h4>;
@@ -43,36 +45,33 @@ export function HomeSectionHeader({
   range,
   action,
   marker = "none",
-  topBorder = true,
   headingLevel = 2,
 }: HomeSectionHeaderProps) {
   return (
-    <div
-      className={`flex items-center gap-4 border-b-2 border-foreground py-3.5 max-md:flex-wrap ${topBorder ? "border-t-2" : ""}`}
-    >
-      <SectionTitle headingLevel={headingLevel}>
-        {marker === "outline" ? (
-          <span className="size-3.5 rounded-[3px] border-2 border-accent bg-card" aria-hidden />
+    <div className="mb-7 flex items-end justify-between gap-6 max-md:flex-col max-md:items-start md:mb-8 lg:mb-10">
+      <div className="max-w-190 space-y-3">
+        <SectionTitle headingLevel={headingLevel}>
+          {marker === "outline" ? (
+            <span className="size-3.5 rounded-[3px] border-2 border-accent bg-card" aria-hidden />
+          ) : null}
+          {marker === "solid" ? (
+            <span className="size-3.5 rounded-[3px] bg-foreground" aria-hidden />
+          ) : null}
+          {title}
+        </SectionTitle>
+        {description ? (
+          <p className={cn("max-w-[62ch] text-muted italic", publicTypography.editorialBody)}>
+            {description}
+          </p>
         ) : null}
-        {marker === "solid" ? (
-          <span className="size-3.5 rounded-[3px] bg-foreground" aria-hidden />
-        ) : null}
-        {title}
-      </SectionTitle>
-      {description ? (
-        <span className={cn("text-muted italic", publicTypography.editorialSmall)}>
-          {description}
-        </span>
-      ) : null}
+      </div>
       {range ? (
-        <span className="ml-auto font-heading text-xs font-bold tracking-[0.06em] text-muted max-md:ml-0">
-          {range}
-        </span>
+        <span className="font-heading text-xs font-bold tracking-[0.06em] text-muted">{range}</span>
       ) : null}
       {action ? (
         <Link
           href={action.href}
-          className="ml-auto text-right font-heading text-xs font-bold tracking-[0.06em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"
+          className="shrink-0 pb-1 text-right font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"
         >
           {action.label}
         </Link>

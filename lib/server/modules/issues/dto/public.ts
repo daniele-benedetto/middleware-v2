@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { issueHomeBlocksSchema, issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+import {
+  issueHomeBlocksSchema,
+  issueHomeVariantSchema,
+  issueTitleStyledSchema,
+} from "@/lib/server/modules/issues/schema";
 
 const publicIssueArticleTagDtoSchema = z.object({
   id: z.string().uuid(),
@@ -33,6 +37,7 @@ export const publicIssueDtoSchema = z.object({
   slug: z.string(),
   description: z.unknown().nullable(),
   homeBlocks: issueHomeBlocksSchema.nullable(),
+  homeVariant: issueHomeVariantSchema,
   publishedAt: z.string(),
   articlesCount: z.number().int(),
 });

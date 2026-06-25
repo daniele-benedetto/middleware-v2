@@ -1,6 +1,6 @@
-import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
+import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 
-export function getNarrativeVariantClasses(variant: NarrativeHomeBlock["variant"]) {
+export function getNarrativeVariantClasses(variant: IssueHomeVariant) {
   switch (variant) {
     case "red":
       return {
@@ -14,7 +14,7 @@ export function getNarrativeVariantClasses(variant: NarrativeHomeBlock["variant"
       };
     case "default":
       return {
-        section: "bg-background text-foreground",
+        section: "border-y border-foreground bg-background text-foreground",
         eyebrow: "text-muted",
         metaTone: "light" as const,
         titlePrimary: "text-accent",

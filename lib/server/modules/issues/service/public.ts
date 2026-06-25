@@ -4,7 +4,7 @@ import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicIssuesRepository } from "@/lib/server/modules/issues/repository/public";
-import { issueHomeBlocksSchema } from "@/lib/server/modules/issues/schema";
+import { issueHomeBlocksSchema, issueHomeVariantSchema } from "@/lib/server/modules/issues/schema";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
@@ -21,6 +21,7 @@ type PublicIssueRecord = {
   slug: string;
   description: unknown;
   homeBlocks: unknown;
+  homeVariant?: string | null;
   publishedAt: Date | null;
   _count?: { articles: number };
 };
@@ -55,17 +56,7 @@ const normalizeIssueHomeBlocks = (value: unknown): IssueHomeBlocks | null => {
     return null;
   }
 
-  const blocks = Array.isArray(value)
-    ? value.map((block) => {
-        if (!block || typeof block !== "object" || "variant" in block) {
-          return block;
-        }
-
-        return { ...block, variant: "black" };
-      })
-    : value;
-
-  return issueHomeBlocksSchema.parse(blocks);
+  return issueHomeBlocksSchema.parse(value);
 };
 
 type PublicIssueDetailRecord = PublicIssueRecord & {
@@ -84,6 +75,7 @@ const toPublicIssueDto = (issue: PublicIssueRecord): PublicIssueDto => {
     slug: issue.slug,
     description: issue.description ?? null,
     homeBlocks: normalizeIssueHomeBlocks(issue.homeBlocks),
+    homeVariant: issueHomeVariantSchema.parse(issue.homeVariant ?? "black"),
     publishedAt: issue.publishedAt.toISOString(),
     articlesCount: issue._count?.articles ?? 0,
   };

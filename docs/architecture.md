@@ -195,7 +195,8 @@ Editorial image semantics:
 
 - Public home composition is issue-centric. `Issue.homeBlocks` is the editorial source of truth for the current issue home layout.
 - Articles remain content entities with category, tags, author, media, and publication metadata. They do not own home placement state.
-- `Issue.homeBlocks` is a validated JSON array. Each block stores `id`, `type`, optional `title`, optional `description`, `articleIds`, and optional `featuredArticleId`.
+- `Issue.homeVariant` stores the visual variant for the issue across dossier blocks and issue archive cards (`black`, `red`, or `default`).
+- `Issue.homeBlocks` is a validated JSON array. Each block stores `id`, `type`, optional `title`, optional `description`, `articleIds`, and optional `featuredArticleId`; visual variant state belongs to the issue, not to individual blocks.
 - Blocks use only manually assigned articles. Empty blocks are allowed in CMS state and are skipped by the public renderer.
 - Supported block types are `opening`, `body`, `rupture`, and `closing`.
 - `body` blocks can set `featuredPlacement` to `left` or `right`; `right` also makes the featured article last in that block's numbering order.

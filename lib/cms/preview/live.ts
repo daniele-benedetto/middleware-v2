@@ -7,7 +7,11 @@ import type {
   PublicArticleTagDto,
 } from "@/lib/server/modules/articles/dto/public";
 import type { PublicIssueArticleSummaryDto } from "@/lib/server/modules/issues/dto/public";
-import type { IssueHomeBlocks, IssueTitleStyled } from "@/lib/server/modules/issues/schema";
+import type {
+  IssueHomeBlocks,
+  IssueHomeVariant,
+  IssueTitleStyled,
+} from "@/lib/server/modules/issues/schema";
 
 export type ArticleLivePreviewSnapshot = {
   article: PublicArticleDetailDto;
@@ -66,6 +70,7 @@ export type IssueLivePreviewInput = {
   slug: string;
   description: unknown;
   homeBlocks: IssueHomeBlocks | null;
+  homeVariant: IssueHomeVariant;
   articles: PublicIssueArticleSummaryDto[];
   publishedIssues?: PublicIssueListItem[];
   statusLabel: string;
@@ -143,6 +148,7 @@ export function toIssueLivePreviewSnapshot(input: IssueLivePreviewInput): IssueL
     slug,
     description: input.description ?? null,
     homeBlocks: input.homeBlocks,
+    homeVariant: input.homeVariant,
     publishedAt: now,
     articlesCount: input.articles.length,
     articles: input.articles,

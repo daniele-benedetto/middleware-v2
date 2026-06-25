@@ -50,7 +50,6 @@ export function createEmptyHomeBlock(
   return createHomeBlock({
     id,
     type,
-    variant: "black",
     title: null,
     description: null,
     articleIds: [],

@@ -34,7 +34,6 @@ function toNarrativeBlock({
   return {
     id: block.id,
     type: block.type,
-    variant: block.variant,
     title: compactText(block.title),
     titleStyled: block.titleStyled ?? null,
     description: compactText(block.description),

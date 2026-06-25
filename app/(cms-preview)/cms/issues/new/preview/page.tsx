@@ -35,6 +35,7 @@ export default async function CmsNewIssuePreviewPage({
         slug: "anteprima-uscita",
         description: emptyContentDoc,
         homeBlocks: null,
+        homeVariant: "black",
         articles: [],
         statusLabel: i18n.cms.forms.resources.issues.newPreviewStatus,
         publicAvailable: false,

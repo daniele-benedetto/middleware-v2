@@ -23,7 +23,6 @@ describe("home block rules", () => {
       normalizeHomeBlock({
         id: "closing",
         type: "closing",
-        variant: "default",
         title: "Chiusura",
         description: "Copy",
         articleIds: ["00000000-0000-4000-8000-000000000001"],
@@ -38,7 +37,6 @@ describe("home block rules", () => {
       normalizeHomeBlock({
         id: "opening",
         type: "opening",
-        variant: "red",
         title: "Apertura",
         titleStyled: [{ text: "Apertura", tone: "primary" }],
         description: "Copy",
@@ -52,7 +50,6 @@ describe("home block rules", () => {
     ).toEqual({
       id: "opening",
       type: "opening",
-      variant: "red",
       title: null,
       titleStyled: null,
       description: null,
@@ -67,7 +64,6 @@ describe("home block rules", () => {
       normalizeHomeBlock({
         id: "rupture",
         type: "rupture",
-        variant: "red",
         title: "Rottura",
         titleStyled: [{ text: "Rottura", tone: "primary" }],
         description: "Copy",

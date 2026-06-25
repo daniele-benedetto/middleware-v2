@@ -13,6 +13,7 @@ import { UnpaginatedArticleRow } from "@/components/public/sections/dossier/unpa
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
+import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 
 type DossierHomeProps = {
   issue: PublicCurrentIssueDetail;
@@ -20,6 +21,7 @@ type DossierHomeProps = {
 
 function renderBlock(
   block: NarrativeHomeBlock,
+  variant: IssueHomeVariant,
   articleNumbers: Map<string, number>,
   options: { priority?: boolean } = {},
 ) {
@@ -29,6 +31,7 @@ function renderBlock(
         <LeadBlock
           key={block.id}
           block={block}
+          variant={variant}
           articleNumbers={articleNumbers}
           priority={options.priority}
         />
@@ -36,9 +39,23 @@ function renderBlock(
     case "body":
       return <BodyBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
     case "rupture":
-      return <FeatureBreakBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
+      return (
+        <FeatureBreakBlock
+          key={block.id}
+          block={block}
+          variant={variant}
+          articleNumbers={articleNumbers}
+        />
+      );
     case "closing":
-      return <ClosingBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
+      return (
+        <ClosingBlock
+          key={block.id}
+          block={block}
+          variant={variant}
+          articleNumbers={articleNumbers}
+        />
+      );
     default: {
       const exhaustiveCheck: never = block.type;
       throw new Error(`Unhandled narrative block type: ${String(exhaustiveCheck)}`);
@@ -48,6 +65,7 @@ function renderBlock(
 
 export function DossierHome({ issue }: DossierHomeProps) {
   const blocks = resolveIssueHomeBlocks(issue);
+  const variant = issue.homeVariant;
 
   if (blocks.length === 0) {
     return <UnpaginatedArticleRow articles={issue.articles} />;
@@ -68,10 +86,10 @@ export function DossierHome({ issue }: DossierHomeProps) {
   return (
     <div className="bg-background">
       {contentBlocks.map((block, index) =>
-        renderBlock(block, articleNumbers, { priority: index === 0 }),
+        renderBlock(block, variant, articleNumbers, { priority: index === 0 }),
       )}
       <UnpaginatedArticleRow articles={unpaginatedArticles} startNumber={unpaginatedStartNumber} />
-      {closingBlocks.map((block) => renderBlock(block, articleNumbers))}
+      {closingBlocks.map((block) => renderBlock(block, variant, articleNumbers))}
     </div>
   );
 }

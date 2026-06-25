@@ -9,7 +9,6 @@ export type HomeIssueArticle = PublicCurrentIssueDetail["articles"][number];
 export type NarrativeHomeBlock = {
   id: string;
   type: "opening" | "body" | "rupture" | "closing";
-  variant: "black" | "red" | "default";
   title: string | null;
   titleStyled: IssueTitleStyled | null;
   description: string | null;

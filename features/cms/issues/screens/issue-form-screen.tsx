@@ -11,6 +11,7 @@ import {
   CmsFormField,
   CmsPageHeader,
   CmsRichTextEditor,
+  CmsSelect,
   CmsStyledTitleEditor,
   CmsTextInput,
   createStyledTitleValue,
@@ -44,9 +45,15 @@ import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
 
 import type { PublicIssueArticleSummaryDto } from "@/lib/server/modules/issues/dto/public";
-import type { IssueHomeBlocks } from "@/lib/server/modules/issues/schema";
+import type { IssueHomeBlocks, IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
+
+const issueHomeVariantOptions = [
+  { value: "black", labelKey: "homeVariantBlack" },
+  { value: "red", labelKey: "homeVariantRed" },
+  { value: "default", labelKey: "homeVariantDefault" },
+] as const;
 
 type IssueFormScreenProps = {
   mode: "create" | "edit";
@@ -228,6 +235,7 @@ function IssueFormContent({
     slug: fieldText.slug,
     description: fieldText.description,
     homeBlocks: issueFormText.homeBlocksLabel,
+    homeVariant: issueFormText.homeVariantLabel,
     publishedAt: fieldText.publishedAt,
   };
 
@@ -242,6 +250,7 @@ function IssueFormContent({
   const title = getStyledTitlePlainText(titleStyled);
   const [description, setDescription] = useState<unknown>(issue?.description ?? emptyContentDoc);
   const [homeBlocks, setHomeBlocks] = useState<IssueHomeBlocks>(() => issue?.homeBlocks ?? []);
+  const [homeVariant, setHomeVariant] = useState<IssueHomeVariant>(issue?.homeVariant ?? "black");
   const [isActive, setIsActive] = useState(issue?.isActive ?? true);
   const [publishedAt, setPublishedAt] = useState<Date | null>(
     issue?.publishedAt ? new Date(issue.publishedAt) : null,
@@ -263,6 +272,10 @@ function IssueFormContent({
 
   const articles = useMemo(() => issue?.articles ?? [], [issue?.articles]);
   const isBusy = isMutating;
+  const homeVariantOptions = issueHomeVariantOptions.map((option) => ({
+    value: option.value,
+    label: issueFormText[option.labelKey],
+  }));
 
   const previewArticles = useMemo<PublicIssueArticleSummaryDto[]>(
     () =>
@@ -316,6 +329,7 @@ function IssueFormContent({
             slug: slugPayload,
             description,
             homeBlocks: homeBlocksPayload,
+            homeVariant,
             isActive,
             publishedAt: publishedAt ?? undefined,
           },
@@ -339,6 +353,7 @@ function IssueFormContent({
           slug: slugPayload,
           description,
           homeBlocks: homeBlocksPayload,
+          homeVariant,
           isActive,
           publishedAt,
         },
@@ -381,6 +396,7 @@ function IssueFormContent({
           slug: resolvedSlug,
           description,
           homeBlocks: homeBlocks.length > 0 ? homeBlocks : null,
+          homeVariant,
           articles: previewArticles,
           statusLabel,
           publicAvailable: Boolean(issue?.isActive && issue.publishedAt),
@@ -404,6 +420,7 @@ function IssueFormContent({
   }, [
     description,
     homeBlocks,
+    homeVariant,
     isActive,
     issue?.isActive,
     issue?.publishedAt,
@@ -555,6 +572,15 @@ function IssueFormContent({
             </div>
 
             <div className="space-y-4">
+              <CmsFormField label={issueFormText.homeVariantLabel} htmlFor="issue-home-variant">
+                <CmsSelect
+                  value={homeVariant}
+                  disabled={isBusy}
+                  options={homeVariantOptions}
+                  onValueChange={(nextVariant) => setHomeVariant(nextVariant as IssueHomeVariant)}
+                />
+              </CmsFormField>
+
               <CmsCheckbox
                 label={issueFormText.activeLabel}
                 checked={isActive}

@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import type { PublicIssueListItem } from "@/lib/public/types/issues";
+import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 
 type ArchiveSectionProps = {
   title: string;
@@ -22,10 +23,8 @@ type ArchiveSectionProps = {
   countLabel: (count: number) => string;
 };
 
-type ArchiveCardVariant = "default" | "red" | "black";
-
 const archiveCardVariantClasses: Record<
-  ArchiveCardVariant,
+  IssueHomeVariant,
   {
     surface: string;
     backgroundNumber: string;
@@ -35,6 +34,7 @@ const archiveCardVariantClasses: Record<
     meta: string;
     separator: string;
     border: string;
+    cardBorder: string;
   }
 > = {
   default: {
@@ -46,6 +46,7 @@ const archiveCardVariantClasses: Record<
     meta: "text-muted",
     separator: "bg-accent",
     border: "border-foreground",
+    cardBorder: "border border-foreground",
   },
   red: {
     surface: "bg-accent text-background",
@@ -56,6 +57,7 @@ const archiveCardVariantClasses: Record<
     meta: "text-cream-muted",
     separator: "bg-foreground",
     border: "border-foreground",
+    cardBorder: "",
   },
   black: {
     surface: "bg-foreground text-background",
@@ -66,6 +68,7 @@ const archiveCardVariantClasses: Record<
     meta: "text-dark-muted",
     separator: "bg-accent",
     border: "border-dark-border",
+    cardBorder: "",
   },
 };
 
@@ -107,10 +110,8 @@ export function ArchiveSection({
   }
 
   const issueNumbers = buildIssueNumberMap(allIssues);
-  const variants: ArchiveCardVariant[] = ["default", "red", "black"];
-
   return (
-    <section className="scroll-mt-20 py-12 lg:py-14">
+    <section className="scroll-mt-20 border-t-2 border-foreground py-12 lg:py-14">
       <div className={publicContentClassName}>
         <HomeSectionHeader
           title={title}
@@ -121,7 +122,7 @@ export function ArchiveSection({
           {issues.map((issue, index) => {
             const issueDescription = getIssuePlainDescription(issue);
             const issueNumber = issueNumbers.get(issue.id) ?? formatIssueNumber(0);
-            const variantClasses = archiveCardVariantClasses[variants[index % variants.length]];
+            const variantClasses = archiveCardVariantClasses[issue.homeVariant];
             const publishedAtLabel = formatIssueMonthYearLong(issue.publishedAt);
 
             return (
@@ -132,6 +133,7 @@ export function ArchiveSection({
                   publicInteraction.cardBase,
                   "relative isolate flex min-h-96 flex-col overflow-hidden px-5 py-6 sm:px-6 sm:py-7 lg:min-h-112 lg:px-7 lg:py-8",
                   variantClasses.surface,
+                  variantClasses.cardBorder,
                   getArchiveCardClassName(index, issues.length),
                 )}
               >

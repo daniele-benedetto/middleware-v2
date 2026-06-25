@@ -13,6 +13,7 @@ describe("issues schemas", () => {
     });
 
     expect(parsed.title).toBe("Issue 01");
+    expect(parsed.homeVariant).toBe("black");
     expect(parsed.isActive).toBe(true);
     expect(parsed.publishedAt).toBeInstanceOf(Date);
   });
@@ -31,14 +32,12 @@ describe("issues schemas", () => {
           {
             id: "campo",
             type: "body",
-            variant: "default",
             articleIds: [articleId],
             featuredArticleId: articleId,
           },
           {
             id: "chiusura",
             type: "closing",
-            variant: "default",
             articleIds: [articleId],
             featuredArticleId: articleId,
           },
@@ -54,7 +53,6 @@ describe("issues schemas", () => {
         {
           id: "corpo",
           type: "body",
-          variant: "default",
           title: "Corpo",
           description: null,
           articleIds: [],
@@ -73,7 +71,6 @@ describe("issues schemas", () => {
         {
           id: "corpo",
           type: "body",
-          variant: "default",
           title: "Corpo",
           description: null,
           articleIds: [],
@@ -94,7 +91,6 @@ describe("issues schemas", () => {
           {
             id: "sequenza",
             type: "sequence",
-            variant: "default",
             title: "Sequenza",
             description: null,
             articleIds: [],
@@ -112,7 +108,6 @@ describe("issues schemas", () => {
         {
           id: "corpo",
           type: "body",
-          variant: "default",
           title: "Titolo blocco",
           titleStyled: [
             { text: "Titolo ", tone: "default" },
@@ -139,7 +134,6 @@ describe("issues schemas", () => {
           {
             id: "apertura",
             type: "opening",
-            variant: "black",
             title: "Apertura",
             description: null,
             articleIds: [
@@ -161,7 +155,6 @@ describe("issues schemas", () => {
           {
             id: "rottura",
             type: "rupture",
-            variant: "default",
             title: "Rottura",
             description: null,
             articleIds: ["00000000-0000-4000-8000-000000000001"],
@@ -178,7 +171,6 @@ describe("issues schemas", () => {
           {
             id: "chiusura",
             type: "closing",
-            variant: "default",
             title: "Chiusura",
             description: "Copy",
             articleIds: ["00000000-0000-4000-8000-000000000001"],

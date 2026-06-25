@@ -6,7 +6,7 @@ import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { issuesRepository } from "@/lib/server/modules/issues/repository";
-import { issueHomeBlocksSchema } from "@/lib/server/modules/issues/schema";
+import { issueHomeBlocksSchema, issueHomeVariantSchema } from "@/lib/server/modules/issues/schema";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
@@ -29,6 +29,7 @@ type IssueRecord = {
   slug: string;
   description: unknown;
   homeBlocks: unknown;
+  homeVariant?: string | null;
   isActive: boolean;
   sortOrder: number;
   publishedAt: Date | null;
@@ -92,6 +93,7 @@ const toIssueDto = (issue: IssueRecord): IssueDto => {
     slug: issue.slug,
     description: issue.description ?? null,
     homeBlocks: normalizeIssueHomeBlocks(issue.homeBlocks),
+    homeVariant: issueHomeVariantSchema.parse(issue.homeVariant ?? "black"),
     isActive: issue.isActive,
     sortOrder: issue.sortOrder,
     publishedAt: issue.publishedAt?.toISOString() ?? null,
@@ -106,17 +108,7 @@ const normalizeIssueHomeBlocks = (value: unknown): IssueHomeBlocks | null => {
     return null;
   }
 
-  const blocks = Array.isArray(value)
-    ? value.map((block) => {
-        if (!block || typeof block !== "object" || "variant" in block) {
-          return block;
-        }
-
-        return { ...block, variant: "black" };
-      })
-    : value;
-
-  return issueHomeBlocksSchema.parse(blocks);
+  return issueHomeBlocksSchema.parse(value);
 };
 
 const toIssueDetailDto = (issue: IssueDetailRecord): IssueDetailDto => {
@@ -145,6 +137,7 @@ const toPublicIssuePreviewDto = (issue: IssuePreviewRecord): PublicIssueDetailDt
     slug: issue.slug,
     description: issue.description ?? null,
     homeBlocks: normalizeIssueHomeBlocks(issue.homeBlocks),
+    homeVariant: issueHomeVariantSchema.parse(issue.homeVariant ?? "black"),
     publishedAt: toPreviewPublishedAt(issue.publishedAt, issue.updatedAt),
     articlesCount: issue._count?.articles ?? 0,
     articles: (issue.articles ?? []).map((article) => ({
@@ -225,6 +218,7 @@ export const issuesService = {
           slug: candidateSlug,
           description: input.description,
           homeBlocks: input.homeBlocks ?? null,
+          homeVariant: input.homeVariant,
           isActive: input.isActive,
           publishedAt: input.publishedAt ?? null,
         });

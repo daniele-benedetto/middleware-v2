@@ -5,18 +5,17 @@ import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 import { cn } from "@/lib/utils";
 
 import type { ArchiveIssueViewModel } from "@/components/public/sections/archive/archive-view-model";
-
-export type IssueArchiveCardVariant = "default" | "red" | "black";
+import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 
 type IssueArchiveCardProps = {
   issue: ArchiveIssueViewModel;
   countLabel: (count: number) => string;
-  variant: IssueArchiveCardVariant;
+  variant: IssueHomeVariant;
   className?: string;
 };
 
 const archiveCoverVariantClasses: Record<
-  IssueArchiveCardVariant,
+  IssueHomeVariant,
   {
     surface: string;
     backgroundNumber: string;
@@ -26,6 +25,7 @@ const archiveCoverVariantClasses: Record<
     meta: string;
     separator: string;
     border: string;
+    cardBorder: string;
   }
 > = {
   default: {
@@ -37,6 +37,7 @@ const archiveCoverVariantClasses: Record<
     meta: "text-muted",
     separator: "bg-accent",
     border: "border-foreground",
+    cardBorder: "border border-foreground",
   },
   red: {
     surface: "bg-accent text-background",
@@ -47,6 +48,7 @@ const archiveCoverVariantClasses: Record<
     meta: "text-cream-muted",
     separator: "bg-foreground",
     border: "border-foreground",
+    cardBorder: "",
   },
   black: {
     surface: "bg-foreground text-background",
@@ -57,6 +59,7 @@ const archiveCoverVariantClasses: Record<
     meta: "text-dark-muted",
     separator: "bg-accent",
     border: "border-dark-border",
+    cardBorder: "",
   },
 };
 
@@ -71,6 +74,7 @@ export function IssueArchiveCard({ issue, countLabel, variant, className }: Issu
         publicInteraction.cardBase,
         "relative isolate block overflow-hidden px-5 py-7 sm:px-6 sm:py-9 md:px-8 md:py-10 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:px-12 lg:py-14 xl:px-16",
         variantClasses.surface,
+        variantClasses.cardBorder,
         className,
       )}
     >

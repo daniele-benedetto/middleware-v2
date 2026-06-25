@@ -20,13 +20,15 @@ import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
+import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 
 type ClosingBlockProps = {
   block: NarrativeHomeBlock;
+  variant: IssueHomeVariant;
   articleNumbers: Map<string, number>;
 };
 
-export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
+export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockProps) {
   const article = block.featuredArticle ?? block.articles[0];
 
   if (!article) {
@@ -34,10 +36,9 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
   }
 
   const tagLine = formatTags(article);
-  const variantClasses = getNarrativeVariantClasses(block.variant);
+  const variantClasses = getNarrativeVariantClasses(variant);
   const blockHasCopy = Boolean(block.title || block.description);
   const closingText = i18n.public.home.closing;
-  const editorialPanelBorder = block.variant === "default" ? "border border-foreground" : "";
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `closing-article-title-${article.id}`;
   const image = article.imageUrl ? (
@@ -57,7 +58,7 @@ export function ClosingBlock({ block, articleNumbers }: ClosingBlockProps) {
       <div
         className={`${publicContentClassName} grid gap-8 md:grid-cols-[minmax(220px,0.38fr)_minmax(0,0.62fr)] md:gap-10 lg:grid-cols-[minmax(240px,0.38fr)_minmax(0,0.62fr)] lg:gap-12`}
       >
-        <aside className={`p-6 md:p-8 lg:p-9 ${variantClasses.section} ${editorialPanelBorder}`}>
+        <aside className={`p-6 md:p-8 lg:p-9 ${variantClasses.section}`}>
           {blockHasCopy ? (
             <div>
               {block.title ? (
