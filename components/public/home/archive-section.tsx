@@ -111,7 +111,7 @@ export function ArchiveSection({
 
   const issueNumbers = buildIssueNumberMap(allIssues);
   return (
-    <section className="scroll-mt-20 border-t-2 border-foreground py-12 lg:py-14">
+    <section className="scroll-mt-20 py-12 lg:py-14">
       <div className={publicContentClassName}>
         <HomeSectionHeader
           title={title}

@@ -39,6 +39,7 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
   const variantClasses = getNarrativeVariantClasses(variant);
   const blockHasCopy = Boolean(block.title || block.description);
   const closingText = i18n.public.home.closing;
+  const editorialPanelBorder = variant === "default" ? "border border-foreground" : "";
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `closing-article-title-${article.id}`;
   const image = article.imageUrl ? (
@@ -58,7 +59,7 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
       <div
         className={`${publicContentClassName} grid gap-8 md:grid-cols-[minmax(220px,0.38fr)_minmax(0,0.62fr)] md:gap-10 lg:grid-cols-[minmax(240px,0.38fr)_minmax(0,0.62fr)] lg:gap-12`}
       >
-        <aside className={`p-6 md:p-8 lg:p-9 ${variantClasses.section}`}>
+        <aside className={`p-6 md:p-8 lg:p-9 ${variantClasses.section} ${editorialPanelBorder}`}>
           {blockHasCopy ? (
             <div>
               {block.title ? (

@@ -16,6 +16,20 @@ export type AudioProgressRecord = {
   completedAt: string | null;
 };
 
+export type AudioBookmarkRecord = {
+  id: string;
+  articleId: string;
+  articleSlug: string;
+  articleTitle: string;
+  articleUpdatedAt: string | null;
+  audioUrl: string;
+  chunkId: string;
+  chunkStart: number;
+  chunkEnd: number;
+  chunkText: string;
+  createdAt: string;
+};
+
 type MiddlewareClientDb = DBSchema & {
   audioProgress: {
     key: string;
@@ -25,11 +39,20 @@ type MiddlewareClientDb = DBSchema & {
       "by-status": AudioProgressStatus;
     };
   };
+  audioBookmarks: {
+    key: string;
+    value: AudioBookmarkRecord;
+    indexes: {
+      "by-articleId": string;
+      "by-createdAt": string;
+    };
+  };
 };
 
 const databaseName = "middleware-client";
-const databaseVersion = 1;
+const databaseVersion = 2;
 const audioProgressStoreName = "audioProgress";
+const audioBookmarksStoreName = "audioBookmarks";
 const maxStoredAudioProgressRecords = 200;
 const audioProgressRetentionMs = 1000 * 60 * 60 * 24 * 180;
 
@@ -50,6 +73,12 @@ function getDatabase() {
         const store = database.createObjectStore(audioProgressStoreName, { keyPath: "articleId" });
         store.createIndex("by-updatedAt", "updatedAt");
         store.createIndex("by-status", "status");
+      }
+
+      if (!database.objectStoreNames.contains(audioBookmarksStoreName)) {
+        const store = database.createObjectStore(audioBookmarksStoreName, { keyPath: "id" });
+        store.createIndex("by-articleId", "articleId");
+        store.createIndex("by-createdAt", "createdAt");
       }
     },
   });
@@ -105,4 +134,27 @@ export async function cleanupAudioProgress() {
       ),
     );
   });
+}
+
+export function getAudioBookmarkId(articleId: string, chunkId: string) {
+  return `${articleId}:${chunkId}`;
+}
+
+export async function getAudioBookmarks(articleId: string) {
+  return runAudioProgressOperation((database) =>
+    database.getAllFromIndex(audioBookmarksStoreName, "by-articleId", articleId),
+  );
+}
+
+export async function saveAudioBookmark(record: AudioBookmarkRecord) {
+  return runAudioProgressOperation(async (database) => {
+    await database.put(audioBookmarksStoreName, record);
+    return record;
+  });
+}
+
+export async function deleteAudioBookmark(articleId: string, chunkId: string) {
+  return runAudioProgressOperation((database) =>
+    database.delete(audioBookmarksStoreName, getAudioBookmarkId(articleId, chunkId)),
+  );
 }

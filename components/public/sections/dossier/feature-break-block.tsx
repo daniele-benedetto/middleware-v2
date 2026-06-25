@@ -42,6 +42,7 @@ export function FeatureBreakBlock({ block, variant, articleNumbers }: FeatureBre
   const imageBorderClass = imageOnRight
     ? "border-t md:border-t-0 md:border-l"
     : "border-b md:border-r md:border-b-0";
+  const cardBorderClass = showBorder ? "border-l border-foreground" : "";
   const image = article.imageUrl ? (
     <div
       className={`relative min-h-70 overflow-hidden sm:min-h-76 md:min-h-full ${showBorder ? `${imageBorderClass} ${variantClasses.image}` : "grayscale"}`}
@@ -66,6 +67,7 @@ export function FeatureBreakBlock({ block, variant, articleNumbers }: FeatureBre
             publicInteraction.cardBase,
             "grid md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
             variantClasses.section,
+            cardBorderClass,
           )}
         >
           {imageOnRight ? null : image}

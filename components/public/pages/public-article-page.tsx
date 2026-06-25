@@ -1,6 +1,8 @@
+import { PlayIcon } from "lucide-react";
 import Image from "next/image";
 
 import { DossierArticleCard, PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
+import { HomeSectionHeader } from "@/components/public/home/home-section-header";
 import { publicContentClassName } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { PublicRichText } from "@/components/public/rich-text";
@@ -35,6 +37,26 @@ function formatArticleNumber(value: number | null) {
   return value ? String(value).padStart(2, "0") : "MW";
 }
 
+function getRelatedArticlesGridClassName(count: number) {
+  if (count === 1) {
+    return "grid border-l border-t border-foreground";
+  }
+
+  if (count === 2) {
+    return "grid border-l border-t border-foreground md:grid-cols-2";
+  }
+
+  return "grid border-l border-t border-foreground md:grid-cols-2 xl:grid-cols-3";
+}
+
+function getRelatedArticleCardClassName(index: number, count: number) {
+  if (count === 3 && index === 2) {
+    return "md:col-span-2 xl:col-span-1";
+  }
+
+  return undefined;
+}
+
 function ArticleMetaRail({ article }: ArticleOnlyProps) {
   const text = i18n.public.articlePage;
   const metaItems = [
@@ -51,8 +73,9 @@ function ArticleMetaRail({ article }: ArticleOnlyProps) {
       {article.audioUrl ? (
         <Link
           href={`/articoli/${article.slug}/ascolta`}
-          className="w-fit border-2 border-foreground bg-foreground px-3 py-2 font-heading text-[11px] font-extrabold tracking-[0.12em] text-background uppercase transition-transform duration-(--motion-fast) hover:scale-[0.98] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="inline-flex w-fit shrink-0 items-center gap-2 pb-1 font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"
         >
+          <PlayIcon className="size-3.5 fill-current" aria-hidden />
           {text.audioCta}
         </Link>
       ) : null}
@@ -83,28 +106,22 @@ function RelatedArticlesSection({ article, relatedArticles }: RelatedArticlesSec
   const text = i18n.public.articlePage;
 
   return (
-    <section className="bg-background py-10 sm:py-14 lg:py-16">
+    <section className="scroll-mt-20 bg-background py-12 lg:py-14">
       <div className={publicContentClassName}>
-        <div className="mb-5 flex flex-col gap-3 border-t-2 border-foreground pt-4 md:flex-row md:items-center md:justify-between">
-          <p className="font-heading text-[13px] font-semibold text-muted sm:text-[14px]">
-            {text.issuePrefix} {article.issueTitle}
-          </p>
-          <Link
-            href={`/uscite/${article.issueSlug}`}
-            className="w-fit font-heading text-xs font-bold tracking-[0.06em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"
-          >
-            {text.viewIssue}
-          </Link>
-        </div>
+        <HomeSectionHeader
+          title="Articoli correlati"
+          action={{ label: text.viewIssue, href: `/uscite/${article.issueSlug}` }}
+        />
 
-        <div className="grid border-l border-t border-foreground md:grid-cols-2 xl:grid-cols-3">
-          {relatedArticles.map((item) => (
+        <div className={getRelatedArticlesGridClassName(relatedArticles.length)}>
+          {relatedArticles.map((item, index) => (
             <DossierArticleCard
               key={item.article.id}
               article={item.article}
               eyebrow={formatTags(item.article) || item.article.categoryName || ""}
               number={item.number}
               variant="constellationSecondary"
+              className={getRelatedArticleCardClassName(index, relatedArticles.length)}
             />
           ))}
         </div>

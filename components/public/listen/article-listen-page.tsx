@@ -10,9 +10,20 @@ type ArticleListenPageProps = {
   data: PublicArticleListenPageData;
 };
 
+function formatArticleDate(value: string) {
+  return new Intl.DateTimeFormat("it-IT", { dateStyle: "long" }).format(new Date(value));
+}
+
 export function ArticleListenPage({ data }: ArticleListenPageProps) {
   const { article, chunks } = data;
   const text = i18n.public.listenPage;
+  const metaItems = [
+    { key: "issue", label: article.issueTitle, href: `/uscite/${article.issueSlug}` },
+    { key: "category", label: article.categoryName },
+    article.authorName ? { key: "author", label: article.authorName } : null,
+    { key: "date", label: formatArticleDate(article.publishedAt), dateTime: article.publishedAt },
+    { key: "article", label: text.backToArticle, href: `/articoli/${article.slug}` },
+  ].filter((item) => item !== null);
 
   return (
     <main
@@ -27,18 +38,7 @@ export function ArticleListenPage({ data }: ArticleListenPageProps) {
           titleStyled={article.titleStyled}
           backgroundCode="AU"
           containerClassName="pt-7 pb-5 sm:pt-9 sm:pb-6 lg:pt-10 lg:pb-7"
-          eyebrow={
-            <span className="font-heading text-[11px] font-extrabold tracking-[0.14em] text-accent uppercase">
-              {text.title}
-            </span>
-          }
-          meta={
-            <PublicMetaRail
-              items={[
-                { key: "article", label: text.backToArticle, href: `/articoli/${article.slug}` },
-              ]}
-            />
-          }
+          meta={<PublicMetaRail items={metaItems} />}
         />
 
         <section className="min-h-0 bg-surface py-4 sm:py-5 lg:py-6">

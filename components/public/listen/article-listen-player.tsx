@@ -1,6 +1,6 @@
 "use client";
 
-import { PauseIcon, PlayIcon, RotateCcwIcon, RotateCwIcon } from "lucide-react";
+import { BookmarkIcon, PauseIcon, PlayIcon, RotateCcwIcon, RotateCwIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -11,9 +11,13 @@ import {
   type VisibleAudioChunk,
 } from "@/lib/audio/audio-chunks";
 import {
-  deleteAudioProgress,
+  deleteAudioBookmark,
+  getAudioBookmarkId,
+  getAudioBookmarks,
   getAudioProgress,
   saveAudioProgress,
+  saveAudioBookmark,
+  type AudioBookmarkRecord,
   type AudioProgressRecord,
   type AudioProgressStatus,
 } from "@/lib/browser/storage/audio-progress-store";
@@ -34,12 +38,18 @@ type ArticleListenPlayerProps = {
 
 type ChunkWindowProps = {
   chunks: VisibleAudioChunk[];
+  bookmarkedChunkIds: Set<string>;
   onChunkSelect: (chunk: AudioChunk) => void;
 };
 
 const minimumResumeTime = 10;
 const saveIntervalSeconds = 15;
 const completionThresholdSeconds = 3;
+const playbackRates = [1, 1.25, 1.5] as const;
+
+function formatPlaybackRate(rate: number) {
+  return `${rate.toFixed(2)}x`;
+}
 
 function clampTime(value: number, duration: number) {
   if (!Number.isFinite(value)) return 0;
@@ -59,20 +69,24 @@ function isResumeCandidate(record: AudioProgressRecord) {
   return true;
 }
 
-function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
+function ChunkWindow({ chunks, bookmarkedChunkIds, onChunkSelect }: ChunkWindowProps) {
   const text = i18n.public.listenPage;
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const chunkRefs = useRef(new Map<string, HTMLButtonElement>());
   const activeChunk = chunks.find((chunk) => chunk.position === "active");
 
   useEffect(() => {
     if (!activeChunk) return;
 
+    const container = scrollContainerRef.current;
     const element = chunkRefs.current.get(activeChunk.id);
-    if (!element) return;
+    if (!container || !element) return;
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    element.scrollIntoView({
-      block: "center",
+    const targetTop = element.offsetTop - container.clientHeight / 2 + element.clientHeight / 2;
+
+    container.scrollTo({
+      top: Math.max(0, targetTop),
       behavior: prefersReducedMotion ? "auto" : "smooth",
     });
   }, [activeChunk]);
@@ -83,14 +97,18 @@ function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
 
   return (
     <div
-      className="h-full min-h-0 overflow-hidden border-t-2 border-foreground pt-4 sm:pt-5"
+      className="h-full min-h-0 overflow-hidden pt-4 sm:pt-5"
       role="group"
       aria-label={text.syncedText}
     >
-      <div className="h-full overflow-y-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        ref={scrollContainerRef}
+        className="h-full overflow-y-auto pr-1 [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         <div className="grid min-h-full content-center gap-3 py-4 sm:gap-3.5 sm:py-5">
           {chunks.map((chunk) => {
             const isActive = chunk.position === "active";
+            const isBookmarked = bookmarkedChunkIds.has(chunk.id);
 
             return (
               <button
@@ -107,7 +125,7 @@ function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
                 onClick={() => onChunkSelect(chunk)}
                 aria-current={isActive ? "true" : undefined}
                 className={cn(
-                  "group w-full cursor-pointer text-left font-editorial transition-[opacity,transform,color] duration-(--motion-slow) focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-accent",
+                  "group flex w-full cursor-pointer items-start gap-2 text-left font-editorial transition-[opacity,transform,color] duration-(--motion-slow) focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-accent",
                   isActive
                     ? "translate-x-0 text-foreground opacity-100"
                     : "translate-x-0 text-muted opacity-45 hover:text-body-text hover:opacity-80 sm:translate-x-1.5",
@@ -115,14 +133,20 @@ function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
               >
                 <span
                   className={cn(
-                    "block leading-[1.22]",
+                    "block min-w-0 flex-1 leading-[1.24]",
                     isActive
-                      ? "border-l-3 border-accent pl-3 text-[clamp(22px,3vw,34px)] font-semibold tracking-[-0.025em]"
+                      ? "text-[clamp(22px,3vw,34px)] font-medium tracking-[-0.025em]"
                       : "pl-4 text-[clamp(15px,1.45vw,19px)] italic",
                   )}
                 >
                   {chunk.text}
                 </span>
+                {isBookmarked ? (
+                  <BookmarkIcon
+                    className="mt-1 size-3.5 shrink-0 fill-accent text-accent sm:size-4"
+                    aria-hidden
+                  />
+                ) : null}
               </button>
             );
           })}
@@ -146,18 +170,22 @@ export function ArticleListenPlayer({
   const currentTimeRef = useRef(0);
   const durationRef = useRef(0);
   const hasInteractedRef = useRef(false);
+  const isSeekingRef = useRef(false);
   const startedAtRef = useRef<string | null>(null);
   const lastSavedBucketRef = useRef(-1);
   const [currentTime, setCurrentTime] = useState(0);
+  const [seekPreviewTime, setSeekPreviewTime] = useState<number | null>(null);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [, setSavedProgress] = useState<AudioProgressRecord | null>(null);
+  const [bookmarks, setBookmarks] = useState<AudioBookmarkRecord[]>([]);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [audioError, setAudioError] = useState(false);
+  const displayedTime = seekPreviewTime ?? currentTime;
   const activeChunk =
-    getActiveAudioChunk(chunks, currentTime) ??
-    chunks.findLast((chunk) => currentTime >= chunk.end) ??
+    getActiveAudioChunk(chunks, displayedTime) ??
+    chunks.findLast((chunk) => displayedTime >= chunk.end) ??
     chunks[0] ??
     null;
   const activeChunkId = activeChunk?.id ?? null;
@@ -166,6 +194,11 @@ export function ArticleListenPlayer({
     [chunks, activeChunkId],
   );
   const resolvedDuration = duration > 0 ? duration : (chunks.at(-1)?.end ?? 0);
+  const bookmarkedChunkIds = useMemo(
+    () => new Set(bookmarks.map((bookmark) => bookmark.chunkId)),
+    [bookmarks],
+  );
+  const activeChunkIsBookmarked = activeChunk ? bookmarkedChunkIds.has(activeChunk.id) : false;
 
   const persistProgress = useCallback(
     async (status: AudioProgressStatus = "listening", timeOverride?: number) => {
@@ -236,6 +269,23 @@ export function ArticleListenPlayer({
   }, [articleId, articleUpdatedAt, audioUrl]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    async function loadBookmarks() {
+      const records = await getAudioBookmarks(articleId);
+      if (cancelled) return;
+
+      setBookmarks(records ?? []);
+    }
+
+    void loadBookmarks();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [articleId]);
+
+  useEffect(() => {
     const audio = audioRef.current;
     if (audio) {
       audio.playbackRate = playbackRate;
@@ -277,6 +327,7 @@ export function ArticleListenPlayer({
     if (!audio) return;
 
     const nextTime = clampTime(seconds, getFiniteDuration(audio) || resolvedDuration);
+    currentTimeRef.current = nextTime;
     audio.currentTime = nextTime;
     setCurrentTime(nextTime);
     return nextTime;
@@ -306,21 +357,59 @@ export function ArticleListenPlayer({
     const nextTime = seekTo(target);
     if (nextTime === undefined) return;
 
+    isSeekingRef.current = false;
+    setSeekPreviewTime(null);
     setHasInteracted(true);
     void persistProgress(isPlaying ? "listening" : "paused", nextTime);
   };
 
-  const seekBy = (seconds: number) => commitSeek(currentTime + seconds);
+  const seekBy = (seconds: number) => commitSeek(currentTimeRef.current + seconds);
 
   const handleSeekTo = (seconds: number) => commitSeek(seconds);
 
-  const restart = () => {
-    setHasInteracted(true);
-    seekTo(0);
-    void deleteAudioProgress(articleId);
-    setSavedProgress(null);
-    startedAtRef.current = null;
-    lastSavedBucketRef.current = -1;
+  const previewSeekTo = (seconds: number) => {
+    isSeekingRef.current = true;
+    setSeekPreviewTime(clampTime(seconds, resolvedDuration));
+  };
+
+  const commitPreviewSeek = (seconds: number) => {
+    handleSeekTo(seconds);
+  };
+
+  const cyclePlaybackRate = () => {
+    const currentIndex = playbackRates.findIndex((rate) => rate === playbackRate);
+    const nextRate = playbackRates[(currentIndex + 1) % playbackRates.length] ?? playbackRates[0];
+    setPlaybackRate(nextRate);
+  };
+
+  const toggleActiveChunkBookmark = () => {
+    if (!activeChunk) return;
+
+    const bookmarkId = getAudioBookmarkId(articleId, activeChunk.id);
+    const existingBookmark = bookmarks.find((bookmark) => bookmark.id === bookmarkId);
+
+    if (existingBookmark) {
+      setBookmarks((current) => current.filter((bookmark) => bookmark.id !== bookmarkId));
+      void deleteAudioBookmark(articleId, activeChunk.id);
+      return;
+    }
+
+    const bookmark: AudioBookmarkRecord = {
+      id: bookmarkId,
+      articleId,
+      articleSlug,
+      articleTitle,
+      articleUpdatedAt,
+      audioUrl,
+      chunkId: activeChunk.id,
+      chunkStart: activeChunk.start,
+      chunkEnd: activeChunk.end,
+      chunkText: activeChunk.text,
+      createdAt: new Date().toISOString(),
+    };
+
+    setBookmarks((current) => [...current, bookmark]);
+    void saveAudioBookmark(bookmark);
   };
 
   return (
@@ -334,6 +423,8 @@ export function ArticleListenPlayer({
         onCanPlay={(event) => syncDuration(event.currentTarget)}
         onTimeUpdate={(event) => {
           syncDuration(event.currentTarget);
+          if (isSeekingRef.current) return;
+          currentTimeRef.current = event.currentTarget.currentTime;
           setCurrentTime(event.currentTarget.currentTime);
         }}
         onPlay={(event) => {
@@ -357,41 +448,89 @@ export function ArticleListenPlayer({
           </p>
 
           <div className="grid gap-2">
-            <input
-              type="range"
-              min={0}
-              max={resolvedDuration || 0}
-              step="0.01"
-              value={clampTime(currentTime, resolvedDuration)}
-              disabled={resolvedDuration <= 0}
-              onInput={(event) => handleSeekTo(Number(event.currentTarget.value))}
-              onChange={(event) => handleSeekTo(Number(event.currentTarget.value))}
-              className="h-1.5 w-full cursor-pointer accent-accent disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label={text.progressAriaLabel}
-              aria-valuetext={text.progressValueText(
-                formatAudioTime(currentTime),
-                formatAudioTime(resolvedDuration),
-              )}
-            />
+            <div className="relative h-5">
+              <div
+                className="pointer-events-none absolute top-1/2 right-0 left-0 z-0 h-1.5 -translate-y-1/2 bg-foreground/15"
+                aria-hidden
+              />
+              {bookmarks.map((bookmark) => {
+                const segmentStart =
+                  resolvedDuration > 0 ? (bookmark.chunkStart / resolvedDuration) * 100 : 0;
+                const segmentEnd =
+                  resolvedDuration > 0
+                    ? (bookmark.chunkEnd / resolvedDuration) * 100
+                    : segmentStart;
+                const segmentWidth = Math.max(1.2, segmentEnd - segmentStart);
+
+                return (
+                  <span
+                    key={bookmark.id}
+                    className="pointer-events-none absolute top-1/2 z-10 h-1.5 min-w-4 -translate-y-1/2 bg-foreground"
+                    style={{ left: `${segmentStart}%`, width: `${segmentWidth}%` }}
+                    aria-hidden
+                  />
+                );
+              })}
+              <input
+                type="range"
+                min={0}
+                max={resolvedDuration || 0}
+                step="0.01"
+                value={clampTime(displayedTime, resolvedDuration)}
+                disabled={resolvedDuration <= 0}
+                onPointerDown={(event) => previewSeekTo(Number(event.currentTarget.value))}
+                onInput={(event) => previewSeekTo(Number(event.currentTarget.value))}
+                onChange={(event) => previewSeekTo(Number(event.currentTarget.value))}
+                onPointerUp={(event) => commitPreviewSeek(Number(event.currentTarget.value))}
+                onPointerCancel={(event) => commitPreviewSeek(Number(event.currentTarget.value))}
+                onKeyUp={(event) => commitPreviewSeek(Number(event.currentTarget.value))}
+                onBlur={(event) => {
+                  if (!isSeekingRef.current) return;
+                  commitPreviewSeek(Number(event.currentTarget.value));
+                }}
+                className="absolute top-1/2 right-0 left-0 z-20 h-5 w-full -translate-y-1/2 cursor-pointer opacity-70 accent-accent disabled:cursor-not-allowed disabled:opacity-30"
+                aria-label={text.progressAriaLabel}
+                aria-valuetext={text.progressValueText(
+                  formatAudioTime(displayedTime),
+                  formatAudioTime(resolvedDuration),
+                )}
+              />
+            </div>
             <div className="flex items-center justify-between font-heading text-[11px] font-bold tracking-[0.08em] text-muted uppercase">
-              <span>{formatAudioTime(currentTime)}</span>
+              <span>{formatAudioTime(displayedTime)}</span>
               <span>{formatAudioTime(resolvedDuration)}</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-4">
+          <div className="flex items-center justify-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={toggleActiveChunkBookmark}
+              aria-pressed={activeChunkIsBookmarked}
+              className={cn(
+                "inline-flex size-12 cursor-pointer items-center justify-center border-2 border-foreground font-heading text-[11px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-13",
+                activeChunkIsBookmarked
+                  ? "bg-accent text-background"
+                  : "bg-background hover:bg-accent/15",
+              )}
+              aria-label={activeChunkIsBookmarked ? "Rimuovi segnalibro" : "Aggiungi segnalibro"}
+            >
+              <BookmarkIcon
+                className={cn("size-4", activeChunkIsBookmarked ? "fill-current" : undefined)}
+              />
+            </button>
             <button
               type="button"
               onClick={() => seekBy(-15)}
-              className="flex h-10 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[11px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:h-11"
+              className="inline-flex size-12 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[11px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-13"
               aria-label={text.seekBackward}
             >
-              <RotateCcwIcon className="mr-2 size-4" /> 15
+              <RotateCcwIcon className="size-5" />
             </button>
             <button
               type="button"
               onClick={togglePlayback}
-              className="flex size-16 cursor-pointer items-center justify-center bg-foreground text-background transition-transform duration-(--motion-fast) hover:scale-[0.98] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-accent sm:size-18"
+              className="flex size-[4.25rem] cursor-pointer items-center justify-center bg-foreground text-background transition-transform duration-(--motion-fast) hover:scale-[0.98] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-accent sm:size-[4.75rem]"
               aria-label={isPlaying ? text.pause : text.play}
             >
               {isPlaying ? <PauseIcon className="size-6" /> : <PlayIcon className="ml-1 size-6" />}
@@ -399,39 +538,18 @@ export function ArticleListenPlayer({
             <button
               type="button"
               onClick={() => seekBy(15)}
-              className="flex h-10 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[11px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:h-11"
+              className="inline-flex size-12 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[11px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-13"
               aria-label={text.seekForward}
             >
-              15 <RotateCwIcon className="ml-2 size-4" />
+              <RotateCwIcon className="size-5" />
             </button>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-foreground/20 pt-3">
-            <div className="flex gap-2">
-              {[1, 1.25, 1.5].map((rate) => (
-                <button
-                  key={rate}
-                  type="button"
-                  onClick={() => setPlaybackRate(rate)}
-                  aria-pressed={playbackRate === rate}
-                  aria-label={text.speed(rate)}
-                  className={cn(
-                    "cursor-pointer border border-foreground px-2 py-0.5 font-heading text-[10px] font-extrabold tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent",
-                    playbackRate === rate
-                      ? "bg-foreground text-background"
-                      : "bg-surface hover:bg-accent/10",
-                  )}
-                >
-                  {rate}x
-                </button>
-              ))}
-            </div>
             <button
               type="button"
-              onClick={restart}
-              className="cursor-pointer font-heading text-[10px] font-extrabold tracking-widest text-muted uppercase transition-colors duration-(--motion-fast) hover:text-accent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              onClick={cyclePlaybackRate}
+              className="inline-flex size-12 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[11px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-13"
+              aria-label={`Velocità ${formatPlaybackRate(playbackRate)}`}
             >
-              {text.restart}
+              {formatPlaybackRate(playbackRate)}
             </button>
           </div>
 
@@ -447,6 +565,7 @@ export function ArticleListenPlayer({
         {visibleChunks.length > 0 ? (
           <ChunkWindow
             chunks={visibleChunks}
+            bookmarkedChunkIds={bookmarkedChunkIds}
             onChunkSelect={(chunk) => handleSeekTo(chunk.start)}
           />
         ) : (
