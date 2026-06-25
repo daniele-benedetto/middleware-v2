@@ -1,8 +1,8 @@
+import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { ArticleListenPlayer } from "@/components/public/listen/article-listen-player";
 import { ListenEmptyState } from "@/components/public/listen/listen-empty-state";
 import { ListenPlayerHeader } from "@/components/public/listen/listen-player-header";
 import { publicContentClassName } from "@/components/public/primitives";
-import { PublicLink as Link } from "@/components/public/public-link";
 import { i18n } from "@/lib/i18n";
 
 import type { PublicArticleListenPageData } from "@/lib/public/server/article-listen-page";
@@ -19,34 +19,44 @@ export function ArticleListenPage({ data }: ArticleListenPageProps) {
     <main
       id="main-content"
       tabIndex={-1}
-      className="flex flex-1 flex-col bg-surface py-4 font-heading text-foreground focus:outline-none sm:py-5 lg:py-6"
+      className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
-      <div className={`${publicContentClassName} flex flex-1 flex-col gap-4`}>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-foreground pb-3">
-          <div className="font-heading text-[11px] font-extrabold tracking-[0.14em] text-muted uppercase">
-            <Link
-              href={`/articoli/${article.slug}`}
-              className="transition-colors hover:text-accent"
-            >
-              {text.backToArticle}
-            </Link>
-          </div>
-          <div className="font-heading text-[11px] font-extrabold tracking-[0.14em] text-accent uppercase">
-            {text.title}
-          </div>
-        </div>
-
-        <ArticleListenPlayer
-          articleId={article.id}
-          articleSlug={article.slug}
-          articleTitle={article.title}
-          articleUpdatedAt={article.updatedAt}
-          audioUrl={article.audioUrl ?? ""}
-          chunks={chunks}
-          header={<ListenPlayerHeader title={article.title} excerpt={article.excerpt} />}
-          emptyState={<ListenEmptyState />}
+      <article>
+        <PublicPageHero
+          as="header"
+          title={article.title}
+          titleStyled={article.titleStyled}
+          backgroundCode="AU"
+          description={article.excerpt}
+          eyebrow={
+            <span className="font-heading text-[11px] font-extrabold tracking-[0.14em] text-accent uppercase">
+              {text.title}
+            </span>
+          }
+          meta={
+            <PublicMetaRail
+              items={[
+                { key: "article", label: text.backToArticle, href: `/articoli/${article.slug}` },
+              ]}
+            />
+          }
         />
-      </div>
+
+        <section className="bg-surface py-12 sm:py-16 lg:py-20">
+          <div className={publicContentClassName}>
+            <ArticleListenPlayer
+              articleId={article.id}
+              articleSlug={article.slug}
+              articleTitle={article.title}
+              articleUpdatedAt={article.updatedAt}
+              audioUrl={article.audioUrl ?? ""}
+              chunks={chunks}
+              header={<ListenPlayerHeader />}
+              emptyState={<ListenEmptyState />}
+            />
+          </div>
+        </section>
+      </article>
     </main>
   );
 }

@@ -69,10 +69,13 @@ function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
 
   return (
     <div
-      className="grid min-h-65 content-center gap-5 sm:min-h-80"
+      className="grid gap-4 border-t-2 border-foreground pt-6 sm:gap-5 sm:pt-8"
       role="group"
       aria-label={text.syncedText}
     >
+      <p className="font-heading text-[11px] font-extrabold tracking-[0.14em] text-accent uppercase">
+        {text.syncedText}
+      </p>
       {chunks.map((chunk) => {
         const isActive = chunk.position === "active";
 
@@ -83,18 +86,18 @@ function ChunkWindow({ chunks, onChunkSelect }: ChunkWindowProps) {
             onClick={() => onChunkSelect(chunk)}
             aria-current={isActive ? "true" : undefined}
             className={cn(
-              "group w-full cursor-pointer text-left font-editorial transition-[filter,opacity,transform,color] duration-(--motion-slow) focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-accent",
+              "group w-full cursor-pointer text-left font-editorial transition-[opacity,transform,color] duration-(--motion-slow) focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-accent",
               isActive
-                ? "scale-100 text-cream-on-dark opacity-100"
-                : "scale-[0.98] text-cream-muted opacity-55 blur-[1px] hover:opacity-80 hover:blur-none motion-reduce:blur-none",
+                ? "translate-x-0 text-foreground opacity-100"
+                : "translate-x-0 text-muted opacity-55 hover:text-body-text hover:opacity-85 sm:translate-x-2",
             )}
           >
             <span
               className={cn(
                 "block leading-[1.18]",
                 isActive
-                  ? "text-[clamp(28px,4.7vw,62px)] font-semibold tracking-[-0.035em]"
-                  : "text-[clamp(18px,2.2vw,28px)]",
+                  ? "border-l-4 border-accent pl-4 text-[clamp(28px,4.5vw,56px)] font-semibold tracking-[-0.035em]"
+                  : "pl-5 text-[clamp(18px,2vw,26px)] italic",
               )}
             >
               {chunk.text}
@@ -301,7 +304,7 @@ export function ArticleListenPlayer({
   };
 
   return (
-    <section className="grid min-h-[calc(100svh-170px)] gap-4 lg:grid-cols-[minmax(280px,420px)_1fr] lg:gap-5">
+    <section className="mx-auto grid w-full max-w-3xl gap-8 sm:gap-10">
       <audio
         ref={audioRef}
         src={audioUrl}
@@ -327,17 +330,17 @@ export function ArticleListenPlayer({
         }}
       />
 
-      <div className="flex min-h-0 flex-col justify-between border-2 border-foreground bg-background p-4 shadow-[8px_8px_0_0_var(--foreground)] sm:p-5 lg:p-6">
+      <div className="grid gap-6 border-2 border-foreground bg-background p-4 sm:gap-7 sm:p-6 lg:p-8">
         {header}
 
-        <div className="mt-6 grid gap-5">
+        <div className="grid gap-5">
           <p role="status" className="sr-only">
             {isPlaying ? text.playingStatus : text.pausedStatus}
           </p>
           {shouldOfferResume && savedProgress ? (
             <div
               role="status"
-              className="border-2 border-accent bg-accent/10 p-3 font-heading text-[12px] font-bold tracking-[0.08em] uppercase"
+              className="border-l-4 border-accent bg-accent/10 px-4 py-3 font-heading text-[12px] font-bold tracking-[0.08em] uppercase"
             >
               {text.resumeFrom(formatAudioTime(savedProgress.currentTime))}
             </div>
@@ -353,7 +356,7 @@ export function ArticleListenPlayer({
               disabled={resolvedDuration <= 0}
               onInput={(event) => handleSeekTo(Number(event.currentTarget.value))}
               onChange={(event) => handleSeekTo(Number(event.currentTarget.value))}
-              className="h-2 w-full cursor-pointer accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-2 w-full cursor-pointer accent-accent disabled:cursor-not-allowed disabled:opacity-50"
               aria-label={text.progressAriaLabel}
               aria-valuetext={text.progressValueText(
                 formatAudioTime(currentTime),
@@ -369,11 +372,11 @@ export function ArticleListenPlayer({
             </div>
           </div>
 
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-5">
             <button
               type="button"
               onClick={() => seekBy(-15)}
-              className="flex h-12 cursor-pointer items-center justify-center border-2 border-foreground bg-surface font-heading text-xs font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="flex h-12 cursor-pointer items-center justify-center border-2 border-foreground bg-surface font-heading text-xs font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:h-14"
               aria-label={text.seekBackward}
             >
               <RotateCcwIcon className="mr-2 size-4" /> 15
@@ -381,15 +384,15 @@ export function ArticleListenPlayer({
             <button
               type="button"
               onClick={togglePlayback}
-              className="flex size-18 cursor-pointer items-center justify-center bg-foreground text-background transition-transform duration-(--motion-fast) hover:scale-[0.98] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-accent sm:size-20"
+              className="flex size-20 cursor-pointer items-center justify-center bg-foreground text-background transition-transform duration-(--motion-fast) hover:scale-[0.98] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-accent sm:size-24"
               aria-label={isPlaying ? text.pause : text.play}
             >
-              {isPlaying ? <PauseIcon className="size-7" /> : <PlayIcon className="ml-1 size-7" />}
+              {isPlaying ? <PauseIcon className="size-8" /> : <PlayIcon className="ml-1 size-8" />}
             </button>
             <button
               type="button"
               onClick={() => seekBy(15)}
-              className="flex h-12 cursor-pointer items-center justify-center border-2 border-foreground bg-surface font-heading text-xs font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="flex h-12 cursor-pointer items-center justify-center border-2 border-foreground bg-surface font-heading text-xs font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:h-14"
               aria-label={text.seekForward}
             >
               15 <RotateCwIcon className="ml-2 size-4" />
@@ -433,10 +436,7 @@ export function ArticleListenPlayer({
         </div>
       </div>
 
-      <div className="relative min-h-90 overflow-hidden border-2 border-foreground bg-foreground p-5 text-background shadow-[8px_8px_0_0_var(--accent)] sm:p-8 lg:min-h-0 lg:p-10">
-        <div className="absolute top-4 right-4 font-heading text-[11px] font-extrabold tracking-[0.14em] text-cream-muted uppercase">
-          {text.syncedText}
-        </div>
+      <div className="bg-surface">
         {visibleChunks.length > 0 ? (
           <ChunkWindow
             chunks={visibleChunks}
