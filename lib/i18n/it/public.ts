@@ -107,7 +107,7 @@ export const publicIt = {
     audioCta: "Ascolta l'articolo",
     audioUnsupported: "Il tuo browser non supporta la riproduzione audio.",
     issuePrefix: "Dal numero:",
-    viewIssue: "Visualizza il numero",
+    viewIssue: "Visualizza il numero  →",
   },
   listenPage: {
     backToArticle: "Torna all'articolo",
