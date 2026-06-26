@@ -12,13 +12,14 @@ type PublicMenuButtonProps = {
   tone?: "light" | "dark";
   expanded?: boolean;
   controls?: string;
+  disabled?: boolean;
   onClick: () => void;
   className?: string;
 };
 
 export const PublicMenuButton = forwardRef<HTMLButtonElement, PublicMenuButtonProps>(
   function PublicMenuButton(
-    { label, ariaLabel, icon, tone = "light", expanded, controls, onClick, className },
+    { label, ariaLabel, icon, tone = "light", expanded, controls, disabled, onClick, className },
     ref,
   ) {
     return (
@@ -28,10 +29,12 @@ export const PublicMenuButton = forwardRef<HTMLButtonElement, PublicMenuButtonPr
         aria-label={ariaLabel}
         aria-expanded={expanded}
         aria-controls={controls}
+        disabled={disabled}
         onClick={onClick}
         className={cn(
           publicHeaderButtonClassName,
-          icon === "close" ? "p-0" : "px-0 py-1.5",
+          "px-0 py-1.5",
+          disabled && "cursor-default opacity-80",
           tone === "dark" ? "text-background" : "text-foreground",
           className,
         )}

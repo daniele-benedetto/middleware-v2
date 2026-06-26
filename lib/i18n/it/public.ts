@@ -29,7 +29,8 @@ export const publicIt = {
     dialogAriaLabel: "Menu principale",
     close: "Chiudi",
     closeAriaLabel: "Chiudi menu",
-    quote: "La conoscenza è legata alla lotta. Conosce veramente chi veramente odia.",
+    quote_1: "La conoscenza è legata alla lotta.",
+    quote_2: "Conosce veramente chi veramente odia.",
     quoteSource: "In memoria di Mario Tronti.",
     items: [
       { number: "01", label: "Numero corrente", href: "/" },
