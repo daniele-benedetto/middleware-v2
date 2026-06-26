@@ -51,7 +51,7 @@ export function PublicPageHero({
           </div>
         ) : null}
         <h1
-          className={`${publicTypography.homeHeroTitle} w-full text-foreground`}
+          className={`${publicTypography.homeHeroTitle} w-full pb-[0.18em] leading-[0.94] text-foreground`}
           data-page-reveal="title"
           style={{ "--page-reveal-delay": "170ms" } as CSSProperties}
         >
