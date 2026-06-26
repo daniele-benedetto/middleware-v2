@@ -3,6 +3,7 @@ import { IssuesArchiveRail } from "@/components/public/sections/archive/issues-a
 import { i18n } from "@/lib/i18n";
 
 import type { ArchiveIssueViewModel } from "@/components/public/sections/archive/archive-view-model";
+import type { CSSProperties } from "react";
 
 type IssuesArchiveGridProps = {
   issues: ArchiveIssueViewModel[];
@@ -15,7 +16,7 @@ export function IssuesArchiveGrid({ issues, countLabel }: IssuesArchiveGridProps
   }
 
   return (
-    <>
+    <div data-page-reveal="body" style={{ "--page-reveal-delay": "660ms" } as CSSProperties}>
       <h2 className="sr-only">{i18n.public.issuesArchive.railAriaLabel}</h2>
       <IssuesArchiveRail ariaLabel={i18n.public.issuesArchive.railAriaLabel}>
         {issues.map((issue) => (
@@ -28,6 +29,6 @@ export function IssuesArchiveGrid({ issues, countLabel }: IssuesArchiveGridProps
           />
         ))}
       </IssuesArchiveRail>
-    </>
+    </div>
   );
 }

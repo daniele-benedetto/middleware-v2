@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
+import type { CSSProperties } from "react";
 
 type LeadBlockProps = {
   block: NarrativeHomeBlock;
@@ -45,6 +46,8 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
         <Link
           href={articleHref}
           aria-labelledby={titleId}
+          data-page-reveal={priority ? "body" : undefined}
+          style={priority ? ({ "--page-reveal-delay": "660ms" } as CSSProperties) : undefined}
           className={cn(
             publicInteraction.cardBase,
             "grid gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] md:gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:gap-12",

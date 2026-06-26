@@ -13,6 +13,7 @@ import { buildArticlePageJsonLd } from "@/lib/seo";
 
 import type { PublicRelatedIssueArticle } from "@/lib/public/server/article-page";
 import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
+import type { CSSProperties } from "react";
 
 type PublicArticlePageProps = {
   article: PublicArticleDetailDto;
@@ -159,7 +160,11 @@ export function PublicArticlePage({
         />
 
         {article.imageUrl ? (
-          <figure className="bg-foreground">
+          <figure
+            className="bg-foreground"
+            data-page-reveal="media"
+            style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
+          >
             <Image
               src={article.imageUrl}
               alt={editorialImageAlt(article.imageAlt)}
@@ -172,7 +177,11 @@ export function PublicArticlePage({
           </figure>
         ) : null}
 
-        <div className="bg-surface py-12 sm:py-16 lg:py-20">
+        <div
+          className="bg-surface py-12 sm:py-16 lg:py-20"
+          data-page-reveal="body"
+          style={{ "--page-reveal-delay": article.imageUrl ? "760ms" : "620ms" } as CSSProperties}
+        >
           <div className={publicContentClassName}>
             <div className="mx-auto max-w-3xl space-y-10">
               <PublicRichText value={article.contentRich} />

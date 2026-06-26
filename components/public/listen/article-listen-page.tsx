@@ -5,6 +5,7 @@ import { publicContentClassName } from "@/components/public/primitives";
 import { i18n } from "@/lib/i18n";
 
 import type { PublicArticleListenPageData } from "@/lib/public/server/article-listen-page";
+import type { CSSProperties } from "react";
 
 type ArticleListenPageProps = {
   data: PublicArticleListenPageData;
@@ -41,7 +42,11 @@ export function ArticleListenPage({ data }: ArticleListenPageProps) {
           meta={<PublicMetaRail items={metaItems} />}
         />
 
-        <section className="min-h-0 bg-surface py-4 sm:py-5 lg:py-6">
+        <section
+          className="min-h-0 bg-surface py-4 sm:py-5 lg:py-6"
+          data-page-reveal="body"
+          style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
+        >
           <div className={`${publicContentClassName} h-full min-h-0`}>
             <ArticleListenPlayer
               articleId={article.id}

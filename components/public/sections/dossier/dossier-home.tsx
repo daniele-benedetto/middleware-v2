@@ -14,6 +14,7 @@ import { UnpaginatedArticleRow } from "@/components/public/sections/dossier/unpa
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
+import type { CSSProperties } from "react";
 
 type DossierHomeProps = {
   issue: PublicCurrentIssueDetail;
@@ -37,7 +38,14 @@ function renderBlock(
         />
       );
     case "body":
-      return <BodyBlock key={block.id} block={block} articleNumbers={articleNumbers} />;
+      return (
+        <BodyBlock
+          key={block.id}
+          block={block}
+          articleNumbers={articleNumbers}
+          priority={options.priority}
+        />
+      );
     case "rupture":
       return (
         <FeatureBreakBlock
@@ -45,6 +53,7 @@ function renderBlock(
           block={block}
           variant={variant}
           articleNumbers={articleNumbers}
+          priority={options.priority}
         />
       );
     case "closing":
@@ -68,7 +77,11 @@ export function DossierHome({ issue }: DossierHomeProps) {
   const variant = issue.homeVariant;
 
   if (blocks.length === 0) {
-    return <UnpaginatedArticleRow articles={issue.articles} />;
+    return (
+      <div data-page-reveal="body" style={{ "--page-reveal-delay": "660ms" } as CSSProperties}>
+        <UnpaginatedArticleRow articles={issue.articles} />
+      </div>
+    );
   }
 
   const unpaginatedArticles = getUnpaginatedArticles(issue, blocks);

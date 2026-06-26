@@ -2,7 +2,7 @@ import { publicContentClassName, publicTypography } from "@/components/public/pr
 import { StyledTitle } from "@/components/public/styled-title";
 
 import type { IssueTitleStyled } from "@/lib/server/modules/issues/schema";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 type PublicPageHeroProps = {
   title: string;
@@ -32,6 +32,8 @@ export function PublicPageHero({
       {backgroundCode ? (
         <div
           className={`${publicTypography.issueBackgroundNumber} pointer-events-none absolute top-5 right-5 z-0 text-accent/15 select-none [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]`}
+          data-page-reveal="code"
+          style={{ "--page-reveal-delay": "60ms" } as CSSProperties}
           aria-hidden
         >
           {backgroundCode}
@@ -39,8 +41,20 @@ export function PublicPageHero({
       ) : null}
 
       <div className="relative z-10 w-full">
-        {eyebrow ? <div className="mb-5">{eyebrow}</div> : null}
-        <h1 className={`${publicTypography.homeHeroTitle} w-full text-foreground`}>
+        {eyebrow ? (
+          <div
+            className="mb-5"
+            data-page-reveal="eyebrow"
+            style={{ "--page-reveal-delay": "110ms" } as CSSProperties}
+          >
+            {eyebrow}
+          </div>
+        ) : null}
+        <h1
+          className={`${publicTypography.homeHeroTitle} w-full text-foreground`}
+          data-page-reveal="title"
+          style={{ "--page-reveal-delay": "170ms" } as CSSProperties}
+        >
           <StyledTitle
             title={title}
             titleStyled={titleStyled}
@@ -48,14 +62,36 @@ export function PublicPageHero({
           />
         </h1>
         {description ? (
-          <div className="mt-8 w-full border-t-2 border-foreground pt-5">
-            <p className="font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] text-body-text italic">
+          <div
+            className="mt-8 w-full pt-5 text-foreground"
+            data-page-rule
+            style={{ "--page-rule-delay": "300ms" } as CSSProperties}
+          >
+            <p
+              className="font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] text-body-text italic"
+              data-page-reveal="description"
+              style={{ "--page-reveal-delay": "380ms" } as CSSProperties}
+            >
               {description}
             </p>
-            {meta ? <div className="mt-6">{meta}</div> : null}
+            {meta ? (
+              <div
+                className="mt-6"
+                data-page-reveal="meta"
+                style={{ "--page-reveal-delay": "460ms" } as CSSProperties}
+              >
+                {meta}
+              </div>
+            ) : null}
           </div>
         ) : meta ? (
-          <div className="mt-7">{meta}</div>
+          <div
+            className="mt-7"
+            data-page-reveal="meta"
+            style={{ "--page-reveal-delay": "300ms" } as CSSProperties}
+          >
+            {meta}
+          </div>
         ) : null}
       </div>
     </div>

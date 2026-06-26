@@ -19,14 +19,21 @@ import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
+import type { CSSProperties } from "react";
 
 type FeatureBreakBlockProps = {
   block: NarrativeHomeBlock;
   variant: IssueHomeVariant;
   articleNumbers: Map<string, number>;
+  priority?: boolean;
 };
 
-export function FeatureBreakBlock({ block, variant, articleNumbers }: FeatureBreakBlockProps) {
+export function FeatureBreakBlock({
+  block,
+  variant,
+  articleNumbers,
+  priority = false,
+}: FeatureBreakBlockProps) {
   const article = block.featuredArticle ?? block.articles[0];
 
   if (!article) {
@@ -63,6 +70,8 @@ export function FeatureBreakBlock({ block, variant, articleNumbers }: FeatureBre
         <Link
           href={articleHref}
           aria-labelledby={titleId}
+          data-page-reveal={priority ? "body" : undefined}
+          style={priority ? ({ "--page-reveal-delay": "660ms" } as CSSProperties) : undefined}
           className={cn(
             publicInteraction.cardBase,
             "grid md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",

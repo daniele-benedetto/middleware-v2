@@ -8,13 +8,15 @@ import {
 import { i18n } from "@/lib/i18n";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
+import type { CSSProperties } from "react";
 
 type BodyBlockProps = {
   block: NarrativeHomeBlock;
   articleNumbers: Map<string, number>;
+  priority?: boolean;
 };
 
-export function BodyBlock({ block, articleNumbers }: BodyBlockProps) {
+export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlockProps) {
   const featured = block.featuredArticle ?? block.articles[0] ?? null;
   const secondary = featured
     ? block.articles.filter((article) => article.id !== featured.id)
@@ -46,7 +48,11 @@ export function BodyBlock({ block, articleNumbers }: BodyBlockProps) {
     : "md:grid-cols-[minmax(260px,0.42fr)_minmax(0,0.58fr)]";
 
   return (
-    <section className="scroll-mt-20 py-10 md:py-12">
+    <section
+      className="scroll-mt-20 py-10 md:py-12"
+      data-page-reveal={priority ? "body" : undefined}
+      style={priority ? ({ "--page-reveal-delay": "660ms" } as CSSProperties) : undefined}
+    >
       <div className={publicContentClassName}>
         {block.title ? null : <h2 className="sr-only">{i18n.public.home.dossier.articlesLabel}</h2>}
         <BlockSectionIntro block={block} />

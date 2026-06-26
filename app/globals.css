@@ -325,29 +325,86 @@ body {
 }
 
 ::view-transition-old(.page-transition) {
-  animation: 400ms var(--easing-standard) both page-transition-out;
+  animation: 180ms var(--easing-standard) both page-transition-out;
 }
 
 ::view-transition-new(.page-transition) {
-  animation: 570ms var(--easing-standard) 360ms both page-transition-in;
+  animation: 1ms linear both page-transition-in;
 }
 
 @keyframes page-transition-out {
   to {
     opacity: 0;
-    filter: blur(1.5px);
+    transform: translateY(-8px);
   }
 }
 
 @keyframes page-transition-in {
   from {
-    opacity: 0;
-    filter: blur(1.5px);
+    opacity: 1;
   }
 
   to {
     opacity: 1;
-    filter: blur(0);
+  }
+}
+
+[data-page-reveal] {
+  opacity: 0;
+  clip-path: inset(0 0 100% 0);
+  transform: translateY(18px);
+  animation: public-page-reveal-in 440ms var(--easing-standard) both;
+  animation-delay: var(--page-reveal-delay, 0ms);
+}
+
+[data-page-reveal="media"] {
+  clip-path: inset(0 0 18% 0);
+  transform: translateY(14px) scale(0.992);
+  animation-duration: 560ms;
+}
+
+[data-page-rule] {
+  position: relative;
+}
+
+[data-page-rule]::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: var(--page-rule-height, 2px);
+  content: "";
+  background: currentColor;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: public-page-rule-in 360ms var(--easing-standard) both;
+  animation-delay: var(--page-rule-delay, 220ms);
+}
+
+@keyframes public-page-reveal-in {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes public-page-rule-in {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
   }
 }
 
@@ -655,6 +712,19 @@ body {
   }
 
   .public-menu-link::after {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  [data-page-reveal] {
+    animation: none !important;
+    clip-path: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  [data-page-rule]::before {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

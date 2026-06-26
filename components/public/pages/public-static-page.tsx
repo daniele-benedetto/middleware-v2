@@ -6,6 +6,7 @@ import { getPublicStaticPagePath, isPublicStaticPageSlug } from "@/lib/public/pa
 import { buildStaticPageJsonLd } from "@/lib/seo";
 
 import type { PublicPageDto } from "@/lib/server/modules/pages/dto/public";
+import type { CSSProperties } from "react";
 
 type PublicStaticPageProps = {
   page: PublicPageDto;
@@ -58,7 +59,11 @@ export function PublicStaticPage({ page }: PublicStaticPageProps) {
           meta={<StaticPageMetaRail page={page} />}
           containerClassName="pt-7 sm:pt-9 lg:pt-14"
         />
-        <div className="bg-surface py-12 sm:py-16 lg:py-20">
+        <div
+          className="bg-surface py-12 sm:py-16 lg:py-20"
+          data-page-reveal="body"
+          style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
+        >
           <div className={publicContentClassName}>
             <PublicRichText value={page.contentRich} className="mx-auto max-w-3xl" />
           </div>
