@@ -18,6 +18,7 @@ import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, sensitiveWriteProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
+import { successOutputSchema } from "@/lib/server/trpc/schemas/result";
 import { parseOutput } from "@/lib/server/validation/output";
 
 const usersIdInputSchema = z.object({
@@ -104,6 +105,6 @@ export const usersRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       await usersService.delete(ctx.session!.user.id, input.id);
-      return { success: true };
+      return parseOutput({ success: true }, successOutputSchema);
     }),
 });

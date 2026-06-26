@@ -4,8 +4,8 @@ Next.js 16 app for a magazine CMS with Postgres, Prisma, and Better Auth.
 
 ## Stack
 
-- Next.js `16.2.4` (App Router)
-- React `19.2.4`
+- Next.js `16.2.9` (App Router)
+- React `19.2.7`
 - Prisma `7.x` + PostgreSQL
 - Better Auth + Prisma adapter
 
@@ -59,6 +59,7 @@ Production note:
 - `pnpm fix:all` - run formatter + lint autofix
 - `pnpm check:all` - run tailwind vars check + format check + lint + typecheck + vitest + prisma validate + build
 - `pnpm build` - production build check
+- `pnpm prisma:migrate:deploy` - apply versioned Prisma migrations in production/CI
 - `pnpm prisma:studio` - inspect DB with Prisma Studio
 
 ## Quality automation
@@ -175,7 +176,7 @@ Naming conventions used in schema:
 
 ## Data rules (current phase)
 
-- `Article.slug` is unique within an issue (`@@unique([issueId, slug])`).
+- `Article.slug` is globally unique (`@@unique([slug])`) for canonical `/articoli/:slug` URLs.
 - Slug normalization is handled in API layer before write: lowercase, trim, hyphenate.
 - `Article.publishedAt` is an API-layer invariant: set only when status is `PUBLISHED`.
 - `contentRich` and `audioChunks` are JSON payloads and should be evolved with backward-compatible versioned structures.
@@ -389,4 +390,4 @@ Before starting API implementation, keep these conditions true:
   - rollback note for risky schema or runtime changes
 - Production migrations policy:
   - do not use `prisma migrate dev` in production
-  - use `prisma migrate deploy` in CI/CD on release
+  - use `pnpm prisma:migrate:deploy` in CI/CD on release

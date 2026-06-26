@@ -20,6 +20,7 @@ import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, publishProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
+import { successOutputSchema } from "@/lib/server/trpc/schemas/result";
 import { parseOutput } from "@/lib/server/validation/output";
 
 const articleIdInputSchema = z.object({
@@ -107,7 +108,7 @@ export const articlesRouter = router({
     .mutation(async ({ input }) => {
       await articlesService.delete(input.id);
       revalidatePublicArticleContent();
-      return { success: true };
+      return parseOutput({ success: true }, successOutputSchema);
     }),
   syncTags: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))

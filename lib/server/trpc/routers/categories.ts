@@ -17,6 +17,7 @@ import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
+import { successOutputSchema } from "@/lib/server/trpc/schemas/result";
 import { parseOutput } from "@/lib/server/validation/output";
 
 const categoryIdInputSchema = z.object({
@@ -87,6 +88,6 @@ export const categoriesRouter = router({
     )
     .mutation(async ({ input }) => {
       await categoriesService.delete(input.id);
-      return { success: true };
+      return parseOutput({ success: true }, successOutputSchema);
     }),
 });

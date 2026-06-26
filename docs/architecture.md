@@ -74,16 +74,16 @@ CMS page/request
 - List hooks keep previous data visible during filter, sort, and pagination changes.
 - Post-mutation cache invalidation is centralized in `lib/cms/trpc/invalidation.ts`.
 - The public home uses `lib/public/server/home.ts` as its single data loader for page rendering and metadata.
-- Public home data is cached with `unstable_cache` and `PUBLIC_HOME_REVALIDATE_SECONDS` because issue publishing is infrequent.
+- Public data loaders use Cache Components primitives: `"use cache"`, `cacheLife`, and `cacheTag`.
 - The public home loader calls the public issue service directly, not the request-bound tRPC caller, so it is safe to reuse across requests.
 - The public home loader uses `publicIssuesService.listPublishedItems()` for archive cards, avoiding the `countPublished()` query used by paginated API responses.
-- Public issue pages use `lib/public/server/issue-page.ts`; they are generated from published issue slugs and share the same one-hour ISR policy.
+- Public issue pages use `lib/public/server/issue-page.ts` and are cached through Cache Components.
 - Public static CMS pages use `lib/public/server/page.ts`; only slugs listed in `PUBLIC_STATIC_PAGE_SLUGS` are routed publicly at top level.
-- Public route segment `revalidate` exports must stay literal numbers, such as `3600`, because Next.js validates segment config statically.
+- Route segment config exports such as `runtime`, `dynamic`, `revalidate`, `fetchCache`, and `dynamicParams` must not be added while `cacheComponents: true` is enabled.
 - Public loaders must not call `getTrpcCaller()` because it depends on request headers and makes otherwise static pages request-bound.
 - Article `contentPreview` is derived and capped server-side before serialization; fully removing `contentRich` from home queries requires persisted derived fields such as `readingTimeMinutes` and `contentPreview`.
-- The public home cache tag is `PUBLIC_HOME_CACHE_TAG` (`public-home`); use `revalidateTag(PUBLIC_HOME_CACHE_TAG)` when CMS publish flows need immediate public refresh.
-- The public issue cache tag is `PUBLIC_ISSUE_PAGE_CACHE_TAG` (`public-issue`); use `revalidateTag(PUBLIC_ISSUE_PAGE_CACHE_TAG)` when published issue pages need immediate refresh.
+- The public home cache tag is `PUBLIC_HOME_CACHE_TAG` (`public-home`); use `revalidateTag(PUBLIC_HOME_CACHE_TAG, { expire: 0 })` when CMS publish flows need immediate public refresh.
+- The public issue cache tag is `PUBLIC_ISSUE_PAGE_CACHE_TAG` (`public-issue`); use `revalidateTag(PUBLIC_ISSUE_PAGE_CACHE_TAG, { expire: 0 })` when published issue pages need immediate refresh.
 - The public static page cache tag is `PUBLIC_PAGE_CACHE_TAG` (`public-page`); use it when CMS page publishing needs immediate refresh.
 
 ## Public Frontend Composition

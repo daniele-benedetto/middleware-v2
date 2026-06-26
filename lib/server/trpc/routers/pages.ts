@@ -16,8 +16,9 @@ import {
 import { router } from "@/lib/server/trpc/init";
 import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
-import { protectedProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
+import { protectedProcedure, publishProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
+import { successOutputSchema } from "@/lib/server/trpc/schemas/result";
 import { parseOutput } from "@/lib/server/validation/output";
 
 const pageIdInputSchema = z.object({
@@ -93,9 +94,9 @@ export const pagesRouter = router({
     .mutation(async ({ input }) => {
       await pagesService.delete(input.id);
       revalidatePublicPageContent();
-      return { success: true };
+      return parseOutput({ success: true }, successOutputSchema);
     }),
-  publish: writeProcedure
+  publish: publishProcedure
     .use(requireRoleMiddleware(pagesPolicy.allowedRoles))
     .input(pageIdInputSchema)
     .use(
