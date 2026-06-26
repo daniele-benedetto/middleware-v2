@@ -24,7 +24,7 @@ export function CmsLoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const errorId = "cms-login-error";
 
-  const nextPath = getSafeCmsNextPath(searchParams.get("next"));
+  const nextPath = getSafeCmsNextPath(searchParams?.get("next") ?? null);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

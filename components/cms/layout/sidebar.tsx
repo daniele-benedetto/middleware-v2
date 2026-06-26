@@ -33,7 +33,7 @@ type CmsSidebarProps = {
 };
 
 export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const router = useRouter();
   const commonText = i18n.cms.common;
   const visibleNavigation = toVisibleNavigation(role);

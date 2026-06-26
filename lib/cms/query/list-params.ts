@@ -11,7 +11,7 @@ import type { RouterInputs } from "@/lib/trpc/types";
 
 type CmsSearchParamValue = string | string[] | undefined;
 
-export type CmsSearchParamsInput = URLSearchParams | Record<string, CmsSearchParamValue>;
+export type CmsSearchParamsInput = URLSearchParams | Record<string, CmsSearchParamValue> | null;
 
 type ParseCmsListSearchParamsOptions = {
   allowedSortBy?: readonly string[];
@@ -44,6 +44,10 @@ const pagesSortByValues = ["createdAt", "updatedAt", "publishedAt", "title"] as 
 const usersSortByValues = ["createdAt", "email"] as const;
 
 function readParam(input: CmsSearchParamsInput, key: string) {
+  if (!input) {
+    return undefined;
+  }
+
   if (input instanceof URLSearchParams) {
     return input.get(key) ?? undefined;
   }

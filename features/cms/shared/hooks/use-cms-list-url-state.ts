@@ -14,7 +14,7 @@ type UseCmsListUrlStateOptions = {
 
 export function useCmsListUrlState({ baseParams, clearSelection }: UseCmsListUrlStateOptions) {
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   const updateSearchParams = useCallback(
     (patch: Record<string, CmsListUrlStateValue>) => {
