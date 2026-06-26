@@ -2,7 +2,9 @@ import { BlobAccessError, BlobNotFoundError, get } from "@vercel/blob";
 
 import { cmsMediaBlobAccess, parseMediaPathname } from "@/lib/media/blob";
 import { getAuthSession } from "@/lib/server/auth/session";
+import { getRequestId, getRequestPath } from "@/lib/server/http/request";
 import { mediaPolicy } from "@/lib/server/modules/media";
+import { logServerEvent } from "@/lib/server/observability/log";
 
 function buildContentDisposition(pathname: string, download: boolean) {
   const { fileName } = parseMediaPathname(pathname);
@@ -52,6 +54,16 @@ export async function GET(request: Request) {
     if (error instanceof BlobAccessError) {
       return new Response("Forbidden", { status: 403 });
     }
+
+    logServerEvent({
+      event: "CMS_BLOB_READ_FAILED",
+      level: "error",
+      requestId: getRequestId(request),
+      path: getRequestPath(request),
+      method: request.method,
+      metadata: { pathname },
+      error,
+    });
 
     return new Response("Internal error", { status: 500 });
   }

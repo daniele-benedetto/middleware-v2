@@ -1,5 +1,7 @@
 import "server-only";
 
+const requestIds = new WeakMap<Request, string>();
+
 function readHeaderValue(headers: Headers, name: string) {
   const value = headers.get(name)?.trim();
   return value ? value : null;
@@ -17,11 +19,25 @@ export function getRequestClientIp(request: Request) {
 }
 
 export function getRequestId(request: Request) {
-  return (
+  const headerValue =
     readHeaderValue(request.headers, "x-vercel-id") ??
     readHeaderValue(request.headers, "x-request-id") ??
-    readHeaderValue(request.headers, "traceparent")
-  );
+    readHeaderValue(request.headers, "traceparent");
+
+  if (headerValue) {
+    requestIds.set(request, headerValue);
+    return headerValue;
+  }
+
+  const current = requestIds.get(request);
+
+  if (current) {
+    return current;
+  }
+
+  const generated = crypto.randomUUID();
+  requestIds.set(request, generated);
+  return generated;
 }
 
 export function getRequestPath(request: Request) {

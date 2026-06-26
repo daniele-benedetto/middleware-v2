@@ -1,7 +1,9 @@
 import { BlobAccessError, BlobNotFoundError, get } from "@vercel/blob";
 
 import { cmsMediaBlobAccess, parseMediaPathname } from "@/lib/media/blob";
+import { getRequestId, getRequestPath } from "@/lib/server/http/request";
 import { publicMediaService } from "@/lib/server/modules/media/service/public";
+import { logServerEvent } from "@/lib/server/observability/log";
 
 function buildContentDisposition(pathname: string) {
   const { fileName } = parseMediaPathname(pathname);
@@ -51,6 +53,16 @@ export async function GET(request: Request) {
     if (error instanceof BlobNotFoundError || error instanceof BlobAccessError) {
       return new Response("Not found", { status: 404 });
     }
+
+    logServerEvent({
+      event: "PUBLIC_BLOB_READ_FAILED",
+      level: "error",
+      requestId: getRequestId(request),
+      path: getRequestPath(request),
+      method: request.method,
+      metadata: { pathname },
+      error,
+    });
 
     return new Response("Internal error", { status: 500 });
   }

@@ -12,7 +12,9 @@ import {
   sanitizeMediaBaseName,
 } from "@/lib/media/blob";
 import { getAuthSession } from "@/lib/server/auth/session";
+import { getRequestId, getRequestPath } from "@/lib/server/http/request";
 import { mediaPolicy } from "@/lib/server/modules/media";
+import { logServerEvent } from "@/lib/server/observability/log";
 
 import type { CmsSupportedMediaKind } from "@/lib/media/blob";
 
@@ -107,6 +109,15 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
+    logServerEvent({
+      event: "BLOB_UPLOAD_FAILED",
+      level: "warn",
+      requestId: getRequestId(request),
+      path: getRequestPath(request),
+      method: request.method,
+      error,
+    });
+
     return NextResponse.json(
       { error: error instanceof Error ? error.message : text.uploadFailed },
       { status: 400 },

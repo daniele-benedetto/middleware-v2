@@ -16,6 +16,17 @@ function createRequest(pathname: string) {
   });
 }
 
+function readLoggedPayload(spy: ReturnType<typeof vi.spyOn>) {
+  return JSON.parse(String(spy.mock.calls[0]?.[0])) as {
+    event: string;
+    level: string;
+    path: string;
+    method: string;
+    metadata: { policy: string };
+    error: { message: string };
+  };
+}
+
 describe("enforceRateLimit", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -58,10 +69,14 @@ describe("enforceRateLimit", () => {
       message: "Rate limit backend unavailable",
     });
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "RATE_LIMIT_BACKEND_UNAVAILABLE",
-      expect.any(Error),
-    );
+    expect(readLoggedPayload(consoleErrorSpy)).toMatchObject({
+      event: "RATE_LIMIT_BACKEND_UNAVAILABLE",
+      level: "error",
+      path: "/api/test-rate-limit-production-down",
+      method: "POST",
+      metadata: { policy: "test-rate-limit-production-down" },
+      error: { message: "Redis unavailable" },
+    });
   });
 
   it("fails closed in production when Redis is not configured", async () => {
@@ -81,9 +96,13 @@ describe("enforceRateLimit", () => {
       message: "Rate limit backend unavailable",
     });
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "RATE_LIMIT_BACKEND_UNAVAILABLE",
-      expect.any(Error),
-    );
+    expect(readLoggedPayload(consoleErrorSpy)).toMatchObject({
+      event: "RATE_LIMIT_BACKEND_UNAVAILABLE",
+      level: "error",
+      path: "/api/test-rate-limit-production-missing",
+      method: "POST",
+      metadata: { policy: "test-rate-limit-production-missing" },
+      error: { message: "Redis rate limit backend is unavailable" },
+    });
   });
 });

@@ -2,6 +2,8 @@ import "server-only";
 
 import { createClient } from "redis";
 
+import { logServerEvent } from "@/lib/server/observability/log";
+
 type RedisClient = ReturnType<typeof createClient>;
 
 const globalForRedis = globalThis as typeof globalThis & {
@@ -33,7 +35,7 @@ function createRedisSingleton(): Promise<RedisClient | null> {
   const client = createClient({ url: redisUrl });
 
   client.on("error", (error) => {
-    console.error("Redis client error", error);
+    logServerEvent({ event: "REDIS_CLIENT_ERROR", level: "error", error });
   });
 
   return client.connect().then(() => client);

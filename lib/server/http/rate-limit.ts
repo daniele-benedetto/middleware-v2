@@ -2,7 +2,8 @@ import "server-only";
 
 import { getRedisClient } from "@/lib/redis";
 import { ApiError } from "@/lib/server/http/api-error";
-import { getRequestClientIp } from "@/lib/server/http/request";
+import { getRequestClientIp, getRequestId, getRequestPath } from "@/lib/server/http/request";
+import { logServerEvent } from "@/lib/server/observability/log";
 
 type RateLimitPolicy = {
   name: string;
@@ -149,7 +150,15 @@ export async function enforceRateLimit(request: Request, policy: RateLimitPolicy
     try {
       counter = await incrementRequiredRedisCounter(key, policy);
     } catch (error) {
-      console.error("RATE_LIMIT_BACKEND_UNAVAILABLE", error);
+      logServerEvent({
+        event: "RATE_LIMIT_BACKEND_UNAVAILABLE",
+        level: "error",
+        requestId: getRequestId(request),
+        path: getRequestPath(request),
+        method: request.method,
+        metadata: { policy: policy.name },
+        error,
+      });
       throw buildRateLimitBackendUnavailableError();
     }
 
