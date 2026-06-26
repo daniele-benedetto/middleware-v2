@@ -1,11 +1,12 @@
 import { forbidden } from "next/navigation";
 
 import { CmsAuditLogsListScreen } from "@/features/cms/audit-logs/screens/audit-logs-list-screen";
-import { hasCmsRole, requireCmsSession } from "@/lib/cms/auth";
+import { hasAnyCmsRole, requireCmsSession } from "@/lib/cms/auth";
 import { parseAuditLogsListSearchParams } from "@/lib/cms/query";
 import { prefetchAuditLogsList } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
+import { auditLogsPolicy } from "@/lib/server/modules/audit-logs/policy";
 
 export const metadata = buildCmsMetadata({
   title: i18n.cms.navigation.auditLogs,
@@ -21,7 +22,7 @@ export default async function CmsAuditLogsPage({ searchParams }: CmsAuditLogsPag
   const resolvedSearchParams = await searchParams;
   const session = await requireCmsSession("/cms/audit-logs");
 
-  if (!hasCmsRole(session, "ADMIN")) {
+  if (!hasAnyCmsRole(session, auditLogsPolicy.allowedRoles)) {
     forbidden();
   }
 

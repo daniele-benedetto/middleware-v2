@@ -15,10 +15,10 @@ import {
   CmsSelect,
   CmsStyledTitleEditor,
   CmsTextInput,
+  cmsToast,
   createStyledTitleValue,
   getStyledTitlePlainText,
   hasStyledTitleAccent,
-  cmsToast,
 } from "@/components/cms/primitives";
 import { CmsPageFormLoading } from "@/features/cms/pages/components/page-form-loading";
 import {
@@ -30,9 +30,9 @@ import {
 import { mapCrudDomainError, useCmsFormNavigation } from "@/features/cms/shared/forms";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
-import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
+import { normalizeSlug } from "@/lib/validation/slug";
 
 import type { PageTitleStyled } from "@/lib/server/modules/pages/schema";
 

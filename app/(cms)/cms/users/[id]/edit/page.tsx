@@ -1,7 +1,7 @@
 import { forbidden } from "next/navigation";
 
 import { CmsUserFormScreen } from "@/features/cms/users/screens/user-form-screen";
-import { hasCmsRole, requireCmsSession } from "@/lib/cms/auth";
+import { hasAnyCmsRole, requireCmsSession } from "@/lib/cms/auth";
 import {
   prefetchCmsDetailOrNotFound,
   resolveCmsRouteEntityIdOrNotFound,
@@ -9,6 +9,7 @@ import {
 import { prefetchUserById } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
+import { usersPolicy } from "@/lib/server/modules/users/policy";
 
 export const metadata = buildCmsMetadata({
   title: `${i18n.cms.quickActions.edit} ${i18n.cms.navigation.users}`,
@@ -24,7 +25,7 @@ export default async function CmsUserEditPage({ params }: CmsUserEditPageProps) 
   const id = resolveCmsRouteEntityIdOrNotFound(rawId);
   const session = await requireCmsSession(`/cms/users/${id}/edit`);
 
-  if (!hasCmsRole(session, "ADMIN")) {
+  if (!hasAnyCmsRole(session, usersPolicy.updateAllowedRoles)) {
     forbidden();
   }
 

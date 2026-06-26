@@ -34,3 +34,7 @@ export async function requireCmsSession(nextPath?: string) {
 export function hasCmsRole(session: AuthSession, role: UserRole) {
   return session.user.role === role;
 }
+
+export function hasAnyCmsRole(session: AuthSession, roles: readonly UserRole[]) {
+  return roles.includes(session.user.role);
+}

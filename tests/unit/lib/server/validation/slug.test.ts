@@ -1,4 +1,4 @@
-import { normalizeSlug } from "@/lib/server/validation/slug";
+import { normalizeSlug } from "@/lib/validation/slug";
 
 describe("normalizeSlug", () => {
   it("normalizes case, spacing and punctuation", () => {

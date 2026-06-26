@@ -5,7 +5,7 @@ import {
   auditLogResourceValues,
   auditLogSortByValues,
 } from "@/lib/audit-logs/constants";
-import { paginationDefaults } from "@/lib/server/http/pagination";
+import { paginationDefaults } from "@/lib/http/pagination";
 
 import type { RouterInputs } from "@/lib/trpc/types";
 

@@ -14,10 +14,10 @@ import {
   CmsSelect,
   CmsStyledTitleEditor,
   CmsTextInput,
+  cmsToast,
   createStyledTitleValue,
   getStyledTitlePlainText,
   hasStyledTitleAccent,
-  cmsToast,
 } from "@/components/cms/primitives";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -40,9 +40,9 @@ import { createLivePreviewSessionId, toIssueLivePreviewSnapshot } from "@/lib/cm
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { createIssueInputSchema, updateIssueInputSchema } from "@/lib/server/modules/issues/schema";
-import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
+import { normalizeSlug } from "@/lib/validation/slug";
 
 import type { PublicIssueArticleSummaryDto } from "@/lib/server/modules/issues/dto/public";
 import type { IssueHomeBlocks, IssueHomeVariant } from "@/lib/server/modules/issues/schema";

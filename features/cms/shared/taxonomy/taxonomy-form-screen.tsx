@@ -21,9 +21,9 @@ import {
 } from "@/features/cms/shared/forms";
 import { invalidateAfterCmsMutation, type CmsMutationName } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
-import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
+import { normalizeSlug } from "@/lib/validation/slug";
 
 import type { ZodType } from "zod";
 

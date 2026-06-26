@@ -55,9 +55,9 @@ import {
   createArticleInputSchema,
   updateArticleInputSchema,
 } from "@/lib/server/modules/articles/schema";
-import { normalizeSlug } from "@/lib/server/validation/slug";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
+import { normalizeSlug } from "@/lib/validation/slug";
 
 import type {
   AuthorsListInitialData,

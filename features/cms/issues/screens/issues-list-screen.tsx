@@ -58,8 +58,8 @@ import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { parseIssuesListSearchParams } from "@/lib/cms/query";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { cmsInteractiveRailClass, cmsMetaLabelClass } from "@/lib/cms/ui/variants";
+import { paginationDefaults } from "@/lib/http/pagination";
 import { i18n } from "@/lib/i18n";
-import { paginationDefaults } from "@/lib/server/http/pagination";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
 

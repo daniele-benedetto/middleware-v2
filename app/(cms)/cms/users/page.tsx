@@ -1,11 +1,12 @@
 import { forbidden } from "next/navigation";
 
 import { CmsUsersListScreen } from "@/features/cms/users/screens/users-list-screen";
-import { hasCmsRole, requireCmsSession } from "@/lib/cms/auth";
+import { hasAnyCmsRole, requireCmsSession } from "@/lib/cms/auth";
 import { parseUsersListSearchParams } from "@/lib/cms/query";
 import { prefetchUsersList } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
+import { usersPolicy } from "@/lib/server/modules/users/policy";
 
 export const metadata = buildCmsMetadata({
   title: i18n.cms.navigation.users,
@@ -21,7 +22,7 @@ export default async function CmsUsersPage({ searchParams }: CmsUsersPageProps) 
   const resolvedSearchParams = await searchParams;
   const session = await requireCmsSession("/cms/users");
 
-  if (!hasCmsRole(session, "ADMIN")) {
+  if (!hasAnyCmsRole(session, usersPolicy.listAllowedRoles)) {
     forbidden();
   }
 
