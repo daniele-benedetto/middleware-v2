@@ -6,7 +6,7 @@ import {
   getPublicArticleListenPageData,
   getPublicArticleListenStaticParams,
 } from "@/lib/public/server/article-listen-page";
-import { getCanonicalUrl } from "@/lib/seo";
+import { buildArticleListenMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
@@ -23,34 +23,23 @@ export async function generateMetadata({
 }: PublicArticleListenRouteProps): Promise<Metadata> {
   const { slug } = await params;
   const data = await getPublicArticleListenPageData(slug);
-  const canonical = getCanonicalUrl(`/articoli/${data?.article.slug ?? slug}`);
   const text = i18n.public.listenPage;
 
   if (!data) {
-    return {
+    return buildArticleListenMetadata({
       title: text.notFoundTitle,
-      alternates: { canonical },
-      robots: { index: false, follow: true, googleBot: { index: false, follow: true } },
-    };
+      slug,
+    });
   }
 
   const title = text.metadataTitle(data.article.title);
 
-  return {
+  return buildArticleListenMetadata({
     title,
     description: data.article.excerpt ?? undefined,
-    alternates: { canonical },
-    robots: { index: false, follow: true, googleBot: { index: false, follow: true } },
-    openGraph: {
-      type: "article",
-      title,
-      description: data.article.excerpt ?? undefined,
-      url: canonical,
-      images: data.article.imageUrl
-        ? [{ url: data.article.imageUrl, alt: data.article.title }]
-        : undefined,
-    },
-  };
+    slug: data.article.slug,
+    imageUrl: data.article.imageUrl,
+  });
 }
 
 export default async function PublicArticleListenRoute({ params }: PublicArticleListenRouteProps) {

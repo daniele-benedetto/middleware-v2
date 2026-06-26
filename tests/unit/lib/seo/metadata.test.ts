@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { buildArticleMetadata, buildPageMetadata, getCanonicalUrl } from "@/lib/seo";
+import {
+  buildArticleListenMetadata,
+  buildArticleMetadata,
+  buildPageMetadata,
+  getCanonicalUrl,
+} from "@/lib/seo";
 
 describe("seo metadata", () => {
   it("builds page metadata with absolute canonical and image URLs", () => {
@@ -43,6 +48,30 @@ describe("seo metadata", () => {
       authors: ["Autrice"],
       tags: ["inchiesta"],
     });
+  });
+
+  it("builds noindex listen metadata with canonical article URL and social cards", () => {
+    const metadata = buildArticleListenMetadata({
+      title: "Ascolta: Titolo articolo",
+      description: "Descrizione audio",
+      slug: "titolo-articolo",
+      imageUrl: "/api/public/media/blob?pathname=covers%2Fhero.jpg",
+    });
+
+    expect(metadata.alternates?.canonical).toBe("http://localhost:3000/articoli/titolo-articolo");
+    expect(metadata.robots).toMatchObject({
+      index: false,
+      follow: true,
+      googleBot: { index: false, follow: true },
+    });
+    expect(metadata.openGraph).toMatchObject({
+      type: "article",
+      siteName: "middleware",
+      url: "http://localhost:3000/articoli/titolo-articolo",
+    });
+    expect(metadata.twitter?.images).toEqual([
+      "http://localhost:3000/api/public/media/blob?pathname=covers%2Fhero.jpg",
+    ]);
   });
 
   it("uses local fallback outside production", () => {

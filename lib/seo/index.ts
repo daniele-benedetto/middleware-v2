@@ -10,6 +10,7 @@ export {
   buildWebsiteJsonLd,
 } from "@/lib/seo/json-ld";
 export {
+  buildArticleListenMetadata,
   buildArticleMetadata,
   buildCmsMetadata,
   buildPageMetadata,

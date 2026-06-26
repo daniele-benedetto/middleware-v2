@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { PUBLIC_STATIC_PAGE_SLUGS, getPublicStaticPagePath } from "@/lib/public/pages/static-pages";
+import {
+  PUBLIC_STATIC_PAGE_SLUGS,
+  getPublicStaticPagePath,
+  isPublicStaticPageSlug,
+} from "@/lib/public/pages/static-pages";
 import { getCanonicalUrl } from "@/lib/seo";
 
 import type { MetadataRoute } from "next";
@@ -66,17 +70,45 @@ async function getPublishedIssuePages() {
   }
 }
 
+async function getPublishedStaticPages() {
+  try {
+    const pages = await prisma.page.findMany({
+      where: {
+        status: "PUBLISHED",
+        publishedAt: { not: null },
+        slug: { in: [...PUBLIC_STATIC_PAGE_SLUGS] },
+      },
+      orderBy: { publishedAt: "desc" },
+      select: { slug: true, publishedAt: true, updatedAt: true },
+    });
+
+    return pages.flatMap((page) => {
+      if (!isPublicStaticPageSlug(page.slug)) {
+        return [];
+      }
+
+      return [
+        {
+          url: getCanonicalUrl(getPublicStaticPagePath(page.slug)),
+          lastModified: page.updatedAt ?? page.publishedAt ?? undefined,
+          changeFrequency: "monthly" as const,
+          priority: 0.6,
+        },
+      ];
+    });
+  } catch (error) {
+    console.error("sitemap published static pages failed", error);
+    return [];
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [homeLastModified, articlePages, issuePages] = await Promise.all([
+  const [homeLastModified, articlePages, issuePages, staticPages] = await Promise.all([
     getHomeLastModified(),
     getPublishedArticlePages(),
     getPublishedIssuePages(),
+    getPublishedStaticPages(),
   ]);
-  const staticPages = PUBLIC_STATIC_PAGE_SLUGS.map((slug) => ({
-    url: getCanonicalUrl(getPublicStaticPagePath(slug)),
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  }));
 
   return [
     {

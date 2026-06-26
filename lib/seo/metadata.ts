@@ -24,6 +24,13 @@ type ArticleMetadataInput = {
   tags?: string[];
 };
 
+type ArticleListenMetadataInput = {
+  title: string;
+  description?: string | null;
+  slug: string;
+  imageUrl?: string | null;
+};
+
 function resolveRobots(index: boolean): Metadata["robots"] {
   return {
     index,
@@ -190,6 +197,48 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
       modifiedTime,
       authors: input.authorName ? [input.authorName] : undefined,
       tags: input.tags,
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: input.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: input.title,
+      description,
+      creator: seoConfig.twitterHandle,
+      images: [image],
+    },
+  };
+}
+
+export function buildArticleListenMetadata(input: ArticleListenMetadataInput): Metadata {
+  const canonical = getCanonicalUrl(`/articoli/${input.slug}`);
+  const description = input.description ?? seoConfig.defaultDescription;
+  const image = input.imageUrl ? resolveAbsoluteUrl(input.imageUrl) : getOpenGraphImageUrl();
+
+  return {
+    title: input.title,
+    description,
+    alternates: {
+      canonical,
+    },
+    robots: {
+      index: false,
+      follow: true,
+      googleBot: { index: false, follow: true },
+    },
+    openGraph: {
+      type: "article",
+      locale: seoConfig.locale,
+      siteName: seoConfig.siteName,
+      title: input.title,
+      description,
+      url: canonical,
       images: [
         {
           url: image,

@@ -90,6 +90,12 @@ describe("seo json-ld", () => {
     );
   });
 
+  it("builds home json-ld with Organization even without current issue", () => {
+    const jsonLd = buildHomeJsonLd(null);
+
+    expect(getGraph(jsonLd).map((node) => node["@type"])).toEqual(["WebSite", "Organization"]);
+  });
+
   it("builds article page graph with Organization, Article and BreadcrumbList", () => {
     const jsonLd = buildArticlePageJsonLd(article, "Descrizione");
     const graph = getGraph(jsonLd);
@@ -141,7 +147,14 @@ describe("seo json-ld", () => {
 
   it("builds breadcrumb json-ld for static pages", () => {
     const staticJsonLd = buildStaticPageJsonLd("Chi siamo", "/chi-siamo");
+    const graph = getGraph(staticJsonLd);
 
-    expect(getGraph(staticJsonLd).some((node) => node["@type"] === "BreadcrumbList")).toBe(true);
+    expect(graph.map((node) => node["@type"])).toEqual([
+      "WebSite",
+      "Organization",
+      "WebPage",
+      "BreadcrumbList",
+    ]);
+    expect(graph.some((node) => node["@type"] === "BreadcrumbList")).toBe(true);
   });
 });

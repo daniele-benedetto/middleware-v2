@@ -57,6 +57,19 @@ export function buildBreadcrumbJsonLd(items: BreadcrumbItem[]) {
   };
 }
 
+export function buildWebPageJsonLd(title: string, path: string) {
+  const url = getCanonicalUrl(path);
+
+  return {
+    "@type": "WebPage",
+    "@id": `${url}#webpage`,
+    name: title,
+    url,
+    isPartOf: { "@id": `${getRootUrl()}#website` },
+    inLanguage: "it-IT",
+  };
+}
+
 export function buildArticleJsonLd(article: PublicArticleDetailDto, description?: string | null) {
   const articleUrl = getCanonicalUrl(`/articoli/${article.slug}`);
   const imageUrl = article.imageUrl ? resolveAbsoluteUrl(article.imageUrl) : getOpenGraphImageUrl();
@@ -186,6 +199,7 @@ export function buildStaticPageJsonLd(title: string, path: string) {
   return buildJsonLdGraph([
     buildWebsiteJsonLd(),
     buildOrganizationJsonLd(),
+    buildWebPageJsonLd(title, path),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
       { name: title, path },
