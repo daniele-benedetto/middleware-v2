@@ -19,6 +19,8 @@
     "fix:tailwind-vars": "node scripts/fix-tailwind-color-vars.mjs",
     "fix:tailwind-vars:check": "node scripts/fix-tailwind-color-vars.mjs --check",
     "fix:all": "pnpm fix:tailwind-vars && pnpm format && pnpm lint:fix",
+    "auth:bootstrap-admin": "node scripts/bootstrap-admin.mjs",
+    "audit:prune": "node scripts/prune-audit-logs.mjs",
     "check:all": "pnpm fix:tailwind-vars:check && pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:run && pnpm prisma:validate && pnpm build",
     "prisma:format": "prisma format",
     "prisma:validate": "prisma validate",

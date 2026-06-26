@@ -22,6 +22,10 @@ Required vars:
 - `DATABASE_URL`: Postgres connection string
 - `BETTER_AUTH_SECRET`: Better Auth signing secret
 - `BETTER_AUTH_URL`: app base URL
+- `BOOTSTRAP_ADMIN_EMAIL`: first-admin bootstrap email, used only by `pnpm auth:bootstrap-admin`
+- `BOOTSTRAP_ADMIN_PASSWORD`: first-admin bootstrap password, used only by `pnpm auth:bootstrap-admin`
+- `BOOTSTRAP_ADMIN_NAME`: optional first-admin display name
+- `AUDIT_LOG_RETENTION_DAYS`: audit-log retention window for `pnpm audit:prune`
 - `REDIS_URL`: Redis connection string for CMS rate limiting; required in production, optional in local dev/test
 
 Postgres SSL note:
@@ -43,7 +47,7 @@ Current setup runs with a single database as source of truth (Vercel auto-deploy
 Production note:
 
 - Redis-backed rate limiting is required in production.
-- If `REDIS_URL` is missing or Redis is unavailable in production, rate-limited CMS writes fail closed instead of degrading to in-memory counters.
+- If `REDIS_URL` is missing or Redis is unavailable in production, rate-limited CMS writes and Better Auth login rate limiting fail closed instead of degrading to in-memory counters.
 
 ## Development commands
 
@@ -59,6 +63,8 @@ Production note:
 - `pnpm fix:all` - run formatter + lint autofix
 - `pnpm check:all` - run tailwind vars check + format check + lint + typecheck + vitest + prisma validate + build
 - `pnpm build` - production build check
+- `pnpm auth:bootstrap-admin` - create the first `ADMIN` when no admin exists
+- `pnpm audit:prune` - delete audit log entries older than `AUDIT_LOG_RETENTION_DAYS`
 - `pnpm prisma:migrate:deploy` - apply versioned Prisma migrations in production/CI
 - `pnpm prisma:studio` - inspect DB with Prisma Studio
 
