@@ -325,38 +325,23 @@ body {
 }
 
 ::view-transition-old(.page-transition) {
-  z-index: 2;
+  animation: 180ms var(--easing-standard) both page-transition-out;
 }
 
 ::view-transition-new(.page-transition) {
-  z-index: 1;
-}
-
-::view-transition-old(.page-transition) {
-  animation: 340ms var(--easing-standard) both page-transition-out;
-}
-
-::view-transition-new(.page-transition) {
-  animation: 1ms linear 340ms both page-transition-in;
+  animation: 1ms linear both page-transition-in;
 }
 
 @keyframes page-transition-out {
-  from {
-    opacity: 1;
-    filter: blur(0);
-    transform: translateY(0);
-  }
-
   to {
     opacity: 0;
-    filter: blur(1.2px);
     transform: translateY(-8px);
   }
 }
 
 @keyframes page-transition-in {
   from {
-    opacity: 0;
+    opacity: 1;
   }
 
   to {
