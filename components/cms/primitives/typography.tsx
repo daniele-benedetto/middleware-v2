@@ -181,10 +181,23 @@ type CmsMetaTextProps = {
   children: ReactNode;
   className?: string;
   as?: ElementType;
+  id?: string;
+  role?: string;
 } & VariantProps<typeof cmsMetaTextVariants>;
 
-export function CmsMetaText({ children, className, variant, as: Tag = "span" }: CmsMetaTextProps) {
-  return <Tag className={cn(cmsMetaTextVariants({ variant }), className)}>{children}</Tag>;
+export function CmsMetaText({
+  children,
+  className,
+  variant,
+  as: Tag = "span",
+  id,
+  role,
+}: CmsMetaTextProps) {
+  return (
+    <Tag id={id} role={role} className={cn(cmsMetaTextVariants({ variant }), className)}>
+      {children}
+    </Tag>
+  );
 }
 
 type CmsParagraphNumberProps = { children: ReactNode; className?: string };
@@ -269,10 +282,19 @@ const cmsHeadingVariants = cva("font-display", {
 type CmsHeadingProps = {
   children: ReactNode;
   className?: string;
+  as?: "h1" | "h2";
 } & VariantProps<typeof cmsHeadingVariants>;
 
-export function CmsHeading({ children, className, size, tone }: CmsHeadingProps) {
-  return <h2 className={cn(cmsHeadingVariants({ size, tone }), className)}>{children}</h2>;
+export function CmsHeading({
+  children,
+  className,
+  size,
+  tone,
+  as: Component = "h2",
+}: CmsHeadingProps) {
+  return (
+    <Component className={cn(cmsHeadingVariants({ size, tone }), className)}>{children}</Component>
+  );
 }
 
 const cmsBodyTextVariants = cva("font-editorial", {

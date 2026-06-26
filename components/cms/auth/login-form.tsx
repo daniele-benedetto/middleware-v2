@@ -22,6 +22,7 @@ export function CmsLoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const errorId = "cms-login-error";
 
   const nextPath = getSafeCmsNextPath(searchParams.get("next"));
 
@@ -60,6 +61,8 @@ export function CmsLoginForm() {
         <CmsFormField label={text.emailLabel} htmlFor="email">
           <CmsTextInput
             id="email"
+            aria-describedby={error ? errorId : undefined}
+            aria-invalid={error ? true : undefined}
             autoComplete="email"
             state={error ? "error" : email ? "filled" : "default"}
             tone="mono"
@@ -75,6 +78,8 @@ export function CmsLoginForm() {
         <CmsFormField label={text.passwordLabel} htmlFor="password">
           <CmsTextInput
             id="password"
+            aria-describedby={error ? errorId : undefined}
+            aria-invalid={error ? true : undefined}
             autoComplete="current-password"
             state={error ? "error" : password ? "filled" : "default"}
             tone="mono"
@@ -88,7 +93,7 @@ export function CmsLoginForm() {
         </CmsFormField>
 
         {error ? (
-          <CmsMetaText variant="tiny" as="p" className="text-accent!">
+          <CmsMetaText id={errorId} variant="tiny" as="p" className="text-accent!" role="alert">
             {"⚑ "}
             {error}
           </CmsMetaText>

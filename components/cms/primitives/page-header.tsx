@@ -13,7 +13,9 @@ export function CmsPageHeader({ title, actions }: CmsPageHeaderProps) {
     <div className="mb-6 pb-4">
       <div className="flex items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
         <div>
-          <CmsHeading size="page">{title}</CmsHeading>
+          <CmsHeading as="h1" size="page">
+            {title}
+          </CmsHeading>
         </div>
         {actions ? (
           <div className="flex items-center gap-3 max-sm:w-full max-sm:flex-wrap">{actions}</div>

@@ -14,6 +14,7 @@ export function CmsErrorState({ title, description, retryLabel, onRetry }: CmsEr
 
   return (
     <CmsShellSystemState
+      role="alert"
       eyebrow={text.errorEyebrow}
       title={title}
       description={description}

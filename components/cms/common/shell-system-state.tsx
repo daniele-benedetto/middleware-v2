@@ -11,6 +11,7 @@ type CmsShellSystemStateProps = {
   actions?: ReactNode;
   size?: "sm" | "md";
   className?: string;
+  role?: "alert" | "status";
 };
 
 const codeSizeMap = {
@@ -32,11 +33,16 @@ export function CmsShellSystemState({
   actions,
   size = "md",
   className,
+  role,
 }: CmsShellSystemStateProps) {
   const hasLeftColumn = Boolean(code || eyebrow);
 
   return (
-    <div className={cn("flex w-full flex-col items-stretch py-2", className)}>
+    <div
+      className={cn("flex w-full flex-col items-stretch py-2", className)}
+      role={role}
+      aria-live={role === "alert" ? "assertive" : role === "status" ? "polite" : undefined}
+    >
       <div
         className={cn(
           "grid w-full gap-y-6",
@@ -46,7 +52,7 @@ export function CmsShellSystemState({
         {hasLeftColumn ? (
           <div className="flex min-w-0 flex-col">
             {eyebrow ? (
-              <span className="font-ui text-(length:--text-meta) font-extrabold uppercase tracking-[0.1em] text-accent">
+              <span className="font-ui text-(length:--text-meta) font-extrabold uppercase tracking-widest text-accent">
                 {eyebrow}
               </span>
             ) : null}
@@ -54,7 +60,7 @@ export function CmsShellSystemState({
               <span
                 aria-hidden
                 className={cn(
-                  "font-display font-black leading-[0.82] tracking-[-0.05em] text-foreground",
+                  "font-display font-black leading-[0.82] tracking-tighter text-foreground",
                   codeSizeMap[size],
                   eyebrow && "mt-2",
                 )}
