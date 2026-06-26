@@ -63,6 +63,7 @@ Production note:
 - `pnpm fix:all` - run formatter + lint autofix
 - `pnpm check:all` - run tailwind vars check + format check + lint + typecheck + vitest + prisma validate + build
 - `pnpm build` - production build check
+- `pnpm build:analyze` - run the production build with Next bundle analyzer enabled
 - `pnpm auth:bootstrap-admin` - create the first `ADMIN` when no admin exists
 - `pnpm audit:prune` - delete audit log entries older than `AUDIT_LOG_RETENTION_DAYS`
 - `pnpm prisma:migrate:deploy` - apply versioned Prisma migrations in production/CI

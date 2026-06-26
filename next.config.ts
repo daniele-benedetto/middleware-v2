@@ -1,3 +1,5 @@
+import createBundleAnalyzer from "@next/bundle-analyzer";
+
 import type { NextConfig } from "next";
 
 const contentSecurityPolicy = [
@@ -84,4 +86,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withBundleAnalyzer = createBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
+export default withBundleAnalyzer(nextConfig);
