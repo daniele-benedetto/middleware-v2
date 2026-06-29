@@ -1,10 +1,13 @@
-import { PublicFooter, PublicHeader } from "@/components/public";
+import { CookieConsentBanner, PublicFooter, PublicHeader } from "@/components/public";
 import { PublicPageTransition } from "@/components/public/public-page-transition";
 import { i18n } from "@/lib/i18n";
+import { getLegalConsentVersion } from "@/lib/public/server/legal-consent";
 
 import type { ReactNode } from "react";
 
-export default function PublicLayout({ children }: { children: ReactNode }) {
+export default async function PublicLayout({ children }: { children: ReactNode }) {
+  const legalConsentVersion = await getLegalConsentVersion();
+
   return (
     <div className="flex min-h-svh flex-1 flex-col bg-background font-heading text-foreground">
       <a
@@ -20,6 +23,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <div data-public-footer>
         <PublicFooter />
       </div>
+      <CookieConsentBanner consentVersion={legalConsentVersion} />
     </div>
   );
 }

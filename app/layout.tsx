@@ -1,5 +1,3 @@
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Archivo, IBM_Plex_Mono, Spectral } from "next/font/google";
 
 import { buildRootMetadata } from "@/lib/seo";
@@ -56,8 +54,6 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col scrollbar-thin scrollbar-track-background scrollbar-thumb-border md:hover:scrollbar-thumb-foreground">
         {children}
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );
