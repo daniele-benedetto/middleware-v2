@@ -139,7 +139,7 @@ export function ArchiveSection({
               >
                 <span
                   className={cn(
-                    "pointer-events-none absolute top-4 right-4 -z-10 font-heading text-[clamp(96px,13vw,180px)] leading-[0.72] font-black tracking-tighter select-none",
+                    "pointer-events-none absolute top-4 right-4 -z-10 font-heading text-[clamp(96px,13vw,180px)] leading-[0.75] font-black tracking-tighter select-none",
                     variantClasses.backgroundNumber,
                   )}
                   aria-hidden

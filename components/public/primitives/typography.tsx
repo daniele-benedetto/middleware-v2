@@ -14,7 +14,7 @@ export const publicTypography = {
   homeHeroTitle:
     "font-heading text-[clamp(48px,9.5vw,138px)] leading-[0.86] font-black tracking-[-0.06em]",
   issueBackgroundNumber:
-    "font-heading text-[clamp(108px,26vw,390px)] leading-[0.72] font-black tracking-[-0.035em]",
+    "font-heading text-[clamp(108px,26vw,390px)] leading-[0.75] font-black tracking-[-0.035em]",
   blockTitle:
     "font-heading text-[clamp(34px,4vw,64px)] leading-[0.9] font-black tracking-[-0.045em] uppercase",
   leadArticleTitle:
