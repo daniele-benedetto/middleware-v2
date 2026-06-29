@@ -8,6 +8,7 @@ import { PUBLIC_ISSUE_PAGE_CACHE_TAG } from "@/lib/public/server/issue-page";
 import { PUBLIC_ISSUES_ARCHIVE_CACHE_TAG } from "@/lib/public/server/issues-archive";
 import { PUBLIC_NAVIGATION_CACHE_TAG } from "@/lib/public/server/navigation-cache";
 import { PUBLIC_PAGE_CACHE_TAG } from "@/lib/public/server/page";
+import { PUBLIC_MEDIA_CACHE_TAG } from "@/lib/server/modules/media/service/public";
 
 function revalidatePublicTag(tag: string) {
   revalidateTag(tag, { expire: 0 });
@@ -18,6 +19,7 @@ export function revalidatePublicArticleContent() {
   revalidatePublicTag(PUBLIC_HOME_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ISSUES_ARCHIVE_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_MEDIA_CACHE_TAG);
 }
 
 export function revalidatePublicIssueContent() {
@@ -25,10 +27,12 @@ export function revalidatePublicIssueContent() {
   revalidatePublicTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ARTICLE_PAGE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ISSUES_ARCHIVE_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_MEDIA_CACHE_TAG);
 }
 
 export function revalidatePublicPageContent() {
   revalidatePublicTag(PUBLIC_PAGE_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_MEDIA_CACHE_TAG);
 }
 
 export function revalidatePublicNavigation() {

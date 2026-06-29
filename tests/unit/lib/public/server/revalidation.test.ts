@@ -11,6 +11,7 @@ const PUBLIC_HOME_CACHE_TAG = "public-home";
 const PUBLIC_ISSUE_PAGE_CACHE_TAG = "public-issue";
 const PUBLIC_ISSUES_ARCHIVE_CACHE_TAG = "public-issues-archive";
 const PUBLIC_PAGE_CACHE_TAG = "public-page";
+const PUBLIC_MEDIA_CACHE_TAG = "public-media";
 const revalidateTagMock = vi.hoisted(() => vi.fn());
 
 vi.mock("next/cache", () => ({
@@ -39,6 +40,10 @@ vi.mock("@/lib/public/server/page", () => ({
   PUBLIC_PAGE_CACHE_TAG: "public-page",
 }));
 
+vi.mock("@/lib/server/modules/media/service/public", () => ({
+  PUBLIC_MEDIA_CACHE_TAG: "public-media",
+}));
+
 describe("public cache revalidation", () => {
   beforeEach(() => {
     revalidateTagMock.mockClear();
@@ -47,7 +52,7 @@ describe("public cache revalidation", () => {
   it("expires article-dependent public cache tags", () => {
     revalidatePublicArticleContent();
 
-    expect(revalidateTagMock).toHaveBeenCalledTimes(4);
+    expect(revalidateTagMock).toHaveBeenCalledTimes(5);
     expect(revalidateTagMock).toHaveBeenNthCalledWith(1, PUBLIC_ARTICLE_PAGE_CACHE_TAG, {
       expire: 0,
     });
@@ -58,12 +63,13 @@ describe("public cache revalidation", () => {
     expect(revalidateTagMock).toHaveBeenNthCalledWith(4, PUBLIC_ISSUES_ARCHIVE_CACHE_TAG, {
       expire: 0,
     });
+    expect(revalidateTagMock).toHaveBeenNthCalledWith(5, PUBLIC_MEDIA_CACHE_TAG, { expire: 0 });
   });
 
   it("expires issue-dependent public cache tags", () => {
     revalidatePublicIssueContent();
 
-    expect(revalidateTagMock).toHaveBeenCalledTimes(4);
+    expect(revalidateTagMock).toHaveBeenCalledTimes(5);
     expect(revalidateTagMock).toHaveBeenNthCalledWith(1, PUBLIC_HOME_CACHE_TAG, { expire: 0 });
     expect(revalidateTagMock).toHaveBeenNthCalledWith(2, PUBLIC_ISSUE_PAGE_CACHE_TAG, {
       expire: 0,
@@ -74,12 +80,14 @@ describe("public cache revalidation", () => {
     expect(revalidateTagMock).toHaveBeenNthCalledWith(4, PUBLIC_ISSUES_ARCHIVE_CACHE_TAG, {
       expire: 0,
     });
+    expect(revalidateTagMock).toHaveBeenNthCalledWith(5, PUBLIC_MEDIA_CACHE_TAG, { expire: 0 });
   });
 
   it("expires static page public cache tags", () => {
     revalidatePublicPageContent();
 
-    expect(revalidateTagMock).toHaveBeenCalledTimes(1);
+    expect(revalidateTagMock).toHaveBeenCalledTimes(2);
     expect(revalidateTagMock).toHaveBeenCalledWith(PUBLIC_PAGE_CACHE_TAG, { expire: 0 });
+    expect(revalidateTagMock).toHaveBeenCalledWith(PUBLIC_MEDIA_CACHE_TAG, { expire: 0 });
   });
 });

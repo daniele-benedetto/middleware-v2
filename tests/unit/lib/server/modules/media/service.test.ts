@@ -28,6 +28,11 @@ vi.mock("@/lib/server/modules/media/repository/public", () => ({
   publicMediaRepository: publicMediaRepositoryMock,
 }));
 
+vi.mock("next/cache", () => ({
+  cacheLife: vi.fn(),
+  cacheTag: vi.fn(),
+}));
+
 import {
   BlobNotFoundError,
   BlobPreconditionFailedError,
@@ -222,6 +227,7 @@ describe("publicMediaService", () => {
     expect(publicMediaRepositoryMock.hasPublishedArticleMedia).toHaveBeenCalledWith(
       "covers/hero-image.jpg",
     );
+    expect(publicMediaRepositoryMock.hasPublishedPageImage).not.toHaveBeenCalled();
   });
 
   it("authorizes images referenced by published page rich text", async () => {
