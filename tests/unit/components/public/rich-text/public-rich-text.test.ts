@@ -19,6 +19,7 @@ describe("PublicRichText", () => {
       "blockquote",
       "codeBlock",
       "image",
+      "noteReference",
       "hardBreak",
       "text",
     ]);
@@ -151,5 +152,69 @@ describe("PublicRichText", () => {
     expect(resolveSafeRichTextLinkHref("tel:+390000000000")).toBe("tel:+390000000000");
     expect(resolveSafeRichTextLinkHref("javascript:alert(1)")).toBeNull();
     expect(resolveSafeRichTextLinkHref("relative/path")).toBeNull();
+  });
+
+  it("renders article notes with forward and back links", () => {
+    const html = renderToStaticMarkup(
+      createElement(PublicRichText, {
+        value: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                { type: "text", text: "First" },
+                {
+                  type: "noteReference",
+                  attrs: {
+                    id: "note-a",
+                    contentRich: {
+                      type: "doc",
+                      content: [
+                        {
+                          type: "paragraph",
+                          content: [
+                            { type: "text", text: "Nota " },
+                            { type: "text", text: "importante", marks: [{ type: "bold" }] },
+                            {
+                              type: "text",
+                              text: " link",
+                              marks: [{ type: "link", attrs: { href: "https://example.com" } }],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+                { type: "text", text: " second" },
+                {
+                  type: "noteReference",
+                  attrs: {
+                    id: "note-b",
+                    contentRich: {
+                      type: "doc",
+                      content: [
+                        { type: "paragraph", content: [{ type: "text", text: "Seconda nota" }] },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(html).toContain("Note");
+    expect(html).toContain('id="note-ref-1"');
+    expect(html).toContain('href="#note-1"');
+    expect(html).toContain('id="note-1"');
+    expect(html).toContain('href="#note-ref-1"');
+    expect(html).toContain("[1]");
+    expect(html).toContain("[2]");
+    expect(html).toContain("<strong>importante</strong>");
+    expect(html).toContain('href="https://example.com/"');
   });
 });

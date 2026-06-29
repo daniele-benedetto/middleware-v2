@@ -29,6 +29,17 @@ type PublicRichTextProps = {
   className?: string;
 };
 
+type NoteEntry = {
+  number: number;
+  contentRich: RichTextNode;
+  node: RichTextNode;
+};
+
+type RenderContext = {
+  noteNumbers: WeakMap<RichTextNode, number>;
+  renderNoteReferences: boolean;
+};
+
 function getNodeContent(node: RichTextNode): RichTextNode[] {
   return Array.isArray(node.content) ? (node.content as RichTextNode[]) : [];
 }
@@ -56,6 +67,38 @@ function getImageAttrs(node: RichTextNode) {
     alt: typeof attrs.alt === "string" ? attrs.alt : "",
     title: typeof attrs.title === "string" ? attrs.title : undefined,
   };
+}
+
+function getNoteContentRich(node: RichTextNode): RichTextNode | null {
+  if (!node.attrs || typeof node.attrs !== "object") {
+    return null;
+  }
+
+  const contentRich = (node.attrs as { contentRich?: unknown }).contentRich;
+
+  if (!contentRich || typeof contentRich !== "object") {
+    return null;
+  }
+
+  return contentRich as RichTextNode;
+}
+
+function collectNotes(
+  node: RichTextNode,
+  entries: NoteEntry[],
+  noteNumbers: WeakMap<RichTextNode, number>,
+) {
+  if (node.type === "noteReference") {
+    const contentRich = getNoteContentRich(node);
+
+    if (contentRich) {
+      const number = entries.length + 1;
+      entries.push({ number, contentRich, node });
+      noteNumbers.set(node, number);
+    }
+  }
+
+  getNodeContent(node).forEach((child) => collectNotes(child, entries, noteNumbers));
 }
 
 function renderMarks(children: ReactNode, marks: unknown): ReactNode {
@@ -95,7 +138,7 @@ function renderMarks(children: ReactNode, marks: unknown): ReactNode {
   }, children);
 }
 
-function renderInlineNode(node: RichTextNode, key: string): ReactNode {
+function renderInlineNode(node: RichTextNode, key: string, context: RenderContext): ReactNode {
   if (typeof node.text === "string") {
     return <Fragment key={key}>{renderMarks(node.text, node.marks)}</Fragment>;
   }
@@ -104,26 +147,56 @@ function renderInlineNode(node: RichTextNode, key: string): ReactNode {
     return <br key={key} />;
   }
 
-  return renderInlineContent(node, key);
+  if (node.type === "noteReference") {
+    if (!context.renderNoteReferences) {
+      return null;
+    }
+
+    const number = context.noteNumbers.get(node);
+
+    if (!number) {
+      return null;
+    }
+
+    return (
+      <sup key={key} id={`note-ref-${number}`} className="scroll-mt-24 align-super">
+        <a
+          href={`#note-${number}`}
+          aria-label={`Vai alla nota ${number}`}
+          className="font-heading text-[0.62em] font-black text-accent no-underline hover:text-foreground"
+        >
+          [{number}]
+        </a>
+      </sup>
+    );
+  }
+
+  return renderInlineContent(node, key, context);
 }
 
-function renderInlineContent(node: RichTextNode, keyPrefix: string): ReactNode {
+function renderInlineContent(
+  node: RichTextNode,
+  keyPrefix: string,
+  context: RenderContext,
+): ReactNode {
   return getNodeContent(node).map((child, index) =>
-    renderInlineNode(child, `${keyPrefix}-${index}`),
+    renderInlineNode(child, `${keyPrefix}-${index}`, context),
   );
 }
 
-function renderBlockChildren(node: RichTextNode, key: string): ReactNode {
-  return getNodeContent(node).map((child, index) => renderBlockNode(child, `${key}-${index}`));
+function renderBlockChildren(node: RichTextNode, key: string, context: RenderContext): ReactNode {
+  return getNodeContent(node).map((child, index) =>
+    renderBlockNode(child, `${key}-${index}`, context),
+  );
 }
 
-function renderBlockNode(node: RichTextNode, key: string): ReactNode {
+function renderBlockNode(node: RichTextNode, key: string, context: RenderContext): ReactNode {
   if (!isPublicRichTextNodeType(node.type)) {
-    return <Fragment key={key}>{renderInlineContent(node, key)}</Fragment>;
+    return <Fragment key={key}>{renderInlineContent(node, key, context)}</Fragment>;
   }
 
   if (node.type === "paragraph") {
-    return <p key={key}>{renderInlineContent(node, key)}</p>;
+    return <p key={key}>{renderInlineContent(node, key, context)}</p>;
   }
 
   if (node.type === "heading") {
@@ -135,11 +208,11 @@ function renderBlockNode(node: RichTextNode, key: string): ReactNode {
 
     return level === 3 ? (
       <h3 key={key} className={className}>
-        {renderInlineContent(node, key)}
+        {renderInlineContent(node, key, context)}
       </h3>
     ) : (
       <h2 key={key} className={className}>
-        {renderInlineContent(node, key)}
+        {renderInlineContent(node, key, context)}
       </h2>
     );
   }
@@ -147,7 +220,7 @@ function renderBlockNode(node: RichTextNode, key: string): ReactNode {
   if (node.type === "bulletList") {
     return (
       <ul key={key} className="list-disc pl-6">
-        {renderBlockChildren(node, key)}
+        {renderBlockChildren(node, key, context)}
       </ul>
     );
   }
@@ -155,19 +228,19 @@ function renderBlockNode(node: RichTextNode, key: string): ReactNode {
   if (node.type === "orderedList") {
     return (
       <ol key={key} className="list-decimal pl-6">
-        {renderBlockChildren(node, key)}
+        {renderBlockChildren(node, key, context)}
       </ol>
     );
   }
 
   if (node.type === "listItem") {
-    return <li key={key}>{renderBlockChildren(node, key)}</li>;
+    return <li key={key}>{renderBlockChildren(node, key, context)}</li>;
   }
 
   if (node.type === "blockquote") {
     return (
       <blockquote key={key} className="border-l-4 border-accent pl-5 italic">
-        {renderBlockChildren(node, key)}
+        {renderBlockChildren(node, key, context)}
       </blockquote>
     );
   }
@@ -206,7 +279,55 @@ function renderBlockNode(node: RichTextNode, key: string): ReactNode {
     );
   }
 
-  return <Fragment key={key}>{renderInlineContent(node, key)}</Fragment>;
+  if (node.type === "noteReference") {
+    return <Fragment key={key}>{renderInlineNode(node, key, context)}</Fragment>;
+  }
+
+  return <Fragment key={key}>{renderInlineContent(node, key, context)}</Fragment>;
+}
+
+function renderNotes(entries: NoteEntry[], context: RenderContext): ReactNode {
+  if (entries.length === 0) {
+    return null;
+  }
+
+  const noteContentContext = { ...context, renderNoteReferences: false };
+
+  return (
+    <section
+      className="mt-12 border-t border-foreground pt-6"
+      aria-labelledby="article-notes-title"
+    >
+      <h2
+        id="article-notes-title"
+        className="font-heading text-[13px] font-black tracking-[0.12em] text-foreground uppercase"
+      >
+        Note
+      </h2>
+      <ol className="mt-5 space-y-4 font-editorial text-[15px] leading-normal text-body-text">
+        {entries.map((entry) => (
+          <li
+            key={`${entry.number}-${entry.node.attrs && typeof entry.node.attrs === "object" ? (entry.node.attrs as { id?: unknown }).id : "note"}`}
+            id={`note-${entry.number}`}
+            className="scroll-mt-24"
+          >
+            <a
+              href={`#note-ref-${entry.number}`}
+              aria-label={`Torna al riferimento della nota ${entry.number}`}
+              className="mr-2 font-heading text-[12px] font-black text-accent no-underline hover:text-foreground"
+            >
+              {entry.number}.
+            </a>
+            <div className="inline [&_a]:underline [&_p]:inline">
+              {getNodeContent(entry.contentRich).map((node, index) =>
+                renderBlockNode(node, `note-${entry.number}-${index}`, noteContentContext),
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
 }
 
 export function PublicRichText({ value, className }: PublicRichTextProps) {
@@ -215,6 +336,10 @@ export function PublicRichText({ value, className }: PublicRichTextProps) {
   }
 
   const root = value as RichTextNode;
+  const noteEntries: NoteEntry[] = [];
+  const noteNumbers = new WeakMap<RichTextNode, number>();
+  collectNotes(root, noteEntries, noteNumbers);
+  const context: RenderContext = { noteNumbers, renderNoteReferences: true };
 
   return (
     <div
@@ -224,7 +349,8 @@ export function PublicRichText({ value, className }: PublicRichTextProps) {
         className,
       )}
     >
-      {getNodeContent(root).map((node, index) => renderBlockNode(node, String(index)))}
+      {getNodeContent(root).map((node, index) => renderBlockNode(node, String(index), context))}
+      {renderNotes(noteEntries, context)}
     </div>
   );
 }

@@ -7,6 +7,7 @@ export const PUBLIC_RICH_TEXT_NODE_TYPES = [
   "blockquote",
   "codeBlock",
   "image",
+  "noteReference",
   "hardBreak",
   "text",
 ] as const;

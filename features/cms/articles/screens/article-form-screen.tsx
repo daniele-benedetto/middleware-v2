@@ -783,6 +783,7 @@ function ArticleFormContent({
                   onChange={field.onChange}
                   ariaLabel={articleFormText.contentEditorAriaLabel}
                   fullHeight
+                  enableNotes
                 />
               )}
             />
