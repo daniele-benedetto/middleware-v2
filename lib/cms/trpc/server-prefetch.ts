@@ -21,6 +21,8 @@ type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 type MediaListOutput = RouterOutputs["media"]["list"];
+type NavigationMenusOutput = RouterOutputs["navigation"]["listMenus"];
+type NavigationOptionsOutput = RouterOutputs["navigation"]["listOptions"];
 
 type IssuesListOutput = RouterOutputs["issues"]["list"];
 type CategoriesListOutput = RouterOutputs["categories"]["list"];
@@ -90,6 +92,23 @@ export async function prefetchUsersList(input: UsersListInput): Promise<UsersLis
 export async function prefetchMediaList(): Promise<MediaListOutput> {
   const caller = await getTrpcCaller();
   return caller.media.list();
+}
+
+export async function prefetchNavigationBuilder(): Promise<{
+  menus: NavigationMenusOutput;
+  pageOptions: NavigationOptionsOutput;
+  articleOptions: NavigationOptionsOutput;
+  issueOptions: NavigationOptionsOutput;
+}> {
+  const caller = await getTrpcCaller();
+  const [menus, pageOptions, articleOptions, issueOptions] = await Promise.all([
+    caller.navigation.listMenus(),
+    caller.navigation.listOptions({ type: "page" }),
+    caller.navigation.listOptions({ type: "article" }),
+    caller.navigation.listOptions({ type: "issue" }),
+  ]);
+
+  return { menus, pageOptions, articleOptions, issueOptions };
 }
 
 export async function prefetchIssueById(id: string): Promise<IssueDetailOutput> {

@@ -9,6 +9,7 @@ export {
   invalidateArticlesAfterMutation,
   invalidateCategoriesAfterMutation,
   invalidateIssuesAfterMutation,
+  invalidateNavigationAfterMutation,
   invalidatePagesAfterMutation,
   invalidateTagsAfterMutation,
   invalidateUsersAfterMutation,

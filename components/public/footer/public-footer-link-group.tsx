@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 type PublicFooterLink = {
   label: string;
   href: string;
+  external?: boolean;
 };
 
 type PublicFooterLinkGroupProps = {
@@ -21,6 +22,8 @@ export function PublicFooterLinkGroup({ title, links }: PublicFooterLinkGroupPro
           <Link
             key={link.label}
             href={link.href}
+            target={link.external ? "_blank" : undefined}
+            rel={link.external ? "noopener noreferrer" : undefined}
             className="transition-colors duration-(--motion-fast) md:hover:text-background md:hover:underline md:hover:underline-offset-3"
           >
             {link.label}

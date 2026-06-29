@@ -427,6 +427,11 @@ body {
   transform: translateY(18px);
 }
 
+.public-menu-link-part {
+  padding-block: 0.08em;
+  margin-block: -0.08em;
+}
+
 .public-menu-link::after {
   position: absolute;
   right: 0;
@@ -478,7 +483,8 @@ body {
 }
 
 .public-menu-overlay[data-menu-state="opening"] .public-menu-quote {
-  animation: public-menu-link-in 420ms var(--easing-standard) 600ms both;
+  animation: public-menu-link-in 420ms var(--easing-standard) both;
+  animation-delay: var(--menu-quote-delay);
 }
 
 .public-menu-overlay[data-menu-state="closing-content"] .public-menu-quote {

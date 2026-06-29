@@ -73,6 +73,11 @@ export type ArticleTag = Prisma.ArticleTagModel
  */
 export type Page = Prisma.PageModel
 /**
+ * Model NavigationMenu
+ * 
+ */
+export type NavigationMenu = Prisma.NavigationMenuModel
+/**
  * Model AuditLog
  * 
  */

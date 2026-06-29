@@ -395,6 +395,7 @@ export const ModelName = {
   Article: 'Article',
   ArticleTag: 'ArticleTag',
   Page: 'Page',
+  NavigationMenu: 'NavigationMenu',
   AuditLog: 'AuditLog'
 } as const
 
@@ -411,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "auditLog"
+    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "navigationMenu" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1229,6 +1230,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    NavigationMenu: {
+      payload: Prisma.$NavigationMenuPayload<ExtArgs>
+      fields: Prisma.NavigationMenuFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NavigationMenuFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavigationMenuPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NavigationMenuFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavigationMenuPayload>
+        }
+        findFirst: {
+          args: Prisma.NavigationMenuFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavigationMenuPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NavigationMenuFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavigationMenuPayload>
+        }
+        findMany: {
+          args: Prisma.NavigationMenuFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavigationMenuPayload>[]
+        }
+        create: {
+          args: Prisma.NavigationMenuCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavigationMenuPayload>
+        }
+        createMany: {
+          args: Prisma.NavigationMenuCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NavigationMenuCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavigationMenuPayload>[]
+        }
+        delete: {
+          args: Prisma.NavigationMenuDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavigationMenuPayload>
+        }
+        update: {
+          args: Prisma.NavigationMenuUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavigationMenuPayload>
+        }
+        deleteMany: {
+          args: Prisma.NavigationMenuDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NavigationMenuUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NavigationMenuUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavigationMenuPayload>[]
+        }
+        upsert: {
+          args: Prisma.NavigationMenuUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NavigationMenuPayload>
+        }
+        aggregate: {
+          args: Prisma.NavigationMenuAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNavigationMenu>
+        }
+        groupBy: {
+          args: Prisma.NavigationMenuGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NavigationMenuGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NavigationMenuCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NavigationMenuCountAggregateOutputType> | number
+        }
+      }
+    }
     AuditLog: {
       payload: Prisma.$AuditLogPayload<ExtArgs>
       fields: Prisma.AuditLogFieldRefs
@@ -1506,6 +1581,18 @@ export const PageScalarFieldEnum = {
 } as const
 
 export type PageScalarFieldEnum = (typeof PageScalarFieldEnum)[keyof typeof PageScalarFieldEnum]
+
+
+export const NavigationMenuScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  label: 'label',
+  items: 'items',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NavigationMenuScalarFieldEnum = (typeof NavigationMenuScalarFieldEnum)[keyof typeof NavigationMenuScalarFieldEnum]
 
 
 export const AuditLogScalarFieldEnum = {
@@ -1838,6 +1925,7 @@ export type GlobalOmitConfig = {
   article?: Prisma.ArticleOmit
   articleTag?: Prisma.ArticleTagOmit
   page?: Prisma.PageOmit
+  navigationMenu?: Prisma.NavigationMenuOmit
   auditLog?: Prisma.AuditLogOmit
 }
 

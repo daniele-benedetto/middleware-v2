@@ -5,6 +5,7 @@ type TrpcUtils = ReturnType<typeof trpc.useUtils>;
 type MutationInput = {
   id?: string;
   ids?: string[];
+  key?: string;
 };
 
 type InvalidateDetail = (input: { id: string }) => Promise<void>;
@@ -65,7 +66,8 @@ export type CmsMutationName =
   | "pages.delete"
   | "pages.publish"
   | "pages.unpublish"
-  | "pages.archive";
+  | "pages.archive"
+  | "navigation.update";
 
 export async function invalidateIssuesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
   await invalidateResource(utils.issues.list.invalidate, utils.issues.getById.invalidate, input);
@@ -103,6 +105,15 @@ export async function invalidatePagesAfterMutation(utils: TrpcUtils, input?: Mut
   await invalidateResource(utils.pages.list.invalidate, utils.pages.getById.invalidate, input);
 }
 
+export async function invalidateNavigationAfterMutation(utils: TrpcUtils) {
+  await Promise.all([
+    utils.navigation.listMenus.invalidate(),
+    utils.navigation.listOptions.invalidate({ type: "page" }),
+    utils.navigation.listOptions.invalidate({ type: "article" }),
+    utils.navigation.listOptions.invalidate({ type: "issue" }),
+  ]);
+}
+
 export async function invalidateAfterCmsMutation(
   utils: TrpcUtils,
   mutation: CmsMutationName,
@@ -135,6 +146,11 @@ export async function invalidateAfterCmsMutation(
 
   if (mutation.startsWith("pages.")) {
     await invalidatePagesAfterMutation(utils, input);
+    return;
+  }
+
+  if (mutation.startsWith("navigation.")) {
+    await invalidateNavigationAfterMutation(utils);
     return;
   }
 

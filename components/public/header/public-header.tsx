@@ -10,15 +10,38 @@ import { PublicMenuButton } from "@/components/public/header/public-menu-button"
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
+import type { PublicMenuItem } from "@/components/public/header/public-fullscreen-menu";
+
 type PublicHeaderProps = {
   className?: string;
+  menuItems?: PublicMenuItem[];
 };
 
 type MenuState = "closed" | "opening" | "open" | "closing-content" | "closing-shell";
 
-const menuOpenAnimationDuration = 1080;
-const menuContentCloseDuration = 420;
 const menuShellCloseDuration = 360;
+const menuItemOpenStagger = 165;
+const menuItemCloseStagger = 64;
+const menuLinkOpenDelay = 110;
+const menuLinkOpenDuration = 380;
+const menuQuoteOpenDuration = 420;
+const menuLinkCloseDuration = 220;
+const menuQuoteOpenGap = 80;
+
+function getMenuOpenAnimationDuration(itemCount: number) {
+  return (
+    menuLinkOpenDelay +
+    Math.max(0, itemCount - 1) * menuItemOpenStagger +
+    menuLinkOpenDuration +
+    menuQuoteOpenGap +
+    menuQuoteOpenDuration +
+    60
+  );
+}
+
+function getMenuContentCloseDuration(itemCount: number) {
+  return 140 + Math.max(0, itemCount - 1) * menuItemCloseStagger + menuLinkCloseDuration + 40;
+}
 
 const focusableSelector = [
   "a[href]",
@@ -33,7 +56,15 @@ function isElementVisible(element: HTMLElement) {
   return element.getClientRects().length > 0;
 }
 
-export function PublicHeader({ className }: PublicHeaderProps) {
+function getFallbackMenuItems(): PublicMenuItem[] {
+  return i18n.public.menu.items.map((item) => ({
+    id: item.href,
+    label: item.label,
+    href: item.href,
+  }));
+}
+
+export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
   const router = useRouter();
   const [menuState, setMenuState] = useState<MenuState>("closed");
   const menuId = useId();
@@ -41,6 +72,9 @@ export function PublicHeader({ className }: PublicHeaderProps) {
   const animationTimerRefs = useRef<number[]>([]);
   const text = i18n.public.header;
   const menuText = i18n.public.menu;
+  const resolvedMenuItems = menuItems?.length ? menuItems : getFallbackMenuItems();
+  const menuOpenAnimationDuration = getMenuOpenAnimationDuration(resolvedMenuItems.length);
+  const menuContentCloseDuration = getMenuContentCloseDuration(resolvedMenuItems.length);
   const menuVisible = menuState !== "closed";
   const headerMenuActive = menuVisible;
   const menuClosing = menuState === "closing-content" || menuState === "closing-shell";
@@ -219,7 +253,12 @@ export function PublicHeader({ className }: PublicHeaderProps) {
       </header>
 
       {menuVisible ? (
-        <PublicFullscreenMenu id={menuId} state={menuState} onNavigate={navigateAfterMenuClose} />
+        <PublicFullscreenMenu
+          id={menuId}
+          state={menuState}
+          items={resolvedMenuItems}
+          onNavigate={navigateAfterMenuClose}
+        />
       ) : null}
     </>
   );

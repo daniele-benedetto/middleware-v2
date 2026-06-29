@@ -22,6 +22,7 @@ export const cmsIt = {
     authors: "Autori",
     articles: "Articoli",
     pages: "Pagine",
+    publicNavigation: "Navigazione",
     media: "Media",
     auditLogs: "Audit log",
     users: "Utenti",
@@ -39,10 +40,14 @@ export const cmsIt = {
     authors: "Autori",
     articles: "Articoli",
     pages: "Pagine",
+    navigation: "Navigazione",
     media: "Media",
     "audit-logs": "Audit log",
     users: "Utenti",
     new: "Nuovo",
+  },
+  navigationBuilder: {
+    subtitle: "Builder dei menu pubblici del sito.",
   },
   resource: {
     subtitle: "Lista base con filtri, tabella, paginazione e conferma per azioni distruttive.",

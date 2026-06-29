@@ -13,6 +13,7 @@ export const cmsNavigation: CmsNavItem[] = [
   { label: i18n.cms.navigation.authors, href: "/cms/authors" },
   { label: i18n.cms.navigation.articles, href: "/cms/articles" },
   { label: i18n.cms.navigation.pages, href: "/cms/pages" },
+  { label: i18n.cms.navigation.publicNavigation, href: "/cms/navigation" },
   { label: i18n.cms.navigation.media, href: "/cms/media" },
   { label: i18n.cms.navigation.auditLogs, href: "/cms/audit-logs", adminOnly: true },
   { label: i18n.cms.navigation.users, href: "/cms/users", adminOnly: true },

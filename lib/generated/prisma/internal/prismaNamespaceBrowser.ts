@@ -62,6 +62,7 @@ export const ModelName = {
   Article: 'Article',
   ArticleTag: 'ArticleTag',
   Page: 'Page',
+  NavigationMenu: 'NavigationMenu',
   AuditLog: 'AuditLog'
 } as const
 
@@ -245,6 +246,18 @@ export const PageScalarFieldEnum = {
 } as const
 
 export type PageScalarFieldEnum = (typeof PageScalarFieldEnum)[keyof typeof PageScalarFieldEnum]
+
+
+export const NavigationMenuScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  label: 'label',
+  items: 'items',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NavigationMenuScalarFieldEnum = (typeof NavigationMenuScalarFieldEnum)[keyof typeof NavigationMenuScalarFieldEnum]
 
 
 export const AuditLogScalarFieldEnum = {

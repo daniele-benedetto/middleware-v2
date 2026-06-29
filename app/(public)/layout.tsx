@@ -2,11 +2,15 @@ import { CookieConsentBanner, PublicFooter, PublicHeader } from "@/components/pu
 import { PublicPageTransition } from "@/components/public/public-page-transition";
 import { i18n } from "@/lib/i18n";
 import { getLegalConsentVersion } from "@/lib/public/server/legal-consent";
+import { getPublicNavigation } from "@/lib/public/server/navigation";
 
 import type { ReactNode } from "react";
 
 export default async function PublicLayout({ children }: { children: ReactNode }) {
-  const legalConsentVersion = await getLegalConsentVersion();
+  const [legalConsentVersion, navigation] = await Promise.all([
+    getLegalConsentVersion(),
+    getPublicNavigation(),
+  ]);
 
   return (
     <div className="flex min-h-svh flex-1 flex-col bg-background font-heading text-foreground">
@@ -16,12 +20,15 @@ export default async function PublicLayout({ children }: { children: ReactNode }
       >
         {i18n.public.header.skipToContent}
       </a>
-      <PublicHeader />
+      <PublicHeader menuItems={navigation.main} />
       <div data-public-page-content>
         <PublicPageTransition>{children}</PublicPageTransition>
       </div>
       <div data-public-footer>
-        <PublicFooter />
+        <PublicFooter
+          sectionsLinks={navigation.footerSections}
+          legalLinks={navigation.footerLegal}
+        />
       </div>
       <CookieConsentBanner consentVersion={legalConsentVersion} />
     </div>

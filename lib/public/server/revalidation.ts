@@ -6,6 +6,7 @@ import { PUBLIC_ARTICLE_PAGE_CACHE_TAG } from "@/lib/public/server/article-page"
 import { PUBLIC_HOME_CACHE_TAG } from "@/lib/public/server/home";
 import { PUBLIC_ISSUE_PAGE_CACHE_TAG } from "@/lib/public/server/issue-page";
 import { PUBLIC_ISSUES_ARCHIVE_CACHE_TAG } from "@/lib/public/server/issues-archive";
+import { PUBLIC_NAVIGATION_CACHE_TAG } from "@/lib/public/server/navigation-cache";
 import { PUBLIC_PAGE_CACHE_TAG } from "@/lib/public/server/page";
 
 function revalidatePublicTag(tag: string) {
@@ -28,4 +29,8 @@ export function revalidatePublicIssueContent() {
 
 export function revalidatePublicPageContent() {
   revalidatePublicTag(PUBLIC_PAGE_CACHE_TAG);
+}
+
+export function revalidatePublicNavigation() {
+  revalidatePublicTag(PUBLIC_NAVIGATION_CACHE_TAG);
 }

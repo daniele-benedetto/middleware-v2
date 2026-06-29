@@ -231,6 +231,17 @@ model Page {
   @@map("pages")
 }
 
+model NavigationMenu {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  label     String
+  items     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("navigation_menus")
+}
+
 model AuditLog {
   id           String          @id @default(uuid())
   actorId      String?

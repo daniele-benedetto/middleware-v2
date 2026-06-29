@@ -5,9 +5,17 @@ import { cn } from "@/lib/utils";
 
 import type { CSSProperties, MouseEvent } from "react";
 
+export type PublicMenuItem = {
+  id: string;
+  label: string;
+  href: string;
+  external?: boolean;
+};
+
 type PublicFullscreenMenuProps = {
   id: string;
   state: "opening" | "open" | "closing-content" | "closing-shell";
+  items: PublicMenuItem[];
   onNavigate: (href: string) => void;
 };
 
@@ -15,7 +23,12 @@ function shouldUseNativeNavigation(event: MouseEvent<HTMLAnchorElement>) {
   return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
-export function PublicFullscreenMenu({ id, state, onNavigate }: PublicFullscreenMenuProps) {
+function getQuoteDelay(itemCount: number) {
+  const lastItemIndex = Math.max(0, itemCount - 1);
+  return 110 + lastItemIndex * 165 + 380 + 80;
+}
+
+export function PublicFullscreenMenu({ id, state, items, onNavigate }: PublicFullscreenMenuProps) {
   const text = i18n.public.menu;
   const titleId = `${id}-title`;
 
@@ -26,6 +39,7 @@ export function PublicFullscreenMenu({ id, state, onNavigate }: PublicFullscreen
       aria-modal="true"
       aria-labelledby={titleId}
       data-menu-state={state}
+      style={{ "--menu-quote-delay": `${getQuoteDelay(items.length)}ms` } as CSSProperties}
       className="public-menu-overlay fixed inset-0 z-100 flex flex-col overflow-y-auto bg-foreground text-background"
     >
       <h2 id={titleId} className="sr-only">
@@ -36,12 +50,12 @@ export function PublicFullscreenMenu({ id, state, onNavigate }: PublicFullscreen
         className={`${publicContentClassName} relative z-10 flex flex-1 flex-col justify-center py-24 sm:py-28`}
       >
         <div className="public-menu-link-list">
-          {text.items.map((item, index) => (
+          {items.map((item, index) => (
             <Link
-              key={item.number}
+              key={item.id}
               href={item.href}
               onClick={(event) => {
-                if (shouldUseNativeNavigation(event)) {
+                if (item.external || shouldUseNativeNavigation(event)) {
                   return;
                 }
 
@@ -52,12 +66,14 @@ export function PublicFullscreenMenu({ id, state, onNavigate }: PublicFullscreen
               style={
                 {
                   "--menu-item-index": index,
-                  "--menu-item-reverse-index": text.items.length - index - 1,
+                  "--menu-item-reverse-index": items.length - index - 1,
                 } as CSSProperties
               }
+              target={item.external ? "_blank" : undefined}
+              rel={item.external ? "noopener noreferrer" : undefined}
             >
               <span className="public-menu-link-part font-heading text-[15px] font-bold tracking-widest text-accent">
-                {item.number}
+                {String(index + 1).padStart(2, "0")}
               </span>
               <span className={cn("public-menu-link-part", publicTypography.menuItem)}>
                 {item.label}
