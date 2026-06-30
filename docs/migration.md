@@ -42,7 +42,7 @@ Regola operativa: il dominio pubblico si attiva solo dopo verifica su hostname t
 - **CI/CD**: GitHub Actions, immagini arm64 app+migrator su GHCR, deploy via SSH.
 - **Analytics**: in-app, eventi cookieless su Postgres, dashboard nel CMS.
 - **Performance**: `useReportWebVitals` verso lo stesso collector.
-- **Errori/log**: `instrumentation.ts` con `onRequestError`, tabella `ErrorLog`, Pino su stdout.
+- **Errori/log**: `instrumentation.ts` con `onRequestError`, tabella `ErrorLog`, logger JSON su stdout.
 - **Uptime**: GitHub Action schedulata su `/api/health`.
 - **Branch**: produzione deploya da `main`. Il branch `dev` resta il lavoro in locale.
 
@@ -385,46 +385,178 @@ Regole della pipeline:
 
 ## Osservabilità in-app
 
-Tutto vive dentro Next.js e Postgres. Niente servizi esterni.
+Tutto vive dentro Next.js e Postgres. Niente servizi esterni, niente cookie analytics, niente IP grezzi salvati. L'obiettivo non e replicare Umami, Sentry o GlitchTip: e avere il minimo set affidabile per capire traffico, performance reali ed errori senza rallentare l'app e senza far crescere Postgres senza controllo.
+
+Principi non negoziabili:
+
+- La raccolta lato browser e sempre fire-and-forget: `navigator.sendBeacon` quando disponibile, fallback `fetch` con `keepalive: true`, mai await nel flusso UI.
+- Il collector risponde veloce: valida, normalizza, scrive e torna `204`. Niente elaborazioni pesanti in request path.
+- Nessun identificatore persistente: il visitor hash ruota ogni giorno e non usa cookie, localStorage o fingerprinting stabile.
+- Nessun dato sensibile persistito: non salvare IP grezzo, cookie, authorization header, request body, password, token, session id o contenuti editoriali completi.
+- Il CMS legge aggregazioni o tabelle gia raggruppate, non scansiona le tabelle raw a ogni apertura.
+- Retention attiva dal primo deploy: raw telemetry breve, aggregati piu longevi.
+- Le rotte di telemetria devono essere interne alla stessa origin e compatibili con CSP; niente chiamate a domini terzi.
+- Gli errori di osservabilita non devono rompere l'app: se il collector fallisce, si logga su stdout e la request applicativa continua.
+
+Architettura consigliata:
+
+- **Collector unico**: `POST /api/telemetry`, con payload discriminato da `type: "analytics" | "web-vital" | "client-error"`. Una sola route riduce CSP, codice client e superficie pubblica; la sicurezza resta nella validazione Zod per tipo.
+- **Moduli server separati**: `lib/server/modules/telemetry/*` con `repository`, `service`, `dto`, `schema`, `policy`, coerente con gli altri moduli. Il router tRPC resta orchestration-only.
+- **Client minimo**: `lib/telemetry/client.ts` espone `track(event, metadata?)` e `reportWebVital(metric)`. Il codice deve fare solo serializzazione, size guard e invio non bloccante.
+- **Error server path**: `instrumentation.ts` alla root esporta `onRequestError`; salva su `ErrorLog` via helper server e continua a scrivere JSON su stdout con `logServerEvent`.
+- **Error client path**: `app/error.tsx`, `app/global-error.tsx` e `app/(cms)/cms/error.tsx` inviano `client-error` al collector con payload minimo.
+- **CMS separato in tre pagine admin-only**: `/cms/analytics`, `/cms/performance`, `/cms/errors`. Sono tre superfici operative diverse e vanno tenute separate per evitare dashboard generiche e query troppo larghe.
+- **Aggregazioni consigliate**: materialized view o tabelle aggregate gestite da script. Per questo progetto e preferibile usare tabelle aggregate aggiornate da script notturno o on-demand, perche sono semplici da leggere via Prisma, versionabili e controllabili senza appoggiarsi a refresh costosi durante la navigazione CMS.
+
+### Modelli dati
+
+Modelli Prisma da aggiungere:
+
+- `AnalyticsEvent`: eventi raw cookieless.
+- `WebVital`: misure RUM raw.
+- `ErrorLog`: errori raggruppati per fingerprint.
+- `TelemetryDailyAggregate`: aggregati analytics giornalieri per pagina/referrer/paese.
+- `WebVitalDailyAggregate`: aggregati performance giornalieri per pagina e metrica.
+
+`AnalyticsEvent` deve contenere solo dati minimali:
+
+- `id String @id @default(uuid())`
+- `event String`
+- `path String`
+- `referrer String?`
+- `country String?`
+- `visitorHash String`
+- `metadata Json?`
+- `createdAt DateTime @default(now())`
+- indici: `[createdAt]`, `[event, createdAt]`, `[path, createdAt]`, `[visitorHash, createdAt]`
+
+`WebVital` deve evitare duplicati e permettere percentili:
+
+- `id String @id @default(uuid())`
+- `metricId String`
+- `name String`
+- `value Float`
+- `delta Float`
+- `rating String?`
+- `navigationType String?`
+- `path String`
+- `visitorHash String?`
+- `createdAt DateTime @default(now())`
+- `@@unique([metricId, name])`
+- indici: `[createdAt]`, `[name, createdAt]`, `[path, createdAt]`, `[path, name, createdAt]`
+
+`ErrorLog` deve raggruppare invece di duplicare:
+
+- `id String @id @default(uuid())`
+- `fingerprint String @unique`
+- `source String` con valori logici `server`, `client`, `boundary`
+- `name String?`
+- `message String`
+- `digest String?`
+- `path String?`
+- `method String?`
+- `routePath String?`
+- `routeType String?`
+- `requestId String?`
+- `userAgent String?`
+- `count Int @default(1)`
+- `firstSeenAt DateTime @default(now())`
+- `lastSeenAt DateTime @updatedAt`
+- `metadata Json?`
+- indici: `[lastSeenAt]`, `[path, lastSeenAt]`, `[source, lastSeenAt]`
+
+Aggregati consigliati:
+
+- `TelemetryDailyAggregate`: `date`, `path`, `referrer`, `country`, `event`, `views`, `visitors`.
+- `WebVitalDailyAggregate`: `date`, `path`, `name`, `count`, `p50`, `p75`, `p95`, `good`, `needsImprovement`, `poor`.
+
+Regola DB: le tabelle raw sono append-only tranne retention. `ErrorLog` usa upsert per fingerprint. Gli aggregati possono essere ricostruiti idempotentemente per intervallo di date.
 
 ### Analytics
 
-- **Client**: una util `track(event)` che usa `navigator.sendBeacon` verso una route interna. Fire-and-forget, non blocca render né navigazione.
-- **Server**: una route handler che fa `insert` su una tabella Prisma `AnalyticsEvent`.
-- **Cookieless senza PII**: il visitor id è `sha256(ip + user_agent + salt_del_giorno)`, dove il salt deriva da `ANALYTICS_SALT_SECRET` più la data corrente. Ruota ogni giorno, quindi nessun identificatore persistente, nessun IP grezzo salvato, nessun cookie e nessun banner.
-- **Paese**: dall'header `CF-IPCountry` di Cloudflare, senza salvare l'IP.
-- **Aggregazione**: vista materializzata o job cron periodico per le query del CMS, così la dashboard non scansiona la tabella grezza a ogni apertura.
-- **CMS**: una sezione che legge le aggregazioni e mostra visite, pagine, referrer.
+- **Eventi minimi**: `page_view`, `article_view`, `issue_view`, `listen_view`, `media_open` solo se utile. Non tracciare ogni click: aumenta rumore, scritture e volume DB.
+- **Path normalizzato**: salvare pathname senza query string sensibili. Le query ammesse vanno allowlistate, altrimenti si scartano.
+- **Referrer normalizzato**: salvare hostname o path interno, non URL completo con query.
+- **Visitor hash giornaliero**: `sha256(ip + user_agent + yyyy-mm-dd + ANALYTICS_SALT_SECRET)`. L'IP serve solo in memoria durante la request e non viene persistito.
+- **Paese**: leggere `CF-IPCountry`; se assente, `null`. Non fare lookup GeoIP in app.
+- **Metadata**: solo valori allowlistati e piccoli, per esempio `{ articleSlug, issueSlug }`. Limite massimo consigliato: 2 KB serializzati.
+- **Bot e prefetch**: scartare richieste con user-agent chiaramente bot, `purpose: prefetch`, `next-router-prefetch` o path tecnico (`/_next`, `/api`, `/cms`).
+- **Rate/backpressure**: se il collector riceve payload invalidi o troppo grandi risponde `204` o `400` senza stack trace. Non deve generare error storm.
+- **CMS `/cms/analytics`**: mostra periodo selezionabile, page views, visitatori giornalieri, top pagine, top referrer, paesi, andamento per giorno. La pagina legge `TelemetryDailyAggregate`, non `AnalyticsEvent` raw.
 
 ### Performance
 
-- `useReportWebVitals` da `next/web-vitals` cattura LCP, CLS, INP, FCP e TTFB sul client.
-- I valori vanno allo stesso collector delle analytics, su una tabella `WebVital` o come tipo dentro `AnalyticsEvent`.
-- Nel CMS si mostrano i percentili per pagina. È RUM, dai visitatori veri, senza strumenti esterni.
+- Usare `useReportWebVitals` da `next/web-vitals` in un componente client isolato, importato da `app/layout.tsx`. Non trasformare il root layout in client component.
+- La callback passata a `useReportWebVitals` deve essere stabile per evitare invii duplicati, come da documentazione Next 16.
+- Metriche attese: `LCP`, `CLS`, `INP`, `FCP`, `TTFB`, e `FID` se emesso dal browser/runtime.
+- Salvare `metric.id` e `metric.name` con unique composta per deduplicare reinvii.
+- Salvare `value`, `delta`, `rating`, `navigationType`, `path` e timestamp. Non salvare `entries` raw: sono verbose, instabili e possono contenere dettagli inutili.
+- Per ridurre volume, si puo applicare sampling solo ai Web Vitals quando il traffico cresce. Default iniziale: 100%, per avere baseline reale.
+- Aggregare percentili con job: p50, p75, p95 per metrica e path. Il CMS non calcola percentili sulle righe raw.
+- **CMS `/cms/performance`**: mostra p75 e p95 per metrica, trend giornaliero, pagine peggiori, distribuzione rating `good` / `needs-improvement` / `poor`. Default ordinamento: peggior p75 LCP/INP e peggior CLS.
+- Soglie UI iniziali: usare il rating fornito dal web-vitals package; non duplicare soglie custom finche non serve.
 
 ### Errori
 
-- `instrumentation.ts` esporta `onRequestError` (Next 15+). Scatta su errori da route handler, server action, server component e middleware, e scrive su una tabella `ErrorLog`.
-- Caveat: la copertura non è totale, alcuni errori middleware su certi runtime non vengono catturati. Per questo si accoppia con `app/error.tsx` e `app/global-error.tsx`, che intercettano gli errori di render lato client e fanno POST a una route di logging.
-- Prima di salvare, si strippano cookie, header auth e body per non scrivere PII.
-- Fingerprint minimo in scrittura, per incrementare un contatore invece di duplicare righe identiche.
+- `instrumentation.ts` esporta `onRequestError` con tipo `Instrumentation.onRequestError` da `next`.
+- `onRequestError` deve awaitare la scrittura persistente, come richiesto da Next, ma la scrittura deve essere leggera: fingerprint, sanitize, upsert.
+- Non importare codice client o moduli non server-safe in `instrumentation.ts`.
+- Sanitizzazione obbligatoria: scartare `cookie`, `authorization`, `proxy-authorization`, `set-cookie`, body e search param sensibili. Salvare solo path, method, route context, request id, user-agent e digest.
+- Fingerprint consigliato: hash di `source + name + normalizedMessage + routePath/path + digest`. Evitare stack completa nel fingerprint: cambia troppo spesso.
+- Upsert: se fingerprint esiste, incrementare `count` e aggiornare `lastSeenAt`; se nuovo, creare riga con `firstSeenAt` e `lastSeenAt`.
+- `app/error.tsx`, `app/global-error.tsx` e `app/(cms)/cms/error.tsx` inviano errori client/boundary alla stessa route collector. Payload minimo: `name`, `message`, `digest`, `path`, `source`.
+- Non salvare stack client in produzione. In locale/test puo andare su console, non su DB.
+- `ALERT_WEBHOOK_URL` e opzionale: se presente, notificare solo nuovi fingerprint o incrementi con soglia, non ogni singola occorrenza.
+- **CMS `/cms/errors`**: lista gruppi errore ordinata per `lastSeenAt` e `count`, filtro source/path, dettaglio con metadata sanitizzata, azione manuale `mark resolved` solo se si aggiunge un campo `resolvedAt`. Per la prima versione basta lista + dettaglio.
+- Caveat: `onRequestError` non copre tutto. I boundary client/server completano la copertura, ma non sostituiscono un sistema full Sentry con source map e replay.
 
 ### Log
 
-- Pino come logger strutturato JSON, output su stdout catturato da Docker.
+- Logger strutturato JSON su stdout catturato da Docker. Il progetto ha gia `lib/server/observability/log.ts`; si puo continuare con quello o sostituirlo con Pino solo se serve davvero.
 - Ciò che deve sopravvivere al container va su Postgres (gli errori) o ruotato su file/bucket.
 - Non fare affidamento sullo stdout per dati che ti servono dopo un redeploy, perché `docker compose up` ricrea il container.
+- Non duplicare ogni analytics event anche su stdout: sarebbe rumore e I/O inutile.
+- Loggare errori collector solo in forma aggregata/sintetica, senza payload completo.
+
+### Aggregazioni CMS
+
+Le pagine CMS non devono interrogare le tabelle raw in modo non limitato. La strategia consigliata e:
+
+1. Inserire raw events in request path.
+2. Eseguire `scripts/refresh-telemetry-aggregates.mjs` con cron notturno e comando manuale.
+3. Il job ricostruisce gli aggregati per gli ultimi N giorni, default 7, cosi corregge eventuali ritardi o deploy interrotti.
+4. Le pagine CMS leggono solo aggregate tables e `ErrorLog` gia raggruppata.
+5. Se serve dato quasi real-time, aggiungere una piccola query raw limitata alle ultime 24 ore e solo su indici stretti, non una scansione globale.
+
+Script consigliati:
+
+- `pnpm telemetry:aggregate`: aggiorna `TelemetryDailyAggregate` e `WebVitalDailyAggregate`.
+- `pnpm telemetry:prune`: cancella raw oltre `TELEMETRY_RETENTION_DAYS`.
+- `pnpm telemetry:jobs`: esegue aggregate + prune, pensato per cron giornaliero.
+
+Cron VPS consigliato:
+
+```cron
+15 2 * * * cd /opt/middleware && docker compose -f docker-compose.prod.yml --profile ops run --rm migrate pnpm telemetry:jobs
+```
+
+Il comando gira nel container `migrate` perche contiene workspace, Prisma e script operativi. Non va eseguito nel container standalone dell'app.
 
 ### Retention telemetria
 
-- Job notturno che cancella o partiziona per data `AnalyticsEvent`, `WebVital` ed `ErrorLog`, governato da `TELEMETRY_RETENTION_DAYS`.
+- Job notturno che cancella per data `AnalyticsEvent` e `WebVital`, governato da `TELEMETRY_RETENTION_DAYS`.
+- `ErrorLog` puo seguire la stessa retention oppure una retention piu lunga se si aggiunge `ERROR_LOG_RETENTION_DAYS`. Per ora tenere `TELEMETRY_RETENTION_DAYS=90` anche per errori.
 - Da attivare dal primo giorno: senza uno strumento esterno questi dati crescono solo dentro il tuo Postgres.
-- Se vuoi storico analytics lungo, tieni la tabella grezza a 90 giorni e conserva a lungo solo le aggregazioni.
+- Storico lungo: raw a 90 giorni, aggregati a 12-24 mesi. Gli aggregati occupano poco e sono utili per trend editoriali.
+- Il prune deve essere esplicito e rumoroso su stdout: numero righe cancellate per tabella, retention applicata, timestamp.
+- Il prune non deve cancellare aggregati necessari al CMS storico.
 
 ### Alerting (opzionale)
 
 - Senza GlitchTip nessuno avvisa quando un errore esplode. Di default lo vedi nel CMS.
-- Per notifiche push, dentro `onRequestError` aggiungi una chiamata a `ALERT_WEBHOOK_URL` verso ntfy, Telegram o Discord. Poche righe, nessun servizio pesante.
+- Per notifiche push, dentro il service errori aggiungi una chiamata a `ALERT_WEBHOOK_URL` verso ntfy, Telegram o Discord. Poche righe, nessun servizio pesante.
+- Non inviare webhook per ogni occorrenza: solo nuovo fingerprint, oppure `count` che supera soglie tipo 10, 50, 100.
+- Se il webhook fallisce, log stdout e basta. Non deve fallire la request utente.
 
 ### Tracing (escluso per ora)
 
@@ -434,6 +566,41 @@ Tutto vive dentro Next.js e Postgres. Niente servizi esterni.
 
 - Monitorare il Next.js dal Next.js non funziona: se il box è giù, è giù anche il monitor.
 - L'uptime resta esterno, sul Workflow uptime di GitHub Actions che colpisce `/api/health` ogni cinque minuti. Resta dentro l'ecosistema GitHub, nessuna terza parte e nessun health check Cloudflare a pagamento.
+
+### Checklist implementativa osservabilità
+
+- [ ] Aggiungere i modelli Prisma raw e aggregati: `AnalyticsEvent`, `WebVital`, `ErrorLog`, `TelemetryDailyAggregate`, `WebVitalDailyAggregate`.
+- [ ] Aggiungere migration con indici espliciti per path, data, metriche, fingerprint e deduplica Web Vitals.
+- [ ] Creare `lib/server/modules/telemetry/schema` con payload Zod discriminati per analytics, web vital e client error.
+- [ ] Creare helper `deriveDailyVisitorHash` con `ANALYTICS_SALT_SECRET`, data UTC, IP in memoria e user-agent.
+- [ ] Creare sanitizer per header, path, referrer, metadata e messaggi errore.
+- [ ] Implementare `POST /api/telemetry` con risposta rapida, size limit applicativo e nessun dato sensibile in output.
+- [ ] Implementare `lib/telemetry/client.ts` con `sendBeacon` + fallback `fetch keepalive`.
+- [ ] Aggiungere pageview tracking pubblico senza tracciare `/cms`, `/api`, `/_next` e prefetch.
+- [ ] Aggiungere componente Web Vitals client isolato e importarlo in `app/layout.tsx`.
+- [ ] Implementare `instrumentation.ts` con `onRequestError` e upsert su `ErrorLog`.
+- [ ] Aggiornare `app/error.tsx`, `app/global-error.tsx` e `app/(cms)/cms/error.tsx` per inviare `client-error`.
+- [ ] Creare `telemetryRouter` tRPC admin-only con procedure per analytics, performance ed errori.
+- [ ] Creare tre pagine CMS separate: `/cms/analytics`, `/cms/performance`, `/cms/errors`.
+- [ ] Aggiungere navigazione CMS admin-only per le tre pagine o gruppo osservabilità.
+- [ ] Implementare `scripts/refresh-telemetry-aggregates.mjs` idempotente sugli ultimi N giorni.
+- [ ] Implementare `scripts/prune-telemetry.mjs` governato da `TELEMETRY_RETENTION_DAYS`.
+- [ ] Aggiungere script npm `telemetry:aggregate`, `telemetry:prune`, `telemetry:jobs`.
+- [ ] Documentare cron VPS che esegue `telemetry:jobs` dal container `migrate`.
+- [ ] Aggiornare CSP per permettere `connect-src 'self'` verso `/api/telemetry`, senza host esterni.
+- [ ] Testare localmente eventi analytics, Web Vitals, server error, boundary error, aggregazione e prune.
+
+### Criteri di accettazione osservabilità
+
+- Una visita pubblica genera al massimo un `page_view` per navigazione reale e non blocca render o navigazione.
+- Nessuna riga telemetry contiene IP grezzo, cookie, authorization header, session token o body request.
+- `AnalyticsEvent` riceve eventi reali e `/cms/analytics` mostra dati da aggregati.
+- `WebVital` riceve metriche reali e `/cms/performance` mostra p75/p95 per pagina senza query raw pesanti.
+- Un errore server di test crea o aggiorna un gruppo in `ErrorLog`.
+- Un errore intercettato da `error.tsx` o `global-error.tsx` arriva in `/cms/errors`.
+- `telemetry:jobs` aggiorna aggregati e cancella raw oltre retention.
+- Se Postgres e lento o temporaneamente non disponibile, il collector non rompe l'esperienza utente.
+- `pnpm check:all` resta verde.
 
 ## Baseline locale completata
 
@@ -515,12 +682,55 @@ Attività da fare dopo questa macro:
 
 ### 4. Osservabilità in-app
 
-- Aggiungere modelli Prisma `AnalyticsEvent`, `WebVital`, `ErrorLog`.
-- Implementare collector analytics cookieless e web vitals.
-- Implementare `instrumentation.ts` con `onRequestError` e sanitizzazione di cookie, auth header e body.
-- Implementare route logging per `app/error.tsx` e `app/global-error.tsx`.
-- Implementare aggregazioni per CMS senza query pesanti sulla tabella grezza.
-- Implementare retention job governato da `TELEMETRY_RETENTION_DAYS`.
+Obiettivo: sistema production-ready, leggero e autosufficiente per analytics, performance ed errori, senza servizi esterni e senza rallentare l'app pubblica.
+
+Schema e storage:
+
+- [ ] Aggiungere modelli Prisma `AnalyticsEvent`, `WebVital`, `ErrorLog`, `TelemetryDailyAggregate`, `WebVitalDailyAggregate`.
+- [ ] Aggiungere indici mirati per data, path, visitor hash, metrica, fingerprint e deduplica Web Vitals.
+- [ ] Mantenere raw telemetry append-only, con update solo su `ErrorLog` via fingerprint.
+- [ ] Limitare metadata JSON con allowlist e size guard per evitare payload grandi in Postgres.
+
+Collector e client:
+
+- [ ] Implementare `POST /api/telemetry` come collector unico con payload discriminato `analytics`, `web-vital`, `client-error`.
+- [ ] Implementare `track(event, metadata?)` con `navigator.sendBeacon` e fallback `fetch keepalive`.
+- [ ] Tracciare solo eventi editorialmente utili: page view, article view, issue view, listen view.
+- [ ] Escludere tracking per `/cms`, `/api`, `/_next`, prefetch e bot evidenti.
+- [ ] Calcolare visitor hash giornaliero da IP in memoria, user-agent, data UTC e `ANALYTICS_SALT_SECRET`.
+- [ ] Salvare paese da `CF-IPCountry` senza lookup esterni e senza IP grezzo.
+
+Performance:
+
+- [ ] Implementare componente client isolato per `useReportWebVitals` da `next/web-vitals`.
+- [ ] Inviare `LCP`, `CLS`, `INP`, `FCP`, `TTFB` e `FID` se disponibile.
+- [ ] Deduplicare con `metric.id + metric.name`.
+- [ ] Non salvare `entries` raw dei Web Vitals.
+
+Errori:
+
+- [ ] Implementare `instrumentation.ts` con `onRequestError` tipizzato e compatibile con Next 16.
+- [ ] Sanitizzare cookie, auth header, body, token, query sensibili e stack production.
+- [ ] Implementare fingerprint deterministico e upsert su `ErrorLog` con contatore.
+- [ ] Aggiornare `app/error.tsx`, `app/global-error.tsx` e `app/(cms)/cms/error.tsx` per inviare `client-error`.
+- [ ] Collegare `ALERT_WEBHOOK_URL` opzionale solo per nuovi fingerprint o soglie, non per ogni occorrenza.
+
+Aggregazioni e CMS:
+
+- [ ] Implementare `scripts/refresh-telemetry-aggregates.mjs` idempotente sugli ultimi N giorni.
+- [ ] Creare router tRPC admin-only `telemetryRouter` con output DTO validati.
+- [ ] Creare `/cms/analytics` per visite, visitatori, top pagine, referrer e paesi.
+- [ ] Creare `/cms/performance` per p75/p95 Web Vitals, trend e pagine peggiori.
+- [ ] Creare `/cms/errors` per gruppi errore, frequenza, ultimo avvistamento e dettaglio sanitizzato.
+- [ ] Far leggere al CMS aggregati e `ErrorLog` raggruppato, non raw table non limitate.
+
+Retention e operatività:
+
+- [ ] Implementare `scripts/prune-telemetry.mjs` governato da `TELEMETRY_RETENTION_DAYS`.
+- [ ] Aggiungere script npm `telemetry:aggregate`, `telemetry:prune`, `telemetry:jobs`.
+- [ ] Documentare cron VPS che esegue `telemetry:jobs` dal container `migrate`.
+- [ ] Aggiornare CSP per collector same-origin.
+- [ ] Testare in locale raccolta, aggregazione, pagine CMS, error boundary e retention.
 
 ### 5. Backup e restore senza bucket reale
 
@@ -569,8 +779,8 @@ pnpm auth:bootstrap-admin
 - [x] `/api/health` implementato e usabile da Docker healthcheck.
 - [ ] Workflow e script (`deploy.sh`, `backup-db.sh`, `healthcheck.sh`) preparati nel repo.
 - [x] Target Docker `migrator` verificato su DB locale vuoto.
-- [ ] Modelli Prisma `AnalyticsEvent`, `WebVital`, `ErrorLog` definiti.
-- [ ] `instrumentation.ts`, route collector analytics, route logging errori, retention job implementati e testati in locale.
+- [ ] Modelli Prisma `AnalyticsEvent`, `WebVital`, `ErrorLog`, `TelemetryDailyAggregate`, `WebVitalDailyAggregate` definiti.
+- [ ] `instrumentation.ts`, route collector `/api/telemetry`, Web Vitals, boundary errori, aggregazioni e retention job implementati e testati in locale.
 - [ ] Piano CSP per host app e route interne pronto.
 - [ ] Piano backup e checklist smoke/rollback pronti.
 
@@ -659,9 +869,11 @@ Gate fase D:
 ### Fase E - Osservabilità e backup
 
 - [ ] Verificare che `AnalyticsEvent` riceva eventi reali dal sito.
-- [ ] Verificare che i Web Vitals arrivino e si vedano nel CMS.
+- [ ] Verificare che `/cms/analytics` legga aggregati e mostri visite, visitatori, pagine, referrer e paesi.
+- [ ] Verificare che i Web Vitals arrivino e si vedano in `/cms/performance` con p75/p95.
 - [ ] Verificare che un errore di test finisca in `ErrorLog`.
-- [ ] Verificare i boundary `error.tsx`/`global-error.tsx`.
+- [ ] Verificare che `/cms/errors` mostri gruppi errore, conteggio, ultimo avvistamento e dettaglio sanitizzato.
+- [ ] Verificare i boundary `error.tsx`, `global-error.tsx` e `app/(cms)/cms/error.tsx`.
 - [ ] Verificare il job di retention telemetria.
 - [ ] Configurare `scripts/backup-db.sh` con cron giornaliero.
 - [ ] Eseguire un restore test su DB di prova.
@@ -670,8 +882,9 @@ Gate fase D:
 
 Gate fase E:
 
-- Analytics, web vitals ed errori visibili nel CMS.
+- Analytics, web vitals ed errori visibili nelle tre pagine CMS dedicate.
 - Retention telemetria attiva.
+- Aggregazioni telemetry aggiornate senza query pesanti sulle tabelle raw.
 - Backup DB schedulato e restore testato.
 - Uptime check attivo.
 
@@ -767,7 +980,7 @@ Già completato in locale, da riverificare. L'unico codice nuovo oltre la baseli
 2. `cacheComponents: true`, senza route segment config incompatibili (`runtime`, `dynamic`, `revalidate`, `fetchCache`, `dynamicParams`).
 3. Bucket S3 privato, accesso pubblico via route applicative.
 4. `redis` come client standard, solo `REDIS_URL`.
-5. `instrumentation.ts`, collector analytics, route logging errori, `useReportWebVitals`, retention job collegati.
+5. `instrumentation.ts`, collector `/api/telemetry`, `useReportWebVitals`, boundary errori, aggregazioni e retention job collegati.
 6. `/api/health` implementato, usato da healthcheck e uptime.
 7. CSP aggiornata agli host reali e alle route interne.
 8. `BETTER_AUTH_URL` e `NEXT_PUBLIC_SITE_URL` sul dominio produzione.
@@ -874,10 +1087,13 @@ Già completato in locale, da riverificare. L'unico codice nuovo oltre la baseli
 - [ ] Admin produzione creato.
 - [ ] Upload media e pubblicazione funzionanti.
 - [ ] `AnalyticsEvent` popolata da traffico reale.
-- [ ] Web Vitals visibili nel CMS.
+- [ ] `/cms/analytics` popolata da aggregati reali.
+- [ ] Web Vitals visibili in `/cms/performance` con p75/p95.
 - [ ] `ErrorLog` popolata da errore di test.
+- [ ] `/cms/errors` mostra gruppi errore e dettaglio sanitizzato.
 - [ ] Boundary errori verificati.
 - [ ] Retention telemetria attiva.
+- [ ] Aggregazioni telemetria aggiornate dal job operativo.
 - [ ] CSP verificata nel browser.
 
 ### Backup e uptime
