@@ -829,23 +829,82 @@ Criterio di completamento:
 
 Obiettivo: validare l'architettura end-to-end su pochi modelli prima di committare l'intero schema. La libertà del "non ancora deployato" si usa per andare per gradi, non per modellare nove entità al buio.
 
+Assunzione operativa: la Fase 0 è stata completata come descritta. Vocabolario, algoritmi, fingerprint, privacy, timestamp, score, metadata, sample rate e campi catturati/derivati non si ridefiniscono qui. La Fase 1 li applica.
+
+Principio di questa fase: slice verticale, no retrocompatibilità. Le tabelle e i flussi provvisori (`AnalyticsEvent`, `WebVital`, `ErrorLog`, `TelemetryDailyAggregate`, `WebVitalDailyAggregate`, DTO basati su views, procedure CMS basate su page view, job di aggregazione provvisori) non sono vincoli. Se non servono lo slice qualitativo, si eliminano o si riscrivono. Non si mantengono adapter legacy, alias di endpoint, mapping vecchio-nuovo o doppie dashboard per proteggere il modello provvisorio.
+
+Scelta dello slice interpretato: `ErrorGroup` + `ErrorOccurrence`. Gli errori danno valore operativo immediato e validano correlazione, fingerprint versionato, status operativo, severità derivata, dettaglio UI e separazione tra gruppo interpretato e occorrenze catturate. `ContentEngagement` resta fuori da questa fase e viene affrontato in Fase 3.
+
 Modelli introdotti in questa fase, soltanto la spina dorsale:
 
 - `ObservabilitySession`
-- `ObservabilityEvent` (raw, append-only)
-- Una sola tabella interpretata end-to-end. Scelta raccomandata: `ErrorGroup` + `ErrorOccurrence`, perché gli errori danno valore operativo immediato e validano correlazione, fingerprint, stato e detail UI. Alternativa: `ContentEngagement`, se si vuole validare prima il tracking editoriale.
+- `ObservabilityEvent` raw append-only
+- `ErrorGroup`
+- `ErrorOccurrence`
 
 Campi trasversali da prevedere fin da subito: `sessionId`, `visitorHash`, `requestId`, `correlationId`, `path`, `pageType`, `contentId`, `contentType`, `release`/`buildId`, `sampleRate`, `clientSequence`, `clientElapsedMs`, `receivedAtServer`, `metadata` con limiti severi di dimensione e shape.
 
-Decisioni tecniche: `ObservabilityEvent` append-only; retention raw più breve degli aggregati; tabelle interpretate leggibili direttamente dalla UI; campi interpretati mai scritti come fatti certi sui record di cattura.
+Decisioni tecniche: `ObservabilityEvent` append-only; retention raw più breve degli aggregati; tabelle interpretate leggibili direttamente dalla UI; campi interpretati mai scritti come fatti certi sui record di cattura; ogni occorrenza errore viene salvata, mentre il gruppo contiene solo stato, sintesi e contatori derivati; la sessione in Fase 1 è minima e serve a collegare l'errore al percorso end-to-end, non sostituisce il session tracking completo della Fase 2.
 
-Deliverable: migrazione Prisma minima, DTO di output per la prima pagina, schema Zod input/output, un repository per il dominio scelto.
+Checklist operativa Fase 1:
+
+- [ ] Rimuovere dallo schema autorevole i modelli provvisori incompatibili: `AnalyticsEvent`, `WebVital`, `ErrorLog`, `TelemetryDailyAggregate`, `WebVitalDailyAggregate`.
+- [ ] Rimuovere o riscrivere le relazioni implicite del codice verso page view, Web Vitals aggregate e `ErrorLog.count` come fonti primarie della UI.
+- [ ] Creare `ObservabilitySession` con campi minimi catturati/derivati: `id`, `visitorHash`, `startedAt`, `lastSeenAt`, `endedAt`, `landingPath`, `exitPath`, `referrerDomain`, `country`, `userAgent` redatto o limitato, `isLikelyBot`, `createdAt`, `updatedAt`.
+- [ ] Creare `ObservabilityEvent` raw append-only con `sessionId`, `visitorHash`, `type`, `category`, `path`, `pageType`, `contentId`, `contentType`, `requestId`, `correlationId`, `release`/`buildId`, `sampleRate`, `clientSequence`, `clientElapsedMs`, `metadata`, `receivedAtServer`.
+- [ ] Creare `ErrorGroup` con `fingerprint`, `fingerprintVersion`, `errorSignature`, `title`, `source`, `severity`, `status`, `firstSeenAt`, `lastSeenAt`, `occurrenceCount`, `affectedSessions`, `affectedPaths`, `impactArea`, `userImpact`, `regression`, `firstRelease`, `lastRelease`, `resolvedAt`, `resolvedBy`.
+- [ ] Creare `ErrorOccurrence` con `errorGroupId`, `observabilityEventId`, `sessionId`, `requestId`, `correlationId`, `path`, `routePath`, `routeType`, `method`, `statusCode`, `actionContext`, `userAgent` redatto o limitato, `deviceType`, `browser`, `os`, `stackTraceRedacted`, `metadata`, `occurredAt`.
+- [ ] Decidere esplicitamente quali campi sono nullable in Fase 1 perché non ancora prodotti dal collector completo, senza inventare valori falsi: ad esempio `sessionId` può mancare per errori server non correlati a una sessione browser.
+- [ ] Aggiungere indici minimi per lo slice: sessione per `visitorHash`/`startedAt`, eventi per `receivedAtServer`/`sessionId`/`requestId`, gruppi per `fingerprint`/`errorSignature`/`status`/`severity`/`lastSeenAt`, occorrenze per `errorGroupId`/`occurredAt`/`sessionId`/`requestId`.
+- [ ] Generare una migrazione Prisma netta che elimina le tabelle provvisorie e crea le nuove tabelle, senza colonne ponte, backfill legacy o preservazione dei conteggi vecchi.
+- [ ] Aggiornare il client telemetry minimo per generare `sessionId` anonimo in `sessionStorage`, ruotarlo dopo 30 minuti di inattività e allegarlo agli errori client.
+- [ ] Non implementare in Fase 1 heartbeat, scroll milestone, active time completo, bot filtering completo o batching avanzato: appartengono alla Fase 2 o 3.
+- [ ] Aggiornare `/api/telemetry` per accettare il payload minimo dello slice, validarlo con Zod, applicare limiti di payload e ignorare input invalidi senza rompere la risposta.
+- [ ] Limitare il collector pubblico di Fase 1 agli errori client e agli eventi raw necessari per ricostruirli; analytics/page view e Web Vitals non devono restare la fonte primaria di nessuna pagina nuova.
+- [ ] Aggiornare `instrumentation.ts` o il punto equivalente di cattura server error per registrare errori server nel nuovo flusso `ErrorGroup` + `ErrorOccurrence`.
+- [ ] Implementare sanitizzazione e redazione centralizzate per metadata, path, user-agent, stack trace e messaggi errore secondo i limiti decisi in Fase 0.
+- [ ] Implementare `fingerprintVersion` obbligatorio e algoritmo fingerprint v1 conforme alla Fase 0, senza riusare il fingerprint provvisorio non versionato come vincolo.
+- [ ] Implementare `errorSignature` grossolana per regressioni future, anche se la detection completa può restare minima in questa fase.
+- [ ] Implementare derivazione iniziale deterministica di `title`, `severity`, `impactArea` e `userImpact` da source, route, status code, action context e contesto disponibile.
+- [ ] Implementare il flusso service atomico: calcolo fingerprint/signature, creazione o aggiornamento `ObservabilitySession`, creazione `ObservabilityEvent`, creazione o aggiornamento `ErrorGroup`, creazione sempre nuova `ErrorOccurrence`, aggiornamento sintesi del gruppo.
+- [ ] Garantire che un errore ripetuto incrementi e aggiorni il gruppo ma produca comunque una nuova occorrenza consultabile.
+- [ ] Separare responsabilità nel modulo server: schema Zod per input/output, repository per Prisma, service per regole/fingerprint/derivazioni, DTO per UI, policy per accesso CMS.
+- [ ] Evitare router tRPC con business logic: le procedure devono orchestrare input, policy, service e `parseOutput`.
+- [ ] Creare DTO CMS per lista gruppi errore con almeno `id`, `title`, `source`, `severity`, `status`, `occurrenceCount`, `affectedSessions`, `affectedPaths`, `impactArea`, `userImpact`, `firstSeenAt`, `lastSeenAt`, `regression`.
+- [ ] Creare DTO CMS per dettaglio gruppo con fingerprint, versione, signature, stato operativo, breakdown impatto, ultime occorrenze, request/session/correlation id, path, route, stack redatto e metadata redatti.
+- [ ] Creare procedure tRPC per lista errori, dettaglio errore e aggiornamento status (`open`, `investigating`, `resolved`, `ignored`).
+- [ ] Aggiornare o sostituire la UI CMS errori in modo che legga `ErrorGroup` e `ErrorOccurrence`, non `ErrorLog` o conteggi legacy.
+- [ ] La prima UI deve mostrare una inbox operativa minima: KPI essenziali, lista ordinata per impatto/recenza, filtri per status/severity/source, dettaglio con timeline occorrenze e copy button per fingerprint/requestId/sessionId.
+- [ ] Rimuovere o disabilitare route, schermate, prefetch e query CMS che dipendono da analytics summary o performance summary provvisori se non sono più coerenti con lo slice.
+- [ ] Rimuovere o rendere esplicitamente non applicabili gli script provvisori di aggregazione/prune telemetry che dipendono dalle vecchie tabelle, se non vengono riscritti per il nuovo schema.
+- [ ] Aggiornare export e import del modulo in modo che il codice non continui a esporre DTO o schema legacy come API ufficiale.
+- [ ] Aggiornare i test esistenti che presuppongono `page_view`, `FID`, `ErrorLog` o aggregate a views, eliminando le aspettative incoerenti invece di adattarle con compatibilità finta.
+- [ ] Aggiungere test unitari per visitor hash giornaliero, normalizzazione path, metadata privacy, fingerprint v1, `errorSignature`, derivazione severity/impact, creazione gruppo, creazione occorrenza e ripetizione errore.
+- [ ] Aggiungere test route collector per payload valido, payload invalido, payload oversized, metadata troppo grandi, session id presente, session id assente dove consentito.
+- [ ] Aggiungere test tRPC/service per lista, dettaglio e update status con output validato da DTO.
+- [ ] Verificare con `prisma validate`, generazione client, typecheck, lint e unit test pertinenti.
+- [ ] Aggiornare questo documento se durante l'implementazione emergono decisioni di schema o derivazione che precisano la Fase 1, senza creare checklist parallele.
+
+Deliverable Fase 1:
+
+- [ ] Migrazione Prisma netta con `ObservabilitySession`, `ObservabilityEvent`, `ErrorGroup`, `ErrorOccurrence` e rimozione delle tabelle provvisorie non più usate.
+- [ ] Schema Zod input/output per collector minimo, query CMS e update status.
+- [ ] Repository per sessioni, raw event, error group e error occurrence.
+- [ ] Service per registrazione errori, fingerprint v1, signature, derivazioni qualitative e DTO.
+- [ ] Procedure tRPC per inbox errori, dettaglio e cambio status.
+- [ ] UI CMS minima per error inbox basata sul nuovo modello interpretato.
+- [ ] Test unitari e route test che dimostrano il percorso end-to-end.
 
 Criterio di completamento:
 
-- Un dato reale catturato attraversa tutto il percorso: evento → sessione → tabella interpretata → DTO → UI.
-- Il vecchio concetto di page view non è il dato primario di quella pagina.
-- Solo dopo questa validazione si espande lo schema alle altre entità, fase per fase.
+- [ ] Un errore client reale attraversa tutto il percorso: payload collector → sessione minima → evento raw → `ErrorGroup`/`ErrorOccurrence` → DTO → UI.
+- [ ] Un errore server reale attraversa il percorso nuovo almeno da cattura server → evento raw o occurrence correlata → `ErrorGroup`/`ErrorOccurrence` → DTO → UI, anche quando `sessionId` non è disponibile.
+- [ ] Ogni ripetizione dello stesso errore crea una nuova `ErrorOccurrence` e aggiorna il relativo `ErrorGroup` senza perdere dettaglio operativo.
+- [ ] Il fingerprint è normalizzato, versionato e non dipende da dati dinamici o sensibili.
+- [ ] La UI errori non usa `ErrorLog`, `AnalyticsEvent`, page view, Web Vitals o aggregati legacy come fonte autorevole.
+- [ ] Le parti incompatibili del modello provvisorio sono eliminate o rese non raggiungibili, non mantenute per retrocompatibilità preventiva.
+- [ ] Il sistema resta funzionante e verificabile dopo la migrazione, anche se telemetry editoriale, performance qualitativa, aggregati e overview arrivano nelle fasi successive.
+- [ ] Solo dopo questa validazione si espande lo schema alle altre entità, fase per fase.
 
 ### Fase 2: Collector, Session Tracking, Bot Filtering E Rate Limit
 
