@@ -267,3 +267,103 @@ model AuditLog {
   @@index([outcome, createdAt])
   @@map("audit_logs")
 }
+
+model AnalyticsEvent {
+  id          String   @id @default(uuid())
+  event       String
+  path        String
+  referrer    String?
+  country     String?
+  visitorHash String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([event, createdAt])
+  @@index([path, createdAt])
+  @@index([visitorHash, createdAt])
+  @@map("analytics_events")
+}
+
+model WebVital {
+  id             String   @id @default(uuid())
+  metricId       String
+  name           String
+  value          Float
+  delta          Float
+  rating         String?
+  navigationType String?
+  path           String
+  visitorHash    String?
+  createdAt      DateTime @default(now())
+
+  @@unique([metricId, name])
+  @@index([createdAt])
+  @@index([name, createdAt])
+  @@index([path, createdAt])
+  @@index([path, name, createdAt])
+  @@map("web_vitals")
+}
+
+model ErrorLog {
+  id          String   @id @default(uuid())
+  fingerprint String   @unique
+  source      String
+  name        String?
+  message     String
+  digest      String?
+  path        String?
+  method      String?
+  routePath   String?
+  routeType   String?
+  requestId   String?
+  userAgent   String?
+  count       Int      @default(1)
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @updatedAt
+  metadata    Json?
+
+  @@index([lastSeenAt])
+  @@index([path, lastSeenAt])
+  @@index([source, lastSeenAt])
+  @@map("error_logs")
+}
+
+model TelemetryDailyAggregate {
+  id        String   @id @default(uuid())
+  date      DateTime
+  event     String
+  path      String
+  referrer  String   @default("")
+  country   String   @default("")
+  views     Int      @default(0)
+  visitors  Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@unique([date, event, path, referrer, country])
+  @@index([date])
+  @@index([event, date])
+  @@index([path, date])
+  @@map("telemetry_daily_aggregates")
+}
+
+model WebVitalDailyAggregate {
+  id               String   @id @default(uuid())
+  date             DateTime
+  path             String
+  name             String
+  count            Int      @default(0)
+  p50              Float?
+  p75              Float?
+  p95              Float?
+  good             Int      @default(0)
+  needsImprovement Int      @default(0)
+  poor             Int      @default(0)
+  updatedAt        DateTime @updatedAt
+
+  @@unique([date, path, name])
+  @@index([date])
+  @@index([name, date])
+  @@index([path, date])
+  @@map("web_vital_daily_aggregates")
+}

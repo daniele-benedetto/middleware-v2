@@ -63,7 +63,12 @@ export const ModelName = {
   ArticleTag: 'ArticleTag',
   Page: 'Page',
   NavigationMenu: 'NavigationMenu',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  AnalyticsEvent: 'AnalyticsEvent',
+  WebVital: 'WebVital',
+  ErrorLog: 'ErrorLog',
+  TelemetryDailyAggregate: 'TelemetryDailyAggregate',
+  WebVitalDailyAggregate: 'WebVitalDailyAggregate'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -281,6 +286,91 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const AnalyticsEventScalarFieldEnum = {
+  id: 'id',
+  event: 'event',
+  path: 'path',
+  referrer: 'referrer',
+  country: 'country',
+  visitorHash: 'visitorHash',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AnalyticsEventScalarFieldEnum = (typeof AnalyticsEventScalarFieldEnum)[keyof typeof AnalyticsEventScalarFieldEnum]
+
+
+export const WebVitalScalarFieldEnum = {
+  id: 'id',
+  metricId: 'metricId',
+  name: 'name',
+  value: 'value',
+  delta: 'delta',
+  rating: 'rating',
+  navigationType: 'navigationType',
+  path: 'path',
+  visitorHash: 'visitorHash',
+  createdAt: 'createdAt'
+} as const
+
+export type WebVitalScalarFieldEnum = (typeof WebVitalScalarFieldEnum)[keyof typeof WebVitalScalarFieldEnum]
+
+
+export const ErrorLogScalarFieldEnum = {
+  id: 'id',
+  fingerprint: 'fingerprint',
+  source: 'source',
+  name: 'name',
+  message: 'message',
+  digest: 'digest',
+  path: 'path',
+  method: 'method',
+  routePath: 'routePath',
+  routeType: 'routeType',
+  requestId: 'requestId',
+  userAgent: 'userAgent',
+  count: 'count',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt',
+  metadata: 'metadata'
+} as const
+
+export type ErrorLogScalarFieldEnum = (typeof ErrorLogScalarFieldEnum)[keyof typeof ErrorLogScalarFieldEnum]
+
+
+export const TelemetryDailyAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  event: 'event',
+  path: 'path',
+  referrer: 'referrer',
+  country: 'country',
+  views: 'views',
+  visitors: 'visitors',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TelemetryDailyAggregateScalarFieldEnum = (typeof TelemetryDailyAggregateScalarFieldEnum)[keyof typeof TelemetryDailyAggregateScalarFieldEnum]
+
+
+export const WebVitalDailyAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  path: 'path',
+  name: 'name',
+  count: 'count',
+  p50: 'p50',
+  p75: 'p75',
+  p95: 'p95',
+  good: 'good',
+  needsImprovement: 'needsImprovement',
+  poor: 'poor',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WebVitalDailyAggregateScalarFieldEnum = (typeof WebVitalDailyAggregateScalarFieldEnum)[keyof typeof WebVitalDailyAggregateScalarFieldEnum]
 
 
 export const SortOrder = {

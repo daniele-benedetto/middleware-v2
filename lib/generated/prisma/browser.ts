@@ -82,3 +82,28 @@ export type NavigationMenu = Prisma.NavigationMenuModel
  * 
  */
 export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model AnalyticsEvent
+ * 
+ */
+export type AnalyticsEvent = Prisma.AnalyticsEventModel
+/**
+ * Model WebVital
+ * 
+ */
+export type WebVital = Prisma.WebVitalModel
+/**
+ * Model ErrorLog
+ * 
+ */
+export type ErrorLog = Prisma.ErrorLogModel
+/**
+ * Model TelemetryDailyAggregate
+ * 
+ */
+export type TelemetryDailyAggregate = Prisma.TelemetryDailyAggregateModel
+/**
+ * Model WebVitalDailyAggregate
+ * 
+ */
+export type WebVitalDailyAggregate = Prisma.WebVitalDailyAggregateModel

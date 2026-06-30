@@ -396,7 +396,12 @@ export const ModelName = {
   ArticleTag: 'ArticleTag',
   Page: 'Page',
   NavigationMenu: 'NavigationMenu',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  AnalyticsEvent: 'AnalyticsEvent',
+  WebVital: 'WebVital',
+  ErrorLog: 'ErrorLog',
+  TelemetryDailyAggregate: 'TelemetryDailyAggregate',
+  WebVitalDailyAggregate: 'WebVitalDailyAggregate'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -412,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "navigationMenu" | "auditLog"
+    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "navigationMenu" | "auditLog" | "analyticsEvent" | "webVital" | "errorLog" | "telemetryDailyAggregate" | "webVitalDailyAggregate"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1378,6 +1383,376 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AnalyticsEvent: {
+      payload: Prisma.$AnalyticsEventPayload<ExtArgs>
+      fields: Prisma.AnalyticsEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AnalyticsEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AnalyticsEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        findFirst: {
+          args: Prisma.AnalyticsEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AnalyticsEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        findMany: {
+          args: Prisma.AnalyticsEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>[]
+        }
+        create: {
+          args: Prisma.AnalyticsEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        createMany: {
+          args: Prisma.AnalyticsEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AnalyticsEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>[]
+        }
+        delete: {
+          args: Prisma.AnalyticsEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        update: {
+          args: Prisma.AnalyticsEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.AnalyticsEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AnalyticsEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AnalyticsEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.AnalyticsEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        aggregate: {
+          args: Prisma.AnalyticsEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAnalyticsEvent>
+        }
+        groupBy: {
+          args: Prisma.AnalyticsEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalyticsEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AnalyticsEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalyticsEventCountAggregateOutputType> | number
+        }
+      }
+    }
+    WebVital: {
+      payload: Prisma.$WebVitalPayload<ExtArgs>
+      fields: Prisma.WebVitalFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WebVitalFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WebVitalFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalPayload>
+        }
+        findFirst: {
+          args: Prisma.WebVitalFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WebVitalFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalPayload>
+        }
+        findMany: {
+          args: Prisma.WebVitalFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalPayload>[]
+        }
+        create: {
+          args: Prisma.WebVitalCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalPayload>
+        }
+        createMany: {
+          args: Prisma.WebVitalCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WebVitalCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalPayload>[]
+        }
+        delete: {
+          args: Prisma.WebVitalDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalPayload>
+        }
+        update: {
+          args: Prisma.WebVitalUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalPayload>
+        }
+        deleteMany: {
+          args: Prisma.WebVitalDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WebVitalUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WebVitalUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalPayload>[]
+        }
+        upsert: {
+          args: Prisma.WebVitalUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalPayload>
+        }
+        aggregate: {
+          args: Prisma.WebVitalAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWebVital>
+        }
+        groupBy: {
+          args: Prisma.WebVitalGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebVitalGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WebVitalCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebVitalCountAggregateOutputType> | number
+        }
+      }
+    }
+    ErrorLog: {
+      payload: Prisma.$ErrorLogPayload<ExtArgs>
+      fields: Prisma.ErrorLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ErrorLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ErrorLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ErrorLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ErrorLogPayload>
+        }
+        findFirst: {
+          args: Prisma.ErrorLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ErrorLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ErrorLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ErrorLogPayload>
+        }
+        findMany: {
+          args: Prisma.ErrorLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ErrorLogPayload>[]
+        }
+        create: {
+          args: Prisma.ErrorLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ErrorLogPayload>
+        }
+        createMany: {
+          args: Prisma.ErrorLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ErrorLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ErrorLogPayload>[]
+        }
+        delete: {
+          args: Prisma.ErrorLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ErrorLogPayload>
+        }
+        update: {
+          args: Prisma.ErrorLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ErrorLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.ErrorLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ErrorLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ErrorLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ErrorLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.ErrorLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ErrorLogPayload>
+        }
+        aggregate: {
+          args: Prisma.ErrorLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateErrorLog>
+        }
+        groupBy: {
+          args: Prisma.ErrorLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ErrorLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ErrorLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ErrorLogCountAggregateOutputType> | number
+        }
+      }
+    }
+    TelemetryDailyAggregate: {
+      payload: Prisma.$TelemetryDailyAggregatePayload<ExtArgs>
+      fields: Prisma.TelemetryDailyAggregateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TelemetryDailyAggregateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TelemetryDailyAggregatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TelemetryDailyAggregateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TelemetryDailyAggregatePayload>
+        }
+        findFirst: {
+          args: Prisma.TelemetryDailyAggregateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TelemetryDailyAggregatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TelemetryDailyAggregateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TelemetryDailyAggregatePayload>
+        }
+        findMany: {
+          args: Prisma.TelemetryDailyAggregateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TelemetryDailyAggregatePayload>[]
+        }
+        create: {
+          args: Prisma.TelemetryDailyAggregateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TelemetryDailyAggregatePayload>
+        }
+        createMany: {
+          args: Prisma.TelemetryDailyAggregateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TelemetryDailyAggregateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TelemetryDailyAggregatePayload>[]
+        }
+        delete: {
+          args: Prisma.TelemetryDailyAggregateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TelemetryDailyAggregatePayload>
+        }
+        update: {
+          args: Prisma.TelemetryDailyAggregateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TelemetryDailyAggregatePayload>
+        }
+        deleteMany: {
+          args: Prisma.TelemetryDailyAggregateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TelemetryDailyAggregateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TelemetryDailyAggregateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TelemetryDailyAggregatePayload>[]
+        }
+        upsert: {
+          args: Prisma.TelemetryDailyAggregateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TelemetryDailyAggregatePayload>
+        }
+        aggregate: {
+          args: Prisma.TelemetryDailyAggregateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTelemetryDailyAggregate>
+        }
+        groupBy: {
+          args: Prisma.TelemetryDailyAggregateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TelemetryDailyAggregateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TelemetryDailyAggregateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TelemetryDailyAggregateCountAggregateOutputType> | number
+        }
+      }
+    }
+    WebVitalDailyAggregate: {
+      payload: Prisma.$WebVitalDailyAggregatePayload<ExtArgs>
+      fields: Prisma.WebVitalDailyAggregateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WebVitalDailyAggregateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalDailyAggregatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WebVitalDailyAggregateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalDailyAggregatePayload>
+        }
+        findFirst: {
+          args: Prisma.WebVitalDailyAggregateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalDailyAggregatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WebVitalDailyAggregateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalDailyAggregatePayload>
+        }
+        findMany: {
+          args: Prisma.WebVitalDailyAggregateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalDailyAggregatePayload>[]
+        }
+        create: {
+          args: Prisma.WebVitalDailyAggregateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalDailyAggregatePayload>
+        }
+        createMany: {
+          args: Prisma.WebVitalDailyAggregateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WebVitalDailyAggregateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalDailyAggregatePayload>[]
+        }
+        delete: {
+          args: Prisma.WebVitalDailyAggregateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalDailyAggregatePayload>
+        }
+        update: {
+          args: Prisma.WebVitalDailyAggregateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalDailyAggregatePayload>
+        }
+        deleteMany: {
+          args: Prisma.WebVitalDailyAggregateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WebVitalDailyAggregateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WebVitalDailyAggregateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalDailyAggregatePayload>[]
+        }
+        upsert: {
+          args: Prisma.WebVitalDailyAggregateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebVitalDailyAggregatePayload>
+        }
+        aggregate: {
+          args: Prisma.WebVitalDailyAggregateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWebVitalDailyAggregate>
+        }
+        groupBy: {
+          args: Prisma.WebVitalDailyAggregateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebVitalDailyAggregateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WebVitalDailyAggregateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebVitalDailyAggregateCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1616,6 +1991,91 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const AnalyticsEventScalarFieldEnum = {
+  id: 'id',
+  event: 'event',
+  path: 'path',
+  referrer: 'referrer',
+  country: 'country',
+  visitorHash: 'visitorHash',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AnalyticsEventScalarFieldEnum = (typeof AnalyticsEventScalarFieldEnum)[keyof typeof AnalyticsEventScalarFieldEnum]
+
+
+export const WebVitalScalarFieldEnum = {
+  id: 'id',
+  metricId: 'metricId',
+  name: 'name',
+  value: 'value',
+  delta: 'delta',
+  rating: 'rating',
+  navigationType: 'navigationType',
+  path: 'path',
+  visitorHash: 'visitorHash',
+  createdAt: 'createdAt'
+} as const
+
+export type WebVitalScalarFieldEnum = (typeof WebVitalScalarFieldEnum)[keyof typeof WebVitalScalarFieldEnum]
+
+
+export const ErrorLogScalarFieldEnum = {
+  id: 'id',
+  fingerprint: 'fingerprint',
+  source: 'source',
+  name: 'name',
+  message: 'message',
+  digest: 'digest',
+  path: 'path',
+  method: 'method',
+  routePath: 'routePath',
+  routeType: 'routeType',
+  requestId: 'requestId',
+  userAgent: 'userAgent',
+  count: 'count',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt',
+  metadata: 'metadata'
+} as const
+
+export type ErrorLogScalarFieldEnum = (typeof ErrorLogScalarFieldEnum)[keyof typeof ErrorLogScalarFieldEnum]
+
+
+export const TelemetryDailyAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  event: 'event',
+  path: 'path',
+  referrer: 'referrer',
+  country: 'country',
+  views: 'views',
+  visitors: 'visitors',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TelemetryDailyAggregateScalarFieldEnum = (typeof TelemetryDailyAggregateScalarFieldEnum)[keyof typeof TelemetryDailyAggregateScalarFieldEnum]
+
+
+export const WebVitalDailyAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  path: 'path',
+  name: 'name',
+  count: 'count',
+  p50: 'p50',
+  p75: 'p75',
+  p95: 'p95',
+  good: 'good',
+  needsImprovement: 'needsImprovement',
+  poor: 'poor',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WebVitalDailyAggregateScalarFieldEnum = (typeof WebVitalDailyAggregateScalarFieldEnum)[keyof typeof WebVitalDailyAggregateScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1927,6 +2387,11 @@ export type GlobalOmitConfig = {
   page?: Prisma.PageOmit
   navigationMenu?: Prisma.NavigationMenuOmit
   auditLog?: Prisma.AuditLogOmit
+  analyticsEvent?: Prisma.AnalyticsEventOmit
+  webVital?: Prisma.WebVitalOmit
+  errorLog?: Prisma.ErrorLogOmit
+  telemetryDailyAggregate?: Prisma.TelemetryDailyAggregateOmit
+  webVitalDailyAggregate?: Prisma.WebVitalDailyAggregateOmit
 }
 
 /* Types for Logging */
