@@ -1,4 +1,4 @@
-import type { AuditLogOutcomeValue } from "@/lib/audit-logs/constants";
+import type { AuditLogOutcomeValue, AuditLogResourceValue } from "@/lib/audit-logs/constants";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { UserRole } from "@/lib/server/auth/roles";
 
@@ -9,7 +9,7 @@ export type CreateAuditLogEntry = {
   actorEmail?: string | null;
   actorRole?: UserRole | null;
   action: string;
-  resource: string;
+  resource: AuditLogResourceValue;
   resourceId?: string | null;
   outcome: AuditLogEntryOutcome;
   errorCode?: string | null;

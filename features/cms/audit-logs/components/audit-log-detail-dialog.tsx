@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatAuditActionLabel } from "@/features/cms/audit-logs/format";
+import { formatAuditActionLabel, formatAuditResourceLabel } from "@/features/cms/audit-logs/format";
 import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -142,31 +142,7 @@ function resolveResourceLabel(
   resource: AuditLogDetail["resource"],
   text: typeof i18n.cms.lists.auditLogs,
 ) {
-  if (resource === "articles") {
-    return text.resourceArticleLabel;
-  }
-
-  if (resource === "categories") {
-    return text.resourceCategoryLabel;
-  }
-
-  if (resource === "issues") {
-    return text.resourceIssueLabel;
-  }
-
-  if (resource === "media") {
-    return text.resourceMediaLabel;
-  }
-
-  if (resource === "tags") {
-    return text.resourceTagLabel;
-  }
-
-  if (resource === "users") {
-    return text.resourceUserLabel;
-  }
-
-  return text.resourceUnknownLabel;
+  return formatAuditResourceLabel(resource, text);
 }
 
 function AuditLogDetailSkeleton({ text }: { text: typeof i18n.cms.lists.auditLogs }) {
@@ -277,6 +253,13 @@ function resolveResourceAction(detail: AuditLogDetail, text: typeof i18n.cms.lis
     } satisfies DetailAction;
   }
 
+  if (detail.resource === "authors" && detail.resourceId) {
+    return {
+      href: cmsCrudRoutes.authors.edit(detail.resourceId),
+      label: text.links.openAuthor,
+    } satisfies DetailAction;
+  }
+
   if (detail.resource === "issues" && detail.resourceId) {
     return {
       href: cmsCrudRoutes.issues.edit(detail.resourceId),
@@ -288,6 +271,13 @@ function resolveResourceAction(detail: AuditLogDetail, text: typeof i18n.cms.lis
     return {
       href: cmsCrudRoutes.tags.edit(detail.resourceId),
       label: text.links.openTag,
+    } satisfies DetailAction;
+  }
+
+  if (detail.resource === "pages" && detail.resourceId) {
+    return {
+      href: cmsCrudRoutes.pages.edit(detail.resourceId),
+      label: text.links.openPage,
     } satisfies DetailAction;
   }
 

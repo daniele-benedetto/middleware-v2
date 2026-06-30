@@ -3,9 +3,11 @@ import "server-only";
 import { auditAction } from "@/lib/server/http/audit";
 import { trpc } from "@/lib/server/trpc/init";
 
+import type { AuditLogResourceValue } from "@/lib/audit-logs/constants";
+
 type AuditPayload = {
   action: string;
-  resource: string;
+  resource: AuditLogResourceValue;
   resourceId?: string;
 };
 

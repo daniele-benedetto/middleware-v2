@@ -5,9 +5,11 @@ import { i18n } from "@/lib/i18n";
 import { ApiError } from "@/lib/server/http/api-error";
 import { articlesRepository } from "@/lib/server/modules/articles/repository";
 import { auditLogsRepository } from "@/lib/server/modules/audit-logs/repository";
+import { authorsRepository } from "@/lib/server/modules/authors/repository";
 import { categoriesRepository } from "@/lib/server/modules/categories/repository";
 import { issuesRepository } from "@/lib/server/modules/issues/repository";
 import { mediaRepository } from "@/lib/server/modules/media/repository";
+import { pagesRepository } from "@/lib/server/modules/pages/repository";
 import { tagsRepository } from "@/lib/server/modules/tags/repository";
 import { usersRepository } from "@/lib/server/modules/users/repository";
 import { StorageNotFoundError } from "@/lib/server/storage/errors";
@@ -211,6 +213,59 @@ async function resolveArticleSummary(resourceId: string): Promise<AuditLogResour
   };
 }
 
+async function resolveAuthorSummary(resourceId: string): Promise<AuditLogResourceSummary> {
+  const text = i18n.cms.lists.auditLogs;
+  const author = await authorsRepository.getById(resourceId);
+
+  if (!author) {
+    return buildMissingResourceSummary(text.resourceAuthorLabel, resourceId);
+  }
+
+  return {
+    title: author.name,
+    description: text.resourceAuthorDescription,
+    missing: false,
+    fields: buildFields([
+      { label: text.fields.id, value: author.id },
+      { label: text.fields.slug, value: author.slug },
+      { label: text.fields.activeMasculine, value: formatBoolean(author.isActive) },
+      { label: text.fields.linkedArticles, value: String(author._count?.articles ?? 0) },
+    ]),
+  };
+}
+
+async function resolvePageSummary(resourceId: string): Promise<AuditLogResourceSummary> {
+  const text = i18n.cms.lists.auditLogs;
+  const page = await pagesRepository.getById(resourceId);
+
+  if (!page) {
+    return buildMissingResourceSummary(text.resourcePageLabel, resourceId);
+  }
+
+  return {
+    title: page.title,
+    description: text.resourcePageDescription,
+    missing: false,
+    fields: buildFields([
+      { label: text.fields.id, value: page.id },
+      { label: text.fields.slug, value: page.slug },
+      { label: text.fields.status, value: page.status },
+      { label: text.fields.published, value: formatNullableDate(page.publishedAt) },
+    ]),
+  };
+}
+
+function resolveNavigationSummary(resourceId: string): AuditLogResourceSummary {
+  const text = i18n.cms.lists.auditLogs;
+
+  return {
+    title: resourceId,
+    description: text.resourceNavigationDescription,
+    missing: false,
+    fields: [{ label: text.fields.key, value: resourceId }],
+  };
+}
+
 async function resolveMediaSummary(resourceId: string): Promise<AuditLogResourceSummary> {
   const text = i18n.cms.lists.auditLogs;
   try {
@@ -248,6 +303,10 @@ async function resolveResourceSummary(
     return resolveCategorySummary(resourceId);
   }
 
+  if (resource === "authors") {
+    return resolveAuthorSummary(resourceId);
+  }
+
   if (resource === "tags") {
     return resolveTagSummary(resourceId);
   }
@@ -264,8 +323,16 @@ async function resolveResourceSummary(
     return resolveArticleSummary(resourceId);
   }
 
+  if (resource === "pages") {
+    return resolvePageSummary(resourceId);
+  }
+
   if (resource === "media") {
     return resolveMediaSummary(resourceId);
+  }
+
+  if (resource === "navigation") {
+    return resolveNavigationSummary(resourceId);
   }
 
   return buildMissingResourceSummary("Risorsa", resourceId);

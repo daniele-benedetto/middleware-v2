@@ -22,3 +22,17 @@ export function formatAuditActionLabel(value: string, text: AuditLogText): strin
 
   return value.replace(/-/g, " ");
 }
+
+export function formatAuditResourceLabel(value: string, text: AuditLogText): string {
+  if (value === "articles") return text.resourceArticleLabel;
+  if (value === "authors") return text.resourceAuthorLabel;
+  if (value === "categories") return text.resourceCategoryLabel;
+  if (value === "issues") return text.resourceIssueLabel;
+  if (value === "media") return text.resourceMediaLabel;
+  if (value === "navigation") return text.resourceNavigationLabel;
+  if (value === "pages") return text.resourcePageLabel;
+  if (value === "tags") return text.resourceTagLabel;
+  if (value === "users") return text.resourceUserLabel;
+
+  return text.resourceUnknownLabel;
+}

@@ -13,12 +13,13 @@ import {
 } from "@/lib/server/http/request";
 import { auditLogsService } from "@/lib/server/modules/audit-logs";
 
+import type { AuditLogResourceValue } from "@/lib/audit-logs/constants";
 import type { AuthSession } from "@/lib/server/auth/types";
 import type { AuditLogEntryOutcome } from "@/lib/server/modules/audit-logs";
 
 type AuditPayload = {
   action: string;
-  resource: string;
+  resource: AuditLogResourceValue;
   resourceId?: string;
   metadata?: Prisma.InputJsonValue;
 };

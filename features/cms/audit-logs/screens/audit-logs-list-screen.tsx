@@ -25,7 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CmsAuditLogDetailDialog } from "@/features/cms/audit-logs/components/audit-log-detail-dialog";
-import { formatAuditActionLabel } from "@/features/cms/audit-logs/format";
+import { formatAuditActionLabel, formatAuditResourceLabel } from "@/features/cms/audit-logs/format";
 import { CmsListFiltersSheet } from "@/features/cms/shared/components/cms-list-filters-sheet";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import { useAuditLogsListQuery, useCmsListUrlState } from "@/features/cms/shared/hooks";
@@ -234,21 +234,7 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <div className="space-y-1">
                         <div className="font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-foreground">
-                          {`${formatAuditActionLabel(entry.action, listText)}: ${
-                            entry.resource === "articles"
-                              ? listText.resourceArticleLabel
-                              : entry.resource === "categories"
-                                ? listText.resourceCategoryLabel
-                                : entry.resource === "issues"
-                                  ? listText.resourceIssueLabel
-                                  : entry.resource === "media"
-                                    ? listText.resourceMediaLabel
-                                    : entry.resource === "tags"
-                                      ? listText.resourceTagLabel
-                                      : entry.resource === "users"
-                                        ? listText.resourceUserLabel
-                                        : listText.resourceUnknownLabel
-                          }`}
+                          {`${formatAuditActionLabel(entry.action, listText)}: ${formatAuditResourceLabel(entry.resource, listText)}`}
                         </div>
                       </div>
                     </TableCell>
