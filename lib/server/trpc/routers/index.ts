@@ -11,6 +11,7 @@ import { navigationRouter } from "@/lib/server/trpc/routers/navigation";
 import { pagesRouter } from "@/lib/server/trpc/routers/pages";
 import { publicRouter } from "@/lib/server/trpc/routers/public";
 import { tagsRouter } from "@/lib/server/trpc/routers/tags";
+import { telemetryRouter } from "@/lib/server/trpc/routers/telemetry";
 import { usersRouter } from "@/lib/server/trpc/routers/users";
 
 export const appRouter = router({
@@ -25,6 +26,7 @@ export const appRouter = router({
   media: mediaRouter,
   navigation: navigationRouter,
   public: publicRouter,
+  telemetry: telemetryRouter,
 });
 
 export type AppRouter = typeof appRouter;

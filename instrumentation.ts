@@ -1,6 +1,3 @@
-import { telemetryService } from "@/lib/server/modules/telemetry/service";
-import { logServerEvent } from "@/lib/server/observability/log";
-
 import type { Instrumentation } from "next";
 
 type RequestError = Error & { digest?: string };
@@ -24,9 +21,15 @@ function readRequestId(headers: Record<string, string | string[] | undefined>) {
 }
 
 export const onRequestError: Instrumentation.onRequestError = async (error, request, context) => {
+  if (process.env.NEXT_RUNTIME === "edge") {
+    return;
+  }
+
   const typedError = error as RequestError;
 
   try {
+    const { telemetryService } = await import("@/lib/server/modules/telemetry/service");
+
     await telemetryService.recordServerError({
       source: "server",
       name: typedError.name,
@@ -45,6 +48,8 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
       },
     });
   } catch (telemetryError) {
+    const { logServerEvent } = await import("@/lib/server/observability/log");
+
     logServerEvent({
       event: "REQUEST_ERROR_TELEMETRY_FAILED",
       level: "error",

@@ -60,9 +60,22 @@ export const telemetryCollectorPayloadSchema = z.discriminatedUnion("type", [
   clientErrorTelemetryPayloadSchema,
 ]);
 
+export const telemetryPeriodQuerySchema = z.object({
+  days: z.number().int().min(1).max(365).default(30),
+});
+
+export const listTelemetryErrorsQuerySchema = z.object({
+  source: z.enum(errorLogSourceValues).optional(),
+  q: z.string().trim().min(1).optional(),
+  sortBy: z.enum(["lastSeenAt", "count", "firstSeenAt"]).default("lastSeenAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
 export type AnalyticsTelemetryPayload = z.infer<typeof analyticsTelemetryPayloadSchema>;
 export type WebVitalTelemetryPayload = z.infer<typeof webVitalTelemetryPayloadSchema>;
 export type ClientErrorTelemetryPayload = z.infer<typeof clientErrorTelemetryPayloadSchema>;
 export type TelemetryCollectorPayload = z.infer<typeof telemetryCollectorPayloadSchema>;
 export type TelemetryMetadata = z.infer<typeof telemetryMetadataSchema>;
 export type ErrorLogSource = (typeof errorLogSourceValues)[number];
+export type TelemetryPeriodQuery = z.infer<typeof telemetryPeriodQuerySchema>;
+export type ListTelemetryErrorsQuery = z.infer<typeof listTelemetryErrorsQuerySchema>;

@@ -29,6 +29,8 @@ ENV BETTER_AUTH_URL=http://localhost:3000
 ENV NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ENV REDIS_URL=redis://localhost:6379/0
 ENV AUDIT_LOG_RETENTION_DAYS=365
+ENV TELEMETRY_RETENTION_DAYS=90
+ENV ANALYTICS_SALT_SECRET=build-time-analytics-salt-placeholder
 ENV BLOB_READ_WRITE_TOKEN=build-time-placeholder
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -48,6 +50,8 @@ ENV PRISMA_DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=dis
 ENV NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ENV REDIS_URL=redis://localhost:6379/0
 ENV AUDIT_LOG_RETENTION_DAYS=365
+ENV TELEMETRY_RETENTION_DAYS=90
+ENV ANALYTICS_SALT_SECRET=build-time-analytics-salt-placeholder
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json pnpm-lock.yaml ./

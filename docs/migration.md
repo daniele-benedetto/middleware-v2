@@ -103,6 +103,28 @@ Nota ARM: lo stack target e `linux/arm64`. La build immagini avviene su runner A
 | `TELEMETRY_RETENTION_DAYS` | `90`                                                    |
 | `ALERT_WEBHOOK_URL`        | Opzionale                                               |
 
+Comandi generazione segreti pre-acquisto:
+
+```bash
+openssl rand -base64 48 # BETTER_AUTH_SECRET
+openssl rand -base64 32 # ANALYTICS_SALT_SECRET
+openssl rand -base64 32 # POSTGRES_PASSWORD
+```
+
+Matrice segreti da preparare fuori repository prima degli acquisti:
+
+| Nome                       | Stato pre-acquisto | Note                                          |
+| -------------------------- | ------------------ | --------------------------------------------- |
+| `BETTER_AUTH_SECRET`       | Da generare        | Password manager                              |
+| `ANALYTICS_SALT_SECRET`    | Da generare        | Password manager                              |
+| `POSTGRES_PASSWORD`        | Da generare        | Password manager e `.env` VPS                 |
+| `BOOTSTRAP_ADMIN_EMAIL`    | Da decidere        | Admin produzione                              |
+| `BOOTSTRAP_ADMIN_PASSWORD` | Da generare        | Password manager                              |
+| `BOOTSTRAP_ADMIN_NAME`     | Da decidere        | Admin produzione                              |
+| `GHCR_PAT`                 | Da creare          | PAT read-only `read:packages` se GHCR privato |
+| `CLOUDFLARE_TUNNEL_TOKEN`  | Dopo tunnel        | `.env` VPS                                    |
+| Credenziali S3             | Dopo bucket        | Access key dedicata produzione                |
+
 ### Env infrastrutturali
 
 Restano sul VPS o nei secret GitHub, mai nel repository.
@@ -234,6 +256,19 @@ pnpm prisma:migrate:deploy
 pnpm auth:bootstrap-admin
 ```
 
+Esito locale 2026-06-30:
+
+- `pnpm check:all`: verde.
+- `docker compose config`: verde.
+- `docker compose build app`: verde.
+- `pnpm docker:prod:config`: verde.
+- `pnpm docker:prod:build`: verde.
+- Backup locale verso `/tmp/middleware-backup-test`: verde.
+- Restore su progetto Compose separato `middleware-v2-restore-test`: verde.
+- Migration su DB Compose vuoto separato `middleware-v2-empty-test`: verde.
+- Bootstrap admin su DB Compose vuoto separato `middleware-v2-empty-test`: verde.
+- Nota: le build Docker completano ma emettono log `P1001` durante prerender quando il DB build-time placeholder non e raggiungibile. Non blocca il gate, ma va considerato rumore operativo atteso o da ridurre in seguito.
+
 ## Fasi operative
 
 ### Fase A - Preflight senza acquisti
@@ -241,7 +276,7 @@ pnpm auth:bootstrap-admin
 - [ ] Checklist account e accessi: Hetzner Cloud, Hetzner Object Storage, Cloudflare, GitHub.
 - [ ] Chiave SSH dedicata al deploy generata e pronta.
 - [ ] Matrice segreti applicativi e infrastrutturali pronta, fuori dal repository.
-- [ ] Comando per `BETTER_AUTH_SECRET` e `ANALYTICS_SALT_SECRET` pronto.
+- [x] Comando per `BETTER_AUTH_SECRET` e `ANALYTICS_SALT_SECRET` pronto.
 - [ ] Piano transfer dominio su Cloudflare Registrar pronto.
 - [x] Runtime prod locale pronto.
 - [x] Workflow e script operativi pronti.
@@ -249,7 +284,7 @@ pnpm auth:bootstrap-admin
 - [x] Telemetria in-app pronta fino ad aggregazioni e retention.
 - [ ] Osservabilita CMS implementata.
 - [x] Piano CSP per host app e route interne pronto.
-- [ ] Piano backup e checklist smoke/rollback pronti.
+- [x] Piano backup e checklist smoke/rollback pronti.
 
 ### Fase B - Acquisti e risorse
 

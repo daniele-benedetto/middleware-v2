@@ -8,6 +8,9 @@ x-app-env: &app-env
   PRISMA_DATABASE_URL: postgresql://${POSTGRES_USER:-middleware}:${POSTGRES_PASSWORD:-middleware}@postgres:5432/middleware?sslmode=disable
   REDIS_URL: redis://redis:6379/0
   AUDIT_LOG_RETENTION_DAYS: ${AUDIT_LOG_RETENTION_DAYS:-365}
+  TELEMETRY_RETENTION_DAYS: ${TELEMETRY_RETENTION_DAYS:-90}
+  ANALYTICS_SALT_SECRET: ${ANALYTICS_SALT_SECRET:-local-analytics-salt-change-me-32-characters}
+  ALERT_WEBHOOK_URL: ${ALERT_WEBHOOK_URL:-}
   BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@example.com}
   BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-replace-with-at-least-8-characters}
   BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-Admin}

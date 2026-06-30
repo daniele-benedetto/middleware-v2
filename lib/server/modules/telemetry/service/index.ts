@@ -2,13 +2,23 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
+import { ApiError } from "@/lib/server/http/api-error";
 import { telemetryMetadataSchema } from "@/lib/server/modules/telemetry/schema";
 
+import type { PaginationParams } from "@/lib/server/http/pagination";
+import type {
+  TelemetryAnalyticsSummaryDto,
+  TelemetryErrorLogDetailDto,
+  TelemetryErrorLogDto,
+  TelemetryPerformanceSummaryDto,
+} from "@/lib/server/modules/telemetry/dto";
 import type {
   ClientErrorTelemetryPayload,
   ErrorLogSource,
+  ListTelemetryErrorsQuery,
   TelemetryCollectorPayload,
   TelemetryMetadata,
+  TelemetryPeriodQuery,
 } from "@/lib/server/modules/telemetry/schema";
 
 const technicalPathPrefixes = ["/_next", "/api", "/cms"] as const;
@@ -50,6 +60,47 @@ type ServerErrorTelemetryInput = {
   requestId?: string | null;
   userAgent?: string | null;
   metadata?: unknown;
+};
+
+type AnalyticsAggregateRecord = {
+  date: Date;
+  event: string;
+  path: string;
+  referrer: string;
+  country: string;
+  views: number;
+  visitors: number;
+};
+
+type WebVitalAggregateRecord = {
+  path: string;
+  name: string;
+  count: number;
+  p50: number | null;
+  p75: number | null;
+  p95: number | null;
+  good: number;
+  needsImprovement: number;
+  poor: number;
+};
+
+type ErrorLogRecord = {
+  id: string;
+  fingerprint: string;
+  source: string;
+  name: string | null;
+  message: string;
+  digest: string | null;
+  path: string | null;
+  method: string | null;
+  routePath: string | null;
+  routeType: string | null;
+  requestId: string | null;
+  userAgent: string | null;
+  count: number;
+  firstSeenAt: Date;
+  lastSeenAt: Date;
+  metadata: unknown;
 };
 
 async function getTelemetryRepository() {
@@ -186,6 +237,99 @@ function buildVisitorHash(context: TelemetryRequestContext) {
   });
 }
 
+function incrementMapValue(map: Map<string, number>, key: string, value: number) {
+  map.set(key, (map.get(key) ?? 0) + value);
+}
+
+function toSortedTopItems(map: Map<string, number>, limit: number) {
+  return Array.from(map.entries())
+    .filter(([label]) => label.length > 0)
+    .sort(([, firstValue], [, secondValue]) => secondValue - firstValue)
+    .slice(0, limit)
+    .map(([label, value]) => ({ label, value }));
+}
+
+function toDateKey(value: Date) {
+  return value.toISOString().slice(0, 10);
+}
+
+function toErrorLogDto(record: ErrorLogRecord): TelemetryErrorLogDto {
+  return {
+    id: record.id,
+    source: record.source,
+    name: record.name,
+    message: record.message,
+    path: record.path,
+    routePath: record.routePath,
+    routeType: record.routeType,
+    count: record.count,
+    firstSeenAt: record.firstSeenAt.toISOString(),
+    lastSeenAt: record.lastSeenAt.toISOString(),
+  };
+}
+
+function toErrorLogDetailDto(record: ErrorLogRecord): TelemetryErrorLogDetailDto {
+  return {
+    ...toErrorLogDto(record),
+    fingerprint: record.fingerprint,
+    digest: record.digest,
+    method: record.method,
+    requestId: record.requestId,
+    userAgent: record.userAgent,
+    metadata: record.metadata ?? null,
+  };
+}
+
+function summarizeAnalytics(records: AnalyticsAggregateRecord[]): TelemetryAnalyticsSummaryDto {
+  const viewsByDay = new Map<string, number>();
+  const topPages = new Map<string, number>();
+  const topReferrers = new Map<string, number>();
+  const topCountries = new Map<string, number>();
+
+  let totalViews = 0;
+  let totalVisitors = 0;
+
+  records.forEach((record) => {
+    totalViews += record.views;
+    totalVisitors += record.visitors;
+    incrementMapValue(viewsByDay, toDateKey(record.date), record.views);
+    incrementMapValue(topPages, record.path, record.views);
+    incrementMapValue(topReferrers, record.referrer, record.views);
+    incrementMapValue(topCountries, record.country, record.views);
+  });
+
+  return {
+    totals: {
+      views: totalViews,
+      visitors: totalVisitors,
+    },
+    viewsByDay: Array.from(viewsByDay.entries()).map(([date, value]) => ({ date, value })),
+    topPages: toSortedTopItems(topPages, 10),
+    topReferrers: toSortedTopItems(topReferrers, 10),
+    topCountries: toSortedTopItems(topCountries, 10),
+  };
+}
+
+function summarizePerformance(records: WebVitalAggregateRecord[]): TelemetryPerformanceSummaryDto {
+  return {
+    metrics: records
+      .slice()
+      .sort((first, second) => (second.p75 ?? 0) - (first.p75 ?? 0))
+      .slice(0, 50)
+      .map((record) => ({
+        name: record.name,
+        path: record.path,
+        count: record.count,
+        p50: record.p50,
+        p75: record.p75,
+        p95: record.p95,
+        good: record.good,
+        needsImprovement: record.needsImprovement,
+        poor: record.poor,
+      })),
+  };
+}
+
 async function recordAnalyticsPayload(
   payload: Extract<TelemetryCollectorPayload, { type: "analytics" }>,
   context: TelemetryRequestContext,
@@ -315,6 +459,42 @@ export async function recordServerError(input: ServerErrorTelemetryInput) {
 export const telemetryService = {
   createErrorFingerprint,
   deriveDailyVisitorHash,
+  async getAnalyticsSummary(query: TelemetryPeriodQuery) {
+    const repository = await getTelemetryRepository();
+    const records = (await repository.listAnalyticsAggregates(
+      query.days,
+    )) as AnalyticsAggregateRecord[];
+    return summarizeAnalytics(records);
+  },
+  async getErrorLogById(id: string) {
+    const repository = await getTelemetryRepository();
+    const record = (await repository.getErrorLogById(id)) as ErrorLogRecord | null;
+
+    if (!record) {
+      throw new ApiError(404, "NOT_FOUND", "Telemetry error log not found");
+    }
+
+    return toErrorLogDetailDto(record);
+  },
+  async getPerformanceSummary(query: TelemetryPeriodQuery) {
+    const repository = await getTelemetryRepository();
+    const records = (await repository.listWebVitalAggregates(
+      query.days,
+    )) as WebVitalAggregateRecord[];
+    return summarizePerformance(records);
+  },
+  async listErrorLogs(query: ListTelemetryErrorsQuery, pagination: PaginationParams) {
+    const repository = await getTelemetryRepository();
+    const [items, total] = await Promise.all([
+      repository.listErrorLogs(query, pagination),
+      repository.countErrorLogs(query),
+    ]);
+
+    return {
+      items: (items as ErrorLogRecord[]).map(toErrorLogDto),
+      total,
+    };
+  },
   normalizeTelemetryPath,
   normalizeTelemetryReferrer,
   recordServerError,
