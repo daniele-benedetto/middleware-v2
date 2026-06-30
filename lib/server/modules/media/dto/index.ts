@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const mediaUrlSchema = z.string().min(1);
+
 export const mediaArticleReferenceDtoSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
@@ -7,8 +9,8 @@ export const mediaArticleReferenceDtoSchema = z.object({
 });
 
 export const mediaItemDtoSchema = z.object({
-  url: z.string().url(),
-  downloadUrl: z.string().url(),
+  url: mediaUrlSchema,
+  downloadUrl: mediaUrlSchema,
   pathname: z.string(),
   directory: z.string(),
   fileName: z.string(),

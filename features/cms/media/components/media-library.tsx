@@ -13,7 +13,10 @@ import {
 import { CmsMediaCard } from "@/features/cms/media/components/media-card";
 import { CmsMediaLibraryLoading } from "@/features/cms/media/components/media-library-loading";
 import { CmsMediaPreviewSheet } from "@/features/cms/media/components/media-preview-sheet";
-import { CmsMediaUploadDialog } from "@/features/cms/media/components/media-upload-dialog";
+import {
+  CmsMediaUploadDialog,
+  type CmsMediaUploadResult,
+} from "@/features/cms/media/components/media-upload-dialog";
 import { invalidateArticlesAfterMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
@@ -22,7 +25,6 @@ import { trpc } from "@/lib/trpc/react";
 
 import type { CmsSupportedMediaKind } from "@/lib/media/blob";
 import type { RouterOutputs } from "@/lib/trpc/types";
-import type { PutBlobResult } from "@vercel/blob";
 
 type MediaListInitialData = RouterOutputs["media"]["list"];
 type MediaItem = MediaListInitialData["items"][number];
@@ -38,7 +40,7 @@ type CmsMediaLibraryProps = {
   interactionMode?: "preview" | "select-inline";
   onSelectItem?: (item: MediaItem) => Promise<void> | void;
   onSelectionChange?: (item: MediaItem | null) => void;
-  onBlobUploaded?: (blob: PutBlobResult) => Promise<void> | void;
+  onMediaUploaded?: (media: CmsMediaUploadResult) => Promise<void> | void;
   uploadOpen?: boolean;
   onUploadOpenChange?: (open: boolean) => void;
   showUploadActionInToolbar?: boolean;
@@ -54,7 +56,7 @@ export function CmsMediaLibrary({
   interactionMode = "preview",
   onSelectItem,
   onSelectionChange,
-  onBlobUploaded,
+  onMediaUploaded,
   uploadOpen,
   onUploadOpenChange,
   showUploadActionInToolbar = true,
@@ -117,12 +119,12 @@ export function CmsMediaLibrary({
     ]);
   };
 
-  const handleUploaded = async (blob: PutBlobResult) => {
+  const handleUploaded = async (media: CmsMediaUploadResult) => {
     await refreshMedia();
-    setSelectedPathname(blob.pathname);
+    setSelectedPathname(media.pathname);
 
-    if (onBlobUploaded) {
-      await onBlobUploaded(blob);
+    if (onMediaUploaded) {
+      await onMediaUploaded(media);
       return;
     }
 

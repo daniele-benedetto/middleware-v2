@@ -1,4 +1,3 @@
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 
 import { i18n } from "@/lib/i18n";
@@ -9,12 +8,15 @@ import {
   getCmsMediaAllowedContentTypes,
   inferMediaKind,
   parseMediaPathname,
+  resolveCmsMediaContentTypeFromExtension,
   sanitizeMediaBaseName,
 } from "@/lib/media/blob";
 import { getAuthSession } from "@/lib/server/auth/session";
 import { getRequestId, getRequestPath } from "@/lib/server/http/request";
 import { mediaPolicy } from "@/lib/server/modules/media";
 import { logServerEvent } from "@/lib/server/observability/log";
+import { StorageConflictError } from "@/lib/server/storage/errors";
+import { mediaStorage } from "@/lib/server/storage/media-storage";
 
 import type { CmsSupportedMediaKind } from "@/lib/media/blob";
 
@@ -50,13 +52,13 @@ function validateUploadPathname(pathname: string) {
   }
 }
 
-function resolveAllowedKinds(clientPayload: string | null): CmsSupportedMediaKind[] {
-  if (!clientPayload) {
+function resolveAllowedKinds(rawValue: FormDataEntryValue | null): CmsSupportedMediaKind[] {
+  if (typeof rawValue !== "string" || !rawValue) {
     return cmsMediaDefaultKinds;
   }
 
   try {
-    const parsed = JSON.parse(clientPayload) as { kinds?: unknown };
+    const parsed = JSON.parse(rawValue) as { kinds?: unknown };
 
     if (!Array.isArray(parsed.kinds)) {
       return cmsMediaDefaultKinds;
@@ -75,39 +77,62 @@ function resolveAllowedKinds(clientPayload: string | null): CmsSupportedMediaKin
 
 export async function POST(request: Request): Promise<NextResponse> {
   const text = i18n.cms.lists.media;
-  const body = (await request.json()) as HandleUploadBody;
 
   try {
-    const jsonResponse = await handleUpload({
+    const session = await getAuthSession(request);
+
+    if (!session || !mediaPolicy.allowedRoles.includes(session.user.role)) {
+      throw new Error(text.uploadUnauthorized);
+    }
+
+    const formData = await request.formData();
+    const file = formData.get("file");
+    const pathname = formData.get("pathname");
+
+    if (!(file instanceof File) || typeof pathname !== "string") {
+      throw new Error(text.uploadFileNameRequired);
+    }
+
+    validateUploadPathname(pathname);
+
+    if (file.size > cmsMediaUploadMaxSizeInBytes) {
+      throw new Error(
+        text.uploadSizeHint(Math.round(cmsMediaUploadMaxSizeInBytes / (1024 * 1024))),
+      );
+    }
+
+    const allowedKinds = resolveAllowedKinds(formData.get("kinds"));
+    const contentType = file.type || resolveCmsMediaContentTypeFromExtension(pathname);
+    const mediaKind = inferMediaKind(pathname, contentType);
+
+    if (!contentType || mediaKind === "other" || !allowedKinds.includes(mediaKind)) {
+      throw new Error(text.uploadTypeUnsupported);
+    }
+
+    const allowedContentTypes = getCmsMediaAllowedContentTypes(allowedKinds);
+
+    if (
+      !allowedContentTypes.some((allowedContentType) =>
+        allowedContentType.endsWith("/*")
+          ? contentType.startsWith(allowedContentType.slice(0, -1))
+          : contentType === allowedContentType,
+      )
+    ) {
+      throw new Error(text.uploadTypeUnsupported);
+    }
+
+    const body = new Uint8Array(await file.arrayBuffer());
+    const uploaded = await mediaStorage.put({
+      pathname,
       body,
-      request,
-      onBeforeGenerateToken: async (pathname, clientPayload) => {
-        const session = await getAuthSession(request);
-
-        if (!session || !mediaPolicy.allowedRoles.includes(session.user.role)) {
-          throw new Error(text.uploadUnauthorized);
-        }
-
-        validateUploadPathname(pathname);
-
-        const allowedKinds = resolveAllowedKinds(clientPayload);
-        const mediaKind = inferMediaKind(pathname);
-
-        if (mediaKind === "other" || !allowedKinds.includes(mediaKind)) {
-          throw new Error(text.uploadTypeUnsupported);
-        }
-
-        return {
-          allowedContentTypes: getCmsMediaAllowedContentTypes(allowedKinds),
-          maximumSizeInBytes: cmsMediaUploadMaxSizeInBytes,
-          addRandomSuffix: false,
-          allowOverwrite: false,
-          tokenPayload: JSON.stringify({ userId: session.user.id }),
-        };
-      },
+      contentType,
+      size: file.size,
     });
 
-    return NextResponse.json(jsonResponse);
+    return NextResponse.json({
+      ...uploaded,
+      uploadedAt: uploaded.uploadedAt.toISOString(),
+    });
   } catch (error) {
     logServerEvent({
       event: "BLOB_UPLOAD_FAILED",
@@ -120,7 +145,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json(
       { error: error instanceof Error ? error.message : text.uploadFailed },
-      { status: 400 },
+      { status: error instanceof StorageConflictError ? 409 : 400 },
     );
   }
 }

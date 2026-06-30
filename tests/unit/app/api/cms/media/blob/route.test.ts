@@ -1,5 +1,7 @@
-const blobStorageMock = vi.hoisted(() => ({
-  get: vi.fn(),
+const mediaStorageMock = vi.hoisted(() => ({
+  mediaStorage: {
+    get: vi.fn(),
+  },
 }));
 
 const authSessionMock = vi.hoisted(() => ({
@@ -12,29 +14,19 @@ const mediaModuleMock = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@vercel/blob", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@vercel/blob")>();
-
-  return {
-    ...actual,
-    get: blobStorageMock.get,
-  };
-});
-
+vi.mock("@/lib/server/storage/media-storage", () => mediaStorageMock);
 vi.mock("@/lib/server/auth/session", () => authSessionMock);
 vi.mock("@/lib/server/modules/media", () => mediaModuleMock);
 
-import { BlobAccessError, BlobNotFoundError, get } from "@vercel/blob";
-
 import { GET } from "@/app/api/cms/media/blob/route";
-import { cmsMediaBlobAccess } from "@/lib/media/blob";
 import { USER_ROLES } from "@/lib/server/auth/roles";
 import { getAuthSession } from "@/lib/server/auth/session";
-import { createErrorInstance } from "@/tests/helpers/create-error-instance";
+import { StorageAccessError, StorageNotFoundError } from "@/lib/server/storage/errors";
+import { mediaStorage } from "@/lib/server/storage/media-storage";
 
 import type { AuthSession } from "@/lib/server/auth/types";
 
-const getBlobMock = vi.mocked(get);
+const getMediaMock = vi.mocked(mediaStorage.get);
 const getAuthSessionMock = vi.mocked(getAuthSession);
 
 function createSession(role: AuthSession["user"]["role"] = USER_ROLES.ADMIN): AuthSession {
@@ -62,11 +54,11 @@ function createRequest(pathname?: string, options?: { download?: boolean }) {
   return new Request(url);
 }
 
-function createBlobStream(body: string) {
+function createMediaStream(body: string) {
   const stream = new Response(body).body;
 
   if (!stream) {
-    throw new Error("Unable to create blob stream for test");
+    throw new Error("Unable to create media stream for test");
   }
 
   return stream;
@@ -84,17 +76,17 @@ describe("GET /api/cms/media/blob", () => {
     getAuthSessionMock.mockResolvedValue(createSession());
   });
 
-  it("returns 401 without proxying the blob when the session is missing", async () => {
+  it("returns 401 without reading media when the session is missing", async () => {
     getAuthSessionMock.mockResolvedValue(null);
 
     const response = await GET(createRequest("covers/hero-image.jpg"));
 
     expect(response.status).toBe(401);
     expect(await response.text()).toBe("Unauthorized");
-    expect(getBlobMock).not.toHaveBeenCalled();
+    expect(getMediaMock).not.toHaveBeenCalled();
   });
 
-  it("returns 401 without proxying the blob when the role is not allowed", async () => {
+  it("returns 401 without reading media when the role is not allowed", async () => {
     mediaModuleMock.mediaPolicy.allowedRoles.splice(
       0,
       mediaModuleMock.mediaPolicy.allowedRoles.length,
@@ -106,35 +98,24 @@ describe("GET /api/cms/media/blob", () => {
 
     expect(response.status).toBe(401);
     expect(await response.text()).toBe("Unauthorized");
-    expect(getBlobMock).not.toHaveBeenCalled();
+    expect(getMediaMock).not.toHaveBeenCalled();
   });
 
-  it("returns the private blob stream with download headers", async () => {
-    getBlobMock.mockResolvedValue({
-      statusCode: 200,
-      stream: createBlobStream("image-bytes"),
-      headers: new Headers({
-        "content-type": "image/jpeg",
-      }),
-      blob: {
-        url: "https://store.blob.vercel-storage.com/covers/hero%20image.JPG",
-        downloadUrl: "https://store.blob.vercel-storage.com/covers/hero%20image.JPG?download=1",
-        contentType: "image/jpeg",
-        pathname: "covers/hero image.JPG",
-        contentDisposition: "inline",
-        cacheControl: "private, no-store, max-age=0",
-        size: 1024,
-        etag: "etag-1",
-        uploadedAt: new Date("2026-01-01T00:00:00.000Z"),
-      },
+  it("returns the private media stream with download headers", async () => {
+    getMediaMock.mockResolvedValue({
+      url: "/api/public/media/blob?pathname=covers%2Fhero+image.JPG",
+      downloadUrl: "/api/cms/media/blob?pathname=covers%2Fhero+image.JPG&download=1",
+      contentType: "image/jpeg",
+      pathname: "covers/hero image.JPG",
+      size: 1024,
+      etag: "etag-1",
+      uploadedAt: new Date("2026-01-01T00:00:00.000Z"),
+      stream: createMediaStream("image-bytes"),
     });
 
     const response = await GET(createRequest("covers/hero image.JPG", { download: true }));
 
-    expect(getBlobMock).toHaveBeenCalledWith("covers/hero image.JPG", {
-      access: cmsMediaBlobAccess,
-      useCache: false,
-    });
+    expect(getMediaMock).toHaveBeenCalledWith("covers/hero image.JPG");
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/jpeg");
     expect(response.headers.get("cache-control")).toBe("private, no-store, max-age=0");
@@ -144,8 +125,8 @@ describe("GET /api/cms/media/blob", () => {
     expect(await response.text()).toBe("image-bytes");
   });
 
-  it("maps missing blobs to 404", async () => {
-    getBlobMock.mockRejectedValue(createErrorInstance(BlobNotFoundError, "missing file"));
+  it("maps missing media to 404", async () => {
+    getMediaMock.mockRejectedValue(new StorageNotFoundError());
 
     const response = await GET(createRequest("covers/missing.jpg"));
 
@@ -153,8 +134,8 @@ describe("GET /api/cms/media/blob", () => {
     expect(await response.text()).toBe("Not found");
   });
 
-  it("maps blob access errors to 403", async () => {
-    getBlobMock.mockRejectedValue(createErrorInstance(BlobAccessError, "forbidden"));
+  it("maps storage access errors to 403", async () => {
+    getMediaMock.mockRejectedValue(new StorageAccessError());
 
     const response = await GET(createRequest("covers/forbidden.jpg"));
 

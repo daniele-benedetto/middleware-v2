@@ -1,13 +1,13 @@
 import "server-only";
 
-import { get } from "@vercel/blob";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { parseAudioChunks, type AudioChunk } from "@/lib/audio/audio-chunks";
-import { cmsMediaBlobAccess, extractCmsMediaPathname } from "@/lib/media/blob";
+import { extractCmsMediaPathname } from "@/lib/media/blob";
 import { ensureNonEmptyStaticParams } from "@/lib/public/server/static-params";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicArticlesService } from "@/lib/server/modules/articles/service/public";
+import { mediaStorage } from "@/lib/server/storage/media-storage";
 
 import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
 
@@ -31,12 +31,9 @@ async function loadJsonFromBlobUrl(value: string) {
     return null;
   }
 
-  const result = await get(pathname, {
-    access: cmsMediaBlobAccess,
-    useCache: true,
-  });
+  const result = await mediaStorage.get(pathname);
 
-  if (!result || result.statusCode !== 200 || result.blob.contentType !== "application/json") {
+  if (result.contentType !== "application/json") {
     return null;
   }
 

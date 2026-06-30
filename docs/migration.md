@@ -64,34 +64,35 @@ Verifiche completate:
 - [x] `pnpm prisma:validate`
 - [x] `pnpm build` con DB Docker locale migrato
 - [x] `pnpm dev` con risposta HTTP da `http://localhost:3000`
+- [x] Smoke S3/MinIO reale con put/head/get/delete su bucket `middleware-media`
 
 Verifiche bloccate dall'ambiente locale:
 
 - [ ] `docker compose build app`: bloccato dal pull di `node:22-slim` da Docker Hub (`no route to host`).
 
-### Prossima attività - Adapter storage S3
+### Completato - Storage media S3
 
-Obiettivo: introdurre uno storage adapter interno e una prima implementazione S3 testabile con MinIO, senza ancora cambiare le route pubbliche/CMS.
+Obiettivo completato: sostituire Vercel Blob con storage S3-compatible privato, testabile con MinIO locale.
 
-Scope consigliato:
+Scope completato:
 
-1. Aggiungi dipendenze AWS SDK:
+1. Aggiunta dipendenza AWS SDK:
    - `@aws-sdk/client-s3`
-2. Crea un modulo server-only per la configurazione S3:
+2. Creati moduli server-only per la configurazione S3:
    - lettura `S3_ENDPOINT`
    - lettura `S3_REGION`
    - lettura `S3_BUCKET`
    - lettura `S3_ACCESS_KEY`
    - lettura `S3_SECRET_KEY`
    - lettura `S3_FORCE_PATH_STYLE`
-3. Crea un adapter storage interno con metodi minimi:
-   - `list()`
+3. Creato adapter storage interno con metodi:
+   - `listAll()`
    - `head(pathname)`
    - `put(pathname, body, metadata)`
-   - `copy(sourcePathname, targetPathname, options)`
+   - `copy(sourcePathname, targetPathname)`
    - `delete(pathname, options)`
-   - `getStream(pathname)`
-4. Mantieni i DTO dell'adapter compatibili con i campi oggi usati dal media service:
+   - `get(pathname)`
+4. Mantenuti DTO compatibili con media service:
    - `url`
    - `downloadUrl`
    - `pathname`
@@ -99,19 +100,25 @@ Scope consigliato:
    - `size`
    - `uploadedAt`
    - `etag`
-5. Mantieni bucket privato come default.
-6. Non sostituire ancora `@vercel/blob` nelle route: l'obiettivo di questa attività è costruire e testare l'adapter in isolamento.
+5. Bucket privato come default.
+6. Upload CMS spostato a multipart server-side.
+7. Route `GET /api/cms/media/blob` spostata su S3.
+8. Route `GET /api/public/media/blob` spostata su S3 mantenendo controllo DB sui contenuti pubblicati.
+9. Media service `list`, `rename`, `delete` spostato su S3.
+10. Lettura JSON audio chunks spostata su S3.
+11. Rimossi `@vercel/blob`, `@vercel/analytics`, `@vercel/speed-insights`.
+12. CSP e `next.config.ts` ripuliti dagli host Vercel.
 
-Test da implementare nella prossima attività:
+Test implementati/aggiornati:
 
 - unit test configurazione S3 con env valide
 - unit test configurazione S3 con env mancanti
-- unit test adapter `list` con SDK mockato
-- unit test adapter `head` con SDK mockato
-- unit test adapter `put` con content type e size
-- unit test adapter `copy` con ETag/conflitto se supportato
-- unit test adapter `delete`
-- unit test mapping errori S3 verso errori applicativi storage-neutral
+- route test upload CMS multipart
+- route test media CMS privati
+- route test media pubblici controllati da DB
+- unit test media service con errori storage-neutral
+- unit test audio chunks su storage interno
+- unit test helper media senza URL vendor-specific
 
 Gate attesi per chiudere la prossima attività:
 
@@ -119,18 +126,24 @@ Gate attesi per chiudere la prossima attività:
 - `pnpm typecheck`
 - `pnpm test:run`
 - `pnpm prisma:validate`
+- `pnpm build`
 - `docker compose config`
+- smoke S3/MinIO put/head/get/delete
 
-### Attività successive
+### Prossima attività - Smoke CMS media locale
 
-1. Sostituire `handleUpload` Vercel Blob con upload server-side controllato.
-2. Portare `GET /api/cms/media/blob` su adapter storage.
-3. Portare `GET /api/public/media/blob` su adapter storage mantenendo il controllo DB sui contenuti pubblicati.
-4. Aggiornare media service `list`, `rename`, `delete` per usare l'adapter storage.
-5. Rimuovere `@vercel/blob` quando il flusso S3 copre upload, lettura, lista, rename e delete.
-6. Rimuovere `@vercel/analytics` e `@vercel/speed-insights` se restano inutilizzati.
-7. Aggiornare CSP e `images.remotePatterns` dopo la sostituzione effettiva di Blob.
-8. Verificare `pnpm build` con un DB locale Docker raggiungibile e migrato.
+1. Avviare `pnpm docker:infra:up`.
+2. Eseguire `pnpm prisma:migrate:deploy`.
+3. Eseguire `pnpm auth:bootstrap-admin` se admin assente.
+4. Avviare `pnpm dev`.
+5. Login CMS.
+6. Upload immagine reale e verifica oggetto su MinIO.
+7. Upload audio reale e verifica oggetto su MinIO.
+8. Creazione articolo con immagine/audio.
+9. Pubblicazione articolo.
+10. Verifica media pubblico via `/api/public/media/blob`.
+11. Verifica rename media e sincronizzazione articolo.
+12. Verifica delete media e pulizia riferimenti articolo.
 
 ### Regola sui test failing
 
@@ -268,7 +281,7 @@ Gate attesi per chiudere la prossima attività:
 
 ## Fase 5 - Adeguamento media a S3
 
-1. Sostituisci l'integrazione Vercel Blob con un adapter S3.
+1. Usa l'integrazione S3-compatible privata gia presente nel progetto.
 2. Mantieni le responsabilità esistenti:
    - upload CMS autenticato
    - lista media CMS
@@ -283,7 +296,7 @@ Gate attesi per chiudere la prossima attività:
 5. Aggiorna `lib/media/blob.ts` per usare pathname e URL compatibili con S3.
 6. Aggiorna repository e service media per i comandi S3 equivalenti a list, head, copy e delete.
 7. Aggiorna i test unitari media e route blob.
-8. Rimuovi `@vercel/blob` quando il flusso S3 è completo.
+8. Mantieni assenti dipendenze e URL vendor-specific per lo storage media.
 
 ---
 
@@ -308,7 +321,7 @@ Gate attesi per chiudere la prossima attività:
    - `dynamicParams`
 3. Aggiorna la Content Security Policy per rimuovere host Vercel non usati e aggiungere gli host effettivi di S3/CDN/analytics/error tracking.
 4. Aggiorna `images.remotePatterns` se i media vengono serviti da host esterni all'app.
-5. Rimuovi `@vercel/analytics` e `@vercel/speed-insights` se restano inutilizzati.
+5. Aggiungi eventuali analytics solo quando viene scelto il provider definitivo.
 6. Mantieni `redis` come client Redis standard e configura solo `REDIS_URL`.
 7. Verifica che `BETTER_AUTH_URL` e `NEXT_PUBLIC_SITE_URL` puntino al dominio corretto per ogni ambiente.
 
@@ -566,9 +579,9 @@ Gate attesi per chiudere la prossima attività:
 - [ ] Postgres production creato e non pubblico
 - [ ] Redis production creato e non pubblico
 - [ ] Bucket S3 creato e privato
-- [ ] Integrazione Vercel Blob sostituita da S3
-- [ ] `@vercel/blob` rimosso
-- [ ] `@vercel/analytics` e `@vercel/speed-insights` rimossi se inutilizzati
+- [x] Integrazione media S3-compatible privata attiva
+- [x] `@vercel/blob` rimosso
+- [x] `@vercel/analytics` e `@vercel/speed-insights` rimossi
 - [ ] `next.config.ts` con `output: "standalone"`
 - [ ] CSP aggiornata agli host reali
 - [ ] Dockerfile pnpm presente

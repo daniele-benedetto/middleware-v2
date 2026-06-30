@@ -588,7 +588,7 @@ export const cmsIt = {
     },
     media: {
       subtitle:
-        "Archivio Vercel Blob con preview, rinomina e sincronizzazione automatica degli articoli.",
+        "Archivio media privato con preview, rinomina e sincronizzazione automatica degli articoli.",
       totalFiles: (count: number) => `Totale: ${count} file nello store`,
       uploadCta: "Carica file",
       uploadShortCta: "Carica",
@@ -714,7 +714,7 @@ export const cmsIt = {
       resourceIssueDescription: "Uscita editoriale corrente.",
       resourceUserDescription: "Utente CMS corrente.",
       resourceArticleDescription: "Articolo editoriale corrente.",
-      resourceMediaDescription: "Asset Vercel Blob corrente.",
+      resourceMediaDescription: "Asset media corrente.",
       links: {
         openActor: "Apri utente",
         openArticle: "Apri articolo",

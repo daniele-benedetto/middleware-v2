@@ -1,8 +1,3 @@
-import type { BlobAccessType } from "@vercel/blob";
-
-export const cmsMediaBlobAccess: BlobAccessType =
-  process.env.CMS_MEDIA_BLOB_ACCESS === "public" ? "public" : "private";
-
 export const cmsMediaUploadMaxSizeInBytes = 25 * 1024 * 1024;
 
 const mediaImageExtensions = new Set([".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif"]);
@@ -180,6 +175,11 @@ export function extractCmsMediaPathname(value: string) {
     return url.searchParams.get("pathname")?.trim() ?? null;
   }
 
+  if (trimmedValue.startsWith("/api/public/media/blob")) {
+    const url = new URL(trimmedValue, "http://localhost");
+    return url.searchParams.get("pathname")?.trim() ?? null;
+  }
+
   if (!trimmedValue.startsWith("http://") && !trimmedValue.startsWith("https://")) {
     return trimmedValue.startsWith("/") ? trimmedValue.slice(1) : trimmedValue;
   }
@@ -187,12 +187,8 @@ export function extractCmsMediaPathname(value: string) {
   try {
     const url = new URL(trimmedValue);
 
-    if (url.pathname === "/api/cms/media/blob") {
+    if (url.pathname === "/api/cms/media/blob" || url.pathname === "/api/public/media/blob") {
       return url.searchParams.get("pathname")?.trim() ?? null;
-    }
-
-    if (url.hostname.endsWith(".blob.vercel-storage.com")) {
-      return decodeURIComponent(url.pathname.slice(1));
     }
 
     return null;

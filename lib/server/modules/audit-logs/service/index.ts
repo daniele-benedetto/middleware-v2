@@ -1,7 +1,5 @@
 import "server-only";
 
-import { BlobNotFoundError } from "@vercel/blob";
-
 import { Prisma } from "@/lib/generated/prisma/client";
 import { i18n } from "@/lib/i18n";
 import { ApiError } from "@/lib/server/http/api-error";
@@ -12,6 +10,7 @@ import { issuesRepository } from "@/lib/server/modules/issues/repository";
 import { mediaRepository } from "@/lib/server/modules/media/repository";
 import { tagsRepository } from "@/lib/server/modules/tags/repository";
 import { usersRepository } from "@/lib/server/modules/users/repository";
+import { StorageNotFoundError } from "@/lib/server/storage/errors";
 
 import type { AuditLogOutcomeValue, AuditLogResourceValue } from "@/lib/audit-logs/constants";
 import type { UserRole } from "@/lib/server/auth/roles";
@@ -229,7 +228,7 @@ async function resolveMediaSummary(resourceId: string): Promise<AuditLogResource
       ]),
     };
   } catch (error) {
-    if (error instanceof BlobNotFoundError) {
+    if (error instanceof StorageNotFoundError) {
       return buildMissingResourceSummary("Media", resourceId);
     }
 

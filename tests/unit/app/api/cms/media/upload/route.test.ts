@@ -1,7 +1,3 @@
-const blobClientMock = vi.hoisted(() => ({
-  handleUpload: vi.fn(),
-}));
-
 const authSessionMock = vi.hoisted(() => ({
   getAuthSession: vi.fn(),
 }));
@@ -16,26 +12,27 @@ const observabilityMock = vi.hoisted(() => ({
   logServerEvent: vi.fn(),
 }));
 
-vi.mock("@vercel/blob/client", () => blobClientMock);
+const mediaStorageMock = vi.hoisted(() => ({
+  mediaStorage: {
+    put: vi.fn(),
+  },
+}));
+
 vi.mock("@/lib/server/auth/session", () => authSessionMock);
 vi.mock("@/lib/server/modules/media", () => mediaModuleMock);
 vi.mock("@/lib/server/observability/log", () => observabilityMock);
-
-import { handleUpload } from "@vercel/blob/client";
+vi.mock("@/lib/server/storage/media-storage", () => mediaStorageMock);
 
 import { POST } from "@/app/api/cms/media/upload/route";
-import { i18n } from "@/lib/i18n";
-import { cmsMediaUploadMaxSizeInBytes } from "@/lib/media/blob";
+import { buildPublicMediaAssetUrl, cmsMediaUploadMaxSizeInBytes } from "@/lib/media/blob";
 import { USER_ROLES } from "@/lib/server/auth/roles";
 import { getAuthSession } from "@/lib/server/auth/session";
+import { mediaStorage } from "@/lib/server/storage/media-storage";
 
 import type { AuthSession } from "@/lib/server/auth/types";
-import type { HandleUploadOptions } from "@vercel/blob/client";
-import type { MockedFunction } from "vitest";
 
-const handleUploadMock = handleUpload as MockedFunction<typeof handleUpload>;
 const getAuthSessionMock = vi.mocked(getAuthSession);
-type BeforeGenerateTokenResult = Awaited<ReturnType<HandleUploadOptions["onBeforeGenerateToken"]>>;
+const mediaStoragePutMock = vi.mocked(mediaStorage.put);
 
 function createSession(role: AuthSession["user"]["role"] = USER_ROLES.ADMIN): AuthSession {
   return {
@@ -48,10 +45,23 @@ function createSession(role: AuthSession["user"]["role"] = USER_ROLES.ADMIN): Au
   };
 }
 
-function createRequest() {
+function createRequest({
+  file = new File(["image-bytes"], "hero-image.jpg", { type: "image/jpeg" }),
+  pathname = "hero-image.jpg",
+  kinds = ["image"],
+}: {
+  file?: File;
+  pathname?: string;
+  kinds?: string[];
+} = {}) {
+  const formData = new FormData();
+  formData.set("file", file);
+  formData.set("pathname", pathname);
+  formData.set("kinds", JSON.stringify({ kinds }));
+
   return new Request("https://example.com/api/cms/media/upload", {
     method: "POST",
-    body: JSON.stringify({ type: "blob.generate-client-token" }),
+    body: formData,
   });
 }
 
@@ -65,63 +75,59 @@ describe("POST /api/cms/media/upload", () => {
       USER_ROLES.EDITOR,
     );
     getAuthSessionMock.mockResolvedValue(createSession());
+    mediaStoragePutMock.mockResolvedValue({
+      url: buildPublicMediaAssetUrl("hero-image.jpg"),
+      downloadUrl: "/api/cms/media/blob?pathname=hero-image.jpg&download=1",
+      pathname: "hero-image.jpg",
+      contentType: "image/jpeg",
+      size: 11,
+      uploadedAt: new Date("2026-01-01T00:00:00.000Z"),
+      etag: "etag-1",
+    });
   });
 
-  it("generates a constrained upload token for authorized CMS users", async () => {
-    let generatedToken: BeforeGenerateTokenResult | undefined;
-
-    handleUploadMock.mockImplementation(async (options) => {
-      generatedToken = await options.onBeforeGenerateToken(
-        "hero-image.jpg",
-        JSON.stringify({ kinds: ["image"] }),
-        false,
-      );
-
-      return { type: "blob.generate-client-token", clientToken: "client-token" };
-    });
-
+  it("uploads an authorized CMS file to media storage", async () => {
     const response = await POST(createRequest());
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({
-      type: "blob.generate-client-token",
-      clientToken: "client-token",
+    expect(mediaStoragePutMock).toHaveBeenCalledWith({
+      pathname: "hero-image.jpg",
+      body: expect.any(Uint8Array),
+      contentType: "image/jpeg",
+      size: 11,
     });
-    expect(generatedToken).toEqual({
-      addRandomSuffix: false,
-      allowOverwrite: false,
-      allowedContentTypes: ["image/*"],
-      maximumSizeInBytes: cmsMediaUploadMaxSizeInBytes,
-      tokenPayload: JSON.stringify({ userId: "user-1" }),
+    await expect(response.json()).resolves.toMatchObject({
+      url: "/api/public/media/blob?pathname=hero-image.jpg",
+      pathname: "hero-image.jpg",
+      contentType: "image/jpeg",
+      etag: "etag-1",
     });
   });
 
-  it("rejects token generation without a CMS session", async () => {
+  it("rejects upload without a CMS session", async () => {
     getAuthSessionMock.mockResolvedValue(null);
-    handleUploadMock.mockImplementation(async (options) => {
-      await options.onBeforeGenerateToken("hero-image.jpg", null, false);
-      return { type: "blob.generate-client-token", clientToken: "client-token" };
-    });
 
     const response = await POST(createRequest());
 
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({
-      error: i18n.cms.lists.media.uploadUnauthorized,
-    });
+    expect(mediaStoragePutMock).not.toHaveBeenCalled();
   });
 
-  it("rejects nested or non-normalized upload pathnames", async () => {
-    handleUploadMock.mockImplementation(async (options) => {
-      await options.onBeforeGenerateToken("nested/Hero Image.jpg", null, false);
-      return { type: "blob.generate-client-token", clientToken: "client-token" };
-    });
-
-    const response = await POST(createRequest());
+  it("rejects nested or non-normalized pathnames", async () => {
+    const response = await POST(createRequest({ pathname: "nested/Hero Image.jpg" }));
 
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({
-      error: i18n.cms.lists.media.uploadNestedPathUnsupported,
+    expect(mediaStoragePutMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects files above the upload size limit", async () => {
+    const file = new File([new Uint8Array(cmsMediaUploadMaxSizeInBytes + 1)], "huge.jpg", {
+      type: "image/jpeg",
     });
+
+    const response = await POST(createRequest({ file, pathname: "huge.jpg" }));
+
+    expect(response.status).toBe(400);
+    expect(mediaStoragePutMock).not.toHaveBeenCalled();
   });
 });

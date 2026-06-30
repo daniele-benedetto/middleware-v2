@@ -33,20 +33,18 @@ vi.mock("next/cache", () => ({
   cacheTag: vi.fn(),
 }));
 
-import {
-  BlobNotFoundError,
-  BlobPreconditionFailedError,
-  BlobServiceRateLimited,
-} from "@vercel/blob";
-
 import { mediaService } from "@/lib/server/modules/media/service";
 import { publicMediaService } from "@/lib/server/modules/media/service/public";
-import { createErrorInstance } from "@/tests/helpers/create-error-instance";
+import {
+  StorageAccessError,
+  StorageConflictError,
+  StorageNotFoundError,
+} from "@/lib/server/storage/errors";
 
 function createBlobRecord(overrides: Record<string, unknown> = {}) {
   return {
-    url: "https://store.blob.vercel-storage.com/covers/hero-image.jpg",
-    downloadUrl: "https://store.blob.vercel-storage.com/covers/hero-image.jpg?download=1",
+    url: "/api/public/media/blob?pathname=covers%2Fhero-image.jpg",
+    downloadUrl: "/api/cms/media/blob?pathname=covers%2Fhero-image.jpg&download=1",
     pathname: "covers/hero-image.jpg",
     contentType: "image/jpeg",
     size: 1024,
@@ -66,14 +64,14 @@ describe("mediaService", () => {
 
   it("lists media sorted by uploadedAt and attaches article references", async () => {
     const olderBlob = createBlobRecord({
-      url: "https://store.blob.vercel-storage.com/covers/older.jpg",
-      downloadUrl: "https://store.blob.vercel-storage.com/covers/older.jpg?download=1",
+      url: "/api/public/media/blob?pathname=covers%2Folder.jpg",
+      downloadUrl: "/api/cms/media/blob?pathname=covers%2Folder.jpg&download=1",
       pathname: "covers/older.jpg",
       uploadedAt: new Date("2026-01-01T00:00:00.000Z"),
     });
     const newerBlob = createBlobRecord({
-      url: "https://store.blob.vercel-storage.com/covers/newer.jpg",
-      downloadUrl: "https://store.blob.vercel-storage.com/covers/newer.jpg?download=1",
+      url: "/api/public/media/blob?pathname=covers%2Fnewer.jpg",
+      downloadUrl: "/api/cms/media/blob?pathname=covers%2Fnewer.jpg&download=1",
       pathname: "covers/newer.jpg",
       uploadedAt: new Date("2026-01-02T00:00:00.000Z"),
     });
@@ -107,7 +105,7 @@ describe("mediaService", () => {
   it("rejects rename when the sanitized file name becomes empty", async () => {
     await expect(
       mediaService.rename({
-        url: "https://store.blob.vercel-storage.com/covers/hero-image.jpg",
+        url: "/api/public/media/blob?pathname=covers%2Fhero-image.jpg",
         name: "!!!",
       }),
     ).rejects.toMatchObject({
@@ -136,8 +134,8 @@ describe("mediaService", () => {
   it("rolls back the renamed blob if article URL synchronization fails", async () => {
     const current = createBlobRecord();
     const renamed = createBlobRecord({
-      url: "https://store.blob.vercel-storage.com/covers/hero-image-2.jpg",
-      downloadUrl: "https://store.blob.vercel-storage.com/covers/hero-image-2.jpg?download=1",
+      url: "/api/public/media/blob?pathname=covers%2Fhero-image-2.jpg",
+      downloadUrl: "/api/cms/media/blob?pathname=covers%2Fhero-image-2.jpg&download=1",
       pathname: "covers/hero-image-2.jpg",
       etag: "etag-2",
     });
@@ -156,25 +154,21 @@ describe("mediaService", () => {
     expect(mediaRepositoryMock.delete).toHaveBeenCalledWith(renamed.url, renamed);
   });
 
-  it("maps blob storage rate limit errors on list", async () => {
-    mediaRepositoryMock.listAll.mockRejectedValue(
-      createErrorInstance(BlobServiceRateLimited, "rate limited"),
-    );
+  it("maps storage access errors on list", async () => {
+    mediaRepositoryMock.listAll.mockRejectedValue(new StorageAccessError());
 
     await expect(mediaService.list()).rejects.toMatchObject({
-      status: 429,
-      code: "RATE_LIMITED",
-      message: "Vercel Blob rate limit exceeded",
+      status: 500,
+      code: "INTERNAL_ERROR",
+      message: "Unable to access media storage",
     });
   });
 
   it("maps not found errors on delete", async () => {
-    mediaRepositoryMock.head.mockRejectedValue(
-      createErrorInstance(BlobNotFoundError, "missing file"),
-    );
+    mediaRepositoryMock.head.mockRejectedValue(new StorageNotFoundError());
 
     await expect(
-      mediaService.delete({ url: "https://store.blob.vercel-storage.com/covers/missing.jpg" }),
+      mediaService.delete({ url: "/api/public/media/blob?pathname=covers%2Fmissing.jpg" }),
     ).rejects.toMatchObject({
       status: 404,
       code: "NOT_FOUND",
@@ -185,9 +179,7 @@ describe("mediaService", () => {
   it("maps precondition failures on delete to conflict", async () => {
     const current = createBlobRecord();
     mediaRepositoryMock.head.mockResolvedValue(current);
-    mediaRepositoryMock.delete.mockRejectedValue(
-      createErrorInstance(BlobPreconditionFailedError, "stale etag"),
-    );
+    mediaRepositoryMock.delete.mockRejectedValue(new StorageConflictError("stale etag"));
 
     await expect(mediaService.delete({ url: current.url })).rejects.toMatchObject({
       status: 409,

@@ -15,9 +15,9 @@ import {
 import { CmsMediaLibraryLoading } from "@/features/cms/media/components/media-library-loading";
 import { i18n } from "@/lib/i18n";
 
+import type { CmsMediaUploadResult } from "./media-upload-dialog";
 import type { CmsSupportedMediaKind } from "@/lib/media/blob";
 import type { RouterOutputs } from "@/lib/trpc/types";
-import type { PutBlobResult } from "@vercel/blob";
 
 const CmsMediaLibrary = dynamic(
   () => import("@/features/cms/media/components/media-library").then((mod) => mod.CmsMediaLibrary),
@@ -59,12 +59,12 @@ export function CmsMediaPickerDialog({
     onOpenChange(false);
   };
 
-  const handleUploaded = async (blob: PutBlobResult) => {
+  const handleUploaded = async (media: CmsMediaUploadResult) => {
     if (selectionMode === "select-inline") {
       return;
     }
 
-    onSelectUrl(blob.url);
+    onSelectUrl(media.url);
     onOpenChange(false);
   };
 
@@ -118,7 +118,7 @@ export function CmsMediaPickerDialog({
             onSelectionChange={isInlineSelectionMode ? setSelectedItem : undefined}
             selectActionLabel={isInlineSelectionMode ? undefined : selectActionLabel}
             onSelectItem={isInlineSelectionMode ? undefined : handleSelectItem}
-            onBlobUploaded={handleUploaded}
+            onMediaUploaded={handleUploaded}
           />
         </div>
 

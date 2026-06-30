@@ -65,15 +65,15 @@ describe("media/blob helpers", () => {
     expect(resolveCmsMediaContentTypeFromExtension("data/chunks.json")).toBe("application/json");
   });
 
-  it("extracts pathnames from blob URLs and CMS proxy URLs", () => {
+  it("extracts pathnames from media route URLs and plain pathnames", () => {
     expect(
       extractCmsMediaPathname("/api/cms/media/blob?pathname=covers%2Fhero-image.jpg&download=1"),
     ).toBe("covers/hero-image.jpg");
-    expect(
-      extractCmsMediaPathname("https://store.blob.vercel-storage.com/covers/hero-image.jpg"),
-    ).toBe("covers/hero-image.jpg");
+    expect(extractCmsMediaPathname("/api/public/media/blob?pathname=covers%2Fhero-image.jpg")).toBe(
+      "covers/hero-image.jpg",
+    );
     expect(extractCmsMediaPathname("covers/hero-image.jpg")).toBe("covers/hero-image.jpg");
-    expect(extractCmsMediaPathname("https://example.com/not-a-blob-url")).toBeNull();
+    expect(extractCmsMediaPathname("https://example.com/not-a-media-url")).toBeNull();
   });
 
   it("resolves preview URLs through the CMS blob route when possible", () => {
