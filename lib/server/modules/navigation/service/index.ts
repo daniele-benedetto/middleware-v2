@@ -158,6 +158,26 @@ async function resolvePublicItems(items: NavigationItem[]): Promise<PublicNaviga
   return resolved;
 }
 
+function resolveFallbackPublicItems(items: NavigationItem[]): PublicNavigationItemDto[] {
+  const resolved: PublicNavigationItemDto[] = [];
+
+  for (const item of items) {
+    if (item.type === "home") resolved.push(toPublicItem(item, "/"));
+    if (item.type === "archive") resolved.push(toPublicItem(item, "/uscite"));
+    if (item.type === "custom") resolved.push(toPublicItem(item, item.href));
+  }
+
+  return resolved;
+}
+
+function getFallbackPublicNavigation(): PublicNavigationDto {
+  return {
+    main: resolveFallbackPublicItems(fallbackDocuments.main.items),
+    footerSections: resolveFallbackPublicItems(fallbackDocuments.footer_sections.items),
+    footerLegal: resolveFallbackPublicItems(fallbackDocuments.footer_legal.items),
+  };
+}
+
 function toOptionDto(input: {
   id: string;
   title: string;
@@ -237,4 +257,5 @@ export const navigationService = {
       footerLegal: await resolvePublicItems(footerLegal),
     };
   },
+  getFallbackPublicNavigation,
 };

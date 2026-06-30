@@ -109,4 +109,36 @@ describe("navigationService", () => {
       { id: "archive", label: "Archivio", href: "/uscite", external: false },
     ]);
   });
+
+  it("returns fallback public navigation without reading the repository", () => {
+    const result = navigationService.getFallbackPublicNavigation();
+
+    expect(result).toEqual({
+      main: [
+        { id: "main-home", label: "Numero corrente", href: "/", external: false },
+        { id: "main-archive", label: "Archivio", href: "/uscite", external: false },
+        { id: "main-about", label: "Chi siamo", href: "/chi-siamo", external: false },
+      ],
+      footerSections: [
+        { id: "footer-sections-home", label: "Numero corrente", href: "/", external: false },
+        { id: "footer-sections-archive", label: "Archivio", href: "/uscite", external: false },
+        { id: "footer-sections-about", label: "Chi siamo", href: "/chi-siamo", external: false },
+      ],
+      footerLegal: [
+        {
+          id: "footer-legal-privacy",
+          label: "Privacy policy",
+          href: "/privacy-policy",
+          external: false,
+        },
+        {
+          id: "footer-legal-cookie",
+          label: "Cookie policy",
+          href: "/cookie-policy",
+          external: false,
+        },
+      ],
+    });
+    expect(navigationRepositoryMock.listMenus).not.toHaveBeenCalled();
+  });
 });

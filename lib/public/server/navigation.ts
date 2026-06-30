@@ -10,5 +10,10 @@ export async function getPublicNavigation() {
   cacheLife("hours");
   cacheTag(PUBLIC_NAVIGATION_CACHE_TAG);
 
-  return navigationService.getPublicNavigation();
+  try {
+    return await navigationService.getPublicNavigation();
+  } catch (error) {
+    console.error("public.getPublicNavigation failed", error);
+    return navigationService.getFallbackPublicNavigation();
+  }
 }

@@ -8,34 +8,34 @@ Regola operativa: il dominio principale si punta al VPS solo dopo staging, uploa
 
 ## Dashboard
 
-| Area                            | Stato    | Note                                                             |
-| ------------------------------- | -------- | ---------------------------------------------------------------- |
-| Branch preparazione             | Fatto    | `infra/self-hosting-prep`                                        |
-| Docker locale                   | Fatto    | App, Postgres, Redis, MinIO, `minio-init`, `migrate`             |
-| Prisma baseline                 | Fatto    | Migration iniziale pulita per DB vuoto                           |
-| Admin locale                    | Fatto    | Creato con `pnpm auth:bootstrap-admin`                           |
-| Next standalone                 | Fatto    | `output: "standalone"` in `next.config.ts`                       |
-| Static params build-safe        | Fatto    | Fallback per DB vuoto + Cache Components                         |
-| Storage S3 adapter              | Fatto    | `lib/server/storage/*` con AWS SDK                               |
-| Upload CMS                      | Fatto    | Multipart server-side su `mediaStorage.put`                      |
-| Route media CMS                 | Fatto    | `/api/cms/media/blob` legge da storage adapter                   |
-| Route media pubblica            | Fatto    | `/api/public/media/blob` legge da storage adapter e controlla DB |
-| Media list/rename/delete        | Fatto    | Media repository/service usano `mediaStorage`                    |
-| Vercel Blob                     | Fatto    | Dipendenza rimossa da `package.json`                             |
-| Vercel Analytics/Speed Insights | Fatto    | Dipendenze rimosse da `package.json`                             |
-| CSP/host Vercel                 | Fatto    | Da riverificare quando esistono host reali S3/CDN                |
-| Test unitari S3 config          | Fatto    | Env valide e mancanti                                            |
-| Test unitari adapter S3 diretto | Fatto    | Copertura diretta SDK mockato per `media-storage`                |
-| Seed locale contenuti           | Fatto    | Issue, categorie, autore, 8 tag e 11 articoli pubblicati         |
-| Smoke HTTP locale               | Fatto    | Dev e production-like con media pubblici da MinIO                |
-| Smoke CMS media locale          | Fatto    | UI verificata: login, upload, rename, delete                     |
-| Build Docker app                | Bloccato | Pull `node:22-slim` fallito da Docker Hub: `no route to host`    |
-| VPS Hetzner                     | Da fare  | Richiede acquisto/creazione server                               |
-| Coolify                         | Da fare  | Richiede VPS e DNS                                               |
-| Object Storage Hetzner          | Da fare  | Richiede bucket reale e credenziali production                   |
-| Staging                         | Da fare  | Dopo VPS, Coolify, DB, Redis, bucket                             |
-| Backup/restore                  | Da fare  | Prima del dominio production                                     |
-| Production                      | Da fare  | Solo dopo staging verde                                          |
+| Area                            | Stato   | Note                                                             |
+| ------------------------------- | ------- | ---------------------------------------------------------------- |
+| Branch preparazione             | Fatto   | `infra/self-hosting-prep`                                        |
+| Docker locale                   | Fatto   | App, Postgres, Redis, MinIO, `minio-init`, `migrate`             |
+| Prisma baseline                 | Fatto   | Migration iniziale pulita per DB vuoto                           |
+| Admin locale                    | Fatto   | Creato con `pnpm auth:bootstrap-admin`                           |
+| Next standalone                 | Fatto   | `output: "standalone"` in `next.config.ts`                       |
+| Static params build-safe        | Fatto   | Fallback per DB vuoto + Cache Components                         |
+| Storage S3 adapter              | Fatto   | `lib/server/storage/*` con AWS SDK                               |
+| Upload CMS                      | Fatto   | Multipart server-side su `mediaStorage.put`                      |
+| Route media CMS                 | Fatto   | `/api/cms/media/blob` legge da storage adapter                   |
+| Route media pubblica            | Fatto   | `/api/public/media/blob` legge da storage adapter e controlla DB |
+| Media list/rename/delete        | Fatto   | Media repository/service usano `mediaStorage`                    |
+| Vercel Blob                     | Fatto   | Dipendenza rimossa da `package.json`                             |
+| Vercel Analytics/Speed Insights | Fatto   | Dipendenze rimosse da `package.json`                             |
+| CSP/host Vercel                 | Fatto   | Da riverificare quando esistono host reali S3/CDN                |
+| Test unitari S3 config          | Fatto   | Env valide e mancanti                                            |
+| Test unitari adapter S3 diretto | Fatto   | Copertura diretta SDK mockato per `media-storage`                |
+| Seed locale contenuti           | Fatto   | Issue, categorie, autore, 8 tag e 11 articoli pubblicati         |
+| Smoke HTTP locale               | Fatto   | Dev e production-like con media pubblici da MinIO                |
+| Smoke CMS media locale          | Fatto   | UI verificata: login, upload, rename, delete                     |
+| Build Docker app                | Fatto   | `docker compose build app` completato, smoke container OK        |
+| VPS Hetzner                     | Da fare | Richiede acquisto/creazione server                               |
+| Coolify                         | Da fare | Richiede VPS e DNS                                               |
+| Object Storage Hetzner          | Da fare | Richiede bucket reale e credenziali production                   |
+| Staging                         | Da fare | Dopo VPS, Coolify, DB, Redis, bucket                             |
+| Backup/restore                  | Da fare | Prima del dominio production                                     |
+| Production                      | Da fare | Solo dopo staging verde                                          |
 
 ## Stack target
 
@@ -78,6 +78,7 @@ Obiettivo del branch: rendere il progetto testabile in locale con gli stessi com
 - [x] Applicata baseline Prisma su Postgres Docker locale.
 - [x] Creato admin locale con `pnpm auth:bootstrap-admin`.
 - [x] Aggiunto `output: "standalone"` in `next.config.ts`.
+- [x] Installato `openssl` nel base image Docker per Prisma su `node:22-slim`.
 - [x] Aggiunto fallback static params per build con DB pulito e Cache Components.
 - [x] Aggiunto test unitario per `ensureNonEmptyStaticParams`.
 - [x] Aggiunta dipendenza `@aws-sdk/client-s3`.
@@ -115,10 +116,13 @@ Obiettivo del branch: rendere il progetto testabile in locale con gli stessi com
 - [x] Verifica permessi media: oggetto presente in MinIO ma non referenziato da contenuto pubblicato torna 404
 - [x] Smoke CMS media locale via UI: login, upload, preview/download, rename, delete
 - [x] Test unitari diretti `media-storage`: list, head, put, copy, delete, get e mapping errori S3
+- [x] Pull Docker `node:22-slim` completato
+- [x] `docker compose build app` completato
+- [x] Smoke container app production su rete Compose con risposta HTTP `200 OK` da `http://localhost:3001`
 
 ### Bloccato
 
-- [ ] `docker compose build app`: bloccato dal pull di `node:22-slim` da Docker Hub con `no route to host`.
+- Nessun blocco locale attivo. Le prossime attività richiedono infrastruttura reale o decisioni su host/provider.
 
 ## Prossime attività tecniche
 
@@ -170,12 +174,17 @@ Gia verificato da CLI:
 
 ### 3. Riprovare build Docker app
 
+Stato: completato.
+
 Obiettivo: chiudere il blocco ambientale sul pull dell'immagine base.
 
-1. Verificare connettività Docker Hub.
-2. Eseguire `docker compose build app`.
-3. Se il problema persiste, valutare mirror registry o build immagine in CI.
-4. Se la build sul VPS va in OOM, abilitare swap o spostare la build immagine su GitHub Actions.
+Verifiche completate:
+
+- `docker pull node:22-slim`
+- `docker compose build app`
+- smoke container production su rete Compose con porta locale alternativa `3001`, perché `3000` era già occupata
+
+Nota residua: se la build sul VPS va in OOM, abilitare swap o spostare la build immagine su GitHub Actions.
 
 ### 4. Preparare host reali
 
@@ -335,11 +344,12 @@ Stato: già completato nel branch locale, da verificare di nuovo prima del deplo
 
 ### Fase 6 - Dockerfile pnpm
 
-Stato: file già presente nel branch locale, build app ancora da riprovare quando Docker Hub è raggiungibile.
+Stato: completato nel branch locale.
 
 1. Usa il `Dockerfile` alla root del progetto.
 2. Usa `node:22-slim` per evitare problemi nativi comuni con `sharp` e `next/image`.
-3. Se la build sul VPS va in OOM, abilita swap o sposta la build immagine su GitHub Actions.
+3. Mantieni `openssl` installato nel base image per Prisma.
+4. Se la build sul VPS va in OOM, abilita swap o sposta la build immagine su GitHub Actions.
 
 ### Fase 7 - Deploy staging
 
@@ -552,7 +562,7 @@ Stato: file già presente nel branch locale, build app ancora da riprovare quand
 - [x] Smoke HTTP locale completato in dev e start production-like
 - [x] Unit test diretti completi per `media-storage`
 - [x] Smoke CMS media locale completato via UI
-- [ ] `docker compose build app` completato
+- [x] `docker compose build app` completato
 
 ### Gate locali
 
