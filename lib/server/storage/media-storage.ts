@@ -49,6 +49,10 @@ type DeleteMediaObjectInput = {
   etag?: string;
 };
 
+type GetMediaObjectInput = {
+  range?: string;
+};
+
 function normalizeEtag(value: string | undefined) {
   return value?.replace(/^"|"$/g, "") ?? "";
 }
@@ -284,12 +288,14 @@ export const mediaStorage = {
     }
   },
 
-  async get(pathname: string): Promise<MediaStorageObject> {
+  async get(pathname: string, input: GetMediaObjectInput = {}): Promise<MediaStorageObject> {
     const client = getS3Client();
     const { bucket } = getS3Config();
 
     try {
-      const result = await client.send(new GetObjectCommand({ Bucket: bucket, Key: pathname }));
+      const result = await client.send(
+        new GetObjectCommand({ Bucket: bucket, Key: pathname, Range: input.range }),
+      );
 
       return {
         ...toStorageRecord({

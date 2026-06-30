@@ -1,5 +1,9 @@
 import { parseMediaPathname } from "@/lib/media/blob";
 import { getRequestId, getRequestPath } from "@/lib/server/http/request";
+import {
+  buildUnsatisfiedRangeHeader,
+  parseMediaRangeHeader,
+} from "@/lib/server/modules/media/range";
 import { publicMediaService } from "@/lib/server/modules/media/service/public";
 import { logServerEvent } from "@/lib/server/observability/log";
 import { StorageAccessError, StorageNotFoundError } from "@/lib/server/storage/errors";
@@ -10,6 +14,38 @@ function buildContentDisposition(pathname: string) {
   const encodedFileName = encodeURIComponent(fileName);
 
   return `inline; filename*=UTF-8''${encodedFileName}`;
+}
+
+function buildPublicMediaHeaders({
+  contentType,
+  pathname,
+  size,
+  range,
+}: {
+  contentType: string;
+  pathname: string;
+  size: number;
+  range: ReturnType<typeof parseMediaRangeHeader>;
+}) {
+  const headers = new Headers({
+    "content-type": contentType,
+    "content-disposition": buildContentDisposition(pathname),
+    "cache-control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+    "accept-ranges": "bytes",
+    "x-content-type-options": "nosniff",
+  });
+
+  if (range) {
+    headers.set("content-range", `bytes ${range.start}-${range.end}/${size}`);
+    headers.set("content-length", String(range.end - range.start + 1));
+    return headers;
+  }
+
+  if (size > 0) {
+    headers.set("content-length", String(size));
+  }
+
+  return headers;
 }
 
 export async function GET(request: Request) {
@@ -27,22 +63,36 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await mediaStorage.get(pathname);
+    const metadata = await mediaStorage.head(pathname);
+    const range = parseMediaRangeHeader(request.headers.get("range"), metadata.size);
+
+    if (request.headers.has("range") && !range) {
+      return new Response("Range not satisfiable", {
+        status: 416,
+        headers: {
+          "content-range": buildUnsatisfiedRangeHeader(metadata.size),
+          "accept-ranges": "bytes",
+        },
+      });
+    }
 
     if (
-      !result.contentType ||
-      (!result.contentType.startsWith("image/") && !result.contentType.startsWith("audio/"))
+      !metadata.contentType ||
+      (!metadata.contentType.startsWith("image/") && !metadata.contentType.startsWith("audio/"))
     ) {
       return new Response("Not found", { status: 404 });
     }
 
+    const result = await mediaStorage.get(pathname, range ? { range: range.header } : undefined);
+
     return new Response(result.stream, {
-      status: 200,
-      headers: {
-        "content-type": result.contentType,
-        "content-disposition": buildContentDisposition(result.pathname),
-        "cache-control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
-      },
+      status: range ? 206 : 200,
+      headers: buildPublicMediaHeaders({
+        contentType: metadata.contentType,
+        pathname: result.pathname,
+        size: metadata.size,
+        range,
+      }),
     });
   } catch (error) {
     if (error instanceof StorageNotFoundError || error instanceof StorageAccessError) {

@@ -2,6 +2,17 @@ import createBundleAnalyzer from "@next/bundle-analyzer";
 
 import type { NextConfig } from "next";
 
+function parseSourceList(value: string | undefined) {
+  return (
+    value
+      ?.split(/\s+/)
+      .map((source) => source.trim())
+      .filter(Boolean) ?? []
+  );
+}
+
+const mediaSources = ["'self'", "blob:", ...parseSourceList(process.env.CSP_MEDIA_SRC)];
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -12,7 +23,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  "media-src 'self' blob:",
+  `media-src ${mediaSources.join(" ")}`,
   "connect-src 'self'",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
@@ -46,6 +57,13 @@ const securityHeaders = [
     : []),
 ];
 
+const privateNoStoreHeaders = [
+  {
+    key: "Cache-Control",
+    value: "private, no-store, max-age=0",
+  },
+];
+
 const nextConfig: NextConfig = {
   output: "standalone",
   cacheComponents: true,
@@ -66,6 +84,26 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+      {
+        source: "/cms/:path*",
+        headers: privateNoStoreHeaders,
+      },
+      {
+        source: "/api/trpc/:path*",
+        headers: privateNoStoreHeaders,
+      },
+      {
+        source: "/api/cms/:path*",
+        headers: privateNoStoreHeaders,
+      },
+      {
+        source: "/api/auth/:path*",
+        headers: privateNoStoreHeaders,
+      },
+      {
+        source: "/api/telemetry",
+        headers: privateNoStoreHeaders,
       },
     ];
   },

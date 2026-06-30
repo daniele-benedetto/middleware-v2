@@ -1,5 +1,6 @@
 const mediaStorageMock = vi.hoisted(() => ({
   mediaStorage: {
+    head: vi.fn(),
     get: vi.fn(),
   },
 }));
@@ -27,6 +28,7 @@ import { mediaStorage } from "@/lib/server/storage/media-storage";
 import type { AuthSession } from "@/lib/server/auth/types";
 
 const getMediaMock = vi.mocked(mediaStorage.get);
+const headMediaMock = vi.mocked(mediaStorage.head);
 const getAuthSessionMock = vi.mocked(getAuthSession);
 
 function createSession(role: AuthSession["user"]["role"] = USER_ROLES.ADMIN): AuthSession {
@@ -40,7 +42,7 @@ function createSession(role: AuthSession["user"]["role"] = USER_ROLES.ADMIN): Au
   };
 }
 
-function createRequest(pathname?: string, options?: { download?: boolean }) {
+function createRequest(pathname?: string, options?: { download?: boolean; headers?: HeadersInit }) {
   const url = new URL("https://example.com/api/cms/media/blob");
 
   if (pathname) {
@@ -51,7 +53,7 @@ function createRequest(pathname?: string, options?: { download?: boolean }) {
     url.searchParams.set("download", "1");
   }
 
-  return new Request(url);
+  return new Request(url, { headers: options?.headers });
 }
 
 function createMediaStream(body: string) {
@@ -64,6 +66,20 @@ function createMediaStream(body: string) {
   return stream;
 }
 
+function createMediaRecord(overrides: Record<string, unknown> = {}) {
+  return {
+    url: "/api/public/media/blob?pathname=covers%2Fhero+image.JPG",
+    downloadUrl: "/api/cms/media/blob?pathname=covers%2Fhero+image.JPG&download=1",
+    contentType: "image/jpeg",
+    pathname: "covers/hero image.JPG",
+    size: 1024,
+    etag: "etag-1",
+    uploadedAt: new Date("2026-01-01T00:00:00.000Z"),
+    stream: createMediaStream("image-bytes"),
+    ...overrides,
+  };
+}
+
 describe("GET /api/cms/media/blob", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -74,6 +90,7 @@ describe("GET /api/cms/media/blob", () => {
       USER_ROLES.EDITOR,
     );
     getAuthSessionMock.mockResolvedValue(createSession());
+    headMediaMock.mockResolvedValue(createMediaRecord());
   });
 
   it("returns 401 without reading media when the session is missing", async () => {
@@ -83,6 +100,7 @@ describe("GET /api/cms/media/blob", () => {
 
     expect(response.status).toBe(401);
     expect(await response.text()).toBe("Unauthorized");
+    expect(headMediaMock).not.toHaveBeenCalled();
     expect(getMediaMock).not.toHaveBeenCalled();
   });
 
@@ -98,27 +116,23 @@ describe("GET /api/cms/media/blob", () => {
 
     expect(response.status).toBe(401);
     expect(await response.text()).toBe("Unauthorized");
+    expect(headMediaMock).not.toHaveBeenCalled();
     expect(getMediaMock).not.toHaveBeenCalled();
   });
 
   it("returns the private media stream with download headers", async () => {
-    getMediaMock.mockResolvedValue({
-      url: "/api/public/media/blob?pathname=covers%2Fhero+image.JPG",
-      downloadUrl: "/api/cms/media/blob?pathname=covers%2Fhero+image.JPG&download=1",
-      contentType: "image/jpeg",
-      pathname: "covers/hero image.JPG",
-      size: 1024,
-      etag: "etag-1",
-      uploadedAt: new Date("2026-01-01T00:00:00.000Z"),
-      stream: createMediaStream("image-bytes"),
-    });
+    getMediaMock.mockResolvedValue(createMediaRecord());
 
     const response = await GET(createRequest("covers/hero image.JPG", { download: true }));
 
-    expect(getMediaMock).toHaveBeenCalledWith("covers/hero image.JPG");
+    expect(headMediaMock).toHaveBeenCalledWith("covers/hero image.JPG");
+    expect(getMediaMock).toHaveBeenCalledWith("covers/hero image.JPG", undefined);
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/jpeg");
     expect(response.headers.get("cache-control")).toBe("private, no-store, max-age=0");
+    expect(response.headers.get("accept-ranges")).toBe("bytes");
+    expect(response.headers.get("content-length")).toBe("1024");
+    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     expect(response.headers.get("content-disposition")).toBe(
       "attachment; filename*=UTF-8''hero%20image.JPG",
     );
@@ -126,7 +140,7 @@ describe("GET /api/cms/media/blob", () => {
   });
 
   it("maps missing media to 404", async () => {
-    getMediaMock.mockRejectedValue(new StorageNotFoundError());
+    headMediaMock.mockRejectedValue(new StorageNotFoundError());
 
     const response = await GET(createRequest("covers/missing.jpg"));
 
@@ -135,11 +149,41 @@ describe("GET /api/cms/media/blob", () => {
   });
 
   it("maps storage access errors to 403", async () => {
-    getMediaMock.mockRejectedValue(new StorageAccessError());
+    headMediaMock.mockRejectedValue(new StorageAccessError());
 
     const response = await GET(createRequest("covers/forbidden.jpg"));
 
     expect(response.status).toBe(403);
     expect(await response.text()).toBe("Forbidden");
+  });
+
+  it("returns a partial media response for a valid byte range", async () => {
+    getMediaMock.mockResolvedValue(
+      createMediaRecord({
+        stream: createMediaStream("partial"),
+      }),
+    );
+
+    const response = await GET(
+      createRequest("covers/hero image.JPG", { headers: { range: "bytes=2-8" } }),
+    );
+
+    expect(getMediaMock).toHaveBeenCalledWith("covers/hero image.JPG", { range: "bytes=2-8" });
+    expect(response.status).toBe(206);
+    expect(response.headers.get("content-range")).toBe("bytes 2-8/1024");
+    expect(response.headers.get("content-length")).toBe("7");
+    expect(response.headers.get("accept-ranges")).toBe("bytes");
+    expect(await response.text()).toBe("partial");
+  });
+
+  it("returns 416 for an unsatisfiable byte range", async () => {
+    const response = await GET(
+      createRequest("covers/hero image.JPG", { headers: { range: "bytes=1024-2048" } }),
+    );
+
+    expect(response.status).toBe(416);
+    expect(response.headers.get("content-range")).toBe("bytes */1024");
+    expect(response.headers.get("accept-ranges")).toBe("bytes");
+    expect(getMediaMock).not.toHaveBeenCalled();
   });
 });

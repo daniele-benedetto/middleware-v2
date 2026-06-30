@@ -323,6 +323,23 @@ describe("mediaStorage", () => {
       await expect(new Response(object.stream).text()).resolves.toBe("audio-bytes");
     });
 
+    it("passes byte ranges to S3 get requests", async () => {
+      const stream = new Response("partial").body;
+
+      s3ClientMock.send.mockResolvedValue({ Body: stream });
+
+      await mediaStorage.get("audio/intro.mp3", { range: "bytes=10-99" });
+
+      const command = s3ClientMock.send.mock.calls[0]?.[0];
+
+      expect(command).toBeInstanceOf(GetObjectCommand);
+      expect(commandInput(command)).toMatchObject({
+        Bucket: "middleware-media",
+        Key: "audio/intro.mp3",
+        Range: "bytes=10-99",
+      });
+    });
+
     it("fails when the object body is missing", async () => {
       s3ClientMock.send.mockResolvedValue({});
 
