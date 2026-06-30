@@ -1015,13 +1015,121 @@ Criterio di completamento: le soglie hanno una giustificazione empirica minima, 
 
 Obiettivo: sostituire le views con letture qualificate e consumo reale.
 
-Lavori principali: cablare eventi per articoli, issue, pagine statiche, ascolto e media; associare ogni pagina pubblica a `pageType` e, quando possibile, `contentId`; calcolare `activeTimeMs`, `maxScrollDepth`, `returnCountInSession`, `refreshCount`; derivare `engagementLevel` e `completed` in base al tipo; misurare audio started/completed/listenedMs/completionRate.
+Assunzione operativa: la Fase 1 e la Fase 2 sono state completate come descritte. Esistono quindi `ObservabilitySession`, `ObservabilityEvent`, errori su modello nuovo, collector pubblico batchato, session tracking anonimo, rate limit, bot filtering, privacy gating, sample rate sugli eventi ad alta frequenza e raw event coerenti. La Fase 3 non deve rifare sessionizzazione, rate limit o bot filtering: li usa.
 
-Regole specifiche: articolo, completion da scroll, tempo attivo e lunghezza; issue, da interazione coi blocchi e navigazione verso articoli; home, da esplorazione, click verso contenuti, scroll, ritorni; listen, da audio progress, non scroll; media, da apertura, durata, download o interazione.
+Principio di questa fase: engagement-first, no retrocompatibilità. `page_view`, `article_view`, `issue_view`, `listen_view`, `media_open` come vecchi eventi analytics non sono fonte autorevole e non vanno adattati. Se componenti, DTO, procedure, test o schermate continuano a ragionare in termini di views, si buttano via o si riscrivono. Non si mantiene un doppio tracciamento views + engagement per proteggere codice provvisorio. Il raw event può contenere segnali tecnici di ingresso pagina, ma la UI telemetry lavora su `ContentEngagement` e, per l'audio, `AudioEngagement`.
 
-Deliverable: `ContentEngagement` popolato, service che trasforma eventi raw in engagement, DTO per la dashboard telemetry, test su `glance`/`scan`/`engaged`/`completed`.
+Scelta dello slice interpretato: `ContentEngagement` + `AudioEngagement`. `ContentEngagement` misura consumo e intenzione su home, articoli, issue, pagine statiche, listen e media. `AudioEngagement` è separato perché l'ascolto ha regole proprie: progress, listened time, seek, replay e completion non sono scroll.
 
-Criterio di completamento: la UI mostra letture qualificate senza usare page views come proxy; un contenuto è valutabile per qualità anche con traffico basso.
+Modelli introdotti in questa fase:
+
+- `ContentEngagement`
+- `AudioEngagement`
+
+Eventi raw ammessi come input di Fase 3: `page_enter`, `page_exit`, `visibility_change`, `session_heartbeat`, `scroll_milestone`, `content_interaction`, `navigation_click`, `audio_start`, `audio_progress`, `audio_complete`, `audio_seek`, `audio_replay`, `media_open`, `media_download`. Eventi analytics legacy come `page_view`, `article_view`, `issue_view`, `listen_view` e `web-vital` non sono API ufficiali di questa fase.
+
+Checklist operativa Fase 3:
+
+- [ ] Rimuovere dal percorso pubblico attivo i tracker provvisori basati su views: `PublicPageViewTracker`, chiamate a `track({ event: "page_view" })` e ogni equivalente `article_view`, `issue_view`, `listen_view`, `media_open` legacy.
+- [ ] Rimuovere dal client telemetry ufficiale le API analytics legacy (`track`, `AnalyticsEvent`) e sostituirle con il collector engagement; niente alias o wrapper compatibili con il vecchio contratto.
+- [ ] Rimuovere dal flusso telemetry editoriale ogni dipendenza da `reportWebVital`, `FID` e payload `web-vital`; la performance qualitativa appartiene alla Fase 5, non è una base provvisoria per l'engagement.
+- [ ] Rimuovere o riscrivere procedure, DTO, prefetch e schermate CMS che espongono `views`, `page views`, `visitors` o aggregate views-based come metrica primaria della telemetry editoriale.
+- [ ] Creare `ContentEngagement` nello schema Prisma con campi: `id`, `sessionId`, `visitorHash`, `contentType`, `contentId`, `slug`, `path`, `pageType`, `firstSeenAt`, `lastSeenAt`, `activeTimeMs`, `maxScrollDepth`, `scrollMilestones`, `interactionCount`, `returnCountInSession`, `refreshCount`, `completed`, `engagementLevel`, `exitType`, `sampleRate`, `createdAt`, `updatedAt`.
+- [ ] Creare `AudioEngagement` nello schema Prisma con campi: `id`, `sessionId`, `visitorHash`, `articleId`, `path`, `started`, `completed`, `listenedMs`, `completionRate`, `seekCount`, `replayCount`, `firstSeenAt`, `lastSeenAt`, `createdAt`, `updatedAt`.
+- [ ] Collegare `ContentEngagement` a `ObservabilitySession` con `sessionId` nullable solo dove il collector consente esplicitamente eventi senza sessione, senza inventare sessioni finte.
+- [ ] Collegare `AudioEngagement` a `ObservabilitySession` e al contenuto articolo quando disponibile, senza dipendere da slug come chiave autorevole se esiste `articleId`.
+- [ ] Aggiungere indici minimi per engagement: `sessionId`/`path`, `sessionId`/`contentId`, `contentType`/`contentId`/`firstSeenAt`, `pageType`/`firstSeenAt`, `engagementLevel`/`firstSeenAt`, `completed`/`firstSeenAt`.
+- [ ] Aggiungere indici minimi per audio: `sessionId`/`articleId`, `articleId`/`firstSeenAt`, `completed`/`firstSeenAt`.
+- [ ] Generare una migrazione Prisma netta, senza tabelle ponte, backfill views, mapping da analytics legacy o preservazione di conteggi provvisori.
+- [ ] Definire schema Zod per i payload batch engagement accettati dal collector: page event, scroll milestone, interaction, audio event, media event.
+- [ ] Validare in Zod i valori canonici di `pageType`, `contentType`, `engagementLevel` e `exitType`, riusando i vocabolari della Fase 0.
+- [ ] Limitare metadata engagement a shape e dimensione già definite in Fase 0, senza accettare body request, token, query string sensibili o valori ad alta cardinalità non necessari.
+- [ ] Aggiornare `/api/telemetry` o il collector equivalente per accettare batch engagement oltre agli errori, riusando session tracking, privacy gating, rate limit e bot filtering della Fase 2.
+- [ ] Garantire che gli eventi campionabili (`session_heartbeat`, `scroll_milestone`) portino `sampleRate` e che eventi critici (`page_enter`, `page_exit`, `audio_complete`) non vengano campionati.
+- [ ] Implementare un client `PublicEngagementTracker` o equivalente che invii `page_enter`, `page_exit`, `visibility_change`, heartbeat attivi, scroll milestone deduplicate e interazioni reali.
+- [ ] Calcolare lato client i delta di tempo attivo con `performance.now()`, heartbeat ogni 15s, idle threshold 30s e cap 20s, senza usare wall clock come fonte di durata.
+- [ ] Bloccare l'accumulo di active time quando la pagina è hidden, la finestra non ha focus o non ci sono interazioni recenti.
+- [ ] Inviare `page_exit` con `sendBeacon` o fallback `fetch keepalive`, includendo l'ultimo active time accumulato e l'exit context disponibile.
+- [ ] Deduplicare lato client le scroll milestone, evitando eventi ripetuti per la stessa soglia nella stessa pagina.
+- [ ] Collegare ogni route pubblica al contesto osservabile esplicito, senza inferenze fragili da path quando il server conosce il contenuto: home, articolo, issue, pagina statica, listen, media.
+- [ ] Passare `pageType`, `contentType`, `contentId`, `slug` e path canonico al tracker dalle pagine pubbliche o da un provider contestuale.
+- [ ] Cablare gli articoli con `pageType = "article"`, `contentType = "article"`, `contentId = article.id`, slug e lunghezza del contenuto quando disponibile.
+- [ ] Cablare le issue con `pageType = "issue"`, `contentType = "issue"`, `contentId = issue.id`, slug e segnali di interazione con blocchi o navigazione verso articoli.
+- [ ] Cablare le pagine statiche con `pageType = "static_page"`, `contentType = "page"`, `contentId = page.id` quando disponibile.
+- [ ] Cablare la home con `pageType = "home"`, segnali di esplorazione, scroll e click verso contenuti, senza fingere un `contentId`.
+- [ ] Cablare la pagina ascolta con `pageType = "listen"`, `contentType = "article"`, `contentId = article.id` e segnali audio dedicati.
+- [ ] Cablare media open/download/interazione con `pageType = "media"`, `contentType = "media"`, `contentId` quando disponibile.
+- [ ] Implementare nel player audio gli eventi `audio_start`, `audio_progress`, `audio_complete`, `audio_seek`, `audio_replay`, con progress deduplicato e non rumoroso.
+- [ ] Implementare repository engagement separato da telemetry legacy, con metodi per upsert di `ContentEngagement`, upsert di `AudioEngagement`, lettura summary, lista contenuti e dettaglio contenuto.
+- [ ] Implementare service engagement che trasforma raw event in episodi interpretati, mantenendo nel service le regole di active time, ritorni, refresh, completion ed engagement level.
+- [ ] Calcolare `firstSeenAt` come primo `receivedAtServer` utile e `lastSeenAt` come ultimo `receivedAtServer` utile, non da wall clock client.
+- [ ] Calcolare `activeTimeMs` da delta monotonici validati e cappati, sommando solo segmenti attivi.
+- [ ] Calcolare `maxScrollDepth` e `scrollMilestones` come massimo e insieme deduplicato delle milestone ricevute.
+- [ ] Calcolare `interactionCount` da interazioni umane reali, non da heartbeat o eventi automatici.
+- [ ] Calcolare `refreshCount` quando lo stesso `sessionId` rientra sullo stesso path entro pochi secondi senza nuovo percorso significativo.
+- [ ] Calcolare `returnCountInSession` quando lo stesso `sessionId` torna allo stesso contenuto dopo navigazione o intervallo significativo nella stessa sessione.
+- [ ] Derivare `exitType` come `bounce`, `internal_navigation`, `external_exit` o `unknown` usando eventi di exit e navigazione disponibili, senza scriverlo come fatto catturato sul raw event.
+- [ ] Derivare `engagementLevel` per articolo da active time, scroll depth, lunghezza contenuto e completamento; soglie iniziali configurabili, non costanti sparse.
+- [ ] Derivare `engagementLevel` per issue da interazione con blocchi, scroll, navigazione verso articoli e ritorni.
+- [ ] Derivare `engagementLevel` per home da esplorazione, scroll e click verso contenuti, trattando `completed` come caso raro e definito esplicitamente.
+- [ ] Derivare `engagementLevel` per listen da audio progress e listened time, non da scroll.
+- [ ] Derivare `engagementLevel` per media da apertura, durata, download o interazione reale.
+- [ ] Derivare `completed` per articoli da scroll alto, active time coerente con lunghezza e segnali finali disponibili.
+- [ ] Derivare `completed` per audio da `completionRate` alta o `audio_complete`, con soglia iniziale esplicita.
+- [ ] Escludere di default dagli output qualitativi le sessioni `isLikelyBot = true`, pur mantenendo i raw event e gli episodi per debug se già salvati.
+- [ ] Rendere soglie engagement iniziali configurabili per `pageType`: active time minimo, scroll minimo, completion scroll, audio completion rate, refresh window, return window.
+- [ ] Versionare o nominare il set di soglie usato per derivare engagement, così una futura calibrazione può spiegare perché un episodio è stato classificato in un certo modo.
+- [ ] Creare DTO CMS per summary telemetry engagement con `qualifiedVisits`, `completedReads`, `completionRate`, `averageActiveTimeMs`, `engagementBreakdown`, `topContent`, `lowQualityContent`, `sampleConfidence`.
+- [ ] Creare DTO CMS per lista contenuti con titolo o fallback slug/path, `contentType`, `pageType`, qualified reads, completed reads, completion rate, active time medio, ritorni in sessione, score o rank qualitativo provvisorio.
+- [ ] Creare DTO CMS per dettaglio contenuto con breakdown `glance`/`scan`/`engaged`/`completed`, scroll distribution, active time, ritorni, refresh, exit type e audio breakdown se presente.
+- [ ] Creare procedure tRPC per `engagementSummary`, `contentEngagementList` e `contentEngagementDetail`, con input periodo, `pageType`, `contentType` e query testo dove utile.
+- [ ] Rimuovere o rinominare procedure legacy `analyticsSummary` se continuano a significare views, invece di cambiarne silenziosamente il significato mantenendo lo stesso contratto.
+- [ ] Aggiornare prefetch CMS e tipi `RouterInputs`/`RouterOutputs` per usare le nuove procedure engagement, eliminando tipi legacy non più raggiungibili.
+- [ ] Sostituire la UI CMS analytics/telemetry con una dashboard editoriale di qualità basata su engagement, non su conteggi grezzi.
+- [ ] La prima UI deve mostrare KPI qualitativi, breakdown engagement, tabella contenuti, filtri periodo/pageType/contentType e empty state che spiega la generazione degli episodi.
+- [ ] Non mostrare `views` nella UI Fase 3: se serve una metrica diagnostica di volume, usare un nome nuovo e coerente col modello (`episodi iniziati`, `sessioni con contenuto`, `contenuti aperti`) calcolato da `ContentEngagement`, non da analytics legacy.
+- [ ] Aggiungere indicatore di affidabilità campione per contenuti con pochi episodi, evitando classifiche aggressive su numeri minimi.
+- [ ] Aggiornare testi i18n CMS da analytics/page views a engagement, letture qualificate, completamenti, ritorni e tempo attivo.
+- [ ] Aggiornare export/import del modulo telemetry/engagement in modo che il codice non continui a esporre API legacy come ufficiali.
+- [ ] Rimuovere test che presuppongono `page_view`, `article_view`, `FID`, aggregate views o `track()` come comportamento desiderato.
+- [ ] Aggiungere test unitari per classificazione `glance`, `scan`, `engaged`, `completed` su article, issue, home, listen e media.
+- [ ] Aggiungere test unitari per active time: tab background, finestra senza focus, gap heartbeat, idle lungo, page exit, delta cappato.
+- [ ] Aggiungere test unitari per refresh vs ritorno nella stessa sessione.
+- [ ] Aggiungere test unitari per scroll milestone deduplicate e max scroll depth.
+- [ ] Aggiungere test unitari per audio: start, progress, seek, replay, completionRate e completed.
+- [ ] Aggiungere test service/repository per creazione e aggiornamento di `ContentEngagement` da sequenze raw realistiche.
+- [ ] Aggiungere test service/repository per creazione e aggiornamento di `AudioEngagement` da sequenze audio realistiche.
+- [ ] Aggiungere route test collector per batch engagement valido, payload invalido, payload oversized, metadata troppo grandi, path tecnici, DNT/GPC/privacy gating e sampleRate.
+- [ ] Aggiungere test tRPC/DTO per summary, lista contenuti, dettaglio contenuto e output validato con `parseOutput`.
+- [ ] Verificare con `prisma validate`, generazione client, typecheck, lint e unit test pertinenti.
+- [ ] Aggiornare questo documento se durante l'implementazione emergono decisioni di soglia o schema che precisano Fase 3, senza creare checklist parallele.
+
+Deliverable Fase 3:
+
+- [ ] Migrazione Prisma netta con `ContentEngagement` e `AudioEngagement`, senza backfill o mapping da analytics legacy.
+- [ ] Collector engagement pubblico integrato con sessione, privacy, bot filtering, rate limit e batching della Fase 2.
+- [ ] Tracker pubblico contestuale per home, articoli, issue, pagine statiche, listen e media.
+- [ ] Eventi audio cablati nel player e trasformati in `AudioEngagement`.
+- [ ] Repository engagement per scrittura episodi, summary, lista e dettaglio.
+- [ ] Service engagement per derivare active time, scroll, refresh, ritorni, completion, exit type ed engagement level.
+- [ ] DTO CMS per summary telemetry, lista contenuti e dettaglio contenuto.
+- [ ] Procedure tRPC engagement con policy e output validation.
+- [ ] UI CMS telemetry basata su letture qualificate, completamenti, ritorni e tempo attivo.
+- [ ] Test unitari, route test e tRPC/service test che dimostrano il percorso end-to-end.
+
+Criterio di completamento:
+
+- [ ] Una visita reale a un articolo produce raw event coerenti e un `ContentEngagement` con active time, scroll, engagement level e completed derivati.
+- [ ] Una visita breve senza scroll e senza interazioni resta `glance` e non diventa lettura qualificata.
+- [ ] Una lettura reale con tempo attivo e scroll coerenti diventa `engaged` o `completed` secondo soglie spiegabili.
+- [ ] Refresh rapidi incrementano `refreshCount` e non creano false letture equivalenti.
+- [ ] Ritorni allo stesso contenuto nella stessa sessione incrementano `returnCountInSession` senza simulare tracking cross-day.
+- [ ] Una tab lasciata aperta in background non aumenta `activeTimeMs` in modo significativo.
+- [ ] Una sessione bot evidente resta esclusa dagli output qualitativi di default.
+- [ ] Una sessione listen produce `AudioEngagement` con listened time, completion rate e completed quando l'audio viene consumato davvero.
+- [ ] La UI telemetry mostra letture qualificate, completamenti, completion rate, active time e breakdown engagement senza usare page views come proxy.
+- [ ] Nessun componente, DTO, procedura o test ancora raggiungibile considera `page_view`, `FID`, `AnalyticsEvent` o aggregate views-based come API ufficiale della telemetry editoriale.
+- [ ] Il sistema resta funzionante e verificabile dopo la rimozione del legacy, anche se performance qualitativa, aggregati giornalieri e overview trasversale arrivano nelle fasi successive.
 
 ### Fase 4: Errori Operativi
 
