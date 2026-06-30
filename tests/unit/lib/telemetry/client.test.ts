@@ -1,4 +1,4 @@
-import { reportClientError } from "@/lib/telemetry/client";
+import { reportClientError, reportWebVital, track } from "@/lib/telemetry/client";
 
 describe("reportClientError", () => {
   beforeEach(() => {
@@ -49,5 +49,91 @@ describe("reportClientError", () => {
         body: expect.stringContaining('"type":"client-error"'),
       }),
     );
+  });
+
+  it("tracks analytics events", () => {
+    const sendBeacon = vi.fn();
+
+    vi.stubGlobal("navigator", { sendBeacon });
+
+    track({
+      event: "page_view",
+      path: "/articoli/test",
+      referrer: "https://example.com",
+      metadata: { articleSlug: "test" },
+    });
+
+    expect(sendBeacon).toHaveBeenCalledWith(
+      "/api/telemetry",
+      JSON.stringify({
+        type: "analytics",
+        event: "page_view",
+        path: "/articoli/test",
+        referrer: "https://example.com",
+        metadata: { articleSlug: "test" },
+      }),
+    );
+  });
+
+  it("does not track technical paths", () => {
+    const sendBeacon = vi.fn();
+
+    vi.stubGlobal("navigator", { sendBeacon });
+
+    track({ event: "page_view", path: "/cms/articles" });
+    track({ event: "page_view", path: "/api/health" });
+    track({ event: "page_view", path: "/_next/static/app.js" });
+
+    expect(sendBeacon).not.toHaveBeenCalled();
+  });
+
+  it("reports supported Web Vitals", () => {
+    const sendBeacon = vi.fn();
+
+    vi.stubGlobal("navigator", { sendBeacon });
+
+    reportWebVital(
+      {
+        id: "metric-1",
+        name: "LCP",
+        value: 1200,
+        delta: 1200,
+        rating: "good",
+        navigationType: "navigate",
+      },
+      "/articoli/test",
+    );
+
+    expect(sendBeacon).toHaveBeenCalledWith(
+      "/api/telemetry",
+      JSON.stringify({
+        type: "web-vital",
+        metricId: "metric-1",
+        name: "LCP",
+        value: 1200,
+        delta: 1200,
+        rating: "good",
+        navigationType: "navigate",
+        path: "/articoli/test",
+      }),
+    );
+  });
+
+  it("does not report unsupported Web Vitals", () => {
+    const sendBeacon = vi.fn();
+
+    vi.stubGlobal("navigator", { sendBeacon });
+
+    reportWebVital(
+      {
+        id: "metric-1",
+        name: "Next.js-render",
+        value: 1200,
+        delta: 1200,
+      },
+      "/articoli/test",
+    );
+
+    expect(sendBeacon).not.toHaveBeenCalled();
   });
 });
