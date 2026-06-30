@@ -1,113 +1,443 @@
-# Primo deploy su Hetzner + Coolify
+# Primo deploy self-hosted del magazine Next.js
 
-Documento operativo unico per portare il magazine Next.js su infrastruttura EU self-hosted.
+Documento operativo unico per portare il magazine Next.js su infrastruttura EU self-hosted, con tutto centrato sul solo progetto Next.js.
 
-Obiettivo: avviare un ambiente pulito su Hetzner + Coolify, senza migrazione di contenuti, database o immagini esistenti.
+Obiettivo: avviare un ambiente pulito su Hetzner, senza Coolify e senza servizi di terze parti, dove l'unico applicativo è il Next.js più il suo Postgres e il suo Redis. Analytics, performance ed errori vivono dentro l'app, su Postgres, e si vedono nel CMS.
 
-Modello di lavoro: niente staging. Il banco di prova è il locale con Docker. Sul VPS gira solo production, che segue il branch `main`. Quando il locale è verde si deploya su production.
+Modello di lavoro:
 
-Regola operativa: il dominio principale si punta al VPS solo dopo verifica iniziale su dominio temporaneo, upload media, login CMS, pubblicazione, backup e restore test verificati.
+- Niente staging. Il banco di prova è il locale con Docker.
+- Niente Coolify. Sul VPS gira Docker Compose gestito direttamente.
+- Deploy via GitHub Action su push a `main`.
+- Ingress via Cloudflare Tunnel, nessuna porta web aperta sul VPS.
+- Osservabilità dentro Next.js, salvata su Postgres e mostrata nel CMS.
+
+Regola operativa: il dominio pubblico si attiva solo dopo verifica su hostname temporaneo, upload media, login CMS, pubblicazione, backup e restore test verificati.
 
 ## Dashboard
 
-| Area                    | Stato   | Note                                                        |
-| ----------------------- | ------- | ----------------------------------------------------------- |
-| Baseline locale         | Fatto   | App, DB, Redis, MinIO, S3 adapter, seed, smoke, test, build |
-| Docker production image | Fatto   | `docker compose build app` completato e smoke container OK  |
-| Decisioni pre-acquisto  | Fatto   | Domini, Cloudflare, Umami, GlitchTip, bucket, no staging    |
-| Preflight documentale   | Fatto   | Runbook, env, DNS, backup, segreti e checklist deploy       |
-| VPS Hetzner             | Da fare | Richiede acquisto/creazione server (CAX31 ARM)              |
-| Coolify                 | Da fare | Richiede VPS e DNS                                          |
-| Object Storage Hetzner  | Da fare | Richiede bucket reale e credenziali                         |
-| Backup/restore          | Da fare | Prima del dominio production                                |
-| Production              | Da fare | Solo dopo smoke locale verde e restore DB testato           |
+| Area                   | Stato   | Note                                                          |
+| ---------------------- | ------- | ------------------------------------------------------------- |
+| Baseline locale        | Fatto   | App, DB, Redis, MinIO, S3 adapter, seed, smoke, test, build   |
+| Docker prod image      | Fatto   | `docker compose build app` completato e smoke container OK    |
+| Decisioni pre-acquisto | Fatto   | Dominio, Cloudflare, Tunnel, osservabilità in-app, no servizi |
+| Pipeline CI/CD         | Da fare | GitHub Action build ARM, push GHCR app+migrator, deploy SSH   |
+| VPS Hetzner            | Da fare | CAX21 ARM 8 GB                                                |
+| Object Storage Hetzner | Da fare | Bucket reale e credenziali                                    |
+| Cloudflare Tunnel      | Da fare | VPS e zona Cloudflare                                         |
+| Osservabilità in-app   | Da fare | Tabelle Postgres, `instrumentation.ts`, web vitals, retention |
+| Backup/restore         | Da fare | Prima del dominio pubblico                                    |
+| Produzione             | Da fare | Solo dopo smoke verde e restore DB testato                    |
 
 ## Stack target
 
-- **VPS**: Hetzner CAX31, 8 vCPU ARM Ampere, 16 GB RAM, 160 GB NVMe, datacenter Falkenstein o Norimberga.
-- **PaaS**: Coolify v4 per deploy, SSL, env, database e backup.
-- **DB**: Postgres production gestito da Coolify.
-- **Rate limit**: Redis production gestito da Coolify.
-- **Media**: Hetzner Object Storage S3-compatible, bucket privato.
-- **DNS/CDN**: Cloudflare.
-- **Registrar**: Cloudflare Registrar, dominio trasferito dal registrar attuale.
-- **Analytics**: Umami self-hosted, cookieless, solo production.
-- **Errori**: GlitchTip self-hosted, solo production.
-- **Monitoring**: metriche server, log container, uptime check.
-- **Limiti risorse**: memory limit per container in Coolify, RAM prioritaria a Postgres e app di production.
-- **Branch**: production deploya da `main`. Il branch `dev` resta il lavoro in locale.
+- **VPS**: Hetzner CAX21, 4 vCPU ARM Ampere, 8 GB RAM, 80 GB NVMe, Falkenstein o Norimberga. Intorno agli 8 €/mese.
+- **Runtime**: Docker Compose gestito direttamente sul VPS, senza PaaS.
+- **App**: Next.js standalone, deployata dal branch `main`.
+- **DB**: Postgres dell'app, in container.
+- **Rate limit**: Redis dell'app, in container.
+- **Media**: Hetzner Object Storage S3-compatible, bucket privato con versioning.
+- **Ingress/TLS**: Cloudflare Tunnel (`cloudflared`), nessuna porta 80/443 aperta sul VPS.
+- **DNS/Registrar**: Cloudflare, dominio trasferito su Cloudflare Registrar.
+- **CI/CD**: GitHub Actions, immagini arm64 app+migrator su GHCR, deploy via SSH.
+- **Analytics**: in-app, eventi cookieless su Postgres, dashboard nel CMS.
+- **Performance**: `useReportWebVitals` verso lo stesso collector.
+- **Errori/log**: `instrumentation.ts` con `onRequestError`, tabella `ErrorLog`, Pino su stdout.
+- **Uptime**: GitHub Action schedulata su `/api/health`.
+- **Branch**: produzione deploya da `main`. Il branch `dev` resta il lavoro in locale.
 
-Nota architettura: lo stack gira interamente su arm64. GlitchTip e Umami pubblicano immagini arm64 ufficiali, `node:22-slim` e `sharp` hanno build ARM native, Coolify gira su ARM. Nessun adattamento al codice rispetto alla baseline.
+Nota architettura: lo stack gira su arm64. `node:22-slim`, `sharp`, Postgres, Redis e `cloudflared` hanno immagini arm64 native, e la build in CI usa un runner ARM nativo, senza emulazione QEMU. Nessun adattamento al codice applicativo.
 
-Nota dimensionamento: senza staging il box è scarico. CAX31 (16 GB) dà margine a GlitchTip e alle build. In alternativa si può scendere a CAX21 (8 GB) spostando le build su CI invece che sul VPS.
+Nota migrazioni: l'immagine Next standalone non è un ambiente operativo completo per Prisma. Le migration di produzione devono girare da un'immagine/target dedicato `migrator`, che include workspace, Prisma CLI, schema, cartella `prisma/migrations` e script operativi come `auth:bootstrap-admin`. Non eseguire `pnpm prisma:migrate:deploy` dentro il container standalone dell'app.
+
+Nota dimensionamento: senza Coolify, GlitchTip e Umami, e con la build spostata in CI, il box è scarico. CAX21 da 8 GB è comodo per app, Postgres, Redis e tunnel.
 
 ## Decisioni pre-acquisto
 
-Queste decisioni non richiedono ancora acquisti e definiscono i valori da usare quando si creano VPS, DNS, bucket e ambiente Coolify.
+| Area                 | Decisione                                            |
+| -------------------- | ---------------------------------------------------- |
+| Dominio canonico     | `middleware.media`                                   |
+| Redirect produzione  | `www.middleware.media` -> `middleware.media`         |
+| Ambienti             | Solo produzione, nessuno staging                     |
+| Test                 | Solo in locale con Docker                            |
+| Branch produzione    | `main`                                               |
+| Orchestrazione       | Docker Compose diretto, nessun PaaS                  |
+| Deploy               | GitHub Action su push a `main`                       |
+| CI gate              | `pnpm check:all` sulle PR verso `main`               |
+| Build immagini       | CI su runner ARM nativo, push app+migrator su GHCR   |
+| Registry immagini    | GHCR (GitHub Container Registry)                     |
+| Rollback             | Rideploy dello SHA precedente nello script di deploy |
+| Ingress/TLS          | Cloudflare Tunnel                                    |
+| DNS/CDN              | Cloudflare                                           |
+| Registrar dominio    | Cloudflare Registrar, transfer dal registrar attuale |
+| Email transazionale  | Non prevista                                         |
+| Analytics            | In-app su Postgres, cookieless con salt giornaliero  |
+| Performance          | Web Vitals in-app                                    |
+| Error tracking       | In-app su Postgres via `onRequestError` + boundary   |
+| Alerting             | Opzionale, webhook da `onRequestError`               |
+| Uptime               | GitHub Action schedulata su `/api/health`            |
+| Retention telemetria | Job notturno, `TELEMETRY_RETENTION_DAYS`             |
+| Bucket media prod    | `middleware-media-prod`, privato con versioning      |
+| Backup media         | Solo versioning sul bucket                           |
+| Backup DB            | `pg_dump` schedulato su bucket Hetzner separato      |
+| Backup DB offsite    | Non previsto                                         |
+| Admin bootstrap      | Credenziali produzione scelte manualmente            |
 
-| Area                | Decisione                                            |
-| ------------------- | ---------------------------------------------------- |
-| Dominio canonico    | `middleware.media`                                   |
-| Redirect produzione | `www.middleware.media` -> `middleware.media`         |
-| Dashboard Coolify   | `coolify.middleware.media`                           |
-| Ambienti            | Solo production, nessuno staging                     |
-| Branch production   | `main`                                               |
-| DNS/CDN             | Cloudflare                                           |
-| Registrar dominio   | Cloudflare Registrar, transfer dal registrar attuale |
-| Email transazionale | Non prevista                                         |
-| Analytics           | Umami self-hosted, solo production                   |
-| Error tracking      | GlitchTip self-hosted, solo production               |
-| Bucket media prod   | `middleware-media-prod`                              |
-| Backup media        | Solo versioning sul bucket                           |
-| Backup DB           | Bucket Hetzner separato                              |
-| Backup DB offsite   | Non previsto                                         |
-| Admin bootstrap     | Credenziali production scelte manualmente            |
+### Matrice env applicativa (produzione)
 
-### Matrice env target (production)
+| Env                        | Produzione                                              |
+| -------------------------- | ------------------------------------------------------- |
+| `NODE_ENV`                 | `production`                                            |
+| `NEXT_PUBLIC_SITE_URL`     | `https://middleware.media`                              |
+| `BETTER_AUTH_URL`          | `https://middleware.media`                              |
+| `BETTER_AUTH_SECRET`       | `openssl rand -base64 48`                               |
+| `DATABASE_URL`             | `postgresql://middleware:PASS@postgres:5432/middleware` |
+| `POSTGRES_URL`             | Uguale a `DATABASE_URL`                                 |
+| `PRISMA_DATABASE_URL`      | Uguale a `DATABASE_URL`                                 |
+| `REDIS_URL`                | `redis://redis:6379`                                    |
+| `S3_ENDPOINT`              | Da Hetzner Object Storage                               |
+| `S3_REGION`                | Da bucket Hetzner scelto                                |
+| `S3_BUCKET`                | `middleware-media-prod`                                 |
+| `S3_ACCESS_KEY`            | Access key dedicata produzione                          |
+| `S3_SECRET_KEY`            | Secret key dedicata produzione                          |
+| `S3_FORCE_PATH_STYLE`      | Valore richiesto da endpoint Hetzner                    |
+| `ANALYTICS_SALT_SECRET`    | Base del salt giornaliero, `openssl rand -base64 32`    |
+| `BOOTSTRAP_ADMIN_EMAIL`    | Admin produzione scelto manualmente                     |
+| `BOOTSTRAP_ADMIN_PASSWORD` | Password produzione scelta manualmente                  |
+| `BOOTSTRAP_ADMIN_NAME`     | Nome admin produzione scelto manualmente                |
+| `AUDIT_LOG_RETENTION_DAYS` | `365`                                                   |
+| `TELEMETRY_RETENTION_DAYS` | `90`                                                    |
+| `ALERT_WEBHOOK_URL`        | Opzionale, per notifiche errori push                    |
 
-| Env                        | Production                                  |
-| -------------------------- | ------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`     | `https://middleware.media`                  |
-| `BETTER_AUTH_URL`          | `https://middleware.media`                  |
-| `DATABASE_URL`             | Da Postgres Coolify production              |
-| `POSTGRES_URL`             | Uguale a `DATABASE_URL`                     |
-| `PRISMA_DATABASE_URL`      | Uguale a `DATABASE_URL`                     |
-| `REDIS_URL`                | Da Redis Coolify production                 |
-| `S3_ENDPOINT`              | Da Hetzner Object Storage                   |
-| `S3_REGION`                | Da bucket Hetzner scelto                    |
-| `S3_BUCKET`                | `middleware-media-prod`                     |
-| `S3_ACCESS_KEY`            | Access key dedicata production              |
-| `S3_SECRET_KEY`            | Secret key dedicata production              |
-| `S3_FORCE_PATH_STYLE`      | Valore richiesto da endpoint Hetzner        |
-| `BOOTSTRAP_ADMIN_EMAIL`    | Admin production scelto manualmente         |
-| `BOOTSTRAP_ADMIN_PASSWORD` | Password production scelta manualmente      |
-| `BOOTSTRAP_ADMIN_NAME`     | Nome admin production scelto manualmente    |
-| `BETTER_AUTH_SECRET`       | Secret production generato ad alta entropia |
-| `AUDIT_LOG_RETENTION_DAYS` | `365`                                       |
+### Env infrastrutturali (non applicative)
 
-Nota: nessun `NEXT_PUBLIC_NOINDEX`. Serviva solo a non indicizzare lo staging, che non esiste più. Production è indicizzabile e non richiede modifiche al codice.
+Restano sul VPS o nei secret GitHub, mai nel repository.
+
+| Env / Secret              | Dove vive        | Uso                                               |
+| ------------------------- | ---------------- | ------------------------------------------------- |
+| `IMAGE_TAG`               | `.env` sul VPS   | SHA dell'immagine corrente, per il rollback       |
+| `CLOUDFLARE_TUNNEL_TOKEN` | `.env` sul VPS   | Avvio del container `cloudflared`                 |
+| `POSTGRES_PASSWORD`       | `.env` sul VPS   | Container Postgres                                |
+| `POSTGRES_USER`           | `.env` sul VPS   | Utente DB, valore `middleware`                    |
+| `GHCR_PAT`                | `.env` sul VPS   | PAT read-only `read:packages` per il pull dal VPS |
+| `SSH_HOST`                | Secret GitHub    | Target deploy                                     |
+| `SSH_USER`                | Secret GitHub    | Utente `deploy`                                   |
+| `SSH_KEY`                 | Secret GitHub    | Chiave privata deploy dedicata                    |
+| `GITHUB_TOKEN`            | Automatico in CI | Push immagine su GHCR dal runner                  |
+
+Nota: il `GITHUB_TOKEN` automatico vale solo dentro il runner. Per il `pull` dal VPS serve un PAT dedicato read-only, perché il package GHCR è privato.
 
 ### DNS target
 
-| Host                       | Uso                 | Note                           |
-| -------------------------- | ------------------- | ------------------------------ |
-| `middleware.media`         | App production      | Canonico                       |
-| `www.middleware.media`     | Redirect production | Redirect permanente verso apex |
-| `coolify.middleware.media` | Dashboard Coolify   | Accesso dashboard dopo setup   |
+Con Cloudflare Tunnel non servono record A/AAAA verso l'IP del VPS. I public hostname del tunnel creano automaticamente i CNAME verso `<tunnel-id>.cfargotunnel.com`.
 
-### Servizi self-hosted da prevedere in Coolify
+| Host                   | Uso                   | Gestione                                      |
+| ---------------------- | --------------------- | --------------------------------------------- |
+| `middleware.media`     | App produzione        | Public hostname del tunnel verso `app:3000`   |
+| `www.middleware.media` | Redirect produzione   | Public hostname o regola redirect Cloudflare  |
+| Hostname temporaneo    | Verifica pre-pubblica | Es. `app.middleware.media`, da rimuovere dopo |
 
-- App Next.js production (da `main`).
-- Postgres production.
-- Redis production.
-- Umami self-hosted con il proprio Postgres.
-- GlitchTip self-hosted con il proprio Postgres.
+## Architettura runtime sul VPS
 
-Nota: GlitchTip e Umami restano su Postgres dedicati per semplicità operativa. Sui 16 GB della CAX31 c'è margine.
+Tutto gira in un unico `docker-compose.prod.yml`. Nessuna porta web pubblicata: `cloudflared` raggiunge l'app dalla rete interna del compose.
+
+```yaml
+services:
+  app:
+    image: ghcr.io/OWNER/REPO:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    # nessuna porta pubblicata: l'ingress passa dal tunnel
+
+  migrate:
+    image: ghcr.io/OWNER/REPO-migrator:${IMAGE_TAG:-latest}
+    env_file: .env
+    depends_on:
+      - postgres
+    command: ["pnpm", "prisma:migrate:deploy"]
+    profiles: ["ops"]
+
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-middleware}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: middleware
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  redisdata:
+```
+
+Punti chiave:
+
+- `restart: unless-stopped` su ogni servizio sostituisce l'orchestrazione di Coolify dopo crash o reboot.
+- L'`healthcheck` dell'app è la base sia per lo swap sicuro sia per il rollback automatico.
+- Il servizio `migrate` non resta acceso: si esegue solo on-demand con `docker compose --profile ops run --rm migrate`.
+- L'immagine `REPO-migrator` è diversa dalla standalone app: contiene Prisma CLI, schema, migration files e script operativi.
+- L'app espone la `3000` solo sulla rete interna; nel tunnel il public hostname `middleware.media` punta a `http://app:3000`.
+- Postgres e Redis non hanno porte pubblicate, restano raggiungibili solo dai container.
+- Un unit systemd lancia `docker compose -f docker-compose.prod.yml up -d` al boot.
+
+## Pipeline CI/CD
+
+Un workflow copre gate e deploy. Sulle PR verso `main` gira solo il gate; su push a `main` gira tutto. Un secondo workflow fa l'uptime.
+
+### Workflow deploy
+
+```yaml
+name: deploy
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check:all
+
+  build-deploy:
+    needs: check
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04-arm # runner ARM nativo: immagine arm64 senza QEMU
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push app image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runner
+          push: true
+          platforms: linux/arm64
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+      - name: Build and push migrator image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: migrator
+          push: true
+          platforms: linux/arm64
+          tags: ghcr.io/${{ github.repository }}-migrator:${{ github.sha }}
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /opt/middleware
+            ./scripts/deploy.sh ${{ github.sha }}
+```
+
+### Workflow uptime
+
+```yaml
+name: uptime
+on:
+  schedule:
+    - cron: "*/5 * * * *" # granularità minima del cron GitHub
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health check
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" https://middleware.media/api/health)
+          echo "status=$code"
+          test "$code" = "200"
+```
+
+Per ricevere una notifica al fallimento, aggiungi uno step `if: failure()` che apre una issue con `gh issue create` o chiama un webhook. Resta tutto dentro GitHub, nessun servizio sul server.
+
+### Script di deploy con rollback e login GHCR
+
+`scripts/deploy.sh` risolve tre cose che mancavano: l'autenticazione del VPS a GHCR, le migration da runner dedicato e il rollback automatico su health check fallito.
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+NEW_TAG="$1"
+COMPOSE="docker-compose.prod.yml"
+source .env
+
+# tag corrente salvato per il rollback
+PREV_TAG="${IMAGE_TAG:-}"
+
+# login GHCR con PAT read-only (package privato)
+echo "$GHCR_PAT" | docker login ghcr.io -u OWNER --password-stdin
+
+# backup pre-migrazione
+./scripts/backup-db.sh
+
+# punta al nuovo tag, tira app+migrator, migra, swap
+sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$NEW_TAG/" .env
+docker compose -f "$COMPOSE" pull app
+docker compose -f "$COMPOSE" --profile ops pull migrate
+docker compose -f "$COMPOSE" --profile ops run --rm migrate
+docker compose -f "$COMPOSE" up -d app
+
+# health check, rollback automatico se fallisce
+if ! ./scripts/healthcheck.sh; then
+  echo "Health check fallito. Rollback a ${PREV_TAG:-immagine precedente}"
+  if [ -n "$PREV_TAG" ]; then
+    sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$PREV_TAG/" .env
+    docker compose -f "$COMPOSE" up -d app
+  fi
+  exit 1
+fi
+echo "Deploy ok: $NEW_TAG"
+```
+
+`scripts/healthcheck.sh` aspetta che il container risulti healthy:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+for _ in $(seq 1 20); do
+  status=$(docker inspect --format '{{.State.Health.Status}}' "$(docker compose -f docker-compose.prod.yml ps -q app)" 2>/dev/null || echo "")
+  [ "$status" = "healthy" ] && exit 0
+  sleep 3
+done
+exit 1
+```
+
+`scripts/backup-db.sh` fa il dump verso il bucket backup:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+STAMP=$(date +%F-%H%M)
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  pg_dump -U "${POSTGRES_USER:-middleware}" middleware | gzip > "/tmp/middleware-$STAMP.sql.gz"
+rclone copy "/tmp/middleware-$STAMP.sql.gz" hetzner-backup:middleware-db/
+rm -f "/tmp/middleware-$STAMP.sql.gz"
+```
+
+Prerequisiti backup sul VPS:
+
+- `rclone` installato sull'host, non nel container app.
+- Remote `hetzner-backup` configurato verso il bucket backup DB, con credenziali diverse dal bucket media.
+- Restore testato almeno una volta su DB separato prima del dominio pubblico.
+- Retention backup DB esplicita: lifecycle del bucket o prune schedulato, non accumulo infinito.
+
+Regole della pipeline:
+
+- L'immagine è arm64 nativa, taggata con lo SHA git. Il rollback è automatico se l'health check fallisce, e manuale per SHA se serve tornare più indietro.
+- L'ordine è sempre login, backup, migrate, swap, health check. Il backup pre-migrazione è uno step, non una buona intenzione.
+- La migration gira da immagine `migrator`, non dalla standalone app. Il Dockerfile deve avere un target `migrator` dedicato.
+- Le migration di produzione devono seguire il pattern expand-contract: prima aggiungi schema compatibile, poi deploy codice, poi rimuovi solo in un deploy successivo.
+- `pnpm check:all` sulle PR rende automatico il vincolo che `main` è la produzione.
+- Lo swap su container singolo dà un blip di un paio di secondi. Per renderlo seamless servono due repliche dietro al tunnel, non necessario ora.
+- Il rollback applicativo è automatico, ma quello del DB non lo è. Per uno schema rotto valuta il restore dal dump pre-migrazione.
+
+## Osservabilità in-app
+
+Tutto vive dentro Next.js e Postgres. Niente servizi esterni.
+
+### Analytics
+
+- **Client**: una util `track(event)` che usa `navigator.sendBeacon` verso una route interna. Fire-and-forget, non blocca render né navigazione.
+- **Server**: una route handler che fa `insert` su una tabella Prisma `AnalyticsEvent`.
+- **Cookieless senza PII**: il visitor id è `sha256(ip + user_agent + salt_del_giorno)`, dove il salt deriva da `ANALYTICS_SALT_SECRET` più la data corrente. Ruota ogni giorno, quindi nessun identificatore persistente, nessun IP grezzo salvato, nessun cookie e nessun banner.
+- **Paese**: dall'header `CF-IPCountry` di Cloudflare, senza salvare l'IP.
+- **Aggregazione**: vista materializzata o job cron periodico per le query del CMS, così la dashboard non scansiona la tabella grezza a ogni apertura.
+- **CMS**: una sezione che legge le aggregazioni e mostra visite, pagine, referrer.
+
+### Performance
+
+- `useReportWebVitals` da `next/web-vitals` cattura LCP, CLS, INP, FCP e TTFB sul client.
+- I valori vanno allo stesso collector delle analytics, su una tabella `WebVital` o come tipo dentro `AnalyticsEvent`.
+- Nel CMS si mostrano i percentili per pagina. È RUM, dai visitatori veri, senza strumenti esterni.
+
+### Errori
+
+- `instrumentation.ts` esporta `onRequestError` (Next 15+). Scatta su errori da route handler, server action, server component e middleware, e scrive su una tabella `ErrorLog`.
+- Caveat: la copertura non è totale, alcuni errori middleware su certi runtime non vengono catturati. Per questo si accoppia con `app/error.tsx` e `app/global-error.tsx`, che intercettano gli errori di render lato client e fanno POST a una route di logging.
+- Prima di salvare, si strippano cookie, header auth e body per non scrivere PII.
+- Fingerprint minimo in scrittura, per incrementare un contatore invece di duplicare righe identiche.
+
+### Log
+
+- Pino come logger strutturato JSON, output su stdout catturato da Docker.
+- Ciò che deve sopravvivere al container va su Postgres (gli errori) o ruotato su file/bucket.
+- Non fare affidamento sullo stdout per dati che ti servono dopo un redeploy, perché `docker compose up` ricrea il container.
+
+### Retention telemetria
+
+- Job notturno che cancella o partiziona per data `AnalyticsEvent`, `WebVital` ed `ErrorLog`, governato da `TELEMETRY_RETENTION_DAYS`.
+- Da attivare dal primo giorno: senza uno strumento esterno questi dati crescono solo dentro il tuo Postgres.
+- Se vuoi storico analytics lungo, tieni la tabella grezza a 90 giorni e conserva a lungo solo le aggregazioni.
+
+### Alerting (opzionale)
+
+- Senza GlitchTip nessuno avvisa quando un errore esplode. Di default lo vedi nel CMS.
+- Per notifiche push, dentro `onRequestError` aggiungi una chiamata a `ALERT_WEBHOOK_URL` verso ntfy, Telegram o Discord. Poche righe, nessun servizio pesante.
+
+### Tracing (escluso per ora)
+
+- `@vercel/otel` e OpenTelemetry si agganciano a `instrumentation.ts`, ma OTel richiede un backend (Jaeger, Tempo, SigNoz), che è un servizio. Fuori dalla linea attuale. Lo si valuta solo se servirà tracing distribuito.
+
+### Uptime (eccezione strutturale)
+
+- Monitorare il Next.js dal Next.js non funziona: se il box è giù, è giù anche il monitor.
+- L'uptime resta esterno, sul Workflow uptime di GitHub Actions che colpisce `/api/health` ogni cinque minuti. Resta dentro l'ecosistema GitHub, nessuna terza parte e nessun health check Cloudflare a pagamento.
 
 ## Baseline locale completata
 
-Il branch `infra/self-hosting-prep` è pronto per essere deployato su infrastruttura reale. Il locale con Docker è ora l'unico ambiente di test prima del deploy. La baseline locale include:
+Il branch `infra/self-hosting-prep` è la base. Il locale con Docker è l'unico ambiente di test prima del deploy. La baseline include:
 
 - Dockerfile production standalone con `openssl` per Prisma.
 - Compose locale con app, Postgres, Redis, MinIO, `minio-init` e `migrate`.
@@ -119,7 +449,7 @@ Il branch `infra/self-hosting-prep` è pronto per essere deployato su infrastrut
 - Smoke HTTP dev, production-like e container Docker production.
 - Smoke CMS media via UI: login, upload, preview/download, rename, delete.
 
-Gate locali verdi, da considerare il vero gate pre-deploy:
+Gate locali verdi, il vero gate pre-deploy:
 
 ```bash
 pnpm check:all
@@ -127,722 +457,421 @@ docker compose config
 docker compose build app
 ```
 
-## Piano aggiornato
+## Macro attività codice prima degli acquisti
 
-Da qui in avanti il lavoro è diviso in fasi operative. La fase A si completa senza pagare o creare infrastruttura permanente. Dalla fase B in poi servono VPS, DNS, bucket e servizi reali.
+Queste attività non richiedono VPS, dominio trasferito o bucket reale. Sono il lavoro da chiudere prima di spendere soldi, così l'acquisto serve solo a validare infrastruttura e deploy.
 
-### Fase A - Preflight senza acquisti
+### 1. Runtime production locale completo
 
-Obiettivo: arrivare al momento dell'acquisto con runbook, accessi, segreti, DNS e checklist già pronti.
+- Creare `docker-compose.prod.yml` versionato, separato dal compose locale con MinIO.
+- Aggiungere target Docker `migrator`, distinto dal target `runner`, con Prisma CLI, schema, migration files e script operativi.
+- Verificare localmente build e avvio delle immagini `runner` e `migrator` su DB vuoto.
+- Aggiungere `/api/health` con risposta stabile per healthcheck container e uptime esterno.
+- Decidere se `/api/health` controlla solo processo Next.js o anche DB/Redis. Per il deploy healthcheck conviene almeno processo app; per endpoint operativo può esistere una variante più profonda protetta o interna.
 
-- [x] Preparare checklist account e accessi: Hetzner Cloud, Hetzner Object Storage, Cloudflare, GitHub, email admin.
-- [x] Preparare comando e destinazione per chiave SSH dedicata.
-- [x] Preparare matrice segreti senza salvare valori nel repository.
-- [x] Preparare comando per generare `BETTER_AUTH_SECRET` production.
-- [x] Preparare piano password per admin Coolify, admin production, Umami e GlitchTip.
-- [x] Preparare piano DNS Cloudflare con record, proxy mode e ordine di attivazione.
-- [x] Preparare piano transfer dominio su Cloudflare Registrar.
-- [x] Preparare piano CSP per host app, Umami, GlitchTip e media via route applicative.
-- [x] Preparare piano backup: bucket backup, retention, frequenza, restore test.
-- [x] Preparare checklist smoke locale e production in ordine eseguibile.
-- [x] Preparare checklist rollback/rebuild minima.
+### 2. Pipeline CI/CD pronta ma non attiva
 
-#### Account e accessi
+- Creare workflow GitHub con job `check` su PR verso `main`.
+- Preparare job build ARM per app e migrator, taggati con SHA.
+- Preparare deploy SSH dietro secret, anche se non ancora eseguibile senza VPS.
+- Evitare tag `latest` come sorgente di verità: `IMAGE_TAG` deve restare lo SHA.
+- Documentare rollback manuale per SHA precedente.
 
-| Accesso                | Uso                         | Stato prima acquisto                     | Dove conservarlo           |
-| ---------------------- | --------------------------- | ---------------------------------------- | -------------------------- |
-| Hetzner Cloud          | VPS e snapshot              | Account pronto, billing verificato       | Password manager           |
-| Hetzner Object Storage | Bucket media e backup       | Accesso pronto, bucket non ancora creati | Password manager           |
-| Cloudflare             | DNS/CDN e Registrar         | Dominio `middleware.media` accessibile   | Password manager           |
-| GitHub                 | Repository e Coolify source | Accesso admin al repository verificato   | Account personale protetto |
-| Email admin production | Bootstrap admin production  | Scelta manualmente prima della creazione | Password manager           |
-| Email operativa        | Alert, uptime, recovery     | Casella monitorata                       | Password manager           |
+### 3. Script operativi testabili in locale
 
-#### SSH
+- Versionare `scripts/deploy.sh`, `scripts/healthcheck.sh`, `scripts/backup-db.sh`.
+- Far usare a `deploy.sh` il servizio `migrate`, non il container app standalone.
+- Rendere gli script idempotenti dove possibile e fallire presto con `set -euo pipefail`.
+- Simulare rollback locale con immagine/tag precedente o almeno con healthcheck forzatamente fallito.
+- Aggiungere un README breve per variabili `.env` VPS, senza valori reali.
 
-Generare una chiave dedicata alla VPS, senza riusare chiavi personali generiche:
+### 4. Osservabilità in-app
 
-```bash
-ssh-keygen -t ed25519 -f ~/.ssh/middleware_hetzner_ed25519 -C "middleware.media hetzner"
-```
+- Aggiungere modelli Prisma `AnalyticsEvent`, `WebVital`, `ErrorLog`.
+- Implementare collector analytics cookieless e web vitals.
+- Implementare `instrumentation.ts` con `onRequestError` e sanitizzazione di cookie, auth header e body.
+- Implementare route logging per `app/error.tsx` e `app/global-error.tsx`.
+- Implementare aggregazioni per CMS senza query pesanti sulla tabella grezza.
+- Implementare retention job governato da `TELEMETRY_RETENTION_DAYS`.
 
-Regole operative:
+### 5. Backup e restore senza bucket reale
 
-- Salvare la public key in Hetzner Cloud durante la creazione VPS.
-- Salvare la private key solo sulla macchina amministrativa e nel password manager se supporta allegati sicuri.
-- Non committare mai chiavi SSH nel repository.
-- Dopo setup, usare solo utente `deploy`, non `root`.
+- Preparare `backup-db.sh` usando `pg_dump`, gzip e destinazione `rclone` configurabile.
+- Preparare procedura restore su DB locale separato.
+- Testare restore da dump locale prima di collegare Object Storage reale.
+- Definire retention backup DB: lifecycle bucket o prune periodico.
 
-#### Matrice segreti
+### 6. Media e CSP
 
-I valori reali vanno salvati in password manager o nelle env Coolify, mai nel repository.
+- Verificare che le immagini pubbliche funzionino via route applicative e cache Cloudflare.
+- Per audio pesante, preparare strategia range request o URL firmati S3 diretti, evitando proxy Node per stream lunghi.
+- Aggiornare CSP per route interne di analytics/error logging e per gli host finali previsti.
+- Verificare che `/cms/*`, auth, tRPC e API private non siano cacheabili.
 
-| Segreto                    | Production | Fonte/come generarlo                  |
-| -------------------------- | ---------- | ------------------------------------- |
-| `BETTER_AUTH_SECRET`       | Da fare    | `openssl rand -base64 48`             |
-| `BOOTSTRAP_ADMIN_EMAIL`    | Da fare    | Scelta manuale                        |
-| `BOOTSTRAP_ADMIN_PASSWORD` | Da fare    | Password manager, almeno 20 caratteri |
-| `BOOTSTRAP_ADMIN_NAME`     | Da fare    | Scelta manuale                        |
-| `DATABASE_URL`             | Da fare    | Coolify Postgres                      |
-| `POSTGRES_URL`             | Da fare    | Uguale a `DATABASE_URL`               |
-| `PRISMA_DATABASE_URL`      | Da fare    | Uguale a `DATABASE_URL`               |
-| `REDIS_URL`                | Da fare    | Coolify Redis                         |
-| `S3_ACCESS_KEY`            | Da fare    | Hetzner Object Storage                |
-| `S3_SECRET_KEY`            | Da fare    | Hetzner Object Storage                |
-| Coolify admin password     | Da fare    | Password manager                      |
-| Umami admin password       | Da fare    | Password manager                      |
-| GlitchTip admin password   | Da fare    | Password manager                      |
-| GlitchTip DSN              | Da fare    | GlitchTip project                     |
-| Uptime monitor credentials | Da fare    | Provider scelto                       |
+### 7. Gate finale pre-acquisto
 
-Comandi consigliati:
-
-```bash
-openssl rand -base64 48
-openssl rand -base64 32
-```
-
-Usare il primo per `BETTER_AUTH_SECRET`, il secondo per password generate manualmente se non si usa il generator del password manager.
-
-#### Dominio e transfer su Cloudflare Registrar
-
-Il transfer su Cloudflare Registrar è possibile solo se la zona `middleware.media` è già attiva su Cloudflare. Quindi prima si sposta il DNS, poi si trasferisce la registrazione.
-
-1. Aggiungi `middleware.media` come zona su Cloudflare e punta i nameserver al valore Cloudflare. Attendi che la zona risulti `active`.
-2. Nel registrar attuale togli il registrar lock e, se blocca il transfer, disattiva la WHOIS privacy.
-3. Recupera il codice di autorizzazione (auth code / EPP).
-4. Verifica che il dominio sia registrato da più di 60 giorni e non sia stato trasferito negli ultimi 60 giorni.
-5. Avvia il transfer su Cloudflare Registrar e approva la FOA. Il transfer aggiunge un anno alla scadenza.
-6. Rinnovi successivi a prezzo di costo del registry, senza ricarico.
-
-Il TLD `.media` è supportato da Cloudflare Registrar e risulta disponibile, quindi nessun fallback su registrar esterno.
-
-#### DNS Cloudflare
-
-Creare i record solo dopo avere l'IPv4/IPv6 del VPS. Prima del go-live pubblico, tenere Cloudflare in modalità DNS/proxy coerente con SSL Coolify.
-
-| Host                       | Tipo    | Target                      | Proxy Cloudflare  | Quando attivarlo                  |
-| -------------------------- | ------- | --------------------------- | ----------------- | --------------------------------- |
-| `coolify.middleware.media` | A/AAAA  | IP VPS                      | DNS only iniziale | Subito dopo installazione Coolify |
-| `middleware.media`         | A/AAAA  | IP VPS                      | DNS only iniziale | Solo dopo smoke e restore test OK |
-| `www.middleware.media`     | CNAME/A | `middleware.media` o IP VPS | DNS only iniziale | In fase go-live                   |
-
-Per la verifica pre-pubblica, usa un sottodominio temporaneo (per esempio `app.middleware.media` in DNS only) oppure tieni l'apex in DNS only finché lo smoke non è verde, poi attiva il proxy.
-
-Regole Cloudflare post-verifica:
-
-- SSL mode: `Full (strict)` dopo certificati validi su Coolify.
-- Proxy arancione solo dopo verifica login CMS, cookie auth e tRPC.
-- Non applicare cache HTML globale.
-- Non cachare `/cms/*`, `/api/trpc/*`, `/api/cms/*`, route auth.
-- Cache lunga consentita per `/_next/static/*`.
-- Cache su `/api/public/media/blob` solo rispettando header applicativi.
-
-#### Piano CSP
-
-La CSP definitiva si aggiorna dopo host reali e script effettivi. Piano previsto:
-
-| Direttiva     | Host previsti                                   | Note                                      |
-| ------------- | ----------------------------------------------- | ----------------------------------------- |
-| `script-src`  | `'self'`, eventuale host Umami                  | Aggiungere Umami solo quando installato   |
-| `connect-src` | `'self'`, Umami, GlitchTip                      | Necessario per analytics/error reporting  |
-| `img-src`     | `'self'`, `data:`, `blob:`                      | Media serviti via route applicative       |
-| `media-src`   | `'self'`, `blob:`                               | Audio via route applicative               |
-| `frame-src`   | Nessuno di default                              | Aggiungere solo se necessario             |
-| `style-src`   | `'self'`, `'unsafe-inline'` se ancora richiesto | Da mantenere finché necessario a Next/CSS |
-
-`images.remotePatterns` resta invariato se i media continuano a passare da route applicative. Aggiornarlo solo se si decide di servire immagini direttamente da CDN/S3.
-
-#### Piano backup
-
-| Backup                  | Destinazione              | Frequenza                         | Retention iniziale              | Test richiesto              |
-| ----------------------- | ------------------------- | --------------------------------- | ------------------------------- | --------------------------- |
-| Postgres production     | Bucket backup Hetzner     | Giornaliera                       | 30 giorni                       | Restore prima del go-live   |
-| DB prima di migrazione  | Bucket backup Hetzner     | Manuale, prima di ogni migrazione | Ultime 3 copie                  | Restore su DB prova         |
-| Config Coolify          | Export manuale offsite    | Dopo ogni cambio rilevante        | 3 copie                         | Rebuild runbook             |
-| Bucket media production | Versioning bucket Hetzner | Continuo                          | Versioni non correnti 90 giorni | Recupero oggetto cancellato |
-
-Condizioni obbligatorie: production non va live finché un restore DB è stato completato almeno una volta; senza staging, ogni migrazione su production è preceduta da un backup fresco del DB.
-
-Il backup media è gestito solo via versioning del bucket con lifecycle rule sulle versioni non correnti. Nessun secondo bucket di sync e nessuna copia DB offsite fuori da Hetzner.
-
-#### Smoke locale (gate pre-deploy)
-
-Eseguire in locale con Docker prima di ogni deploy su production:
+Prima di comprare VPS o bucket, il gate locale deve essere:
 
 ```bash
 pnpm check:all
+docker compose config
 docker compose build app
-docker compose up
+docker compose -f docker-compose.prod.yml config
+docker build --target runner -t middleware-app:local .
+docker build --target migrator -t middleware-migrator:local .
 ```
 
-Verificare home, login CMS, upload media, publish/unpublish, revalidation, rate limit Redis e CSP nel container production-like.
+In più, su DB locale vuoto devono riuscire:
 
-#### Smoke production
+```bash
+pnpm prisma:migrate:deploy
+pnpm auth:bootstrap-admin
+```
 
-Eseguire sul dominio temporaneo o con apex in DNS only, prima di attivare il proxy pubblico:
+## Fasi operative
 
-1. Aprire l'URL di verifica e controllare HTTP 200.
-2. Verificare `robots.txt` e `sitemap.xml` (production indicizzabile).
-3. Accedere a `/cms/login`.
-4. Creare contenuto reale minimo o draft smoke.
-5. Caricare immagine.
-6. Caricare audio se previsto dal contenuto.
-7. Creare articolo draft con media.
-8. Pubblicare articolo.
-9. Verificare pagina articolo pubblica.
-10. Verificare `/api/public/media/blob` per media referenziato.
-11. Verificare 404 per media non referenziato da contenuti pubblicati.
-12. Verificare rename media e sincronizzazione riferimenti.
-13. Verificare delete media e pulizia riferimenti.
-14. Verificare revalidation dopo publish/unpublish.
-15. Verificare rate limit con Redis in production mode.
-16. Verificare CSP nel browser.
-17. Verificare evento Umami.
-18. Verificare errore test GlitchTip.
-19. Verificare redirect `www` -> apex.
-20. Verificare 404 e pagina 500 gestita.
+### Fase A - Preflight senza acquisti
 
-#### Rollback e rebuild minimo
+- [ ] Checklist account e accessi: Hetzner Cloud, Hetzner Object Storage, Cloudflare, GitHub.
+- [ ] Chiave SSH dedicata al deploy generata e pronta.
+- [ ] Matrice segreti applicativi e infrastrutturali pronta, fuori dal repository.
+- [ ] Comando per `BETTER_AUTH_SECRET` e `ANALYTICS_SALT_SECRET` pronto.
+- [ ] Piano transfer dominio su Cloudflare Registrar pronto.
+- [ ] `docker-compose.prod.yml`, workflow e script (`deploy.sh`, `backup-db.sh`, `healthcheck.sh`) preparati nel repo.
+- [ ] Target Docker `migrator` pronto e verificato su DB locale vuoto.
+- [ ] `/api/health` implementato e usabile da Docker healthcheck.
+- [ ] Modelli Prisma `AnalyticsEvent`, `WebVital`, `ErrorLog` definiti.
+- [ ] `instrumentation.ts`, route collector analytics, route logging errori, retention job implementati e testati in locale.
+- [ ] Piano CSP per host app e route interne pronto.
+- [ ] Piano backup e checklist smoke/rollback pronti.
 
-Rollback applicativo:
+#### SSH
 
-1. In Coolify, redeploy dell'ultimo commit stabile di `main`.
-2. Se il problema è env, ripristinare env precedente dal password manager/export Coolify.
-3. Se il problema è DB migration, fermarsi e valutare restore dal backup fresco preso prima della migrazione: non improvvisare rollback manuali sul DB production.
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/middleware_deploy_ed25519 -C "middleware deploy"
+```
 
-Rebuild infrastruttura minima:
+- Public key in Hetzner durante la creazione VPS, e in `~deploy/.ssh/authorized_keys`.
+- Private key nei secret GitHub come `SSH_KEY` e nel password manager.
+- Dopo setup si usa solo l'utente `deploy`, mai `root`.
 
-1. Creare nuovo VPS CAX31.
-2. Installare Coolify.
-3. Ripristinare configurazione Coolify salvata offsite.
-4. Ricollegare repository GitHub.
-5. Creare/ripristinare Postgres.
-6. Ripristinare ultimo backup DB valido.
-7. Ricollegare bucket media esistente.
-8. Verificare su dominio temporaneo.
-9. Spostare DNS Cloudflare al nuovo IP.
-10. Verificare production pubblica.
+#### Matrice segreti
 
-Gate per chiudere la fase A:
+| Segreto                         | Dove              | Come generarlo                          |
+| ------------------------------- | ----------------- | --------------------------------------- |
+| `BETTER_AUTH_SECRET`            | `.env` VPS        | `openssl rand -base64 48`               |
+| `ANALYTICS_SALT_SECRET`         | `.env` VPS        | `openssl rand -base64 32`               |
+| `BOOTSTRAP_ADMIN_PASSWORD`      | `.env` VPS        | Password manager, almeno 20 caratteri   |
+| `POSTGRES_USER`                 | `.env` VPS        | `middleware`                            |
+| `POSTGRES_PASSWORD`             | `.env` VPS        | `openssl rand -base64 32`               |
+| `CLOUDFLARE_TUNNEL_TOKEN`       | `.env` VPS        | Cloudflare Zero Trust, creazione tunnel |
+| `GHCR_PAT`                      | `.env` VPS        | GitHub PAT read-only `read:packages`    |
+| `S3_ACCESS_KEY`/`S3_SECRET_KEY` | `.env` VPS        | Hetzner Object Storage                  |
+| `SSH_KEY`                       | Secret GitHub     | Chiave privata deploy dedicata          |
+| `ALERT_WEBHOOK_URL`             | `.env` VPS (opz.) | ntfy/Telegram/Discord                   |
 
-- [x] `docs/migration.md` contiene checklist preflight completa.
-- [x] Nessun segreto reale è committato.
-- [x] Le decisioni residue sono ridotte a valori ottenibili solo dopo creazione risorse reali.
+#### Dominio su Cloudflare Registrar
 
-### Fase B - Acquisti e risorse base
+1. Aggiungi `middleware.media` come zona su Cloudflare e sposta i nameserver, attendi stato `active`.
+2. Nel registrar attuale togli il registrar lock e disattiva la WHOIS privacy se blocca il transfer.
+3. Recupera il codice di autorizzazione (auth code / EPP).
+4. Verifica le regole dei 60 giorni su registrazione e transfer precedenti.
+5. Avvia il transfer su Cloudflare e approva la FOA. Il transfer aggiunge un anno alla scadenza.
 
-Obiettivo: creare solo le risorse necessarie e annotare valori reali.
+Il TLD `.media` è supportato e disponibile su Cloudflare Registrar.
 
-- [ ] Creare VPS Hetzner CAX31 (ARM) Ubuntu 24.04 LTS arm64.
+### Fase B - Acquisti e risorse
+
+- [ ] Creare VPS Hetzner CAX21 (ARM) Ubuntu 24.04 LTS arm64.
 - [ ] Attivare snapshot automatici VPS.
-- [ ] Creare bucket media `middleware-media-prod` privato.
+- [ ] Creare bucket media `middleware-media-prod` privato, con versioning e lifecycle rule 90 giorni sulle versioni non correnti.
 - [ ] Creare bucket backup DB separato.
-- [ ] Generare access key S3 dedicate per production.
+- [ ] Generare access key S3 dedicate produzione.
 - [ ] Annotare endpoint, region e valore corretto di `S3_FORCE_PATH_STYLE`.
 
-Gate per chiudere la fase B:
-
-- VPS raggiungibile via SSH.
-- Bucket creati e privati.
-- Credenziali salvate fuori dal repository.
-
-### Fase C - VPS e Coolify
-
-Obiettivo: rendere il server sicuro e installare il PaaS.
+### Fase C - VPS, Docker e Tunnel
 
 - [ ] Creare utente non-root `deploy`.
-- [ ] Applicare hardening SSH: no root login, no password auth.
-- [ ] Configurare firewall con SSH, 80, 443 e 8000 solo durante setup.
-- [ ] Installare Coolify.
-- [ ] Configurare `https://coolify.middleware.media`.
-- [ ] Collegare GitHub App al repository.
-- [ ] Chiudere porta 8000 dopo conferma HTTPS su Coolify.
+- [ ] Hardening SSH: no root login, no password auth, `fail2ban`.
+- [ ] Firewall: consenti solo SSH. Nessuna porta 80/443, l'ingress passa dal tunnel.
+- [ ] Installare Docker Engine e Compose plugin.
+- [ ] Creare `/opt/middleware` con `docker-compose.prod.yml`, `.env`, `scripts/`.
+- [ ] Creare il tunnel in Cloudflare Zero Trust e salvare `CLOUDFLARE_TUNNEL_TOKEN`.
+- [ ] Autenticare il VPS a GHCR con `GHCR_PAT`.
+- [ ] Configurare il public hostname (temporaneo) verso `http://app:3000`.
+- [ ] Unit systemd per `docker compose up -d` al boot.
+- [ ] Avviare lo stack e verificare che `cloudflared` risulti connesso.
 
-Gate per chiudere la fase C:
+Gate fase C:
 
-- Coolify accessibile via HTTPS.
-- SSH funziona con utente non-root.
-- Porta 8000 chiusa.
+- Docker attivo, compose valido.
+- Tunnel connesso e healthy in dashboard Cloudflare.
+- SSH solo con utente non-root, nessuna porta web aperta.
+- VPS autenticato a GHCR.
 
-### Fase D - Servizi production
+### Fase D - Deploy app e CI
 
-Obiettivo: deployare l'app production da `main` e verificarla prima di esporla.
+- [ ] Configurare i secret GitHub: `SSH_HOST`, `SSH_USER`, `SSH_KEY`.
+- [ ] Configurare `.env` produzione sul VPS dalla matrice applicativa e infrastrutturale.
+- [ ] Primo deploy: build arm64 in CI, push GHCR, pull sul VPS.
+- [ ] `pnpm prisma:migrate:deploy` su DB vuoto.
+- [ ] `pnpm auth:bootstrap-admin` per il primo admin.
+- [ ] Verificare l'app sull'hostname temporaneo del tunnel.
 
-- [ ] Creare ambiente Coolify `production`.
-- [ ] Creare Postgres production non pubblico.
-- [ ] Creare Redis production non pubblico.
-- [ ] Creare app production da Dockerfile, branch `main`.
-- [ ] Configurare env production usando la matrice target.
-- [ ] Impostare memory limit per container.
-- [ ] Applicare migrazioni Prisma su production (preceduto da backup se il DB non è vuoto).
-- [ ] Creare admin production.
-- [ ] Verificare l'app su dominio temporaneo o apex in DNS only.
+Gate fase D:
 
-Gate per chiudere la fase D:
-
-- App risponde in HTTPS sull'URL di verifica.
+- App raggiungibile in HTTPS sull'hostname temporaneo.
 - Login CMS funziona.
-- Upload media funziona sul bucket production.
-- Media pubblico è servito solo se referenziato da contenuti pubblicati.
+- Upload media sul bucket produzione funziona.
+- Media pubblico servito solo se referenziato da contenuti pubblicati.
 - Redis/rate limit funzionano in production mode.
+- Rollback per SHA verificato almeno una volta.
 
 ### Fase E - Osservabilità e backup
 
-Obiettivo: attivare strumenti operativi e backup prima dell'esposizione pubblica.
+- [ ] Verificare che `AnalyticsEvent` riceva eventi reali dal sito.
+- [ ] Verificare che i Web Vitals arrivino e si vedano nel CMS.
+- [ ] Verificare che un errore di test finisca in `ErrorLog`.
+- [ ] Verificare i boundary `error.tsx`/`global-error.tsx`.
+- [ ] Verificare il job di retention telemetria.
+- [ ] Configurare `scripts/backup-db.sh` con cron giornaliero.
+- [ ] Eseguire un restore test su DB di prova.
+- [ ] Opzionale: collegare `ALERT_WEBHOOK_URL`.
+- [ ] Attivare il Workflow uptime.
 
-- [ ] Deployare Umami self-hosted con il proprio Postgres.
-- [ ] Deployare GlitchTip self-hosted con il proprio Postgres.
-- [ ] Configurare GlitchTip senza invio email: `EMAIL_URL=consolemail://`, `ENABLE_USER_REGISTRATION=false`, `ENABLE_OPEN_USER_REGISTRATION=false`.
-- [ ] Aggiornare CSP per Umami e GlitchTip.
-- [ ] Impostare memory limit per container a Umami e GlitchTip.
-- [ ] Configurare backup DB production verso bucket backup separato.
-- [ ] Abilitare versioning sul bucket media con lifecycle rule.
-- [ ] Eseguire restore test su database di prova.
-- [ ] Documentare procedura rebuild minima con backup config Coolify.
+Gate fase E:
 
-Gate per chiudere la fase E:
-
-- Umami riceve evento dall'app.
-- GlitchTip riceve errore test dall'app.
-- Restore DB testato.
-- Procedura rebuild documentata.
+- Analytics, web vitals ed errori visibili nel CMS.
+- Retention telemetria attiva.
+- Backup DB schedulato e restore testato.
+- Uptime check attivo.
 
 ### Fase F - Go-live pubblico
 
-Obiettivo: esporre production solo dopo smoke e backup verdi.
+- [ ] Configurare il public hostname `middleware.media` e il redirect `www` -> apex.
+- [ ] Rimuovere l'hostname temporaneo di verifica.
+- [ ] Smoke produzione completo.
+- [ ] Verificare backup schedulati.
 
-- [ ] Puntare `middleware.media` e `www.middleware.media` in Cloudflare.
-- [ ] Verificare SSL automatico su apex e `www`.
-- [ ] Attivare il proxy Cloudflare dopo verifica login CMS, cookie auth e tRPC.
-- [ ] Eseguire smoke production completo.
-- [ ] Verificare redirect `www.middleware.media` -> `middleware.media`.
-- [ ] Verificare backup production schedulati.
-- [ ] Chiudere la porta 8000.
+Gate fase F:
 
-Gate per chiudere la fase F:
-
-- Production HTTPS verde.
-- CMS production accessibile solo ad admin/editor.
+- Produzione HTTPS verde via tunnel.
+- CMS accessibile solo ad admin/editor.
 - Pubblicazione articolo funziona.
 - Media pubblico rispetta il modello permessi.
 - Sitemap, robots, 404 e 500 gestita verificati.
+- Redirect `www` -> apex verificato.
 
 ### Fase G - Post go-live
 
-Obiettivo: stabilizzare il sistema dopo il primo deploy pubblico.
-
 - [ ] Monitorare log container e metriche server nelle prime 48 ore.
-- [ ] Verificare eventi Umami.
-- [ ] Verificare alert/errori GlitchTip.
+- [ ] Verificare analytics, web vitals ed errori nel CMS.
 - [ ] Verificare consumi VPS, DB, Redis e Object Storage.
-- [ ] Verificare cache Cloudflare e bypass su CMS/API.
-- [ ] Aggiornare `docs/migration.md` con esiti reali e deviazioni dal piano.
-
-## Regola sui test failing
-
-- I test failing sono utili solo nel branch o in PR draft per guidare l'implementazione.
-- `main` deve restare sempre verde con `pnpm check:all`, perché `main` è ciò che va in production.
-- Se un test descrive comportamento futuro ma non è ancora implementabile, usare `it.skip` con una descrizione precisa.
-- Ogni PR pronta al merge deve rimuovere skip non più necessari o trasformarli in test attivi.
-- Non abbassare la qualità dei gate per far passare la migrazione infrastrutturale.
+- [ ] Aggiornare questo documento con esiti reali e deviazioni.
 
 ## Runbook operativo
 
-Questa sezione descrive le attività da fare quando si acquistano VPS, Object Storage, dominio CDN o servizi esterni.
-
-### Fase 0 - Prerequisiti
-
-1. Registra o prepara gli account necessari:
-   - Hetzner Cloud
-   - Hetzner Object Storage
-   - Coolify via VPS
-   - Cloudflare per DNS e Registrar
-   - GitHub con accesso al repository
-2. Genera una chiave SSH dedicata se non esiste:
-   ```bash
-   ssh-keygen -t ed25519
-   ```
-3. Usa i domini operativi già decisi:
-   - app produzione canonica: `middleware.media`
-   - redirect produzione: `www.middleware.media` -> `middleware.media`
-   - dashboard Coolify: `coolify.middleware.media`
-4. Dominio su Cloudflare Registrar:
-   - Aggiungi la zona `middleware.media` su Cloudflare e sposta i nameserver, attendi stato `active`.
-   - Togli il registrar lock e disattiva la WHOIS privacy se blocca il transfer.
-   - Recupera il codice di autorizzazione (auth code / EPP).
-   - Verifica regole 60 giorni su registrazione e transfer precedenti.
-   - Avvia il transfer su Cloudflare e approva la FOA. Il transfer aggiunge un anno alla scadenza.
-5. Prepara i valori production delle env:
-   - `NEXT_PUBLIC_SITE_URL`
-   - `DATABASE_URL`
-   - `POSTGRES_URL`
-   - `PRISMA_DATABASE_URL`
-   - `BETTER_AUTH_SECRET`
-   - `BETTER_AUTH_URL`
-   - `BOOTSTRAP_ADMIN_EMAIL`
-   - `BOOTSTRAP_ADMIN_PASSWORD`
-   - `BOOTSTRAP_ADMIN_NAME`
-   - `AUDIT_LOG_RETENTION_DAYS`
-   - `REDIS_URL`
-   - `S3_ENDPOINT`
-   - `S3_REGION`
-   - `S3_BUCKET`
-   - `S3_ACCESS_KEY`
-   - `S3_SECRET_KEY`
-   - `S3_FORCE_PATH_STYLE`
-
 ### Fase 1 - VPS Hetzner
 
-1. Crea il server in Hetzner Cloud:
-   - Location: Falkenstein o Norimberga
-   - Image: Ubuntu 24.04 LTS arm64
-   - Type: CAX31 (ARM Ampere)
-   - SSH key: chiave pubblica dedicata
-   - Networking: IPv4 + IPv6
-2. Collegati come root:
-   ```bash
-   ssh root@IP_DEL_SERVER
-   ```
-3. Aggiorna il sistema e crea un utente non-root:
+1. Crea il server: Falkenstein o Norimberga, Ubuntu 24.04 LTS arm64, tipo CAX21, chiave SSH dedicata, IPv4 + IPv6.
+2. Connettiti come root e aggiorna:
    ```bash
    apt update && apt upgrade -y
    adduser deploy
    usermod -aG sudo deploy
    rsync --archive --chown=deploy:deploy ~/.ssh /home/deploy
    ```
-4. Configura il firewall:
+3. Firewall, solo SSH:
    ```bash
    ufw allow OpenSSH
-   ufw allow 80/tcp
-   ufw allow 443/tcp
-   ufw allow 8000/tcp
    ufw enable
    ```
-5. Applica l'hardening SSH minimo:
+4. Hardening SSH:
    ```bash
    apt install -y fail2ban
    ```
-6. In `/etc/ssh/sshd_config`, imposta:
-   ```text
-   PermitRootLogin no
-   PasswordAuthentication no
-   ```
-7. Riavvia SSH:
+   In `/etc/ssh/sshd_config`: `PermitRootLogin no`, `PasswordAuthentication no`, poi `systemctl restart ssh`.
+5. Attiva gli snapshot automatici dalla console Hetzner.
+
+### Fase 2 - Docker
+
+1. Installa Docker Engine e il plugin Compose seguendo la guida ufficiale Docker per Ubuntu.
+2. Aggiungi `deploy` al gruppo docker:
    ```bash
-   systemctl restart ssh
+   usermod -aG docker deploy
    ```
-8. Attiva gli snapshot automatici del VPS dalla console Hetzner.
-
-Nota architettura: la CAX31 è ARM. Tutte le immagini Docker usate hanno build arm64 (GlitchTip, Umami, Postgres, Redis, `node:22-slim`, `sharp`), quindi il Dockerfile e lo stack non richiedono modifiche rispetto alla baseline.
-
-### Fase 2 - Installazione Coolify
-
-1. Installa Coolify sul VPS:
+3. Crea la cartella di deploy:
    ```bash
-   curl -fsSL https://cdn.coollabs.io/coolify/install.sh | sudo bash
+   mkdir -p /opt/middleware/scripts
    ```
-2. Apri `http://IP_DEL_SERVER:8000` e crea subito l'account admin.
-3. In Coolify, valida il server locale `localhost`.
-4. Collega GitHub da Sources -> GitHub e installa la GitHub App sul repository.
-5. Configura l'FQDN della dashboard in Settings -> Configuration:
-   ```text
-   https://coolify.middleware.media
-   ```
-6. Punta il DNS di `coolify.middleware.media` al VPS e verifica SSL automatico.
-
-### Fase 3 - Progetto, Postgres e Redis
-
-1. Crea un progetto Coolify, per esempio `magazine`.
-2. Crea l'ambiente `production`.
-3. Nell'ambiente `production`, aggiungi PostgreSQL.
-4. Nell'ambiente `production`, aggiungi Redis.
-5. Lascia Postgres e Redis non esposti pubblicamente.
-6. Imposta un memory limit per ogni container, con priorità di RAM a Postgres e app production.
-7. Annota le connection string interne generate da Coolify.
-8. Usa il formato SSL supportato dal container Postgres effettivo; se il DB resta nella rete Docker interna, non forzare parametri SSL incompatibili.
-
-### Fase 4 - Object Storage pulito
-
-1. Crea il bucket Hetzner Object Storage `middleware-media-prod` e il bucket backup separato, nella region più vicina al VPS.
-2. Genera access key e secret key dedicati per production.
-3. Salva questi valori per Coolify:
-   - `S3_ENDPOINT`
-   - `S3_REGION`
-   - `S3_BUCKET`
-   - `S3_ACCESS_KEY`
-   - `S3_SECRET_KEY`
-   - `S3_FORCE_PATH_STYLE`
-4. Mantieni il bucket privato come default.
-5. Abilita il versioning sul bucket media e imposta una lifecycle rule per le versioni non correnti (90 giorni).
-6. Mantieni l'accesso pubblico ai media attraverso le route applicative, così il server può controllare quali file sono servibili pubblicamente.
-7. Usa il CDN davanti all'app o davanti a una route pubblica cacheable, non come bypass del modello di permessi CMS.
-
-### Fase 5 - Adeguamento app self-hosted
-
-Stato: già completato nel branch locale, da verificare di nuovo prima del deploy. Senza staging non c'è alcuna modifica al codice da aggiungere.
-
-1. Mantieni `output: "standalone"` in `next.config.ts`.
-2. Mantieni `cacheComponents: true` e non aggiungere route segment config incompatibili:
-   - `runtime`
-   - `dynamic`
-   - `revalidate`
-   - `fetchCache`
-   - `dynamicParams`
-3. Mantieni bucket S3 privato e accesso pubblico via route applicative.
-4. Mantieni `redis` come client Redis standard e configura solo `REDIS_URL`.
-5. Aggiorna CSP e `images.remotePatterns` agli host reali quando saranno noti.
-6. Verifica che `BETTER_AUTH_URL` e `NEXT_PUBLIC_SITE_URL` puntino al dominio production.
-
-### Fase 6 - Dockerfile pnpm
-
-Stato: completato nel branch locale.
-
-1. Usa il `Dockerfile` alla root del progetto.
-2. Usa `node:22-slim` per evitare problemi nativi comuni con `sharp` e `next/image`. L'immagine è multi-arch e copre arm64.
-3. Mantieni `openssl` installato nel base image per Prisma.
-4. Con 16 GB di RAM il rischio di OOM in build è basso; tieni comunque lo swap come rete di sicurezza. Se passi a CAX21 da 8 GB, sposta la build su CI.
-
-### Fase 7 - Deploy production
-
-1. In Coolify, crea una Application nell'ambiente `production`.
-2. Seleziona il repository GitHub e il branch `main`.
-3. Build pack: Dockerfile.
-4. Porta interna: `3000`.
-5. Per la verifica iniziale, assegna un dominio temporaneo o tieni l'apex in DNS only.
-6. Configura le env production:
-   - `NODE_ENV=production`
-   - `NEXT_PUBLIC_SITE_URL=https://middleware.media`
-   - `BETTER_AUTH_URL=https://middleware.media`
-   - `BETTER_AUTH_SECRET`
-   - `DATABASE_URL`
-   - `POSTGRES_URL`
-   - `PRISMA_DATABASE_URL`
-   - `REDIS_URL`
-   - `AUDIT_LOG_RETENTION_DAYS`
-   - `BOOTSTRAP_ADMIN_EMAIL`
-   - `BOOTSTRAP_ADMIN_PASSWORD`
-   - `BOOTSTRAP_ADMIN_NAME`
-   - env S3
-7. Avvia il deploy e verifica che Coolify generi il certificato SSL.
-
-### Fase 8 - Inizializzazione dati puliti
-
-1. Apri una shell sul container applicativo o usa un job one-shot con le stesse env.
-2. Se il DB non è vuoto, esegui prima un backup fresco.
-3. Applica le migrazioni Prisma:
+4. Copia `docker-compose.prod.yml` e gli script, crea `.env` con le env applicative e infrastrutturali. `.env` non va mai nel repository.
+5. Autentica il VPS a GHCR:
    ```bash
-   pnpm prisma:migrate:deploy
+   echo "$GHCR_PAT" | docker login ghcr.io -u OWNER --password-stdin
    ```
-4. Verifica lo schema:
+
+### Fase 3 - Cloudflare Tunnel
+
+1. In Cloudflare Zero Trust crea un tunnel per `middleware.media`.
+2. Copia il token e mettilo in `.env` come `CLOUDFLARE_TUNNEL_TOKEN`.
+3. Per la verifica iniziale configura un public hostname temporaneo verso `http://app:3000`.
+4. Avvia lo stack:
    ```bash
-   pnpm prisma:validate
+   cd /opt/middleware
+   docker compose -f docker-compose.prod.yml up -d
    ```
-5. Crea il primo admin:
-   ```bash
-   pnpm auth:bootstrap-admin
-   ```
-6. Accedi al CMS.
-7. Crea contenuti minimi reali o di smoke test:
-   - issue
-   - categoria
-   - autore
-   - articolo draft
-   - pagina statica se necessaria
-8. Testa publish/unpublish e verifica la revalidation pubblica.
+5. Verifica in dashboard che il tunnel sia `Healthy`.
+
+### Fase 4 - Object Storage
+
+1. Crea `middleware-media-prod` e il bucket backup, nella region più vicina al VPS.
+2. Genera access key e secret key dedicate.
+3. Salva in `.env`: `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_FORCE_PATH_STYLE`.
+4. Mantieni il bucket privato, abilita versioning e lifecycle rule 90 giorni sulle versioni non correnti.
+5. L'accesso pubblico ai media resta via route applicative, non via bucket pubblico.
+
+### Fase 5 - App self-hosted, verifica
+
+Già completato in locale, da riverificare. L'unico codice nuovo oltre la baseline è l'osservabilità in-app.
+
+1. `output: "standalone"` in `next.config.ts`.
+2. `cacheComponents: true`, senza route segment config incompatibili (`runtime`, `dynamic`, `revalidate`, `fetchCache`, `dynamicParams`).
+3. Bucket S3 privato, accesso pubblico via route applicative.
+4. `redis` come client standard, solo `REDIS_URL`.
+5. `instrumentation.ts`, collector analytics, route logging errori, `useReportWebVitals`, retention job collegati.
+6. `/api/health` implementato, usato da healthcheck e uptime.
+7. CSP aggiornata agli host reali e alle route interne.
+8. `BETTER_AUTH_URL` e `NEXT_PUBLIC_SITE_URL` sul dominio produzione.
+
+### Fase 6 - Dockerfile
+
+1. `Dockerfile` standalone alla root, `node:22-slim` multi-arch.
+2. Target `runner` per l'app Next standalone.
+3. Target `migrator` con Prisma CLI, schema, migration files e script operativi.
+4. `openssl` nel base image per Prisma.
+5. La build gira in CI su runner ARM nativo, quindi la RAM del VPS non è un vincolo di build.
+
+### Fase 7 - Deploy via GitHub Action
+
+1. Configura i secret GitHub: `SSH_HOST`, `SSH_USER`, `SSH_KEY`.
+2. Il workflow su push a `main` builda le immagini arm64 `runner` e `migrator`, pusha su GHCR, entra in SSH e lancia `scripts/deploy.sh`.
+3. `deploy.sh` fa login GHCR, backup, migrate dal servizio `migrate`, swap, healthcheck e rollback automatico.
+4. Per tornare più indietro: imposta `IMAGE_TAG` allo SHA voluto in `.env` e rifai `docker compose up -d app`.
+
+### Fase 8 - Inizializzazione dati
+
+1. Se il DB non è vuoto, esegui prima `scripts/backup-db.sh`.
+2. `docker compose -f docker-compose.prod.yml --profile ops run --rm migrate`.
+3. `pnpm prisma:validate` resta gate locale/CI, non comando operativo nel container standalone.
+4. `docker compose -f docker-compose.prod.yml --profile ops run --rm migrate pnpm auth:bootstrap-admin`.
+5. Accedi al CMS e crea contenuti minimi reali: issue, categoria, autore, articolo draft.
+6. Testa publish/unpublish e la revalidation pubblica.
 
 ### Fase 9 - Verifiche pre-pubbliche
 
-1. Esegui i controlli locali prima del deploy:
-   ```bash
-   pnpm lint
-   pnpm typecheck
-   pnpm test:run
-   pnpm prisma:validate
-   pnpm build
-   ```
-2. Verifica sull'URL di verifica (dominio temporaneo o apex in DNS only):
-   - home pubblica
-   - pagina issue
-   - pagina articolo
-   - pagina ascolto articolo se usata
-   - pagine statiche pubbliche
-   - login CMS
-   - CRUD CMS principali
-   - upload immagine
-   - upload audio
-   - preview/download media CMS
-   - media pubblico solo quando referenziato da contenuti pubblicati
-   - sitemap
-   - robots indicizzabile
-   - 404
-   - 500 gestita
-3. Verifica cache pubblica e revalidation dopo publish/unpublish.
-4. Verifica header CSP nel browser e correggi eventuali blocchi legittimi.
-5. Verifica che Redis sia raggiungibile e che i rate limit non falliscano in production mode.
+1. Gate locale: `pnpm lint`, `pnpm typecheck`, `pnpm test:run`, `pnpm prisma:validate`, `pnpm build`.
+2. Sull'hostname temporaneo: home, issue, articolo, pagina ascolto, pagine statiche, login CMS, CRUD, upload immagine e audio, preview/download media, media pubblico solo se referenziato, sitemap, robots, 404, 500.
+3. Revalidation dopo publish/unpublish.
+4. Header CSP nel browser.
+5. Redis e rate limit in production mode.
+6. Analytics, web vitals ed errori che compaiono nel CMS.
 
-### Fase 10 - Analytics, errori e monitoring
+### Fase 10 - Backup e disaster recovery
 
-1. Analytics:
-   - deploya Umami da Coolify con il proprio Postgres
-   - aggiungi lo snippet nel layout solo dopo aver aggiornato la CSP
-   - mantieni l'analytics cookieless per evitare banner non necessari
-2. Error tracking:
-   - deploya GlitchTip self-hosted da Coolify con il proprio Postgres
-   - configura GlitchTip senza invio email: `EMAIL_URL=consolemail://`, `ENABLE_USER_REGISTRATION=false`, `ENABLE_OPEN_USER_REGISTRATION=false`
-   - gli alert errori restano visibili in dashboard, eventuale webhook in futuro
-   - configura il progetto GlitchTip per production
-   - aggiungi DSN e CSP solo dopo verifica HTTPS
-3. Email e auth:
-   - nessun SMTP nel progetto
-   - Better Auth senza flussi email (no reset password o verifica via mail)
-   - le azioni privilegiate (pubblicazione, gestione media, gestione utenti) sono ristrette ai ruoli admin ed editor
-4. Metriche server:
-   - usa l'agent Coolify se sufficiente
-   - aggiungi Netdata se vuoi metriche più dettagliate
-5. Log:
-   - usa i log container di Coolify
-   - aggiungi Dozzle solo se serve una UI dedicata
-6. Uptime:
-   - usa Uptime Kuma self-hosted oppure UptimeRobot
-   - controlla dominio pubblico e dashboard Coolify
+1. `scripts/backup-db.sh`: `pg_dump` verso il bucket backup via `rclone`, cron giornaliero, retention 30 giorni.
+2. Regola fissa: backup manuale prima di ogni migrazione, già nello step della Action.
+3. Versioning sul bucket media con lifecycle rule, nessun secondo bucket.
+4. Backup di `docker-compose.prod.yml`, `.env` e `scripts/` fuori dal server, cifrato o nel password manager.
+5. Restore test su DB di prova.
+6. Rebuild minimo: nuovo VPS CAX21, Docker, ripristino `/opt/middleware`, login GHCR, ripristino DB, ricollego bucket media, riconfiguro il tunnel.
 
-### Fase 11 - Backup e disaster recovery
+### Fase 11 - Consegna audio e media
 
-1. Configura backup schedulati di Postgres production in Coolify.
-2. Usa una destinazione S3-compatible per i backup DB:
-   - bucket Hetzner separato
-3. Imposta cadenza giornaliera e retention coerente con il budget (30 giorni production).
-4. Regola fissa: prima di ogni migrazione su production, esegui un backup manuale del DB.
-5. Abilita il versioning sul bucket media con lifecycle rule sulle versioni non correnti. Nessun secondo bucket di sync.
-6. Esegui backup della config Coolify:
-   ```bash
-   tar czf /tmp/coolify-$(date +%F).tar.gz /data/coolify/
-   cp /data/coolify/source/.env /tmp/coolify-env-$(date +%F).backup
-   ```
-7. Sposta i backup config fuori dal server in storage cifrato o password manager.
-8. Esegui un restore test su database di prova.
-9. Documenta la procedura minima di rebuild:
-   - creare nuovo VPS CAX31
-   - installare Coolify
-   - ripristinare config
-   - ripristinare DB
-   - ricollegare bucket media
-   - puntare DNS al nuovo IP
+1. L'audio della pagina di ascolto è pesante e va servito con range request. Preferisci URL firmati direttamente da S3 invece di proxarlo dal processo Node, che altrimenti tiene occupato un worker per tutta la durata dell'ascolto.
+2. Le immagini passano dalle route applicative con cache Cloudflare; l'ottimizzazione `next/image` gira sulla CPU ARM, accettabile a questa scala.
 
-### Fase 12 - Go-live pubblico
+## Sicurezza al bordo
 
-1. Punta i record DNS A/AAAA di apex e `www` al VPS.
-2. Verifica SSL automatico su dominio principale e `www`.
-3. Attiva il proxy Cloudflare come reverse proxy dopo verifica di login CMS, cookie auth e route tRPC.
-4. Esegui smoke production completo.
-5. Verifica il redirect `www` -> apex.
-6. Chiudi la porta 8000:
-   ```bash
-   ufw delete allow 8000/tcp
-   ```
-7. Usa Coolify solo da `https://coolify.middleware.media`.
+- Con il tunnel non hai porte web aperte, quindi la superficie d'attacco di rete è minima.
+- Su `/cms/login` aggiungi una regola di rate limit Cloudflare contro il brute force, oltre al limiter Redis applicativo.
+- Non cachare `/cms/*`, `/api/trpc/*`, `/api/cms/*` e le route auth. Cache lunga su `/_next/static/*`.
 
-### Fase 13 - CDN e DNS
+## GDPR
 
-1. Configura SSL mode `Full (strict)` su Cloudflare.
-2. Cache consigliata:
-   - cache lunga per `/_next/static/*`
-   - cache rispettando gli header per `/api/public/media/blob`
-   - nessuna cache HTML globale di default
-3. Mantieni Cloudflare compatibile con login CMS, cookie auth e route tRPC.
-4. Non cachare:
-   - `/cms/*`
-   - `/api/trpc/*`
-   - `/api/cms/*`
-   - route auth
-5. Firma DPA con i processor coinvolti.
-6. Verifica i subprocessor per Hetzner, Cloudflare, analytics ed error tracking.
+- Analytics first-party e cookieless, visitor hash con salt giornaliero, nessun IP grezzo: nessun banner consensi necessario.
+- Unico cookie è quello di autenticazione, strettamente necessario.
+- Pagina privacy policy che dichiara Hetzner e Cloudflare come processor.
+- Telemetria interamente self-hosted, i dati non lasciano la tua infrastruttura.
+- `AUDIT_LOG_RETENTION_DAYS=365`.
 
 ## Checklist finale attiva
 
-### Preflight
+### Risorse
 
-- [x] Checklist account/accessi completata.
-- [x] Matrice segreti pronta e salvata fuori repository.
-- [x] Piano DNS Cloudflare pronto.
-- [x] Piano transfer dominio su Cloudflare Registrar pronto.
-- [x] Piano CSP pronto.
-- [x] Piano backup e restore pronto.
-- [x] Checklist smoke locale e production pronta.
-- [x] Checklist rollback/rebuild pronta.
-
-### Risorse reali
-
-- [ ] VPS CAX31 creato con Ubuntu 24.04 LTS arm64.
+- [ ] VPS CAX21 con Ubuntu 24.04 arm64.
 - [ ] Snapshot Hetzner attivi.
-- [ ] Bucket media production privato creato.
+- [ ] Bucket media privato con versioning e lifecycle.
 - [ ] Bucket backup DB creato.
-- [ ] Credenziali S3 production salvate fuori repository.
+- [ ] Credenziali S3 fuori dal repository.
 
-### Dominio
+### Dominio e ingress
 
 - [ ] Zona `middleware.media` attiva su Cloudflare.
 - [ ] Transfer su Cloudflare Registrar completato.
+- [ ] Tunnel creato e `Healthy`.
+- [ ] Public hostname apex configurato verso `app:3000`.
+- [ ] Redirect `www` -> apex.
 
-### Server e Coolify
+### Server
 
-- [ ] Utente non-root configurato.
-- [ ] SSH hardening applicato.
-- [ ] Firewall attivo.
-- [ ] Coolify installato e accessibile via `https://coolify.middleware.media`.
-- [ ] Porta 8000 chiusa dopo setup.
-- [ ] GitHub App collegata.
-- [ ] Memory limit per container impostati.
+- [ ] Utente non-root e SSH hardening.
+- [ ] Firewall solo SSH, nessuna porta web aperta.
+- [ ] Docker e Compose installati.
+- [ ] VPS autenticato a GHCR.
+- [ ] `/opt/middleware` con compose, `.env`, script.
+- [ ] Systemd al boot.
 
-### Production
+### CI/CD
 
-- [ ] Postgres production creato e non pubblico.
-- [ ] Redis production creato e non pubblico.
-- [ ] App production deployata da `main`.
-- [ ] `pnpm prisma:migrate:deploy` eseguito su production.
-- [ ] Admin production creato.
-- [ ] Upload media funzionante.
-- [ ] Pubblicazione e revalidation funzionanti.
-- [ ] Media pubblico servito solo se referenziato da contenuti pubblicati.
-- [ ] Redis/rate limit verificati in production mode.
-- [ ] Header CSP verificati nel browser.
-- [ ] Smoke production completato su dominio di verifica.
+- [ ] Secret GitHub configurati.
+- [ ] Workflow `check` verde sulle PR.
+- [ ] Build arm64 su runner ARM nativo.
+- [ ] Deploy su push a `main` funzionante.
+- [ ] Rollback automatico su health check verificato.
 
-### Osservabilità e backup
+### App e osservabilità
 
-- [ ] Umami self-hosted attivo con proprio Postgres.
-- [ ] GlitchTip self-hosted attivo con proprio Postgres, senza invio email.
-- [ ] Backup DB schedulati.
+- [ ] `prisma:migrate:deploy` su produzione.
+- [ ] Admin produzione creato.
+- [ ] Upload media e pubblicazione funzionanti.
+- [ ] `AnalyticsEvent` popolata da traffico reale.
+- [ ] Web Vitals visibili nel CMS.
+- [ ] `ErrorLog` popolata da errore di test.
+- [ ] Boundary errori verificati.
+- [ ] Retention telemetria attiva.
+- [ ] CSP verificata nel browser.
+
+### Backup e uptime
+
+- [ ] `backup-db.sh` schedulato.
 - [ ] Restore DB testato.
-- [ ] Versioning bucket media attivo con lifecycle rule.
-- [ ] Backup config Coolify salvato offsite.
-- [ ] Procedura rebuild documentata.
-
-### Go-live
-
-- [ ] Apex e `www` puntati al VPS.
-- [ ] SSL valido su `middleware.media`, `www.middleware.media` e `coolify.middleware.media`.
-- [ ] Proxy Cloudflare attivo e compatibile con CMS/auth.
-- [ ] Redirect `www.middleware.media` -> `middleware.media` verificato.
-- [ ] Porta 8000 chiusa.
-- [ ] Analytics attive.
-- [ ] Error tracking attivo.
-- [ ] Uptime monitor attivo.
-- [ ] DPA verificati per provider coinvolti.
+- [ ] Backup compose/env/script offsite.
+- [ ] Workflow uptime attivo.
 
 ## Punti di attenzione
 
-- **Niente staging**: il test avviene in locale con Docker. Tieni lo schema locale identico a production e considera il gate `pnpm check:all` più build Docker come la vera barriera pre-deploy.
-- **Migrazioni su production**: senza staging colpiscono direttamente il DB live. Backup fresco del DB immediatamente prima di ogni migrazione, sempre.
-- **Primo runtime in production**: Coolify fa build-then-swap, quindi una build rotta non sostituisce la versione viva. Gli errori di runtime li verifichi sul dominio temporaneo prima di attivare il proxy pubblico.
-- **Database pulito**: non importare dati mock in production. Crea solo admin e contenuti iniziali reali.
-- **Media privati**: il bucket resta privato; la pubblicazione passa dalle route applicative per rispettare il modello CMS.
-- **Backup media**: solo versioning del bucket con lifecycle rule, nessun secondo bucket e nessuna copia DB offsite.
-- **Email**: nessun SMTP nel progetto. Le azioni privilegiate sono ristrette ai ruoli admin/editor, GlitchTip non invia mail.
-- **Limiti per container**: imposta un memory limit per ogni servizio in Coolify, così un container che impazzisce non porta giù production.
-- **Upgrade servizi**: i major di GlitchTip, Umami e Postgres si testano prima in locale, con backup, perché non esiste più uno staging dove provarli.
-- **Cache Components**: usa `cacheLife`, `cacheTag` e `revalidateTag`; non introdurre vecchie route segment config incompatibili.
-- **Single point of failure**: una sola VPS non ha failover automatico. Backup, snapshot e rebuild documentato sono la strategia di ripristino.
-- **Build RAM**: con 16 GB il rischio è basso. Se scendi a CAX21 da 8 GB, builda l'immagine in CI.
-- **next/image**: l'ottimizzazione gira sulla CPU ARM del VPS. A questa scala è accettabile; usa cache CDN sui media pubblici.
+- **Niente Coolify, lavoro spostato su di te**: proxy/TLS via tunnel, riavvio via restart policy, backup via cron, deploy e rollback via Action e script. Tutto coperto, ma è glue che mantieni tu.
+- **Niente staging**: test in locale con Docker, schema locale identico a produzione, gate `pnpm check:all` come barriera reale.
+- **Build ARM**: la build gira su runner ARM nativo e produce immagini arm64. Se mai usassi `ubuntu-latest`, l'immagine sarebbe amd64 e il CAX21 darebbe "exec format error".
+- **GHCR privato**: il VPS deve essere autenticato con un PAT read-only, altrimenti il `pull` fallisce. Il `GITHUB_TOKEN` automatico vale solo dentro il runner.
+- **Migrazioni su produzione**: backup fresco prima di ogni migrazione, sempre, ed è uno step della Action. Per cambi di schema delicati usa il pattern espandi-e-contrai.
+- **Swap deploy**: container singolo, blip di un paio di secondi a ogni deploy. Due repliche se lo vuoi seamless.
+- **Tabelle telemetria che crescono**: senza retention gonfiano il Postgres. Il job di pulizia va attivo dal primo giorno.
+- **Log volatili**: ciò che ti serve dopo un redeploy va su Postgres o su file/bucket, non solo su stdout.
+- **Error log non è triage**: la tabella errori è un registro. Rinunci a grouping ricco, source map e alerting di GlitchTip. Il webhook da `onRequestError` copre la notifica, il grouping lo aggiungi in codice quando serve.
+- **Uptime esterno**: non aggirabile, il monitor non può vivere sul box che monitora. Sta su GitHub Actions.
+- **Cosa NON aggiungere**: niente motore di ricerca (Postgres FTS basta), niente OTel senza backend, niente worker separato (cron container per i job leggeri).
+- **Legame con Cloudflare**: il tunnel rende l'ingress dipendente da Cloudflare, compromesso scelto per non esporre porte e non gestire certificati.
+- **Single point of failure**: una sola VPS, nessun failover. Backup, snapshot e rebuild documentato sono il ripristino.
+- **next/image**: ottimizzazione su CPU ARM, accettabile, con cache CDN sui media pubblici.
+- **Email assente**: nuovi account editor creati a mano, recupero password admin via re-bootstrap dalla shell del container. Nessun reset via mail.
