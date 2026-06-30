@@ -58,11 +58,17 @@ type CmsErrorsScreenProps = {
 
 type ErrorsToolbarFiltersState = {
   sourceValue: string;
+  severityValue: string;
+  statusValue: string;
 };
 
 const defaultErrorsToolbarFilters: ErrorsToolbarFiltersState = {
   sourceValue: "all",
+  severityValue: "all",
+  statusValue: "all",
 };
+
+const statusOptions = ["open", "investigating", "resolved", "ignored"] as const;
 
 function isSameInput(left: TelemetryErrorsListInput | undefined, right: TelemetryErrorsListInput) {
   return Boolean(left && JSON.stringify(left) === JSON.stringify(right));
@@ -94,18 +100,40 @@ function formatMetadata(value: unknown) {
   }
 }
 
-function resolveSourceLabel(source: string) {
-  const text = i18n.cms.lists.errors;
+function humanize(value: string) {
+  return value.replace(/_/g, " ");
+}
 
+function copyTechnicalValue(value: string | null | undefined) {
+  if (!value || typeof navigator === "undefined" || !navigator.clipboard) {
+    return;
+  }
+
+  void navigator.clipboard.writeText(value).catch(() => undefined);
+}
+
+function resolveSourceLabel(source: string) {
   if (source === "server") {
-    return text.sourceServer;
+    return "Server";
   }
 
   if (source === "boundary") {
-    return text.sourceBoundary;
+    return "Boundary";
   }
 
-  return text.sourceClient;
+  return "Client";
+}
+
+function resolveSeverityVariant(severity: string) {
+  if (severity === "critical" || severity === "high") {
+    return "category-solid-accent" as const;
+  }
+
+  if (severity === "medium") {
+    return "category-solid-ink" as const;
+  }
+
+  return "status-archived" as const;
 }
 
 function buildErrorsToolbarFiltersState(
@@ -113,29 +141,27 @@ function buildErrorsToolbarFiltersState(
 ): ErrorsToolbarFiltersState {
   return {
     sourceValue: input.query?.source ?? defaultErrorsToolbarFilters.sourceValue,
+    severityValue: input.query?.severity ?? defaultErrorsToolbarFilters.severityValue,
+    statusValue: input.query?.status ?? defaultErrorsToolbarFilters.statusValue,
   };
 }
 
-function ErrorsToolbarField({
+function FilterField({
+  label,
   value,
+  options,
   onValueChange,
 }: {
+  label: string;
   value: string;
+  options: Array<{ value: string; label: string }>;
   onValueChange: (value: string) => void;
 }) {
-  const optionsText = i18n.cms.listOptions;
-
   return (
-    <CmsSelect
-      value={value}
-      onValueChange={onValueChange}
-      options={[
-        { value: "all", label: optionsText.sourceAll },
-        { value: "server", label: optionsText.sourceServer },
-        { value: "client", label: optionsText.sourceClient },
-        { value: "boundary", label: optionsText.sourceBoundary },
-      ]}
-    />
+    <div className="space-y-2">
+      <div className={cmsMetaLabelClass}>{label}</div>
+      <CmsSelect value={value} onValueChange={onValueChange} options={options} />
+    </div>
   );
 }
 
@@ -174,49 +200,134 @@ function DetailRowsSkeleton() {
   );
 }
 
-function ErrorDetailContent({ detail }: { detail: TelemetryErrorDetail }) {
-  const text = i18n.cms.lists.errors;
-  const metadata = formatMetadata(detail.metadata);
+function CopyTechnicalValueButton({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
+  if (!value) {
+    return null;
+  }
 
   return (
+    <button
+      type="button"
+      className="rounded-[var(--radius-panel)] border border-foreground px-2 py-1 font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-foreground transition-all hover:bg-card-hover focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
+      onClick={() => {
+        copyTechnicalValue(value);
+      }}
+    >
+      Copia {label}
+    </button>
+  );
+}
+
+function ErrorStatusSelect({ detail }: { detail: TelemetryErrorDetail }) {
+  const utils = trpc.useUtils();
+  const mutation = trpc.telemetry.updateErrorStatus.useMutation({
+    onSuccess: async () => {
+      await Promise.all([
+        utils.telemetry.errorsList.invalidate(),
+        utils.telemetry.errorDetail.invalidate({ id: detail.id }),
+      ]);
+    },
+  });
+
+  return (
+    <CmsSelect
+      value={detail.status}
+      onValueChange={(status) => {
+        if (status !== detail.status) {
+          mutation.mutate({ id: detail.id, status: status as (typeof statusOptions)[number] });
+        }
+      }}
+      options={statusOptions.map((status) => ({ value: status, label: humanize(status) }))}
+    />
+  );
+}
+
+function ErrorDetailContent({ detail }: { detail: TelemetryErrorDetail }) {
+  return (
     <div className="space-y-6">
-      <DetailSection title={text.sections.error}>
+      <DetailSection title="Gruppo">
         <DetailRows
           fields={[
-            { label: text.fields.errorId, value: detail.id },
-            { label: text.fields.source, value: resolveSourceLabel(detail.source) },
-            { label: text.fields.name, value: detail.name ?? "-" },
-            { label: text.fields.message, value: detail.message },
-            { label: text.fields.fingerprint, value: detail.fingerprint },
-            { label: text.fields.digest, value: detail.digest ?? "-" },
-            { label: text.fields.count, value: String(detail.count) },
-            { label: text.fields.firstSeenAt, value: formatDateTime(detail.firstSeenAt) },
-            { label: text.fields.lastSeenAt, value: formatDateTime(detail.lastSeenAt) },
+            { label: "ID", value: detail.id },
+            { label: "Titolo", value: detail.title },
+            { label: "Sorgente", value: resolveSourceLabel(detail.source) },
+            { label: "Severita", value: humanize(detail.severity) },
+            { label: "Impatto", value: humanize(detail.userImpact) },
+            { label: "Area", value: humanize(detail.impactArea) },
+            { label: "Occorrenze", value: String(detail.occurrenceCount) },
+            { label: "Sessioni impattate", value: String(detail.affectedSessions) },
+            { label: "Prima vista", value: formatDateTime(detail.firstSeenAt) },
+            { label: "Ultima vista", value: formatDateTime(detail.lastSeenAt) },
           ]}
         />
       </DetailSection>
 
-      <DetailSection title={text.sections.request}>
-        <DetailRows
-          fields={[
-            { label: text.fields.path, value: detail.path ?? "-" },
-            { label: text.fields.routePath, value: detail.routePath ?? "-" },
-            { label: text.fields.routeType, value: detail.routeType ?? "-" },
-            { label: text.fields.method, value: detail.method ?? "-" },
-            { label: text.fields.requestId, value: detail.requestId ?? "-" },
-            { label: text.fields.userAgent, value: detail.userAgent ?? "-" },
-          ]}
-        />
+      <DetailSection title="Stato operativo">
+        <ErrorStatusSelect detail={detail} />
       </DetailSection>
 
-      <DetailSection title={text.sections.metadata}>
-        {metadata ? (
-          <pre className="overflow-x-auto border-y border-(--line-section) py-3 font-mono text-[12px] leading-relaxed text-foreground">
-            {metadata}
-          </pre>
-        ) : (
-          <div className="text-sm text-muted-foreground">{text.metadataEmpty}</div>
-        )}
+      <DetailSection title="Fingerprint">
+        <DetailRows
+          fields={[
+            { label: "Fingerprint", value: detail.fingerprint },
+            { label: "Versione", value: String(detail.fingerprintVersion) },
+            { label: "Signature", value: detail.errorSignature },
+          ]}
+        />
+        <div className="flex flex-wrap gap-2">
+          <CopyTechnicalValueButton label="fingerprint" value={detail.fingerprint} />
+          <CopyTechnicalValueButton label="signature" value={detail.errorSignature} />
+        </div>
+      </DetailSection>
+
+      <DetailSection title="Occorrenze recenti">
+        <div className="space-y-4">
+          {detail.occurrences.map((occurrence) => {
+            const metadata = formatMetadata(occurrence.metadata);
+
+            return (
+              <div key={occurrence.id} className="border-y border-(--line-section) py-3">
+                <DetailRows
+                  fields={[
+                    { label: "Occorrenza", value: occurrence.id },
+                    { label: "Quando", value: formatDateTime(occurrence.occurredAt) },
+                    { label: "Sessione", value: occurrence.sessionId ?? "-" },
+                    { label: "Request", value: occurrence.requestId ?? "-" },
+                    { label: "Correlation", value: occurrence.correlationId ?? "-" },
+                    { label: "Path", value: occurrence.path ?? occurrence.routePath ?? "-" },
+                    { label: "Metodo", value: occurrence.method ?? "-" },
+                    { label: "Status", value: occurrence.statusCode?.toString() ?? "-" },
+                    { label: "Azione", value: occurrence.actionContext ?? "-" },
+                  ]}
+                />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <CopyTechnicalValueButton label="requestId" value={occurrence.requestId} />
+                  <CopyTechnicalValueButton label="sessionId" value={occurrence.sessionId} />
+                  <CopyTechnicalValueButton
+                    label="correlationId"
+                    value={occurrence.correlationId}
+                  />
+                </div>
+                {occurrence.stackTraceRedacted ? (
+                  <pre className="mt-3 overflow-x-auto font-mono text-[12px] leading-relaxed text-foreground">
+                    {occurrence.stackTraceRedacted}
+                  </pre>
+                ) : null}
+                {metadata ? (
+                  <pre className="mt-3 overflow-x-auto font-mono text-[12px] leading-relaxed text-muted-foreground">
+                    {metadata}
+                  </pre>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
       </DetailSection>
     </div>
   );
@@ -224,7 +335,6 @@ function ErrorDetailContent({ detail }: { detail: TelemetryErrorDetail }) {
 
 function ErrorDetailDialog({ errorId }: { errorId: string }) {
   const [open, setOpen] = useState(false);
-  const text = i18n.cms.lists.errors;
   const detailQuery = trpc.telemetry.errorDetail.useQuery(
     { id: errorId },
     {
@@ -232,11 +342,6 @@ function ErrorDetailDialog({ errorId }: { errorId: string }) {
       staleTime: 30_000,
     },
   );
-
-  const detailTitle = text.detailTitle;
-  const detailDescription = detailQuery.data
-    ? text.detailDescription(formatDateTime(detailQuery.data.lastSeenAt))
-    : text.detailDescriptionPending;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -247,17 +352,15 @@ function ErrorDetailDialog({ errorId }: { errorId: string }) {
           "transition-all hover:bg-card-hover focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2",
         )}
       >
-        {text.detailsCta}
+        Dettagli
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-2 border-foreground bg-card p-0 text-foreground shadow-none sm:max-w-3xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-2 border-foreground bg-card p-0 text-foreground shadow-none sm:max-w-4xl">
         <div className="border-b-2 border-foreground p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
-              <DialogTitle className="font-display text-3xl leading-none">
-                {detailTitle}
-              </DialogTitle>
+              <DialogTitle className="font-display text-3xl leading-none">Errore</DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground">
-                {detailDescription}
+                Gruppo interpretato con occorrenze raw correlate.
               </DialogDescription>
             </div>
             <DialogClose
@@ -276,10 +379,10 @@ function ErrorDetailDialog({ errorId }: { errorId: string }) {
         <div className="p-5">
           {detailQuery.isPending && open ? (
             <div className="space-y-6">
-              <DetailSection title={text.sections.error}>
+              <DetailSection title="Gruppo">
                 <DetailRowsSkeleton />
               </DetailSection>
-              <DetailSection title={text.sections.request}>
+              <DetailSection title="Occorrenze">
                 <DetailRowsSkeleton />
               </DetailSection>
             </div>
@@ -292,7 +395,7 @@ function ErrorDetailDialog({ errorId }: { errorId: string }) {
           ) : detailQuery.data ? (
             <ErrorDetailContent detail={detailQuery.data} />
           ) : (
-            <div className="text-sm text-muted-foreground">{text.detailLoading}</div>
+            <div className="text-sm text-muted-foreground">Caricamento dettaglio.</div>
           )}
         </div>
       </DialogContent>
@@ -321,6 +424,8 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
       pageSize: input.pageSize,
       q: input.query?.q,
       source: input.query?.source,
+      severity: input.query?.severity,
+      status: input.query?.status,
       sortBy: input.query?.sortBy,
       sortOrder: input.query?.sortOrder,
     },
@@ -341,10 +446,19 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
     );
   }
 
-  const hasActiveFilters = Boolean(input.query?.q || input.query?.source);
-  const activeFiltersCount = Number(
-    currentToolbarFilters.sourceValue !== defaultErrorsToolbarFilters.sourceValue,
+  const hasActiveFilters = Boolean(
+    input.query?.q || input.query?.source || input.query?.severity || input.query?.status,
   );
+  const activeFiltersCount = [
+    currentToolbarFilters.sourceValue !== "all",
+    currentToolbarFilters.severityValue !== "all",
+    currentToolbarFilters.statusValue !== "all",
+  ].filter(Boolean).length;
+  const visibleCriticalOrHigh = query.data.items.filter(
+    (entry) => entry.severity === "critical" || entry.severity === "high",
+  ).length;
+  const visibleOpen = query.data.items.filter((entry) => entry.status === "open").length;
+  const visibleRegressions = query.data.items.filter((entry) => entry.regression).length;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -356,6 +470,21 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
           <div className="space-y-3">
             <div className={cmsMetaLabelClass}>
               {commonText.totalRecords(query.data.pagination.total)}
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-3">
+              {[
+                { label: "Critical/high visibili", value: visibleCriticalOrHigh },
+                { label: "Open visibili", value: visibleOpen },
+                { label: "Regressioni visibili", value: visibleRegressions },
+              ].map((item) => (
+                <div key={item.label} className="border-2 border-foreground bg-card p-3">
+                  <div className={cmsMetaLabelClass}>{item.label}</div>
+                  <div className="font-display text-3xl leading-none text-foreground">
+                    {item.value}
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
@@ -381,6 +510,14 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
                       draftToolbarFilters.sourceValue === "all"
                         ? undefined
                         : draftToolbarFilters.sourceValue,
+                    severity:
+                      draftToolbarFilters.severityValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.severityValue,
+                    status:
+                      draftToolbarFilters.statusValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.statusValue,
                     page: 1,
                   });
                 }}
@@ -388,12 +525,49 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
                   setDraftToolbarFilters(defaultErrorsToolbarFilters);
                 }}
               >
-                <ErrorsToolbarField
-                  value={draftToolbarFilters.sourceValue}
-                  onValueChange={(value) => {
-                    setDraftToolbarFilters({ sourceValue: value });
-                  }}
-                />
+                <div className="space-y-4">
+                  <FilterField
+                    label="Sorgente"
+                    value={draftToolbarFilters.sourceValue}
+                    onValueChange={(value) => {
+                      setDraftToolbarFilters((current) => ({ ...current, sourceValue: value }));
+                    }}
+                    options={[
+                      { value: "all", label: "Tutte" },
+                      { value: "server", label: "Server" },
+                      { value: "client", label: "Client" },
+                      { value: "boundary", label: "Boundary" },
+                    ]}
+                  />
+                  <FilterField
+                    label="Severita"
+                    value={draftToolbarFilters.severityValue}
+                    onValueChange={(value) => {
+                      setDraftToolbarFilters((current) => ({ ...current, severityValue: value }));
+                    }}
+                    options={[
+                      { value: "all", label: "Tutte" },
+                      { value: "critical", label: "Critical" },
+                      { value: "high", label: "High" },
+                      { value: "medium", label: "Medium" },
+                      { value: "low", label: "Low" },
+                    ]}
+                  />
+                  <FilterField
+                    label="Stato"
+                    value={draftToolbarFilters.statusValue}
+                    onValueChange={(value) => {
+                      setDraftToolbarFilters((current) => ({ ...current, statusValue: value }));
+                    }}
+                    options={[
+                      { value: "all", label: "Tutti" },
+                      ...statusOptions.map((status) => ({
+                        value: status,
+                        label: humanize(status),
+                      })),
+                    ]}
+                  />
+                </div>
               </CmsListFiltersSheet>
             </div>
           </div>
@@ -406,24 +580,13 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
             >
               <TableHeader>
                 <TableRow className={cmsTableClasses.headerRow}>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.lastSeenAt}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.source}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.message}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.path}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.count}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.details}
-                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>Ultima vista</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>Severita</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>Stato</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>Errore</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>Impatto</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>Occorrenze</TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>Dettagli</TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -434,21 +597,25 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
                       {formatDateTime(entry.lastSeenAt)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellBadge}>
-                      <CmsBadge
-                        variant={
-                          entry.source === "server" ? "category-solid-accent" : "category-solid-ink"
-                        }
-                      >
-                        {resolveSourceLabel(entry.source)}
+                      <CmsBadge variant={resolveSeverityVariant(entry.severity)}>
+                        {humanize(entry.severity)}
                       </CmsBadge>
                     </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      <div className="max-w-md truncate text-foreground">{entry.message}</div>
+                    <TableCell className={cmsTableClasses.bodyCellBadge}>
+                      <CmsBadge variant="status-archived">{humanize(entry.status)}</CmsBadge>
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
-                      {entry.path ?? entry.routePath ?? "-"}
+                      <div className="max-w-md truncate text-foreground">{entry.title}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {resolveSourceLabel(entry.source)} · {humanize(entry.impactArea)}
+                      </div>
                     </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellMeta}>{entry.count}</TableCell>
+                    <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      {humanize(entry.userImpact)}
+                    </TableCell>
+                    <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      {entry.occurrenceCount} / {entry.affectedSessions} sessioni
+                    </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <ErrorDetailDialog errorId={entry.id} />
                     </TableCell>

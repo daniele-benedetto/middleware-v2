@@ -1,22 +1,23 @@
 import { telemetryCollectorPayloadSchema } from "@/lib/server/modules/telemetry/schema";
 
 describe("telemetry payload schema", () => {
-  it("accepts analytics payloads with small metadata", () => {
+  it("accepts client error payloads with small metadata", () => {
     const result = telemetryCollectorPayloadSchema.safeParse({
-      type: "analytics",
-      event: "page_view",
+      type: "client-error",
+      source: "boundary",
+      sessionId: "obs_session_1_0000",
+      message: "boom",
       path: "/articoli/test",
-      referrer: "https://example.com/source",
-      metadata: { articleSlug: "test" },
+      metadata: { component: "ArticlePage" },
     });
 
     expect(result.success).toBe(true);
   });
 
-  it("rejects unsupported analytics events", () => {
+  it("rejects legacy analytics payloads", () => {
     const result = telemetryCollectorPayloadSchema.safeParse({
       type: "analytics",
-      event: "click_everything",
+      event: "page_view",
       path: "/",
     });
 
@@ -35,18 +36,16 @@ describe("telemetry payload schema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts web vital payloads", () => {
+  it("rejects legacy web vital payloads", () => {
     const result = telemetryCollectorPayloadSchema.safeParse({
       type: "web-vital",
       metricId: "v3-123",
       name: "LCP",
       value: 1200,
       delta: 1200,
-      rating: "good",
-      navigationType: "navigate",
       path: "/",
     });
 
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
   });
 });

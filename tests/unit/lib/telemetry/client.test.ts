@@ -1,14 +1,28 @@
-import { reportClientError, reportWebVital, track } from "@/lib/telemetry/client";
+import { reportClientError } from "@/lib/telemetry/client";
+
+function createSessionStorageMock() {
+  const store = new Map<string, string>();
+
+  return {
+    getItem: vi.fn((key: string) => store.get(key) ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      store.set(key, value);
+    }),
+  };
+}
 
 describe("reportClientError", () => {
   beforeEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it("sends boundary errors with sendBeacon when available", () => {
+  it("sends boundary errors with a session id when sendBeacon is available", () => {
     const sendBeacon = vi.fn();
+    const sessionStorage = createSessionStorageMock();
 
     vi.stubGlobal("navigator", { sendBeacon });
+    vi.stubGlobal("sessionStorage", sessionStorage);
+    vi.stubGlobal("crypto", { randomUUID: () => "session-1" });
 
     reportClientError({
       error: Object.assign(new Error("boom"), { digest: "digest-1" }),
@@ -16,11 +30,14 @@ describe("reportClientError", () => {
       metadata: { boundary: "test" },
     });
 
-    expect(sendBeacon).toHaveBeenCalledWith(
-      "/api/telemetry",
-      JSON.stringify({
+    const payload = JSON.parse(sendBeacon.mock.calls[0]?.[1] as string) as Record<string, unknown>;
+
+    expect(sendBeacon.mock.calls[0]?.[0]).toBe("/api/telemetry");
+    expect(payload).toEqual(
+      expect.objectContaining({
         type: "client-error",
         source: "boundary",
+        sessionId: "obs_session-1",
         name: "Error",
         message: "boom",
         digest: "digest-1",
@@ -28,6 +45,7 @@ describe("reportClientError", () => {
         metadata: { boundary: "test" },
       }),
     );
+    expect(payload.stack).toEqual(expect.any(String));
   });
 
   it("falls back to fetch keepalive", () => {
@@ -35,6 +53,8 @@ describe("reportClientError", () => {
 
     vi.stubGlobal("navigator", {});
     vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("sessionStorage", createSessionStorageMock());
+    vi.stubGlobal("crypto", { randomUUID: () => "session-1" });
 
     reportClientError({
       error: new Error("boom"),
@@ -51,89 +71,31 @@ describe("reportClientError", () => {
     );
   });
 
-  it("tracks analytics events", () => {
+  it("rotates the session id after inactivity", () => {
     const sendBeacon = vi.fn();
+    const sessionStorage = createSessionStorageMock();
+    const now = 1_000_000;
 
     vi.stubGlobal("navigator", { sendBeacon });
-
-    track({
-      event: "page_view",
-      path: "/articoli/test",
-      referrer: "https://example.com",
-      metadata: { articleSlug: "test" },
+    vi.stubGlobal("sessionStorage", sessionStorage);
+    vi.stubGlobal("crypto", {
+      randomUUID: vi.fn().mockReturnValueOnce("session-1").mockReturnValueOnce("session-2"),
     });
+    vi.spyOn(Date, "now")
+      .mockReturnValueOnce(now)
+      .mockReturnValueOnce(now + 31 * 60 * 1000);
 
-    expect(sendBeacon).toHaveBeenCalledWith(
-      "/api/telemetry",
-      JSON.stringify({
-        type: "analytics",
-        event: "page_view",
-        path: "/articoli/test",
-        referrer: "https://example.com",
-        metadata: { articleSlug: "test" },
-      }),
-    );
-  });
+    reportClientError({ error: new Error("first"), path: "/" });
+    reportClientError({ error: new Error("second"), path: "/" });
 
-  it("does not track technical paths", () => {
-    const sendBeacon = vi.fn();
+    const firstPayload = JSON.parse(sendBeacon.mock.calls[0]?.[1] as string) as {
+      sessionId: string;
+    };
+    const secondPayload = JSON.parse(sendBeacon.mock.calls[1]?.[1] as string) as {
+      sessionId: string;
+    };
 
-    vi.stubGlobal("navigator", { sendBeacon });
-
-    track({ event: "page_view", path: "/cms/articles" });
-    track({ event: "page_view", path: "/api/health" });
-    track({ event: "page_view", path: "/_next/static/app.js" });
-
-    expect(sendBeacon).not.toHaveBeenCalled();
-  });
-
-  it("reports supported Web Vitals", () => {
-    const sendBeacon = vi.fn();
-
-    vi.stubGlobal("navigator", { sendBeacon });
-
-    reportWebVital(
-      {
-        id: "metric-1",
-        name: "LCP",
-        value: 1200,
-        delta: 1200,
-        rating: "good",
-        navigationType: "navigate",
-      },
-      "/articoli/test",
-    );
-
-    expect(sendBeacon).toHaveBeenCalledWith(
-      "/api/telemetry",
-      JSON.stringify({
-        type: "web-vital",
-        metricId: "metric-1",
-        name: "LCP",
-        value: 1200,
-        delta: 1200,
-        rating: "good",
-        navigationType: "navigate",
-        path: "/articoli/test",
-      }),
-    );
-  });
-
-  it("does not report unsupported Web Vitals", () => {
-    const sendBeacon = vi.fn();
-
-    vi.stubGlobal("navigator", { sendBeacon });
-
-    reportWebVital(
-      {
-        id: "metric-1",
-        name: "Next.js-render",
-        value: 1200,
-        delta: 1200,
-      },
-      "/articoli/test",
-    );
-
-    expect(sendBeacon).not.toHaveBeenCalled();
+    expect(firstPayload.sessionId).toBe("obs_session-1");
+    expect(secondPayload.sessionId).toBe("obs_session-2");
   });
 });

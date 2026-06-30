@@ -1,13 +1,9 @@
 const telemetryRepositoryMock = vi.hoisted(() => ({
-  countErrorLogs: vi.fn(),
-  countDistinctAnalyticsVisitors: vi.fn(),
-  createAnalyticsEvent: vi.fn(),
-  createWebVital: vi.fn(),
-  getErrorLogById: vi.fn(),
-  listAnalyticsAggregates: vi.fn(),
-  listErrorLogs: vi.fn(),
-  listWebVitalAggregates: vi.fn(),
-  upsertErrorLog: vi.fn(),
+  countErrorGroups: vi.fn(),
+  getErrorGroupById: vi.fn(),
+  listErrorGroups: vi.fn(),
+  recordError: vi.fn(),
+  updateErrorGroupStatus: vi.fn(),
 }));
 
 vi.mock("@/lib/server/modules/telemetry/repository", () => ({
@@ -104,252 +100,106 @@ describe("telemetry service helpers", () => {
     expect(second).toBe(first);
   });
 
-  it("records analytics payloads with normalized fields", async () => {
+  it("creates a coarser error signature", () => {
+    const first = telemetryService.createErrorSignature({
+      source: "server",
+      name: "Error",
+      message: "Missing id 550e8400-e29b-41d4-a716-446655440000",
+      impactArea: "EDITORIAL",
+    });
+    const second = telemetryService.createErrorSignature({
+      source: "server",
+      name: "Error",
+      message: "Missing id 550e8400-e29b-41d4-a716-446655440111",
+      impactArea: "EDITORIAL",
+    });
+
+    expect(second).toBe(first);
+  });
+
+  it("records client errors through the phase 1 vertical slice", async () => {
     await telemetryService.recordTelemetryPayload(
       {
-        type: "analytics",
-        event: "article_view",
-        path: "https://middleware.media/articoli/test?token=secret",
-        referrer: "https://middleware.media/?preview=1",
-        metadata: { articleSlug: "test" },
+        type: "client-error",
+        source: "boundary",
+        sessionId: "obs_session_1_0000",
+        name: "Error",
+        message: "Render failed 550e8400-e29b-41d4-a716-446655440000",
+        stack: "at ArticlePage (/app/article.tsx:10:2)",
+        path: "/articoli/test?token=secret",
+        pageType: "article",
+        contentId: "article-1",
+        sampleRate: 1,
+        metadata: { component: "ArticlePage" },
       },
       {
         ipAddress: "203.0.113.10",
+        method: "POST",
+        requestId: "request-1",
         userAgent: "Test browser",
         country: "it",
       },
     );
 
-    expect(telemetryRepositoryMock.createAnalyticsEvent).toHaveBeenCalledWith(
+    expect(telemetryRepositoryMock.recordError).toHaveBeenCalledWith(
       expect.objectContaining({
-        event: "article_view",
-        path: "/articoli/test",
-        referrer: "/",
-        country: "IT",
-        metadata: { articleSlug: "test" },
-      }),
-    );
-    expect(telemetryRepositoryMock.createAnalyticsEvent.mock.calls[0]?.[0].visitorHash).toMatch(
-      /^[0-9a-f]{64}$/,
-    );
-  });
-
-  it("skips analytics payloads for technical paths", async () => {
-    await telemetryService.recordTelemetryPayload(
-      {
-        type: "analytics",
-        event: "page_view",
-        path: "/cms/articles",
-      },
-      {
-        ipAddress: "203.0.113.10",
-        userAgent: "Test browser",
-      },
-    );
-
-    expect(telemetryRepositoryMock.createAnalyticsEvent).not.toHaveBeenCalled();
-  });
-
-  it("records web vital payloads", async () => {
-    await telemetryService.recordTelemetryPayload(
-      {
-        type: "web-vital",
-        metricId: "metric-1",
-        name: "LCP",
-        value: 1200,
-        delta: 1200,
-        rating: "good",
-        navigationType: "navigate",
-        path: "/articoli/test",
-      },
-      {
-        ipAddress: "203.0.113.10",
-        userAgent: "Test browser",
-      },
-    );
-
-    expect(telemetryRepositoryMock.createWebVital).toHaveBeenCalledWith(
-      expect.objectContaining({
-        metricId: "metric-1",
-        name: "LCP",
-        path: "/articoli/test",
-        value: 1200,
+        session: expect.objectContaining({
+          id: "obs_session_1_0000",
+          country: "IT",
+          landingPath: "/articoli/test",
+        }),
+        event: expect.objectContaining({
+          sessionId: "obs_session_1_0000",
+          type: "boundary_error",
+          path: "/articoli/test",
+          pageType: "article",
+          contentId: "article-1",
+          requestId: "request-1",
+        }),
+        group: expect.objectContaining({
+          fingerprintVersion: 1,
+          source: "BOUNDARY",
+          impactArea: "PUBLIC_SITE",
+        }),
+        occurrence: expect.objectContaining({
+          sessionId: "obs_session_1_0000",
+          path: "/articoli/test",
+          requestId: "request-1",
+          metadata: { component: "ArticlePage" },
+        }),
       }),
     );
   });
 
-  it("records client errors with a fingerprint", async () => {
-    await telemetryService.recordTelemetryPayload(
-      {
-        type: "client-error",
-        source: "boundary",
-        name: "Error",
-        message: "Render failed 550e8400-e29b-41d4-a716-446655440000",
-        path: "/articoli/test?token=secret",
-        metadata: { component: "ArticlePage" },
-      },
-      {
-        method: "POST",
-        requestId: "request-1",
-        userAgent: "Test browser",
-      },
-    );
-
-    expect(telemetryRepositoryMock.upsertErrorLog).toHaveBeenCalledWith(
-      expect.objectContaining({
-        fingerprint: expect.stringMatching(/^[0-9a-f]{64}$/),
-        source: "boundary",
-        name: "Error",
-        message: "Render failed 550e8400-e29b-41d4-a716-446655440000",
-        path: "/articoli/test",
-        method: "POST",
-        requestId: "request-1",
-        metadata: { component: "ArticlePage" },
-      }),
-    );
-  });
-
-  it("summarizes analytics aggregates for CMS", async () => {
-    telemetryRepositoryMock.countDistinctAnalyticsVisitors.mockResolvedValue(7);
-    telemetryRepositoryMock.listAnalyticsAggregates.mockResolvedValue([
-      {
-        date: new Date("2026-06-30T00:00:00.000Z"),
-        event: "page_view",
-        path: "/",
-        referrer: "",
-        country: "IT",
-        views: 10,
-        visitors: 7,
-      },
-      {
-        date: new Date("2026-06-30T00:00:00.000Z"),
-        event: "page_view",
-        path: "/articoli/test",
-        referrer: "search.example.com",
-        country: "IT",
-        views: 5,
-        visitors: 4,
-      },
-    ]);
-
-    const result = await telemetryService.getAnalyticsSummary({ days: 30 });
-
-    expect(result.totals).toEqual({ views: 15, visitors: 7 });
-    expect(result.viewsByDay).toEqual([{ date: "2026-06-30", value: 15 }]);
-    expect(result.topPages[0]).toEqual({ label: "/", value: 10 });
-    expect(result.topReferrers).toEqual([{ label: "search.example.com", value: 5 }]);
-    expect(result.topCountries).toEqual([{ label: "IT", value: 15 }]);
-  });
-
-  it("does not sum distinct visitors across aggregate dimensions", async () => {
-    telemetryRepositoryMock.countDistinctAnalyticsVisitors.mockResolvedValue(1);
-    telemetryRepositoryMock.listAnalyticsAggregates.mockResolvedValue([
-      {
-        date: new Date("2026-06-30T00:00:00.000Z"),
-        event: "page_view",
-        path: "/",
-        referrer: "",
-        country: "",
-        views: 3,
-        visitors: 1,
-      },
-      {
-        date: new Date("2026-06-30T00:00:00.000Z"),
-        event: "page_view",
-        path: "/uscite",
-        referrer: "",
-        country: "",
-        views: 2,
-        visitors: 1,
-      },
-      {
-        date: new Date("2026-06-30T00:00:00.000Z"),
-        event: "page_view",
-        path: "/articoli/test",
-        referrer: "",
-        country: "",
-        views: 1,
-        visitors: 1,
-      },
-    ]);
-
-    const result = await telemetryService.getAnalyticsSummary({ days: 30 });
-
-    expect(result.totals).toEqual({ views: 6, visitors: 1 });
-  });
-
-  it("summarizes performance aggregates for CMS", async () => {
-    telemetryRepositoryMock.listWebVitalAggregates.mockResolvedValue([
-      {
-        path: "/",
-        name: "LCP",
-        count: 10,
-        p50: 900,
-        p75: 1200,
-        p95: 2000,
-        good: 8,
-        needsImprovement: 2,
-        poor: 0,
-      },
-    ]);
-
-    const result = await telemetryService.getPerformanceSummary({ days: 30 });
-
-    expect(result.metrics).toEqual([
-      {
-        path: "/",
-        name: "LCP",
-        count: 10,
-        p50: 900,
-        p75: 1200,
-        p95: 2000,
-        good: 8,
-        needsImprovement: 2,
-        poor: 0,
-      },
-    ]);
-  });
-
-  it("lists grouped error logs for CMS", async () => {
-    telemetryRepositoryMock.listErrorLogs.mockResolvedValue([
-      {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        fingerprint: "fingerprint-1",
-        source: "server",
-        name: "Error",
-        message: "boom",
-        digest: null,
-        path: "/api/test",
-        method: "GET",
-        routePath: "/app/api/test/route",
-        routeType: "route",
-        requestId: "request-1",
-        userAgent: "Test browser",
-        count: 3,
-        firstSeenAt: new Date("2026-06-30T10:00:00.000Z"),
-        lastSeenAt: new Date("2026-06-30T11:00:00.000Z"),
-        metadata: null,
-      },
-    ]);
-    telemetryRepositoryMock.countErrorLogs.mockResolvedValue(1);
-
-    const result = await telemetryService.listErrorLogs(
-      { sortBy: "lastSeenAt", sortOrder: "desc" },
-      { page: 1, pageSize: 20 },
-    );
-
-    expect(result.total).toBe(1);
-    expect(result.items[0]).toEqual({
-      id: "550e8400-e29b-41d4-a716-446655440000",
+  it("records server errors without inventing a session", async () => {
+    await telemetryService.recordServerError({
       source: "server",
       name: "Error",
-      message: "boom",
-      path: "/api/test",
-      routePath: "/app/api/test/route",
-      routeType: "route",
-      count: 3,
-      firstSeenAt: "2026-06-30T10:00:00.000Z",
-      lastSeenAt: "2026-06-30T11:00:00.000Z",
+      message: "Publish failed",
+      path: "/cms/articles/1/edit",
+      routePath: "/cms/articles/[id]/edit",
+      method: "POST",
+      statusCode: 500,
+      actionContext: "publish",
+      requestId: "request-1",
+      userAgent: "Test browser",
     });
+
+    expect(telemetryRepositoryMock.recordError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        session: null,
+        group: expect.objectContaining({
+          source: "SERVER",
+          severity: "HIGH",
+          impactArea: "EDITORIAL",
+          userImpact: "BLOCKED_ACTION",
+        }),
+        occurrence: expect.objectContaining({
+          sessionId: null,
+          routePath: "/cms/articles/[id]/edit",
+          actionContext: "publish",
+        }),
+      }),
+    );
   });
 });

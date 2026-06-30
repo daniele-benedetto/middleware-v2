@@ -29,6 +29,46 @@ enum AuditLogOutcome {
   FAILURE
 }
 
+enum ObservabilityEventCategory {
+  ERROR
+}
+
+enum ObservabilityErrorSource {
+  SERVER
+  CLIENT
+  BOUNDARY
+}
+
+enum ObservabilityErrorSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ObservabilityErrorStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  IGNORED
+}
+
+enum ObservabilityImpactArea {
+  CMS
+  PUBLIC_SITE
+  AUTH
+  MEDIA
+  EDITORIAL
+  UNKNOWN
+}
+
+enum ObservabilityUserImpact {
+  NONE
+  MINOR
+  BLOCKED_ACTION
+  LOST_CONTENT
+}
+
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
@@ -268,102 +308,118 @@ model AuditLog {
   @@map("audit_logs")
 }
 
-model AnalyticsEvent {
-  id          String   @id @default(uuid())
-  event       String
-  path        String
-  referrer    String?
-  country     String?
-  visitorHash String
-  metadata    Json?
-  createdAt   DateTime @default(now())
+model ObservabilitySession {
+  id             String    @id
+  visitorHash    String
+  startedAt      DateTime  @default(now())
+  lastSeenAt     DateTime  @default(now())
+  endedAt        DateTime?
+  landingPath    String?
+  exitPath       String?
+  referrerDomain String?
+  country        String?
+  userAgent      String?
+  isLikelyBot    Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  @@index([createdAt])
-  @@index([event, createdAt])
-  @@index([path, createdAt])
-  @@index([visitorHash, createdAt])
-  @@map("analytics_events")
-}
+  events           ObservabilityEvent[]
+  errorOccurrences ErrorOccurrence[]
 
-model WebVital {
-  id             String   @id @default(uuid())
-  metricId       String
-  name           String
-  value          Float
-  delta          Float
-  rating         String?
-  navigationType String?
-  path           String
-  visitorHash    String?
-  createdAt      DateTime @default(now())
-
-  @@unique([metricId, name])
-  @@index([createdAt])
-  @@index([name, createdAt])
-  @@index([path, createdAt])
-  @@index([path, name, createdAt])
-  @@map("web_vitals")
-}
-
-model ErrorLog {
-  id          String   @id @default(uuid())
-  fingerprint String   @unique
-  source      String
-  name        String?
-  message     String
-  digest      String?
-  path        String?
-  method      String?
-  routePath   String?
-  routeType   String?
-  requestId   String?
-  userAgent   String?
-  count       Int      @default(1)
-  firstSeenAt DateTime @default(now())
-  lastSeenAt  DateTime @updatedAt
-  metadata    Json?
-
+  @@index([visitorHash, startedAt])
+  @@index([startedAt])
   @@index([lastSeenAt])
-  @@index([path, lastSeenAt])
+  @@map("observability_sessions")
+}
+
+model ObservabilityEvent {
+  id               String                     @id @default(uuid())
+  sessionId        String?
+  visitorHash      String?
+  type             String
+  category         ObservabilityEventCategory
+  path             String?
+  pageType         String?
+  contentId        String?
+  contentType      String?
+  requestId        String?
+  correlationId    String?
+  release          String?
+  sampleRate       Float                      @default(1)
+  clientSequence   Int?
+  clientElapsedMs  Int?
+  metadata         Json?
+  receivedAtServer DateTime                   @default(now())
+
+  session          ObservabilitySession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  errorOccurrences ErrorOccurrence[]
+
+  @@index([receivedAtServer])
+  @@index([sessionId, receivedAtServer])
+  @@index([requestId])
+  @@index([category, receivedAtServer])
+  @@map("observability_events")
+}
+
+model ErrorGroup {
+  id                 String                     @id @default(uuid())
+  fingerprint        String                     @unique
+  fingerprintVersion Int
+  errorSignature     String
+  title              String
+  source             ObservabilityErrorSource
+  severity           ObservabilityErrorSeverity
+  status             ObservabilityErrorStatus   @default(OPEN)
+  firstSeenAt        DateTime                   @default(now())
+  lastSeenAt         DateTime                   @default(now())
+  occurrenceCount    Int                        @default(1)
+  affectedSessions   Int                        @default(0)
+  affectedPaths      Json                       @default("[]")
+  impactArea         ObservabilityImpactArea    @default(UNKNOWN)
+  userImpact         ObservabilityUserImpact    @default(NONE)
+  regression         Boolean                    @default(false)
+  firstRelease       String?
+  lastRelease        String?
+  resolvedAt         DateTime?
+  resolvedBy         String?
+
+  occurrences ErrorOccurrence[]
+
+  @@index([errorSignature])
+  @@index([status, severity, lastSeenAt])
   @@index([source, lastSeenAt])
-  @@map("error_logs")
+  @@index([impactArea, lastSeenAt])
+  @@map("error_groups")
 }
 
-model TelemetryDailyAggregate {
-  id        String   @id @default(uuid())
-  date      DateTime
-  event     String
-  path      String
-  referrer  String   @default("")
-  country   String   @default("")
-  views     Int      @default(0)
-  visitors  Int      @default(0)
-  updatedAt DateTime @updatedAt
+model ErrorOccurrence {
+  id                   String   @id @default(uuid())
+  errorGroupId         String
+  observabilityEventId String?
+  sessionId            String?
+  requestId            String?
+  correlationId        String?
+  path                 String?
+  routePath            String?
+  routeType            String?
+  method               String?
+  statusCode           Int?
+  actionContext        String?
+  userAgent            String?
+  deviceType           String?
+  browser              String?
+  os                   String?
+  stackTraceRedacted   String?
+  metadata             Json?
+  occurredAt           DateTime @default(now())
 
-  @@unique([date, event, path, referrer, country])
-  @@index([date])
-  @@index([event, date])
-  @@index([path, date])
-  @@map("telemetry_daily_aggregates")
-}
+  errorGroup         ErrorGroup            @relation(fields: [errorGroupId], references: [id], onDelete: Cascade)
+  observabilityEvent ObservabilityEvent?   @relation(fields: [observabilityEventId], references: [id], onDelete: SetNull)
+  session            ObservabilitySession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
 
-model WebVitalDailyAggregate {
-  id               String   @id @default(uuid())
-  date             DateTime
-  path             String
-  name             String
-  count            Int      @default(0)
-  p50              Float?
-  p75              Float?
-  p95              Float?
-  good             Int      @default(0)
-  needsImprovement Int      @default(0)
-  poor             Int      @default(0)
-  updatedAt        DateTime @updatedAt
-
-  @@unique([date, path, name])
-  @@index([date])
-  @@index([name, date])
-  @@index([path, date])
-  @@map("web_vital_daily_aggregates")
+  @@index([errorGroupId, occurredAt])
+  @@index([sessionId, occurredAt])
+  @@index([requestId])
+  @@index([occurredAt])
+  @@map("error_occurrences")
 }

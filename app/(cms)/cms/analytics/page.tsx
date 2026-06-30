@@ -1,9 +1,8 @@
 import { forbidden } from "next/navigation";
 
-import { CmsAnalyticsScreen } from "@/features/cms/telemetry/screens/analytics-screen";
+import { CmsEmptyState } from "@/components/cms/common";
+import { CmsPageHeader } from "@/components/cms/primitives";
 import { hasAnyCmsRole, requireCmsSession } from "@/lib/cms/auth";
-import { parseTelemetryAnalyticsSearchParams } from "@/lib/cms/query";
-import { prefetchTelemetryAnalytics } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
 import { telemetryPolicy } from "@/lib/server/modules/telemetry";
@@ -14,20 +13,20 @@ export const metadata = buildCmsMetadata({
   path: "/cms/analytics",
 });
 
-type CmsAnalyticsPageProps = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
-
-export default async function CmsAnalyticsPage({ searchParams }: CmsAnalyticsPageProps) {
-  const resolvedSearchParams = await searchParams;
+export default async function CmsAnalyticsPage() {
   const session = await requireCmsSession("/cms/analytics");
 
   if (!hasAnyCmsRole(session, telemetryPolicy.allowedRoles)) {
     forbidden();
   }
 
-  const input = parseTelemetryAnalyticsSearchParams(resolvedSearchParams);
-  const initialData = await prefetchTelemetryAnalytics(input);
-
-  return <CmsAnalyticsScreen initialInput={input} initialData={initialData} />;
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <CmsPageHeader title={i18n.cms.navigation.analytics} />
+      <CmsEmptyState
+        title="Telemetry editoriale fuori scope Fase 1"
+        description="Le metriche basate su page view sono state rimosse. La dashboard tornera con ContentEngagement e letture qualificate nella fase dedicata."
+      />
+    </div>
+  );
 }

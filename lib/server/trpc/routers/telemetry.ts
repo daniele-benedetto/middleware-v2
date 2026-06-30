@@ -4,21 +4,18 @@ import { z } from "zod";
 
 import {
   listTelemetryErrorsQuerySchema,
-  telemetryAnalyticsSummaryDtoSchema,
-  telemetryErrorLogDetailDtoSchema,
-  telemetryErrorLogsListDtoSchema,
-  telemetryPerformanceSummaryDtoSchema,
-  telemetryPeriodQuerySchema,
+  telemetryErrorGroupDetailDtoSchema,
+  telemetryErrorGroupDtoSchema,
+  telemetryErrorGroupsListDtoSchema,
   telemetryPolicy,
   telemetryService,
+  updateTelemetryErrorStatusSchema,
 } from "@/lib/server/modules/telemetry";
 import { router } from "@/lib/server/trpc/init";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
 import { parseOutput } from "@/lib/server/validation/output";
-
-const telemetryPeriodInputSchema = telemetryPeriodQuerySchema.default({ days: 30 });
 
 const telemetryErrorsListInputSchema = paginationInputSchema.extend({
   query: listTelemetryErrorsQuerySchema.default({
@@ -32,35 +29,17 @@ const telemetryErrorIdInputSchema = z.object({
 });
 
 export const telemetryRouter = router({
-  analyticsSummary: protectedProcedure
-    .use(requireRoleMiddleware(telemetryPolicy.allowedRoles))
-    .input(telemetryPeriodInputSchema)
-    .query(async ({ input }) => {
-      return parseOutput(
-        await telemetryService.getAnalyticsSummary(input),
-        telemetryAnalyticsSummaryDtoSchema,
-      );
-    }),
-  performanceSummary: protectedProcedure
-    .use(requireRoleMiddleware(telemetryPolicy.allowedRoles))
-    .input(telemetryPeriodInputSchema)
-    .query(async ({ input }) => {
-      return parseOutput(
-        await telemetryService.getPerformanceSummary(input),
-        telemetryPerformanceSummaryDtoSchema,
-      );
-    }),
   errorsList: protectedProcedure
     .use(requireRoleMiddleware(telemetryPolicy.allowedRoles))
     .input(telemetryErrorsListInputSchema)
     .query(async ({ input }) => {
-      const result = await telemetryService.listErrorLogs(input.query, {
+      const result = await telemetryService.listErrorGroups(input.query, {
         page: input.page,
         pageSize: input.pageSize,
       });
 
       return {
-        items: parseOutput(result.items, telemetryErrorLogsListDtoSchema),
+        items: parseOutput(result.items, telemetryErrorGroupsListDtoSchema),
         pagination: {
           page: input.page,
           pageSize: input.pageSize,
@@ -73,8 +52,17 @@ export const telemetryRouter = router({
     .input(telemetryErrorIdInputSchema)
     .query(async ({ input }) => {
       return parseOutput(
-        await telemetryService.getErrorLogById(input.id),
-        telemetryErrorLogDetailDtoSchema,
+        await telemetryService.getErrorGroupById(input.id),
+        telemetryErrorGroupDetailDtoSchema,
+      );
+    }),
+  updateErrorStatus: protectedProcedure
+    .use(requireRoleMiddleware(telemetryPolicy.allowedRoles))
+    .input(updateTelemetryErrorStatusSchema)
+    .mutation(async ({ ctx, input }) => {
+      return parseOutput(
+        await telemetryService.updateErrorGroupStatus(input.id, input.status, ctx.session.user.id),
+        telemetryErrorGroupDtoSchema,
       );
     }),
 });

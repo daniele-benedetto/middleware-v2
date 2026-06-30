@@ -37,8 +37,10 @@ describe("POST /api/telemetry", () => {
   it("records valid telemetry payloads and returns 204", async () => {
     const response = await POST(
       createTelemetryRequest({
-        type: "analytics",
-        event: "page_view",
+        type: "client-error",
+        source: "boundary",
+        message: "boom",
+        sessionId: "obs_session_1_0000",
         path: "/articoli/test",
       }),
     );
@@ -46,8 +48,11 @@ describe("POST /api/telemetry", () => {
     expect(response.status).toBe(204);
     expect(telemetryServiceMock.recordTelemetryPayload).toHaveBeenCalledWith(
       {
-        type: "analytics",
-        event: "page_view",
+        type: "client-error",
+        source: "boundary",
+        message: "boom",
+        sampleRate: 1,
+        sessionId: "obs_session_1_0000",
         path: "/articoli/test",
       },
       {
@@ -61,7 +66,7 @@ describe("POST /api/telemetry", () => {
   });
 
   it("ignores invalid payloads", async () => {
-    const response = await POST(createTelemetryRequest({ type: "analytics", event: "bad" }));
+    const response = await POST(createTelemetryRequest({ type: "analytics", event: "page_view" }));
 
     expect(response.status).toBe(204);
     expect(telemetryServiceMock.recordTelemetryPayload).not.toHaveBeenCalled();
@@ -81,8 +86,9 @@ describe("POST /api/telemetry", () => {
 
     const response = await POST(
       createTelemetryRequest({
-        type: "analytics",
-        event: "page_view",
+        type: "client-error",
+        source: "boundary",
+        message: "boom",
         path: "/articoli/test",
       }),
     );

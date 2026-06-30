@@ -362,6 +362,13 @@ export type EnumAuditLogOutcomeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumAuditLogOutcomeFilter<$PrismaModel>
 }
 
+export type EnumObservabilityEventCategoryFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityEventCategory | Prisma.EnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityEventCategory[] | Prisma.ListEnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityEventCategory[] | Prisma.ListEnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityEventCategoryFilter<$PrismaModel> | $Enums.ObservabilityEventCategory
+}
+
 export type FloatFilter<$PrismaModel = never> = {
   equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
@@ -371,6 +378,27 @@ export type FloatFilter<$PrismaModel = never> = {
   gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   not?: Prisma.NestedFloatFilter<$PrismaModel> | number
+}
+
+export type IntNullableFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
+  in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  notIn?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  lt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedIntNullableFilter<$PrismaModel> | number | null
+}
+
+export type EnumObservabilityEventCategoryWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityEventCategory | Prisma.EnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityEventCategory[] | Prisma.ListEnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityEventCategory[] | Prisma.ListEnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityEventCategoryWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityEventCategory
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityEventCategoryFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityEventCategoryFilter<$PrismaModel>
 }
 
 export type FloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -389,31 +417,105 @@ export type FloatWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
 }
 
-export type FloatNullableFilter<$PrismaModel = never> = {
-  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null
-  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
-  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
-  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null
-}
-
-export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null
-  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
-  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
-  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
+  in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  notIn?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  lt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>
-  _sum?: Prisma.NestedFloatNullableFilter<$PrismaModel>
-  _min?: Prisma.NestedFloatNullableFilter<$PrismaModel>
-  _max?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _sum?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedIntNullableFilter<$PrismaModel>
+}
+
+export type EnumObservabilityErrorSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorSource | Prisma.EnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorSource[] | Prisma.ListEnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorSource[] | Prisma.ListEnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorSourceFilter<$PrismaModel> | $Enums.ObservabilityErrorSource
+}
+
+export type EnumObservabilityErrorSeverityFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorSeverity | Prisma.EnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorSeverity[] | Prisma.ListEnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorSeverity[] | Prisma.ListEnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorSeverityFilter<$PrismaModel> | $Enums.ObservabilityErrorSeverity
+}
+
+export type EnumObservabilityErrorStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorStatus | Prisma.EnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorStatus[] | Prisma.ListEnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorStatus[] | Prisma.ListEnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorStatusFilter<$PrismaModel> | $Enums.ObservabilityErrorStatus
+}
+
+export type EnumObservabilityImpactAreaFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityImpactArea | Prisma.EnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityImpactArea[] | Prisma.ListEnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityImpactArea[] | Prisma.ListEnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityImpactAreaFilter<$PrismaModel> | $Enums.ObservabilityImpactArea
+}
+
+export type EnumObservabilityUserImpactFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityUserImpact | Prisma.EnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityUserImpact[] | Prisma.ListEnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityUserImpact[] | Prisma.ListEnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityUserImpactFilter<$PrismaModel> | $Enums.ObservabilityUserImpact
+}
+
+export type EnumObservabilityErrorSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorSource | Prisma.EnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorSource[] | Prisma.ListEnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorSource[] | Prisma.ListEnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorSourceWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityErrorSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityErrorSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityErrorSourceFilter<$PrismaModel>
+}
+
+export type EnumObservabilityErrorSeverityWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorSeverity | Prisma.EnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorSeverity[] | Prisma.ListEnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorSeverity[] | Prisma.ListEnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorSeverityWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityErrorSeverity
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityErrorSeverityFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityErrorSeverityFilter<$PrismaModel>
+}
+
+export type EnumObservabilityErrorStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorStatus | Prisma.EnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorStatus[] | Prisma.ListEnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorStatus[] | Prisma.ListEnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorStatusWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityErrorStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityErrorStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityErrorStatusFilter<$PrismaModel>
+}
+
+export type EnumObservabilityImpactAreaWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityImpactArea | Prisma.EnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityImpactArea[] | Prisma.ListEnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityImpactArea[] | Prisma.ListEnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityImpactAreaWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityImpactArea
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityImpactAreaFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityImpactAreaFilter<$PrismaModel>
+}
+
+export type EnumObservabilityUserImpactWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityUserImpact | Prisma.EnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityUserImpact[] | Prisma.ListEnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityUserImpact[] | Prisma.ListEnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityUserImpactWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityUserImpact
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityUserImpactFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityUserImpactFilter<$PrismaModel>
 }
 
 export type NestedStringFilter<$PrismaModel = never> = {
@@ -723,6 +825,23 @@ export type NestedEnumAuditLogOutcomeWithAggregatesFilter<$PrismaModel = never> 
   _max?: Prisma.NestedEnumAuditLogOutcomeFilter<$PrismaModel>
 }
 
+export type NestedEnumObservabilityEventCategoryFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityEventCategory | Prisma.EnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityEventCategory[] | Prisma.ListEnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityEventCategory[] | Prisma.ListEnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityEventCategoryFilter<$PrismaModel> | $Enums.ObservabilityEventCategory
+}
+
+export type NestedEnumObservabilityEventCategoryWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityEventCategory | Prisma.EnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityEventCategory[] | Prisma.ListEnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityEventCategory[] | Prisma.ListEnumObservabilityEventCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityEventCategoryWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityEventCategory
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityEventCategoryFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityEventCategoryFilter<$PrismaModel>
+}
+
 export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
   equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
@@ -739,6 +858,22 @@ export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
 }
 
+export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
+  in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  notIn?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  lt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _sum?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedIntNullableFilter<$PrismaModel>
+}
+
 export type NestedFloatNullableFilter<$PrismaModel = never> = {
   equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null
   in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
@@ -750,20 +885,89 @@ export type NestedFloatNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null
 }
 
-export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null
-  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
-  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
-  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
-  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>
-  _sum?: Prisma.NestedFloatNullableFilter<$PrismaModel>
-  _min?: Prisma.NestedFloatNullableFilter<$PrismaModel>
-  _max?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+export type NestedEnumObservabilityErrorSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorSource | Prisma.EnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorSource[] | Prisma.ListEnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorSource[] | Prisma.ListEnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorSourceFilter<$PrismaModel> | $Enums.ObservabilityErrorSource
+}
+
+export type NestedEnumObservabilityErrorSeverityFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorSeverity | Prisma.EnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorSeverity[] | Prisma.ListEnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorSeverity[] | Prisma.ListEnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorSeverityFilter<$PrismaModel> | $Enums.ObservabilityErrorSeverity
+}
+
+export type NestedEnumObservabilityErrorStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorStatus | Prisma.EnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorStatus[] | Prisma.ListEnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorStatus[] | Prisma.ListEnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorStatusFilter<$PrismaModel> | $Enums.ObservabilityErrorStatus
+}
+
+export type NestedEnumObservabilityImpactAreaFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityImpactArea | Prisma.EnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityImpactArea[] | Prisma.ListEnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityImpactArea[] | Prisma.ListEnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityImpactAreaFilter<$PrismaModel> | $Enums.ObservabilityImpactArea
+}
+
+export type NestedEnumObservabilityUserImpactFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityUserImpact | Prisma.EnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityUserImpact[] | Prisma.ListEnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityUserImpact[] | Prisma.ListEnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityUserImpactFilter<$PrismaModel> | $Enums.ObservabilityUserImpact
+}
+
+export type NestedEnumObservabilityErrorSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorSource | Prisma.EnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorSource[] | Prisma.ListEnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorSource[] | Prisma.ListEnumObservabilityErrorSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorSourceWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityErrorSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityErrorSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityErrorSourceFilter<$PrismaModel>
+}
+
+export type NestedEnumObservabilityErrorSeverityWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorSeverity | Prisma.EnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorSeverity[] | Prisma.ListEnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorSeverity[] | Prisma.ListEnumObservabilityErrorSeverityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorSeverityWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityErrorSeverity
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityErrorSeverityFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityErrorSeverityFilter<$PrismaModel>
+}
+
+export type NestedEnumObservabilityErrorStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityErrorStatus | Prisma.EnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityErrorStatus[] | Prisma.ListEnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityErrorStatus[] | Prisma.ListEnumObservabilityErrorStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityErrorStatusWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityErrorStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityErrorStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityErrorStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumObservabilityImpactAreaWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityImpactArea | Prisma.EnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityImpactArea[] | Prisma.ListEnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityImpactArea[] | Prisma.ListEnumObservabilityImpactAreaFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityImpactAreaWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityImpactArea
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityImpactAreaFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityImpactAreaFilter<$PrismaModel>
+}
+
+export type NestedEnumObservabilityUserImpactWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityUserImpact | Prisma.EnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityUserImpact[] | Prisma.ListEnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityUserImpact[] | Prisma.ListEnumObservabilityUserImpactFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityUserImpactWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityUserImpact
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityUserImpactFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityUserImpactFilter<$PrismaModel>
 }
 
 

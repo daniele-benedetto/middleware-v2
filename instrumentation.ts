@@ -35,6 +35,7 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
       name: typedError.name,
       message: typedError.message,
       digest: typedError.digest,
+      stack: typedError.stack,
       path: request.path,
       method: request.method,
       routePath: context.routePath,

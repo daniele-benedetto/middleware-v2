@@ -41,3 +41,61 @@ export const AuditLogOutcome = {
 } as const
 
 export type AuditLogOutcome = (typeof AuditLogOutcome)[keyof typeof AuditLogOutcome]
+
+
+export const ObservabilityEventCategory = {
+  ERROR: 'ERROR'
+} as const
+
+export type ObservabilityEventCategory = (typeof ObservabilityEventCategory)[keyof typeof ObservabilityEventCategory]
+
+
+export const ObservabilityErrorSource = {
+  SERVER: 'SERVER',
+  CLIENT: 'CLIENT',
+  BOUNDARY: 'BOUNDARY'
+} as const
+
+export type ObservabilityErrorSource = (typeof ObservabilityErrorSource)[keyof typeof ObservabilityErrorSource]
+
+
+export const ObservabilityErrorSeverity = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL'
+} as const
+
+export type ObservabilityErrorSeverity = (typeof ObservabilityErrorSeverity)[keyof typeof ObservabilityErrorSeverity]
+
+
+export const ObservabilityErrorStatus = {
+  OPEN: 'OPEN',
+  INVESTIGATING: 'INVESTIGATING',
+  RESOLVED: 'RESOLVED',
+  IGNORED: 'IGNORED'
+} as const
+
+export type ObservabilityErrorStatus = (typeof ObservabilityErrorStatus)[keyof typeof ObservabilityErrorStatus]
+
+
+export const ObservabilityImpactArea = {
+  CMS: 'CMS',
+  PUBLIC_SITE: 'PUBLIC_SITE',
+  AUTH: 'AUTH',
+  MEDIA: 'MEDIA',
+  EDITORIAL: 'EDITORIAL',
+  UNKNOWN: 'UNKNOWN'
+} as const
+
+export type ObservabilityImpactArea = (typeof ObservabilityImpactArea)[keyof typeof ObservabilityImpactArea]
+
+
+export const ObservabilityUserImpact = {
+  NONE: 'NONE',
+  MINOR: 'MINOR',
+  BLOCKED_ACTION: 'BLOCKED_ACTION',
+  LOST_CONTENT: 'LOST_CONTENT'
+} as const
+
+export type ObservabilityUserImpact = (typeof ObservabilityUserImpact)[keyof typeof ObservabilityUserImpact]

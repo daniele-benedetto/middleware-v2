@@ -43,8 +43,14 @@ const articlesSortByValues = ["createdAt", "publishedAt"] as const;
 const pagesSortByValues = ["createdAt", "updatedAt", "publishedAt", "title"] as const;
 const usersSortByValues = ["createdAt", "email"] as const;
 const telemetryErrorSourceValues = ["server", "client", "boundary"] as const;
-const telemetryErrorsSortByValues = ["lastSeenAt", "count", "firstSeenAt"] as const;
-const telemetryPeriodValues = [7, 30, 90] as const;
+const telemetryErrorSeverityValues = ["low", "medium", "high", "critical"] as const;
+const telemetryErrorStatusValues = ["open", "investigating", "resolved", "ignored"] as const;
+const telemetryErrorsSortByValues = [
+  "lastSeenAt",
+  "occurrenceCount",
+  "firstSeenAt",
+  "affectedSessions",
+] as const;
 
 function readParam(input: CmsSearchParamsInput, key: string) {
   if (!input) {
@@ -187,30 +193,7 @@ type ArticlesListInput = RouterInputs["articles"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
-type TelemetryAnalyticsInput = RouterInputs["telemetry"]["analyticsSummary"];
-type TelemetryPerformanceInput = RouterInputs["telemetry"]["performanceSummary"];
 type TelemetryErrorsListInput = RouterInputs["telemetry"]["errorsList"];
-
-function parseTelemetryPeriodSearchParams(input: CmsSearchParamsInput): TelemetryAnalyticsInput {
-  const parsedDays = Number(readParam(input, "days"));
-  const days = telemetryPeriodValues.includes(parsedDays as (typeof telemetryPeriodValues)[number])
-    ? parsedDays
-    : 30;
-
-  return { days };
-}
-
-export function parseTelemetryAnalyticsSearchParams(
-  input: CmsSearchParamsInput,
-): TelemetryAnalyticsInput {
-  return parseTelemetryPeriodSearchParams(input);
-}
-
-export function parseTelemetryPerformanceSearchParams(
-  input: CmsSearchParamsInput,
-): TelemetryPerformanceInput {
-  return parseTelemetryPeriodSearchParams(input);
-}
 
 export function parseIssuesListSearchParams(input: CmsSearchParamsInput): IssuesListInput {
   const base = parseCmsListSearchParams(input, {
@@ -398,6 +381,14 @@ export function parseTelemetryErrorsListSearchParams(
       source: parseEnumQueryParam(
         cleanString(readParam(input, "source")),
         telemetryErrorSourceValues,
+      ),
+      severity: parseEnumQueryParam(
+        cleanString(readParam(input, "severity")),
+        telemetryErrorSeverityValues,
+      ),
+      status: parseEnumQueryParam(
+        cleanString(readParam(input, "status")),
+        telemetryErrorStatusValues,
       ),
       q: base.q,
       sortBy,

@@ -1,34 +1,38 @@
 export {
-  telemetryAnalyticsSummaryDtoSchema,
-  telemetryErrorLogDetailDtoSchema,
-  telemetryErrorLogsListDtoSchema,
-  telemetryPerformanceSummaryDtoSchema,
+  telemetryErrorGroupDetailDtoSchema,
+  telemetryErrorGroupDtoSchema,
+  telemetryErrorGroupsListDtoSchema,
+  telemetryErrorOccurrenceDtoSchema,
 } from "@/lib/server/modules/telemetry/dto";
 export { telemetryPolicy } from "@/lib/server/modules/telemetry/policy";
 export { telemetryRepository } from "@/lib/server/modules/telemetry/repository";
 export {
-  analyticsTelemetryPayloadSchema,
   clientErrorTelemetryPayloadSchema,
   listTelemetryErrorsQuerySchema,
+  observabilityErrorSeverityValues,
+  observabilityErrorSourceValues,
+  observabilityErrorStatusValues,
+  observabilityImpactAreaValues,
+  observabilityMetadataSchema,
+  observabilityUserImpactValues,
   telemetryCollectorPayloadSchema,
-  telemetryMetadataSchema,
-  telemetryPeriodQuerySchema,
-  webVitalTelemetryPayloadSchema,
+  updateTelemetryErrorStatusSchema,
 } from "@/lib/server/modules/telemetry/schema";
 export { telemetryService } from "@/lib/server/modules/telemetry/service";
 export type {
-  TelemetryAnalyticsSummaryDto,
-  TelemetryErrorLogDetailDto,
-  TelemetryErrorLogDto,
-  TelemetryPerformanceSummaryDto,
+  TelemetryErrorGroupDetailDto,
+  TelemetryErrorGroupDto,
+  TelemetryErrorOccurrenceDto,
 } from "@/lib/server/modules/telemetry/dto";
 export type {
-  AnalyticsTelemetryPayload,
   ClientErrorTelemetryPayload,
-  ErrorLogSource,
   ListTelemetryErrorsQuery,
+  ObservabilityErrorSeverity,
+  ObservabilityErrorSource,
+  ObservabilityErrorStatus,
+  ObservabilityImpactArea,
+  ObservabilityMetadata,
+  ObservabilityUserImpact,
   TelemetryCollectorPayload,
-  TelemetryMetadata,
-  TelemetryPeriodQuery,
-  WebVitalTelemetryPayload,
+  UpdateTelemetryErrorStatusInput,
 } from "@/lib/server/modules/telemetry/schema";

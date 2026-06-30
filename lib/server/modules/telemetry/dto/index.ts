@@ -1,67 +1,59 @@
 import { z } from "zod";
 
-export const telemetryMetricPointDtoSchema = z.object({
-  date: z.string(),
-  value: z.number(),
-});
+import {
+  observabilityErrorSeverityValues,
+  observabilityErrorSourceValues,
+  observabilityErrorStatusValues,
+  observabilityImpactAreaValues,
+  observabilityUserImpactValues,
+} from "@/lib/server/modules/telemetry/schema";
 
-export const telemetryTopItemDtoSchema = z.object({
-  label: z.string(),
-  value: z.number(),
-});
-
-export const telemetryAnalyticsSummaryDtoSchema = z.object({
-  totals: z.object({
-    views: z.number(),
-    visitors: z.number(),
-  }),
-  viewsByDay: z.array(telemetryMetricPointDtoSchema),
-  topPages: z.array(telemetryTopItemDtoSchema),
-  topReferrers: z.array(telemetryTopItemDtoSchema),
-  topCountries: z.array(telemetryTopItemDtoSchema),
-});
-
-export const telemetryPerformanceMetricDtoSchema = z.object({
-  name: z.string(),
-  path: z.string(),
-  count: z.number(),
-  p50: z.number().nullable(),
-  p75: z.number().nullable(),
-  p95: z.number().nullable(),
-  good: z.number(),
-  needsImprovement: z.number(),
-  poor: z.number(),
-});
-
-export const telemetryPerformanceSummaryDtoSchema = z.object({
-  metrics: z.array(telemetryPerformanceMetricDtoSchema),
-});
-
-export const telemetryErrorLogDtoSchema = z.object({
+export const telemetryErrorGroupDtoSchema = z.object({
   id: z.string().uuid(),
-  source: z.string(),
-  name: z.string().nullable(),
-  message: z.string(),
-  path: z.string().nullable(),
-  routePath: z.string().nullable(),
-  routeType: z.string().nullable(),
-  count: z.number(),
+  title: z.string(),
+  source: z.enum(observabilityErrorSourceValues),
+  severity: z.enum(observabilityErrorSeverityValues),
+  status: z.enum(observabilityErrorStatusValues),
+  occurrenceCount: z.number(),
+  affectedSessions: z.number(),
+  affectedPaths: z.array(z.string()),
+  impactArea: z.enum(observabilityImpactAreaValues),
+  userImpact: z.enum(observabilityUserImpactValues),
+  regression: z.boolean(),
   firstSeenAt: z.string(),
   lastSeenAt: z.string(),
 });
 
-export const telemetryErrorLogDetailDtoSchema = telemetryErrorLogDtoSchema.extend({
-  fingerprint: z.string(),
-  digest: z.string().nullable(),
-  method: z.string().nullable(),
+export const telemetryErrorOccurrenceDtoSchema = z.object({
+  id: z.string().uuid(),
+  sessionId: z.string().nullable(),
   requestId: z.string().nullable(),
+  correlationId: z.string().nullable(),
+  path: z.string().nullable(),
+  routePath: z.string().nullable(),
+  routeType: z.string().nullable(),
+  method: z.string().nullable(),
+  statusCode: z.number().nullable(),
+  actionContext: z.string().nullable(),
   userAgent: z.string().nullable(),
+  stackTraceRedacted: z.string().nullable(),
   metadata: z.unknown().nullable(),
+  occurredAt: z.string(),
 });
 
-export const telemetryErrorLogsListDtoSchema = z.array(telemetryErrorLogDtoSchema);
+export const telemetryErrorGroupDetailDtoSchema = telemetryErrorGroupDtoSchema.extend({
+  fingerprint: z.string(),
+  fingerprintVersion: z.number(),
+  errorSignature: z.string(),
+  firstRelease: z.string().nullable(),
+  lastRelease: z.string().nullable(),
+  resolvedAt: z.string().nullable(),
+  resolvedBy: z.string().nullable(),
+  occurrences: z.array(telemetryErrorOccurrenceDtoSchema),
+});
 
-export type TelemetryAnalyticsSummaryDto = z.infer<typeof telemetryAnalyticsSummaryDtoSchema>;
-export type TelemetryPerformanceSummaryDto = z.infer<typeof telemetryPerformanceSummaryDtoSchema>;
-export type TelemetryErrorLogDto = z.infer<typeof telemetryErrorLogDtoSchema>;
-export type TelemetryErrorLogDetailDto = z.infer<typeof telemetryErrorLogDetailDtoSchema>;
+export const telemetryErrorGroupsListDtoSchema = z.array(telemetryErrorGroupDtoSchema);
+
+export type TelemetryErrorGroupDto = z.infer<typeof telemetryErrorGroupDtoSchema>;
+export type TelemetryErrorGroupDetailDto = z.infer<typeof telemetryErrorGroupDetailDtoSchema>;
+export type TelemetryErrorOccurrenceDto = z.infer<typeof telemetryErrorOccurrenceDtoSchema>;

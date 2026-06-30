@@ -45,6 +45,7 @@ describe("onRequestError", () => {
       name: "Error",
       message: "boom",
       digest: "digest-1",
+      stack: expect.any(String),
       path: "/articoli/test?token=secret",
       method: "GET",
       routePath: "/app/(public)/articoli/[slug]/page",
