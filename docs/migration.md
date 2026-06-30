@@ -8,34 +8,18 @@ Regola operativa: il dominio principale si punta al VPS solo dopo staging, uploa
 
 ## Dashboard
 
-| Area                            | Stato   | Note                                                             |
-| ------------------------------- | ------- | ---------------------------------------------------------------- |
-| Branch preparazione             | Fatto   | `infra/self-hosting-prep`                                        |
-| Docker locale                   | Fatto   | App, Postgres, Redis, MinIO, `minio-init`, `migrate`             |
-| Prisma baseline                 | Fatto   | Migration iniziale pulita per DB vuoto                           |
-| Admin locale                    | Fatto   | Creato con `pnpm auth:bootstrap-admin`                           |
-| Next standalone                 | Fatto   | `output: "standalone"` in `next.config.ts`                       |
-| Static params build-safe        | Fatto   | Fallback per DB vuoto + Cache Components                         |
-| Storage S3 adapter              | Fatto   | `lib/server/storage/*` con AWS SDK                               |
-| Upload CMS                      | Fatto   | Multipart server-side su `mediaStorage.put`                      |
-| Route media CMS                 | Fatto   | `/api/cms/media/blob` legge da storage adapter                   |
-| Route media pubblica            | Fatto   | `/api/public/media/blob` legge da storage adapter e controlla DB |
-| Media list/rename/delete        | Fatto   | Media repository/service usano `mediaStorage`                    |
-| Vercel Blob                     | Fatto   | Dipendenza rimossa da `package.json`                             |
-| Vercel Analytics/Speed Insights | Fatto   | Dipendenze rimosse da `package.json`                             |
-| CSP/host Vercel                 | Fatto   | Da riverificare quando esistono host reali S3/CDN                |
-| Test unitari S3 config          | Fatto   | Env valide e mancanti                                            |
-| Test unitari adapter S3 diretto | Fatto   | Copertura diretta SDK mockato per `media-storage`                |
-| Seed locale contenuti           | Fatto   | Issue, categorie, autore, 8 tag e 11 articoli pubblicati         |
-| Smoke HTTP locale               | Fatto   | Dev e production-like con media pubblici da MinIO                |
-| Smoke CMS media locale          | Fatto   | UI verificata: login, upload, rename, delete                     |
-| Build Docker app                | Fatto   | `docker compose build app` completato, smoke container OK        |
-| VPS Hetzner                     | Da fare | Richiede acquisto/creazione server                               |
-| Coolify                         | Da fare | Richiede VPS e DNS                                               |
-| Object Storage Hetzner          | Da fare | Richiede bucket reale e credenziali production                   |
-| Staging                         | Da fare | Dopo VPS, Coolify, DB, Redis, bucket                             |
-| Backup/restore                  | Da fare | Prima del dominio production                                     |
-| Production                      | Da fare | Solo dopo staging verde                                          |
+| Area                    | Stato    | Note                                                        |
+| ----------------------- | -------- | ----------------------------------------------------------- |
+| Baseline locale         | Fatto    | App, DB, Redis, MinIO, S3 adapter, seed, smoke, test, build |
+| Docker production image | Fatto    | `docker compose build app` completato e smoke container OK  |
+| Decisioni pre-acquisto  | Fatto    | Domini, Cloudflare, Umami, GlitchTip, bucket, dati separati |
+| Preflight documentale   | In corso | Runbook, env, DNS, backup, segreti e checklist deploy       |
+| VPS Hetzner             | Da fare  | Richiede acquisto/creazione server                          |
+| Coolify                 | Da fare  | Richiede VPS e DNS                                          |
+| Object Storage Hetzner  | Da fare  | Richiede bucket reali e credenziali                         |
+| Staging                 | Da fare  | Dopo VPS, Coolify, DB, Redis, bucket                        |
+| Backup/restore          | Da fare  | Prima del dominio production                                |
+| Production              | Da fare  | Solo dopo staging verde                                     |
 
 ## Stack target
 
@@ -110,162 +94,164 @@ Queste decisioni non richiedono ancora acquisti e definiscono i valori da usare 
 - Umami self-hosted.
 - GlitchTip self-hosted.
 
-## Stato branch locale
+## Baseline locale completata
 
-Branch attivo:
+Il branch `infra/self-hosting-prep` è pronto per essere deployato su infrastruttura reale. La baseline locale include:
 
-```bash
-infra/self-hosting-prep
-```
+- Dockerfile production standalone con `openssl` per Prisma.
+- Compose locale con app, Postgres, Redis, MinIO, `minio-init` e `migrate`.
+- Prisma baseline pulita per DB vuoto.
+- Storage S3 adapter e route media CMS/pubbliche su bucket privato.
+- Rimozione dipendenze Vercel Blob, Analytics e Speed Insights.
+- Seed locale contenuti e admin locale.
+- Test unitari S3 config e adapter `media-storage`.
+- Smoke HTTP dev, production-like e container Docker production.
+- Smoke CMS media via UI: login, upload, preview/download, rename, delete.
 
-Obiettivo del branch: rendere il progetto testabile in locale con gli stessi componenti logici della produzione self-hosted.
-
-### Completato
-
-- [x] Creato branch `infra/self-hosting-prep`.
-- [x] Aggiunto `Dockerfile` production basato su `pnpm`.
-- [x] Aggiunto `.dockerignore`.
-- [x] Aggiunto `docker-compose.yml` locale con app, Postgres, Redis e MinIO.
-- [x] Aggiunto servizio compose `minio-init` per creare il bucket locale `middleware-media`.
-- [x] Aggiunto servizio compose `migrate` per eseguire `pnpm prisma:migrate:deploy` prima dell'app.
-- [x] Aggiunti script `pnpm docker:up`, `pnpm docker:down`, `pnpm docker:logs`.
-- [x] Aggiunti script `pnpm docker:infra:up`, `pnpm docker:infra:down`, `pnpm docker:infra:logs`.
-- [x] Aggiornato `README.md` con lo stack locale self-hosted.
-- [x] Aggiornato `.env.example` con env S3/MinIO.
-- [x] Spostato il vecchio `.env` remoto in `.env.remote-backup` ignorato da git.
-- [x] Creato `.env` locale puntato a Postgres, Redis e MinIO su Docker.
-- [x] Sostituita la cronologia Prisma storica con una migration iniziale pulita per DB vuoto.
-- [x] Avviata infrastruttura locale con `pnpm docker:infra:up`.
-- [x] Applicata baseline Prisma su Postgres Docker locale.
-- [x] Creato admin locale con `pnpm auth:bootstrap-admin`.
-- [x] Aggiunto `output: "standalone"` in `next.config.ts`.
-- [x] Installato `openssl` nel base image Docker per Prisma su `node:22-slim`.
-- [x] Aggiunto fallback static params per build con DB pulito e Cache Components.
-- [x] Aggiunto test unitario per `ensureNonEmptyStaticParams`.
-- [x] Aggiunta dipendenza `@aws-sdk/client-s3`.
-- [x] Creati moduli server-only S3: `s3-config`, `s3-client`, `media-storage`.
-- [x] Implementati metodi storage: `listAll`, `head`, `put`, `copy`, `delete`, `get`.
-- [x] Mantenuti DTO media compatibili: `url`, `downloadUrl`, `pathname`, `contentType`, `size`, `uploadedAt`, `etag`.
-- [x] Spostato upload CMS da Vercel Blob a upload multipart server-side.
-- [x] Spostata route `GET /api/cms/media/blob` su storage adapter.
-- [x] Spostata route `GET /api/public/media/blob` su storage adapter con controllo DB sui contenuti pubblicati.
-- [x] Spostati media service `list`, `rename`, `delete` su storage adapter.
-- [x] Spostata lettura JSON audio chunks su storage adapter.
-- [x] Rimossi `@vercel/blob`, `@vercel/analytics`, `@vercel/speed-insights` da `package.json`.
-- [x] Corretto seed locale `scripts/create-first-issue.mjs` per serializzare esplicitamente i campi JSON.
-- [x] Caricata immagine locale `jolly-roger.jpg` su MinIO come `jolly-roger.jpg` senza tracciarla in git.
-- [x] Eseguito seed locale contenuti con `scripts/create-first-issue.mjs`.
-- [x] Creati/aggiornati 5 categorie, 8 tag, autore `Redazione`, issue pubblicata e 11 articoli pubblicati.
-- [x] Assegnati 3 tag a ciascun articolo seed, per 33 relazioni `article_tags`.
-- [x] Allungata la descrizione rich text del numero seed a 5 paragrafi.
-- [x] Svuotato il DB locale, riapplicata la migration pulita, ricreato admin e rieseguito il seed.
-
-### Verifiche completate
-
-- [x] `docker compose config`
-- [x] `pnpm prettier "docker-compose.yml" "package.json" "README.md" "docs/migration.md" "next.config.ts" --check`
-- [x] `pnpm lint`
-- [x] `pnpm typecheck`
-- [x] `pnpm test:run`
-- [x] `pnpm prisma:validate`
-- [x] `pnpm build` con DB Docker locale migrato
-- [x] `pnpm dev` con risposta HTTP da `http://localhost:3000`
-- [x] Smoke S3/MinIO reale con put/head/get/delete su bucket `middleware-media`
-- [x] Smoke dev: home, login CMS, issue pubblica, articolo pubblico e media pubblico `jolly-roger.jpg`
-- [x] Smoke production-like: `pnpm build`, `pnpm start`, home, login CMS, issue, articolo, media pubblico, sitemap e robots
-- [x] Login admin verificato via Better Auth API con cookie sessione restituito
-- [x] Verifica permessi media: oggetto presente in MinIO ma non referenziato da contenuto pubblicato torna 404
-- [x] Smoke CMS media locale via UI: login, upload, preview/download, rename, delete
-- [x] Test unitari diretti `media-storage`: list, head, put, copy, delete, get e mapping errori S3
-- [x] Pull Docker `node:22-slim` completato
-- [x] `docker compose build app` completato
-- [x] Smoke container app production su rete Compose con risposta HTTP `200 OK` da `http://localhost:3001`
-
-### Bloccato
-
-- Nessun blocco locale attivo. Le prossime attività richiedono infrastruttura reale o decisioni su host/provider.
-
-## Prossime attività tecniche
-
-### 1. Copertura adapter storage
-
-Stato: completato.
-
-Obiettivo: chiudere la copertura diretta dell'adapter S3, oggi coperto soprattutto tramite route/service.
-
-- [x] Unit test `mediaStorage.listAll` con SDK mockato.
-- [x] Unit test `mediaStorage.head` con SDK mockato.
-- [x] Unit test `mediaStorage.put` con content type, size e conflitto se oggetto esiste.
-- [x] Unit test `mediaStorage.copy` con ETag e conflitto se target esiste.
-- [x] Unit test `mediaStorage.delete` con `IfMatch`.
-- [x] Unit test `mediaStorage.get` con stream valido.
-- [x] Unit test mapping errori S3 verso `StorageNotFoundError`, `StorageConflictError`, `StorageAccessError`.
-
-Gate per chiudere:
+Gate locali verdi:
 
 ```bash
-pnpm lint
-pnpm typecheck
-pnpm test:run
-pnpm prisma:validate
-pnpm build
+pnpm check:all
 docker compose config
+docker compose build app
 ```
 
-### 2. Smoke CMS media locale via UI
+## Piano aggiornato
 
-Stato: completato.
+Da qui in avanti il lavoro è diviso in fasi operative. Le fasi A e B si possono completare senza pagare o creare infrastruttura permanente. Le fasi successive richiedono VPS, DNS, bucket e servizi reali.
 
-Obiettivo: completare la parte manuale via browser del flusso reale end-to-end con MinIO locale.
+### Fase A - Preflight senza acquisti
 
-Gia verificato da CLI:
+Obiettivo: arrivare al momento dell'acquisto con runbook, accessi, segreti, DNS e checklist già pronti.
 
-- admin locale presente
-- immagine seed caricata su MinIO
-- seed articoli pubblicati completato
-- pagine pubbliche e media pubblici serviti correttamente in `pnpm dev`
-- pagine pubbliche e media pubblici serviti correttamente in `pnpm start` dopo `pnpm build`
-- login admin verificato via endpoint Better Auth
-- media non referenziati da contenuti pubblicati non sono pubblici
-- login CMS verificato via browser
-- upload media verificato via UI
-- preview/download media verificati via UI
-- rename media verificato via UI
-- delete media verificato via UI
+- [ ] Preparare checklist account e accessi: Hetzner Cloud, Hetzner Object Storage, Cloudflare, GitHub, email admin.
+- [ ] Preparare comando e destinazione per chiave SSH dedicata.
+- [ ] Preparare matrice segreti senza salvare valori nel repository.
+- [ ] Preparare comandi per generare `BETTER_AUTH_SECRET` staging e production.
+- [ ] Preparare piano password per admin Coolify, admin staging, admin production, Umami e GlitchTip.
+- [ ] Preparare piano DNS Cloudflare con record, proxy mode e ordine di attivazione.
+- [ ] Preparare piano CSP per host app, Umami, GlitchTip e media via route applicative.
+- [ ] Preparare piano backup: bucket backup, retention, frequenza, restore test.
+- [ ] Preparare checklist smoke staging e production in ordine eseguibile.
+- [ ] Preparare checklist rollback/rebuild minima.
 
-### 3. Riprovare build Docker app
+Gate per chiudere la fase A:
 
-Stato: completato.
+- `docs/migration.md` contiene checklist preflight completa.
+- Nessun segreto reale è committato.
+- Le decisioni residue sono ridotte a valori ottenibili solo dopo creazione risorse reali.
 
-Obiettivo: chiudere il blocco ambientale sul pull dell'immagine base.
+### Fase B - Acquisti e risorse base
 
-Verifiche completate:
+Obiettivo: creare solo le risorse necessarie e annotare valori reali.
 
-- `docker pull node:22-slim`
-- `docker compose build app`
-- smoke container production su rete Compose con porta locale alternativa `3001`, perché `3000` era già occupata
+- [ ] Creare VPS Hetzner CX32 Ubuntu 24.04 LTS.
+- [ ] Attivare snapshot automatici VPS.
+- [ ] Creare bucket media `middleware-media-staging` privato.
+- [ ] Creare bucket media `middleware-media-prod` privato.
+- [ ] Creare bucket backup DB separato.
+- [ ] Generare access key S3 dedicate per staging.
+- [ ] Generare access key S3 dedicate per production.
+- [ ] Annotare endpoint, region e valore corretto di `S3_FORCE_PATH_STYLE`.
 
-Nota residua: se la build sul VPS va in OOM, abilitare swap o spostare la build immagine su GitHub Actions.
+Gate per chiudere la fase B:
 
-### 4. Preparare host reali
+- VPS raggiungibile via SSH.
+- Bucket creati e privati.
+- Credenziali salvate fuori dal repository.
 
-Obiettivo: sostituire placeholder locali con valori production/staging solo quando esistono VPS, DNS e bucket.
+### Fase C - VPS e Coolify
 
-- [x] Definire dominio production canonico: `middleware.media`.
-- [x] Definire redirect production: `www.middleware.media` verso `middleware.media`.
-- [x] Definire dominio staging: `staging.middleware.media`.
-- [x] Definire dominio Coolify: `coolify.middleware.media`.
-- [x] Definire provider DNS/CDN: Cloudflare.
-- [x] Definire analytics: Umami self-hosted.
-- [x] Definire error tracking: GlitchTip self-hosted.
-- [x] Definire dati separati per staging e production.
-- [x] Definire bucket media: `middleware-media-staging` e `middleware-media-prod`.
-- [x] Definire backup DB iniziali su bucket Hetzner separato.
-- [x] Definire admin bootstrap separati per staging e production.
-- [ ] Definire endpoint Hetzner Object Storage reale.
-- [ ] Aggiornare CSP agli host reali di app, S3/CDN, analytics, error tracking.
-- [ ] Aggiornare `images.remotePatterns` solo se i media vengono serviti da host esterni all'app.
-- [ ] Verificare `BETTER_AUTH_URL` e `NEXT_PUBLIC_SITE_URL` per ogni ambiente.
+Obiettivo: rendere il server sicuro e installare il PaaS.
+
+- [ ] Creare utente non-root `deploy`.
+- [ ] Applicare hardening SSH: no root login, no password auth.
+- [ ] Configurare firewall con SSH, 80, 443 e 8000 solo durante setup.
+- [ ] Installare Coolify.
+- [ ] Configurare `https://coolify.middleware.media`.
+- [ ] Collegare GitHub App al repository.
+- [ ] Chiudere porta 8000 dopo conferma HTTPS su Coolify.
+
+Gate per chiudere la fase C:
+
+- Coolify accessibile via HTTPS.
+- SSH funziona con utente non-root.
+- Porta 8000 chiusa.
+
+### Fase D - Servizi staging
+
+Obiettivo: deployare staging con dati separati e verificare end-to-end.
+
+- [ ] Creare ambiente Coolify `staging`.
+- [ ] Creare Postgres staging non pubblico.
+- [ ] Creare Redis staging non pubblico.
+- [ ] Creare app staging da Dockerfile.
+- [ ] Configurare env staging usando la matrice target.
+- [ ] Puntare `staging.middleware.media` in Cloudflare.
+- [ ] Applicare migrazioni Prisma su staging.
+- [ ] Creare admin staging.
+- [ ] Eseguire smoke staging completo.
+
+Gate per chiudere la fase D:
+
+- Home staging risponde in HTTPS.
+- Login CMS staging funziona.
+- Upload media funziona su bucket staging.
+- Media pubblico è servito solo se referenziato da contenuti pubblicati.
+- Redis/rate limit funzionano in production mode.
+
+### Fase E - Osservabilità e backup staging
+
+Obiettivo: attivare strumenti operativi prima della produzione.
+
+- [ ] Deployare Umami self-hosted.
+- [ ] Deployare GlitchTip self-hosted.
+- [ ] Aggiornare CSP per Umami e GlitchTip.
+- [ ] Configurare backup DB staging e production verso bucket backup separato.
+- [ ] Eseguire restore test su database di prova.
+- [ ] Documentare procedura rebuild minima con backup config Coolify.
+
+Gate per chiudere la fase E:
+
+- Umami riceve evento da staging.
+- GlitchTip riceve errore test da staging.
+- Restore DB testato.
+- Procedura rebuild documentata.
+
+### Fase F - Production
+
+Obiettivo: creare produzione solo dopo staging, osservabilità e backup verdi.
+
+- [ ] Creare ambiente Coolify `production`.
+- [ ] Creare Postgres production non pubblico.
+- [ ] Creare Redis production non pubblico.
+- [ ] Creare app production da Dockerfile.
+- [ ] Configurare env production usando la matrice target.
+- [ ] Puntare `middleware.media` e `www.middleware.media` in Cloudflare.
+- [ ] Applicare migrazioni Prisma su production.
+- [ ] Creare admin production.
+- [ ] Eseguire smoke production completo.
+- [ ] Verificare redirect `www.middleware.media` -> `middleware.media`.
+- [ ] Verificare backup production schedulati.
+
+Gate per chiudere la fase F:
+
+- Production HTTPS verde.
+- CMS production accessibile solo ad admin/editor.
+- Pubblicazione articolo funziona.
+- Media pubblico rispetta il modello permessi.
+- Sitemap, robots, 404 e 500 gestita verificati.
+
+### Fase G - Post go-live
+
+Obiettivo: stabilizzare il sistema dopo il primo deploy pubblico.
+
+- [ ] Monitorare log container e metriche server nelle prime 48 ore.
+- [ ] Verificare eventi Umami.
+- [ ] Verificare alert/errori GlitchTip.
+- [ ] Verificare consumi VPS, DB, Redis e Object Storage.
+- [ ] Verificare cache Cloudflare e bypass su CMS/API.
+- [ ] Aggiornare `docs/migration.md` con esiti reali e deviazioni dal piano.
 
 ## Regola sui test failing
 
@@ -511,8 +497,9 @@ Stato: completato nel branch locale.
    - aggiungi lo snippet nel layout solo dopo aver aggiornato la CSP
    - mantieni l'analytics cookieless se vuoi evitare banner non necessari
 2. Error tracking:
-   - usa Sentry cloud con DPA oppure GlitchTip self-hosted
-   - evita Sentry self-hosted completo su questa VPS
+   - deploya GlitchTip self-hosted da Coolify
+   - configura il progetto GlitchTip per staging e production
+   - aggiungi DSN e CSP solo dopo verifica HTTPS
 3. Metriche server:
    - usa l'agent Coolify se sufficiente
    - aggiungi Netdata se vuoi metriche più dettagliate
@@ -528,7 +515,6 @@ Stato: completato nel branch locale.
 1. Configura backup schedulati di Postgres in Coolify.
 2. Usa una destinazione S3-compatible per i backup DB:
    - bucket Hetzner separato
-   - oppure Backblaze B2 separato
 3. Imposta cadenza giornaliera e retention coerente con il budget.
 4. Abilita versioning sul bucket media o sync periodico verso un secondo bucket.
 5. Esegui backup della config Coolify:
@@ -566,7 +552,7 @@ Stato: completato nel branch locale.
 3. Aggiungi i domini all'app:
    - `middleware.media`
    - `www.middleware.media`
-4. Punta i record DNS A/AAAA al VPS o configura Cloudflare/Bunny come reverse proxy.
+4. Punta i record DNS A/AAAA al VPS e configura Cloudflare come reverse proxy.
 5. Verifica SSL automatico su dominio principale e `www`.
 6. Applica le migrazioni Prisma in production:
    ```bash
@@ -599,7 +585,7 @@ Stato: completato nel branch locale.
    - cache lunga per `/_next/static/*`
    - cache rispettando gli header per `/api/public/media/blob`
    - nessuna cache HTML globale di default
-3. Mantieni Cloudflare/Bunny compatibile con login CMS, cookie auth e route tRPC.
+3. Mantieni Cloudflare compatibile con login CMS, cookie auth e route tRPC.
 4. Non cachare:
    - `/cms/*`
    - `/api/trpc/*`
@@ -608,89 +594,72 @@ Stato: completato nel branch locale.
 5. Firma DPA con i processor coinvolti.
 6. Verifica i subprocessor per Hetzner, CDN, analytics ed error tracking.
 
-## Checklist finale
+## Checklist finale attiva
 
-### Locale/branch
+### Preflight
 
-- [x] Branch `infra/self-hosting-prep` creato
-- [x] Dockerfile pnpm presente
-- [x] `.dockerignore` presente
-- [x] `docker-compose.yml` locale presente
-- [x] Postgres locale configurato
-- [x] Redis locale configurato
-- [x] MinIO locale configurato
-- [x] Bucket locale `middleware-media` creato da `minio-init`
-- [x] Migration Prisma iniziale pulita presente
-- [x] `.env.example` con env S3/MinIO
-- [x] `next.config.ts` con `output: "standalone"`
-- [x] Adapter S3 interno presente
-- [x] Upload CMS su storage adapter
-- [x] Route media CMS su storage adapter
-- [x] Route media pubblica su storage adapter
-- [x] Media service `list`, `rename`, `delete` su storage adapter
-- [x] `@vercel/blob` rimosso
-- [x] `@vercel/analytics` e `@vercel/speed-insights` rimossi
-- [x] Seed locale contenuti completato
-- [x] Smoke HTTP locale completato in dev e start production-like
-- [x] Unit test diretti completi per `media-storage`
-- [x] Smoke CMS media locale completato via UI
-- [x] `docker compose build app` completato
+- [ ] Checklist account/accessi completata.
+- [ ] Matrice segreti pronta e salvata fuori repository.
+- [ ] Piano DNS Cloudflare pronto.
+- [ ] Piano CSP pronto.
+- [ ] Piano backup e restore pronto.
+- [ ] Checklist smoke staging e production pronta.
+- [ ] Checklist rollback/rebuild pronta.
 
-### Gate locali
+### Risorse reali
 
-- [x] `docker compose config` passato
-- [x] `pnpm lint` passato
-- [x] `pnpm typecheck` passato
-- [x] `pnpm test:run` passato
-- [x] `pnpm prisma:validate` passato
-- [x] `pnpm build` passato con DB Docker locale migrato
-- [x] `pnpm check:all` passato prima del merge finale
+- [ ] VPS creato con Ubuntu 24.04 LTS.
+- [ ] Snapshot Hetzner attivi.
+- [ ] Bucket media staging privato creato.
+- [ ] Bucket media production privato creato.
+- [ ] Bucket backup DB creato.
+- [ ] Credenziali S3 staging e production salvate fuori repository.
 
-### Infrastruttura
+### Server e Coolify
 
-- [ ] VPS creato con Ubuntu 24.04 LTS
-- [ ] Utente non-root configurato
-- [ ] SSH hardening applicato
-- [ ] Firewall attivo con porte 80/443 e SSH
-- [ ] Snapshot Hetzner attivi
-- [ ] Coolify installato e accessibile via FQDN HTTPS
-- [ ] Porta 8000 chiusa dopo setup
-- [ ] Postgres production creato e non pubblico
-- [ ] Redis production creato e non pubblico
-- [ ] Bucket S3 production creato e privato
-- [ ] CSP aggiornata agli host reali
-- [ ] `images.remotePatterns` aggiornato se necessario
+- [ ] Utente non-root configurato.
+- [ ] SSH hardening applicato.
+- [ ] Firewall attivo.
+- [ ] Coolify installato e accessibile via `https://coolify.middleware.media`.
+- [ ] Porta 8000 chiusa dopo setup.
+- [ ] GitHub App collegata.
 
 ### Staging
 
-- [ ] Deploy staging riuscito
-- [ ] `pnpm prisma:migrate:deploy` eseguito su staging
-- [ ] Admin staging creato
-- [ ] Upload media funzionante su staging
-- [ ] Pubblicazione e revalidation funzionanti su staging
-- [ ] Media pubblico servito solo se referenziato da contenuti pubblicati
-- [ ] Redis/rate limit verificati in production mode
-- [ ] Header CSP verificati nel browser
+- [ ] Postgres staging creato e non pubblico.
+- [ ] Redis staging creato e non pubblico.
+- [ ] Deploy staging riuscito.
+- [ ] `pnpm prisma:migrate:deploy` eseguito su staging.
+- [ ] Admin staging creato.
+- [ ] Upload media funzionante su staging.
+- [ ] Pubblicazione e revalidation funzionanti su staging.
+- [ ] Media pubblico servito solo se referenziato da contenuti pubblicati.
+- [ ] Redis/rate limit verificati in production mode.
+- [ ] Header CSP verificati nel browser.
 
-### Backup e recovery
+### Osservabilità e backup
 
-- [ ] Backup DB schedulati
-- [ ] Restore DB testato
-- [ ] Backup config Coolify salvato offsite
-- [ ] Procedura rebuild documentata
+- [ ] Umami self-hosted attivo.
+- [ ] GlitchTip self-hosted attivo.
+- [ ] Backup DB schedulati.
+- [ ] Restore DB testato.
+- [ ] Backup config Coolify salvato offsite.
+- [ ] Procedura rebuild documentata.
 
 ### Production
 
-- [ ] Deploy production riuscito
-- [ ] `pnpm prisma:migrate:deploy` eseguito su production
-- [ ] Admin production creato
-- [ ] SSL valido su dominio principale, `www` e Coolify
-- [ ] Smoke test production completato
-- [ ] Redirect `www`/non-`www` verificato
-- [ ] Analytics attive se previste
-- [ ] Error tracking attivo se previsto
-- [ ] Uptime monitor attivo
-- [ ] DPA verificati per provider coinvolti
+- [ ] Postgres production creato e non pubblico.
+- [ ] Redis production creato e non pubblico.
+- [ ] Deploy production riuscito.
+- [ ] `pnpm prisma:migrate:deploy` eseguito su production.
+- [ ] Admin production creato.
+- [ ] SSL valido su `middleware.media`, `www.middleware.media` e `coolify.middleware.media`.
+- [ ] Smoke test production completato.
+- [ ] Redirect `www.middleware.media` -> `middleware.media` verificato.
+- [ ] Analytics attive.
+- [ ] Error tracking attivo.
+- [ ] Uptime monitor attivo.
+- [ ] DPA verificati per provider coinvolti.
 
 ## Punti di attenzione
 
