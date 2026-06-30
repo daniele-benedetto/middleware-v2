@@ -1,6 +1,11 @@
 const telemetryRepositoryMock = vi.hoisted(() => ({
+  countErrorLogs: vi.fn(),
   createAnalyticsEvent: vi.fn(),
   createWebVital: vi.fn(),
+  getErrorLogById: vi.fn(),
+  listAnalyticsAggregates: vi.fn(),
+  listErrorLogs: vi.fn(),
+  listWebVitalAggregates: vi.fn(),
   upsertErrorLog: vi.fn(),
 }));
 
@@ -201,5 +206,111 @@ describe("telemetry service helpers", () => {
         metadata: { component: "ArticlePage" },
       }),
     );
+  });
+
+  it("summarizes analytics aggregates for CMS", async () => {
+    telemetryRepositoryMock.listAnalyticsAggregates.mockResolvedValue([
+      {
+        date: new Date("2026-06-30T00:00:00.000Z"),
+        event: "page_view",
+        path: "/",
+        referrer: "",
+        country: "IT",
+        views: 10,
+        visitors: 7,
+      },
+      {
+        date: new Date("2026-06-30T00:00:00.000Z"),
+        event: "page_view",
+        path: "/articoli/test",
+        referrer: "search.example.com",
+        country: "IT",
+        views: 5,
+        visitors: 4,
+      },
+    ]);
+
+    const result = await telemetryService.getAnalyticsSummary({ days: 30 });
+
+    expect(result.totals).toEqual({ views: 15, visitors: 11 });
+    expect(result.viewsByDay).toEqual([{ date: "2026-06-30", value: 15 }]);
+    expect(result.topPages[0]).toEqual({ label: "/", value: 10 });
+    expect(result.topReferrers).toEqual([{ label: "search.example.com", value: 5 }]);
+    expect(result.topCountries).toEqual([{ label: "IT", value: 15 }]);
+  });
+
+  it("summarizes performance aggregates for CMS", async () => {
+    telemetryRepositoryMock.listWebVitalAggregates.mockResolvedValue([
+      {
+        path: "/",
+        name: "LCP",
+        count: 10,
+        p50: 900,
+        p75: 1200,
+        p95: 2000,
+        good: 8,
+        needsImprovement: 2,
+        poor: 0,
+      },
+    ]);
+
+    const result = await telemetryService.getPerformanceSummary({ days: 30 });
+
+    expect(result.metrics).toEqual([
+      {
+        path: "/",
+        name: "LCP",
+        count: 10,
+        p50: 900,
+        p75: 1200,
+        p95: 2000,
+        good: 8,
+        needsImprovement: 2,
+        poor: 0,
+      },
+    ]);
+  });
+
+  it("lists grouped error logs for CMS", async () => {
+    telemetryRepositoryMock.listErrorLogs.mockResolvedValue([
+      {
+        id: "550e8400-e29b-41d4-a716-446655440000",
+        fingerprint: "fingerprint-1",
+        source: "server",
+        name: "Error",
+        message: "boom",
+        digest: null,
+        path: "/api/test",
+        method: "GET",
+        routePath: "/app/api/test/route",
+        routeType: "route",
+        requestId: "request-1",
+        userAgent: "Test browser",
+        count: 3,
+        firstSeenAt: new Date("2026-06-30T10:00:00.000Z"),
+        lastSeenAt: new Date("2026-06-30T11:00:00.000Z"),
+        metadata: null,
+      },
+    ]);
+    telemetryRepositoryMock.countErrorLogs.mockResolvedValue(1);
+
+    const result = await telemetryService.listErrorLogs(
+      { sortBy: "lastSeenAt", sortOrder: "desc" },
+      { page: 1, pageSize: 20 },
+    );
+
+    expect(result.total).toBe(1);
+    expect(result.items[0]).toEqual({
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      source: "server",
+      name: "Error",
+      message: "boom",
+      path: "/api/test",
+      routePath: "/app/api/test/route",
+      routeType: "route",
+      count: 3,
+      firstSeenAt: "2026-06-30T10:00:00.000Z",
+      lastSeenAt: "2026-06-30T11:00:00.000Z",
+    });
   });
 });

@@ -20,7 +20,7 @@ Regola operativa: il dominio pubblico si attiva solo dopo verifica su hostname t
 | VPS Hetzner            | Da fare | CAX21 ARM 8 GB                                                                |
 | Object Storage Hetzner | Da fare | Bucket media e backup DB reali                                                |
 | Cloudflare Tunnel      | Da fare | VPS e zona Cloudflare                                                         |
-| Osservabilita CMS      | Da fare | Router tRPC admin-only e pagine CMS analytics/performance/errors              |
+| Osservabilita CMS      | Da fare | Pagine CMS analytics/performance/errors                                       |
 | Backup/restore reale   | Da fare | Prima del dominio pubblico                                                    |
 | Produzione             | Da fare | Solo dopo smoke verde e restore DB testato                                    |
 
@@ -164,11 +164,11 @@ Nota: il `GITHUB_TOKEN` automatico vale solo nel runner. Per il `pull` dal VPS s
 - Client telemetry con `track`, `reportWebVital`, `sendBeacon` e fallback `fetch keepalive`.
 - Pageview tracking pubblico e Web Vitals collegati al layout pubblico.
 - Script `telemetry:aggregate`, `telemetry:prune`, `telemetry:jobs`.
+- Router tRPC `telemetry` admin-only per analytics, performance ed errori.
 - Test unitari per schema/service/collector/client/instrumentation telemetry.
 
 ### Da completare nel codice prima degli acquisti
 
-- Creare `telemetryRouter` tRPC admin-only con output DTO validati.
 - Creare `/cms/analytics`, `/cms/performance`, `/cms/errors` e navigazione CMS admin-only.
 - Collegare le pagine CMS agli aggregati senza query raw pesanti.
 - Testare localmente le pagine CMS con stati loading/empty/error coerenti.
@@ -216,10 +216,10 @@ Principi:
 - `telemetry:aggregate` ricostruisce aggregati recenti idempotenti.
 - `telemetry:prune` cancella raw telemetry ed error logs oltre `TELEMETRY_RETENTION_DAYS`.
 - `telemetry:jobs` esegue aggregazione e prune dal container `migrate`.
+- `telemetryRouter` espone summary analytics, summary performance, lista errori e dettaglio errore solo ad admin.
 
 ### Checklist restante
 
-- [ ] Router tRPC admin-only per analytics/performance/errors.
 - [ ] Pagine CMS dedicate.
 - [ ] Componenti CMS coerenti con skeleton/loading/error/empty state esistenti.
 - [ ] Test locali delle pagine CMS e query tRPC.
