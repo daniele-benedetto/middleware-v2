@@ -44,10 +44,71 @@ Regola operativa: il dominio principale si punta al VPS solo dopo staging, uploa
 - **DB**: Postgres gestito da Coolify.
 - **Rate limit**: Redis gestito da Coolify.
 - **Media**: Hetzner Object Storage S3-compatible, bucket privato.
-- **DNS/CDN**: Cloudflare free oppure Bunny.net se si vuole evitare processor USA.
+- **DNS/CDN**: Cloudflare.
 - **Analytics**: Umami self-hosted, cookieless.
-- **Errori**: Sentry cloud oppure GlitchTip self-hosted.
+- **Errori**: GlitchTip self-hosted.
 - **Monitoring**: metriche server, log container, uptime check.
+
+## Decisioni pre-acquisto
+
+Queste decisioni non richiedono ancora acquisti e definiscono i valori da usare quando si creano VPS, DNS, bucket e ambienti Coolify.
+
+| Area                 | Decisione                                                        |
+| -------------------- | ---------------------------------------------------------------- |
+| Dominio canonico     | `middleware.media`                                               |
+| Redirect produzione  | `www.middleware.media` -> `middleware.media`                     |
+| Staging              | `staging.middleware.media`                                       |
+| Dashboard Coolify    | `coolify.middleware.media`                                       |
+| DNS/CDN              | Cloudflare                                                       |
+| Analytics            | Umami self-hosted                                                |
+| Error tracking       | GlitchTip self-hosted                                            |
+| Dati staging/prod    | Separati                                                         |
+| Bucket media prod    | `middleware-media-prod`                                          |
+| Bucket media staging | `middleware-media-staging`                                       |
+| Backup DB            | Bucket Hetzner separato                                          |
+| Admin bootstrap      | Credenziali separate scelte manualmente per staging e production |
+
+### Matrice env target
+
+| Env                        | Staging                                  | Production                                  |
+| -------------------------- | ---------------------------------------- | ------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`     | `https://staging.middleware.media`       | `https://middleware.media`                  |
+| `BETTER_AUTH_URL`          | `https://staging.middleware.media`       | `https://middleware.media`                  |
+| `DATABASE_URL`             | Da Postgres Coolify staging              | Da Postgres Coolify production              |
+| `POSTGRES_URL`             | Uguale a `DATABASE_URL` staging          | Uguale a `DATABASE_URL` production          |
+| `PRISMA_DATABASE_URL`      | Uguale a `DATABASE_URL` staging          | Uguale a `DATABASE_URL` production          |
+| `REDIS_URL`                | Da Redis Coolify staging                 | Da Redis Coolify production                 |
+| `S3_ENDPOINT`              | Da Hetzner Object Storage                | Da Hetzner Object Storage                   |
+| `S3_REGION`                | Da bucket Hetzner scelto                 | Da bucket Hetzner scelto                    |
+| `S3_BUCKET`                | `middleware-media-staging`               | `middleware-media-prod`                     |
+| `S3_ACCESS_KEY`            | Access key dedicata staging              | Access key dedicata production              |
+| `S3_SECRET_KEY`            | Secret key dedicata staging              | Secret key dedicata production              |
+| `S3_FORCE_PATH_STYLE`      | Valore richiesto da endpoint Hetzner     | Valore richiesto da endpoint Hetzner        |
+| `BOOTSTRAP_ADMIN_EMAIL`    | Admin staging scelto manualmente         | Admin production scelto manualmente         |
+| `BOOTSTRAP_ADMIN_PASSWORD` | Password staging scelta manualmente      | Password production scelta manualmente      |
+| `BOOTSTRAP_ADMIN_NAME`     | Nome admin staging scelto manualmente    | Nome admin production scelto manualmente    |
+| `BETTER_AUTH_SECRET`       | Secret staging generato ad alta entropia | Secret production generato ad alta entropia |
+| `AUDIT_LOG_RETENTION_DAYS` | `365`                                    | `365`                                       |
+
+### DNS target
+
+| Host                       | Uso                 | Note                           |
+| -------------------------- | ------------------- | ------------------------------ |
+| `middleware.media`         | App production      | Canonico                       |
+| `www.middleware.media`     | Redirect production | Redirect permanente verso apex |
+| `staging.middleware.media` | App staging         | Ambiente dati separato         |
+| `coolify.middleware.media` | Dashboard Coolify   | Accesso dashboard dopo setup   |
+
+### Servizi self-hosted da prevedere in Coolify
+
+- App Next.js staging.
+- App Next.js production.
+- Postgres staging.
+- Postgres production.
+- Redis staging.
+- Redis production.
+- Umami self-hosted.
+- GlitchTip self-hosted.
 
 ## Stato branch locale
 
@@ -190,7 +251,17 @@ Nota residua: se la build sul VPS va in OOM, abilitare swap o spostare la build 
 
 Obiettivo: sostituire placeholder locali con valori production/staging solo quando esistono VPS, DNS e bucket.
 
-- [ ] Definire dominio staging, production e Coolify.
+- [x] Definire dominio production canonico: `middleware.media`.
+- [x] Definire redirect production: `www.middleware.media` verso `middleware.media`.
+- [x] Definire dominio staging: `staging.middleware.media`.
+- [x] Definire dominio Coolify: `coolify.middleware.media`.
+- [x] Definire provider DNS/CDN: Cloudflare.
+- [x] Definire analytics: Umami self-hosted.
+- [x] Definire error tracking: GlitchTip self-hosted.
+- [x] Definire dati separati per staging e production.
+- [x] Definire bucket media: `middleware-media-staging` e `middleware-media-prod`.
+- [x] Definire backup DB iniziali su bucket Hetzner separato.
+- [x] Definire admin bootstrap separati per staging e production.
 - [ ] Definire endpoint Hetzner Object Storage reale.
 - [ ] Aggiornare CSP agli host reali di app, S3/CDN, analytics, error tracking.
 - [ ] Aggiornare `images.remotePatterns` solo se i media vengono serviti da host esterni all'app.
@@ -220,10 +291,11 @@ Questa sezione descrive le attività da fare quando si acquistano VPS, Object St
    ```bash
    ssh-keygen -t ed25519
    ```
-3. Decidi i domini operativi:
-   - app staging: `staging.tuodominio.it`
-   - app produzione: `tuodominio.it` e `www.tuodominio.it`
-   - dashboard Coolify: `coolify.tuodominio.it`
+3. Usa i domini operativi già decisi:
+   - app staging: `staging.middleware.media`
+   - app produzione canonica: `middleware.media`
+   - redirect produzione: `www.middleware.media` -> `middleware.media`
+   - dashboard Coolify: `coolify.middleware.media`
 4. Prepara i valori production delle env:
    - `NEXT_PUBLIC_SITE_URL`
    - `DATABASE_URL`
@@ -296,9 +368,9 @@ Questa sezione descrive le attività da fare quando si acquistano VPS, Object St
 4. Collega GitHub da Sources -> GitHub e installa la GitHub App sul repository.
 5. Configura l'FQDN della dashboard in Settings -> Configuration:
    ```text
-   https://coolify.tuodominio.it
+   https://coolify.middleware.media
    ```
-6. Punta il DNS di `coolify.tuodominio.it` al VPS e verifica SSL automatico.
+6. Punta il DNS di `coolify.middleware.media` al VPS e verifica SSL automatico.
 
 ### Fase 3 - Progetto, Postgres e Redis
 
@@ -359,13 +431,13 @@ Stato: completato nel branch locale.
 4. Porta interna: `3000`.
 5. Imposta il dominio:
    ```text
-   staging.tuodominio.it
+   staging.middleware.media
    ```
-6. Punta il DNS di `staging.tuodominio.it` al VPS.
+6. Punta il DNS di `staging.middleware.media` al VPS.
 7. Configura le env staging:
    - `NODE_ENV=production`
-   - `NEXT_PUBLIC_SITE_URL=https://staging.tuodominio.it`
-   - `BETTER_AUTH_URL=https://staging.tuodominio.it`
+   - `NEXT_PUBLIC_SITE_URL=https://staging.middleware.media`
+   - `BETTER_AUTH_URL=https://staging.middleware.media`
    - `BETTER_AUTH_SECRET`
    - `DATABASE_URL`
    - `POSTGRES_URL`
@@ -479,8 +551,8 @@ Stato: completato nel branch locale.
 1. Crea o clona l'app Coolify nell'ambiente `production`.
 2. Configura le env production:
    - `NODE_ENV=production`
-   - `NEXT_PUBLIC_SITE_URL=https://tuodominio.it`
-   - `BETTER_AUTH_URL=https://tuodominio.it`
+   - `NEXT_PUBLIC_SITE_URL=https://middleware.media`
+   - `BETTER_AUTH_URL=https://middleware.media`
    - `BETTER_AUTH_SECRET`
    - `DATABASE_URL`
    - `POSTGRES_URL`
@@ -492,8 +564,8 @@ Stato: completato nel branch locale.
    - `BOOTSTRAP_ADMIN_NAME`
    - env S3 production
 3. Aggiungi i domini all'app:
-   - `tuodominio.it`
-   - `www.tuodominio.it`
+   - `middleware.media`
+   - `www.middleware.media`
 4. Punta i record DNS A/AAAA al VPS o configura Cloudflare/Bunny come reverse proxy.
 5. Verifica SSL automatico su dominio principale e `www`.
 6. Applica le migrazioni Prisma in production:
@@ -518,7 +590,7 @@ Stato: completato nel branch locale.
    ```bash
    ufw delete allow 8000/tcp
    ```
-10. Usa Coolify solo da `https://coolify.tuodominio.it`.
+10. Usa Coolify solo da `https://coolify.middleware.media`.
 
 ### Fase 13 - CDN e DNS
 
