@@ -781,49 +781,55 @@ Principio di questa fase: contract-first, no retrocompatibilità. Prima si decid
 
 Checklist operativa Fase 0:
 
-- [ ] Dichiarare esplicitamente che il modello esistente di telemetry/performance/errors/audit è provvisorio e non vincolante.
-- [ ] Decidere quali parti concettuali già presenti si possono riusare come idea, non come vincolo: hash giornaliero, normalizzazione path/referrer, limiti metadata, skip path tecnici.
-- [ ] Decidere quali parti vanno sostituite senza retrocompatibilità: page-view analytics come metrica primaria, `FID`, grouped error senza occorrenze, aggregati basati su views, fingerprint non versionato.
-- [ ] Definire i valori canonici di `pageType`: home, article, issue, static_page, listen, media, cms.
-- [ ] Definire i valori canonici di `contentType`: article, issue, page, media, navigation, user, taxonomy.
-- [ ] Definire i livelli qualitativi: `glance`, `scan`, `engaged`, `completed`.
-- [ ] Definire la performance percepita: `smooth`, `acceptable`, `frustrating`, `broken`.
-- [ ] Definire severity errori: `low`, `medium`, `high`, `critical`.
-- [ ] Definire status errori: `open`, `investigating`, `resolved`, `ignored`.
-- [ ] Definire risk audit: `low`, `medium`, `high`, `critical`.
-- [ ] Definire outcome audit: `SUCCESS`, `FAILURE`.
-- [ ] Definire quando un evento o un'attività ha `publicImpact`.
-- [ ] Definire `view`, `visit`, `session`, `read`, `qualifiedVisit`, `completedRead`, `return`, `completion`, `impact`, `activeTime`, `qualityScore`.
-- [ ] Confermare la soglia di nuova sessione: 30 minuti di inattività.
-- [ ] Scrivere l'algoritmo del tempo attivo: heartbeat 15s, idle threshold 30s, cap del delta 20s, visibility/focus/interazione, monotonic clock.
-- [ ] Definire i casi limite del tempo attivo: tab in background, finestra senza focus, gap heartbeat, page exit, idle lungo, clock manipolato.
-- [ ] Scrivere la formula del quality score di sessione con base, bonus, penalità, clamp e breakdown.
-- [ ] Scrivere la formula del quality score di contenuto con componenti, pesi iniziali, normalizzazione, penalità e breakdown.
-- [ ] Decidere come versionare pesi e soglie del quality score.
-- [ ] Scrivere l'algoritmo di fingerprint errori con normalizzazione, stack frame applicativi, rimozione dati dinamici, route template, `fingerprintVersion`.
-- [ ] Definire `errorSignature` come chiave grossolana per regressioni oltre al fingerprint fine.
-- [ ] Definire l'identità del visitatore: `sessionId` in `sessionStorage`, `visitorHash` server-side giornaliero, niente tracking cross-day per persona.
-- [ ] Definire come rappresentare ritorni same-session, same-day e interesse ricorrente multi-giorno solo aggregato.
-- [ ] Definire l'autorità dei timestamp: `receivedAtServer` autorevole, `clientSequence` e `clientElapsedMs` non autorevoli.
-- [ ] Definire stance privacy/GDPR: minimizzazione, niente token/body/header sensibili, consenso opzionale, DNT e Global Privacy Control.
-- [ ] Definire cosa si campiona: heartbeat e scroll milestone sì; errori, audit, session_start, session_end no.
-- [ ] Definire regole sample-rate-aware: conteggi pesati, medie/percentili non calcolati come media ingenua dei campioni.
-- [ ] Definire bot filtering minimo: user-agent denylist, assenza segnali umani, timing assurdo, headless marker, skew client/server.
-- [ ] Definire limiti metadata: shape ammessa, dimensione massima, cardinalità, redazione valori sensibili.
-- [ ] Definire parametri iniziali configurabili: idle threshold, heartbeat interval, max heartbeat gap, pesi score, soglie engagement per `pageType`.
-- [ ] Definire quali raw event sono ammessi nella prima versione e quali sono esplicitamente fuori scope.
-- [ ] Definire quali campi sono catturati e quali sono derivati, vietando campi interpretati autorevoli sulle tabelle raw.
-- [ ] Definire criteri di accettazione per Fase 1 e Fase 2 basati su questi contratti, non sul codice attuale.
-- [ ] Preparare test unitari per vocabolari, active time, quality score, fingerprint, visitor hash, timestamp sanity, metadata privacy e sample-rate weighting.
-- [ ] Aggiornare il documento dopo ogni decisione, evitando documenti paralleli o checklist separate.
+- [x] Dichiarare esplicitamente che il modello esistente di telemetry/performance/errors/audit è provvisorio e non vincolante.
+- [x] Decidere quali parti concettuali già presenti si possono riusare come idea, non come vincolo: hash giornaliero, normalizzazione path/referrer, limiti metadata, skip path tecnici.
+- [x] Decidere quali parti vanno sostituite senza retrocompatibilità: page-view analytics come metrica primaria, `FID`, grouped error senza occorrenze, aggregati basati su views, fingerprint non versionato.
+- [x] Definire i valori canonici di `pageType`: home, article, issue, static_page, listen, media, cms.
+- [x] Definire i valori canonici di `contentType`: article, issue, page, media, navigation, user, taxonomy.
+- [x] Definire i livelli qualitativi: `glance`, `scan`, `engaged`, `completed`.
+- [x] Definire la performance percepita: `smooth`, `acceptable`, `frustrating`, `broken`.
+- [x] Definire severity errori: `low`, `medium`, `high`, `critical`.
+- [x] Definire status errori: `open`, `investigating`, `resolved`, `ignored`.
+- [x] Definire risk audit: `low`, `medium`, `high`, `critical`.
+- [x] Definire outcome audit: `SUCCESS`, `FAILURE`.
+- [x] Definire quando un evento o un'attività ha `publicImpact`.
+- [x] Definire `view`, `visit`, `session`, `read`, `qualifiedVisit`, `completedRead`, `return`, `completion`, `impact`, `activeTime`, `qualityScore`.
+- [x] Confermare la soglia di nuova sessione: 30 minuti di inattività.
+- [x] Scrivere l'algoritmo del tempo attivo: heartbeat 15s, idle threshold 30s, cap del delta 20s, visibility/focus/interazione, monotonic clock.
+- [x] Definire i casi limite del tempo attivo: tab in background, finestra senza focus, gap heartbeat, page exit, idle lungo, clock manipolato.
+- [x] Scrivere la formula del quality score di sessione con base, bonus, penalità, clamp e breakdown.
+- [x] Scrivere la formula del quality score di contenuto con componenti, pesi iniziali, normalizzazione, penalità e breakdown.
+- [x] Decidere come versionare pesi e soglie del quality score.
+- [x] Scrivere l'algoritmo di fingerprint errori con normalizzazione, stack frame applicativi, rimozione dati dinamici, route template, `fingerprintVersion`.
+- [x] Definire `errorSignature` come chiave grossolana per regressioni oltre al fingerprint fine.
+- [x] Definire l'identità del visitatore: `sessionId` in `sessionStorage`, `visitorHash` server-side giornaliero, niente tracking cross-day per persona.
+- [x] Definire come rappresentare ritorni same-session, same-day e interesse ricorrente multi-giorno solo aggregato.
+- [x] Definire l'autorità dei timestamp: `receivedAtServer` autorevole, `clientSequence` e `clientElapsedMs` non autorevoli.
+- [x] Definire stance privacy/GDPR: minimizzazione, niente token/body/header sensibili, consenso opzionale, DNT e Global Privacy Control.
+- [x] Definire cosa si campiona: heartbeat e scroll milestone sì; errori, audit, session_start, session_end no.
+- [x] Definire regole sample-rate-aware: conteggi pesati, medie/percentili non calcolati come media ingenua dei campioni.
+- [x] Definire bot filtering minimo: user-agent denylist, assenza segnali umani, timing assurdo, headless marker, skew client/server.
+- [x] Definire limiti metadata: shape ammessa, dimensione massima, cardinalità, redazione valori sensibili.
+- [x] Definire parametri iniziali configurabili: idle threshold, heartbeat interval, max heartbeat gap, pesi score, soglie engagement per `pageType`.
+- [x] Definire quali raw event sono ammessi nella prima versione e quali sono esplicitamente fuori scope.
+- [x] Definire quali campi sono catturati e quali sono derivati, vietando campi interpretati autorevoli sulle tabelle raw.
+- [x] Definire criteri di accettazione per Fase 1 e Fase 2 basati su questi contratti, non sul codice attuale.
+- [x] Preparare test unitari per vocabolari, active time, quality score, fingerprint, visitor hash, timestamp sanity, metadata privacy e sample-rate weighting.
+- [x] Aggiornare il documento dopo ogni decisione, evitando documenti paralleli o checklist separate.
+
+Deliverable prodotti:
+
+- Contratti puri in `lib/server/modules/observability/model/*`.
+- Test unitari in `tests/unit/lib/server/modules/observability/model.test.ts`.
+- Verifica: `pnpm test:run tests/unit/lib/server/modules/observability/model.test.ts` e `pnpm typecheck`.
 
 Criterio di completamento:
 
-- [ ] Ogni metrica qualitativa ha una definizione riproducibile, non una descrizione.
-- [ ] Nessun termine ambiguo resta non definito: view, visit, session, read, return, completion, impact, active time, quality score.
-- [ ] Il codice provvisorio non impone vincoli di retrocompatibilità alle fasi successive.
-- [ ] Le parti incompatibili col modello qualitativo sono identificate come eliminabili o riscrivibili.
-- [ ] Le fasi successive possono partire senza reinterpretare vocabolario, privacy, timestamp, fingerprint, active time o score.
+- [x] Ogni metrica qualitativa ha una definizione riproducibile, non una descrizione.
+- [x] Nessun termine ambiguo resta non definito: view, visit, session, read, return, completion, impact, active time, quality score.
+- [x] Il codice provvisorio non impone vincoli di retrocompatibilità alle fasi successive.
+- [x] Le parti incompatibili col modello qualitativo sono identificate come eliminabili o riscrivibili.
+- [x] Le fasi successive possono partire senza reinterpretare vocabolario, privacy, timestamp, fingerprint, active time o score.
 
 ### Fase 1: Slice Verticale Dello Schema
 
