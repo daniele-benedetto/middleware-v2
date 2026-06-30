@@ -25,7 +25,7 @@ Regola operativa: il dominio principale si punta al VPS solo dopo staging, uploa
 | Vercel Analytics/Speed Insights | Fatto    | Dipendenze rimosse da `package.json`                             |
 | CSP/host Vercel                 | Fatto    | Da riverificare quando esistono host reali S3/CDN                |
 | Test unitari S3 config          | Fatto    | Env valide e mancanti                                            |
-| Test unitari adapter S3 diretto | Da fare  | Manca copertura diretta SDK mockato per `media-storage`          |
+| Test unitari adapter S3 diretto | Fatto    | Copertura diretta SDK mockato per `media-storage`                |
 | Seed locale contenuti           | Fatto    | Issue, categorie, autore, 8 tag e 11 articoli pubblicati         |
 | Smoke HTTP locale               | Fatto    | Dev e production-like con media pubblici da MinIO                |
 | Smoke CMS media locale          | Fatto    | UI verificata: login, upload, rename, delete                     |
@@ -114,6 +114,7 @@ Obiettivo del branch: rendere il progetto testabile in locale con gli stessi com
 - [x] Login admin verificato via Better Auth API con cookie sessione restituito
 - [x] Verifica permessi media: oggetto presente in MinIO ma non referenziato da contenuto pubblicato torna 404
 - [x] Smoke CMS media locale via UI: login, upload, preview/download, rename, delete
+- [x] Test unitari diretti `media-storage`: list, head, put, copy, delete, get e mapping errori S3
 
 ### Bloccato
 
@@ -123,15 +124,17 @@ Obiettivo del branch: rendere il progetto testabile in locale con gli stessi com
 
 ### 1. Copertura adapter storage
 
+Stato: completato.
+
 Obiettivo: chiudere la copertura diretta dell'adapter S3, oggi coperto soprattutto tramite route/service.
 
-- [ ] Unit test `mediaStorage.listAll` con SDK mockato.
-- [ ] Unit test `mediaStorage.head` con SDK mockato.
-- [ ] Unit test `mediaStorage.put` con content type, size e conflitto se oggetto esiste.
-- [ ] Unit test `mediaStorage.copy` con ETag e conflitto se target esiste.
-- [ ] Unit test `mediaStorage.delete` con `IfMatch`.
-- [ ] Unit test `mediaStorage.get` con stream valido.
-- [ ] Unit test mapping errori S3 verso `StorageNotFoundError`, `StorageConflictError`, `StorageAccessError`.
+- [x] Unit test `mediaStorage.listAll` con SDK mockato.
+- [x] Unit test `mediaStorage.head` con SDK mockato.
+- [x] Unit test `mediaStorage.put` con content type, size e conflitto se oggetto esiste.
+- [x] Unit test `mediaStorage.copy` con ETag e conflitto se target esiste.
+- [x] Unit test `mediaStorage.delete` con `IfMatch`.
+- [x] Unit test `mediaStorage.get` con stream valido.
+- [x] Unit test mapping errori S3 verso `StorageNotFoundError`, `StorageConflictError`, `StorageAccessError`.
 
 Gate per chiudere:
 
@@ -547,7 +550,7 @@ Stato: file già presente nel branch locale, build app ancora da riprovare quand
 - [x] `@vercel/analytics` e `@vercel/speed-insights` rimossi
 - [x] Seed locale contenuti completato
 - [x] Smoke HTTP locale completato in dev e start production-like
-- [ ] Unit test diretti completi per `media-storage`
+- [x] Unit test diretti completi per `media-storage`
 - [x] Smoke CMS media locale completato via UI
 - [ ] `docker compose build app` completato
 
