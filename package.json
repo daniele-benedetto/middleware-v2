@@ -33,6 +33,7 @@
     "ops:deploy:local": "ENV_FILE=.env.ops.local DEPLOY_SKIP_PULL=1 DEPLOY_SKIP_BACKUP=1 ./scripts/deploy.sh local",
     "ops:healthcheck": "./scripts/healthcheck.sh",
     "ops:backup-db": "./scripts/backup-db.sh",
+    "ops:restore-db": "./scripts/restore-db.sh",
     "fix:tailwind-vars": "node scripts/fix-tailwind-color-vars.mjs",
     "fix:tailwind-vars:check": "node scripts/fix-tailwind-color-vars.mjs --check",
     "fix:all": "pnpm fix:tailwind-vars && pnpm format && pnpm lint:fix",

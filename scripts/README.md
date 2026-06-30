@@ -7,6 +7,7 @@ Scripts for the production-like Docker Compose runtime. They are safe to test lo
 - `deploy.sh <image-tag>`: backup, migrate, app swap, healthcheck, rollback on failed healthcheck.
 - `healthcheck.sh`: waits for the `app` container to become healthy, with optional HTTP fallback.
 - `backup-db.sh`: writes a compressed `pg_dump` locally and optionally copies it with `rclone`.
+- `restore-db.sh <backup.sql.gz>`: restores a compressed dump into the Compose Postgres service.
 
 ## Common variables
 
@@ -21,7 +22,9 @@ Scripts for the production-like Docker Compose runtime. They are safe to test lo
 | `DEPLOY_SKIP_BACKUP`        | `0`                       | Set `1` for local deploys without backup         |
 | `HEALTHCHECK_URL`           | empty                     | Optional HTTP healthcheck fallback               |
 | `BACKUP_DIR`                | `.backups/db`             | Local backup destination                         |
+| `BACKUP_RETENTION_DAYS`     | `30`                      | Local backup retention, `0` disables pruning     |
 | `RCLONE_REMOTE`             | empty                     | Optional remote backup destination               |
+| `RESTORE_ALLOW_NON_EMPTY`   | `0`                       | Set `1` to reset a non-empty DB before restore   |
 
 ## Local deploy smoke
 
@@ -50,6 +53,25 @@ If `RCLONE_REMOTE` is set, the same file is copied to that remote:
 
 ```bash
 RCLONE_REMOTE=hetzner-backup:middleware-db ./scripts/backup-db.sh
+```
+
+Local backup retention deletes `middleware-*.sql.gz` files older than `BACKUP_RETENTION_DAYS` in `BACKUP_DIR`. Set `BACKUP_RETENTION_DAYS=0` to disable local pruning.
+
+## Local restore
+
+Restore into a separate Compose project, not into the source DB:
+
+```bash
+COMPOSE_PROJECT_NAME=middleware-v2-restore-check docker compose -f docker-compose.prod.yml up -d postgres redis
+COMPOSE_PROJECT_NAME=middleware-v2-restore-check ./scripts/restore-db.sh .backups/test/middleware-YYYY-MM-DD-HHMMSS.sql.gz
+COMPOSE_PROJECT_NAME=middleware-v2-restore-check docker compose -f docker-compose.prod.yml --profile ops run --rm migrate
+COMPOSE_PROJECT_NAME=middleware-v2-restore-check docker compose -f docker-compose.prod.yml down -v
+```
+
+`restore-db.sh` refuses to restore into a non-empty DB by default. To intentionally reset the public schema first:
+
+```bash
+RESTORE_ALLOW_NON_EMPTY=1 ./scripts/restore-db.sh .backups/test/middleware-YYYY-MM-DD-HHMMSS.sql.gz
 ```
 
 ## VPS notes

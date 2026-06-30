@@ -750,10 +750,25 @@ Retention e operatività:
 
 ### 5. Backup e restore senza bucket reale
 
-- Preparare `backup-db.sh` usando `pg_dump`, gzip e destinazione `rclone` configurabile.
-- Preparare procedura restore su DB locale separato.
-- Testare restore da dump locale prima di collegare Object Storage reale.
-- Definire retention backup DB: lifecycle bucket o prune periodico.
+- [x] Preparare `backup-db.sh` usando `pg_dump`, gzip e destinazione `rclone` configurabile.
+- [x] Preparare procedura restore su DB locale separato con `scripts/restore-db.sh`.
+- [x] Testare restore da dump locale prima di collegare Object Storage reale.
+- [x] Definire retention backup DB: prune locale con `BACKUP_RETENTION_DAYS`, lifecycle bucket dopo.
+
+Dettagli implementati:
+
+- `backup-db.sh` salva dump compressi in `BACKUP_DIR`, applica retention locale e copia su `RCLONE_REMOTE` solo se configurato.
+- `restore-db.sh <backup.sql.gz>` avvia Postgres, rifiuta DB non vuoti di default, importa il dump e verifica tabelle minime.
+- Restore distruttivo intenzionale solo con `RESTORE_ALLOW_NON_EMPTY=1`, che resetta lo schema `public` prima dell'import.
+- Script npm aggiunto: `ops:restore-db`.
+
+Attività da fare dopo questa macro:
+
+- Configurare `rclone` reale sul VPS.
+- Creare bucket backup Hetzner e remote `hetzner-backup`.
+- Testare backup verso bucket reale e restore da dump scaricato dal bucket.
+- Definire lifecycle del bucket backup, ad esempio 30 o 60 giorni.
+- Salvare anche `/opt/middleware/.env`, compose e script fuori server, cifrati o nel password manager.
 
 ### 6. Media e CSP
 
