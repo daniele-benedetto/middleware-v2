@@ -1,4 +1,5 @@
 export { telemetryPolicy } from "@/lib/server/modules/telemetry/policy";
+export { telemetryRepository } from "@/lib/server/modules/telemetry/repository";
 export {
   analyticsTelemetryPayloadSchema,
   clientErrorTelemetryPayloadSchema,

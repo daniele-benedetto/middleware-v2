@@ -2,9 +2,15 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
+import { telemetryRepository } from "@/lib/server/modules/telemetry/repository";
 import { telemetryMetadataSchema } from "@/lib/server/modules/telemetry/schema";
 
-import type { ErrorLogSource, TelemetryMetadata } from "@/lib/server/modules/telemetry/schema";
+import type {
+  ClientErrorTelemetryPayload,
+  ErrorLogSource,
+  TelemetryCollectorPayload,
+  TelemetryMetadata,
+} from "@/lib/server/modules/telemetry/schema";
 
 const technicalPathPrefixes = ["/_next", "/api", "/cms"] as const;
 const technicalPaths = new Set(["/favicon.ico", "/robots.txt", "/sitemap.xml"]);
@@ -23,6 +29,28 @@ type ErrorFingerprintInput = {
   path?: string | null;
   routePath?: string | null;
   digest?: string | null;
+};
+
+type TelemetryRequestContext = {
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  country?: string | null;
+  method?: string | null;
+  requestId?: string | null;
+};
+
+type ServerErrorTelemetryInput = {
+  source: "server";
+  name?: string | null;
+  message: string;
+  digest?: string | null;
+  path?: string | null;
+  method?: string | null;
+  routePath?: string | null;
+  routeType?: string | null;
+  requestId?: string | null;
+  userAgent?: string | null;
+  metadata?: unknown;
 };
 
 function sha256(value: string) {
@@ -132,11 +160,153 @@ export function createErrorFingerprint({
   );
 }
 
+function truncate(value: string | null | undefined, maxLength: number) {
+  const normalizedValue = value ? normalizeWhitespace(value) : null;
+  return normalizedValue ? normalizedValue.slice(0, maxLength) : null;
+}
+
+function readCountry(value: string | null | undefined) {
+  const normalizedValue = value?.trim().toUpperCase();
+
+  if (!normalizedValue || normalizedValue.length !== 2) {
+    return null;
+  }
+
+  return normalizedValue;
+}
+
+function buildVisitorHash(context: TelemetryRequestContext) {
+  return deriveDailyVisitorHash({
+    ipAddress: context.ipAddress,
+    userAgent: context.userAgent,
+  });
+}
+
+async function recordAnalyticsPayload(
+  payload: Extract<TelemetryCollectorPayload, { type: "analytics" }>,
+  context: TelemetryRequestContext,
+) {
+  const path = normalizeTelemetryPath(payload.path);
+
+  if (shouldSkipTelemetryPath(path)) {
+    return;
+  }
+
+  await telemetryRepository.createAnalyticsEvent({
+    event: payload.event,
+    path,
+    referrer: normalizeTelemetryReferrer(payload.referrer),
+    country: readCountry(context.country),
+    visitorHash: buildVisitorHash(context),
+    metadata: sanitizeTelemetryMetadata(payload.metadata),
+  });
+}
+
+async function recordWebVitalPayload(
+  payload: Extract<TelemetryCollectorPayload, { type: "web-vital" }>,
+  context: TelemetryRequestContext,
+) {
+  const path = normalizeTelemetryPath(payload.path);
+
+  if (shouldSkipTelemetryPath(path)) {
+    return;
+  }
+
+  await telemetryRepository.createWebVital({
+    metricId: payload.metricId,
+    name: payload.name,
+    value: payload.value,
+    delta: payload.delta,
+    rating: payload.rating ?? null,
+    navigationType: truncate(payload.navigationType, 80),
+    path,
+    visitorHash: buildVisitorHash(context),
+  });
+}
+
+async function recordClientErrorPayload(
+  payload: ClientErrorTelemetryPayload,
+  context: TelemetryRequestContext,
+) {
+  const path = payload.path ? normalizeTelemetryPath(payload.path) : null;
+  const message = truncate(payload.message, 1000) ?? "Unknown client error";
+  const name = truncate(payload.name, 120);
+  const digest = truncate(payload.digest, 160);
+
+  await telemetryRepository.upsertErrorLog({
+    fingerprint: createErrorFingerprint({
+      source: payload.source,
+      name,
+      message,
+      path,
+      digest,
+    }),
+    source: payload.source,
+    name,
+    message,
+    digest,
+    path,
+    method: context.method,
+    requestId: context.requestId,
+    userAgent: truncate(context.userAgent, 500),
+    metadata: sanitizeTelemetryMetadata(payload.metadata),
+  });
+}
+
+export async function recordTelemetryPayload(
+  payload: TelemetryCollectorPayload,
+  context: TelemetryRequestContext,
+) {
+  if (payload.type === "analytics") {
+    await recordAnalyticsPayload(payload, context);
+    return;
+  }
+
+  if (payload.type === "web-vital") {
+    await recordWebVitalPayload(payload, context);
+    return;
+  }
+
+  await recordClientErrorPayload(payload, context);
+}
+
+export async function recordServerError(input: ServerErrorTelemetryInput) {
+  const path = input.path ? normalizeTelemetryPath(input.path) : null;
+  const routePath = input.routePath ? normalizeTelemetryPath(input.routePath) : null;
+  const message = truncate(input.message, 1000) ?? "Unknown server error";
+  const name = truncate(input.name, 120);
+  const digest = truncate(input.digest, 160);
+
+  await telemetryRepository.upsertErrorLog({
+    fingerprint: createErrorFingerprint({
+      source: input.source,
+      name,
+      message,
+      path,
+      routePath,
+      digest,
+    }),
+    source: input.source,
+    name,
+    message,
+    digest,
+    path,
+    method: truncate(input.method, 20),
+    routePath,
+    routeType: truncate(input.routeType, 80),
+    requestId: truncate(input.requestId, 200),
+    userAgent: truncate(input.userAgent, 500),
+    metadata: sanitizeTelemetryMetadata(input.metadata),
+  });
+}
+
 export const telemetryService = {
   createErrorFingerprint,
   deriveDailyVisitorHash,
   normalizeTelemetryPath,
   normalizeTelemetryReferrer,
+  recordServerError,
+  recordTelemetryPayload,
   sanitizeTelemetryMetadata,
   shouldSkipTelemetryPath,
 };
