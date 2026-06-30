@@ -5,6 +5,7 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { parseAudioChunks, type AudioChunk } from "@/lib/audio/audio-chunks";
 import { cmsMediaBlobAccess, extractCmsMediaPathname } from "@/lib/media/blob";
+import { ensureNonEmptyStaticParams } from "@/lib/public/server/static-params";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicArticlesService } from "@/lib/server/modules/articles/service/public";
 
@@ -107,6 +108,11 @@ export async function getPublicArticleListenStaticParams() {
   cacheLife("hours");
   cacheTag(PUBLIC_ARTICLE_LISTEN_PAGE_CACHE_TAG);
 
-  const articles = await publicArticlesService.listWithAudio();
-  return articles.map((article) => ({ slug: article.slug }));
+  try {
+    const articles = await publicArticlesService.listWithAudio();
+    return ensureNonEmptyStaticParams(articles.map((article) => ({ slug: article.slug })));
+  } catch (error) {
+    console.error("public.getPublicArticleListenStaticParams audio articles failed", { error });
+    return ensureNonEmptyStaticParams([]);
+  }
 }

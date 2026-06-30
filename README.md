@@ -44,6 +44,39 @@ pnpm prisma:generate
 
 Current setup runs with a single database as source of truth (Vercel auto-deploy).
 
+## Local self-hosting stack
+
+The repository includes a Docker-based infrastructure stack for self-hosting preparation. It runs Postgres, Redis, and MinIO as an S3-compatible local object store. The Next.js app runs locally with `pnpm dev` against those services.
+
+```bash
+pnpm docker:infra:up
+pnpm prisma:migrate:deploy
+pnpm auth:bootstrap-admin
+pnpm dev
+```
+
+Useful endpoints:
+
+- App: `http://localhost:3000`
+- Postgres: `localhost:5432`
+- Redis: `localhost:6379`
+- MinIO API: `http://localhost:9000`
+- MinIO Console: `http://localhost:9001`
+
+Local MinIO credentials:
+
+- Access key: `minioadmin`
+- Secret key: `minioadmin`
+- Bucket: `middleware-media`
+
+The current local `.env` should point to the Docker services on `localhost`. The previous remote `.env` can be kept as `.env.remote-backup`, which is ignored by git.
+
+Stop the stack:
+
+```bash
+pnpm docker:infra:down
+```
+
 Production note:
 
 - Redis-backed rate limiting is required in production.
