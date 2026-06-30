@@ -21,7 +21,7 @@ Regola operativa: il dominio pubblico si attiva solo dopo verifica su hostname t
 | Baseline locale        | Fatto   | App, DB, Redis, MinIO, S3 adapter, seed, smoke, test, build   |
 | Docker prod image      | Fatto   | `docker compose build app` completato e smoke container OK    |
 | Decisioni pre-acquisto | Fatto   | Dominio, Cloudflare, Tunnel, osservabilità in-app, no servizi |
-| Pipeline CI/CD         | Da fare | GitHub Action build ARM, push GHCR app+migrator, deploy SSH   |
+| Pipeline CI/CD         | Fatto   | Workflow pronto, build ARM su `main`, deploy SSH disattivato  |
 | VPS Hetzner            | Da fare | CAX21 ARM 8 GB                                                |
 | Object Storage Hetzner | Da fare | Bucket reale e credenziali                                    |
 | Cloudflare Tunnel      | Da fare | VPS e zona Cloudflare                                         |
@@ -481,11 +481,29 @@ Attività da fare dopo questa macro:
 
 ### 2. Pipeline CI/CD pronta ma non attiva
 
-- Creare workflow GitHub con job `check` su PR verso `main`.
-- Preparare job build ARM per app e migrator, taggati con SHA.
-- Preparare deploy SSH dietro secret, anche se non ancora eseguibile senza VPS.
-- Evitare tag `latest` come sorgente di verità: `IMAGE_TAG` deve restare lo SHA.
-- Documentare rollback manuale per SHA precedente.
+- [x] Creare workflow GitHub con job `check` su PR verso `main`.
+- [x] Preparare job build ARM per app e migrator, taggati con SHA.
+- [x] Preparare deploy SSH dietro secret, anche se non ancora eseguibile senza VPS.
+- [x] Evitare tag `latest` come sorgente di verità: `IMAGE_TAG` deve restare lo SHA.
+- [x] Documentare rollback manuale per SHA precedente: il deploy reale dovrà accettare uno SHA e aggiornare `IMAGE_TAG`; per tornare indietro si rilancia `deploy.sh <sha-precedente>` o si imposta `IMAGE_TAG` sul VPS e si fa `docker compose up -d app`.
+
+Dettagli implementati:
+
+- Workflow unico `.github/workflows/deploy.yml`.
+- `check` gira su PR verso `main`, push a `main` e manual dispatch.
+- `build-images` gira solo su push a `main`, come scelta operativa pre-acquisto.
+- Immagine app: `ghcr.io/${{ github.repository }}:${{ github.sha }}`.
+- Immagine migrator: `ghcr.io/${{ github.repository }}-migrator:${{ github.sha }}`.
+- Deploy SSH presente ma disattivato finché `vars.ENABLE_PRODUCTION_DEPLOY` non vale `true`.
+
+Attività da fare dopo questa macro:
+
+- Configurare `ENABLE_PRODUCTION_DEPLOY=true` solo quando VPS, `/opt/middleware` e script deploy sono pronti.
+- Configurare i secret GitHub `SSH_HOST`, `SSH_USER`, `SSH_KEY`.
+- Decidere se GHCR resta privato; se sì, creare `GHCR_PAT` read-only sul VPS.
+- Adeguare compose/script VPS ai nomi GHCR reali `ghcr.io/daniele-benedetto/middleware-v2` e `ghcr.io/daniele-benedetto/middleware-v2-migrator`.
+- Implementare `scripts/deploy.sh`, `scripts/healthcheck.sh`, `scripts/backup-db.sh` nella macro script operativi.
+- Verificare su GitHub che PR esegua solo `check`, push a `main` esegua `check` + `build-images`, e `deploy` resti skipped.
 
 ### 3. Script operativi testabili in locale
 
