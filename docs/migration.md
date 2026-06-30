@@ -18,176 +18,15 @@ Regola operativa: il dominio pubblico si attiva solo dopo verifica su hostname t
 | Backup/restore reale   | Da fare    | Su bucket reale prima del dominio pubblico                |
 | Produzione             | Da fare    | Solo dopo hostname temporaneo, smoke e restore verificati |
 
-## Decisioni operative
-
-| Area                | Decisione                                              |
-| ------------------- | ------------------------------------------------------ |
-| Dominio canonico    | `middleware.media`                                     |
-| Redirect produzione | `www.middleware.media` -> `middleware.media`           |
-| Ambienti            | Solo produzione, nessuno staging                       |
-| Test                | Locale con Docker                                      |
-| Branch produzione   | `main`                                                 |
-| Orchestrazione      | Docker Compose diretto, nessun PaaS                    |
-| Deploy              | GitHub Action su push a `main`                         |
-| CI gate             | `pnpm check:all` sulle PR verso `main`                 |
-| Build immagini      | CI su runner ARM nativo, push app+migrator su GHCR     |
-| Registry immagini   | GHCR                                                   |
-| Rollback            | Redeploy dello SHA precedente con `scripts/deploy.sh`  |
-| Ingress/TLS         | Cloudflare Tunnel, nessuna porta 80/443 aperta         |
-| DNS/Registrar       | Cloudflare, dominio trasferito su Cloudflare Registrar |
-| Email transazionale | Non prevista                                           |
-| Analytics           | In-app su Postgres, cookieless con salt giornaliero    |
-| Performance         | Web Vitals in-app                                      |
-| Error tracking      | In-app su Postgres via `onRequestError` + boundary     |
-| Alerting            | Opzionale via `ALERT_WEBHOOK_URL`                      |
-| Uptime              | GitHub Action schedulata su `/api/health`              |
-| Backup DB           | `pg_dump` schedulato su bucket Hetzner separato        |
-| Backup media        | Versioning bucket media                                |
-| Admin bootstrap     | Credenziali produzione scelte manualmente              |
-
-### Confine API pubblico/CMS
-
-- tRPC e il trasporto applicativo per il CMS e per le superfici autenticate/interattive: sessione, ruoli, mutazioni, policy, validazione input/output e dashboard amministrative.
-- Il public non deve usare tRPC come data layer principale. Le pagine pubbliche leggono dati server-side tramite loader cache-safe in `lib/public/server/*`, con Cache Components (`"use cache"`, `cacheLife`, `cacheTag`) e revalidation tramite tag quando i flussi CMS pubblicano o ritirano contenuti.
-- Le route HTTP non-tRPC restano ammesse solo per casi tecnici che non sono API applicativa CMS: auth, healthcheck, telemetry fire-and-forget, media/blob proxy e integrazioni simili.
-- `/api/telemetry` resta HTTP perche deve supportare `sendBeacon`, fallback `fetch keepalive`, risposta `204`, payload anonimo/cookieless e nessun contratto RPC interattivo.
-- Obiettivo: public SEO-friendly e cacheabile; CMS tipizzato, autenticato e governato da policy tRPC.
-
-Nota migrazioni: l'immagine Next standalone non e un ambiente operativo completo per Prisma. Le migration di produzione girano dal target `migrate`, che include workspace, Prisma CLI, schema, cartella `prisma/migrations` e script operativi come `auth:bootstrap-admin`.
-
-Nota ARM: lo stack target e `linux/arm64`. La build immagini avviene su runner ARM nativo, senza QEMU.
-
-## Stack target
-
-- **VPS**: Hetzner CAX21, ARM Ampere, 4 vCPU, 8 GB RAM, 80 GB NVMe.
-- **Runtime**: Docker Compose diretto sul VPS.
-- **App**: Next.js standalone deployata da `main`.
-- **DB**: Postgres in container.
-- **Rate limit**: Redis in container.
-- **Media**: Hetzner Object Storage S3-compatible, bucket privato con versioning.
-- **Ingress/TLS**: Cloudflare Tunnel verso `app:3000` nella rete Compose.
-- **CI/CD**: GitHub Actions, immagini app+migrator su GHCR, deploy via SSH.
-- **Osservabilita**: telemetry tables su Postgres, dashboard CMS, uptime da GitHub Actions.
-
-## Env produzione
-
-### Env applicative
-
-| Env                        | Produzione                                              |
-| -------------------------- | ------------------------------------------------------- |
-| `NODE_ENV`                 | `production`                                            |
-| `NEXT_PUBLIC_SITE_URL`     | `https://middleware.media`                              |
-| `BETTER_AUTH_URL`          | `https://middleware.media`                              |
-| `BETTER_AUTH_SECRET`       | `openssl rand -base64 48`                               |
-| `DATABASE_URL`             | `postgresql://middleware:PASS@postgres:5432/middleware` |
-| `POSTGRES_URL`             | Uguale a `DATABASE_URL`                                 |
-| `PRISMA_DATABASE_URL`      | Uguale a `DATABASE_URL`                                 |
-| `REDIS_URL`                | `redis://redis:6379`                                    |
-| `S3_ENDPOINT`              | Da bucket Hetzner                                       |
-| `S3_REGION`                | Da bucket Hetzner                                       |
-| `S3_BUCKET`                | `middleware-media-prod`                                 |
-| `S3_ACCESS_KEY`            | Access key dedicata produzione                          |
-| `S3_SECRET_KEY`            | Secret key dedicata produzione                          |
-| `S3_FORCE_PATH_STYLE`      | Valore richiesto da endpoint Hetzner                    |
-| `ANALYTICS_SALT_SECRET`    | `openssl rand -base64 32`                               |
-| `BOOTSTRAP_ADMIN_EMAIL`    | Admin produzione                                        |
-| `BOOTSTRAP_ADMIN_PASSWORD` | Password manager                                        |
-| `BOOTSTRAP_ADMIN_NAME`     | Nome admin produzione                                   |
-| `AUDIT_LOG_RETENTION_DAYS` | `365`                                                   |
-| `TELEMETRY_RETENTION_DAYS` | `90`                                                    |
-| `ALERT_WEBHOOK_URL`        | Opzionale                                               |
-
-Materiali locali gia generati fuori repository:
-
-- Chiave SSH deploy: `~/.ssh/middleware-prod-deploy`.
-- Public key deploy da installare sul VPS: `~/.ssh/middleware-prod-deploy.pub`.
-- Segreti locali temporanei: `~/.middleware-v2/prod-secrets.env` con permessi `600`.
-- GitHub CLI autenticata come `daniele-benedetto`.
-- `hcloud` e `cloudflared` non risultano disponibili da questa macchina; verificare Hetzner e Cloudflare via browser o dopo installazione CLI.
-
-Matrice segreti produzione:
-
-| Nome                       | Stato pre-acquisto  | Note                                          |
-| -------------------------- | ------------------- | --------------------------------------------- |
-| `BETTER_AUTH_SECRET`       | Generato localmente | Copiare in password manager e `.env` VPS      |
-| `ANALYTICS_SALT_SECRET`    | Generato localmente | Copiare in password manager e `.env` VPS      |
-| `POSTGRES_PASSWORD`        | Generato localmente | Copiare in password manager e `.env` VPS      |
-| `BOOTSTRAP_ADMIN_EMAIL`    | Da decidere         | Admin produzione                              |
-| `BOOTSTRAP_ADMIN_PASSWORD` | Generato localmente | Copiare in password manager e `.env` VPS      |
-| `BOOTSTRAP_ADMIN_NAME`     | Da decidere         | Admin produzione                              |
-| `GHCR_PAT`                 | Da creare           | PAT read-only `read:packages` se GHCR privato |
-| `CLOUDFLARE_TUNNEL_TOKEN`  | Dopo tunnel         | `.env` VPS                                    |
-| Credenziali S3             | Dopo bucket         | Access key dedicata produzione                |
-
-### Env infrastrutturali
-
-Restano sul VPS o nei secret GitHub, mai nel repository.
-
-| Env / Secret                | Dove vive     | Uso                            |
-| --------------------------- | ------------- | ------------------------------ |
-| `IMAGE_TAG`                 | `.env` VPS    | SHA immagine corrente          |
-| `APP_IMAGE_REPOSITORY`      | `.env` VPS    | Repo GHCR app                  |
-| `MIGRATOR_IMAGE_REPOSITORY` | `.env` VPS    | Repo GHCR migrator             |
-| `CLOUDFLARE_TUNNEL_TOKEN`   | `.env` VPS    | Avvio `cloudflared`            |
-| `POSTGRES_PASSWORD`         | `.env` VPS    | Container Postgres             |
-| `POSTGRES_USER`             | `.env` VPS    | Utente DB, valore `middleware` |
-| `GHCR_USER`                 | `.env` VPS    | Login GHCR dal VPS             |
-| `GHCR_PAT`                  | `.env` VPS    | PAT read-only `read:packages`  |
-| `RCLONE_REMOTE`             | `.env` VPS    | Remote backup DB               |
-| `SSH_HOST`                  | Secret GitHub | Target deploy                  |
-| `SSH_USER`                  | Secret GitHub | Utente `deploy`                |
-| `SSH_KEY`                   | Secret GitHub | Chiave privata deploy dedicata |
-
-Nota: il `GITHUB_TOKEN` automatico vale solo nel runner. Per il `pull` dal VPS serve un PAT read-only se il package GHCR resta privato.
-
-## Stato pre-acquisto
-
-Il repository e pronto per il preflight finale: runtime Docker production-like, pipeline CI/CD, script operativi, backup/restore locale, telemetry collector, aggregazioni, retention, router tRPC admin-only e pagine CMS telemetry sono gia disponibili. Le attivita aperte prima degli acquisti sono solo quelle sotto.
-
-### Da preparare fuori dal codice prima degli acquisti
+## Prossime azioni pre-acquisto
 
 - Verificare accesso a Hetzner Cloud, Hetzner Object Storage e Cloudflare.
 - Copiare i segreti generati localmente nel password manager.
-- Decidere i valori admin produzione: `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_NAME`.
-- Preparare il PAT GHCR read-only se le immagini restano private.
+- Decidere `BOOTSTRAP_ADMIN_EMAIL` e `BOOTSTRAP_ADMIN_NAME`.
+- Preparare `GHCR_PAT` read-only se GHCR resta privato.
 - Preparare il piano transfer dominio su Cloudflare Registrar.
-
-### Da fare solo dopo gli acquisti
-
-- Creare VPS Hetzner CAX21 Ubuntu 24.04 arm64.
-- Creare bucket media `middleware-media-prod` privato con versioning e lifecycle.
-- Creare bucket backup DB separato.
-- Generare credenziali S3 produzione.
-- Configurare Cloudflare zone, transfer registrar e tunnel.
-- Configurare `/opt/middleware` con compose, `.env` e script.
-- Configurare GitHub secrets e abilitare `ENABLE_PRODUCTION_DEPLOY=true` solo a VPS pronto.
-- Testare backup su bucket reale e restore su DB separato.
-- Verificare rollback reale da SHA GHCR precedente.
-
-## Osservabilita in-app
-
-Tutto vive dentro Next.js e Postgres. Niente servizi esterni, niente cookie analytics, niente IP grezzi salvati.
-
-Principi:
-
-- Raccolta browser fire-and-forget: `navigator.sendBeacon`, fallback `fetch` con `keepalive: true`.
-- Collector veloce: valida, normalizza, scrive e torna `204`.
-- Nessun identificatore persistente: visitor hash giornaliero, senza cookie/localStorage/fingerprint stabile.
-- Nessun dato sensibile persistito: niente IP grezzo, cookie, authorization header, body, password, token, session id o contenuti editoriali completi.
-- CMS su aggregati, non scansioni raw non limitate.
-- Retention attiva dal primo deploy.
-- Errori osservabilita non bloccanti per l'esperienza utente.
-
-### Criteri di accettazione
-
-- Una visita pubblica genera al massimo un `page_view` per navigazione reale e non blocca render o navigazione.
-- Nessuna riga telemetry contiene IP grezzo, cookie, authorization header, session token o body request.
-- `/cms/analytics` legge aggregati e mostra visite, visitatori, top pagine, referrer e paesi.
-- `/cms/performance` mostra p75/p95 per pagina senza query raw pesanti.
-- Un errore server di test crea o aggiorna un gruppo in `ErrorLog`.
-- Un errore intercettato da boundary arriva in `/cms/errors`.
-- `telemetry:jobs` aggiorna aggregati e cancella raw oltre retention.
-- `pnpm check:all` resta verde.
+- Verificare localmente l'osservabilita CMS.
+- Rieseguire il gate locale pre-acquisto.
 
 ## Gate locale pre-acquisto
 
@@ -224,18 +63,158 @@ Ultimo esito locale verificato 2026-06-30:
 - Nota: le build Docker completano ma emettono log `P1001` durante prerender quando il DB build-time placeholder non e raggiungibile. Non blocca il gate, ma va considerato rumore operativo atteso o da ridurre in seguito.
 - Da rieseguire dopo il completamento delle pagine CMS telemetry.
 
-## Fasi operative
+## Decisioni operative
 
-### Fase A - Preflight senza acquisti
+| Area                | Decisione                                              |
+| ------------------- | ------------------------------------------------------ |
+| Dominio canonico    | `middleware.media`                                     |
+| Redirect produzione | `www.middleware.media` -> `middleware.media`           |
+| Ambienti            | Solo produzione, nessuno staging                       |
+| Test                | Locale con Docker                                      |
+| Branch produzione   | `main`                                                 |
+| Orchestrazione      | Docker Compose diretto, nessun PaaS                    |
+| Deploy              | GitHub Action su push a `main`                         |
+| CI gate             | `pnpm check:all` sulle PR verso `main`                 |
+| Build immagini      | CI su runner ARM nativo, push app+migrator su GHCR     |
+| Registry immagini   | GHCR                                                   |
+| Rollback            | Redeploy dello SHA precedente con `scripts/deploy.sh`  |
+| Ingress/TLS         | Cloudflare Tunnel, nessuna porta 80/443 aperta         |
+| DNS/Registrar       | Cloudflare, dominio trasferito su Cloudflare Registrar |
+| Email transazionale | Non prevista                                           |
+| Analytics           | In-app su Postgres, cookieless con salt giornaliero    |
+| Performance         | Web Vitals in-app                                      |
+| Error tracking      | In-app su Postgres via `onRequestError` + boundary     |
+| Alerting            | Opzionale via `ALERT_WEBHOOK_URL`                      |
+| Uptime              | GitHub Action schedulata su `/api/health`              |
+| Backup DB           | `pg_dump` schedulato su bucket Hetzner separato        |
+| Backup media        | Versioning bucket media                                |
+| Admin bootstrap     | Credenziali produzione scelte manualmente              |
 
-- [ ] Verificare accesso a Hetzner Cloud, Hetzner Object Storage e Cloudflare.
-- [ ] Copiare i segreti generati localmente nel password manager.
-- [ ] Decidere `BOOTSTRAP_ADMIN_EMAIL` e `BOOTSTRAP_ADMIN_NAME`.
-- [ ] Preparare `GHCR_PAT` read-only se GHCR resta privato.
-- [ ] Piano transfer dominio su Cloudflare Registrar pronto.
-- [ ] Osservabilita CMS verificata localmente.
+### Confine API pubblico/CMS
 
-### Fase B - Acquisti e risorse
+- tRPC e il trasporto applicativo per il CMS e per le superfici autenticate/interattive: sessione, ruoli, mutazioni, policy, validazione input/output e dashboard amministrative.
+- Il public non deve usare tRPC come data layer principale. Le pagine pubbliche leggono dati server-side tramite loader cache-safe in `lib/public/server/*`, con Cache Components (`"use cache"`, `cacheLife`, `cacheTag`) e revalidation tramite tag quando i flussi CMS pubblicano o ritirano contenuti.
+- Le route HTTP non-tRPC restano ammesse solo per casi tecnici che non sono API applicativa CMS: auth, healthcheck, telemetry fire-and-forget, media/blob proxy e integrazioni simili.
+- `/api/telemetry` resta HTTP perche deve supportare `sendBeacon`, fallback `fetch keepalive`, risposta `204`, payload anonimo/cookieless e nessun contratto RPC interattivo.
+- Obiettivo: public SEO-friendly e cacheabile; CMS tipizzato, autenticato e governato da policy tRPC.
+
+### Note runtime
+
+- L'immagine Next standalone non e un ambiente operativo completo per Prisma. Le migration di produzione girano dal target `migrate`, che include workspace, Prisma CLI, schema, cartella `prisma/migrations` e script operativi come `auth:bootstrap-admin`.
+- Lo stack target e `linux/arm64`. La build immagini avviene su runner ARM nativo, senza QEMU.
+
+## Stack target
+
+- **VPS**: Hetzner CAX21, ARM Ampere, 4 vCPU, 8 GB RAM, 80 GB NVMe.
+- **Runtime**: Docker Compose diretto sul VPS.
+- **App**: Next.js standalone deployata da `main`.
+- **DB**: Postgres in container.
+- **Rate limit**: Redis in container.
+- **Media**: Hetzner Object Storage S3-compatible, bucket privato con versioning.
+- **Ingress/TLS**: Cloudflare Tunnel verso `app:3000` nella rete Compose.
+- **CI/CD**: GitHub Actions, immagini app+migrator su GHCR, deploy via SSH.
+- **Osservabilita**: telemetry tables su Postgres, dashboard CMS, uptime da GitHub Actions.
+
+## Env produzione
+
+### Env applicative
+
+| Env                        | Produzione                                              |
+| -------------------------- | ------------------------------------------------------- |
+| `NODE_ENV`                 | `production`                                            |
+| `NEXT_PUBLIC_SITE_URL`     | `https://middleware.media`                              |
+| `BETTER_AUTH_URL`          | `https://middleware.media`                              |
+| `BETTER_AUTH_SECRET`       | Segreto produzione                                      |
+| `DATABASE_URL`             | `postgresql://middleware:PASS@postgres:5432/middleware` |
+| `POSTGRES_URL`             | Uguale a `DATABASE_URL`                                 |
+| `PRISMA_DATABASE_URL`      | Uguale a `DATABASE_URL`                                 |
+| `REDIS_URL`                | `redis://redis:6379`                                    |
+| `S3_ENDPOINT`              | Da bucket Hetzner                                       |
+| `S3_REGION`                | Da bucket Hetzner                                       |
+| `S3_BUCKET`                | `middleware-media-prod`                                 |
+| `S3_ACCESS_KEY`            | Access key dedicata produzione                          |
+| `S3_SECRET_KEY`            | Secret key dedicata produzione                          |
+| `S3_FORCE_PATH_STYLE`      | Valore richiesto da endpoint Hetzner                    |
+| `ANALYTICS_SALT_SECRET`    | Segreto produzione                                      |
+| `BOOTSTRAP_ADMIN_EMAIL`    | Admin produzione                                        |
+| `BOOTSTRAP_ADMIN_PASSWORD` | Password manager                                        |
+| `BOOTSTRAP_ADMIN_NAME`     | Nome admin produzione                                   |
+| `AUDIT_LOG_RETENTION_DAYS` | `365`                                                   |
+| `TELEMETRY_RETENTION_DAYS` | `90`                                                    |
+| `ALERT_WEBHOOK_URL`        | Opzionale                                               |
+
+### Env infrastrutturali
+
+Restano sul VPS o nei secret GitHub, mai nel repository.
+
+| Env / Secret                | Dove vive     | Uso                            |
+| --------------------------- | ------------- | ------------------------------ |
+| `IMAGE_TAG`                 | `.env` VPS    | SHA immagine corrente          |
+| `APP_IMAGE_REPOSITORY`      | `.env` VPS    | Repo GHCR app                  |
+| `MIGRATOR_IMAGE_REPOSITORY` | `.env` VPS    | Repo GHCR migrator             |
+| `CLOUDFLARE_TUNNEL_TOKEN`   | `.env` VPS    | Avvio `cloudflared`            |
+| `POSTGRES_PASSWORD`         | `.env` VPS    | Container Postgres             |
+| `POSTGRES_USER`             | `.env` VPS    | Utente DB, valore `middleware` |
+| `GHCR_USER`                 | `.env` VPS    | Login GHCR dal VPS             |
+| `GHCR_PAT`                  | `.env` VPS    | PAT read-only `read:packages`  |
+| `RCLONE_REMOTE`             | `.env` VPS    | Remote backup DB               |
+| `SSH_HOST`                  | Secret GitHub | Target deploy                  |
+| `SSH_USER`                  | Secret GitHub | Utente `deploy`                |
+| `SSH_KEY`                   | Secret GitHub | Chiave privata deploy dedicata |
+
+Nota: il `GITHUB_TOKEN` automatico vale solo nel runner. Per il `pull` dal VPS serve un PAT read-only se il package GHCR resta privato.
+
+## Segreti e materiali locali
+
+### Materiali locali gia pronti
+
+- Chiave SSH deploy: `~/.ssh/middleware-prod-deploy`.
+- Public key deploy da installare sul VPS: `~/.ssh/middleware-prod-deploy.pub`.
+- Segreti locali temporanei: `~/.middleware-v2/prod-secrets.env` con permessi `600`.
+- GitHub CLI autenticata come `daniele-benedetto`.
+- `hcloud` e `cloudflared` non risultano disponibili da questa macchina; verificare Hetzner e Cloudflare via browser o dopo installazione CLI.
+
+### Matrice segreti produzione
+
+| Nome                       | Stato pre-acquisto  | Note                                          |
+| -------------------------- | ------------------- | --------------------------------------------- |
+| `BETTER_AUTH_SECRET`       | Generato localmente | Copiare in password manager e `.env` VPS      |
+| `ANALYTICS_SALT_SECRET`    | Generato localmente | Copiare in password manager e `.env` VPS      |
+| `POSTGRES_PASSWORD`        | Generato localmente | Copiare in password manager e `.env` VPS      |
+| `BOOTSTRAP_ADMIN_EMAIL`    | Da decidere         | Admin produzione                              |
+| `BOOTSTRAP_ADMIN_PASSWORD` | Generato localmente | Copiare in password manager e `.env` VPS      |
+| `BOOTSTRAP_ADMIN_NAME`     | Da decidere         | Admin produzione                              |
+| `GHCR_PAT`                 | Da creare           | PAT read-only `read:packages` se GHCR privato |
+| `CLOUDFLARE_TUNNEL_TOKEN`  | Dopo tunnel         | `.env` VPS                                    |
+| Credenziali S3             | Dopo bucket         | Access key dedicata produzione                |
+
+## Osservabilita in-app
+
+### Principi
+
+- Tutto vive dentro Next.js e Postgres: niente servizi esterni, niente cookie analytics, niente IP grezzi salvati.
+- Raccolta browser fire-and-forget: `navigator.sendBeacon`, fallback `fetch` con `keepalive: true`.
+- Collector veloce: valida, normalizza, scrive e torna `204`.
+- Nessun identificatore persistente: visitor hash giornaliero, senza cookie/localStorage/fingerprint stabile.
+- Nessun dato sensibile persistito: niente IP grezzo, cookie, authorization header, body, password, token, session id o contenuti editoriali completi.
+- CMS su aggregati, non scansioni raw non limitate.
+- Retention attiva dal primo deploy.
+- Errori osservabilita non bloccanti per l'esperienza utente.
+
+### Criteri di accettazione
+
+- Una visita pubblica genera al massimo un `page_view` per navigazione reale e non blocca render o navigazione.
+- Nessuna riga telemetry contiene IP grezzo, cookie, authorization header, session token o body request.
+- `/cms/analytics` legge aggregati e mostra visite, visitatori, top pagine, referrer e paesi.
+- `/cms/performance` mostra p75/p95 per pagina senza query raw pesanti.
+- Un errore server di test crea o aggiorna un gruppo in `ErrorLog`.
+- Un errore intercettato da boundary arriva in `/cms/errors`.
+- `telemetry:jobs` aggiorna aggregati e cancella raw oltre retention.
+- `pnpm check:all` resta verde.
+
+## Roadmap post-acquisto
+
+### 1. Acquisti e risorse
 
 - [ ] Creare VPS Hetzner CAX21 Ubuntu 24.04 LTS arm64.
 - [ ] Attivare snapshot automatici VPS.
@@ -244,7 +223,7 @@ Ultimo esito locale verificato 2026-06-30:
 - [ ] Generare access key S3 dedicate produzione.
 - [ ] Annotare endpoint, region e valore corretto di `S3_FORCE_PATH_STYLE`.
 
-### Fase C - VPS, Docker e Tunnel
+### 2. VPS, Docker e Tunnel
 
 - [ ] Creare utente non-root `deploy`.
 - [ ] Hardening SSH: no root login, no password auth, `fail2ban`.
@@ -257,7 +236,7 @@ Ultimo esito locale verificato 2026-06-30:
 - [ ] Unit systemd per `docker compose up -d` al boot.
 - [ ] Avviare lo stack e verificare `cloudflared` healthy.
 
-Gate fase C:
+Gate fase 2:
 
 - Docker attivo e compose valido.
 - Tunnel connesso in Cloudflare.
@@ -265,7 +244,7 @@ Gate fase C:
 - Nessuna porta web aperta.
 - VPS autenticato a GHCR.
 
-### Fase D - Deploy app e CI
+### 3. Deploy app e CI
 
 - [ ] Configurare i secret GitHub: `SSH_HOST`, `SSH_USER`, `SSH_KEY`.
 - [ ] Configurare `.env` produzione sul VPS.
@@ -276,7 +255,7 @@ Gate fase C:
 - [ ] Eseguire `auth:bootstrap-admin` dal servizio `migrate`.
 - [ ] Verificare app sull'hostname temporaneo.
 
-Gate fase D:
+Gate fase 3:
 
 - App HTTPS raggiungibile sull'hostname temporaneo.
 - Login CMS funziona.
@@ -285,7 +264,7 @@ Gate fase D:
 - Redis/rate limit funzionano in production mode.
 - Rollback per SHA verificato almeno una volta.
 
-### Fase E - Osservabilita e backup
+### 4. Osservabilita e backup
 
 - [ ] Verificare eventi analytics reali.
 - [ ] Verificare Web Vitals reali.
@@ -297,7 +276,7 @@ Gate fase D:
 - [ ] Opzionale: collegare `ALERT_WEBHOOK_URL`.
 - [ ] Attivare workflow uptime.
 
-Gate fase E:
+Gate fase 4:
 
 - Analytics, Web Vitals ed errori visibili nel CMS.
 - Retention telemetria attiva.
@@ -305,7 +284,7 @@ Gate fase E:
 - Backup DB schedulato e restore testato.
 - Uptime check attivo.
 
-### Fase F - Go-live pubblico
+### 5. Go-live pubblico
 
 - [ ] Configurare public hostname `middleware.media`.
 - [ ] Configurare redirect `www` -> apex.
@@ -313,7 +292,7 @@ Gate fase E:
 - [ ] Smoke produzione completo.
 - [ ] Verificare backup schedulati.
 
-Gate fase F:
+Gate fase 5:
 
 - Produzione HTTPS verde via tunnel.
 - CMS accessibile solo ad admin/editor.
@@ -322,7 +301,7 @@ Gate fase F:
 - Sitemap, robots, 404 e 500 verificati.
 - Redirect `www` -> apex verificato.
 
-### Fase G - Post go-live
+### 6. Post go-live
 
 - [ ] Monitorare log container e metriche server nelle prime 48 ore.
 - [ ] Verificare analytics, Web Vitals ed errori nel CMS.
