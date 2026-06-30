@@ -1,5 +1,6 @@
 const telemetryRepositoryMock = vi.hoisted(() => ({
   countErrorLogs: vi.fn(),
+  countDistinctAnalyticsVisitors: vi.fn(),
   createAnalyticsEvent: vi.fn(),
   createWebVital: vi.fn(),
   getErrorLogById: vi.fn(),
@@ -209,6 +210,7 @@ describe("telemetry service helpers", () => {
   });
 
   it("summarizes analytics aggregates for CMS", async () => {
+    telemetryRepositoryMock.countDistinctAnalyticsVisitors.mockResolvedValue(7);
     telemetryRepositoryMock.listAnalyticsAggregates.mockResolvedValue([
       {
         date: new Date("2026-06-30T00:00:00.000Z"),
@@ -232,11 +234,48 @@ describe("telemetry service helpers", () => {
 
     const result = await telemetryService.getAnalyticsSummary({ days: 30 });
 
-    expect(result.totals).toEqual({ views: 15, visitors: 11 });
+    expect(result.totals).toEqual({ views: 15, visitors: 7 });
     expect(result.viewsByDay).toEqual([{ date: "2026-06-30", value: 15 }]);
     expect(result.topPages[0]).toEqual({ label: "/", value: 10 });
     expect(result.topReferrers).toEqual([{ label: "search.example.com", value: 5 }]);
     expect(result.topCountries).toEqual([{ label: "IT", value: 15 }]);
+  });
+
+  it("does not sum distinct visitors across aggregate dimensions", async () => {
+    telemetryRepositoryMock.countDistinctAnalyticsVisitors.mockResolvedValue(1);
+    telemetryRepositoryMock.listAnalyticsAggregates.mockResolvedValue([
+      {
+        date: new Date("2026-06-30T00:00:00.000Z"),
+        event: "page_view",
+        path: "/",
+        referrer: "",
+        country: "",
+        views: 3,
+        visitors: 1,
+      },
+      {
+        date: new Date("2026-06-30T00:00:00.000Z"),
+        event: "page_view",
+        path: "/uscite",
+        referrer: "",
+        country: "",
+        views: 2,
+        visitors: 1,
+      },
+      {
+        date: new Date("2026-06-30T00:00:00.000Z"),
+        event: "page_view",
+        path: "/articoli/test",
+        referrer: "",
+        country: "",
+        views: 1,
+        visitors: 1,
+      },
+    ]);
+
+    const result = await telemetryService.getAnalyticsSummary({ days: 30 });
+
+    expect(result.totals).toEqual({ views: 6, visitors: 1 });
   });
 
   it("summarizes performance aggregates for CMS", async () => {

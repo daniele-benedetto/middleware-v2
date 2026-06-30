@@ -102,6 +102,20 @@ export const telemetryRepository = {
     });
   },
 
+  async countDistinctAnalyticsVisitors(days: number) {
+    const result = await prisma.analyticsEvent.groupBy({
+      by: ["visitorHash"],
+      where: {
+        createdAt: { gte: getDateThreshold(days) },
+      },
+      _count: {
+        visitorHash: true,
+      },
+    });
+
+    return result.length;
+  },
+
   async listWebVitalAggregates(days: number) {
     return prisma.webVitalDailyAggregate.findMany({
       where: {

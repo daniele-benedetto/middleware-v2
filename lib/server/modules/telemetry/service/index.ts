@@ -280,18 +280,18 @@ function toErrorLogDetailDto(record: ErrorLogRecord): TelemetryErrorLogDetailDto
   };
 }
 
-function summarizeAnalytics(records: AnalyticsAggregateRecord[]): TelemetryAnalyticsSummaryDto {
+function summarizeAnalytics(
+  records: AnalyticsAggregateRecord[],
+  totalVisitors: number,
+): TelemetryAnalyticsSummaryDto {
   const viewsByDay = new Map<string, number>();
   const topPages = new Map<string, number>();
   const topReferrers = new Map<string, number>();
   const topCountries = new Map<string, number>();
 
   let totalViews = 0;
-  let totalVisitors = 0;
-
   records.forEach((record) => {
     totalViews += record.views;
-    totalVisitors += record.visitors;
     incrementMapValue(viewsByDay, toDateKey(record.date), record.views);
     incrementMapValue(topPages, record.path, record.views);
     incrementMapValue(topReferrers, record.referrer, record.views);
@@ -461,10 +461,12 @@ export const telemetryService = {
   deriveDailyVisitorHash,
   async getAnalyticsSummary(query: TelemetryPeriodQuery) {
     const repository = await getTelemetryRepository();
-    const records = (await repository.listAnalyticsAggregates(
-      query.days,
-    )) as AnalyticsAggregateRecord[];
-    return summarizeAnalytics(records);
+    const [records, totalVisitors] = await Promise.all([
+      repository.listAnalyticsAggregates(query.days),
+      repository.countDistinctAnalyticsVisitors(query.days),
+    ]);
+
+    return summarizeAnalytics(records as AnalyticsAggregateRecord[], totalVisitors);
   },
   async getErrorLogById(id: string) {
     const repository = await getTelemetryRepository();
