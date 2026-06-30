@@ -674,11 +674,27 @@ Attività da fare dopo questa macro:
 
 ### 3. Script operativi testabili in locale
 
-- Versionare `scripts/deploy.sh`, `scripts/healthcheck.sh`, `scripts/backup-db.sh`.
-- Far usare a `deploy.sh` il servizio `migrate`, non il container app standalone.
-- Rendere gli script idempotenti dove possibile e fallire presto con `set -euo pipefail`.
-- Simulare rollback locale con immagine/tag precedente o almeno con healthcheck forzatamente fallito.
-- Aggiungere un README breve per variabili `.env` VPS, senza valori reali.
+- [x] Versionare `scripts/deploy.sh`, `scripts/healthcheck.sh`, `scripts/backup-db.sh`.
+- [x] Far usare a `deploy.sh` il servizio `migrate`, non il container app standalone.
+- [x] Rendere gli script idempotenti dove possibile e fallire presto con `set -euo pipefail`.
+- [x] Simulare rollback locale con healthcheck fallito.
+- [x] Aggiungere un README breve per variabili `.env` VPS, senza valori reali.
+
+Dettagli implementati:
+
+- `deploy.sh <image-tag>` aggiorna `IMAGE_TAG`, esegue backup opzionale, migration, swap app, healthcheck e rollback applicativo sul tag precedente.
+- `healthcheck.sh` aspetta il container `app` healthy e supporta fallback HTTP con `HEALTHCHECK_URL`.
+- `backup-db.sh` produce dump `pg_dump` compresso locale e copia su `RCLONE_REMOTE` solo se configurato.
+- `docker-compose.prod.yml` usa `APP_IMAGE_REPOSITORY` e `MIGRATOR_IMAGE_REPOSITORY`, così locale e GHCR condividono lo stesso compose.
+- Script npm aggiunti: `ops:deploy:local`, `ops:healthcheck`, `ops:backup-db`.
+
+Attività da fare dopo questa macro:
+
+- Configurare `rclone` reale sul VPS e testare backup verso bucket Hetzner.
+- Testare restore da dump remoto su DB separato.
+- Inserire `APP_IMAGE_REPOSITORY`, `MIGRATOR_IMAGE_REPOSITORY`, `GHCR_USER`, `GHCR_PAT` e `RCLONE_REMOTE` nella `.env` VPS.
+- Attivare il deploy GitHub solo dopo VPS pronto e script copiati in `/opt/middleware`.
+- Testare rollback reale da uno SHA GHCR precedente dopo il primo deploy.
 
 ### 4. Osservabilità in-app
 
@@ -777,7 +793,7 @@ pnpm auth:bootstrap-admin
 - [x] `docker-compose.prod.yml` preparato nel repo per runtime prod locale.
 - [x] Target Docker `migrator` pronto.
 - [x] `/api/health` implementato e usabile da Docker healthcheck.
-- [ ] Workflow e script (`deploy.sh`, `backup-db.sh`, `healthcheck.sh`) preparati nel repo.
+- [x] Workflow e script (`deploy.sh`, `backup-db.sh`, `healthcheck.sh`) preparati nel repo.
 - [x] Target Docker `migrator` verificato su DB locale vuoto.
 - [ ] Modelli Prisma `AnalyticsEvent`, `WebVital`, `ErrorLog`, `TelemetryDailyAggregate`, `WebVitalDailyAggregate` definiti.
 - [ ] `instrumentation.ts`, route collector `/api/telemetry`, Web Vitals, boundary errori, aggregazioni e retention job implementati e testati in locale.

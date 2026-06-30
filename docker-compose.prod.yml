@@ -21,7 +21,7 @@ x-app-env: &app-env
 
 services:
   app:
-    image: middleware-app:${IMAGE_TAG:-local}
+    image: ${APP_IMAGE_REPOSITORY:-middleware-app}:${IMAGE_TAG:-local}
     build:
       context: .
       target: runner
@@ -48,7 +48,7 @@ services:
       start_period: 30s
 
   migrate:
-    image: middleware-migrator:${IMAGE_TAG:-local}
+    image: ${MIGRATOR_IMAGE_REPOSITORY:-middleware-migrator}:${IMAGE_TAG:-local}
     build:
       context: .
       target: migrator
