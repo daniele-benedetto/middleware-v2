@@ -236,7 +236,14 @@ export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
           <PublicBrand
             priority
             tone={headerMenuActive ? "dark" : "light"}
-            onClick={menuVisible ? closeMenu : undefined}
+            onClick={
+              menuVisible
+                ? (event) => {
+                    event.preventDefault();
+                    navigateAfterMenuClose("/");
+                  }
+                : undefined
+            }
           />
           <PublicMenuButton
             ref={menuButtonRef}
