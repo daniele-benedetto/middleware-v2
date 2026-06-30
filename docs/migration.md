@@ -8,18 +8,18 @@ Regola operativa: il dominio principale si punta al VPS solo dopo staging, uploa
 
 ## Dashboard
 
-| Area                    | Stato    | Note                                                        |
-| ----------------------- | -------- | ----------------------------------------------------------- |
-| Baseline locale         | Fatto    | App, DB, Redis, MinIO, S3 adapter, seed, smoke, test, build |
-| Docker production image | Fatto    | `docker compose build app` completato e smoke container OK  |
-| Decisioni pre-acquisto  | Fatto    | Domini, Cloudflare, Umami, GlitchTip, bucket, dati separati |
-| Preflight documentale   | In corso | Runbook, env, DNS, backup, segreti e checklist deploy       |
-| VPS Hetzner             | Da fare  | Richiede acquisto/creazione server                          |
-| Coolify                 | Da fare  | Richiede VPS e DNS                                          |
-| Object Storage Hetzner  | Da fare  | Richiede bucket reali e credenziali                         |
-| Staging                 | Da fare  | Dopo VPS, Coolify, DB, Redis, bucket                        |
-| Backup/restore          | Da fare  | Prima del dominio production                                |
-| Production              | Da fare  | Solo dopo staging verde                                     |
+| Area                    | Stato   | Note                                                        |
+| ----------------------- | ------- | ----------------------------------------------------------- |
+| Baseline locale         | Fatto   | App, DB, Redis, MinIO, S3 adapter, seed, smoke, test, build |
+| Docker production image | Fatto   | `docker compose build app` completato e smoke container OK  |
+| Decisioni pre-acquisto  | Fatto   | Domini, Cloudflare, Umami, GlitchTip, bucket, dati separati |
+| Preflight documentale   | Fatto   | Runbook, env, DNS, backup, segreti e checklist deploy       |
+| VPS Hetzner             | Da fare | Richiede acquisto/creazione server                          |
+| Coolify                 | Da fare | Richiede VPS e DNS                                          |
+| Object Storage Hetzner  | Da fare | Richiede bucket reali e credenziali                         |
+| Staging                 | Da fare | Dopo VPS, Coolify, DB, Redis, bucket                        |
+| Backup/restore          | Da fare | Prima del dominio production                                |
+| Production              | Da fare | Solo dopo staging verde                                     |
 
 ## Stack target
 
@@ -118,28 +118,195 @@ docker compose build app
 
 ## Piano aggiornato
 
-Da qui in avanti il lavoro è diviso in fasi operative. Le fasi A e B si possono completare senza pagare o creare infrastruttura permanente. Le fasi successive richiedono VPS, DNS, bucket e servizi reali.
+Da qui in avanti il lavoro è diviso in fasi operative. La fase A si completa senza pagare o creare infrastruttura permanente. Dalla fase B in poi servono VPS, DNS, bucket e servizi reali.
 
 ### Fase A - Preflight senza acquisti
 
 Obiettivo: arrivare al momento dell'acquisto con runbook, accessi, segreti, DNS e checklist già pronti.
 
-- [ ] Preparare checklist account e accessi: Hetzner Cloud, Hetzner Object Storage, Cloudflare, GitHub, email admin.
-- [ ] Preparare comando e destinazione per chiave SSH dedicata.
-- [ ] Preparare matrice segreti senza salvare valori nel repository.
-- [ ] Preparare comandi per generare `BETTER_AUTH_SECRET` staging e production.
-- [ ] Preparare piano password per admin Coolify, admin staging, admin production, Umami e GlitchTip.
-- [ ] Preparare piano DNS Cloudflare con record, proxy mode e ordine di attivazione.
-- [ ] Preparare piano CSP per host app, Umami, GlitchTip e media via route applicative.
-- [ ] Preparare piano backup: bucket backup, retention, frequenza, restore test.
-- [ ] Preparare checklist smoke staging e production in ordine eseguibile.
-- [ ] Preparare checklist rollback/rebuild minima.
+- [x] Preparare checklist account e accessi: Hetzner Cloud, Hetzner Object Storage, Cloudflare, GitHub, email admin.
+- [x] Preparare comando e destinazione per chiave SSH dedicata.
+- [x] Preparare matrice segreti senza salvare valori nel repository.
+- [x] Preparare comandi per generare `BETTER_AUTH_SECRET` staging e production.
+- [x] Preparare piano password per admin Coolify, admin staging, admin production, Umami e GlitchTip.
+- [x] Preparare piano DNS Cloudflare con record, proxy mode e ordine di attivazione.
+- [x] Preparare piano CSP per host app, Umami, GlitchTip e media via route applicative.
+- [x] Preparare piano backup: bucket backup, retention, frequenza, restore test.
+- [x] Preparare checklist smoke staging e production in ordine eseguibile.
+- [x] Preparare checklist rollback/rebuild minima.
+
+#### Account e accessi
+
+| Accesso                | Uso                         | Stato prima acquisto                     | Dove conservarlo           |
+| ---------------------- | --------------------------- | ---------------------------------------- | -------------------------- |
+| Hetzner Cloud          | VPS e snapshot              | Account pronto, billing verificato       | Password manager           |
+| Hetzner Object Storage | Bucket media e backup       | Accesso pronto, bucket non ancora creati | Password manager           |
+| Cloudflare             | DNS/CDN                     | Dominio `middleware.media` accessibile   | Password manager           |
+| GitHub                 | Repository e Coolify source | Accesso admin al repository verificato   | Account personale protetto |
+| Email admin staging    | Bootstrap admin staging     | Scelta manualmente prima della creazione | Password manager           |
+| Email admin production | Bootstrap admin production  | Scelta manualmente prima della creazione | Password manager           |
+| Email operativa        | Alert, uptime, recovery     | Casella monitorata                       | Password manager           |
+
+#### SSH
+
+Generare una chiave dedicata alla VPS, senza riusare chiavi personali generiche:
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/middleware_hetzner_ed25519 -C "middleware.media hetzner"
+```
+
+Regole operative:
+
+- Salvare la public key in Hetzner Cloud durante la creazione VPS.
+- Salvare la private key solo sulla macchina amministrativa e nel password manager se supporta allegati sicuri.
+- Non committare mai chiavi SSH nel repository.
+- Dopo setup, usare solo utente `deploy`, non `root`.
+
+#### Matrice segreti
+
+I valori reali vanno salvati in password manager o nelle env Coolify, mai nel repository.
+
+| Segreto                    | Staging | Production | Fonte/come generarlo                  |
+| -------------------------- | ------- | ---------- | ------------------------------------- |
+| `BETTER_AUTH_SECRET`       | Da fare | Da fare    | `openssl rand -base64 48`             |
+| `BOOTSTRAP_ADMIN_EMAIL`    | Da fare | Da fare    | Scelta manuale                        |
+| `BOOTSTRAP_ADMIN_PASSWORD` | Da fare | Da fare    | Password manager, almeno 20 caratteri |
+| `BOOTSTRAP_ADMIN_NAME`     | Da fare | Da fare    | Scelta manuale                        |
+| `DATABASE_URL`             | Da fare | Da fare    | Coolify Postgres                      |
+| `POSTGRES_URL`             | Da fare | Da fare    | Uguale a `DATABASE_URL`               |
+| `PRISMA_DATABASE_URL`      | Da fare | Da fare    | Uguale a `DATABASE_URL`               |
+| `REDIS_URL`                | Da fare | Da fare    | Coolify Redis                         |
+| `S3_ACCESS_KEY`            | Da fare | Da fare    | Hetzner Object Storage                |
+| `S3_SECRET_KEY`            | Da fare | Da fare    | Hetzner Object Storage                |
+| Coolify admin password     | N/A     | Da fare    | Password manager                      |
+| Umami admin password       | N/A     | Da fare    | Password manager                      |
+| GlitchTip admin password   | N/A     | Da fare    | Password manager                      |
+| GlitchTip DSN              | Da fare | Da fare    | GlitchTip project                     |
+| Uptime monitor credentials | N/A     | Da fare    | Provider scelto                       |
+
+Comandi consigliati:
+
+```bash
+openssl rand -base64 48
+openssl rand -base64 32
+```
+
+Usare il primo per `BETTER_AUTH_SECRET`, il secondo per password generate manualmente se non si usa il generator del password manager.
+
+#### DNS Cloudflare
+
+Creare i record solo dopo avere l'IPv4/IPv6 del VPS. Prima del deploy staging, tenere Cloudflare in modalità DNS/proxy coerente con SSL Coolify.
+
+| Host                       | Tipo    | Target                      | Proxy Cloudflare  | Quando attivarlo                    |
+| -------------------------- | ------- | --------------------------- | ----------------- | ----------------------------------- |
+| `coolify.middleware.media` | A/AAAA  | IP VPS                      | DNS only iniziale | Subito dopo installazione Coolify   |
+| `staging.middleware.media` | A/AAAA  | IP VPS                      | DNS only iniziale | Prima del deploy staging            |
+| `middleware.media`         | A/AAAA  | IP VPS                      | DNS only iniziale | Solo dopo staging e restore test OK |
+| `www.middleware.media`     | CNAME/A | `middleware.media` o IP VPS | DNS only iniziale | Solo in fase production             |
+
+Regole Cloudflare post-verifica:
+
+- SSL mode: `Full (strict)` dopo certificati validi su Coolify.
+- Proxy arancione solo dopo verifica login CMS, cookie auth e tRPC.
+- Non applicare cache HTML globale.
+- Non cachare `/cms/*`, `/api/trpc/*`, `/api/cms/*`, route auth.
+- Cache lunga consentita per `/_next/static/*`.
+- Cache su `/api/public/media/blob` solo rispettando header applicativi.
+
+#### Piano CSP
+
+La CSP definitiva si aggiorna dopo host reali e script effettivi. Piano previsto:
+
+| Direttiva     | Host previsti                                   | Note                                      |
+| ------------- | ----------------------------------------------- | ----------------------------------------- |
+| `script-src`  | `'self'`, eventuale host Umami                  | Aggiungere Umami solo quando installato   |
+| `connect-src` | `'self'`, Umami, GlitchTip                      | Necessario per analytics/error reporting  |
+| `img-src`     | `'self'`, `data:`, `blob:`                      | Media serviti via route applicative       |
+| `media-src`   | `'self'`, `blob:`                               | Audio via route applicative               |
+| `frame-src`   | Nessuno di default                              | Aggiungere solo se necessario             |
+| `style-src`   | `'self'`, `'unsafe-inline'` se ancora richiesto | Da mantenere finché necessario a Next/CSS |
+
+`images.remotePatterns` resta invariato se i media continuano a passare da route applicative. Aggiornarlo solo se si decide di servire immagini direttamente da CDN/S3.
+
+#### Piano backup
+
+| Backup                  | Destinazione              | Frequenza                  | Retention iniziale | Test richiesto              |
+| ----------------------- | ------------------------- | -------------------------- | ------------------ | --------------------------- |
+| Postgres staging        | Bucket backup Hetzner     | Giornaliera                | 7 giorni           | Restore su DB prova         |
+| Postgres production     | Bucket backup Hetzner     | Giornaliera                | 30 giorni          | Restore prima del go-live   |
+| Config Coolify          | Export manuale + offsite  | Dopo ogni cambio rilevante | 3 copie            | Rebuild runbook             |
+| Bucket media staging    | Versioning o sync manuale | Da decidere dopo bucket    | Da decidere        | Recupero oggetto cancellato |
+| Bucket media production | Versioning o sync manuale | Da decidere dopo bucket    | Da decidere        | Recupero oggetto cancellato |
+
+Condizione obbligatoria: production non va live finché un restore DB è stato completato almeno una volta.
+
+#### Smoke staging
+
+Eseguire in ordine:
+
+1. Aprire `https://staging.middleware.media` e verificare HTTP 200.
+2. Verificare `robots.txt` e `sitemap.xml`.
+3. Accedere a `/cms/login`.
+4. Creare categoria, autore e issue smoke.
+5. Caricare immagine.
+6. Caricare audio se previsto dal contenuto.
+7. Creare articolo draft con media.
+8. Pubblicare articolo.
+9. Verificare pagina articolo pubblica.
+10. Verificare `/api/public/media/blob` per media referenziato.
+11. Verificare 404 per media non referenziato da contenuti pubblicati.
+12. Verificare rename media e sincronizzazione riferimenti.
+13. Verificare delete media e pulizia riferimenti.
+14. Verificare revalidation dopo publish/unpublish.
+15. Verificare rate limit con Redis in production mode.
+16. Verificare CSP nel browser.
+17. Verificare evento Umami.
+18. Verificare errore test GlitchTip.
+
+#### Smoke production
+
+Eseguire solo dopo staging verde e restore DB testato:
+
+1. Aprire `https://middleware.media` e verificare HTTP 200.
+2. Verificare redirect `https://www.middleware.media` -> `https://middleware.media`.
+3. Verificare login CMS production.
+4. Creare contenuto reale minimo o draft smoke.
+5. Caricare media reale.
+6. Pubblicare articolo reale o smoke autorizzato.
+7. Verificare articolo pubblico.
+8. Verificare media pubblico solo se referenziato.
+9. Verificare sitemap e robots.
+10. Verificare 404 e pagina errore gestita.
+11. Verificare backup production schedulato.
+12. Verificare Umami production.
+13. Verificare GlitchTip production.
+
+#### Rollback e rebuild minimo
+
+Rollback applicativo:
+
+1. In Coolify, redeploy dell'ultimo commit stabile.
+2. Se il problema è env, ripristinare env precedente dal password manager/export Coolify.
+3. Se il problema è DB migration, fermarsi e valutare restore: non improvvisare rollback manuali sul DB production.
+
+Rebuild infrastruttura minima:
+
+1. Creare nuovo VPS.
+2. Installare Coolify.
+3. Ripristinare configurazione Coolify salvata offsite.
+4. Ricollegare repository GitHub.
+5. Creare/ripristinare Postgres.
+6. Ripristinare ultimo backup DB valido.
+7. Ricollegare bucket media esistenti.
+8. Verificare staging.
+9. Spostare DNS Cloudflare al nuovo IP.
+10. Verificare production.
 
 Gate per chiudere la fase A:
 
-- `docs/migration.md` contiene checklist preflight completa.
-- Nessun segreto reale è committato.
-- Le decisioni residue sono ridotte a valori ottenibili solo dopo creazione risorse reali.
+- [x] `docs/migration.md` contiene checklist preflight completa.
+- [x] Nessun segreto reale è committato.
+- [x] Le decisioni residue sono ridotte a valori ottenibili solo dopo creazione risorse reali.
 
 ### Fase B - Acquisti e risorse base
 
@@ -598,13 +765,13 @@ Stato: completato nel branch locale.
 
 ### Preflight
 
-- [ ] Checklist account/accessi completata.
-- [ ] Matrice segreti pronta e salvata fuori repository.
-- [ ] Piano DNS Cloudflare pronto.
-- [ ] Piano CSP pronto.
-- [ ] Piano backup e restore pronto.
-- [ ] Checklist smoke staging e production pronta.
-- [ ] Checklist rollback/rebuild pronta.
+- [x] Checklist account/accessi completata.
+- [x] Matrice segreti pronta e salvata fuori repository.
+- [x] Piano DNS Cloudflare pronto.
+- [x] Piano CSP pronto.
+- [x] Piano backup e restore pronto.
+- [x] Checklist smoke staging e production pronta.
+- [x] Checklist rollback/rebuild pronta.
 
 ### Risorse reali
 
