@@ -8,6 +8,9 @@ Scripts for the production-like Docker Compose runtime. They are safe to test lo
 - `healthcheck.sh`: waits for the `app` container to become healthy, with optional HTTP fallback.
 - `backup-db.sh`: writes a compressed `pg_dump` locally and optionally copies it with `rclone`.
 - `restore-db.sh <backup.sql.gz>`: restores a compressed dump into the Compose Postgres service.
+- `refresh-telemetry-aggregates.mjs`: rebuilds recent telemetry aggregates from raw rows.
+- `prune-telemetry.mjs`: deletes raw telemetry and grouped errors older than retention.
+- `telemetry-jobs.mjs`: runs aggregate refresh and prune in sequence.
 
 ## Common variables
 
@@ -25,6 +28,8 @@ Scripts for the production-like Docker Compose runtime. They are safe to test lo
 | `BACKUP_RETENTION_DAYS`     | `30`                      | Local backup retention, `0` disables pruning     |
 | `RCLONE_REMOTE`             | empty                     | Optional remote backup destination               |
 | `RESTORE_ALLOW_NON_EMPTY`   | `0`                       | Set `1` to reset a non-empty DB before restore   |
+| `TELEMETRY_AGGREGATE_DAYS`  | `7`                       | Recent days rebuilt by telemetry aggregate job   |
+| `TELEMETRY_RETENTION_DAYS`  | required                  | Raw telemetry and error-log retention window     |
 
 ## Local deploy smoke
 
@@ -73,6 +78,22 @@ COMPOSE_PROJECT_NAME=middleware-v2-restore-check docker compose -f docker-compos
 ```bash
 RESTORE_ALLOW_NON_EMPTY=1 ./scripts/restore-db.sh .backups/test/middleware-YYYY-MM-DD-HHMMSS.sql.gz
 ```
+
+## Telemetry jobs
+
+Run aggregate refresh and prune from the migrator container, not the standalone app container:
+
+```bash
+TELEMETRY_RETENTION_DAYS=90 pnpm telemetry:jobs
+```
+
+On the VPS, schedule it with cron from `/opt/middleware`:
+
+```cron
+15 2 * * * cd /opt/middleware && docker compose -f docker-compose.prod.yml --profile ops run --rm migrate pnpm telemetry:jobs
+```
+
+`telemetry:aggregate` is idempotent for the last `TELEMETRY_AGGREGATE_DAYS` days: it deletes and rebuilds only that recent aggregate window. `telemetry:prune` deletes raw `analytics_events`, raw `web_vitals` and grouped `error_logs` older than `TELEMETRY_RETENTION_DAYS`. Aggregate tables are not pruned by this job.
 
 ## VPS notes
 

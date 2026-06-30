@@ -8,21 +8,21 @@ Regola operativa: il dominio pubblico si attiva solo dopo verifica su hostname t
 
 ## Dashboard
 
-| Area                   | Stato    | Note                                                                          |
-| ---------------------- | -------- | ----------------------------------------------------------------------------- |
-| Baseline locale        | Fatto    | App, DB, Redis, MinIO, S3 adapter, seed, smoke, test, build                   |
-| Runtime prod locale    | Fatto    | `docker-compose.prod.yml`, Docker target `runner`/`migrate`, `/api/health`    |
-| Docker prod image      | Fatto    | Build app e migrator verificabili localmente                                  |
-| Pipeline CI/CD         | Fatto    | Workflow deploy pronto, build ARM su `main`, deploy SSH gated                 |
-| Script operativi       | Fatto    | `deploy.sh`, `healthcheck.sh`, `backup-db.sh`, `restore-db.sh`, README script |
-| Telemetria backend     | Parziale | Modelli, migration, collector, schema/service/repository e test presenti      |
-| Backup/restore locale  | Fatto    | Dump locale, retention e restore verificato su DB separato                    |
-| VPS Hetzner            | Da fare  | CAX21 ARM 8 GB                                                                |
-| Object Storage Hetzner | Da fare  | Bucket media e backup DB reali                                                |
-| Cloudflare Tunnel      | Da fare  | VPS e zona Cloudflare                                                         |
-| Osservabilita CMS      | Da fare  | Client telemetry, Web Vitals, server errors, pagine CMS, aggregati, retention |
-| Backup/restore reale   | Da fare  | Prima del dominio pubblico                                                    |
-| Produzione             | Da fare  | Solo dopo smoke verde e restore DB testato                                    |
+| Area                   | Stato   | Note                                                                          |
+| ---------------------- | ------- | ----------------------------------------------------------------------------- |
+| Baseline locale        | Fatto   | App, DB, Redis, MinIO, S3 adapter, seed, smoke, test, build                   |
+| Runtime prod locale    | Fatto   | `docker-compose.prod.yml`, Docker target `runner`/`migrate`, `/api/health`    |
+| Docker prod image      | Fatto   | Build app e migrator verificabili localmente                                  |
+| Pipeline CI/CD         | Fatto   | Workflow deploy pronto, build ARM su `main`, deploy SSH gated                 |
+| Script operativi       | Fatto   | `deploy.sh`, `healthcheck.sh`, `backup-db.sh`, `restore-db.sh`, README script |
+| Telemetria in-app      | Fatto   | Modelli, collector, client, Web Vitals, error tracking, aggregati, retention  |
+| Backup/restore locale  | Fatto   | Dump locale, retention e restore verificato su DB separato                    |
+| VPS Hetzner            | Da fare | CAX21 ARM 8 GB                                                                |
+| Object Storage Hetzner | Da fare | Bucket media e backup DB reali                                                |
+| Cloudflare Tunnel      | Da fare | VPS e zona Cloudflare                                                         |
+| Osservabilita CMS      | Da fare | Router tRPC admin-only e pagine CMS analytics/performance/errors              |
+| Backup/restore reale   | Da fare | Prima del dominio pubblico                                                    |
+| Produzione             | Da fare | Solo dopo smoke verde e restore DB testato                                    |
 
 ## Decisioni operative
 
@@ -129,22 +129,19 @@ Nota: il `GITHUB_TOKEN` automatico vale solo nel runner. Per il `pull` dal VPS s
 - Modelli Prisma telemetry e migration dedicata.
 - Collector `POST /api/telemetry`.
 - Modulo `lib/server/modules/telemetry` con schema, service, repository e policy.
-- Test unitari per schema/service telemetry.
+- `instrumentation.ts` con `onRequestError` e upsert `ErrorLog`.
+- Boundary errori collegati a `client-error`.
+- Client telemetry con `track`, `reportWebVital`, `sendBeacon` e fallback `fetch keepalive`.
+- Pageview tracking pubblico e Web Vitals collegati al layout pubblico.
+- Script `telemetry:aggregate`, `telemetry:prune`, `telemetry:jobs`.
+- Test unitari per schema/service/collector/client/instrumentation telemetry.
 
 ### Da completare nel codice prima degli acquisti
 
-- Implementare `instrumentation.ts` con `onRequestError` tipizzato Next 16 e `telemetryService.recordServerError`.
-- Implementare client telemetry `lib/telemetry/client.ts` con `sendBeacon` e fallback `fetch keepalive`.
-- Aggiungere pageview tracking pubblico, escludendo `/cms`, `/api`, `/_next`, prefetch e bot evidenti.
-- Aggiungere componente client isolato per `useReportWebVitals` e importarlo da `app/layout.tsx` senza rendere client il root layout.
-- Aggiornare `app/error.tsx`, `app/global-error.tsx` e `app/(cms)/cms/error.tsx` per inviare `client-error`.
 - Creare `telemetryRouter` tRPC admin-only con output DTO validati.
 - Creare `/cms/analytics`, `/cms/performance`, `/cms/errors` e navigazione CMS admin-only.
-- Implementare `scripts/refresh-telemetry-aggregates.mjs` idempotente sugli ultimi N giorni.
-- Implementare `scripts/prune-telemetry.mjs` governato da `TELEMETRY_RETENTION_DAYS`.
-- Aggiungere script npm `telemetry:aggregate`, `telemetry:prune`, `telemetry:jobs`.
-- Aggiornare CSP per collector same-origin e host finali.
-- Testare localmente analytics, Web Vitals, server error, boundary error, aggregazione, prune e CMS.
+- Collegare le pagine CMS agli aggregati senza query raw pesanti.
+- Testare localmente le pagine CMS con stati loading/empty/error coerenti.
 
 ### Da fare solo su infrastruttura reale
 
@@ -181,20 +178,21 @@ Principi:
 - Hash visitatore giornaliero con `ANALYTICS_SALT_SECRET`.
 - Normalizzazione path/referrer e sanitizzazione metadata.
 - Upsert `ErrorLog` per fingerprint.
+- `instrumentation.ts` salva server errors in `ErrorLog` e non rompe la request se fallisce.
+- `app/error.tsx`, `app/global-error.tsx` e `app/(cms)/cms/error.tsx` inviano `client-error`.
+- `track` invia analytics pubbliche con `sendBeacon` e fallback `fetch keepalive`.
+- `PublicPageViewTracker` invia `page_view` solo dal layout pubblico.
+- `WebVitalsReporter` invia `LCP`, `CLS`, `INP`, `FCP`, `TTFB`, `FID` quando disponibili.
+- `telemetry:aggregate` ricostruisce aggregati recenti idempotenti.
+- `telemetry:prune` cancella raw telemetry ed error logs oltre `TELEMETRY_RETENTION_DAYS`.
+- `telemetry:jobs` esegue aggregazione e prune dal container `migrate`.
 
 ### Checklist restante
 
-- [ ] Client browser `track(event, metadata?)` e `reportWebVital(metric)`.
-- [ ] Pageview tracking pubblico e tracking eventi editoriali utili: `page_view`, `article_view`, `issue_view`, `listen_view`.
-- [ ] Web Vitals `LCP`, `CLS`, `INP`, `FCP`, `TTFB`, `FID` se disponibile.
-- [ ] `instrumentation.ts` con `onRequestError` e sanitizzazione request context.
-- [ ] Boundary errori collegati al collector.
-- [ ] Aggregazioni giornaliere analytics e performance.
-- [ ] Retention raw telemetry e error logs.
 - [ ] Router tRPC admin-only per analytics/performance/errors.
 - [ ] Pagine CMS dedicate.
-- [ ] Cron operativo `telemetry:jobs` dal container `migrate`.
-- [ ] Test locali end-to-end della pipeline telemetry.
+- [ ] Componenti CMS coerenti con skeleton/loading/error/empty state esistenti.
+- [ ] Test locali delle pagine CMS e query tRPC.
 
 ### Criteri di accettazione
 
@@ -240,9 +238,9 @@ pnpm auth:bootstrap-admin
 - [x] Runtime prod locale pronto.
 - [x] Workflow e script operativi pronti.
 - [x] Backup/restore locale testato su DB separato.
-- [x] Telemetria backend base pronta.
-- [ ] Osservabilita CMS, client telemetry, aggregazioni e retention implementate.
-- [ ] Piano CSP per host app e route interne pronto.
+- [x] Telemetria in-app pronta fino ad aggregazioni e retention.
+- [ ] Osservabilita CMS implementata.
+- [x] Piano CSP per host app e route interne pronto.
 - [ ] Piano backup e checklist smoke/rollback pronti.
 
 ### Fase B - Acquisti e risorse
@@ -383,6 +381,14 @@ Gate fase F:
 - Backup offsite cifrato o password manager per `docker-compose.prod.yml`, `.env` e `scripts/`.
 - Rebuild minimo: nuovo VPS CAX21, Docker, ripristino `/opt/middleware`, login GHCR, restore DB, ricollego bucket media, riconfiguro tunnel.
 
+### Media e CSP
+
+- Route media pubblica e CMS supportano `Range` singolo con risposte `206` e `416`.
+- Le route media espongono `Accept-Ranges`, `Content-Length`, `Content-Range` quando applicabile e `X-Content-Type-Options: nosniff`.
+- Il proxy Next resta la scelta locale fino al bucket reale; dopo Hetzner Object Storage valutare URL S3 firmati per audio lunghi.
+- CSP mantiene `media-src 'self' blob:` e puo essere estesa con `CSP_MEDIA_SRC` per host media futuri.
+- Header `Cache-Control: private, no-store, max-age=0` applicato via `next.config.ts` a `/cms/*`, `/api/trpc/*`, `/api/cms/*`, `/api/auth/*` e `/api/telemetry`.
+
 ## Smoke pre-pubblico
 
 - Home, issue, articolo, pagina ascolto e pagine statiche.
@@ -400,7 +406,7 @@ Gate fase F:
 
 - Con Cloudflare Tunnel non ci sono porte web aperte sul VPS.
 - `/cms/login` puo avere rate limit Cloudflare oltre al limiter Redis applicativo.
-- Non cachare `/cms/*`, `/api/trpc/*`, `/api/cms/*` e auth routes.
+- Non cachare `/cms/*`, `/api/trpc/*`, `/api/cms/*`, `/api/auth/*` e `/api/telemetry`.
 - Cache lunga su `/_next/static/*` e media pubblici cacheabili.
 - Analytics first-party e cookieless, visitor hash con salt giornaliero, nessun IP grezzo.
 - Cookie auth strettamente necessario.
