@@ -25,7 +25,7 @@ wait_for_postgres() {
 
   while [ "$SECONDS" -lt "$deadline" ]; do
     if docker compose -f "$COMPOSE_FILE" exec -T "$POSTGRES_SERVICE" \
-      pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; then
+      psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -c "SELECT 1;" >/dev/null 2>&1; then
       return 0
     fi
 
