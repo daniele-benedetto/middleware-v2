@@ -20,6 +20,9 @@ type AuthorsListInput = RouterInputs["authors"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
+type TelemetryAnalyticsInput = RouterInputs["telemetry"]["analyticsSummary"];
+type TelemetryPerformanceInput = RouterInputs["telemetry"]["performanceSummary"];
+type TelemetryErrorsListInput = RouterInputs["telemetry"]["errorsList"];
 type MediaListOutput = RouterOutputs["media"]["list"];
 type NavigationMenusOutput = RouterOutputs["navigation"]["listMenus"];
 type NavigationOptionsOutput = RouterOutputs["navigation"]["listOptions"];
@@ -31,6 +34,9 @@ type ArticlesListOutput = RouterOutputs["articles"]["list"];
 type AuthorsListOutput = RouterOutputs["authors"]["list"];
 type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
+type TelemetryAnalyticsOutput = RouterOutputs["telemetry"]["analyticsSummary"];
+type TelemetryPerformanceOutput = RouterOutputs["telemetry"]["performanceSummary"];
+type TelemetryErrorsListOutput = RouterOutputs["telemetry"]["errorsList"];
 
 type IssueDetailOutput = RouterOutputs["issues"]["getById"];
 type IssuePreviewOutput = RouterOutputs["issues"]["getPreviewById"];
@@ -87,6 +93,28 @@ export async function prefetchAuditLogsList(
 
 export async function prefetchUsersList(input: UsersListInput): Promise<UsersListOutput> {
   return prefetchCmsList(input, (caller, listInput) => caller.users.list(listInput));
+}
+
+export async function prefetchTelemetryAnalytics(
+  input: TelemetryAnalyticsInput,
+): Promise<TelemetryAnalyticsOutput> {
+  return prefetchCmsList(input, (caller, listInput) =>
+    caller.telemetry.analyticsSummary(listInput),
+  );
+}
+
+export async function prefetchTelemetryPerformance(
+  input: TelemetryPerformanceInput,
+): Promise<TelemetryPerformanceOutput> {
+  return prefetchCmsList(input, (caller, listInput) =>
+    caller.telemetry.performanceSummary(listInput),
+  );
+}
+
+export async function prefetchTelemetryErrorsList(
+  input: TelemetryErrorsListInput,
+): Promise<TelemetryErrorsListOutput> {
+  return prefetchCmsList(input, (caller, listInput) => caller.telemetry.errorsList(listInput));
 }
 
 export async function prefetchMediaList(): Promise<MediaListOutput> {

@@ -6,23 +6,17 @@ Obiettivo: avviare produzione su Hetzner con Docker Compose diretto, Postgres, R
 
 Regola operativa: il dominio pubblico si attiva solo dopo verifica su hostname temporaneo, login CMS, upload media, pubblicazione, backup e restore test verificati.
 
-## Dashboard
+## Stato sintetico
 
-| Area                   | Stato   | Note                                                                          |
-| ---------------------- | ------- | ----------------------------------------------------------------------------- |
-| Baseline locale        | Fatto   | App, DB, Redis, MinIO, S3 adapter, seed, smoke, test, build                   |
-| Runtime prod locale    | Fatto   | `docker-compose.prod.yml`, Docker target `runner`/`migrate`, `/api/health`    |
-| Docker prod image      | Fatto   | Build app e migrator verificabili localmente                                  |
-| Pipeline CI/CD         | Fatto   | Workflow deploy pronto, build ARM su `main`, deploy SSH gated                 |
-| Script operativi       | Fatto   | `deploy.sh`, `healthcheck.sh`, `backup-db.sh`, `restore-db.sh`, README script |
-| Telemetria in-app      | Fatto   | Modelli, collector, client, Web Vitals, error tracking, aggregati, retention  |
-| Backup/restore locale  | Fatto   | Dump locale, retention e restore verificato su DB separato                    |
-| VPS Hetzner            | Da fare | CAX21 ARM 8 GB                                                                |
-| Object Storage Hetzner | Da fare | Bucket media e backup DB reali                                                |
-| Cloudflare Tunnel      | Da fare | VPS e zona Cloudflare                                                         |
-| Osservabilita CMS      | Da fare | Pagine CMS analytics/performance/errors                                       |
-| Backup/restore reale   | Da fare | Prima del dominio pubblico                                                    |
-| Produzione             | Da fare | Solo dopo smoke verde e restore DB testato                                    |
+| Area                   | Stato      | Note                                                      |
+| ---------------------- | ---------- | --------------------------------------------------------- |
+| Preflight locale       | Da rifare  | Verifica finale dopo pagine CMS telemetry                 |
+| Osservabilita CMS      | Da testare | Collector, aggregati, retention, router e pagine CMS      |
+| VPS Hetzner            | Da fare    | Dopo gate pre-acquisto                                    |
+| Object Storage Hetzner | Da fare    | Bucket media e backup DB reali                            |
+| Cloudflare Tunnel      | Da fare    | VPS e zona Cloudflare                                     |
+| Backup/restore reale   | Da fare    | Su bucket reale prima del dominio pubblico                |
+| Produzione             | Da fare    | Solo dopo hostname temporaneo, smoke e restore verificati |
 
 ## Decisioni operative
 
@@ -103,27 +97,27 @@ Nota ARM: lo stack target e `linux/arm64`. La build immagini avviene su runner A
 | `TELEMETRY_RETENTION_DAYS` | `90`                                                    |
 | `ALERT_WEBHOOK_URL`        | Opzionale                                               |
 
-Comandi generazione segreti pre-acquisto:
+Materiali locali gia generati fuori repository:
 
-```bash
-openssl rand -base64 48 # BETTER_AUTH_SECRET
-openssl rand -base64 32 # ANALYTICS_SALT_SECRET
-openssl rand -base64 32 # POSTGRES_PASSWORD
-```
+- Chiave SSH deploy: `~/.ssh/middleware-prod-deploy`.
+- Public key deploy da installare sul VPS: `~/.ssh/middleware-prod-deploy.pub`.
+- Segreti locali temporanei: `~/.middleware-v2/prod-secrets.env` con permessi `600`.
+- GitHub CLI autenticata come `daniele-benedetto`.
+- `hcloud` e `cloudflared` non risultano disponibili da questa macchina; verificare Hetzner e Cloudflare via browser o dopo installazione CLI.
 
-Matrice segreti da preparare fuori repository prima degli acquisti:
+Matrice segreti produzione:
 
-| Nome                       | Stato pre-acquisto | Note                                          |
-| -------------------------- | ------------------ | --------------------------------------------- |
-| `BETTER_AUTH_SECRET`       | Da generare        | Password manager                              |
-| `ANALYTICS_SALT_SECRET`    | Da generare        | Password manager                              |
-| `POSTGRES_PASSWORD`        | Da generare        | Password manager e `.env` VPS                 |
-| `BOOTSTRAP_ADMIN_EMAIL`    | Da decidere        | Admin produzione                              |
-| `BOOTSTRAP_ADMIN_PASSWORD` | Da generare        | Password manager                              |
-| `BOOTSTRAP_ADMIN_NAME`     | Da decidere        | Admin produzione                              |
-| `GHCR_PAT`                 | Da creare          | PAT read-only `read:packages` se GHCR privato |
-| `CLOUDFLARE_TUNNEL_TOKEN`  | Dopo tunnel        | `.env` VPS                                    |
-| Credenziali S3             | Dopo bucket        | Access key dedicata produzione                |
+| Nome                       | Stato pre-acquisto  | Note                                          |
+| -------------------------- | ------------------- | --------------------------------------------- |
+| `BETTER_AUTH_SECRET`       | Generato localmente | Copiare in password manager e `.env` VPS      |
+| `ANALYTICS_SALT_SECRET`    | Generato localmente | Copiare in password manager e `.env` VPS      |
+| `POSTGRES_PASSWORD`        | Generato localmente | Copiare in password manager e `.env` VPS      |
+| `BOOTSTRAP_ADMIN_EMAIL`    | Da decidere         | Admin produzione                              |
+| `BOOTSTRAP_ADMIN_PASSWORD` | Generato localmente | Copiare in password manager e `.env` VPS      |
+| `BOOTSTRAP_ADMIN_NAME`     | Da decidere         | Admin produzione                              |
+| `GHCR_PAT`                 | Da creare           | PAT read-only `read:packages` se GHCR privato |
+| `CLOUDFLARE_TUNNEL_TOKEN`  | Dopo tunnel         | `.env` VPS                                    |
+| Credenziali S3             | Dopo bucket         | Access key dedicata produzione                |
 
 ### Env infrastrutturali
 
@@ -146,34 +140,19 @@ Restano sul VPS o nei secret GitHub, mai nel repository.
 
 Nota: il `GITHUB_TOKEN` automatico vale solo nel runner. Per il `pull` dal VPS serve un PAT read-only se il package GHCR resta privato.
 
-## Stato repo
+## Stato pre-acquisto
 
-### Completato
+Il repository e pronto per il preflight finale: runtime Docker production-like, pipeline CI/CD, script operativi, backup/restore locale, telemetry collector, aggregazioni, retention, router tRPC admin-only e pagine CMS telemetry sono gia disponibili. Le attivita aperte prima degli acquisti sono solo quelle sotto.
 
-- `docker-compose.prod.yml` versionato per runtime production-like locale.
-- Dockerfile con target `runner` e `migrate`.
-- `/api/health` con healthcheck leggero e deep check via query.
-- Script npm `docker:prod:*` e `ops:*`.
-- Workflow `.github/workflows/deploy.yml` con `check`, build ARM app+migrator e deploy SSH gated da `vars.ENABLE_PRODUCTION_DEPLOY`.
-- Script `scripts/deploy.sh`, `scripts/healthcheck.sh`, `scripts/backup-db.sh`.
-- Modelli Prisma telemetry e migration dedicata.
-- Collector `POST /api/telemetry`.
-- Modulo `lib/server/modules/telemetry` con schema, service, repository e policy.
-- `instrumentation.ts` con `onRequestError` e upsert `ErrorLog`.
-- Boundary errori collegati a `client-error`.
-- Client telemetry con `track`, `reportWebVital`, `sendBeacon` e fallback `fetch keepalive`.
-- Pageview tracking pubblico e Web Vitals collegati al layout pubblico.
-- Script `telemetry:aggregate`, `telemetry:prune`, `telemetry:jobs`.
-- Router tRPC `telemetry` admin-only per analytics, performance ed errori.
-- Test unitari per schema/service/collector/client/instrumentation telemetry.
+### Da preparare fuori dal codice prima degli acquisti
 
-### Da completare nel codice prima degli acquisti
+- Verificare accesso a Hetzner Cloud, Hetzner Object Storage e Cloudflare.
+- Copiare i segreti generati localmente nel password manager.
+- Decidere i valori admin produzione: `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_NAME`.
+- Preparare il PAT GHCR read-only se le immagini restano private.
+- Preparare il piano transfer dominio su Cloudflare Registrar.
 
-- Creare `/cms/analytics`, `/cms/performance`, `/cms/errors` e navigazione CMS admin-only.
-- Collegare le pagine CMS agli aggregati senza query raw pesanti.
-- Testare localmente le pagine CMS con stati loading/empty/error coerenti.
-
-### Da fare solo su infrastruttura reale
+### Da fare solo dopo gli acquisti
 
 - Creare VPS Hetzner CAX21 Ubuntu 24.04 arm64.
 - Creare bucket media `middleware-media-prod` privato con versioning e lifecycle.
@@ -198,31 +177,6 @@ Principi:
 - CMS su aggregati, non scansioni raw non limitate.
 - Retention attiva dal primo deploy.
 - Errori osservabilita non bloccanti per l'esperienza utente.
-
-### Gia implementato
-
-- Modelli `AnalyticsEvent`, `WebVital`, `ErrorLog`, `TelemetryDailyAggregate`, `WebVitalDailyAggregate`.
-- Indici principali per data, path, visitor hash, metrica, fingerprint e deduplica Web Vitals.
-- Payload Zod discriminato `analytics`, `web-vital`, `client-error`.
-- Collector unico `POST /api/telemetry` con limite payload e risposta `204`.
-- Hash visitatore giornaliero con `ANALYTICS_SALT_SECRET`.
-- Normalizzazione path/referrer e sanitizzazione metadata.
-- Upsert `ErrorLog` per fingerprint.
-- `instrumentation.ts` salva server errors in `ErrorLog` e non rompe la request se fallisce.
-- `app/error.tsx`, `app/global-error.tsx` e `app/(cms)/cms/error.tsx` inviano `client-error`.
-- `track` invia analytics pubbliche con `sendBeacon` e fallback `fetch keepalive`.
-- `PublicPageViewTracker` invia `page_view` solo dal layout pubblico.
-- `WebVitalsReporter` invia `LCP`, `CLS`, `INP`, `FCP`, `TTFB`, `FID` quando disponibili.
-- `telemetry:aggregate` ricostruisce aggregati recenti idempotenti.
-- `telemetry:prune` cancella raw telemetry ed error logs oltre `TELEMETRY_RETENTION_DAYS`.
-- `telemetry:jobs` esegue aggregazione e prune dal container `migrate`.
-- `telemetryRouter` espone summary analytics, summary performance, lista errori e dettaglio errore solo ad admin.
-
-### Checklist restante
-
-- [ ] Pagine CMS dedicate.
-- [ ] Componenti CMS coerenti con skeleton/loading/error/empty state esistenti.
-- [ ] Test locali delle pagine CMS e query tRPC.
 
 ### Criteri di accettazione
 
@@ -256,7 +210,7 @@ pnpm prisma:migrate:deploy
 pnpm auth:bootstrap-admin
 ```
 
-Esito locale 2026-06-30:
+Ultimo esito locale verificato 2026-06-30:
 
 - `pnpm check:all`: verde.
 - `docker compose config`: verde.
@@ -268,23 +222,18 @@ Esito locale 2026-06-30:
 - Migration su DB Compose vuoto separato `middleware-v2-empty-test`: verde.
 - Bootstrap admin su DB Compose vuoto separato `middleware-v2-empty-test`: verde.
 - Nota: le build Docker completano ma emettono log `P1001` durante prerender quando il DB build-time placeholder non e raggiungibile. Non blocca il gate, ma va considerato rumore operativo atteso o da ridurre in seguito.
+- Da rieseguire dopo il completamento delle pagine CMS telemetry.
 
 ## Fasi operative
 
 ### Fase A - Preflight senza acquisti
 
-- [ ] Checklist account e accessi: Hetzner Cloud, Hetzner Object Storage, Cloudflare, GitHub.
-- [ ] Chiave SSH dedicata al deploy generata e pronta.
-- [ ] Matrice segreti applicativi e infrastrutturali pronta, fuori dal repository.
-- [x] Comando per `BETTER_AUTH_SECRET` e `ANALYTICS_SALT_SECRET` pronto.
+- [ ] Verificare accesso a Hetzner Cloud, Hetzner Object Storage e Cloudflare.
+- [ ] Copiare i segreti generati localmente nel password manager.
+- [ ] Decidere `BOOTSTRAP_ADMIN_EMAIL` e `BOOTSTRAP_ADMIN_NAME`.
+- [ ] Preparare `GHCR_PAT` read-only se GHCR resta privato.
 - [ ] Piano transfer dominio su Cloudflare Registrar pronto.
-- [x] Runtime prod locale pronto.
-- [x] Workflow e script operativi pronti.
-- [x] Backup/restore locale testato su DB separato.
-- [x] Telemetria in-app pronta fino ad aggregazioni e retention.
-- [ ] Osservabilita CMS implementata.
-- [x] Piano CSP per host app e route interne pronto.
-- [x] Piano backup e checklist smoke/rollback pronti.
+- [ ] Osservabilita CMS verificata localmente.
 
 ### Fase B - Acquisti e risorse
 
