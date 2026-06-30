@@ -51,6 +51,14 @@ Regola operativa: il dominio pubblico si attiva solo dopo verifica su hostname t
 | Backup media        | Versioning bucket media                                |
 | Admin bootstrap     | Credenziali produzione scelte manualmente              |
 
+### Confine API pubblico/CMS
+
+- tRPC e il trasporto applicativo per il CMS e per le superfici autenticate/interattive: sessione, ruoli, mutazioni, policy, validazione input/output e dashboard amministrative.
+- Il public non deve usare tRPC come data layer principale. Le pagine pubbliche leggono dati server-side tramite loader cache-safe in `lib/public/server/*`, con Cache Components (`"use cache"`, `cacheLife`, `cacheTag`) e revalidation tramite tag quando i flussi CMS pubblicano o ritirano contenuti.
+- Le route HTTP non-tRPC restano ammesse solo per casi tecnici che non sono API applicativa CMS: auth, healthcheck, telemetry fire-and-forget, media/blob proxy e integrazioni simili.
+- `/api/telemetry` resta HTTP perche deve supportare `sendBeacon`, fallback `fetch keepalive`, risposta `204`, payload anonimo/cookieless e nessun contratto RPC interattivo.
+- Obiettivo: public SEO-friendly e cacheabile; CMS tipizzato, autenticato e governato da policy tRPC.
+
 Nota migrazioni: l'immagine Next standalone non e un ambiente operativo completo per Prisma. Le migration di produzione girano dal target `migrate`, che include workspace, Prisma CLI, schema, cartella `prisma/migrations` e script operativi come `auth:bootstrap-admin`.
 
 Nota ARM: lo stack target e `linux/arm64`. La build immagini avviene su runner ARM nativo, senza QEMU.

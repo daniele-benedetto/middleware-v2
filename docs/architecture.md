@@ -8,7 +8,7 @@ Use it as the entrypoint before diving into the deeper audit, UI, or checklist d
 
 - Single-package Next.js 16 app with App Router.
 - React 19, RSC-first CMS, Tailwind v4.
-- tRPC-only API surface at `app/api/trpc/[trpc]/route.ts`.
+- tRPC is the application API transport for authenticated CMS workflows at `app/api/trpc/[trpc]/route.ts`.
 - Prisma + Postgres for application data.
 - Better Auth for session management.
 - S3-compatible private object storage for CMS media upload and controlled public proxying.
@@ -59,7 +59,9 @@ CMS page/request
 
 ## tRPC Backend Model
 
-- `app/api/trpc/[trpc]/route.ts` is the single API transport.
+- `app/api/trpc/[trpc]/route.ts` is the application API transport for CMS and authenticated interactive workflows.
+- Public pages do not use tRPC as their primary data layer; they load cache-safe data server-side through `lib/public/server/*`.
+- Non-tRPC HTTP routes are reserved for technical boundaries such as auth, healthcheck, telemetry fire-and-forget, and media/blob proxying.
 - `createTrpcContext()` attaches the raw `Request` plus the resolved auth session.
 - Base procedures in `lib/server/trpc/procedures.ts` layer auth and rate-limit behavior.
 - Resource routers orchestrate only: input parsing, policy checks, service calls, and output validation.
@@ -181,7 +183,7 @@ Editorial image semantics:
 ## Runtime Invariants
 
 - Single environment for now: one production deployment and one production database, no staging split assumed.
-- tRPC is the only application API surface.
+- tRPC is the only CMS/application API surface; public rendering uses server-side cache-safe loaders, and technical HTTP routes are allowed for auth, healthcheck, telemetry, and media boundaries.
 - Redis-backed rate limiting is required in production.
 - If Redis is missing or unavailable in production, rate-limited CMS writes fail closed.
 - Local development and tests may fall back to in-memory rate-limit counters.
