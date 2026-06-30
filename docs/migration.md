@@ -463,11 +463,21 @@ Queste attività non richiedono VPS, dominio trasferito o bucket reale. Sono il 
 
 ### 1. Runtime production locale completo
 
-- Creare `docker-compose.prod.yml` versionato, separato dal compose locale con MinIO.
-- Aggiungere target Docker `migrator`, distinto dal target `runner`, con Prisma CLI, schema, migration files e script operativi.
-- Verificare localmente build e avvio delle immagini `runner` e `migrator` su DB vuoto.
-- Aggiungere `/api/health` con risposta stabile per healthcheck container e uptime esterno.
-- Decidere se `/api/health` controlla solo processo Next.js o anche DB/Redis. Per il deploy healthcheck conviene almeno processo app; per endpoint operativo può esistere una variante più profonda protetta o interna.
+- [x] Creare `docker-compose.prod.yml` versionato, separato dal compose locale con MinIO.
+- [x] Aggiungere target Docker `migrator`, distinto dal target `runner`, con Prisma CLI, schema, migration files e script operativi.
+- [x] Aggiungere `/api/health` con risposta stabile per healthcheck container e uptime esterno.
+- [x] Separare healthcheck leggero e deep check: `/api/health` controlla il processo app; `/api/health?deep=1` controlla anche DB e Redis.
+- [x] Aggiungere script npm per config, build, up, logs, migrate e bootstrap admin del runtime prod locale.
+- [x] Verificare localmente build e avvio delle immagini `runner` e `migrator` su DB vuoto.
+
+Attività da fare dopo questa macro:
+
+- Sostituire i tag locali `middleware-app`/`middleware-migrator` con immagini GHCR nel deploy reale.
+- Sul VPS rimuovere la pubblicazione locale `127.0.0.1:3000:3000`: l'app deve restare raggiungibile solo dal tunnel.
+- Attivare il servizio `cloudflared` solo quando esiste `CLOUDFLARE_TUNNEL_TOKEN` reale.
+- Collegare media e backup a bucket Hetzner reali; questo runtime prod locale non sostituisce il test upload su Object Storage reale.
+- Decidere se mantenere `docker-compose.prod.yml` come file ibrido build+image o introdurre un override specifico VPS prima del primo deploy.
+- Rendere silenziosa la build Next quando il DB non è raggiungibile: oggi le query build-time falliscono in modo gestito e non bloccante, ma sporcano i log Docker.
 
 ### 2. Pipeline CI/CD pronta ma non attiva
 
@@ -516,9 +526,8 @@ Prima di comprare VPS o bucket, il gate locale deve essere:
 pnpm check:all
 docker compose config
 docker compose build app
-docker compose -f docker-compose.prod.yml config
-docker build --target runner -t middleware-app:local .
-docker build --target migrator -t middleware-migrator:local .
+pnpm docker:prod:config
+pnpm docker:prod:build
 ```
 
 In più, su DB locale vuoto devono riuscire:
@@ -537,9 +546,11 @@ pnpm auth:bootstrap-admin
 - [ ] Matrice segreti applicativi e infrastrutturali pronta, fuori dal repository.
 - [ ] Comando per `BETTER_AUTH_SECRET` e `ANALYTICS_SALT_SECRET` pronto.
 - [ ] Piano transfer dominio su Cloudflare Registrar pronto.
-- [ ] `docker-compose.prod.yml`, workflow e script (`deploy.sh`, `backup-db.sh`, `healthcheck.sh`) preparati nel repo.
-- [ ] Target Docker `migrator` pronto e verificato su DB locale vuoto.
-- [ ] `/api/health` implementato e usabile da Docker healthcheck.
+- [x] `docker-compose.prod.yml` preparato nel repo per runtime prod locale.
+- [x] Target Docker `migrator` pronto.
+- [x] `/api/health` implementato e usabile da Docker healthcheck.
+- [ ] Workflow e script (`deploy.sh`, `backup-db.sh`, `healthcheck.sh`) preparati nel repo.
+- [x] Target Docker `migrator` verificato su DB locale vuoto.
 - [ ] Modelli Prisma `AnalyticsEvent`, `WebVital`, `ErrorLog` definiti.
 - [ ] `instrumentation.ts`, route collector analytics, route logging errori, retention job implementati e testati in locale.
 - [ ] Piano CSP per host app e route interne pronto.

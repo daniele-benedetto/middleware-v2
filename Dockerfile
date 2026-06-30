@@ -36,6 +36,29 @@ COPY . .
 RUN pnpm prisma:generate
 RUN pnpm build
 
+FROM base AS migrator
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HUSKY=0
+ENV DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
+ENV POSTGRES_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
+ENV PRISMA_DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
+ENV NEXT_PUBLIC_SITE_URL=http://localhost:3000
+ENV REDIS_URL=redis://localhost:6379/0
+ENV AUDIT_LOG_RETENTION_DAYS=365
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json pnpm-lock.yaml ./
+COPY prisma.config.ts ./
+COPY prisma ./prisma
+COPY scripts ./scripts
+COPY lib ./lib
+RUN pnpm prisma:generate
+
+CMD ["pnpm", "prisma:migrate:deploy"]
+
 FROM base AS runner
 WORKDIR /app
 
