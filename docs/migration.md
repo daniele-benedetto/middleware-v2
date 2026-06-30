@@ -14,8 +14,9 @@ Regola operativa: il dominio pubblico si attiva solo dopo verifica su hostname t
 | Runtime prod locale    | Fatto    | `docker-compose.prod.yml`, Docker target `runner`/`migrate`, `/api/health`    |
 | Docker prod image      | Fatto    | Build app e migrator verificabili localmente                                  |
 | Pipeline CI/CD         | Fatto    | Workflow deploy pronto, build ARM su `main`, deploy SSH gated                 |
-| Script operativi       | Fatto    | `deploy.sh`, `healthcheck.sh`, `backup-db.sh`, README script                  |
+| Script operativi       | Fatto    | `deploy.sh`, `healthcheck.sh`, `backup-db.sh`, `restore-db.sh`, README script |
 | Telemetria backend     | Parziale | Modelli, migration, collector, schema/service/repository e test presenti      |
+| Backup/restore locale  | Fatto    | Dump locale, retention e restore verificato su DB separato                    |
 | VPS Hetzner            | Da fare  | CAX21 ARM 8 GB                                                                |
 | Object Storage Hetzner | Da fare  | Bucket media e backup DB reali                                                |
 | Cloudflare Tunnel      | Da fare  | VPS e zona Cloudflare                                                         |
@@ -216,6 +217,8 @@ docker compose config
 docker compose build app
 pnpm docker:prod:config
 pnpm docker:prod:build
+BACKUP_DIR=/tmp/middleware-backup-test ./scripts/backup-db.sh
+./scripts/restore-db.sh /tmp/middleware-backup-test/<dump>.sql.gz
 ```
 
 Su DB locale vuoto devono riuscire:
@@ -236,6 +239,7 @@ pnpm auth:bootstrap-admin
 - [ ] Piano transfer dominio su Cloudflare Registrar pronto.
 - [x] Runtime prod locale pronto.
 - [x] Workflow e script operativi pronti.
+- [x] Backup/restore locale testato su DB separato.
 - [x] Telemetria backend base pronta.
 - [ ] Osservabilita CMS, client telemetry, aggregazioni e retention implementate.
 - [ ] Piano CSP per host app e route interne pronto.
@@ -371,10 +375,11 @@ Gate fase F:
 
 ### Backup e disaster recovery
 
-- `scripts/backup-db.sh` usa `pg_dump`, gzip e `rclone` se `RCLONE_REMOTE` e configurato.
+- `scripts/backup-db.sh` usa `pg_dump`, gzip, retention locale con `BACKUP_RETENTION_DAYS` e `rclone` se `RCLONE_REMOTE` e configurato.
+- `scripts/restore-db.sh <backup.sql.gz>` ripristina su Postgres Compose, rifiuta DB non vuoti di default e verifica tabelle minime.
 - Backup manuale prima di ogni migrazione: lo script deploy lo prevede.
-- Cron giornaliero backup DB su bucket backup.
-- Restore test su DB separato prima del dominio pubblico.
+- Cron giornaliero backup DB su bucket backup dopo configurazione `rclone` reale.
+- Restore locale testato su DB separato; resta da testare restore da dump scaricato dal bucket reale.
 - Backup offsite cifrato o password manager per `docker-compose.prod.yml`, `.env` e `scripts/`.
 - Rebuild minimo: nuovo VPS CAX21, Docker, ripristino `/opt/middleware`, login GHCR, restore DB, ricollego bucket media, riconfiguro tunnel.
 

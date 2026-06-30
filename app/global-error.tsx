@@ -1,6 +1,7 @@
 "use client";
 
 import { Archivo, IBM_Plex_Mono, Spectral } from "next/font/google";
+import { useEffect } from "react";
 
 import {
   CmsSystemActionButton,
@@ -8,6 +9,7 @@ import {
   CmsSystemScreen,
 } from "@/components/cms/common";
 import { i18n } from "@/lib/i18n";
+import { reportClientError } from "@/lib/telemetry/client";
 import { cn } from "@/lib/utils";
 
 import "./globals.css";
@@ -32,12 +34,20 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 type GlobalErrorProps = {
-  error: Error;
+  error: Error & { digest?: string };
   reset: () => void;
 };
 
-export default function GlobalError({ reset }: GlobalErrorProps) {
+export default function GlobalError({ error, reset }: GlobalErrorProps) {
   const text = i18n.cms.system;
+
+  useEffect(() => {
+    reportClientError({
+      error,
+      source: "boundary",
+      metadata: { boundary: "app/global-error" },
+    });
+  }, [error]);
 
   return (
     <html

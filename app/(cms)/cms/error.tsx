@@ -1,19 +1,30 @@
 "use client";
 
+import { useEffect } from "react";
+
 import {
   CmsSystemActionButton,
   CmsSystemActionLink,
   CmsSystemScreen,
 } from "@/components/cms/common";
 import { i18n } from "@/lib/i18n";
+import { reportClientError } from "@/lib/telemetry/client";
 
 type CmsErrorPageProps = {
-  error: Error;
+  error: Error & { digest?: string };
   reset: () => void;
 };
 
-export default function CmsErrorPage({ reset }: CmsErrorPageProps) {
+export default function CmsErrorPage({ error, reset }: CmsErrorPageProps) {
   const text = i18n.cms.system;
+
+  useEffect(() => {
+    reportClientError({
+      error,
+      source: "boundary",
+      metadata: { boundary: "app/(cms)/cms/error" },
+    });
+  }, [error]);
 
   return (
     <CmsSystemScreen

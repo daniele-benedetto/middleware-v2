@@ -2,7 +2,6 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
-import { telemetryRepository } from "@/lib/server/modules/telemetry/repository";
 import { telemetryMetadataSchema } from "@/lib/server/modules/telemetry/schema";
 
 import type {
@@ -52,6 +51,11 @@ type ServerErrorTelemetryInput = {
   userAgent?: string | null;
   metadata?: unknown;
 };
+
+async function getTelemetryRepository() {
+  const { telemetryRepository } = await import("@/lib/server/modules/telemetry/repository");
+  return telemetryRepository;
+}
 
 function sha256(value: string) {
   return createHash("sha256").update(value).digest("hex");
@@ -192,7 +196,9 @@ async function recordAnalyticsPayload(
     return;
   }
 
-  await telemetryRepository.createAnalyticsEvent({
+  const repository = await getTelemetryRepository();
+
+  await repository.createAnalyticsEvent({
     event: payload.event,
     path,
     referrer: normalizeTelemetryReferrer(payload.referrer),
@@ -212,7 +218,9 @@ async function recordWebVitalPayload(
     return;
   }
 
-  await telemetryRepository.createWebVital({
+  const repository = await getTelemetryRepository();
+
+  await repository.createWebVital({
     metricId: payload.metricId,
     name: payload.name,
     value: payload.value,
@@ -233,7 +241,9 @@ async function recordClientErrorPayload(
   const name = truncate(payload.name, 120);
   const digest = truncate(payload.digest, 160);
 
-  await telemetryRepository.upsertErrorLog({
+  const repository = await getTelemetryRepository();
+
+  await repository.upsertErrorLog({
     fingerprint: createErrorFingerprint({
       source: payload.source,
       name,
@@ -277,7 +287,9 @@ export async function recordServerError(input: ServerErrorTelemetryInput) {
   const name = truncate(input.name, 120);
   const digest = truncate(input.digest, 160);
 
-  await telemetryRepository.upsertErrorLog({
+  const repository = await getTelemetryRepository();
+
+  await repository.upsertErrorLog({
     fingerprint: createErrorFingerprint({
       source: input.source,
       name,
