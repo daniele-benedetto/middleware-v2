@@ -671,8 +671,113 @@ body {
 }
 
 @media (hover: hover) and (pointer: fine) {
+  html.public-custom-cursor-active,
+  html.public-custom-cursor-active body,
+  html.public-custom-cursor-active a,
+  html.public-custom-cursor-active button,
+  html.public-custom-cursor-active [role="button"],
+  html.public-custom-cursor-active summary,
+  html.public-custom-cursor-active [data-cursor-hover] {
+    cursor: none;
+  }
+
+  html.public-custom-cursor-active input,
+  html.public-custom-cursor-active textarea,
+  html.public-custom-cursor-active select,
+  html.public-custom-cursor-active [contenteditable="true"] {
+    cursor: auto;
+  }
+
+  .custom-cursor {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    pointer-events: none;
+  }
+
+  .custom-cursor__dot,
+  .custom-cursor__ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    background: transparent;
+    -webkit-backdrop-filter: invert(1);
+    backdrop-filter: invert(1);
+    will-change: transform, opacity, width, height, background-color, backdrop-filter;
+  }
+
+  .custom-cursor__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    opacity: 0;
+    transition:
+      width var(--motion-fast) var(--easing-standard),
+      height var(--motion-fast) var(--easing-standard),
+      background-color var(--motion-fast) var(--easing-standard),
+      opacity var(--motion-fast) var(--easing-standard);
+  }
+
+  .custom-cursor__ring {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    -webkit-mask: radial-gradient(circle, transparent 61%, #000 62%, #000 66%, transparent 67%);
+    mask: radial-gradient(circle, transparent 61%, #000 62%, #000 66%, transparent 67%);
+    opacity: 0;
+    transition:
+      width var(--motion-base) var(--easing-standard),
+      height var(--motion-base) var(--easing-standard),
+      background-color var(--motion-fast) var(--easing-standard),
+      opacity var(--motion-fast) var(--easing-standard);
+  }
+
+  .custom-cursor[data-visible="true"] .custom-cursor__dot {
+    opacity: 1;
+  }
+
+  .custom-cursor[data-visible="true"] .custom-cursor__ring {
+    opacity: 0.55;
+  }
+
+  .custom-cursor[data-hover="true"] .custom-cursor__dot {
+    width: 9px;
+    height: 9px;
+  }
+
+  .custom-cursor[data-hover="true"] .custom-cursor__ring {
+    width: 58px;
+    height: 58px;
+    -webkit-mask: radial-gradient(circle, transparent 55%, #000 56%, #000 60%, transparent 61%);
+    mask: radial-gradient(circle, transparent 55%, #000 56%, #000 60%, transparent 61%);
+    opacity: 0.82;
+  }
+
+  .custom-cursor[data-pressed="true"] .custom-cursor__dot {
+    width: 11px;
+    height: 11px;
+  }
+
+  .custom-cursor[data-pressed="true"] .custom-cursor__ring {
+    width: 42px;
+    height: 42px;
+    -webkit-mask: radial-gradient(circle, transparent 53%, #000 54%, #000 58%, transparent 59%);
+    mask: radial-gradient(circle, transparent 53%, #000 54%, #000 58%, transparent 59%);
+  }
+
   .cms-scroll:hover::-webkit-scrollbar-thumb {
     background: var(--ink);
+  }
+}
+
+.custom-cursor {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .custom-cursor {
+    display: block;
   }
 }
 

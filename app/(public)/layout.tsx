@@ -1,4 +1,5 @@
 import { CookieConsentBanner, PublicFooter, PublicHeader } from "@/components/public";
+import { CustomCursor } from "@/components/public/custom-cursor";
 import { PublicPageTransition } from "@/components/public/public-page-transition";
 import { i18n } from "@/lib/i18n";
 import { getLegalConsentVersion } from "@/lib/public/server/legal-consent";
@@ -31,6 +32,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         />
       </div>
       <CookieConsentBanner consentVersion={legalConsentVersion} />
+      <CustomCursor />
     </div>
   );
 }
