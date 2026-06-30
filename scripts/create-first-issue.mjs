@@ -34,6 +34,17 @@ const categories = [
   { name: "Analisi", slug: "analisi" },
 ];
 
+const tags = [
+  { name: "Quartiere", slug: "quartiere" },
+  { name: "Sicurezza", slug: "sicurezza" },
+  { name: "Comunità", slug: "comunita" },
+  { name: "Memoria", slug: "memoria" },
+  { name: "Partecipazione", slug: "partecipazione" },
+  { name: "Conflitto", slug: "conflitto" },
+  { name: "Generazioni", slug: "generazioni" },
+  { name: "Analisi urbana", slug: "analisi-urbana" },
+];
+
 const articles = [
   {
     key: "editoriale",
@@ -42,6 +53,7 @@ const articles = [
     slug: "perche-un-magazine",
     categorySlug: "editoriale",
     author: "redazione",
+    tagSlugs: ["quartiere", "sicurezza", "comunita"],
     excerpt:
       "Questo numero si apre con una domanda semplice e insieme impegnativa: perche costruire un magazine, oggi, dentro un territorio attraversato da trasformazioni rapide, conflitti diffusi e parole pubbliche spesso consumate prima ancora di essere comprese? La risposta non e una dichiarazione di intenti astratta, ma il tentativo di mettere in forma uno spazio comune, capace di raccogliere osservazioni, voci, materiali e contraddizioni senza ridurli a slogan.",
   },
@@ -52,6 +64,7 @@ const articles = [
     slug: "coordinate-di-quartiere",
     categorySlug: "approfondimenti",
     author: "redazione",
+    tagSlugs: ["quartiere", "analisi-urbana", "sicurezza"],
     excerpt:
       "Le coordinate del quartiere non coincidono soltanto con una mappa. Sono fatte di strade, soglie, negozi, cortili, fermate, presidi informali, orari in cui la citta cambia passo e relazioni che diventano visibili solo quando qualcosa si incrina. Questo approfondimento ricostruisce il contesto del numero provando a tenere insieme cronologia, descrizione e domande politiche.",
   },
@@ -62,6 +75,7 @@ const articles = [
     slug: "giovani-colleghi-abitanti",
     categorySlug: "interviste",
     author: "redazione",
+    tagSlugs: ["generazioni", "quartiere", "partecipazione"],
     excerpt:
       "La conversazione con giovani colleghi e abitanti parte da gesti quotidiani: attraversare una piazza, scegliere una strada, restare dopo il lavoro, riconoscere chi vive lo stesso spazio con ritmi diversi. Ne emerge uno sguardo generazionale non compatto, a tratti contraddittorio, ma prezioso per capire come il quartiere viene percepito da chi lo abita nel presente.",
   },
@@ -72,6 +86,7 @@ const articles = [
     slug: "abitanti-storici",
     categorySlug: "interviste",
     author: "redazione",
+    tagSlugs: ["memoria", "quartiere", "generazioni"],
     excerpt:
       "Gli abitanti storici raccontano il quartiere attraverso una memoria che non e nostalgia, ma archivio vivo di usi, conflitti, perdite e permanenze. Nell'intervista affiorano trasformazioni lente e brusche, luoghi scomparsi e pratiche che resistono, insieme alla difficolta di nominare cosa sia davvero cambiato e cosa invece continui a tornare sotto forme nuove.",
   },
@@ -82,6 +97,7 @@ const articles = [
     slug: "costruire-comunita-di-quartiere",
     categorySlug: "contributi",
     author: null,
+    tagSlugs: ["comunita", "partecipazione", "conflitto"],
     excerpt:
       "Parlare di comunita di quartiere significa evitare due scorciatoie: immaginarla come un passato perduto oppure invocarla come soluzione immediata a problemi strutturali. Questo contributo la considera invece una pratica fragile, fatta di infrastrutture relazionali, fiducia costruita nel tempo, cura degli spazi comuni e capacita di reggere il dissenso senza trasformarlo subito in distanza.",
   },
@@ -92,6 +108,7 @@ const articles = [
     slug: "scomporre-la-sicurezza",
     categorySlug: "contributi",
     author: null,
+    tagSlugs: ["sicurezza", "conflitto", "quartiere"],
     excerpt:
       "La sicurezza e una parola che tende a chiudere la discussione proprio quando dovrebbe aprirla. Scomporla significa distinguere paure reali, bisogni materiali, dispositivi di controllo, retoriche emergenziali e pratiche di mutuo riconoscimento. Il contributo di rottura del numero prova a separare questi piani, per rifiutare risposte automatiche e rendere leggibile cio che resta nascosto nel discorso pubblico.",
   },
@@ -102,6 +119,7 @@ const articles = [
     slug: "analizzare-il-tessuto-del-quartiere",
     categorySlug: "contributi",
     author: null,
+    tagSlugs: ["quartiere", "analisi-urbana", "comunita"],
     excerpt:
       "Il tessuto del quartiere non e omogeneo: si addensa in alcuni punti, si sfilaccia in altri, produce continuita impreviste e fratture molto concrete. Analizzarlo vuol dire osservare come luoghi, relazioni, servizi, vuoti urbani, economie minute e pratiche quotidiane compongano una trama che nessun indicatore da solo riesce a restituire.",
   },
@@ -112,6 +130,7 @@ const articles = [
     slug: "giovane-attivista-del-quartiere",
     categorySlug: "interviste",
     author: "redazione",
+    tagSlugs: ["partecipazione", "generazioni", "conflitto"],
     excerpt:
       "La voce di una giovane attivista attraversa il numero portando dentro la discussione un punto di vista insieme pratico e immaginativo. Partecipazione, conflitto e futuro non vengono trattati come parole grandi, ma come questioni che si misurano nelle assemblee, nelle relazioni difficili, nella fatica di tenere aperti spazi collettivi quando il tempo disponibile sembra sempre meno.",
   },
@@ -122,6 +141,7 @@ const articles = [
     slug: "un-attivista-di-lungo-corso",
     categorySlug: "interviste",
     author: "redazione",
+    tagSlugs: ["memoria", "partecipazione", "conflitto"],
     excerpt:
       "L'intervista con un attivista di lungo corso mette in relazione esperienza e cambiamento senza trasformare il passato in manuale. Il racconto attraversa stagioni diverse di mobilitazione, linguaggi che si sono consumati, forme organizzative mutate e domande che restano aperte: come trasmettere saperi senza irrigidirli, come riconoscere il nuovo senza perdere memoria.",
   },
@@ -132,6 +152,7 @@ const articles = [
     slug: "il-ruolo-della-sicurezza",
     categorySlug: "contributi",
     author: null,
+    tagSlugs: ["sicurezza", "analisi-urbana", "conflitto"],
     excerpt:
       "Il ruolo della sicurezza nel quartiere non puo essere compreso solo attraverso la cronaca o l'amministrazione dell'ordine. E una dimensione che riguarda percezioni, accesso agli spazi, rapporti di genere, condizioni economiche, fiducia nelle istituzioni e possibilita di autorganizzazione. Il contributo prova a leggere questi intrecci senza ridurre la complessita a una formula.",
   },
@@ -142,6 +163,7 @@ const articles = [
     slug: "elementi-emersi-e-ipotesi-di-lavoro",
     categorySlug: "analisi",
     author: "redazione",
+    tagSlugs: ["analisi-urbana", "sicurezza", "partecipazione"],
     excerpt:
       "La chiusura non pretende di concludere cio che il numero ha aperto. Raccoglie elementi emersi, tensioni ricorrenti e prime ipotesi di lavoro, provando a trasformare gli articoli precedenti in una traccia operativa. Non una sintesi pacificata, ma una mappa provvisoria per continuare a discutere sicurezza, territorio e radicamento con piu precisione.",
   },
@@ -181,6 +203,33 @@ function richText(text) {
       },
     ],
   };
+}
+
+function issueDescriptionRich() {
+  return {
+    type: "doc",
+    content: [
+      paragraph(
+        "Il primo numero di Middleware nasce intorno a una parola che nel discorso pubblico sembra non avere piu bisogno di spiegazioni: sicurezza. Proprio per questo prova a rallentare, a scomporla, a riportarla nei luoghi in cui viene pronunciata e nelle vite che attraversa. Non cerca una definizione unica, ma una costellazione di scene, interviste, contributi e appunti capaci di mostrare quanto siano diversi i bisogni che quella parola raccoglie e quanto siano rischiose le risposte automatiche.",
+      ),
+      paragraph(
+        "Il quartiere diventa il campo di osservazione del numero: una scala abbastanza concreta da evitare astrazioni e abbastanza complessa da non ridurre tutto a cronaca. Le strade, le piazze, i cortili, le soglie dei negozi e gli spazi informali permettono di vedere come paura, fiducia, controllo, cura e conflitto convivano nello stesso territorio. Ogni articolo prova a restituire un pezzo di questa trama senza trasformarla in diagnosi definitiva.",
+      ),
+      paragraph(
+        "Le voci raccolte nel numero non vengono ordinate per produrre consenso. Giovani abitanti, persone con memoria lunga del territorio, attivisti, contributi analitici e testi editoriali compongono un quadro intenzionalmente non pacificato. L'obiettivo e rendere leggibili le differenze: chi percepisce insicurezza, chi subisce controllo, chi prova a costruire relazioni, chi legge nelle trasformazioni urbane una perdita, chi invece intravede possibilita nuove.",
+      ),
+      paragraph(
+        "Scomporre la sicurezza significa allora distinguere tra bisogni materiali e retoriche emergenziali, tra richiesta di protezione e domanda di riconoscimento, tra conflitti reali e narrazioni che li semplificano. Il numero invita a trattare queste dimensioni come questioni politiche e sociali, non come problemi da chiudere con una formula. Per questo alterna mappe, interviste, contributi e analisi: forme diverse per tenere aperta la complessita.",
+      ),
+      paragraph(
+        "Questo numero serve anche come prova editoriale del magazine: definisce un metodo, un tono e una postura. Middleware vuole essere uno spazio in cui i contenuti non siano soltanto pubblicati, ma messi in relazione; in cui le categorie aiutino a orientarsi senza irrigidire il discorso; in cui immagini, tag, issue e articoli costruiscano un archivio navigabile. La sicurezza, qui, non e il punto di arrivo: e il primo banco di prova per capire come raccontare un territorio senza consegnarlo alla paura.",
+      ),
+    ],
+  };
+}
+
+function json(value) {
+  return JSON.stringify(value);
 }
 
 function textNode(text, marks) {
@@ -329,6 +378,18 @@ async function upsertAuthor(client) {
   return result.rows[0].id;
 }
 
+async function upsertTag(client, tag) {
+  const id = randomUUID();
+  const result = await client.query(
+    `insert into tags (id, name, slug, "isActive", "createdAt", "updatedAt")
+     values ($1, $2, $3, true, $4, $4)
+     on conflict (slug) do update set name = excluded.name, "isActive" = true, "updatedAt" = excluded."updatedAt"
+     returning id`,
+    [id, tag.name, tag.slug, now],
+  );
+  return result.rows[0].id;
+}
+
 async function upsertIssue(client) {
   const id = randomUUID();
   const result = await client.query(
@@ -346,16 +407,33 @@ async function upsertIssue(client) {
     [
       id,
       "Scomporre la sicurezza",
-      styledTitle("Scomporre la [[sicurezza]]"),
+      json(styledTitle("Scomporre la [[sicurezza]]")),
       "scomporre-la-sicurezza-primo-numero",
-      richText(
-        "Un primo numero dedicato al quartiere, alle sue voci e ai modi in cui la sicurezza puo essere letta, discussa e ricomposta.",
-      ),
+      json(issueDescriptionRich()),
       issuePublishedAt,
       now,
     ],
   );
   return result.rows[0].id;
+}
+
+async function syncArticleTags(client, articleId, tagSlugs, tagIdsBySlug) {
+  await client.query(`delete from article_tags where "articleId" = $1`, [articleId]);
+
+  for (const tagSlug of tagSlugs) {
+    const tagId = tagIdsBySlug.get(tagSlug);
+
+    if (!tagId) {
+      throw new Error(`Missing tag for slug: ${tagSlug}`);
+    }
+
+    await client.query(
+      `insert into article_tags ("articleId", "tagId", "createdAt")
+       values ($1, $2, $3)
+       on conflict ("articleId", "tagId") do nothing`,
+      [articleId, tagId, now],
+    );
+  }
 }
 
 async function upsertArticle(client, article, issueId, categoryId, redazioneId, index) {
@@ -393,11 +471,11 @@ async function upsertArticle(client, article, issueId, categoryId, redazioneId, 
       article.key === "approfondimento" || article.key === "ruolo-sicurezza",
       publishedAt,
       article.title,
-      article.titleStyled,
+      json(article.titleStyled),
       article.slug,
       article.excerpt,
-      richText(article.excerpt),
-      articleContentRich(article, index),
+      json(richText(article.excerpt)),
+      json(articleContentRich(article, index)),
       imageUrl,
       imageAlt,
       now,
@@ -463,7 +541,7 @@ async function updateHomeBlocks(client, issueId, articleIdsByKey) {
 
   await client.query(
     `update issues set "homeBlocks" = $1, "homeVariant" = 'black', "updatedAt" = $2 where id = $3`,
-    [JSON.stringify(homeBlocks), now, issueId],
+    [json(homeBlocks), now, issueId],
   );
 }
 
@@ -478,16 +556,20 @@ try {
     categoryIdsBySlug.set(category.slug, await upsertCategory(client, category));
   }
 
+  const tagIdsBySlug = new Map();
+  for (const tag of tags) {
+    tagIdsBySlug.set(tag.slug, await upsertTag(client, tag));
+  }
+
   const redazioneId = await upsertAuthor(client);
   const issueId = await upsertIssue(client);
   const articleIdsByKey = new Map();
 
   for (const [index, article] of articles.entries()) {
     const categoryId = categoryIdsBySlug.get(article.categorySlug);
-    articleIdsByKey.set(
-      article.key,
-      await upsertArticle(client, article, issueId, categoryId, redazioneId, index),
-    );
+    const articleId = await upsertArticle(client, article, issueId, categoryId, redazioneId, index);
+    await syncArticleTags(client, articleId, article.tagSlugs, tagIdsBySlug);
+    articleIdsByKey.set(article.key, articleId);
   }
 
   await updateHomeBlocks(client, issueId, articleIdsByKey);
