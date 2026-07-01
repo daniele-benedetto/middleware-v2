@@ -1,4 +1,4 @@
-const telemetryServiceMock = vi.hoisted(() => ({
+const observabilityErrorsServiceMock = vi.hoisted(() => ({
   recordServerError: vi.fn(),
 }));
 
@@ -6,8 +6,8 @@ const logServerEventMock = vi.hoisted(() => ({
   logServerEvent: vi.fn(),
 }));
 
-vi.mock("@/lib/server/modules/telemetry/service", () => ({
-  telemetryService: telemetryServiceMock,
+vi.mock("@/lib/server/modules/observability-errors/service", () => ({
+  observabilityErrorsService: observabilityErrorsServiceMock,
 }));
 
 vi.mock("@/lib/server/observability/log", () => logServerEventMock);
@@ -40,28 +40,33 @@ describe("onRequestError", () => {
       },
     );
 
-    expect(telemetryServiceMock.recordServerError).toHaveBeenCalledWith({
-      source: "server",
-      name: "Error",
-      message: "boom",
-      digest: "digest-1",
-      stack: expect.any(String),
-      path: "/articoli/test?token=secret",
-      method: "GET",
-      routePath: "/app/(public)/articoli/[slug]/page",
-      routeType: "render",
-      requestId: "request-1",
-      userAgent: "Test browser",
-      metadata: {
-        routerKind: "App Router",
-        renderSource: "server-rendering",
-        revalidateReason: null,
+    expect(observabilityErrorsServiceMock.recordServerError).toHaveBeenCalledWith(
+      {
+        name: "Error",
+        message: "boom",
+        digest: "digest-1",
+        stack: expect.any(String),
+        path: "/articoli/test?token=secret",
+        method: "GET",
+        routePath: "/app/(public)/articoli/[slug]/page",
+        routeType: "render",
+        requestId: "request-1",
+        metadata: {
+          routerKind: "App Router",
+          renderSource: "server-rendering",
+          revalidateReason: null,
+        },
       },
-    });
+      {
+        userAgent: "Test browser",
+        method: "GET",
+        requestId: "request-1",
+      },
+    );
   });
 
   it("logs telemetry failures without throwing", async () => {
-    telemetryServiceMock.recordServerError.mockRejectedValue(new Error("db down"));
+    observabilityErrorsServiceMock.recordServerError.mockRejectedValue(new Error("db down"));
 
     await expect(
       onRequestError(

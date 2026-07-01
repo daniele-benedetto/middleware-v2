@@ -348,10 +348,16 @@ export const ErrorGroupScalarFieldEnum = {
   impactArea: 'impactArea',
   userImpact: 'userImpact',
   regression: 'regression',
+  priorityScore: 'priorityScore',
+  priorityReasons: 'priorityReasons',
   firstRelease: 'firstRelease',
   lastRelease: 'lastRelease',
   resolvedAt: 'resolvedAt',
-  resolvedBy: 'resolvedBy'
+  resolvedBy: 'resolvedBy',
+  reopenedAt: 'reopenedAt',
+  reopenedBy: 'reopenedBy',
+  lastStatusAt: 'lastStatusAt',
+  lastStatusBy: 'lastStatusBy'
 } as const
 
 export type ErrorGroupScalarFieldEnum = (typeof ErrorGroupScalarFieldEnum)[keyof typeof ErrorGroupScalarFieldEnum]

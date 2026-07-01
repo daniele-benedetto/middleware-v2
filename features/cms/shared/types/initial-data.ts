@@ -16,4 +16,4 @@ export type ArticlesListInitialData = RouterOutputs["articles"]["list"];
 export type AuthorsListInitialData = RouterOutputs["authors"]["list"];
 export type AuditLogsListInitialData = RouterOutputs["auditLogs"]["list"];
 export type UsersListInitialData = RouterOutputs["users"]["list"];
-export type TelemetryErrorsListInitialData = RouterOutputs["telemetry"]["errorsList"];
+export type ObservabilityErrorsListInitialData = RouterOutputs["observabilityErrors"]["list"];

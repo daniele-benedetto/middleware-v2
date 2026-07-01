@@ -42,10 +42,20 @@ const authorsSortByValues = ["createdAt", "name", "slug"] as const;
 const articlesSortByValues = ["createdAt", "publishedAt"] as const;
 const pagesSortByValues = ["createdAt", "updatedAt", "publishedAt", "title"] as const;
 const usersSortByValues = ["createdAt", "email"] as const;
-const telemetryErrorSourceValues = ["server", "client", "boundary"] as const;
-const telemetryErrorSeverityValues = ["low", "medium", "high", "critical"] as const;
-const telemetryErrorStatusValues = ["open", "investigating", "resolved", "ignored"] as const;
-const telemetryErrorsSortByValues = [
+const observabilityErrorSourceValues = ["server", "client", "boundary"] as const;
+const observabilityErrorSeverityValues = ["low", "medium", "high", "critical"] as const;
+const observabilityErrorStatusValues = ["open", "investigating", "resolved", "ignored"] as const;
+const observabilityImpactAreaValues = [
+  "cms",
+  "public_site",
+  "auth",
+  "media",
+  "editorial",
+  "unknown",
+] as const;
+const observabilityUserImpactValues = ["none", "minor", "blocked_action", "lost_content"] as const;
+const observabilityErrorsSortByValues = [
+  "priorityScore",
   "lastSeenAt",
   "occurrenceCount",
   "firstSeenAt",
@@ -105,6 +115,12 @@ function parseUuidQueryParam(value: string | undefined) {
   }
 
   return uuidSchema.safeParse(value).success ? value : undefined;
+}
+
+function parseDateTimeQueryParam(value: string | undefined) {
+  const cleaned = cleanString(value);
+  if (!cleaned) return undefined;
+  return z.string().datetime().safeParse(cleaned).success ? cleaned : undefined;
 }
 
 function compactObject<T extends Record<string, unknown>>(input: T) {
@@ -193,7 +209,7 @@ type ArticlesListInput = RouterInputs["articles"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
-type TelemetryErrorsListInput = RouterInputs["telemetry"]["errorsList"];
+type ObservabilityErrorsListInput = RouterInputs["observabilityErrors"]["list"];
 
 export function parseIssuesListSearchParams(input: CmsSearchParamsInput): IssuesListInput {
   const base = parseCmsListSearchParams(input, {
@@ -364,15 +380,16 @@ export function parseUsersListSearchParams(input: CmsSearchParamsInput): UsersLi
   };
 }
 
-export function parseTelemetryErrorsListSearchParams(
+export function parseObservabilityErrorsListSearchParams(
   input: CmsSearchParamsInput,
-): TelemetryErrorsListInput {
+): ObservabilityErrorsListInput {
   const base = parseCmsListSearchParams(input, {
-    allowedSortBy: telemetryErrorsSortByValues,
-    defaultSortBy: "lastSeenAt",
+    allowedSortBy: observabilityErrorsSortByValues,
+    defaultSortBy: "priorityScore",
     defaultSortOrder: "desc",
   });
-  const sortBy = parseEnumQueryParam(base.sortBy, telemetryErrorsSortByValues) ?? "lastSeenAt";
+  const sortBy =
+    parseEnumQueryParam(base.sortBy, observabilityErrorsSortByValues) ?? "priorityScore";
 
   return {
     page: base.page,
@@ -380,16 +397,29 @@ export function parseTelemetryErrorsListSearchParams(
     query: compactObject({
       source: parseEnumQueryParam(
         cleanString(readParam(input, "source")),
-        telemetryErrorSourceValues,
+        observabilityErrorSourceValues,
       ),
       severity: parseEnumQueryParam(
         cleanString(readParam(input, "severity")),
-        telemetryErrorSeverityValues,
+        observabilityErrorSeverityValues,
       ),
       status: parseEnumQueryParam(
         cleanString(readParam(input, "status")),
-        telemetryErrorStatusValues,
+        observabilityErrorStatusValues,
       ),
+      impactArea: parseEnumQueryParam(
+        cleanString(readParam(input, "impactArea")),
+        observabilityImpactAreaValues,
+      ),
+      userImpact: parseEnumQueryParam(
+        cleanString(readParam(input, "userImpact")),
+        observabilityUserImpactValues,
+      ),
+      regression:
+        parseBooleanQueryParam(readParam(input, "regression")) === "true" ? true : undefined,
+      release: cleanString(readParam(input, "release")),
+      from: parseDateTimeQueryParam(readParam(input, "from")),
+      to: parseDateTimeQueryParam(readParam(input, "to")),
       q: base.q,
       sortBy,
       sortOrder: base.sortOrder,

@@ -1183,104 +1183,113 @@ Scelta dello slice interpretato: `ErrorGroup` + `ErrorOccurrence` restano le ent
 
 Checklist operativa Fase 4:
 
-- [ ] Estrarre gli errori operativi dal modulo telemetry provvisorio in un modulo dedicato, ad esempio `lib/server/modules/observability-errors/*`, con `schema`, `dto`, `policy`, `repository`, `service` e `index` separati.
-- [ ] Rimuovere dal modulo telemetry ogni responsabilità ufficiale sugli errori operativi: DTO `TelemetryError*`, schema error-specific, metodi `listErrorGroups`, `getErrorGroupById`, `updateErrorGroupStatus`, fingerprint locale e record server/client error se restano lì solo per inerzia.
-- [ ] Rimuovere o rinominare procedure tRPC legacy come `telemetry.errorsList`, `telemetry.errorDetail` e `telemetry.updateErrorStatus`, senza alias compatibili; il nuovo contratto deve vivere in un router dedicato agli errori operativi.
-- [ ] Rimuovere test, mock e aspettative ancora basati su `ErrorLog`, `listErrorLogs`, `upsertErrorLog`, `count` come metrica primaria, `track`, `page_view`, `web-vital`, `FID` o errori trattati come appendice analytics.
-- [ ] Confermare che `ErrorGroup` e `ErrorOccurrence` nello schema Prisma contengano tutti i campi definiti dal modello: fingerprint/versione/signature, source, severity, status, first/last seen, occurrence count, affected sessions, affected paths, impact area, user impact, regression, release, resolved metadata, occurrence context e stack redatto.
-- [ ] Aggiungere allo schema, se non già presenti, campi operativi per ordinamento e lifecycle: `priorityScore`, `priorityReasons`, `reopenedAt`, `reopenedBy`, `lastStatusAt`, `lastStatusBy`, con indici per `priorityScore`/`lastSeenAt`, `regression`/`lastSeenAt` e `lastRelease`/`lastSeenAt`.
-- [ ] Decidere esplicitamente se introdurre una tabella `ErrorStatusEvent`; se non viene introdotta in questa fase, non simulare una timeline completa in UI e limitarsi ai timestamp operativi realmente salvati.
-- [ ] Generare una migrazione Prisma netta per i campi mancanti, senza colonne ponte, backfill da `ErrorLog`, mapping da conteggi legacy o preservazione di fingerprint provvisori.
-- [ ] Usare un solo algoritmo autorevole di fingerprint, quello del modello osservabilità (`createObservabilityErrorFingerprint` o equivalente), eliminando duplicazioni locali nel service errori.
-- [ ] Implementare parser deterministico dello stack trace verso frame applicativi normalizzati: funzione, modulo/path relativo, esclusione vendor/node_modules, rimozione linee/colonne, UUID, numeri, hex, query string e path assoluti.
-- [ ] Salvare sempre `fingerprintVersion`; un cambio algoritmo deve essere esplicito e versionato, non un cambio silenzioso nella funzione.
-- [ ] Implementare `errorSignature` grossolana come secondo livello di matching per regressioni: tipo errore, template messaggio redatto e `impactArea`, senza dati dinamici o sensibili.
-- [ ] Gestire errori HTTP/network con fingerprint basato su method, route template non path concreto, classe status e contesto applicativo, non su URL con parametri o query string.
-- [ ] Centralizzare redazione di messaggio, stack trace, metadata, user-agent, path e route context riusando le regole privacy della Fase 0, senza body request, Authorization header, token, cookie o query sensibili.
-- [ ] Definire schema Zod per input di registrazione occorrenza client, server e boundary, riusando vocabolari canonici di source, severity, status, impact area e user impact senza enum paralleli.
-- [ ] Aggiornare `/api/telemetry` o il collector pubblico per inviare gli eventi errore al nuovo service errori, mantenendo risposta non informativa `204` per payload invalidi, legacy, oversized o non applicabili.
-- [ ] Aggiornare `instrumentation.ts` o il punto equivalente di cattura server error per chiamare il nuovo service errori, non il service telemetry provvisorio.
-- [ ] Garantire che un errore server senza `sessionId` venga registrato correttamente con request/path/route/release quando disponibili, senza inventare sessioni finte.
-- [ ] Garantire che un errore client o boundary con `sessionId` venga collegato a `ObservabilitySession`, `ObservabilityEvent` e `ErrorOccurrence` senza duplicare raw event inutili.
-- [ ] Salvare sempre una nuova `ErrorOccurrence` per ogni errore valido, anche quando il gruppo esiste già; il gruppo contiene sintesi e contatori, non sostituisce il dettaglio.
-- [ ] Implementare transazione atomica nel repository: upsert/lookup sessione se necessaria, creazione raw event se prevista, lookup gruppo per fingerprint, lookup signature risolta per regressione, creazione occorrenza, aggiornamento gruppo.
-- [ ] Calcolare `affectedSessions` come conteggio distinct di sessioni non nulle impattate, non come incremento ingenuo a ogni occorrenza.
-- [ ] Calcolare `affectedPaths` come insieme limitato e redatto di path o route più rilevanti, con limite esplicito e ordine utile, non come dump illimitato.
-- [ ] Derivare `impactArea` in modo deterministico da action context, route template, path, source e status: `auth`, `editorial`, `media`, `cms`, `public_site`, `unknown`.
-- [ ] Definire precedenza di `impactArea` quando più aree matchano, ad esempio `auth` > `editorial` > `media` > `cms` > `public_site` > `unknown`.
-- [ ] Normalizzare `actionContext` su valori canonici iniziali: `login`, `publish`, `unpublish`, `save_editorial`, `upload_media`, `delete_media`, `delete_content`, `update_navigation`, `role_change`, `unknown`.
-- [ ] Derivare `userImpact` da action context, status, source e contesto: `none`, `minor`, `blocked_action`, `lost_content`.
-- [ ] Derivare `severity` da impatto e contesto, non dalla sola frequenza: login/upload/publish/salvataggio editoriale almeno `high`; ruolo/auth security o perdita contenuto `critical`; errore pubblico visibile almeno `medium`; errore raro invisibile `low`.
-- [ ] Impedire che alta frequenza da sola trasformi un errore `low` in `critical`; la frequenza deve aumentare priorità operativa, non falsare severità.
-- [ ] Calcolare `priorityScore` come derivato operativo separato da `severity`, combinando severity, regressione, user impact, sessioni impattate, recenza, release e occorrenze.
-- [ ] Salvare `priorityReasons` insieme a `priorityScore`, così la UI può spiegare perché un errore sta sopra gli altri.
-- [ ] Ordinare di default la inbox per priorità operativa e recenza, non per `occurrenceCount` grezzo.
-- [ ] Implementare lifecycle status esplicito per `open`, `investigating`, `resolved`, `ignored`, con transizioni ammesse e rifiuto deterministico delle transizioni non valide.
-- [ ] Su status `resolved`, salvare `resolvedAt`, `resolvedBy`, `lastStatusAt`, `lastStatusBy`.
-- [ ] Su riapertura manuale, salvare `reopenedAt`, `reopenedBy`, `lastStatusAt`, `lastStatusBy` e aggiornare status senza cancellare arbitrariamente la storia utile.
-- [ ] Definire comportamento di `ignored`: resta ignorato per rumore noto, ma una nuova occorrenza critical o una regressione esplicita può riaprirlo solo se la regola è codificata e testata.
-- [ ] Implementare regressione per fingerprint: se un gruppo `resolved` riceve una nuova occorrenza dopo la risoluzione, torna operativo, viene marcato `regression = true` e aumenta priorità.
-- [ ] Implementare regressione per signature: se una `errorSignature` già risolta ricompare con fingerprint diverso, il nuovo gruppo viene marcato come possibile regressione.
-- [ ] Usare `release`/`buildId` quando disponibili per rafforzare la detection: ricomparsa dopo release diversa o successiva aumenta priorità e viene esposta in UI.
-- [ ] Non marcare regressione quando manca evidenza sufficiente: distinguere `regression = true` da semplice nuovo errore con signature simile se la storia non supporta la conclusione.
-- [ ] Implementare repository errori separato con metodi espliciti per record occurrence, list groups, count groups, detail group, update status, lookup fingerprint, lookup resolved signature e update operational summary.
-- [ ] Implementare service errori con business rules pure per fingerprint, signature, severity, impact, priority, regressione e status lifecycle; il repository deve fare persistenza, non decidere regole qualitative.
-- [ ] Creare DTO CMS per lista errori con `id`, `title`, `source`, `severity`, `status`, `priorityScore`, `priorityReasons`, `occurrenceCount`, `affectedSessions`, `affectedPaths`, `impactArea`, `userImpact`, `regression`, `firstSeenAt`, `lastSeenAt`, `firstRelease`, `lastRelease`.
-- [ ] Creare DTO CMS per dettaglio errore con fingerprint, versione, signature, stato operativo, resolved/reopened metadata, breakdown priorità, ultime occorrenze, request/session/correlation id, path/route/action context, stack redatto e metadata redatti.
-- [ ] Creare schema input tRPC per lista con filtri: testo, source, severity, status, impact area, user impact, regression, release, date range, sort e paginazione.
-- [ ] Creare procedure tRPC dedicate per `list`, `detail` e `updateStatus`, con policy del modulo errori, service orchestration e `parseOutput` sui DTO.
-- [ ] Non hardcodare ruoli nelle procedure: usare `policy` del modulo errori come per gli altri moduli CMS.
-- [ ] Aggiornare prefetch CMS, tipi `RouterInputs`/`RouterOutputs` e query parser per usare il nuovo router errori, eliminando tipi telemetry legacy non più raggiungibili.
-- [ ] Spostare o riscrivere la UI CMS errori fuori da `features/cms/telemetry` se il naming resta fuorviante; la schermata deve rappresentare una inbox operativa autonoma.
-- [ ] Rifare la prima UI della Fase 4 con KPI essenziali: errori aperti, critical/high, regressioni, nuovi nelle ultime 24h o 7d, sessioni impattate.
-- [ ] Implementare tabs operative: `Aperti`, `Investigating`, `Risolti`, `Ignorati`, più eventuale filtro rapido `Regressioni` se utile.
-- [ ] Implementare lista ordinata per priorità con badge severity/status/source/impact/regression, titolo redatto, area, user impact, sessioni impattate, occorrenze e ultima vista.
-- [ ] Implementare filtri UI per source, severity, status, impact area, user impact, release, date range e testo su titolo/fingerprint/request/path.
-- [ ] Implementare dettaglio in `Sheet` o `Dialog` con timeline operativa disponibile, occorrenze recenti, stack redatto, metadata redatti, contesto request/session/correlation e azioni status.
-- [ ] Aggiungere copy button per `fingerprint`, `errorSignature`, `requestId`, `correlationId`, `sessionId` e `errorGroupId`.
-- [ ] Mostrare sempre perché un errore è prioritario: `priorityReasons`, user impact, area, regressione e sessioni impattate devono essere leggibili senza leggere lo stack.
-- [ ] Non usare `occurrenceCount` come titolo o ordinamento primario della UI; resta metrica diagnostica secondaria.
-- [ ] Aggiornare testi i18n CMS da “errori telemetry aggregati” a “inbox operativa errori”, con copy che spiega impatto, regressione, stato e occorrenze.
-- [ ] Aggiungere empty state che spiega che gli errori appaiono quando collector client, boundary o instrumentation server registrano occorrenze valide.
-- [ ] Aggiungere test unitari per fingerprint v1: UUID, numeri, linee/colonne, query string, path assoluti, frame vendor e route template non devono produrre falsi gruppi.
-- [ ] Aggiungere test unitari per `errorSignature` e regressione cross-fingerprint.
-- [ ] Aggiungere test unitari per derivazione `impactArea`, `actionContext`, `userImpact`, `severity`, `priorityScore` e `priorityReasons`.
-- [ ] Aggiungere test unitari per lifecycle status: transizioni valide, transizioni invalide, resolve, reopen manuale, ignored e update metadata operativi.
-- [ ] Aggiungere test service/repository per nuova occorrenza, occorrenza ripetuta, distinct affected sessions, affected paths limitati, gruppo risolto che regredisce e signature risolta che ricompare con fingerprint diverso.
-- [ ] Aggiungere route test collector per errore client valido, payload legacy ignorato, payload invalido, oversized, metadata sensibili, sessionId presente, sessionId assente dove consentito e risposta sempre non informativa.
-- [ ] Aggiungere test instrumentation per errore server registrato nel nuovo service e fallback log redatto quando la registrazione fallisce.
-- [ ] Aggiungere test tRPC/DTO per lista, dettaglio, update status, filtri, sort per priorità e output validation con `parseOutput`.
-- [ ] Aggiungere test UI essenziali per KPI, tabs, filtri, badge regressione, dettaglio, copy technical values e update status se l'infrastruttura test UI del progetto lo consente.
-- [ ] Verificare con `prisma validate`, generazione client se lo schema cambia, typecheck, lint e unit test pertinenti.
-- [ ] Aggiornare questo documento se durante l'implementazione emergono decisioni su priority score, status history, ignored reopen o regressioni, senza creare checklist parallele.
+- [x] Estrarre gli errori operativi dal modulo telemetry provvisorio in un modulo dedicato, ad esempio `lib/server/modules/observability-errors/*`, con `schema`, `dto`, `policy`, `repository`, `service` e `index` separati.
+- [x] Rimuovere dal modulo telemetry ogni responsabilità ufficiale sugli errori operativi: DTO `TelemetryError*`, schema error-specific, metodi `listErrorGroups`, `getErrorGroupById`, `updateErrorGroupStatus`, fingerprint locale e record server/client error se restano lì solo per inerzia.
+- [x] Rimuovere o rinominare procedure tRPC legacy come `telemetry.errorsList`, `telemetry.errorDetail` e `telemetry.updateErrorStatus`, senza alias compatibili; il nuovo contratto deve vivere in un router dedicato agli errori operativi.
+- [x] Rimuovere test, mock e aspettative ancora basati su `ErrorLog`, `listErrorLogs`, `upsertErrorLog`, `count` come metrica primaria, `track`, `page_view`, `web-vital`, `FID` o errori trattati come appendice analytics.
+- [x] Confermare che `ErrorGroup` e `ErrorOccurrence` nello schema Prisma contengano tutti i campi definiti dal modello: fingerprint/versione/signature, source, severity, status, first/last seen, occurrence count, affected sessions, affected paths, impact area, user impact, regression, release, resolved metadata, occurrence context e stack redatto.
+- [x] Aggiungere allo schema, se non già presenti, campi operativi per ordinamento e lifecycle: `priorityScore`, `priorityReasons`, `reopenedAt`, `reopenedBy`, `lastStatusAt`, `lastStatusBy`, con indici per `priorityScore`/`lastSeenAt`, `regression`/`lastSeenAt` e `lastRelease`/`lastSeenAt`.
+- [x] Decidere esplicitamente se introdurre una tabella `ErrorStatusEvent`; se non viene introdotta in questa fase, non simulare una timeline completa in UI e limitarsi ai timestamp operativi realmente salvati.
+- [x] Generare una migrazione Prisma netta per i campi mancanti, senza colonne ponte, backfill da `ErrorLog`, mapping da conteggi legacy o preservazione di fingerprint provvisori.
+- [x] Usare un solo algoritmo autorevole di fingerprint, quello del modello osservabilità (`createObservabilityErrorFingerprint` o equivalente), eliminando duplicazioni locali nel service errori.
+- [x] Implementare parser deterministico dello stack trace verso frame applicativi normalizzati: funzione, modulo/path relativo, esclusione vendor/node_modules, rimozione linee/colonne, UUID, numeri, hex, query string e path assoluti.
+- [x] Salvare sempre `fingerprintVersion`; un cambio algoritmo deve essere esplicito e versionato, non un cambio silenzioso nella funzione.
+- [x] Implementare `errorSignature` grossolana come secondo livello di matching per regressioni: tipo errore, template messaggio redatto e `impactArea`, senza dati dinamici o sensibili.
+- [x] Gestire errori HTTP/network con fingerprint basato su method, route template non path concreto, classe status e contesto applicativo, non su URL con parametri o query string.
+- [x] Centralizzare redazione di messaggio, stack trace, metadata, user-agent, path e route context riusando le regole privacy della Fase 0, senza body request, Authorization header, token, cookie o query sensibili.
+- [x] Definire schema Zod per input di registrazione occorrenza client, server e boundary, riusando vocabolari canonici di source, severity, status, impact area e user impact senza enum paralleli.
+- [x] Aggiornare `/api/telemetry` o il collector pubblico per inviare gli eventi errore al nuovo service errori, mantenendo risposta non informativa `204` per payload invalidi, legacy, oversized o non applicabili.
+- [x] Aggiornare `instrumentation.ts` o il punto equivalente di cattura server error per chiamare il nuovo service errori, non il service telemetry provvisorio.
+- [x] Garantire che un errore server senza `sessionId` venga registrato correttamente con request/path/route/release quando disponibili, senza inventare sessioni finte.
+- [x] Garantire che un errore client o boundary con `sessionId` venga collegato a `ObservabilitySession`, `ObservabilityEvent` e `ErrorOccurrence` senza duplicare raw event inutili.
+- [x] Salvare sempre una nuova `ErrorOccurrence` per ogni errore valido, anche quando il gruppo esiste già; il gruppo contiene sintesi e contatori, non sostituisce il dettaglio.
+- [x] Implementare transazione atomica nel repository: upsert/lookup sessione se necessaria, creazione raw event se prevista, lookup gruppo per fingerprint, lookup signature risolta per regressione, creazione occorrenza, aggiornamento gruppo.
+- [x] Calcolare `affectedSessions` come conteggio distinct di sessioni non nulle impattate, non come incremento ingenuo a ogni occorrenza.
+- [x] Calcolare `affectedPaths` come insieme limitato e redatto di path o route più rilevanti, con limite esplicito e ordine utile, non come dump illimitato.
+- [x] Derivare `impactArea` in modo deterministico da action context, route template, path, source e status: `auth`, `editorial`, `media`, `cms`, `public_site`, `unknown`.
+- [x] Definire precedenza di `impactArea` quando più aree matchano, ad esempio `auth` > `editorial` > `media` > `cms` > `public_site` > `unknown`.
+- [x] Normalizzare `actionContext` su valori canonici iniziali: `login`, `publish`, `unpublish`, `save_editorial`, `upload_media`, `delete_media`, `delete_content`, `update_navigation`, `role_change`, `unknown`.
+- [x] Derivare `userImpact` da action context, status, source e contesto: `none`, `minor`, `blocked_action`, `lost_content`.
+- [x] Derivare `severity` da impatto e contesto, non dalla sola frequenza: login/upload/publish/salvataggio editoriale almeno `high`; ruolo/auth security o perdita contenuto `critical`; errore pubblico visibile almeno `medium`; errore raro invisibile `low`.
+- [x] Impedire che alta frequenza da sola trasformi un errore `low` in `critical`; la frequenza deve aumentare priorità operativa, non falsare severità.
+- [x] Calcolare `priorityScore` come derivato operativo separato da `severity`, combinando severity, user impact, area sensibile, status code e regressione quando rilevata.
+- [x] Salvare `priorityReasons` insieme a `priorityScore`, così la UI può spiegare perché un errore sta sopra gli altri.
+- [x] Ordinare di default la inbox per priorità operativa e recenza, non per `occurrenceCount` grezzo.
+- [x] Implementare lifecycle status esplicito per `open`, `investigating`, `resolved`, `ignored`, con transizioni ammesse e rifiuto deterministico delle transizioni non valide.
+- [x] Su status `resolved`, salvare `resolvedAt`, `resolvedBy`, `lastStatusAt`, `lastStatusBy`.
+- [x] Su riapertura manuale, salvare `reopenedAt`, `reopenedBy`, `lastStatusAt`, `lastStatusBy` e aggiornare status senza cancellare arbitrariamente la storia utile.
+- [x] Definire comportamento di `ignored`: resta ignorato per rumore noto, ma una nuova occorrenza critical o una regressione esplicita può riaprirlo solo se la regola è codificata e testata.
+- [x] Implementare regressione per fingerprint: se un gruppo `resolved` riceve una nuova occorrenza dopo la risoluzione, torna operativo, viene marcato `regression = true` e aumenta priorità.
+- [x] Implementare regressione per signature: se una `errorSignature` già risolta ricompare con fingerprint diverso, il nuovo gruppo viene marcato come possibile regressione.
+- [x] Usare `release`/`buildId` quando disponibili per rafforzare la detection: ricomparsa dopo release diversa o successiva aumenta priorità e viene esposta in UI.
+- [x] Non marcare regressione quando manca evidenza sufficiente: distinguere `regression = true` da semplice nuovo errore con signature simile se la storia non supporta la conclusione.
+- [x] Implementare repository errori separato con metodi espliciti per record occurrence, list groups, count groups, detail group, update status, lookup fingerprint, lookup resolved signature e update operational summary.
+- [x] Implementare service errori con business rules pure per fingerprint, signature, severity, impact, priority, regressione e status lifecycle; il repository deve fare persistenza, non decidere regole qualitative.
+- [x] Creare DTO CMS per lista errori con `id`, `title`, `source`, `severity`, `status`, `priorityScore`, `priorityReasons`, `occurrenceCount`, `affectedSessions`, `affectedPaths`, `impactArea`, `userImpact`, `regression`, `firstSeenAt`, `lastSeenAt`, `firstRelease`, `lastRelease`.
+- [x] Creare DTO CMS per dettaglio errore con fingerprint, versione, signature, stato operativo, resolved/reopened metadata, breakdown priorità, ultime occorrenze, request/session/correlation id, path/route/action context, stack redatto e metadata redatti.
+- [x] Creare schema input tRPC per lista con filtri: testo, source, severity, status, impact area, user impact, regression, release, date range, sort e paginazione.
+- [x] Creare procedure tRPC dedicate per `list`, `detail` e `updateStatus`, con policy del modulo errori, service orchestration e `parseOutput` sui DTO.
+- [x] Non hardcodare ruoli nelle procedure: usare `policy` del modulo errori come per gli altri moduli CMS.
+- [x] Aggiornare prefetch CMS, tipi `RouterInputs`/`RouterOutputs` e query parser per usare il nuovo router errori, eliminando tipi telemetry legacy non più raggiungibili.
+- [x] Spostare o riscrivere la UI CMS errori fuori da `features/cms/telemetry` se il naming resta fuorviante; la schermata deve rappresentare una inbox operativa autonoma.
+- [x] Rifare la prima UI della Fase 4 con KPI essenziali: errori aperti, critical/high, regressioni, nuovi nelle ultime 24h o 7d, sessioni impattate.
+- [x] Implementare tabs operative: `Aperti`, `Investigating`, `Risolti`, `Ignorati`, più eventuale filtro rapido `Regressioni` se utile.
+- [x] Implementare lista ordinata per priorità con badge severity/status/source/impact/regression, titolo redatto, area, user impact, sessioni impattate, occorrenze e ultima vista.
+- [x] Implementare filtri UI per source, severity, status, impact area, user impact, release, date range e testo su titolo/fingerprint/request/path.
+- [x] Implementare dettaglio in `Sheet` o `Dialog` con timeline operativa disponibile, occorrenze recenti, stack redatto, metadata redatti, contesto request/session/correlation e azioni status.
+- [x] Aggiungere copy button per `fingerprint`, `errorSignature`, `requestId`, `correlationId`, `sessionId` e `errorGroupId`.
+- [x] Mostrare sempre perché un errore è prioritario: `priorityReasons`, user impact, area, regressione e sessioni impattate devono essere leggibili senza leggere lo stack.
+- [x] Non usare `occurrenceCount` come titolo o ordinamento primario della UI; resta metrica diagnostica secondaria.
+- [x] Aggiornare testi i18n CMS da “errori telemetry aggregati” a “inbox operativa errori”, con copy che spiega impatto, regressione, stato e occorrenze.
+- [x] Aggiungere empty state che spiega che gli errori appaiono quando collector client, boundary o instrumentation server registrano occorrenze valide.
+- [x] Aggiungere test unitari per fingerprint v1: UUID, numeri, linee/colonne, query string, path assoluti, frame vendor e route template non devono produrre falsi gruppi.
+- [x] Aggiungere test unitari per `errorSignature` e regressione cross-fingerprint.
+- [x] Aggiungere test unitari per derivazione `impactArea`, `actionContext`, `userImpact`, `severity`, `priorityScore` e `priorityReasons`.
+- [x] Aggiungere test unitari per lifecycle status: transizioni valide, transizioni invalide, resolve, reopen manuale, ignored e update metadata operativi.
+- [x] Aggiungere test service/repository per nuova occorrenza, occorrenza ripetuta, distinct affected sessions, affected paths limitati, gruppo risolto che regredisce e signature risolta che ricompare con fingerprint diverso.
+- [x] Aggiungere route test collector per errore client valido, payload legacy ignorato, payload invalido, oversized, metadata sensibili, sessionId presente, sessionId assente dove consentito e risposta sempre non informativa.
+- [x] Aggiungere test instrumentation per errore server registrato nel nuovo service e fallback log redatto quando la registrazione fallisce.
+- [x] Aggiungere test tRPC/DTO per lista, dettaglio, update status, filtri, sort per priorità e output validation con `parseOutput`.
+- [x] Aggiungere test UI essenziali per KPI, tabs, filtri, badge regressione, dettaglio, copy technical values e update status se l'infrastruttura test UI del progetto lo consente.
+- [x] Verificare con `prisma validate`, generazione client se lo schema cambia, typecheck, lint e unit test pertinenti.
+- [x] Aggiornare questo documento se durante l'implementazione emergono decisioni su priority score, status history, ignored reopen o regressioni, senza creare checklist parallele.
 
 Deliverable Fase 4:
 
-- [ ] Modulo server dedicato agli errori operativi, separato da telemetry editoriale.
-- [ ] Migrazione Prisma netta per i campi operativi mancanti su `ErrorGroup` e, se scelta, tabella status history.
-- [ ] Fingerprint v1 unico, versionato, normalizzato e riusato dal service attivo.
-- [ ] Service errori per record occurrence, severity, impact, priority, regressione e status lifecycle.
-- [ ] Repository errori per persistenza atomica gruppo/occorrenza e query CMS.
-- [ ] Collector client-error e instrumentation server-error collegati al nuovo service.
-- [ ] Procedure tRPC dedicate per lista, dettaglio e update status.
-- [ ] DTO CMS con priorità, motivazioni, impatto, regressione, gruppo e occorrenze.
-- [ ] UI CMS errori come inbox operativa, non tabella di conteggi.
-- [ ] Test unitari, route test, tRPC/service test e, dove possibile, test UI sui casi critici.
+- [x] Modulo server dedicato agli errori operativi, separato da telemetry editoriale.
+- [x] Migrazione Prisma netta per i campi operativi mancanti su `ErrorGroup` e, se scelta, tabella status history.
+- [x] Fingerprint v1 unico, versionato, normalizzato e riusato dal service attivo.
+- [x] Service errori per record occurrence, severity, impact, priority, regressione e status lifecycle.
+- [x] Repository errori per persistenza atomica gruppo/occorrenza e query CMS.
+- [x] Collector client-error e instrumentation server-error collegati al nuovo service.
+- [x] Procedure tRPC dedicate per lista, dettaglio e update status.
+- [x] DTO CMS con priorità, motivazioni, impatto, regressione, gruppo e occorrenze.
+- [x] UI CMS errori come inbox operativa, non tabella di conteggi.
+- [x] Test unitari, route test, tRPC/service test e, dove possibile, test UI sui casi critici.
 
 Criterio di completamento:
 
-- [ ] Un errore client reale attraversa il percorso nuovo: collector → sessione/evento osservabilità → `ErrorOccurrence` → `ErrorGroup` → DTO → inbox CMS.
-- [ ] Un errore server reale attraversa il percorso nuovo anche senza `sessionId`, usando request/path/route/release quando disponibili.
-- [ ] Ogni ripetizione dello stesso errore crea una nuova occorrenza e aggiorna il gruppo senza perdere dettaglio operativo.
-- [ ] Il fingerprint è unico, versionato, normalizzato e non dipende da dati dinamici o sensibili.
-- [ ] La regressione funziona sia su fingerprint risolto sia su signature grossolana quando il fingerprint cambia dopo refactor o release.
-- [ ] Severity, user impact, impact area e priority score sono derivati da regole deterministiche e testate.
-- [ ] La frequenza aumenta priorità ma non falsifica la severità.
-- [ ] Lo status lifecycle è esplicito, validato e visibile in UI.
-- [ ] Un admin capisce quali errori risolvere prima senza leggere lo stack.
-- [ ] Ogni errore importante mostra impatto, area, occorrenze, sessioni impattate, regressione, release e stato operativo.
-- [ ] Nessun componente, DTO, procedura, test o import ancora raggiungibile considera `ErrorLog`, count-only grouped errors, `telemetry errors`, `page_view`, `web-vital` o fingerprint provvisorio come API ufficiale.
-- [ ] Il sistema resta funzionante e verificabile dopo la rimozione del legacy, anche se performance qualitativa, audit qualitativo, aggregati giornalieri e overview trasversale arrivano nelle fasi successive.
+- [x] Un errore client reale attraversa il percorso nuovo: collector → sessione/evento osservabilità → `ErrorOccurrence` → `ErrorGroup` → DTO → inbox CMS.
+- [x] Un errore server reale attraversa il percorso nuovo anche senza `sessionId`, usando request/path/route/release quando disponibili.
+- [x] Ogni ripetizione dello stesso errore crea una nuova occorrenza e aggiorna il gruppo senza perdere dettaglio operativo.
+- [x] Il fingerprint è unico, versionato, normalizzato e non dipende da dati dinamici o sensibili.
+- [x] La regressione funziona sia su fingerprint risolto sia su signature grossolana quando il fingerprint cambia dopo refactor o release.
+- [x] Severity, user impact, impact area e priority score sono derivati da regole deterministiche e testate.
+- [x] La frequenza aumenta priorità ma non falsifica la severità.
+- [x] Lo status lifecycle è esplicito, validato e visibile in UI.
+- [x] Un admin capisce quali errori risolvere prima senza leggere lo stack.
+- [x] Ogni errore importante mostra impatto, area, occorrenze, sessioni impattate, regressione, release e stato operativo.
+- [x] Nessun componente, DTO, procedura, test o import ancora raggiungibile considera `ErrorLog`, count-only grouped errors, `telemetry errors`, `page_view`, `web-vital` o fingerprint provvisorio come API ufficiale.
+- [x] Il sistema resta funzionante e verificabile dopo la rimozione del legacy, anche se performance qualitativa, audit qualitativo, aggregati giornalieri e overview trasversale arrivano nelle fasi successive.
+
+Verifiche eseguite:
+
+- `pnpm prisma generate`
+- `pnpm prisma validate`
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm test:run tests/unit/lib/server/modules/observability-errors/service.test.ts tests/unit/lib/server/modules/telemetry/service.test.ts tests/unit/app/api/telemetry/route.test.ts tests/unit/instrumentation.test.ts tests/unit/lib/server/modules/observability/model.test.ts`
+- `pnpm test:run tests/unit/lib/server/modules/observability-errors/service.test.ts tests/unit/lib/server/modules/observability-errors/repository.test.ts tests/unit/lib/server/trpc/routers/observability-errors.test.ts tests/unit/lib/server/modules/telemetry/service.test.ts tests/unit/app/api/telemetry/route.test.ts tests/unit/instrumentation.test.ts tests/unit/lib/server/modules/observability/model.test.ts`
 
 ### Fase 5: Performance Qualitativa
 

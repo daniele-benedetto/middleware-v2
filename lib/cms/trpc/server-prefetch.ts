@@ -20,7 +20,7 @@ type AuthorsListInput = RouterInputs["authors"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
-type TelemetryErrorsListInput = RouterInputs["telemetry"]["errorsList"];
+type ObservabilityErrorsListInput = RouterInputs["observabilityErrors"]["list"];
 type MediaListOutput = RouterOutputs["media"]["list"];
 type NavigationMenusOutput = RouterOutputs["navigation"]["listMenus"];
 type NavigationOptionsOutput = RouterOutputs["navigation"]["listOptions"];
@@ -32,7 +32,7 @@ type ArticlesListOutput = RouterOutputs["articles"]["list"];
 type AuthorsListOutput = RouterOutputs["authors"]["list"];
 type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
-type TelemetryErrorsListOutput = RouterOutputs["telemetry"]["errorsList"];
+type ObservabilityErrorsListOutput = RouterOutputs["observabilityErrors"]["list"];
 
 type IssueDetailOutput = RouterOutputs["issues"]["getById"];
 type IssuePreviewOutput = RouterOutputs["issues"]["getPreviewById"];
@@ -91,10 +91,10 @@ export async function prefetchUsersList(input: UsersListInput): Promise<UsersLis
   return prefetchCmsList(input, (caller, listInput) => caller.users.list(listInput));
 }
 
-export async function prefetchTelemetryErrorsList(
-  input: TelemetryErrorsListInput,
-): Promise<TelemetryErrorsListOutput> {
-  return prefetchCmsList(input, (caller, listInput) => caller.telemetry.errorsList(listInput));
+export async function prefetchObservabilityErrorsList(
+  input: ObservabilityErrorsListInput,
+): Promise<ObservabilityErrorsListOutput> {
+  return prefetchCmsList(input, (caller, listInput) => caller.observabilityErrors.list(listInput));
 }
 
 export async function prefetchMediaList(): Promise<MediaListOutput> {

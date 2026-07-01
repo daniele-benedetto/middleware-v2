@@ -28,26 +28,32 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
   const typedError = error as RequestError;
 
   try {
-    const { telemetryService } = await import("@/lib/server/modules/telemetry/service");
+    const { observabilityErrorsService } =
+      await import("@/lib/server/modules/observability-errors/service");
 
-    await telemetryService.recordServerError({
-      source: "server",
-      name: typedError.name,
-      message: typedError.message,
-      digest: typedError.digest,
-      stack: typedError.stack,
-      path: request.path,
-      method: request.method,
-      routePath: context.routePath,
-      routeType: context.routeType,
-      requestId: readRequestId(request.headers),
-      userAgent: readHeaderValue(request.headers, "user-agent"),
-      metadata: {
-        routerKind: context.routerKind,
-        renderSource: context.renderSource ?? null,
-        revalidateReason: context.revalidateReason ?? null,
+    await observabilityErrorsService.recordServerError(
+      {
+        name: typedError.name,
+        message: typedError.message,
+        digest: typedError.digest,
+        stack: typedError.stack,
+        path: request.path,
+        method: request.method,
+        routePath: context.routePath,
+        routeType: context.routeType,
+        requestId: readRequestId(request.headers),
+        metadata: {
+          routerKind: context.routerKind,
+          renderSource: context.renderSource ?? null,
+          revalidateReason: context.revalidateReason ?? null,
+        },
       },
-    });
+      {
+        userAgent: readHeaderValue(request.headers, "user-agent"),
+        method: request.method,
+        requestId: readRequestId(request.headers),
+      },
+    );
   } catch (telemetryError) {
     const { logServerEvent } = await import("@/lib/server/observability/log");
 

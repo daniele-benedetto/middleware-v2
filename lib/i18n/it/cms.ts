@@ -843,9 +843,11 @@ export const cmsIt = {
       poor: "Poor",
     },
     errors: {
-      subtitle: "Errori applicativi server, client e boundary aggregati per fingerprint.",
-      searchPlaceholder: "Cerca messaggio, path, digest, request id...",
-      emptyDescription: "Gli errori compariranno qui dopo la prima registrazione telemetry.",
+      subtitle:
+        "Inbox operativa degli errori con priorità, impatto, regressioni e occorrenze correlate.",
+      searchPlaceholder: "Cerca titolo, fingerprint, path, request id...",
+      emptyDescription:
+        "Gli errori compariranno qui quando collector client, boundary o instrumentation server registrano occorrenze valide.",
       detailsCta: "Dettaglio",
       detailTitle: "Dettaglio errore",
       detailDescription: (lastSeenAt: string) => `Ultima occorrenza registrata il ${lastSeenAt}.`,

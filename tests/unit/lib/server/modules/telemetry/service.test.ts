@@ -1,21 +1,22 @@
 const telemetryRepositoryMock = vi.hoisted(() => ({
-  countErrorGroups: vi.fn(),
   countContentEngagementRecords: vi.fn(),
   getAudioEngagementForContent: vi.fn(),
-  getErrorGroupById: vi.fn(),
   listContentEngagementDetailRecords: vi.fn(),
   listContentEngagementRecords: vi.fn(),
   listContentEngagementSummaryRecords: vi.fn(),
-  listErrorGroups: vi.fn(),
-  recordError: vi.fn(),
   recordSessionEvent: vi.fn(),
-  updateErrorGroupStatus: vi.fn(),
   upsertAudioEngagement: vi.fn(),
   upsertContentEngagement: vi.fn(),
+}));
+const observabilityErrorsServiceMock = vi.hoisted(() => ({
+  recordOccurrence: vi.fn(),
 }));
 
 vi.mock("@/lib/server/modules/telemetry/repository", () => ({
   telemetryRepository: telemetryRepositoryMock,
+}));
+vi.mock("@/lib/server/modules/observability-errors/service", () => ({
+  observabilityErrorsService: observabilityErrorsServiceMock,
 }));
 
 import { telemetryService } from "@/lib/server/modules/telemetry/service";
@@ -91,41 +92,7 @@ describe("telemetry service helpers", () => {
     ).toBe("search.example.com");
   });
 
-  it("uses normalized error messages for fingerprints", () => {
-    const first = telemetryService.createErrorFingerprint({
-      source: "server",
-      name: "Error",
-      message: "Missing id 550e8400-e29b-41d4-a716-446655440000",
-      path: "/api/test",
-    });
-    const second = telemetryService.createErrorFingerprint({
-      source: "server",
-      name: "Error",
-      message: "Missing id 550e8400-e29b-41d4-a716-446655440111",
-      path: "/api/test",
-    });
-
-    expect(second).toBe(first);
-  });
-
-  it("creates a coarser error signature", () => {
-    const first = telemetryService.createErrorSignature({
-      source: "server",
-      name: "Error",
-      message: "Missing id 550e8400-e29b-41d4-a716-446655440000",
-      impactArea: "EDITORIAL",
-    });
-    const second = telemetryService.createErrorSignature({
-      source: "server",
-      name: "Error",
-      message: "Missing id 550e8400-e29b-41d4-a716-446655440111",
-      impactArea: "EDITORIAL",
-    });
-
-    expect(second).toBe(first);
-  });
-
-  it("records client errors through the phase 1 vertical slice", async () => {
+  it("delegates client errors to the operational errors domain", async () => {
     await telemetryService.recordTelemetryPayload(
       {
         sessionId: "obs_session_1_0000",
@@ -157,36 +124,20 @@ describe("telemetry service helpers", () => {
       },
     );
 
-    expect(telemetryRepositoryMock.recordError).toHaveBeenCalledWith(
+    expect(observabilityErrorsServiceMock.recordOccurrence).toHaveBeenCalledWith(
       expect.objectContaining({
-        session: expect.objectContaining({
-          id: "obs_session_1_0000",
-          country: "IT",
-          landingPath: "/articoli/test",
-        }),
-        event: expect.objectContaining({
-          sessionId: "obs_session_1_0000",
-          type: "boundary_error",
-          path: "/articoli/test",
-          pageType: "article",
-          contentId: "article-1",
-          requestId: "request-1",
-        }),
-        group: expect.objectContaining({
-          fingerprintVersion: 1,
-          source: "BOUNDARY",
-          impactArea: "PUBLIC_SITE",
-        }),
-        occurrence: expect.objectContaining({
-          sessionId: "obs_session_1_0000",
-          path: "/articoli/test",
-          requestId: "request-1",
-          metadata: expect.objectContaining({
-            component: "ArticlePage",
-            pageInstanceId: "page_0000",
-          }),
+        source: "boundary",
+        sessionId: "obs_session_1_0000",
+        path: "/articoli/test",
+        pageType: "article",
+        contentId: "article-1",
+        requestId: undefined,
+        metadata: expect.objectContaining({
+          component: "ArticlePage",
+          pageInstanceId: "page_0000",
         }),
       }),
+      expect.objectContaining({ requestId: "request-1" }),
     );
   });
 
@@ -370,37 +321,5 @@ describe("telemetry service helpers", () => {
     expect(detail.maxScrollDepth).toBe(90);
     expect(detail.audio?.seekCount).toBe(2);
     expect(detail.exitBreakdown[0]).toEqual({ exitType: "internal_navigation", count: 1 });
-  });
-
-  it("records server errors without inventing a session", async () => {
-    await telemetryService.recordServerError({
-      source: "server",
-      name: "Error",
-      message: "Publish failed",
-      path: "/cms/articles/1/edit",
-      routePath: "/cms/articles/[id]/edit",
-      method: "POST",
-      statusCode: 500,
-      actionContext: "publish",
-      requestId: "request-1",
-      userAgent: "Test browser",
-    });
-
-    expect(telemetryRepositoryMock.recordError).toHaveBeenCalledWith(
-      expect.objectContaining({
-        session: null,
-        group: expect.objectContaining({
-          source: "SERVER",
-          severity: "HIGH",
-          impactArea: "EDITORIAL",
-          userImpact: "BLOCKED_ACTION",
-        }),
-        occurrence: expect.objectContaining({
-          sessionId: null,
-          routePath: "/cms/articles/[id]/edit",
-          actionContext: "publish",
-        }),
-      }),
-    );
   });
 });

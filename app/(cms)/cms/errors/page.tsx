@@ -1,12 +1,12 @@
 import { forbidden } from "next/navigation";
 
-import { CmsErrorsScreen } from "@/features/cms/telemetry/screens/errors-screen";
+import { CmsErrorsScreen } from "@/features/cms/observability-errors/screens/errors-inbox-screen";
 import { hasAnyCmsRole, requireCmsSession } from "@/lib/cms/auth";
-import { parseTelemetryErrorsListSearchParams } from "@/lib/cms/query";
-import { prefetchTelemetryErrorsList } from "@/lib/cms/trpc/server-prefetch";
+import { parseObservabilityErrorsListSearchParams } from "@/lib/cms/query";
+import { prefetchObservabilityErrorsList } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
-import { telemetryPolicy } from "@/lib/server/modules/telemetry";
+import { observabilityErrorsPolicy } from "@/lib/server/modules/observability-errors";
 
 export const metadata = buildCmsMetadata({
   title: i18n.cms.navigation.errors,
@@ -22,12 +22,12 @@ export default async function CmsErrorsPage({ searchParams }: CmsErrorsPageProps
   const resolvedSearchParams = await searchParams;
   const session = await requireCmsSession("/cms/errors");
 
-  if (!hasAnyCmsRole(session, telemetryPolicy.allowedRoles)) {
+  if (!hasAnyCmsRole(session, observabilityErrorsPolicy.allowedRoles)) {
     forbidden();
   }
 
-  const input = parseTelemetryErrorsListSearchParams(resolvedSearchParams);
-  const initialData = await prefetchTelemetryErrorsList(input);
+  const input = parseObservabilityErrorsListSearchParams(resolvedSearchParams);
+  const initialData = await prefetchObservabilityErrorsList(input);
 
   return <CmsErrorsScreen initialInput={input} initialData={initialData} />;
 }

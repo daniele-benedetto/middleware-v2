@@ -30,12 +30,14 @@ export type ErrorGroupAvgAggregateOutputType = {
   fingerprintVersion: number | null
   occurrenceCount: number | null
   affectedSessions: number | null
+  priorityScore: number | null
 }
 
 export type ErrorGroupSumAggregateOutputType = {
   fingerprintVersion: number | null
   occurrenceCount: number | null
   affectedSessions: number | null
+  priorityScore: number | null
 }
 
 export type ErrorGroupMinAggregateOutputType = {
@@ -54,10 +56,15 @@ export type ErrorGroupMinAggregateOutputType = {
   impactArea: $Enums.ObservabilityImpactArea | null
   userImpact: $Enums.ObservabilityUserImpact | null
   regression: boolean | null
+  priorityScore: number | null
   firstRelease: string | null
   lastRelease: string | null
   resolvedAt: Date | null
   resolvedBy: string | null
+  reopenedAt: Date | null
+  reopenedBy: string | null
+  lastStatusAt: Date | null
+  lastStatusBy: string | null
 }
 
 export type ErrorGroupMaxAggregateOutputType = {
@@ -76,10 +83,15 @@ export type ErrorGroupMaxAggregateOutputType = {
   impactArea: $Enums.ObservabilityImpactArea | null
   userImpact: $Enums.ObservabilityUserImpact | null
   regression: boolean | null
+  priorityScore: number | null
   firstRelease: string | null
   lastRelease: string | null
   resolvedAt: Date | null
   resolvedBy: string | null
+  reopenedAt: Date | null
+  reopenedBy: string | null
+  lastStatusAt: Date | null
+  lastStatusBy: string | null
 }
 
 export type ErrorGroupCountAggregateOutputType = {
@@ -99,10 +111,16 @@ export type ErrorGroupCountAggregateOutputType = {
   impactArea: number
   userImpact: number
   regression: number
+  priorityScore: number
+  priorityReasons: number
   firstRelease: number
   lastRelease: number
   resolvedAt: number
   resolvedBy: number
+  reopenedAt: number
+  reopenedBy: number
+  lastStatusAt: number
+  lastStatusBy: number
   _all: number
 }
 
@@ -111,12 +129,14 @@ export type ErrorGroupAvgAggregateInputType = {
   fingerprintVersion?: true
   occurrenceCount?: true
   affectedSessions?: true
+  priorityScore?: true
 }
 
 export type ErrorGroupSumAggregateInputType = {
   fingerprintVersion?: true
   occurrenceCount?: true
   affectedSessions?: true
+  priorityScore?: true
 }
 
 export type ErrorGroupMinAggregateInputType = {
@@ -135,10 +155,15 @@ export type ErrorGroupMinAggregateInputType = {
   impactArea?: true
   userImpact?: true
   regression?: true
+  priorityScore?: true
   firstRelease?: true
   lastRelease?: true
   resolvedAt?: true
   resolvedBy?: true
+  reopenedAt?: true
+  reopenedBy?: true
+  lastStatusAt?: true
+  lastStatusBy?: true
 }
 
 export type ErrorGroupMaxAggregateInputType = {
@@ -157,10 +182,15 @@ export type ErrorGroupMaxAggregateInputType = {
   impactArea?: true
   userImpact?: true
   regression?: true
+  priorityScore?: true
   firstRelease?: true
   lastRelease?: true
   resolvedAt?: true
   resolvedBy?: true
+  reopenedAt?: true
+  reopenedBy?: true
+  lastStatusAt?: true
+  lastStatusBy?: true
 }
 
 export type ErrorGroupCountAggregateInputType = {
@@ -180,10 +210,16 @@ export type ErrorGroupCountAggregateInputType = {
   impactArea?: true
   userImpact?: true
   regression?: true
+  priorityScore?: true
+  priorityReasons?: true
   firstRelease?: true
   lastRelease?: true
   resolvedAt?: true
   resolvedBy?: true
+  reopenedAt?: true
+  reopenedBy?: true
+  lastStatusAt?: true
+  lastStatusBy?: true
   _all?: true
 }
 
@@ -290,10 +326,16 @@ export type ErrorGroupGroupByOutputType = {
   impactArea: $Enums.ObservabilityImpactArea
   userImpact: $Enums.ObservabilityUserImpact
   regression: boolean
+  priorityScore: number
+  priorityReasons: runtime.JsonValue
   firstRelease: string | null
   lastRelease: string | null
   resolvedAt: Date | null
   resolvedBy: string | null
+  reopenedAt: Date | null
+  reopenedBy: string | null
+  lastStatusAt: Date
+  lastStatusBy: string | null
   _count: ErrorGroupCountAggregateOutputType | null
   _avg: ErrorGroupAvgAggregateOutputType | null
   _sum: ErrorGroupSumAggregateOutputType | null
@@ -336,10 +378,16 @@ export type ErrorGroupWhereInput = {
   impactArea?: Prisma.EnumObservabilityImpactAreaFilter<"ErrorGroup"> | $Enums.ObservabilityImpactArea
   userImpact?: Prisma.EnumObservabilityUserImpactFilter<"ErrorGroup"> | $Enums.ObservabilityUserImpact
   regression?: Prisma.BoolFilter<"ErrorGroup"> | boolean
+  priorityScore?: Prisma.IntFilter<"ErrorGroup"> | number
+  priorityReasons?: Prisma.JsonFilter<"ErrorGroup">
   firstRelease?: Prisma.StringNullableFilter<"ErrorGroup"> | string | null
   lastRelease?: Prisma.StringNullableFilter<"ErrorGroup"> | string | null
   resolvedAt?: Prisma.DateTimeNullableFilter<"ErrorGroup"> | Date | string | null
   resolvedBy?: Prisma.StringNullableFilter<"ErrorGroup"> | string | null
+  reopenedAt?: Prisma.DateTimeNullableFilter<"ErrorGroup"> | Date | string | null
+  reopenedBy?: Prisma.StringNullableFilter<"ErrorGroup"> | string | null
+  lastStatusAt?: Prisma.DateTimeFilter<"ErrorGroup"> | Date | string
+  lastStatusBy?: Prisma.StringNullableFilter<"ErrorGroup"> | string | null
   occurrences?: Prisma.ErrorOccurrenceListRelationFilter
 }
 
@@ -360,10 +408,16 @@ export type ErrorGroupOrderByWithRelationInput = {
   impactArea?: Prisma.SortOrder
   userImpact?: Prisma.SortOrder
   regression?: Prisma.SortOrder
+  priorityScore?: Prisma.SortOrder
+  priorityReasons?: Prisma.SortOrder
   firstRelease?: Prisma.SortOrderInput | Prisma.SortOrder
   lastRelease?: Prisma.SortOrderInput | Prisma.SortOrder
   resolvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   resolvedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  reopenedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  reopenedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastStatusAt?: Prisma.SortOrder
+  lastStatusBy?: Prisma.SortOrderInput | Prisma.SortOrder
   occurrences?: Prisma.ErrorOccurrenceOrderByRelationAggregateInput
 }
 
@@ -387,10 +441,16 @@ export type ErrorGroupWhereUniqueInput = Prisma.AtLeast<{
   impactArea?: Prisma.EnumObservabilityImpactAreaFilter<"ErrorGroup"> | $Enums.ObservabilityImpactArea
   userImpact?: Prisma.EnumObservabilityUserImpactFilter<"ErrorGroup"> | $Enums.ObservabilityUserImpact
   regression?: Prisma.BoolFilter<"ErrorGroup"> | boolean
+  priorityScore?: Prisma.IntFilter<"ErrorGroup"> | number
+  priorityReasons?: Prisma.JsonFilter<"ErrorGroup">
   firstRelease?: Prisma.StringNullableFilter<"ErrorGroup"> | string | null
   lastRelease?: Prisma.StringNullableFilter<"ErrorGroup"> | string | null
   resolvedAt?: Prisma.DateTimeNullableFilter<"ErrorGroup"> | Date | string | null
   resolvedBy?: Prisma.StringNullableFilter<"ErrorGroup"> | string | null
+  reopenedAt?: Prisma.DateTimeNullableFilter<"ErrorGroup"> | Date | string | null
+  reopenedBy?: Prisma.StringNullableFilter<"ErrorGroup"> | string | null
+  lastStatusAt?: Prisma.DateTimeFilter<"ErrorGroup"> | Date | string
+  lastStatusBy?: Prisma.StringNullableFilter<"ErrorGroup"> | string | null
   occurrences?: Prisma.ErrorOccurrenceListRelationFilter
 }, "id" | "fingerprint">
 
@@ -411,10 +471,16 @@ export type ErrorGroupOrderByWithAggregationInput = {
   impactArea?: Prisma.SortOrder
   userImpact?: Prisma.SortOrder
   regression?: Prisma.SortOrder
+  priorityScore?: Prisma.SortOrder
+  priorityReasons?: Prisma.SortOrder
   firstRelease?: Prisma.SortOrderInput | Prisma.SortOrder
   lastRelease?: Prisma.SortOrderInput | Prisma.SortOrder
   resolvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   resolvedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  reopenedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  reopenedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastStatusAt?: Prisma.SortOrder
+  lastStatusBy?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ErrorGroupCountOrderByAggregateInput
   _avg?: Prisma.ErrorGroupAvgOrderByAggregateInput
   _max?: Prisma.ErrorGroupMaxOrderByAggregateInput
@@ -442,10 +508,16 @@ export type ErrorGroupScalarWhereWithAggregatesInput = {
   impactArea?: Prisma.EnumObservabilityImpactAreaWithAggregatesFilter<"ErrorGroup"> | $Enums.ObservabilityImpactArea
   userImpact?: Prisma.EnumObservabilityUserImpactWithAggregatesFilter<"ErrorGroup"> | $Enums.ObservabilityUserImpact
   regression?: Prisma.BoolWithAggregatesFilter<"ErrorGroup"> | boolean
+  priorityScore?: Prisma.IntWithAggregatesFilter<"ErrorGroup"> | number
+  priorityReasons?: Prisma.JsonWithAggregatesFilter<"ErrorGroup">
   firstRelease?: Prisma.StringNullableWithAggregatesFilter<"ErrorGroup"> | string | null
   lastRelease?: Prisma.StringNullableWithAggregatesFilter<"ErrorGroup"> | string | null
   resolvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ErrorGroup"> | Date | string | null
   resolvedBy?: Prisma.StringNullableWithAggregatesFilter<"ErrorGroup"> | string | null
+  reopenedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ErrorGroup"> | Date | string | null
+  reopenedBy?: Prisma.StringNullableWithAggregatesFilter<"ErrorGroup"> | string | null
+  lastStatusAt?: Prisma.DateTimeWithAggregatesFilter<"ErrorGroup"> | Date | string
+  lastStatusBy?: Prisma.StringNullableWithAggregatesFilter<"ErrorGroup"> | string | null
 }
 
 export type ErrorGroupCreateInput = {
@@ -465,10 +537,16 @@ export type ErrorGroupCreateInput = {
   impactArea?: $Enums.ObservabilityImpactArea
   userImpact?: $Enums.ObservabilityUserImpact
   regression?: boolean
+  priorityScore?: number
+  priorityReasons?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   firstRelease?: string | null
   lastRelease?: string | null
   resolvedAt?: Date | string | null
   resolvedBy?: string | null
+  reopenedAt?: Date | string | null
+  reopenedBy?: string | null
+  lastStatusAt?: Date | string
+  lastStatusBy?: string | null
   occurrences?: Prisma.ErrorOccurrenceCreateNestedManyWithoutErrorGroupInput
 }
 
@@ -489,10 +567,16 @@ export type ErrorGroupUncheckedCreateInput = {
   impactArea?: $Enums.ObservabilityImpactArea
   userImpact?: $Enums.ObservabilityUserImpact
   regression?: boolean
+  priorityScore?: number
+  priorityReasons?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   firstRelease?: string | null
   lastRelease?: string | null
   resolvedAt?: Date | string | null
   resolvedBy?: string | null
+  reopenedAt?: Date | string | null
+  reopenedBy?: string | null
+  lastStatusAt?: Date | string
+  lastStatusBy?: string | null
   occurrences?: Prisma.ErrorOccurrenceUncheckedCreateNestedManyWithoutErrorGroupInput
 }
 
@@ -513,10 +597,16 @@ export type ErrorGroupUpdateInput = {
   impactArea?: Prisma.EnumObservabilityImpactAreaFieldUpdateOperationsInput | $Enums.ObservabilityImpactArea
   userImpact?: Prisma.EnumObservabilityUserImpactFieldUpdateOperationsInput | $Enums.ObservabilityUserImpact
   regression?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priorityScore?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityReasons?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   firstRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resolvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reopenedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reopenedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStatusAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastStatusBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occurrences?: Prisma.ErrorOccurrenceUpdateManyWithoutErrorGroupNestedInput
 }
 
@@ -537,10 +627,16 @@ export type ErrorGroupUncheckedUpdateInput = {
   impactArea?: Prisma.EnumObservabilityImpactAreaFieldUpdateOperationsInput | $Enums.ObservabilityImpactArea
   userImpact?: Prisma.EnumObservabilityUserImpactFieldUpdateOperationsInput | $Enums.ObservabilityUserImpact
   regression?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priorityScore?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityReasons?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   firstRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resolvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reopenedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reopenedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStatusAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastStatusBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occurrences?: Prisma.ErrorOccurrenceUncheckedUpdateManyWithoutErrorGroupNestedInput
 }
 
@@ -561,10 +657,16 @@ export type ErrorGroupCreateManyInput = {
   impactArea?: $Enums.ObservabilityImpactArea
   userImpact?: $Enums.ObservabilityUserImpact
   regression?: boolean
+  priorityScore?: number
+  priorityReasons?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   firstRelease?: string | null
   lastRelease?: string | null
   resolvedAt?: Date | string | null
   resolvedBy?: string | null
+  reopenedAt?: Date | string | null
+  reopenedBy?: string | null
+  lastStatusAt?: Date | string
+  lastStatusBy?: string | null
 }
 
 export type ErrorGroupUpdateManyMutationInput = {
@@ -584,10 +686,16 @@ export type ErrorGroupUpdateManyMutationInput = {
   impactArea?: Prisma.EnumObservabilityImpactAreaFieldUpdateOperationsInput | $Enums.ObservabilityImpactArea
   userImpact?: Prisma.EnumObservabilityUserImpactFieldUpdateOperationsInput | $Enums.ObservabilityUserImpact
   regression?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priorityScore?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityReasons?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   firstRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resolvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reopenedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reopenedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStatusAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastStatusBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ErrorGroupUncheckedUpdateManyInput = {
@@ -607,10 +715,16 @@ export type ErrorGroupUncheckedUpdateManyInput = {
   impactArea?: Prisma.EnumObservabilityImpactAreaFieldUpdateOperationsInput | $Enums.ObservabilityImpactArea
   userImpact?: Prisma.EnumObservabilityUserImpactFieldUpdateOperationsInput | $Enums.ObservabilityUserImpact
   regression?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priorityScore?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityReasons?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   firstRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resolvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reopenedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reopenedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStatusAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastStatusBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ErrorGroupCountOrderByAggregateInput = {
@@ -630,16 +744,23 @@ export type ErrorGroupCountOrderByAggregateInput = {
   impactArea?: Prisma.SortOrder
   userImpact?: Prisma.SortOrder
   regression?: Prisma.SortOrder
+  priorityScore?: Prisma.SortOrder
+  priorityReasons?: Prisma.SortOrder
   firstRelease?: Prisma.SortOrder
   lastRelease?: Prisma.SortOrder
   resolvedAt?: Prisma.SortOrder
   resolvedBy?: Prisma.SortOrder
+  reopenedAt?: Prisma.SortOrder
+  reopenedBy?: Prisma.SortOrder
+  lastStatusAt?: Prisma.SortOrder
+  lastStatusBy?: Prisma.SortOrder
 }
 
 export type ErrorGroupAvgOrderByAggregateInput = {
   fingerprintVersion?: Prisma.SortOrder
   occurrenceCount?: Prisma.SortOrder
   affectedSessions?: Prisma.SortOrder
+  priorityScore?: Prisma.SortOrder
 }
 
 export type ErrorGroupMaxOrderByAggregateInput = {
@@ -658,10 +779,15 @@ export type ErrorGroupMaxOrderByAggregateInput = {
   impactArea?: Prisma.SortOrder
   userImpact?: Prisma.SortOrder
   regression?: Prisma.SortOrder
+  priorityScore?: Prisma.SortOrder
   firstRelease?: Prisma.SortOrder
   lastRelease?: Prisma.SortOrder
   resolvedAt?: Prisma.SortOrder
   resolvedBy?: Prisma.SortOrder
+  reopenedAt?: Prisma.SortOrder
+  reopenedBy?: Prisma.SortOrder
+  lastStatusAt?: Prisma.SortOrder
+  lastStatusBy?: Prisma.SortOrder
 }
 
 export type ErrorGroupMinOrderByAggregateInput = {
@@ -680,16 +806,22 @@ export type ErrorGroupMinOrderByAggregateInput = {
   impactArea?: Prisma.SortOrder
   userImpact?: Prisma.SortOrder
   regression?: Prisma.SortOrder
+  priorityScore?: Prisma.SortOrder
   firstRelease?: Prisma.SortOrder
   lastRelease?: Prisma.SortOrder
   resolvedAt?: Prisma.SortOrder
   resolvedBy?: Prisma.SortOrder
+  reopenedAt?: Prisma.SortOrder
+  reopenedBy?: Prisma.SortOrder
+  lastStatusAt?: Prisma.SortOrder
+  lastStatusBy?: Prisma.SortOrder
 }
 
 export type ErrorGroupSumOrderByAggregateInput = {
   fingerprintVersion?: Prisma.SortOrder
   occurrenceCount?: Prisma.SortOrder
   affectedSessions?: Prisma.SortOrder
+  priorityScore?: Prisma.SortOrder
 }
 
 export type ErrorGroupScalarRelationFilter = {
@@ -748,10 +880,16 @@ export type ErrorGroupCreateWithoutOccurrencesInput = {
   impactArea?: $Enums.ObservabilityImpactArea
   userImpact?: $Enums.ObservabilityUserImpact
   regression?: boolean
+  priorityScore?: number
+  priorityReasons?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   firstRelease?: string | null
   lastRelease?: string | null
   resolvedAt?: Date | string | null
   resolvedBy?: string | null
+  reopenedAt?: Date | string | null
+  reopenedBy?: string | null
+  lastStatusAt?: Date | string
+  lastStatusBy?: string | null
 }
 
 export type ErrorGroupUncheckedCreateWithoutOccurrencesInput = {
@@ -771,10 +909,16 @@ export type ErrorGroupUncheckedCreateWithoutOccurrencesInput = {
   impactArea?: $Enums.ObservabilityImpactArea
   userImpact?: $Enums.ObservabilityUserImpact
   regression?: boolean
+  priorityScore?: number
+  priorityReasons?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   firstRelease?: string | null
   lastRelease?: string | null
   resolvedAt?: Date | string | null
   resolvedBy?: string | null
+  reopenedAt?: Date | string | null
+  reopenedBy?: string | null
+  lastStatusAt?: Date | string
+  lastStatusBy?: string | null
 }
 
 export type ErrorGroupCreateOrConnectWithoutOccurrencesInput = {
@@ -810,10 +954,16 @@ export type ErrorGroupUpdateWithoutOccurrencesInput = {
   impactArea?: Prisma.EnumObservabilityImpactAreaFieldUpdateOperationsInput | $Enums.ObservabilityImpactArea
   userImpact?: Prisma.EnumObservabilityUserImpactFieldUpdateOperationsInput | $Enums.ObservabilityUserImpact
   regression?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priorityScore?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityReasons?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   firstRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resolvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reopenedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reopenedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStatusAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastStatusBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type ErrorGroupUncheckedUpdateWithoutOccurrencesInput = {
@@ -833,10 +983,16 @@ export type ErrorGroupUncheckedUpdateWithoutOccurrencesInput = {
   impactArea?: Prisma.EnumObservabilityImpactAreaFieldUpdateOperationsInput | $Enums.ObservabilityImpactArea
   userImpact?: Prisma.EnumObservabilityUserImpactFieldUpdateOperationsInput | $Enums.ObservabilityUserImpact
   regression?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priorityScore?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityReasons?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   firstRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastRelease?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resolvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reopenedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reopenedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastStatusAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastStatusBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -887,10 +1043,16 @@ export type ErrorGroupSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   impactArea?: boolean
   userImpact?: boolean
   regression?: boolean
+  priorityScore?: boolean
+  priorityReasons?: boolean
   firstRelease?: boolean
   lastRelease?: boolean
   resolvedAt?: boolean
   resolvedBy?: boolean
+  reopenedAt?: boolean
+  reopenedBy?: boolean
+  lastStatusAt?: boolean
+  lastStatusBy?: boolean
   occurrences?: boolean | Prisma.ErrorGroup$occurrencesArgs<ExtArgs>
   _count?: boolean | Prisma.ErrorGroupCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["errorGroup"]>
@@ -912,10 +1074,16 @@ export type ErrorGroupSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   impactArea?: boolean
   userImpact?: boolean
   regression?: boolean
+  priorityScore?: boolean
+  priorityReasons?: boolean
   firstRelease?: boolean
   lastRelease?: boolean
   resolvedAt?: boolean
   resolvedBy?: boolean
+  reopenedAt?: boolean
+  reopenedBy?: boolean
+  lastStatusAt?: boolean
+  lastStatusBy?: boolean
 }, ExtArgs["result"]["errorGroup"]>
 
 export type ErrorGroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -935,10 +1103,16 @@ export type ErrorGroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   impactArea?: boolean
   userImpact?: boolean
   regression?: boolean
+  priorityScore?: boolean
+  priorityReasons?: boolean
   firstRelease?: boolean
   lastRelease?: boolean
   resolvedAt?: boolean
   resolvedBy?: boolean
+  reopenedAt?: boolean
+  reopenedBy?: boolean
+  lastStatusAt?: boolean
+  lastStatusBy?: boolean
 }, ExtArgs["result"]["errorGroup"]>
 
 export type ErrorGroupSelectScalar = {
@@ -958,13 +1132,19 @@ export type ErrorGroupSelectScalar = {
   impactArea?: boolean
   userImpact?: boolean
   regression?: boolean
+  priorityScore?: boolean
+  priorityReasons?: boolean
   firstRelease?: boolean
   lastRelease?: boolean
   resolvedAt?: boolean
   resolvedBy?: boolean
+  reopenedAt?: boolean
+  reopenedBy?: boolean
+  lastStatusAt?: boolean
+  lastStatusBy?: boolean
 }
 
-export type ErrorGroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fingerprint" | "fingerprintVersion" | "errorSignature" | "title" | "source" | "severity" | "status" | "firstSeenAt" | "lastSeenAt" | "occurrenceCount" | "affectedSessions" | "affectedPaths" | "impactArea" | "userImpact" | "regression" | "firstRelease" | "lastRelease" | "resolvedAt" | "resolvedBy", ExtArgs["result"]["errorGroup"]>
+export type ErrorGroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fingerprint" | "fingerprintVersion" | "errorSignature" | "title" | "source" | "severity" | "status" | "firstSeenAt" | "lastSeenAt" | "occurrenceCount" | "affectedSessions" | "affectedPaths" | "impactArea" | "userImpact" | "regression" | "priorityScore" | "priorityReasons" | "firstRelease" | "lastRelease" | "resolvedAt" | "resolvedBy" | "reopenedAt" | "reopenedBy" | "lastStatusAt" | "lastStatusBy", ExtArgs["result"]["errorGroup"]>
 export type ErrorGroupInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   occurrences?: boolean | Prisma.ErrorGroup$occurrencesArgs<ExtArgs>
   _count?: boolean | Prisma.ErrorGroupCountOutputTypeDefaultArgs<ExtArgs>
@@ -994,10 +1174,16 @@ export type $ErrorGroupPayload<ExtArgs extends runtime.Types.Extensions.Internal
     impactArea: $Enums.ObservabilityImpactArea
     userImpact: $Enums.ObservabilityUserImpact
     regression: boolean
+    priorityScore: number
+    priorityReasons: runtime.JsonValue
     firstRelease: string | null
     lastRelease: string | null
     resolvedAt: Date | null
     resolvedBy: string | null
+    reopenedAt: Date | null
+    reopenedBy: string | null
+    lastStatusAt: Date
+    lastStatusBy: string | null
   }, ExtArgs["result"]["errorGroup"]>
   composites: {}
 }
@@ -1438,10 +1624,16 @@ export interface ErrorGroupFieldRefs {
   readonly impactArea: Prisma.FieldRef<"ErrorGroup", 'ObservabilityImpactArea'>
   readonly userImpact: Prisma.FieldRef<"ErrorGroup", 'ObservabilityUserImpact'>
   readonly regression: Prisma.FieldRef<"ErrorGroup", 'Boolean'>
+  readonly priorityScore: Prisma.FieldRef<"ErrorGroup", 'Int'>
+  readonly priorityReasons: Prisma.FieldRef<"ErrorGroup", 'Json'>
   readonly firstRelease: Prisma.FieldRef<"ErrorGroup", 'String'>
   readonly lastRelease: Prisma.FieldRef<"ErrorGroup", 'String'>
   readonly resolvedAt: Prisma.FieldRef<"ErrorGroup", 'DateTime'>
   readonly resolvedBy: Prisma.FieldRef<"ErrorGroup", 'String'>
+  readonly reopenedAt: Prisma.FieldRef<"ErrorGroup", 'DateTime'>
+  readonly reopenedBy: Prisma.FieldRef<"ErrorGroup", 'String'>
+  readonly lastStatusAt: Prisma.FieldRef<"ErrorGroup", 'DateTime'>
+  readonly lastStatusBy: Prisma.FieldRef<"ErrorGroup", 'String'>
 }
     
 

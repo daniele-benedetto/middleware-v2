@@ -7,7 +7,7 @@ export {
   parseIssuesListSearchParams,
   parsePagesListSearchParams,
   parseTagsListSearchParams,
-  parseTelemetryErrorsListSearchParams,
+  parseObservabilityErrorsListSearchParams,
   parseUsersListSearchParams,
   serializeCmsSearchParams,
 } from "@/lib/cms/query/list-params";

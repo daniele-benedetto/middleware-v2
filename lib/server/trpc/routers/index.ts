@@ -8,6 +8,7 @@ import { categoriesRouter } from "@/lib/server/trpc/routers/categories";
 import { issuesRouter } from "@/lib/server/trpc/routers/issues";
 import { mediaRouter } from "@/lib/server/trpc/routers/media";
 import { navigationRouter } from "@/lib/server/trpc/routers/navigation";
+import { observabilityErrorsRouter } from "@/lib/server/trpc/routers/observability-errors";
 import { pagesRouter } from "@/lib/server/trpc/routers/pages";
 import { publicRouter } from "@/lib/server/trpc/routers/public";
 import { tagsRouter } from "@/lib/server/trpc/routers/tags";
@@ -25,6 +26,7 @@ export const appRouter = router({
   pages: pagesRouter,
   media: mediaRouter,
   navigation: navigationRouter,
+  observabilityErrors: observabilityErrorsRouter,
   public: publicRouter,
   telemetry: telemetryRouter,
 });

@@ -37,40 +37,55 @@ import {
 import { CmsListFiltersSheet } from "@/features/cms/shared/components/cms-list-filters-sheet";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import { cmsListQueryOptions, useCmsListUrlState } from "@/features/cms/shared/hooks";
-import { parseTelemetryErrorsListSearchParams } from "@/lib/cms/query";
+import { parseObservabilityErrorsListSearchParams } from "@/lib/cms/query";
 import { mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
 
-import type { TelemetryErrorsListInitialData } from "@/features/cms/shared/types/initial-data";
+import type { ObservabilityErrorsListInitialData } from "@/features/cms/shared/types/initial-data";
 import type { RouterInputs, RouterOutputs } from "@/lib/trpc/types";
 import type { ReactNode } from "react";
 
-type TelemetryErrorsListInput = RouterInputs["telemetry"]["errorsList"];
-type TelemetryErrorDetail = RouterOutputs["telemetry"]["errorDetail"];
+type ObservabilityErrorsListInput = RouterInputs["observabilityErrors"]["list"];
+type ObservabilityErrorDetail = RouterOutputs["observabilityErrors"]["detail"];
 
 type CmsErrorsScreenProps = {
-  initialInput?: TelemetryErrorsListInput;
-  initialData?: TelemetryErrorsListInitialData;
+  initialInput?: ObservabilityErrorsListInput;
+  initialData?: ObservabilityErrorsListInitialData;
 };
 
 type ErrorsToolbarFiltersState = {
   sourceValue: string;
   severityValue: string;
   statusValue: string;
+  impactAreaValue: string;
+  userImpactValue: string;
+  regressionValue: string;
+  releaseValue: string;
+  fromValue: string;
+  toValue: string;
 };
 
 const defaultErrorsToolbarFilters: ErrorsToolbarFiltersState = {
   sourceValue: "all",
   severityValue: "all",
   statusValue: "all",
+  impactAreaValue: "all",
+  userImpactValue: "all",
+  regressionValue: "all",
+  releaseValue: "",
+  fromValue: "",
+  toValue: "",
 };
 
 const statusOptions = ["open", "investigating", "resolved", "ignored"] as const;
 
-function isSameInput(left: TelemetryErrorsListInput | undefined, right: TelemetryErrorsListInput) {
+function isSameInput(
+  left: ObservabilityErrorsListInput | undefined,
+  right: ObservabilityErrorsListInput,
+) {
   return Boolean(left && JSON.stringify(left) === JSON.stringify(right));
 }
 
@@ -137,13 +152,45 @@ function resolveSeverityVariant(severity: string) {
 }
 
 function buildErrorsToolbarFiltersState(
-  input: TelemetryErrorsListInput,
+  input: ObservabilityErrorsListInput,
 ): ErrorsToolbarFiltersState {
   return {
     sourceValue: input.query?.source ?? defaultErrorsToolbarFilters.sourceValue,
     severityValue: input.query?.severity ?? defaultErrorsToolbarFilters.severityValue,
     statusValue: input.query?.status ?? defaultErrorsToolbarFilters.statusValue,
+    impactAreaValue: input.query?.impactArea ?? defaultErrorsToolbarFilters.impactAreaValue,
+    userImpactValue: input.query?.userImpact ?? defaultErrorsToolbarFilters.userImpactValue,
+    regressionValue:
+      input.query?.regression === true ? "true" : defaultErrorsToolbarFilters.regressionValue,
+    releaseValue: input.query?.release ?? defaultErrorsToolbarFilters.releaseValue,
+    fromValue: input.query?.from ?? defaultErrorsToolbarFilters.fromValue,
+    toValue: input.query?.to ?? defaultErrorsToolbarFilters.toValue,
   };
+}
+
+function TextFilterField({
+  label,
+  value,
+  onValueChange,
+}: {
+  label: string;
+  value: string;
+  onValueChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className={cmsMetaLabelClass}>{label}</div>
+      <input
+        value={value}
+        onChange={(event) => onValueChange(event.target.value)}
+        className={cn(
+          "h-10 w-full rounded-[var(--radius-panel)] border-2 border-foreground bg-background px-3",
+          "font-editorial text-sm text-foreground shadow-none outline-none transition-all",
+          "focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2",
+        )}
+      />
+    </div>
+  );
 }
 
 function FilterField({
@@ -224,13 +271,13 @@ function CopyTechnicalValueButton({
   );
 }
 
-function ErrorStatusSelect({ detail }: { detail: TelemetryErrorDetail }) {
+function ErrorStatusSelect({ detail }: { detail: ObservabilityErrorDetail }) {
   const utils = trpc.useUtils();
-  const mutation = trpc.telemetry.updateErrorStatus.useMutation({
+  const mutation = trpc.observabilityErrors.updateStatus.useMutation({
     onSuccess: async () => {
       await Promise.all([
-        utils.telemetry.errorsList.invalidate(),
-        utils.telemetry.errorDetail.invalidate({ id: detail.id }),
+        utils.observabilityErrors.list.invalidate(),
+        utils.observabilityErrors.detail.invalidate({ id: detail.id }),
       ]);
     },
   });
@@ -248,7 +295,7 @@ function ErrorStatusSelect({ detail }: { detail: TelemetryErrorDetail }) {
   );
 }
 
-function ErrorDetailContent({ detail }: { detail: TelemetryErrorDetail }) {
+function ErrorDetailContent({ detail }: { detail: ObservabilityErrorDetail }) {
   return (
     <div className="space-y-6">
       <DetailSection title="Gruppo">
@@ -260,10 +307,16 @@ function ErrorDetailContent({ detail }: { detail: TelemetryErrorDetail }) {
             { label: "Severita", value: humanize(detail.severity) },
             { label: "Impatto", value: humanize(detail.userImpact) },
             { label: "Area", value: humanize(detail.impactArea) },
+            { label: "Priorita", value: String(detail.priorityScore) },
+            { label: "Motivi priorita", value: detail.priorityReasons.join(", ") || "-" },
+            { label: "Regressione", value: detail.regression ? "si" : "no" },
             { label: "Occorrenze", value: String(detail.occurrenceCount) },
             { label: "Sessioni impattate", value: String(detail.affectedSessions) },
+            { label: "Release iniziale", value: detail.firstRelease ?? "-" },
+            { label: "Release ultima", value: detail.lastRelease ?? "-" },
             { label: "Prima vista", value: formatDateTime(detail.firstSeenAt) },
             { label: "Ultima vista", value: formatDateTime(detail.lastSeenAt) },
+            { label: "Riaperto", value: formatDateTime(detail.reopenedAt) },
           ]}
         />
       </DetailSection>
@@ -335,7 +388,7 @@ function ErrorDetailContent({ detail }: { detail: TelemetryErrorDetail }) {
 
 function ErrorDetailDialog({ errorId }: { errorId: string }) {
   const [open, setOpen] = useState(false);
-  const detailQuery = trpc.telemetry.errorDetail.useQuery(
+  const detailQuery = trpc.observabilityErrors.detail.useQuery(
     { id: errorId },
     {
       enabled: open,
@@ -409,11 +462,11 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
   const listText = text.lists.errors;
   const commonText = text.common;
 
-  const input = parseTelemetryErrorsListSearchParams(searchParams);
+  const input = parseObservabilityErrorsListSearchParams(searchParams);
   const currentToolbarFilters = buildErrorsToolbarFiltersState(input);
   const [draftToolbarFilters, setDraftToolbarFilters] = useState(currentToolbarFilters);
 
-  const query = trpc.telemetry.errorsList.useQuery(input, {
+  const query = trpc.observabilityErrors.list.useQuery(input, {
     ...cmsListQueryOptions,
     initialData: isSameInput(initialInput, input) ? initialData : undefined,
   });
@@ -426,6 +479,12 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
       source: input.query?.source,
       severity: input.query?.severity,
       status: input.query?.status,
+      impactArea: input.query?.impactArea,
+      userImpact: input.query?.userImpact,
+      regression: input.query?.regression,
+      release: input.query?.release,
+      from: input.query?.from,
+      to: input.query?.to,
       sortBy: input.query?.sortBy,
       sortOrder: input.query?.sortOrder,
     },
@@ -447,12 +506,27 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
   }
 
   const hasActiveFilters = Boolean(
-    input.query?.q || input.query?.source || input.query?.severity || input.query?.status,
+    input.query?.q ||
+    input.query?.source ||
+    input.query?.severity ||
+    input.query?.status ||
+    input.query?.impactArea ||
+    input.query?.userImpact ||
+    input.query?.regression ||
+    input.query?.release ||
+    input.query?.from ||
+    input.query?.to,
   );
   const activeFiltersCount = [
     currentToolbarFilters.sourceValue !== "all",
     currentToolbarFilters.severityValue !== "all",
     currentToolbarFilters.statusValue !== "all",
+    currentToolbarFilters.impactAreaValue !== "all",
+    currentToolbarFilters.userImpactValue !== "all",
+    currentToolbarFilters.regressionValue !== "all",
+    currentToolbarFilters.releaseValue !== "",
+    currentToolbarFilters.fromValue !== "",
+    currentToolbarFilters.toValue !== "",
   ].filter(Boolean).length;
   const visibleCriticalOrHigh = query.data.items.filter(
     (entry) => entry.severity === "critical" || entry.severity === "high",
@@ -488,6 +562,40 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
             </div>
 
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+              <div className="flex flex-wrap gap-2">
+                {["open", "investigating", "resolved", "ignored"].map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    className={cn(
+                      "rounded-[var(--radius-panel)] border-2 border-foreground px-3 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em]",
+                      input.query?.status === status
+                        ? "bg-foreground text-background"
+                        : "bg-card text-foreground hover:bg-card-hover",
+                    )}
+                    onClick={() => {
+                      updateSearchParams({ status, page: 1 });
+                    }}
+                  >
+                    {humanize(status)}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className={cn(
+                    "rounded-[var(--radius-panel)] border-2 border-foreground px-3 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em]",
+                    input.query?.regression
+                      ? "bg-foreground text-background"
+                      : "bg-card text-foreground hover:bg-card-hover",
+                  )}
+                  onClick={() => {
+                    updateSearchParams({ regression: true, page: 1 });
+                  }}
+                >
+                  Regressioni
+                </button>
+              </div>
+
               <CmsListSearchInput
                 initialValue={input.query?.q ?? ""}
                 placeholder={listText.searchPlaceholder}
@@ -518,6 +626,18 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
                       draftToolbarFilters.statusValue === "all"
                         ? undefined
                         : draftToolbarFilters.statusValue,
+                    impactArea:
+                      draftToolbarFilters.impactAreaValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.impactAreaValue,
+                    userImpact:
+                      draftToolbarFilters.userImpactValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.userImpactValue,
+                    regression: draftToolbarFilters.regressionValue === "true" ? true : undefined,
+                    release: draftToolbarFilters.releaseValue.trim() || undefined,
+                    from: draftToolbarFilters.fromValue.trim() || undefined,
+                    to: draftToolbarFilters.toValue.trim() || undefined,
                     page: 1,
                   });
                 }}
@@ -567,6 +687,68 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
                       })),
                     ]}
                   />
+                  <FilterField
+                    label="Area impatto"
+                    value={draftToolbarFilters.impactAreaValue}
+                    onValueChange={(value) => {
+                      setDraftToolbarFilters((current) => ({ ...current, impactAreaValue: value }));
+                    }}
+                    options={[
+                      { value: "all", label: "Tutte" },
+                      { value: "auth", label: "Auth" },
+                      { value: "editorial", label: "Editorial" },
+                      { value: "media", label: "Media" },
+                      { value: "cms", label: "CMS" },
+                      { value: "public_site", label: "Public site" },
+                      { value: "unknown", label: "Unknown" },
+                    ]}
+                  />
+                  <FilterField
+                    label="Impatto utente"
+                    value={draftToolbarFilters.userImpactValue}
+                    onValueChange={(value) => {
+                      setDraftToolbarFilters((current) => ({ ...current, userImpactValue: value }));
+                    }}
+                    options={[
+                      { value: "all", label: "Tutti" },
+                      { value: "none", label: "None" },
+                      { value: "minor", label: "Minor" },
+                      { value: "blocked_action", label: "Blocked action" },
+                      { value: "lost_content", label: "Lost content" },
+                    ]}
+                  />
+                  <FilterField
+                    label="Regressione"
+                    value={draftToolbarFilters.regressionValue}
+                    onValueChange={(value) => {
+                      setDraftToolbarFilters((current) => ({ ...current, regressionValue: value }));
+                    }}
+                    options={[
+                      { value: "all", label: "Tutte" },
+                      { value: "true", label: "Solo regressioni" },
+                    ]}
+                  />
+                  <TextFilterField
+                    label="Release"
+                    value={draftToolbarFilters.releaseValue}
+                    onValueChange={(value) => {
+                      setDraftToolbarFilters((current) => ({ ...current, releaseValue: value }));
+                    }}
+                  />
+                  <TextFilterField
+                    label="Da (ISO)"
+                    value={draftToolbarFilters.fromValue}
+                    onValueChange={(value) => {
+                      setDraftToolbarFilters((current) => ({ ...current, fromValue: value }));
+                    }}
+                  />
+                  <TextFilterField
+                    label="A (ISO)"
+                    value={draftToolbarFilters.toValue}
+                    onValueChange={(value) => {
+                      setDraftToolbarFilters((current) => ({ ...current, toValue: value }));
+                    }}
+                  />
                 </div>
               </CmsListFiltersSheet>
             </div>
@@ -580,6 +762,7 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
             >
               <TableHeader>
                 <TableRow className={cmsTableClasses.headerRow}>
+                  <TableHead className={cmsTableClasses.headerCell}>Priorita</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Ultima vista</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Severita</TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>Stato</TableHead>
@@ -593,6 +776,12 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
               <TableBody>
                 {query.data.items.map((entry) => (
                   <TableRow key={entry.id} className={cmsTableClasses.bodyRow}>
+                    <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      <div className="font-ui text-sm font-bold">{entry.priorityScore}</div>
+                      <div className="mt-1 max-w-40 truncate text-xs text-muted-foreground">
+                        {entry.priorityReasons.slice(0, 2).join(", ") || "-"}
+                      </div>
+                    </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       {formatDateTime(entry.lastSeenAt)}
                     </TableCell>
@@ -608,6 +797,7 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
                       <div className="max-w-md truncate text-foreground">{entry.title}</div>
                       <div className="mt-1 text-xs text-muted-foreground">
                         {resolveSourceLabel(entry.source)} · {humanize(entry.impactArea)}
+                        {entry.regression ? " · regressione" : ""}
                       </div>
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>

@@ -6,29 +6,6 @@ import {
   observabilityRawEventTypeValues,
 } from "@/lib/server/modules/observability/model";
 
-export const observabilityErrorSourceValues = ["server", "client", "boundary"] as const;
-export const observabilityErrorSeverityValues = ["low", "medium", "high", "critical"] as const;
-export const observabilityErrorStatusValues = [
-  "open",
-  "investigating",
-  "resolved",
-  "ignored",
-] as const;
-export const observabilityImpactAreaValues = [
-  "cms",
-  "public_site",
-  "auth",
-  "media",
-  "editorial",
-  "unknown",
-] as const;
-export const observabilityUserImpactValues = [
-  "none",
-  "minor",
-  "blocked_action",
-  "lost_content",
-] as const;
-
 const sensitiveMetadataKeyPattern =
   /(authorization|token|secret|password|cookie|set-cookie|body|payload|email)/i;
 const metadataValueSchema = z.union([
@@ -107,17 +84,6 @@ export const telemetryCollectorPayloadSchema = z.object({
   events: z.array(telemetryCollectorEventSchema).min(1).max(50),
 });
 
-export const listTelemetryErrorsQuerySchema = z.object({
-  source: z.enum(observabilityErrorSourceValues).optional(),
-  severity: z.enum(observabilityErrorSeverityValues).optional(),
-  status: z.enum(observabilityErrorStatusValues).optional(),
-  q: z.string().trim().min(1).optional(),
-  sortBy: z
-    .enum(["lastSeenAt", "occurrenceCount", "firstSeenAt", "affectedSessions"])
-    .default("lastSeenAt"),
-  sortOrder: z.enum(["asc", "desc"]).default("desc"),
-});
-
 export const telemetryEngagementQuerySchema = z.object({
   days: z.number().int().min(1).max(90).default(30),
   pageType: z.enum(observabilityPageTypeValues).optional(),
@@ -143,11 +109,6 @@ export const contentEngagementDetailQuerySchema = telemetryEngagementQuerySchema
   path: observabilityPathSchema.optional().nullable(),
 });
 
-export const updateTelemetryErrorStatusSchema = z.object({
-  id: z.string().uuid(),
-  status: z.enum(observabilityErrorStatusValues),
-});
-
 export type TelemetryCollectorEvent = z.infer<typeof telemetryCollectorEventSchema>;
 export type TelemetryEngagementQuery = z.infer<typeof telemetryEngagementQuerySchema>;
 export type ListContentEngagementQuery = z.infer<typeof listContentEngagementQuerySchema>;
@@ -155,10 +116,3 @@ export type ContentEngagementDetailQuery = z.infer<typeof contentEngagementDetai
 export type TelemetryCollectorPayload = z.infer<typeof telemetryCollectorPayloadSchema>;
 export type ObservabilityRawEventType = (typeof observabilityRawEventTypeValues)[number];
 export type ObservabilityMetadata = z.infer<typeof observabilityMetadataSchema>;
-export type ObservabilityErrorSource = (typeof observabilityErrorSourceValues)[number];
-export type ObservabilityErrorSeverity = (typeof observabilityErrorSeverityValues)[number];
-export type ObservabilityErrorStatus = (typeof observabilityErrorStatusValues)[number];
-export type ObservabilityImpactArea = (typeof observabilityImpactAreaValues)[number];
-export type ObservabilityUserImpact = (typeof observabilityUserImpactValues)[number];
-export type ListTelemetryErrorsQuery = z.infer<typeof listTelemetryErrorsQuerySchema>;
-export type UpdateTelemetryErrorStatusInput = z.infer<typeof updateTelemetryErrorStatusSchema>;

@@ -383,10 +383,16 @@ model ErrorGroup {
   impactArea         ObservabilityImpactArea    @default(UNKNOWN)
   userImpact         ObservabilityUserImpact    @default(NONE)
   regression         Boolean                    @default(false)
+  priorityScore      Int                        @default(0)
+  priorityReasons    Json                       @default("[]")
   firstRelease       String?
   lastRelease        String?
   resolvedAt         DateTime?
   resolvedBy         String?
+  reopenedAt         DateTime?
+  reopenedBy         String?
+  lastStatusAt       DateTime                   @default(now())
+  lastStatusBy       String?
 
   occurrences ErrorOccurrence[]
 
@@ -394,6 +400,9 @@ model ErrorGroup {
   @@index([status, severity, lastSeenAt])
   @@index([source, lastSeenAt])
   @@index([impactArea, lastSeenAt])
+  @@index([priorityScore, lastSeenAt])
+  @@index([regression, lastSeenAt])
+  @@index([lastRelease, lastSeenAt])
   @@map("error_groups")
 }
 
