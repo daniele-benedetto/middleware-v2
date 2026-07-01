@@ -1578,13 +1578,141 @@ Verifiche eseguite:
 
 Obiettivo: dashboard veloci e stabili su aggregati già interpretati.
 
-Lavori principali: job di aggregazione giornaliera; `DailyQualityAggregate` per contenuto, pageType, giorno, con `qualityScoreComponents`; aggregati errori (nuovi, aperti, regressioni, sessioni impattate); aggregati performance (perceived quality, poor rate, worst pages); aggregati audit (high risk, failures, public impact); lock job contro race delete/reinsert; aggregati pesati per `sampleRate` dove c'è campionamento; retention raw breve, aggregati lunga.
+Assunzione operativa: la Fase 1, la Fase 2, la Fase 3, la Fase 4, la Fase 5 e la Fase 6 sono state completate come descritte. Esistono quindi schema autorevole di osservabilità, collector batch/sessionizzato, session tracking, bot filtering, rate limit, privacy gating, engagement contenuti, audio engagement, errori operativi autonomi, performance qualitativa e audit qualitativo. La Fase 7 non deve ridefinire questi domini: li usa come fonti interpretate autorevoli per costruire dashboard storiche veloci.
 
-Regole operative: aggregati idempotenti; job rilanciabili senza duplicare; tabelle raw non necessarie per dashboard storiche dopo la retention; aggregati con abbastanza dimensioni per filtrare senza riesplodere cardinalità.
+Principio di questa fase: aggregates-first, no retrocompatibilità. `TelemetryDailyAggregate`, `WebVitalDailyAggregate`, script legacy su `analytics_events`, `web_vitals`, `error_logs`, `audit_logs`, job provvisori di refresh/prune, summary runtime basati su raw event, DTO storici views-based, comandi `audit:prune` e documentazione ops che cita vecchie tabelle non sono vincoli. Se codice, script, package command, README, test o UI continuano a dipendere da aggregati provvisori o da tabelle eliminate, si buttano via o si riscrivono. Non si mantengono alias, adapter, backfill, colonne ponte, script compatibili, mapping vecchio-nuovo o doppie pipeline per proteggere dati provvisori.
 
-Deliverable: script aggregation, script prune, test service-level, documentazione comandi.
+Scelta dello slice aggregato: aggregati giornalieri persistenti per contenuti, errori, performance e audit, più registro job. Gli aggregati leggono dalle tabelle interpretate (`ContentEngagement`, `AudioEngagement`, `PerformanceExperience`, `ErrorGroup`, `ErrorOccurrence`, `AuditActivity`, `AuditChange`) e non dai raw event come fonte primaria. `ObservabilityEvent` resta utile per debug e ricostruzione recente, ma le dashboard storiche non devono dipendere dai raw dopo la retention.
 
-Criterio di completamento: le dashboard non dipendono da query pesanti sui raw; la retention non rompe le metriche storiche.
+Modelli introdotti in questa fase:
+
+- `DailyContentQualityAggregate`
+- `DailyErrorAggregate`
+- `DailyPerformanceAggregate`
+- `DailyAuditAggregate`
+- `ObservabilityJobRun`
+
+Checklist operativa Fase 7:
+
+- [ ] Rimuovere o sostituire ogni residuo legacy di job e retention: script che puntano a `audit_logs`, `analytics_events`, `web_vitals`, `error_logs`, `TelemetryDailyAggregate`, `WebVitalDailyAggregate` o nomi equivalenti non più autorevoli.
+- [ ] Rimuovere da `package.json` comandi legacy come `audit:prune` se puntano al vecchio dominio, sostituendoli con comandi osservabilità nuovi e senza alias compatibili.
+- [ ] Aggiornare `README.md`, `scripts/README.md` e documentazione operativa che cita vecchie tabelle o vecchi job, eliminando istruzioni non eseguibili invece di marcarle come legacy supportato.
+- [ ] Creare `DailyContentQualityAggregate` nello schema Prisma con dimensioni minime: `date`, `pageType`, `contentType`, `contentId`, `path` e campi qualitativi derivati.
+- [ ] Inserire in `DailyContentQualityAggregate` almeno: `totalVisits`, `qualifiedVisits`, `completedReads`, `significantReturns`, `recurringContentDays`, `averageActiveTimeMs`, `frustrationSignals`, `errorImpactedSessions`, `poorPerformanceSessions`, `qualityScore`, `qualityScoreComponents`, `sampleConfidence`, `thresholdVersion`, `createdAt`, `updatedAt`.
+- [ ] Definire chiave unica per `DailyContentQualityAggregate` sulla granularità scelta, ad esempio `date` + `pageType` + `contentType` + `contentId` + `path`, normalizzando i null in modo deterministico senza colonne ponte legacy.
+- [ ] Creare `DailyErrorAggregate` con dimensioni minime: `date`, `source`, `severity`, `status`, `impactArea`, `userImpact`, `release`.
+- [ ] Inserire in `DailyErrorAggregate` almeno: `newGroups`, `openGroups`, `criticalHighGroups`, `regressions`, `occurrences`, `affectedSessions`, `blockedActionGroups`, `priorityScoreAverage`, `createdAt`, `updatedAt`.
+- [ ] Creare `DailyPerformanceAggregate` con dimensioni minime: `date`, `pageType`, `path`, `contentId`, `deviceType`, `release`.
+- [ ] Inserire in `DailyPerformanceAggregate` almeno: `totalExperiences`, `smoothCount`, `acceptableCount`, `frustratingCount`, `brokenCount`, `earlyExitCount`, `lcpP75`, `inpP75`, `clsP75`, `fcpP75`, `ttfbP75`, `poorRate`, `sampleConfidence`, `thresholdVersion`, `createdAt`, `updatedAt`.
+- [ ] Creare `DailyAuditAggregate` con dimensioni minime: `date`, `resourceType`, `action`, `outcome`, `riskLevel`, `publicImpact`.
+- [ ] Inserire in `DailyAuditAggregate` almeno: `activityCount`, `highCriticalCount`, `failureCount`, `sensitiveActionCount`, `activeActorCount`, `createdAt`, `updatedAt`.
+- [ ] Creare `ObservabilityJobRun` con `id`, `jobName`, `windowStart`, `windowEnd`, `status`, `startedAt`, `finishedAt`, `lockedUntil`, `processedRows`, `errorMessage`, `metadata`, `createdAt`, `updatedAt`.
+- [ ] Aggiungere indici minimi per dashboard: date range, dimensioni principali, `qualityScore`, `sampleConfidence`, severity/status, perceived quality counts, risk/outcome e lookup job per `jobName`/`status`/`lockedUntil`.
+- [ ] Generare una migrazione Prisma netta con le nuove tabelle aggregate e il registro job, senza backfill da aggregati provvisori, viste compatibili, colonne shadow o mapping da tabelle eliminate.
+- [ ] Creare modulo server dedicato `lib/server/modules/observability-aggregates/*` con `schema`, `dto`, `policy`, `repository`, `service` e `index` separati.
+- [ ] Definire schema Zod per input job: `from`, `to`, `days`, `domains`, `force`, `dryRun` se utile, con validazione di finestra temporale e limiti massimi ragionevoli.
+- [ ] Definire schema Zod per query aggregate CMS: periodo, dominio, `pageType`, `contentType`, `contentId`, `path`, `deviceType`, `release`, severity/status/risk/outcome e paginazione dove serve.
+- [ ] Implementare repository aggregati con metodi espliciti per acquisire lock, registrare job start, marcare success/failure, cancellare finestra aggregata, inserire batch aggregate e leggere aggregati per dashboard.
+- [ ] Implementare lock job contro race delete/reinsert usando `ObservabilityJobRun` o lock DB equivalente; due job sulla stessa finestra e dominio non devono riscrivere contemporaneamente gli stessi aggregati.
+- [ ] Garantire che lock scaduti possano essere recuperati in modo deterministico, senza lasciare job bloccati per sempre dopo crash o deploy interrotto.
+- [ ] Implementare service aggregati con funzioni pure per costruire finestre giornaliere UTC, raggruppare dimensioni, calcolare conteggi pesati, sample confidence, quality score e componenti.
+- [ ] Rendere i job idempotenti: rilanciare lo stesso job sulla stessa finestra deve produrre gli stessi aggregati senza duplicati.
+- [ ] Implementare strategia replace-window: per ogni dominio e giorno della finestra si cancellano gli aggregati esistenti e si reinseriscono quelli ricostruiti dentro una transazione o sequenza protetta da lock.
+- [ ] Non leggere `ObservabilityEvent` come fonte primaria degli aggregati qualitativi, salvo controlli diagnostici espliciti; contenuti, performance, errori e audit derivano dalle tabelle interpretate delle fasi precedenti.
+- [ ] Escludere di default dagli aggregati qualitativi le sessioni `isLikelyBot = true`, mantenendo eventuale conteggio diagnostico separato solo se serve e senza contaminarlo con KPI primari.
+- [ ] Calcolare `totalVisits` da `ContentEngagement`, non da page view legacy o raw `page_enter` trattati come views.
+- [ ] Calcolare `qualifiedVisits` da engagement `engaged` e `completed`, con regole coerenti con Fase 3 e senza reintrodurre views come metrica primaria.
+- [ ] Calcolare `completedReads` da `ContentEngagement.completed` e, per contenuti audio/listen, integrare `AudioEngagement.completed` senza doppio conteggio della stessa sessione/contenuto.
+- [ ] Calcolare `significantReturns` da `returnCountInSession` e refresh/return rules della Fase 3, distinguendolo da refresh tecnico.
+- [ ] Calcolare `recurringContentDays` a livello contenuto su più giorni, senza tracking per-visitatore cross-day e senza introdurre identificatori persistenti.
+- [ ] Calcolare `averageActiveTimeMs` con media coerente con `sampleRate`, evitando media ingenua quando gli episodi campionati non sono rappresentativi.
+- [ ] Calcolare `poorPerformanceSessions` e `frustrationSignals` correlando `PerformanceExperience` alla dimensione contenuto/path/giorno, usando `perceivedQuality`, `causedEarlyExit` e sessione.
+- [ ] Calcolare `errorImpactedSessions` correlando `ErrorOccurrence`/`ErrorGroup` con contenuto/path/sessione/giorno, escludendo gruppi `ignored` salvo decisione esplicita codificata.
+- [ ] Implementare quality score contenuto con la formula di Fase 0: `completionRate`, `qualifiedRatio`, `returnRate`, `activeTimeFit`, `perfPenalty`, `errorPenalty` e pesi iniziali versionati.
+- [ ] Salvare sempre `qualityScoreComponents` insieme a `qualityScore`, includendo valori normalizzati, pesi usati, penalità, `thresholdVersion` e motivi principali leggibili dalla UI.
+- [ ] Gestire denominatori zero in modo deterministico: score nullo o non classificabile con `sampleConfidence = low`, non divisioni false o fallback ottimistici.
+- [ ] Calcolare `sampleConfidence` per contenuti in base a volume, distribuzione temporale e sample rate medio, evitando classifiche aggressive su pochi episodi.
+- [ ] Calcolare aggregati errori distinguendo nuovi gruppi, gruppi aperti, critical/high, regressioni, occorrenze, sessioni impattate e azioni bloccate, senza usare solo `occurrenceCount` come priorità.
+- [ ] Calcolare aggregati errori da `ErrorGroup` e `ErrorOccurrence` in modo coerente: stato operativo dal gruppo, volume e sessioni dalla occorrenze nella finestra.
+- [ ] Calcolare aggregati performance con breakdown `smooth`/`acceptable`/`frustrating`/`broken`, `poorRate`, early exits e p75 per `LCP`, `INP`, `CLS`, `FCP`, `TTFB`.
+- [ ] Non reintrodurre `FID` negli aggregati performance; se compare in dati invalidi, resta ignorato/rifiutato dal collector delle fasi precedenti e non ha colonna aggregata.
+- [ ] Calcolare percentili performance in modo metodologicamente onesto: p75 sui campioni osservati con confidence esplicita oppure struttura sample-rate-aware dedicata; non dichiarare precisione falsa.
+- [ ] Calcolare aggregati audit da `AuditActivity`: high/critical, failure, public impact, sensitive actions, active actor distinct e breakdown per resource/action/outcome/risk.
+- [ ] Non aggregare `AuditChange` come fonte primaria dei KPI audit; usarlo solo per conteggi secondari sui campi cambiati se serve e solo da cambiamenti applicati `SUCCESS`.
+- [ ] Definire granularità massima delle dimensioni aggregate per evitare cardinalità esplosiva: path normalizzati e limitati, contentId quando disponibile, bucket `unknown` esplicito per dimensioni assenti.
+- [ ] Implementare pruning raw/interpreted coerente con retention: raw breve, episodi interpretati media, aggregati lunga, audit più conservativo; nessuna retention deve cancellare la storia aggregata necessaria alle dashboard.
+- [ ] Creare script `scripts/aggregate-observability.mjs` per eseguire aggregation da CLI con finestra configurabile e default sicuro.
+- [ ] Creare script `scripts/prune-observability.mjs` per cancellare dati raw/interpreted oltre retention senza toccare aggregati storici non scaduti.
+- [ ] Creare script `scripts/observability-jobs.mjs` che esegue aggregate + prune nella sequenza operativa prevista.
+- [ ] Aggiungere comandi `observability:aggregate`, `observability:prune` e `observability:jobs` a `package.json`, rimuovendo comandi legacy equivalenti.
+- [ ] Definire variabili ambiente nuove e coerenti: giorni finestra aggregazione, retention raw, retention episodi interpretati, retention error occurrences, retention aggregati e timeout lock job.
+- [ ] Aggiornare documentazione comandi in `README.md` e `scripts/README.md` con i nuovi script, variabili env e semantica di retention.
+- [ ] Aggiornare repository/service di telemetry CMS perché summary e trend leggano gli aggregati quando il periodo è coperto da aggregati, non query pesanti su `ContentEngagement`.
+- [ ] Mantenere detail operativi recenti su `ContentEngagement`/`AudioEngagement` quando servono drilldown, senza usare raw event o views legacy.
+- [ ] Aggiornare repository/service performance CMS perché summary, trend e worst pages leggano `DailyPerformanceAggregate` dove possibile, lasciando `PerformanceExperience` per dettagli recenti e diagnosi puntuale.
+- [ ] Aggiornare summary errori CMS per usare `DailyErrorAggregate` sui KPI storici, mantenendo inbox operativa e dettaglio su `ErrorGroup`/`ErrorOccurrence`.
+- [ ] Aggiornare summary audit CMS per usare `DailyAuditAggregate` sui KPI storici, mantenendo timeline e dettaglio su `AuditActivity`/`AuditChange`.
+- [ ] Non modificare il significato delle procedure tRPC esistenti in modo silenzioso se il contratto cambia; creare procedure aggregate esplicite o aggiornare DTO mantenendo nomi coerenti col nuovo significato.
+- [ ] Creare DTO CMS per aggregati contenuto con score, componenti, confidence, periodo e dimensioni filtrabili.
+- [ ] Creare DTO CMS per aggregati performance con breakdown qualità percepita, p75, poor rate, early exit, confidence e release/device/pageType.
+- [ ] Creare DTO CMS per aggregati errori con nuovi/aperti/regressioni/critical-high/sessioni impattate/blocked actions e trend giornaliero.
+- [ ] Creare DTO CMS per aggregati audit con high risk, failures, public impact, sensitive actions, active actors e breakdown per resource/action.
+- [ ] Creare router o procedure tRPC dedicate agli aggregati se necessario, usando policy del modulo e `parseOutput`; niente business logic nei router.
+- [ ] Non hardcodare ruoli nelle procedure aggregate: usare policy del modulo aggregati o policy dei domini osservabilità già definiti.
+- [ ] Aggiungere test unitari per costruzione finestre UTC, inclusi boundary di giorno, timezone locale irrilevante e range multi-giorno.
+- [ ] Aggiungere test service per idempotenza aggregation: due run sulla stessa finestra producono una sola serie di righe aggregate coerenti.
+- [ ] Aggiungere test repository per lock job, lock già acquisito, lock scaduto, job success, job failure e metadata errore redatto.
+- [ ] Aggiungere test per replace-window: aggregati esistenti nella finestra vengono sostituiti, aggregati fuori finestra restano intatti.
+- [ ] Aggiungere test per quality score contenuto: componenti, pesi, clamp, denominatori zero, penalty performance/errori e `sampleConfidence`.
+- [ ] Aggiungere test per sample-rate-aware counts: heartbeat/scroll o episodi campionati pesano correttamente e non alterano eventi critici non campionati.
+- [ ] Aggiungere test aggregati contenuto per qualified visits, completed reads, returns, recurring content days, bot exclusion e audio completion senza doppio conteggio.
+- [ ] Aggiungere test aggregati performance per p75, breakdown qualità percepita, poor rate, early exit, release/device/pageType e assenza `FID`.
+- [ ] Aggiungere test aggregati errori per nuovi gruppi, aperti, critical/high, regressioni, sessioni distinte impattate, ignored esclusi dove previsto e blocked actions.
+- [ ] Aggiungere test aggregati audit per high/critical, failure, public impact, sensitive actions, active actor distinct e breakdown per risorsa/azione.
+- [ ] Aggiungere test prune per retention raw/interpreted/aggregati: la cancellazione non rompe metriche storiche e non tocca righe fuori policy.
+- [ ] Aggiungere test script o smoke test dei comandi CLI dove l'infrastruttura test del progetto lo consente, verificando env mancanti, input invalidi e dry run se implementato.
+- [ ] Aggiornare test tRPC/DTO per confermare che summary/trend storici leggono aggregati e che detail operativi restano sulle tabelle vive corrette.
+- [ ] Verificare con `prisma validate`, generazione client, typecheck, lint, unit test pertinenti, test completi e build se il tempo di esecuzione lo consente.
+- [ ] Aggiornare questo documento se durante l'implementazione emergono decisioni su granularità aggregati, retention, lock, p75 campionati o quality score, senza creare checklist parallele.
+
+Deliverable Fase 7:
+
+- [ ] Migrazione Prisma netta con `DailyContentQualityAggregate`, `DailyErrorAggregate`, `DailyPerformanceAggregate`, `DailyAuditAggregate` e `ObservabilityJobRun`, senza backfill o mapping da aggregati legacy.
+- [ ] Modulo server dedicato `observability-aggregates` con `schema`, `dto`, `policy`, `repository`, `service` e `index` separati.
+- [ ] Service aggregation idempotente per contenuti, performance, errori e audit, basato sulle tabelle interpretate delle fasi precedenti.
+- [ ] Quality score giornaliero per contenuto salvato con componenti, pesi, penalità, threshold version e sample confidence.
+- [ ] Lock job e registro esecuzioni con success/failure, finestre processate, righe elaborate e recupero lock scaduti.
+- [ ] Script `aggregate-observability`, `prune-observability` e `observability-jobs` con comandi `package.json` nuovi.
+- [ ] Retention raw/interpreted/aggregati documentata e implementata senza rompere dashboard storiche.
+- [ ] Summary/trend CMS spostati su aggregati persistenti dove appropriato, mantenendo detail operativi sulle tabelle vive.
+- [ ] Rimozione di script, comandi, documentazione, test e import legacy relativi a vecchie tabelle o vecchi aggregati.
+- [ ] Test unitari, repository test, service test, prune test, tRPC/DTO test e, dove possibile, smoke test CLI sui casi critici.
+
+Criterio di completamento:
+
+- [ ] Rilanciare lo stesso job sulla stessa finestra non duplica righe e produce output stabile.
+- [ ] Due job concorrenti sulla stessa finestra non possono cancellare/reinserire aggregati in race.
+- [ ] Le dashboard storiche leggono aggregati persistenti e non dipendono da query pesanti su raw event o episodi oltre la retention prevista.
+- [ ] La retention può cancellare raw event e dati interpretati scaduti senza rompere quality score, trend storici, KPI errori, KPI performance o KPI audit già aggregati.
+- [ ] `DailyContentQualityAggregate` mostra quality score spiegabile con componenti, sample confidence e threshold version.
+- [ ] Gli aggregati contenuto misurano letture qualificate, completamenti, ritorni e frizione, non page views legacy.
+- [ ] Gli aggregati performance distinguono esperienza percepita, early exit, p75 e confidence, senza reintrodurre `FID` o Web Vitals standalone legacy.
+- [ ] Gli aggregati errori distinguono nuovi, aperti, critical/high, regressioni e sessioni impattate, senza ridurre la priorità a `occurrenceCount` grezzo.
+- [ ] Gli aggregati audit distinguono rischio, fallimenti, impatto pubblico, azioni sensibili e attori attivi, senza ricostruire la storia da stato corrente.
+- [ ] Gli aggregati sono sample-rate-aware dove il dato è campionato e marcano confidence bassa quando l'evidenza è insufficiente.
+- [ ] Sessioni bot sono escluse dagli aggregati qualitativi di default.
+- [ ] Script, comandi e documentazione legacy incompatibili sono eliminati o riscritti, non mantenuti per compatibilità preventiva.
+- [ ] Il sistema resta funzionante e verificabile dopo la rimozione del legacy, anche se overview trasversale e insight avanzati arrivano nelle fasi successive.
+
+Verifiche previste:
+
+- `pnpm prisma:generate`
+- `pnpm prisma:validate`
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm test:run tests/unit/lib/server/modules/observability-aggregates/*`
+- `pnpm test:run`
+- `pnpm build`
 
 ### Fase 8: UI CMS Con Shadcn Charts
 
