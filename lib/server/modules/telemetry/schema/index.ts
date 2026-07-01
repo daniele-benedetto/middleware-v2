@@ -1,32 +1,14 @@
 import { z } from "zod";
 
 import {
+  observabilityMetadataSchema,
   observabilityContentTypeValues,
   observabilityPageTypeValues,
   observabilityRawEventTypeValues,
 } from "@/lib/server/modules/observability/model";
 import { performanceMetricPayloadSchema } from "@/lib/server/modules/observability-performance/schema";
 
-const sensitiveMetadataKeyPattern =
-  /(authorization|token|secret|password|cookie|set-cookie|body|payload|email)/i;
-const metadataValueSchema = z.union([
-  z.string().max(500),
-  z.number().finite(),
-  z.boolean(),
-  z.null(),
-]);
-
-export const observabilityMetadataSchema = z
-  .record(z.string().trim().min(1).max(80), metadataValueSchema)
-  .refine((value) => Object.keys(value).length <= 20, {
-    message: "Observability metadata can contain at most 20 keys",
-  })
-  .refine((value) => JSON.stringify(value).length <= 2048, {
-    message: "Observability metadata must be at most 2KB when serialized",
-  })
-  .refine((value) => Object.keys(value).every((key) => !sensitiveMetadataKeyPattern.test(key)), {
-    message: "Observability metadata cannot contain sensitive keys",
-  });
+export { observabilityMetadataSchema } from "@/lib/server/modules/observability/model";
 
 const observabilityPathSchema = z.string().trim().min(1).max(512).startsWith("/");
 const nullableTextSchema = z.string().trim().min(1).max(200).optional().nullable();
@@ -94,13 +76,33 @@ export const telemetryCollectorEventSchema = baseCollectorEventSchema
     }
   });
 
-export const telemetryCollectorPayloadSchema = z.object({
-  sessionId: z.string().trim().min(16).max(120),
-  pageInstanceId: z.string().trim().min(8).max(120),
-  collectionMode: z.enum(["full", "minimal"]),
-  referrer: z.string().trim().min(1).max(512).optional().nullable(),
-  events: z.array(telemetryCollectorEventSchema).min(1).max(50),
-});
+export const telemetryCollectorPayloadSchema = z
+  .object({
+    sessionId: z.string().trim().min(16).max(120),
+    pageInstanceId: z.string().trim().min(8).max(120),
+    collectionMode: z.enum(["full", "minimal"]),
+    referrer: z.string().trim().min(1).max(512).optional().nullable(),
+    events: z.array(telemetryCollectorEventSchema).min(1).max(50),
+  })
+  .superRefine((payload, context) => {
+    if (payload.collectionMode !== "minimal") {
+      return;
+    }
+
+    payload.events.forEach((event, index) => {
+      if (
+        event.type === "session_heartbeat" ||
+        event.type === "scroll_milestone" ||
+        event.type === "performance_metric"
+      ) {
+        context.addIssue({
+          code: "custom",
+          message: "Minimal collection mode cannot include behavioral or performance events",
+          path: ["events", index, "type"],
+        });
+      }
+    });
+  });
 
 export const telemetryEngagementQuerySchema = z.object({
   days: z.number().int().min(1).max(90).default(30),

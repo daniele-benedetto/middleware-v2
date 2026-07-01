@@ -147,6 +147,25 @@ describe("telemetry payload schema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects optional behavioral events in minimal collection mode", () => {
+    const result = telemetryCollectorPayloadSchema.safeParse({
+      sessionId: "obs_session_1_0000",
+      pageInstanceId: "page_0000",
+      collectionMode: "minimal",
+      events: [
+        {
+          type: "session_heartbeat",
+          path: "/",
+          sampleRate: 0.5,
+          clientSequence: 1,
+          clientElapsedMs: 15_000,
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it("rejects legacy web vital payloads", () => {
     const result = telemetryCollectorPayloadSchema.safeParse({
       type: "web-vital",

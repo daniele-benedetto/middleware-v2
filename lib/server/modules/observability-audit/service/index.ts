@@ -3,6 +3,10 @@ import "server-only";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/lib/server/http/api-error";
+import {
+  hasSensitiveMetadataKey,
+  redactObservabilityText,
+} from "@/lib/server/modules/observability/model";
 import { observabilityAuditRepository } from "@/lib/server/modules/observability-audit/repository";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
@@ -35,7 +39,6 @@ const TEXT_MAX_LENGTH = 240;
 const JSON_TEXT_MAX_LENGTH = 500;
 const MAX_DIFF_FIELDS = 50;
 
-const sensitiveKeyPattern = /(password|token|secret|authorization|cookie|credential|session)/i;
 const publicActions = new Set<ObservabilityAuditAction>([
   "publish",
   "unpublish",
@@ -60,7 +63,7 @@ async function getAggregatesService() {
 
 function truncate(value: string | null | undefined, maxLength = TEXT_MAX_LENGTH) {
   if (!value) return null;
-  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
+  return redactObservabilityText(value, maxLength);
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -81,7 +84,7 @@ function sanitizeJson(value: unknown, depth = 0): Prisma.InputJsonValue | null {
         .slice(0, 40)
         .map(([key, item]) => [
           key,
-          sensitiveKeyPattern.test(key) ? "[redacted]" : sanitizeJson(item, depth + 1),
+          hasSensitiveMetadataKey(key) ? "[redacted]" : sanitizeJson(item, depth + 1),
         ]),
     );
   }
@@ -274,7 +277,7 @@ function buildChanges(input: {
       ...Object.keys(input.after?.values ?? {}),
     ]),
   )
-    .filter((field) => !sensitiveKeyPattern.test(field))
+    .filter((field) => !hasSensitiveMetadataKey(field))
     .slice(0, MAX_DIFF_FIELDS);
 
   return fields
@@ -349,7 +352,7 @@ export function createAuditSnapshot(input: {
 }): AuditSnapshot {
   const values = Object.fromEntries(
     Object.entries(input.values)
-      .filter(([key]) => !sensitiveKeyPattern.test(key))
+      .filter(([key]) => !hasSensitiveMetadataKey(key))
       .map(([key, value]) => [key, sanitizeJson(value)]),
   );
 

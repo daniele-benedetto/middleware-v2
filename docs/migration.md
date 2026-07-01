@@ -207,7 +207,7 @@ Nota: il `GITHUB_TOKEN` automatico vale solo nel runner. Per il `pull` dal VPS s
 
 - Una visita pubblica genera eventi osservabilità batchati e non reintroduce `page_view` come metrica primaria.
 - Nessuna riga telemetry contiene IP grezzo, cookie, authorization header, session token o body request.
-- `/cms/analytics` legge aggregati qualitativi e mostra letture qualificate, completamenti, ritorni e quality score.
+- `/cms/telemetry` legge aggregati qualitativi e mostra letture qualificate, completamenti, ritorni e quality score.
 - `/cms/performance` mostra esperienza percepita, p75 e sample confidence senza query raw pesanti.
 - Un errore server di test crea o aggiorna `ErrorGroup` e salva una nuova `ErrorOccurrence`.
 - Un errore intercettato da boundary arriva in `/cms/errors`.
@@ -268,10 +268,10 @@ Gate fase 3:
 
 ### 4. Osservabilita e backup
 
-- [ ] Verificare eventi analytics reali.
-- [ ] Verificare Web Vitals reali.
-- [ ] Verificare errori server e boundary in `ErrorLog`.
-- [ ] Verificare pagine `/cms/analytics`, `/cms/performance`, `/cms/errors`.
+- [ ] Verificare eventi osservabilità reali senza reintrodurre page views come metrica primaria.
+- [ ] Verificare performance qualitativa reale con `PerformanceExperience`, INP e nessun FID.
+- [ ] Verificare errori server e boundary in `ErrorGroup`/`ErrorOccurrence`.
+- [ ] Verificare pagine `/cms/observability`, `/cms/telemetry`, `/cms/performance`, `/cms/errors` e `/cms/audit`.
 - [ ] Verificare aggregazioni e retention telemetry.
 - [ ] Configurare `scripts/backup-db.sh` con cron giornaliero.
 - [ ] Eseguire restore test su DB di prova.
@@ -280,7 +280,7 @@ Gate fase 3:
 
 Gate fase 4:
 
-- Analytics, Web Vitals ed errori visibili nel CMS.
+- Telemetry qualitativa, performance percepita, errori operativi, audit e overview visibili nel CMS.
 - Retention telemetria attiva.
 - Aggregazioni aggiornate senza query pesanti sulle tabelle raw.
 - Backup DB schedulato e restore testato.

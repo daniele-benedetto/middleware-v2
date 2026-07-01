@@ -1,5 +1,6 @@
 import {
   auditOutcomeValues,
+  buildObservabilityCsv,
   calculateActiveTime,
   calculateContentQualityScore,
   calculateSessionQualityScore,
@@ -17,6 +18,8 @@ import {
   isRawEventType,
   observabilityDefaults,
   parseObservabilityMetadata,
+  redactObservabilityText,
+  sanitizeObservabilityMetadata,
   observabilityPageTypeValues,
   perceivedQualityValues,
   resolveCollectionMode,
@@ -278,6 +281,43 @@ describe("observability privacy and sampling", () => {
     expect(parseObservabilityMetadata({ authorization: "Bearer secret" })).toBeUndefined();
     expect(parseObservabilityMetadata({ value: "x".repeat(3000) })).toBeUndefined();
     expect(hasSensitiveMetadataKey("requestToken")).toBe(true);
+  });
+
+  it("sanitizes metadata without preserving sensitive fields", () => {
+    expect(
+      sanitizeObservabilityMetadata({
+        component: "ArticlePage",
+        authorization: "Bearer secret",
+        nested: { token: "secret" },
+        href: "/articoli/test?token=secret&safe=1",
+        email: "editor@example.com",
+        count: 2,
+      }),
+    ).toEqual({
+      component: "ArticlePage",
+      href: "/articoli/test?token=[redacted]&safe=1",
+      count: 2,
+    });
+  });
+
+  it("redacts sensitive text and volatile identifiers", () => {
+    expect(
+      redactObservabilityText(
+        "Bearer abc.def token=secret user editor@example.com id 550e8400-e29b-41d4-a716-446655440000",
+      ),
+    ).toBe("Bearer [redacted] token=[redacted] user [email] id [uuid]");
+  });
+
+  it("escapes observability CSV cells and neutralizes spreadsheet formulas", () => {
+    expect(
+      buildObservabilityCsv(
+        [{ title: '=IMPORTXML("https://bad.test")', count: 2 }],
+        [
+          { header: "title", value: (row) => row.title },
+          { header: "count", value: (row) => row.count },
+        ],
+      ),
+    ).toBe('"title","count"\n"\'=IMPORTXML(""https://bad.test"")","2"');
   });
 
   it("marks invalid or suspicious client timing", () => {

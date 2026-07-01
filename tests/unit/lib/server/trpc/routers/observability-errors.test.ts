@@ -131,4 +131,24 @@ describe("observabilityErrorsRouter", () => {
       "user-1",
     );
   });
+
+  it("exports operational errors as redacted CSV", async () => {
+    observabilityErrorsServiceMock.listGroups.mockResolvedValue({
+      items: [{ ...group, title: '=IMPORTXML("https://bad.test")' }],
+      total: 1,
+    });
+
+    const result = await createCaller().exportCsv({
+      query: { status: "open", sortBy: "priorityScore", sortOrder: "desc" },
+      limit: 100,
+    });
+
+    expect(result.contentType).toBe("text/csv; charset=utf-8");
+    expect(result.rowCount).toBe(1);
+    expect(result.csv).toContain('"\'=IMPORTXML(""https://bad.test"")"');
+    expect(observabilityErrorsServiceMock.listGroups).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "open" }),
+      { page: 1, pageSize: 100 },
+    );
+  });
 });

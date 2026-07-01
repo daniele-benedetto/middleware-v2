@@ -1,6 +1,7 @@
 export * from "@/lib/server/modules/observability/model/audit";
 export * from "@/lib/server/modules/observability/model/active-time";
 export * from "@/lib/server/modules/observability/model/bot";
+export * from "@/lib/server/modules/observability/model/csv";
 export * from "@/lib/server/modules/observability/model/events";
 export * from "@/lib/server/modules/observability/model/fingerprint";
 export * from "@/lib/server/modules/observability/model/metadata";

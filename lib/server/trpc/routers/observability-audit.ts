@@ -1,5 +1,11 @@
 import "server-only";
 
+import { z } from "zod";
+
+import {
+  createObservabilityCsvExport,
+  observabilityCsvExportDtoSchema,
+} from "@/lib/server/modules/observability/model";
 import {
   listObservabilityAuditQuerySchema,
   observabilityAuditActivitiesListDtoSchema,
@@ -20,6 +26,14 @@ const observabilityAuditListInputSchema = paginationInputSchema.extend({
     sortBy: "createdAt",
     sortOrder: "desc",
   }),
+});
+
+const observabilityAuditExportInputSchema = z.object({
+  query: listObservabilityAuditQuerySchema.default({
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  }),
+  limit: z.number().int().min(1).max(1000).default(500),
 });
 
 export const observabilityAuditRouter = router({
@@ -56,6 +70,39 @@ export const observabilityAuditRouter = router({
       return parseOutput(
         await observabilityAuditService.detail(input.id),
         observabilityAuditActivityDetailDtoSchema,
+      );
+    }),
+  exportCsv: protectedProcedure
+    .use(requireRoleMiddleware(observabilityAuditPolicy.allowedRoles))
+    .input(observabilityAuditExportInputSchema)
+    .query(async ({ input }) => {
+      const result = await observabilityAuditService.list(input.query, {
+        page: 1,
+        pageSize: input.limit,
+      });
+      const rows = parseOutput(result.items, observabilityAuditActivitiesListDtoSchema);
+
+      return parseOutput(
+        createObservabilityCsvExport({
+          filename: "observability-audit.csv",
+          rows,
+          total: result.total,
+          columns: [
+            { header: "id", value: (row) => row.id },
+            { header: "actor", value: (row) => row.actorDisplayName },
+            { header: "action", value: (row) => row.action },
+            { header: "resourceType", value: (row) => row.resourceType },
+            { header: "resourceId", value: (row) => row.resourceId },
+            { header: "resourceTitle", value: (row) => row.resourceTitle },
+            { header: "outcome", value: (row) => row.outcome },
+            { header: "riskLevel", value: (row) => row.riskLevel },
+            { header: "publicImpact", value: (row) => row.publicImpact },
+            { header: "changedFields", value: (row) => row.changedFields.join("; ") },
+            { header: "requestId", value: (row) => row.requestId },
+            { header: "createdAt", value: (row) => row.createdAt },
+          ],
+        }),
+        observabilityCsvExportDtoSchema,
       );
     }),
 });

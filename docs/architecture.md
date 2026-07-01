@@ -152,7 +152,11 @@ export function EditorialSection({ title, description }: EditorialSectionProps) 
 Current role matrix:
 
 - `users.*`: `ADMIN`
-- `auditLogs.*`: `ADMIN`
+- `observabilityAudit.*`: `ADMIN`
+- `observabilityErrors.*`: `ADMIN`, `EDITOR`
+- `observabilityPerformance.*`: `ADMIN`, `EDITOR`
+- `observabilityAggregates.*`: `ADMIN`, `EDITOR`
+- `observabilityOverview.*`: `ADMIN`, `EDITOR`
 - `issues.*`: `ADMIN`, `EDITOR`
 - `categories.*`: `ADMIN`, `EDITOR`
 - `tags.*`: `ADMIN`, `EDITOR`

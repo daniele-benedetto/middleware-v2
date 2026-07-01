@@ -7,6 +7,7 @@ import {
   deriveObservabilityVisitorHash,
   observabilityDefaults,
   parseObservabilityMetadata,
+  redactObservabilityText,
 } from "@/lib/server/modules/observability/model";
 
 import type {
@@ -121,18 +122,6 @@ function normalizePath(value: string | null | undefined) {
 function readCountry(value: string | null | undefined) {
   const normalizedValue = value?.trim().toUpperCase();
   return normalizedValue && normalizedValue.length === 2 ? normalizedValue : null;
-}
-
-function redactText(value: string | null | undefined, maxLength: number) {
-  const normalizedValue = value ? normalizeWhitespace(value) : null;
-  if (!normalizedValue) return null;
-
-  return normalizedValue
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email]")
-    .replace(/Bearer\s+[A-Za-z0-9._~+/-]+=*/gi, "Bearer [redacted]")
-    .replace(/token=([^\s&]+)/gi, "token=[redacted]")
-    .replace(/authorization=([^\s&]+)/gi, "authorization=[redacted]")
-    .slice(0, maxLength);
 }
 
 function parseStackFrames(stack: string | null | undefined) {
@@ -392,8 +381,8 @@ export const observabilityErrorsService = {
     const now = new Date();
     const path = normalizePath(input.path);
     const routePath = normalizePath(input.routePath);
-    const message = truncate(input.message, 1000) ?? "Unknown error";
-    const name = truncate(input.name, 120);
+    const message = redactObservabilityText(input.message, 1000) ?? "Unknown error";
+    const name = redactObservabilityText(input.name, 120);
     const actionContext = normalizeActionContext(input.actionContext ?? routePath ?? path);
     const impactArea = deriveImpactArea({ path, routePath, actionContext });
     const userImpact = deriveUserImpact({
@@ -490,7 +479,7 @@ export const observabilityErrorsService = {
         statusCode: input.statusCode ?? null,
         actionContext,
         userAgent: truncate(context.userAgent, 500),
-        stackTraceRedacted: redactText(input.stack, 8000),
+        stackTraceRedacted: redactObservabilityText(input.stack, 8000),
         metadata,
         occurredAt: now,
       },
