@@ -10,7 +10,7 @@ import {
   renameMediaResultDtoSchema,
 } from "@/lib/server/modules/media";
 import { router } from "@/lib/server/trpc/init";
-import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
+import { auditResourceMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { parseOutput } from "@/lib/server/validation/output";
@@ -23,9 +23,9 @@ export const mediaRouter = router({
     .use(requireRoleMiddleware(mediaPolicy.allowedRoles))
     .input(renameMediaInputSchema)
     .use(
-      auditMiddleware<{ url: string }>((input) => ({
-        action: "rename",
-        resource: "media",
+      auditResourceMiddleware<{ url: string }>((input) => ({
+        action: "update",
+        resourceType: "media",
         resourceId: input.url,
       })),
     )
@@ -36,9 +36,9 @@ export const mediaRouter = router({
     .use(requireRoleMiddleware(mediaPolicy.allowedRoles))
     .input(deleteMediaInputSchema)
     .use(
-      auditMiddleware<{ url: string }>((input) => ({
+      auditResourceMiddleware<{ url: string }>((input) => ({
         action: "delete",
-        resource: "media",
+        resourceType: "media",
         resourceId: input.url,
       })),
     )

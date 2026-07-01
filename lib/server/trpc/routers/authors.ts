@@ -13,7 +13,7 @@ import {
   updateAuthorInputSchema,
 } from "@/lib/server/modules/authors";
 import { router } from "@/lib/server/trpc/init";
-import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
+import { auditResourceMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
@@ -58,7 +58,7 @@ export const authorsRouter = router({
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(authorsPolicy.allowedRoles))
-    .use(auditMiddleware(() => ({ action: "create", resource: "authors" })))
+    .use(auditResourceMiddleware(() => ({ action: "create", resourceType: "author" })))
     .input(createAuthorInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await authorsService.create(input), authorDtoSchema);
@@ -67,11 +67,13 @@ export const authorsRouter = router({
     .use(requireRoleMiddleware(authorsPolicy.allowedRoles))
     .input(authorIdInputSchema.extend({ data: updateAuthorInputSchema }))
     .use(
-      auditMiddleware<{ id: string; data: z.infer<typeof updateAuthorInputSchema> }>((input) => ({
-        action: "update",
-        resource: "authors",
-        resourceId: input.id,
-      })),
+      auditResourceMiddleware<{ id: string; data: z.infer<typeof updateAuthorInputSchema> }>(
+        (input) => ({
+          action: "update",
+          resourceType: "author",
+          resourceId: input.id,
+        }),
+      ),
     )
     .mutation(async ({ input }) => {
       return parseOutput(await authorsService.update(input.id, input.data), authorDtoSchema);
@@ -80,9 +82,9 @@ export const authorsRouter = router({
     .use(requireRoleMiddleware(authorsPolicy.allowedRoles))
     .input(authorIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "delete",
-        resource: "authors",
+        resourceType: "author",
         resourceId: input.id,
       })),
     )

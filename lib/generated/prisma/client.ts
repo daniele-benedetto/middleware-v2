@@ -102,10 +102,15 @@ export type Page = Prisma.PageModel
  */
 export type NavigationMenu = Prisma.NavigationMenuModel
 /**
- * Model AuditLog
+ * Model AuditActivity
  * 
  */
-export type AuditLog = Prisma.AuditLogModel
+export type AuditActivity = Prisma.AuditActivityModel
+/**
+ * Model AuditChange
+ * 
+ */
+export type AuditChange = Prisma.AuditChangeModel
 /**
  * Model ObservabilitySession
  * 

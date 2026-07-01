@@ -24,9 +24,23 @@ enum PageStatus {
   ARCHIVED
 }
 
-enum AuditLogOutcome {
+enum AuditOutcome {
   SUCCESS
   FAILURE
+}
+
+enum AuditRiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AuditChangeType {
+  CREATED
+  UPDATED
+  REMOVED
+  REORDERED
 }
 
 enum ObservabilityEventCategory {
@@ -286,30 +300,57 @@ model NavigationMenu {
   @@map("navigation_menus")
 }
 
-model AuditLog {
-  id           String          @id @default(uuid())
-  actorId      String?
-  actorEmail   String?
-  actorRole    UserRole?
-  action       String
-  resource     String
-  resourceId   String?
-  outcome      AuditLogOutcome
-  errorCode    String?
-  errorMessage String?
-  method       String
-  path         String
-  ipAddress    String?
-  userAgent    String?
-  requestId    String?
-  metadata     Json?
-  createdAt    DateTime        @default(now())
+model AuditActivity {
+  id               String         @id @default(uuid())
+  actorId          String?
+  actorSnapshot    Json?
+  action           String
+  resourceType     String
+  resourceId       String?
+  resourceSnapshot Json?
+  outcome          AuditOutcome
+  riskLevel        AuditRiskLevel
+  riskReasons      Json?
+  changedFields    String[]       @default([])
+  beforeSummary    Json?
+  afterSummary     Json?
+  attemptedSummary Json?
+  publicImpact     Boolean        @default(false)
+  requestId        String?
+  correlationId    String?
+  reason           String?
+  errorCode        String?
+  errorMessage     String?
+  metadata         Json?
+  createdAt        DateTime       @default(now())
+
+  changes AuditChange[]
 
   @@index([createdAt])
   @@index([actorId, createdAt])
-  @@index([resource, resourceId, createdAt])
+  @@index([resourceType, resourceId, createdAt])
   @@index([outcome, createdAt])
-  @@map("audit_logs")
+  @@index([riskLevel, createdAt])
+  @@index([publicImpact, createdAt])
+  @@index([requestId])
+  @@index([correlationId])
+  @@map("audit_activities")
+}
+
+model AuditChange {
+  id                  String          @id @default(uuid())
+  auditActivityId     String
+  field               String
+  beforeValueRedacted Json?
+  afterValueRedacted  Json?
+  changeType          AuditChangeType
+  createdAt           DateTime        @default(now())
+
+  activity AuditActivity @relation(fields: [auditActivityId], references: [id], onDelete: Cascade)
+
+  @@index([auditActivityId])
+  @@index([field])
+  @@map("audit_changes")
 }
 
 model ObservabilitySession {

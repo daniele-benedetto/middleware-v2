@@ -1,10 +1,10 @@
 export {
-  parseAuditLogsListSearchParams,
   parseArticlesListSearchParams,
   parseAuthorsListSearchParams,
   parseCategoriesListSearchParams,
   parseCmsListSearchParams,
   parseIssuesListSearchParams,
+  parseObservabilityAuditListSearchParams,
   parsePagesListSearchParams,
   parseTagsListSearchParams,
   parseObservabilityErrorsListSearchParams,

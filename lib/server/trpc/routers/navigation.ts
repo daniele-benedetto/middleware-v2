@@ -12,7 +12,7 @@ import {
   type UpdateNavigationMenuInput,
 } from "@/lib/server/modules/navigation";
 import { router } from "@/lib/server/trpc/init";
-import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
+import { auditResourceMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { parseOutput } from "@/lib/server/validation/output";
@@ -33,9 +33,9 @@ export const navigationRouter = router({
     .use(requireRoleMiddleware(navigationPolicy.allowedRoles))
     .input(updateNavigationMenuInputSchema)
     .use(
-      auditMiddleware<UpdateNavigationMenuInput>((input) => ({
-        action: "update",
-        resource: "navigation",
+      auditResourceMiddleware<UpdateNavigationMenuInput>((input) => ({
+        action: "update_navigation",
+        resourceType: "navigation",
         resourceId: input.key,
       })),
     )

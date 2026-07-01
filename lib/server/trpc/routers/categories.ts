@@ -13,7 +13,7 @@ import {
   updateCategoryInputSchema,
 } from "@/lib/server/modules/categories";
 import { router } from "@/lib/server/trpc/init";
-import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
+import { auditResourceMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
@@ -58,7 +58,7 @@ export const categoriesRouter = router({
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(categoriesPolicy.allowedRoles))
-    .use(auditMiddleware(() => ({ action: "create", resource: "categories" })))
+    .use(auditResourceMiddleware(() => ({ action: "create", resourceType: "category" })))
     .input(createCategoryInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await categoriesService.create(input), categoryDtoSchema);
@@ -67,11 +67,13 @@ export const categoriesRouter = router({
     .use(requireRoleMiddleware(categoriesPolicy.allowedRoles))
     .input(categoryIdInputSchema.extend({ data: updateCategoryInputSchema }))
     .use(
-      auditMiddleware<{ id: string; data: z.infer<typeof updateCategoryInputSchema> }>((input) => ({
-        action: "update",
-        resource: "categories",
-        resourceId: input.id,
-      })),
+      auditResourceMiddleware<{ id: string; data: z.infer<typeof updateCategoryInputSchema> }>(
+        (input) => ({
+          action: "update",
+          resourceType: "category",
+          resourceId: input.id,
+        }),
+      ),
     )
     .mutation(async ({ input }) => {
       return parseOutput(await categoriesService.update(input.id, input.data), categoryDtoSchema);
@@ -80,9 +82,9 @@ export const categoriesRouter = router({
     .use(requireRoleMiddleware(categoriesPolicy.allowedRoles))
     .input(categoryIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "delete",
-        resource: "categories",
+        resourceType: "category",
         resourceId: input.id,
       })),
     )

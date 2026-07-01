@@ -78,7 +78,7 @@ type TagsListInput = RouterInputs["tags"]["list"];
 type AuthorsListInput = RouterInputs["authors"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
-type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
+type ObservabilityAuditListInput = RouterInputs["observabilityAudit"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 
 type IssuesListOutput = RouterOutputs["issues"]["list"];
@@ -87,7 +87,7 @@ type TagsListOutput = RouterOutputs["tags"]["list"];
 type AuthorsListOutput = RouterOutputs["authors"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
 type PagesListOutput = RouterOutputs["pages"]["list"];
-type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
+type ObservabilityAuditListOutput = RouterOutputs["observabilityAudit"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
 
 function useCmsDomainListQuery<
@@ -188,12 +188,12 @@ export function usePagesListQuery(
   );
 }
 
-export function useAuditLogsListQuery(
-  input: AuditLogsListInput,
-  options?: CmsListQueryOptions<AuditLogsListInput, AuditLogsListOutput>,
-): CmsListQueryState<AuditLogsListOutput["items"][number]> {
+export function useObservabilityAuditListQuery(
+  input: ObservabilityAuditListInput,
+  options?: CmsListQueryOptions<ObservabilityAuditListInput, ObservabilityAuditListOutput>,
+): CmsListQueryState<ObservabilityAuditListOutput["items"][number]> {
   return useCmsDomainListQuery(input, options, (initialData) =>
-    trpc.auditLogs.list.useQuery(input, {
+    trpc.observabilityAudit.list.useQuery(input, {
       ...cmsListQueryOptions,
       initialData,
     }),

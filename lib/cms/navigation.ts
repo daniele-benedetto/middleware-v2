@@ -18,6 +18,6 @@ export const cmsNavigation: CmsNavItem[] = [
   { label: i18n.cms.navigation.analytics, href: "/cms/analytics", adminOnly: true },
   { label: i18n.cms.navigation.performance, href: "/cms/performance", adminOnly: true },
   { label: i18n.cms.navigation.errors, href: "/cms/errors", adminOnly: true },
-  { label: i18n.cms.navigation.auditLogs, href: "/cms/audit-logs", adminOnly: true },
+  { label: i18n.cms.navigation.audit, href: "/cms/audit", adminOnly: true },
   { label: i18n.cms.navigation.users, href: "/cms/users", adminOnly: true },
 ];

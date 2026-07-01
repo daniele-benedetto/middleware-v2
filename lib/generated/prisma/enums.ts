@@ -35,12 +35,32 @@ export const PageStatus = {
 export type PageStatus = (typeof PageStatus)[keyof typeof PageStatus]
 
 
-export const AuditLogOutcome = {
+export const AuditOutcome = {
   SUCCESS: 'SUCCESS',
   FAILURE: 'FAILURE'
 } as const
 
-export type AuditLogOutcome = (typeof AuditLogOutcome)[keyof typeof AuditLogOutcome]
+export type AuditOutcome = (typeof AuditOutcome)[keyof typeof AuditOutcome]
+
+
+export const AuditRiskLevel = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL'
+} as const
+
+export type AuditRiskLevel = (typeof AuditRiskLevel)[keyof typeof AuditRiskLevel]
+
+
+export const AuditChangeType = {
+  CREATED: 'CREATED',
+  UPDATED: 'UPDATED',
+  REMOVED: 'REMOVED',
+  REORDERED: 'REORDERED'
+} as const
+
+export type AuditChangeType = (typeof AuditChangeType)[keyof typeof AuditChangeType]
 
 
 export const ObservabilityEventCategory = {

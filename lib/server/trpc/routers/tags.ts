@@ -13,7 +13,7 @@ import {
   updateTagInputSchema,
 } from "@/lib/server/modules/tags";
 import { router } from "@/lib/server/trpc/init";
-import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
+import { auditResourceMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
@@ -58,7 +58,7 @@ export const tagsRouter = router({
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(tagsPolicy.allowedRoles))
-    .use(auditMiddleware(() => ({ action: "create", resource: "tags" })))
+    .use(auditResourceMiddleware(() => ({ action: "create", resourceType: "tag" })))
     .input(createTagInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await tagsService.create(input), tagDtoSchema);
@@ -67,11 +67,13 @@ export const tagsRouter = router({
     .use(requireRoleMiddleware(tagsPolicy.allowedRoles))
     .input(tagIdInputSchema.extend({ data: updateTagInputSchema }))
     .use(
-      auditMiddleware<{ id: string; data: z.infer<typeof updateTagInputSchema> }>((input) => ({
-        action: "update",
-        resource: "tags",
-        resourceId: input.id,
-      })),
+      auditResourceMiddleware<{ id: string; data: z.infer<typeof updateTagInputSchema> }>(
+        (input) => ({
+          action: "update",
+          resourceType: "tag",
+          resourceId: input.id,
+        }),
+      ),
     )
     .mutation(async ({ input }) => {
       return parseOutput(await tagsService.update(input.id, input.data), tagDtoSchema);
@@ -80,9 +82,9 @@ export const tagsRouter = router({
     .use(requireRoleMiddleware(tagsPolicy.allowedRoles))
     .input(tagIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "delete",
-        resource: "tags",
+        resourceType: "tag",
         resourceId: input.id,
       })),
     )

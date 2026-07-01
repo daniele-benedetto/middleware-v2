@@ -16,7 +16,7 @@ import {
 } from "@/lib/server/modules/issues";
 import { publicIssueDetailDtoSchema } from "@/lib/server/modules/issues/dto/public";
 import { router } from "@/lib/server/trpc/init";
-import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
+import { auditResourceMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, reorderProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
@@ -67,7 +67,7 @@ export const issuesRouter = router({
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
-    .use(auditMiddleware(() => ({ action: "create", resource: "issues" })))
+    .use(auditResourceMiddleware(() => ({ action: "create", resourceType: "issue" })))
     .input(createIssueInputSchema)
     .mutation(async ({ input }) => {
       const issue = parseOutput(await issuesService.create(input), issueDtoSchema);
@@ -82,12 +82,12 @@ export const issuesRouter = router({
       }),
     )
     .use(
-      auditMiddleware<{
+      auditResourceMiddleware<{
         id: string;
         data: z.infer<typeof updateIssueInputSchema>;
       }>((input) => ({
         action: "update",
-        resource: "issues",
+        resourceType: "issue",
         resourceId: input.id,
       })),
     )
@@ -100,9 +100,9 @@ export const issuesRouter = router({
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
     .input(issueIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "delete",
-        resource: "issues",
+        resourceType: "issue",
         resourceId: input.id,
       })),
     )
@@ -113,7 +113,7 @@ export const issuesRouter = router({
     }),
   reorder: reorderProcedure
     .use(requireRoleMiddleware(issuesPolicy.allowedRoles))
-    .use(auditMiddleware(() => ({ action: "reorder", resource: "issues" })))
+    .use(auditResourceMiddleware(() => ({ action: "reorder", resourceType: "issue" })))
     .input(reorderIssuesInputSchema)
     .mutation(async ({ input }) => {
       const issues = parseOutput(await issuesService.reorder(input), issuesListDtoSchema);

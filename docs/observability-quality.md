@@ -1449,120 +1449,130 @@ Scelta dello slice interpretato: `AuditActivity` + `AuditChange`. `AuditActivity
 
 Checklist operativa Fase 6:
 
-- [ ] Rimuovere dallo schema autorevole `AuditLog` e `AuditLogOutcome`, senza backfill, mapping legacy, viste compatibili o preservazione della cronologia tecnica provvisoria.
-- [ ] Rimuovere o sostituire `lib/audit-logs/*`, `lib/server/modules/audit-logs/*`, `lib/server/trpc/routers/audit-logs.ts`, export `auditLogs`, hook, prefetch, query parser, tipi `RouterInputs/RouterOutputs` e UI collegati al vecchio dominio.
-- [ ] Rimuovere o riscrivere la route CMS `/cms/audit-logs` e la navigazione corrispondente; se il prodotto mantiene una pagina audit, deve puntare al nuovo dominio qualitativo, non al vecchio log.
-- [ ] Rimuovere test, mock e aspettative basati su `AuditLog`, `auditLogsService.record`, `auditLogs.list`, `auditLogs.getById`, filtri solo per `outcome/resource`, summary risorsa ricostruiti dallo stato corrente o cronologia tecnica senza rischio.
-- [ ] Definire valori canonici audit riusabili: outcome `SUCCESS`/`FAILURE`, risk `low`/`medium`/`high`/`critical`, change type `created`/`updated`/`removed`/`reordered`, resource type iniziali `article`, `author`, `category`, `issue`, `media`, `navigation`, `page`, `tag`, `user`, `unknown`.
-- [ ] Definire azioni canoniche iniziali per le mutation CMS esistenti: `create`, `update`, `publish`, `unpublish`, `archive`, `delete`, `restore`, `reorder`, `sync_tags`, `upload`, `remove_media`, `update_navigation`, `change_role` e `unknown` solo come fallback esplicito.
-- [ ] Creare `AuditActivity` nello schema Prisma con campi: `id`, `actorId`, `actorSnapshot`, `action`, `resourceType`, `resourceId`, `resourceSnapshot`, `outcome`, `riskLevel`, `changedFields`, `beforeSummary`, `afterSummary`, `attemptedSummary`, `publicImpact`, `requestId`, `correlationId`, `reason`, `errorCode`, `errorMessage`, `metadata`, `createdAt`.
-- [ ] Creare `AuditChange` nello schema Prisma con campi: `id`, `auditActivityId`, `field`, `beforeValueRedacted`, `afterValueRedacted`, `changeType`, `createdAt`.
-- [ ] Collegare `AuditChange` a `AuditActivity` con delete cascade; nessuna `AuditChange` deve esistere per attività `FAILURE`.
-- [ ] Aggiungere indici minimi per audit: `createdAt`, `actorId/createdAt`, `resourceType/resourceId/createdAt`, `outcome/createdAt`, `riskLevel/createdAt`, `publicImpact/createdAt`, `requestId`, `correlationId` se presente.
-- [ ] Generare una migrazione Prisma netta che elimina le tabelle audit provvisorie e crea le nuove tabelle, senza colonne ponte, tabelle shadow, backfill da `audit_logs` o compatibilità con vecchi ID.
-- [ ] Creare modulo server dedicato `lib/server/modules/observability-audit/*` con `schema`, `dto`, `policy`, `repository`, `service`, `types` e `index` separati.
-- [ ] Aggiornare o spostare le funzioni pure in `lib/server/modules/observability/model/audit.ts` per includere derivazione rischio, impatto pubblico, change type, summary, redazione diff e validazione applied/attempted.
-- [ ] Non duplicare enum paralleli tra modello osservabilità e modulo audit: i valori canonici devono essere importati o riesportati da un solo punto autorevole.
-- [ ] Definire input service esplicito per registrare attività audit riuscite: attore, azione, risorsa, snapshot prima, snapshot dopo, contesto request, metadata redatti e motivo opzionale.
-- [ ] Definire input service esplicito per registrare attività audit fallite: attore, azione tentata, risorsa target, attempted summary, contesto request, errore redatto, metadata redatti e motivo opzionale.
-- [ ] Eliminare il contratto `record(entry)` che accetta un log tecnico già pronto; il service deve costruire `riskLevel`, `publicImpact`, `changedFields`, `AuditChange` e summary in modo deterministico.
-- [ ] Sostituire `lib/server/http/audit.ts` con helper qualitativi che raccolgono request context ammesso: method/path normalizzati se utili, `requestId`, `correlationId` quando disponibile, user-agent limitato solo se necessario, mai body request, cookie, Authorization header o token.
-- [ ] Aggiornare il middleware tRPC audit: non deve più ricevere solo `action/resource/resourceId`; deve supportare `captureBefore`, `captureAfter`, `buildAttemptedSummary`, `buildMetadata`, `buildReason` e `resolveResourceId` per mutation.
-- [ ] Garantire che il middleware catturi `beforeSummary` prima di `next()` per mutation su risorse esistenti, senza affidarsi allo stato finale per ricostruire il passato.
-- [ ] Garantire che il middleware catturi `afterSummary` dopo `SUCCESS` e calcoli diff applicati confrontando snapshot normalizzati, non input grezzo contro output parziale.
-- [ ] Garantire che su `FAILURE` venga registrato `attemptedSummary` e non `beforeSummary/afterSummary` come se esistesse una mutazione applicata.
-- [ ] Garantire che un fallimento su azione high/critical mantenga il rischio dell'azione tentata anche senza scrittura persistita.
-- [ ] Implementare fallback di persistenza audit redatto: se la scrittura su database fallisce, loggare internamente evento minimo con `persistence = "console-fallback"`, senza dati sensibili e senza rompere la mutation originale.
-- [ ] Implementare snapshot builder per `article`: id, titolo, slug, status, issue, category, author, isFeatured, publishedAt, presenza audio/media, tag count e flag pubblici utili; niente contenuto rich text completo.
-- [ ] Implementare snapshot builder per `page`: id, titolo, slug, status, publishedAt e flag pubblici; niente contenuto rich text completo.
-- [ ] Implementare snapshot builder per `issue`: id, titolo, slug, isActive, sortOrder, publishedAt, numero articoli collegati e flag pubblici.
-- [ ] Implementare snapshot builder per `author`, `category` e `tag`: id, nome, slug, isActive, conteggio contenuti collegati e indicazione se impattano contenuti pubblici.
-- [ ] Implementare snapshot builder per `navigation`: key, label, conteggio item, fingerprint redatto della struttura e flag di navigazione pubblica; niente dump illimitato di link o payload.
-- [ ] Implementare snapshot builder per `media`: pathname/url redatto, content type, size, public flag, uso noto su contenuti pubblici se disponibile.
-- [ ] Implementare snapshot builder per `user`: id, email redatta o limitata, role, emailVerified, name quando ammesso; niente sessioni, token o dati auth sensibili.
-- [ ] Definire summary leggibili per `beforeSummary`, `afterSummary` e `attemptedSummary` con shape stabile: title, description, fields redatti, public flags e valori necessari al diff.
-- [ ] Implementare diff builder per scalari semplici: title, slug, status, publishedAt, isFeatured, isActive, sortOrder, role, emailVerified e campi equivalenti.
-- [ ] Implementare diff builder per creazione: `changeType = "created"`, `beforeValueRedacted = null`, `afterValueRedacted` limitato ai campi summary ammessi.
-- [ ] Implementare diff builder per cancellazione: `changeType = "removed"`, `beforeValueRedacted` limitato ai campi summary ammessi, `afterValueRedacted = null`.
-- [ ] Implementare diff builder per reorder: salvare posizione/ordine precedente e successivo in forma compatta, non interi payload ordinati se grandi.
-- [ ] Implementare diff builder per liste e relazioni, ad esempio tag sync: aggiunti, rimossi, conteggi e nomi/id redatti limitati.
-- [ ] Implementare trattamento rich text e JSON complessi: non salvare payload completo; salvare summary come changed, length/hash non reversibile, block count o campi esplicitamente ammessi.
-- [ ] Implementare redazione centralizzata per diff, metadata, error message, actor/resource snapshot e attempted summary, riusando le regole privacy già definite: niente token, password, Authorization, cookie, body request, query sensibili o dati personali non necessari.
-- [ ] Imporre limiti di dimensione a snapshot, summary, metadata e valori diff; se un valore eccede i limiti, troncarlo o sostituirlo con summary redatto, non salvarlo integralmente.
-- [ ] Derivare `publicImpact` da stato risorsa e azione: contenuto pubblicato, publish/unpublish, delete pubblico, navigation pubblica, media pubblico/usato, taxonomy/autore collegati a contenuti pubblici.
-- [ ] Derivare `riskLevel = "critical"` per cambio ruolo, cancellazione utente/admin, azioni security-sensitive e azioni massive distruttive.
-- [ ] Derivare `riskLevel = "high"` per publish, unpublish, delete, media pubblico/usato, navigazione pubblica e modifiche a contenuti pubblici critici.
-- [ ] Derivare `riskLevel = "medium"` per modifiche a contenuti pubblicati non critiche, taxonomy o navigazione minore con impatto pubblico indiretto.
-- [ ] Derivare `riskLevel = "low"` per bozze, update metadati non pubblici e modifiche interne senza impatto pubblico.
-- [ ] Rendere risk e public impact spiegabili nei DTO con motivazioni sintetiche, non solo con enum.
-- [ ] Collegare audit a errori operativi tramite `requestId`, `correlationId` e finestra temporale, senza creare dipendenza circolare tra modulo audit e modulo errori; il dettaglio può leggere errori correlati tramite service/query dedicata.
-- [ ] Non bloccare errori o audit critici in base a bot filtering: audit CMS autenticato resta responsabilità operativa, non telemetry pubblica.
-- [ ] Implementare repository audit con metodi espliciti per record success, record failure, list activities, count activities, summary KPI, detail activity, list changes e lookup related errors se previsto.
-- [ ] Implementare service audit con business rules pure per snapshot, diff, redazione, risk, public impact, applied vs attempted, fallback e DTO.
-- [ ] Creare DTO CMS per summary audit con high/critical recenti, public impact recenti, failure sensibili, attori attivi, delete recenti e publish/unpublish recenti.
-- [ ] Creare DTO CMS per lista audit con `id`, actor display, action, resource type/id/title, outcome, riskLevel, riskReasons, publicImpact, changedFields, requestId, correlationId, errorCode e createdAt.
-- [ ] Creare DTO CMS per dettaglio audit con actor snapshot, resource snapshot, before/after/attempted summary, changes redatti, request context, errore redatto, metadata redatti e errori correlati.
-- [ ] Creare schema input tRPC per summary, list e detail con filtri: testo, actor, resource type, action, outcome, risk, public impact, date range, requestId, correlationId, sort e paginazione.
-- [ ] Creare router tRPC dedicato `observabilityAudit`, non procedure annidate in `telemetry`, con policy del modulo audit, service orchestration e `parseOutput` sui DTO.
-- [ ] Non hardcodare ruoli nelle procedure: usare `policy` del modulo audit. Se l'accesso resta admin-only, la decisione vive nella policy.
-- [ ] Aggiornare root router, prefetch CMS, tipi `RouterInputs`/`RouterOutputs`, query parser e hook per usare `observabilityAudit`, eliminando `auditLogs` come API raggiungibile.
-- [ ] Aggiornare tutte le mutation CMS esistenti per fornire al nuovo middleware audit informazioni sufficienti: articles, pages, issues, authors, categories, tags, navigation, media e users.
-- [ ] Per create, catturare attempted summary dall'input e after summary dal record creato; il diff deve rappresentare una creazione, non un update da oggetto vuoto generico.
-- [ ] Per update, catturare before dal repository prima della mutation e after dal record aggiornato o da lookup post-mutation.
-- [ ] Per publish/unpublish/archive, usare azioni specifiche invece di generico `update` quando il dominio le espone come mutation separate o comportamento semanticamente distinto.
-- [ ] Per delete, catturare before prima della cancellazione e non tentare di leggere la risorsa dopo hard delete per ricostruire il passato.
-- [ ] Per failure, registrare il tentativo anche quando `resourceId` non esiste o la risorsa non viene trovata, marcando chiaramente che il cambiamento non è stato applicato.
-- [ ] Sostituire la UI CMS audit con una timeline di responsabilità basata su `AuditActivity`, non con una tabella cronologica tecnica.
-- [ ] La UI deve aprire con KPI operativi: high/critical, public impact, failures, active actors e azioni sensibili recenti.
-- [ ] Implementare tabs o filtri rapidi: `Tutti`, `High risk`, `Falliti`, `Impatto pubblico`, `Azioni sensibili`.
-- [ ] Implementare lista/timeline ordinata per rischio e recenza, con badge risk/outcome/public impact/resource e copy button per ID tecnici rilevanti.
-- [ ] Implementare filtri UI sempre raggiungibili per actor, resource type, action, risk, outcome, public impact, date range e testo.
-- [ ] Implementare dettaglio in `Sheet` o `Dialog` con evento, attore, risorsa, request context, diff applicato per success, attempted summary per failure, errore e metadata redatti.
-- [ ] Mostrare per ogni attività perché è rischiosa: risk reasons, public impact, outcome, tipo risorsa e campi cambiati devono essere leggibili senza aprire JSON grezzo.
-- [ ] Per attività `SUCCESS`, mostrare `AuditChange` come diff applicato; per attività `FAILURE`, mostrare il tentativo marcato come non applicato e non mostrare una sezione diff applicato vuota o fuorviante.
-- [ ] Aggiungere link alla risorsa CMS quando esiste ancora; per risorsa cancellata, mostrare snapshot catturato e stato mancante senza lookup fragile.
-- [ ] Aggiungere copy button per `auditActivityId`, `requestId`, `correlationId`, `resourceId` e, se presenti, ID errori correlati.
-- [ ] Aggiornare testi i18n CMS da “Audit log” a “Audit” o “Timeline audit”, con copy che spiega rischio, impatto pubblico, tentativi falliti e diff applicati.
-- [ ] Aggiungere empty state che spiega che l'audit si popola quando le mutation CMS registrano attività riuscite o fallite con contesto qualitativo.
-- [ ] Non mostrare IP address o user-agent come dati primari UI; se conservati per debug, devono essere redatti/limitati e subordinati al request context.
-- [ ] Aggiungere test unitari per risk derivato: publish/unpublish/delete pubblico high, cambio ruolo critical, bozza low/medium, failure high/critical che resta high/critical.
-- [ ] Aggiungere test unitari per public impact su article/page/issue/navigation/media/taxonomy/user e casi senza impatto pubblico.
-- [ ] Aggiungere test unitari per snapshot builder, summary builder e limiti di dimensione su ogni resource type supportato.
-- [ ] Aggiungere test unitari per diff redatto: create, update, remove, reorder, tag sync, rich text summary e valori sensibili rimossi.
-- [ ] Aggiungere test unitari per applied vs attempted: success produce before/after/change, failure produce attempted/error e zero changes.
-- [ ] Aggiungere test service/repository per record success, record failure, fallback storage failure redatto, lista, summary, dettaglio e paginazione.
-- [ ] Aggiungere test middleware per mutation riuscita, mutation fallita, capture before mancante, delete con hard delete, create senza before e failure prima della persistenza.
-- [ ] Aggiungere test tRPC/DTO per summary, list, detail, filtri, sort, paginazione e output validation con `parseOutput`.
-- [ ] Aggiungere test di correlazione audit/errori via `requestId` o `correlationId`, senza accoppiare direttamente i due moduli in modo ciclico.
-- [ ] Aggiungere test UI essenziali per KPI, filtri, badge rischio, dettaglio success con diff, dettaglio failure con attempted summary, empty state e copy values se l'infrastruttura test UI lo consente.
-- [ ] Verificare con `prisma validate`, generazione client, typecheck, lint, unit test pertinenti e test completi se il tempo di esecuzione lo consente.
-- [ ] Aggiornare questo documento se durante l'implementazione emergono decisioni su shape snapshot, redazione diff, risk reasons, correlationId o UI detail, senza creare checklist parallele.
+- [x] Rimuovere dallo schema autorevole `AuditLog` e `AuditLogOutcome`, senza backfill, mapping legacy, viste compatibili o preservazione della cronologia tecnica provvisoria.
+- [x] Rimuovere o sostituire `lib/audit-logs/*`, `lib/server/modules/audit-logs/*`, `lib/server/trpc/routers/audit-logs.ts`, export `auditLogs`, hook, prefetch, query parser, tipi `RouterInputs/RouterOutputs` e UI collegati al vecchio dominio.
+- [x] Rimuovere o riscrivere la route CMS `/cms/audit-logs` e la navigazione corrispondente; se il prodotto mantiene una pagina audit, deve puntare al nuovo dominio qualitativo, non al vecchio log.
+- [x] Rimuovere test, mock e aspettative basati su `AuditLog`, `auditLogsService.record`, `auditLogs.list`, `auditLogs.getById`, filtri solo per `outcome/resource`, summary risorsa ricostruiti dallo stato corrente o cronologia tecnica senza rischio.
+- [x] Definire valori canonici audit riusabili: outcome `SUCCESS`/`FAILURE`, risk `low`/`medium`/`high`/`critical`, change type `created`/`updated`/`removed`/`reordered`, resource type iniziali `article`, `author`, `category`, `issue`, `media`, `navigation`, `page`, `tag`, `user`, `unknown`.
+- [x] Definire azioni canoniche iniziali per le mutation CMS esistenti: `create`, `update`, `publish`, `unpublish`, `archive`, `delete`, `restore`, `reorder`, `sync_tags`, `upload`, `remove_media`, `update_navigation`, `change_role` e `unknown` solo come fallback esplicito.
+- [x] Creare `AuditActivity` nello schema Prisma con campi: `id`, `actorId`, `actorSnapshot`, `action`, `resourceType`, `resourceId`, `resourceSnapshot`, `outcome`, `riskLevel`, `changedFields`, `beforeSummary`, `afterSummary`, `attemptedSummary`, `publicImpact`, `requestId`, `correlationId`, `reason`, `errorCode`, `errorMessage`, `metadata`, `createdAt`.
+- [x] Creare `AuditChange` nello schema Prisma con campi: `id`, `auditActivityId`, `field`, `beforeValueRedacted`, `afterValueRedacted`, `changeType`, `createdAt`.
+- [x] Collegare `AuditChange` a `AuditActivity` con delete cascade; nessuna `AuditChange` deve esistere per attività `FAILURE`.
+- [x] Aggiungere indici minimi per audit: `createdAt`, `actorId/createdAt`, `resourceType/resourceId/createdAt`, `outcome/createdAt`, `riskLevel/createdAt`, `publicImpact/createdAt`, `requestId`, `correlationId` se presente.
+- [x] Generare una migrazione Prisma netta che elimina le tabelle audit provvisorie e crea le nuove tabelle, senza colonne ponte, tabelle shadow, backfill da `audit_logs` o compatibilità con vecchi ID.
+- [x] Creare modulo server dedicato `lib/server/modules/observability-audit/*` con `schema`, `dto`, `policy`, `repository`, `service`, `types` e `index` separati.
+- [x] Aggiornare o spostare le funzioni pure in `lib/server/modules/observability/model/audit.ts` per includere derivazione rischio, impatto pubblico, change type, summary, redazione diff e validazione applied/attempted.
+- [x] Non duplicare enum paralleli tra modello osservabilità e modulo audit: i valori canonici devono essere importati o riesportati da un solo punto autorevole.
+- [x] Definire input service esplicito per registrare attività audit riuscite: attore, azione, risorsa, snapshot prima, snapshot dopo, contesto request, metadata redatti e motivo opzionale.
+- [x] Definire input service esplicito per registrare attività audit fallite: attore, azione tentata, risorsa target, attempted summary, contesto request, errore redatto, metadata redatti e motivo opzionale.
+- [x] Eliminare il contratto `record(entry)` che accetta un log tecnico già pronto; il service deve costruire `riskLevel`, `publicImpact`, `changedFields`, `AuditChange` e summary in modo deterministico.
+- [x] Sostituire `lib/server/http/audit.ts` con helper qualitativi che raccolgono request context ammesso: method/path normalizzati se utili, `requestId`, `correlationId` quando disponibile, user-agent limitato solo se necessario, mai body request, cookie, Authorization header o token.
+- [x] Aggiornare il middleware tRPC audit: non deve più ricevere solo `action/resource/resourceId`; deve supportare `captureBefore`, `captureAfter`, `buildAttemptedSummary`, `buildMetadata`, `buildReason` e `resolveResourceId` per mutation.
+- [x] Garantire che il middleware catturi `beforeSummary` prima di `next()` per mutation su risorse esistenti, senza affidarsi allo stato finale per ricostruire il passato.
+- [x] Garantire che il middleware catturi `afterSummary` dopo `SUCCESS` e calcoli diff applicati confrontando snapshot normalizzati, non input grezzo contro output parziale.
+- [x] Garantire che su `FAILURE` venga registrato `attemptedSummary` e non `beforeSummary/afterSummary` come se esistesse una mutazione applicata.
+- [x] Garantire che un fallimento su azione high/critical mantenga il rischio dell'azione tentata anche senza scrittura persistita.
+- [x] Implementare fallback di persistenza audit redatto: se la scrittura su database fallisce, loggare internamente evento minimo con `persistence = "console-fallback"`, senza dati sensibili e senza rompere la mutation originale.
+- [x] Implementare snapshot builder per `article`: id, titolo, slug, status, issue, category, author, isFeatured, publishedAt, presenza audio/media, tag count e flag pubblici utili; niente contenuto rich text completo.
+- [x] Implementare snapshot builder per `page`: id, titolo, slug, status, publishedAt e flag pubblici; niente contenuto rich text completo.
+- [x] Implementare snapshot builder per `issue`: id, titolo, slug, isActive, sortOrder, publishedAt, numero articoli collegati e flag pubblici.
+- [x] Implementare snapshot builder per `author`, `category` e `tag`: id, nome, slug, isActive, conteggio contenuti collegati e indicazione se impattano contenuti pubblici.
+- [x] Implementare snapshot builder per `navigation`: key, label, conteggio item, fingerprint redatto della struttura e flag di navigazione pubblica; niente dump illimitato di link o payload.
+- [x] Implementare snapshot builder per `media`: pathname/url redatto, content type, size, public flag, uso noto su contenuti pubblici se disponibile.
+- [x] Implementare snapshot builder per `user`: id, email redatta o limitata, role, emailVerified, name quando ammesso; niente sessioni, token o dati auth sensibili.
+- [x] Definire summary leggibili per `beforeSummary`, `afterSummary` e `attemptedSummary` con shape stabile: title, description, fields redatti, public flags e valori necessari al diff.
+- [x] Implementare diff builder per scalari semplici: title, slug, status, publishedAt, isFeatured, isActive, sortOrder, role, emailVerified e campi equivalenti.
+- [x] Implementare diff builder per creazione: `changeType = "created"`, `beforeValueRedacted = null`, `afterValueRedacted` limitato ai campi summary ammessi.
+- [x] Implementare diff builder per cancellazione: `changeType = "removed"`, `beforeValueRedacted` limitato ai campi summary ammessi, `afterValueRedacted = null`.
+- [x] Implementare diff builder per reorder: salvare posizione/ordine precedente e successivo in forma compatta, non interi payload ordinati se grandi.
+- [x] Implementare diff builder per liste e relazioni, ad esempio tag sync: aggiunti, rimossi, conteggi e nomi/id redatti limitati.
+- [x] Implementare trattamento rich text e JSON complessi: non salvare payload completo; salvare summary come changed, length/hash non reversibile, block count o campi esplicitamente ammessi.
+- [x] Implementare redazione centralizzata per diff, metadata, error message, actor/resource snapshot e attempted summary, riusando le regole privacy già definite: niente token, password, Authorization, cookie, body request, query sensibili o dati personali non necessari.
+- [x] Imporre limiti di dimensione a snapshot, summary, metadata e valori diff; se un valore eccede i limiti, troncarlo o sostituirlo con summary redatto, non salvarlo integralmente.
+- [x] Derivare `publicImpact` da stato risorsa e azione: contenuto pubblicato, publish/unpublish, delete pubblico, navigation pubblica, media pubblico/usato, taxonomy/autore collegati a contenuti pubblici.
+- [x] Derivare `riskLevel = "critical"` per cambio ruolo, cancellazione utente/admin, azioni security-sensitive e azioni massive distruttive.
+- [x] Derivare `riskLevel = "high"` per publish, unpublish, delete, media pubblico/usato, navigazione pubblica e modifiche a contenuti pubblici critici.
+- [x] Derivare `riskLevel = "medium"` per modifiche a contenuti pubblicati non critiche, taxonomy o navigazione minore con impatto pubblico indiretto.
+- [x] Derivare `riskLevel = "low"` per bozze, update metadati non pubblici e modifiche interne senza impatto pubblico.
+- [x] Rendere risk e public impact spiegabili nei DTO con motivazioni sintetiche, non solo con enum.
+- [x] Collegare audit a errori operativi tramite `requestId`, `correlationId` e finestra temporale, senza creare dipendenza circolare tra modulo audit e modulo errori; il dettaglio può leggere errori correlati tramite service/query dedicata.
+- [x] Non bloccare errori o audit critici in base a bot filtering: audit CMS autenticato resta responsabilità operativa, non telemetry pubblica.
+- [x] Implementare repository audit con metodi espliciti per record success, record failure, list activities, count activities, summary KPI, detail activity, list changes e lookup related errors se previsto.
+- [x] Implementare service audit con business rules pure per snapshot, diff, redazione, risk, public impact, applied vs attempted, fallback e DTO.
+- [x] Creare DTO CMS per summary audit con high/critical recenti, public impact recenti, failure sensibili, attori attivi, delete recenti e publish/unpublish recenti.
+- [x] Creare DTO CMS per lista audit con `id`, actor display, action, resource type/id/title, outcome, riskLevel, riskReasons, publicImpact, changedFields, requestId, correlationId, errorCode e createdAt.
+- [x] Creare DTO CMS per dettaglio audit con actor snapshot, resource snapshot, before/after/attempted summary, changes redatti, request context, errore redatto, metadata redatti e errori correlati.
+- [x] Creare schema input tRPC per summary, list e detail con filtri: testo, actor, resource type, action, outcome, risk, public impact, date range, requestId, correlationId, sort e paginazione.
+- [x] Creare router tRPC dedicato `observabilityAudit`, non procedure annidate in `telemetry`, con policy del modulo audit, service orchestration e `parseOutput` sui DTO.
+- [x] Non hardcodare ruoli nelle procedure: usare `policy` del modulo audit. Se l'accesso resta admin-only, la decisione vive nella policy.
+- [x] Aggiornare root router, prefetch CMS, tipi `RouterInputs`/`RouterOutputs`, query parser e hook per usare `observabilityAudit`, eliminando `auditLogs` come API raggiungibile.
+- [x] Aggiornare tutte le mutation CMS esistenti per fornire al nuovo middleware audit informazioni sufficienti: articles, pages, issues, authors, categories, tags, navigation, media e users.
+- [x] Per create, catturare attempted summary dall'input e after summary dal record creato; il diff deve rappresentare una creazione, non un update da oggetto vuoto generico.
+- [x] Per update, catturare before dal repository prima della mutation e after dal record aggiornato o da lookup post-mutation.
+- [x] Per publish/unpublish/archive, usare azioni specifiche invece di generico `update` quando il dominio le espone come mutation separate o comportamento semanticamente distinto.
+- [x] Per delete, catturare before prima della cancellazione e non tentare di leggere la risorsa dopo hard delete per ricostruire il passato.
+- [x] Per failure, registrare il tentativo anche quando `resourceId` non esiste o la risorsa non viene trovata, marcando chiaramente che il cambiamento non è stato applicato.
+- [x] Sostituire la UI CMS audit con una timeline di responsabilità basata su `AuditActivity`, non con una tabella cronologica tecnica.
+- [x] La UI deve aprire con KPI operativi: high/critical, public impact, failures, active actors e azioni sensibili recenti.
+- [x] Implementare tabs o filtri rapidi: `Tutti`, `High risk`, `Falliti`, `Impatto pubblico`, `Azioni sensibili`.
+- [x] Implementare lista/timeline ordinata per rischio e recenza, con badge risk/outcome/public impact/resource e copy button per ID tecnici rilevanti.
+- [x] Implementare filtri UI sempre raggiungibili per actor, resource type, action, risk, outcome, public impact, date range e testo.
+- [x] Implementare dettaglio in `Sheet` o `Dialog` con evento, attore, risorsa, request context, diff applicato per success, attempted summary per failure, errore e metadata redatti.
+- [x] Mostrare per ogni attività perché è rischiosa: risk reasons, public impact, outcome, tipo risorsa e campi cambiati devono essere leggibili senza aprire JSON grezzo.
+- [x] Per attività `SUCCESS`, mostrare `AuditChange` come diff applicato; per attività `FAILURE`, mostrare il tentativo marcato come non applicato e non mostrare una sezione diff applicato vuota o fuorviante.
+- [x] Aggiungere link alla risorsa CMS quando esiste ancora; per risorsa cancellata, mostrare snapshot catturato e stato mancante senza lookup fragile.
+- [x] Aggiungere copy button per `auditActivityId`, `requestId`, `correlationId`, `resourceId` e, se presenti, ID errori correlati.
+- [x] Aggiornare testi i18n CMS da “Audit log” a “Audit” o “Timeline audit”, con copy che spiega rischio, impatto pubblico, tentativi falliti e diff applicati.
+- [x] Aggiungere empty state che spiega che l'audit si popola quando le mutation CMS registrano attività riuscite o fallite con contesto qualitativo.
+- [x] Non mostrare IP address o user-agent come dati primari UI; se conservati per debug, devono essere redatti/limitati e subordinati al request context.
+- [x] Aggiungere test unitari per risk derivato: publish/unpublish/delete pubblico high, cambio ruolo critical, bozza low/medium, failure high/critical che resta high/critical.
+- [x] Aggiungere test unitari per public impact su article/page/issue/navigation/media/taxonomy/user e casi senza impatto pubblico.
+- [x] Aggiungere test unitari per snapshot builder, summary builder e limiti di dimensione su ogni resource type supportato.
+- [x] Aggiungere test unitari per diff redatto: create, update, remove, reorder, tag sync, rich text summary e valori sensibili rimossi.
+- [x] Aggiungere test unitari per applied vs attempted: success produce before/after/change, failure produce attempted/error e zero changes.
+- [x] Aggiungere test service/repository per record success, record failure, fallback storage failure redatto, lista, summary, dettaglio e paginazione.
+- [x] Aggiungere test middleware per mutation riuscita, mutation fallita, capture before mancante, delete con hard delete, create senza before e failure prima della persistenza.
+- [x] Aggiungere test tRPC/DTO per summary, list, detail, filtri, sort, paginazione e output validation con `parseOutput`.
+- [x] Aggiungere test di correlazione audit/errori via `requestId` o `correlationId`, senza accoppiare direttamente i due moduli in modo ciclico.
+- [x] Aggiungere test UI essenziali per KPI, filtri, badge rischio, dettaglio success con diff, dettaglio failure con attempted summary, empty state e copy values se l'infrastruttura test UI lo consente.
+- [x] Verificare con `prisma validate`, generazione client, typecheck, lint, unit test pertinenti e test completi se il tempo di esecuzione lo consente.
+- [x] Aggiornare questo documento se durante l'implementazione emergono decisioni su shape snapshot, redazione diff, risk reasons, correlationId o UI detail, senza creare checklist parallele.
 
 Deliverable Fase 6:
 
-- [ ] Migrazione Prisma netta con `AuditActivity` e `AuditChange`, e rimozione di `AuditLog`/`AuditLogOutcome`, senza backfill o mapping legacy.
-- [ ] Modulo server dedicato `observability-audit` con `schema`, `dto`, `policy`, `repository`, `service`, `types` e `index` separati.
-- [ ] Builder deterministici per snapshot, summary, diff redatti, risk level, public impact, risk reasons e distinzione applied vs attempted.
-- [ ] Middleware/helper audit qualitativo che cattura before, after e attempted summary dalle mutation CMS.
-- [ ] Procedure tRPC dedicate per summary, list e detail audit.
-- [ ] DTO CMS con rischio, motivazioni, impatto pubblico, diff redatti, attempted summary, request context ed errori correlati.
-- [ ] UI CMS audit come timeline di responsabilità, non tabella tecnica di log.
-- [ ] Tutte le mutation CMS rilevanti cablate al nuovo audit qualitativo.
-- [ ] Test unitari, middleware test, service/repository test, tRPC/DTO test e, dove possibile, test UI sui casi critici.
+- [x] Migrazione Prisma netta con `AuditActivity` e `AuditChange`, e rimozione di `AuditLog`/`AuditLogOutcome`, senza backfill o mapping legacy.
+- [x] Modulo server dedicato `observability-audit` con `schema`, `dto`, `policy`, `repository`, `service`, `types` e `index` separati.
+- [x] Builder deterministici per snapshot, summary, diff redatti, risk level, public impact, risk reasons e distinzione applied vs attempted.
+- [x] Middleware/helper audit qualitativo che cattura before, after e attempted summary dalle mutation CMS.
+- [x] Procedure tRPC dedicate per summary, list e detail audit.
+- [x] DTO CMS con rischio, motivazioni, impatto pubblico, diff redatti, attempted summary, request context ed errori correlati.
+- [x] UI CMS audit come timeline di responsabilità, non tabella tecnica di log.
+- [x] Tutte le mutation CMS rilevanti cablate al nuovo audit qualitativo.
+- [x] Test unitari, middleware test, service/repository test, tRPC/DTO test e, dove possibile, test UI sui casi critici.
 
 Criterio di completamento:
 
-- [ ] Una creazione riuscita registra `AuditActivity` con actor snapshot, resource snapshot, `afterSummary`, risk/publicImpact e `AuditChange` di tipo `created`.
-- [ ] Un update riuscito registra `beforeSummary`, `afterSummary`, `changedFields` e diff redatti dei soli campi realmente applicati.
-- [ ] Una cancellazione riuscita conserva snapshot e summary della risorsa prima dell'hard delete, senza lookup postumo fragile.
-- [ ] Un publish/unpublish/delete pubblico emerge come high risk e public impact senza ricerca manuale.
-- [ ] Un cambio ruolo o azione admin sensibile emerge come critical.
-- [ ] Un fallimento su azione high/critical registra `attemptedSummary`, errore redatto e rischio dell'azione tentata, senza `AuditChange` applicati.
-- [ ] Un admin distingue immediatamente azione riuscita, tentativo fallito, rischio, impatto pubblico, attore, risorsa, request e campi cambiati.
-- [ ] Il dettaglio audit mostra diff leggibili e redatti, non JSON grezzo invasivo o stato corrente ricostruito a posteriori.
-- [ ] Audit e errori operativi sono correlabili tramite `requestId`/`correlationId` quando disponibili.
-- [ ] `AuditLog`, `auditLogs`, `/cms/audit-logs`, DTO/test legacy e middleware action/resource-only non sono API ufficiali né codice raggiungibile.
-- [ ] Il sistema resta funzionante e verificabile dopo la rimozione del legacy, anche se aggregati giornalieri, overview trasversale e insight arrivano nelle fasi successive.
+- [x] Una creazione riuscita registra `AuditActivity` con actor snapshot, resource snapshot, `afterSummary`, risk/publicImpact e `AuditChange` di tipo `created`.
+- [x] Un update riuscito registra `beforeSummary`, `afterSummary`, `changedFields` e diff redatti dei soli campi realmente applicati.
+- [x] Una cancellazione riuscita conserva snapshot e summary della risorsa prima dell'hard delete, senza lookup postumo fragile.
+- [x] Un publish/unpublish/delete pubblico emerge come high risk e public impact senza ricerca manuale.
+- [x] Un cambio ruolo o azione admin sensibile emerge come critical.
+- [x] Un fallimento su azione high/critical registra `attemptedSummary`, errore redatto e rischio dell'azione tentata, senza `AuditChange` applicati.
+- [x] Un admin distingue immediatamente azione riuscita, tentativo fallito, rischio, impatto pubblico, attore, risorsa, request e campi cambiati.
+- [x] Il dettaglio audit mostra diff leggibili e redatti, non JSON grezzo invasivo o stato corrente ricostruito a posteriori.
+- [x] Audit e errori operativi sono correlabili tramite `requestId`/`correlationId` quando disponibili.
+- [x] `AuditLog`, `auditLogs`, `/cms/audit-logs`, DTO/test legacy e middleware action/resource-only non sono API ufficiali né codice raggiungibile.
+- [x] Il sistema resta funzionante e verificabile dopo la rimozione del legacy, anche se aggregati giornalieri, overview trasversale e insight arrivano nelle fasi successive.
+
+Verifiche eseguite:
+
+- `pnpm prisma generate`
+- `pnpm prisma validate`
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm test:run tests/unit/lib/server/modules/observability-audit/service.test.ts`
+- `pnpm test:run`
+- `pnpm build`
 
 ### Fase 7: Aggregati Qualitativi E Jobs
 

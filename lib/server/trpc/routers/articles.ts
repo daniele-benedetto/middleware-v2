@@ -16,7 +16,7 @@ import {
 } from "@/lib/server/modules/articles";
 import { publicArticleDetailDtoSchema } from "@/lib/server/modules/articles/dto/public";
 import { router } from "@/lib/server/trpc/init";
-import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
+import { auditResourceMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, publishProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
@@ -70,7 +70,7 @@ export const articlesRouter = router({
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
-    .use(auditMiddleware(() => ({ action: "create", resource: "articles" })))
+    .use(auditResourceMiddleware(() => ({ action: "create", resourceType: "article" })))
     .input(createArticleInputSchema)
     .mutation(async ({ input }) => {
       const article = parseOutput(await articlesService.create(input), articleDtoSchema);
@@ -81,11 +81,13 @@ export const articlesRouter = router({
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .input(articleIdInputSchema.extend({ data: updateArticleInputSchema }))
     .use(
-      auditMiddleware<{ id: string; data: z.infer<typeof updateArticleInputSchema> }>((input) => ({
-        action: "update",
-        resource: "articles",
-        resourceId: input.id,
-      })),
+      auditResourceMiddleware<{ id: string; data: z.infer<typeof updateArticleInputSchema> }>(
+        (input) => ({
+          action: "update",
+          resourceType: "article",
+          resourceId: input.id,
+        }),
+      ),
     )
     .mutation(async ({ input }) => {
       const article = parseOutput(
@@ -99,9 +101,9 @@ export const articlesRouter = router({
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .input(articleIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "delete",
-        resource: "articles",
+        resourceType: "article",
         resourceId: input.id,
       })),
     )
@@ -114,10 +116,10 @@ export const articlesRouter = router({
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .input(articleIdInputSchema.extend({ data: syncArticleTagsInputSchema }))
     .use(
-      auditMiddleware<{ id: string; data: z.infer<typeof syncArticleTagsInputSchema> }>(
+      auditResourceMiddleware<{ id: string; data: z.infer<typeof syncArticleTagsInputSchema> }>(
         (input) => ({
-          action: "sync-tags",
-          resource: "articles",
+          action: "sync_tags",
+          resourceType: "article",
           resourceId: input.id,
         }),
       ),
@@ -134,9 +136,9 @@ export const articlesRouter = router({
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .input(articleIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "publish",
-        resource: "articles",
+        resourceType: "article",
         resourceId: input.id,
       })),
     )
@@ -149,9 +151,9 @@ export const articlesRouter = router({
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .input(articleIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "unpublish",
-        resource: "articles",
+        resourceType: "article",
         resourceId: input.id,
       })),
     )
@@ -164,9 +166,9 @@ export const articlesRouter = router({
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .input(articleIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "archive",
-        resource: "articles",
+        resourceType: "article",
         resourceId: input.id,
       })),
     )
@@ -179,9 +181,9 @@ export const articlesRouter = router({
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .input(articleIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "feature",
-        resource: "articles",
+        resourceType: "article",
         resourceId: input.id,
       })),
     )
@@ -194,9 +196,9 @@ export const articlesRouter = router({
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .input(articleIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "unfeature",
-        resource: "articles",
+        resourceType: "article",
         resourceId: input.id,
       })),
     )

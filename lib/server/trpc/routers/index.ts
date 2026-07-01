@@ -2,12 +2,12 @@ import "server-only";
 
 import { router } from "@/lib/server/trpc/init";
 import { articlesRouter } from "@/lib/server/trpc/routers/articles";
-import { auditLogsRouter } from "@/lib/server/trpc/routers/audit-logs";
 import { authorsRouter } from "@/lib/server/trpc/routers/authors";
 import { categoriesRouter } from "@/lib/server/trpc/routers/categories";
 import { issuesRouter } from "@/lib/server/trpc/routers/issues";
 import { mediaRouter } from "@/lib/server/trpc/routers/media";
 import { navigationRouter } from "@/lib/server/trpc/routers/navigation";
+import { observabilityAuditRouter } from "@/lib/server/trpc/routers/observability-audit";
 import { observabilityErrorsRouter } from "@/lib/server/trpc/routers/observability-errors";
 import { pagesRouter } from "@/lib/server/trpc/routers/pages";
 import { performanceRouter } from "@/lib/server/trpc/routers/performance";
@@ -17,7 +17,6 @@ import { telemetryRouter } from "@/lib/server/trpc/routers/telemetry";
 import { usersRouter } from "@/lib/server/trpc/routers/users";
 
 export const appRouter = router({
-  auditLogs: auditLogsRouter,
   authors: authorsRouter,
   users: usersRouter,
   issues: issuesRouter,
@@ -28,6 +27,7 @@ export const appRouter = router({
   performance: performanceRouter,
   media: mediaRouter,
   navigation: navigationRouter,
+  observabilityAudit: observabilityAuditRouter,
   observabilityErrors: observabilityErrorsRouter,
   public: publicRouter,
   telemetry: telemetryRouter,

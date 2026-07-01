@@ -14,7 +14,7 @@ import {
   usersService,
 } from "@/lib/server/modules/users";
 import { router } from "@/lib/server/trpc/init";
-import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
+import { auditResourceMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, sensitiveWriteProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
@@ -59,7 +59,7 @@ export const usersRouter = router({
     }),
   create: sensitiveWriteProcedure
     .use(requireRoleMiddleware(usersPolicy.createAllowedRoles))
-    .use(auditMiddleware(() => ({ action: "create", resource: "users" })))
+    .use(auditResourceMiddleware(() => ({ action: "create", resourceType: "user" })))
     .input(createUserInputSchema)
     .mutation(async ({ input }) => {
       return parseOutput(await usersService.create(input), userListItemDtoSchema);
@@ -68,11 +68,13 @@ export const usersRouter = router({
     .use(requireRoleMiddleware(usersPolicy.updateAllowedRoles))
     .input(usersIdInputSchema.extend({ data: updateUserInputSchema }))
     .use(
-      auditMiddleware<{ id: string; data: z.infer<typeof updateUserInputSchema> }>((input) => ({
-        action: "update",
-        resource: "users",
-        resourceId: input.id,
-      })),
+      auditResourceMiddleware<{ id: string; data: z.infer<typeof updateUserInputSchema> }>(
+        (input) => ({
+          action: "update",
+          resourceType: "user",
+          resourceId: input.id,
+        }),
+      ),
     )
     .mutation(async ({ input }) => {
       return parseOutput(await usersService.update(input.id, input.data), userListItemDtoSchema);
@@ -81,11 +83,13 @@ export const usersRouter = router({
     .use(requireRoleMiddleware(usersPolicy.updateRoleAllowedRoles))
     .input(usersIdInputSchema.extend({ data: updateUserRoleInputSchema }))
     .use(
-      auditMiddleware<{ id: string; data: z.infer<typeof updateUserRoleInputSchema> }>((input) => ({
-        action: "assign-role",
-        resource: "users",
-        resourceId: input.id,
-      })),
+      auditResourceMiddleware<{ id: string; data: z.infer<typeof updateUserRoleInputSchema> }>(
+        (input) => ({
+          action: "change_role",
+          resourceType: "user",
+          resourceId: input.id,
+        }),
+      ),
     )
     .mutation(async ({ ctx, input }) => {
       return parseOutput(
@@ -97,9 +101,9 @@ export const usersRouter = router({
     .use(requireRoleMiddleware(usersPolicy.deleteAllowedRoles))
     .input(usersIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "delete",
-        resource: "users",
+        resourceType: "user",
         resourceId: input.id,
       })),
     )

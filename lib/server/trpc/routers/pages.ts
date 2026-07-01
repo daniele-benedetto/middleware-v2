@@ -14,7 +14,7 @@ import {
   updatePageInputSchema,
 } from "@/lib/server/modules/pages";
 import { router } from "@/lib/server/trpc/init";
-import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
+import { auditResourceMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
 import { protectedProcedure, publishProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
@@ -59,7 +59,7 @@ export const pagesRouter = router({
     }),
   create: writeProcedure
     .use(requireRoleMiddleware(pagesPolicy.allowedRoles))
-    .use(auditMiddleware(() => ({ action: "create", resource: "pages" })))
+    .use(auditResourceMiddleware(() => ({ action: "create", resourceType: "page" })))
     .input(createPageInputSchema)
     .mutation(async ({ input }) => {
       const page = parseOutput(await pagesService.create(input), pageDtoSchema);
@@ -70,11 +70,13 @@ export const pagesRouter = router({
     .use(requireRoleMiddleware(pagesPolicy.allowedRoles))
     .input(pageIdInputSchema.extend({ data: updatePageInputSchema }))
     .use(
-      auditMiddleware<{ id: string; data: z.infer<typeof updatePageInputSchema> }>((input) => ({
-        action: "update",
-        resource: "pages",
-        resourceId: input.id,
-      })),
+      auditResourceMiddleware<{ id: string; data: z.infer<typeof updatePageInputSchema> }>(
+        (input) => ({
+          action: "update",
+          resourceType: "page",
+          resourceId: input.id,
+        }),
+      ),
     )
     .mutation(async ({ input }) => {
       const page = parseOutput(await pagesService.update(input.id, input.data), pageDtoSchema);
@@ -85,9 +87,9 @@ export const pagesRouter = router({
     .use(requireRoleMiddleware(pagesPolicy.allowedRoles))
     .input(pageIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "delete",
-        resource: "pages",
+        resourceType: "page",
         resourceId: input.id,
       })),
     )
@@ -100,9 +102,9 @@ export const pagesRouter = router({
     .use(requireRoleMiddleware(pagesPolicy.allowedRoles))
     .input(pageIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "publish",
-        resource: "pages",
+        resourceType: "page",
         resourceId: input.id,
       })),
     )
@@ -115,9 +117,9 @@ export const pagesRouter = router({
     .use(requireRoleMiddleware(pagesPolicy.allowedRoles))
     .input(pageIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "unpublish",
-        resource: "pages",
+        resourceType: "page",
         resourceId: input.id,
       })),
     )
@@ -130,9 +132,9 @@ export const pagesRouter = router({
     .use(requireRoleMiddleware(pagesPolicy.allowedRoles))
     .input(pageIdInputSchema)
     .use(
-      auditMiddleware<{ id: string }>((input) => ({
+      auditResourceMiddleware<{ id: string }>((input) => ({
         action: "archive",
-        resource: "pages",
+        resourceType: "page",
         resourceId: input.id,
       })),
     )

@@ -396,7 +396,8 @@ export const ModelName = {
   ArticleTag: 'ArticleTag',
   Page: 'Page',
   NavigationMenu: 'NavigationMenu',
-  AuditLog: 'AuditLog',
+  AuditActivity: 'AuditActivity',
+  AuditChange: 'AuditChange',
   ObservabilitySession: 'ObservabilitySession',
   ObservabilityEvent: 'ObservabilityEvent',
   ErrorGroup: 'ErrorGroup',
@@ -419,7 +420,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "navigationMenu" | "auditLog" | "observabilitySession" | "observabilityEvent" | "errorGroup" | "errorOccurrence" | "contentEngagement" | "audioEngagement" | "performanceExperience"
+    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "navigationMenu" | "auditActivity" | "auditChange" | "observabilitySession" | "observabilityEvent" | "errorGroup" | "errorOccurrence" | "contentEngagement" | "audioEngagement" | "performanceExperience"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1311,77 +1312,151 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    AuditLog: {
-      payload: Prisma.$AuditLogPayload<ExtArgs>
-      fields: Prisma.AuditLogFieldRefs
+    AuditActivity: {
+      payload: Prisma.$AuditActivityPayload<ExtArgs>
+      fields: Prisma.AuditActivityFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.AuditLogFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload> | null
+          args: Prisma.AuditActivityFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditActivityPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.AuditLogFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+          args: Prisma.AuditActivityFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditActivityPayload>
         }
         findFirst: {
-          args: Prisma.AuditLogFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload> | null
+          args: Prisma.AuditActivityFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditActivityPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.AuditLogFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+          args: Prisma.AuditActivityFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditActivityPayload>
         }
         findMany: {
-          args: Prisma.AuditLogFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>[]
+          args: Prisma.AuditActivityFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditActivityPayload>[]
         }
         create: {
-          args: Prisma.AuditLogCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+          args: Prisma.AuditActivityCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditActivityPayload>
         }
         createMany: {
-          args: Prisma.AuditLogCreateManyArgs<ExtArgs>
+          args: Prisma.AuditActivityCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.AuditLogCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>[]
+          args: Prisma.AuditActivityCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditActivityPayload>[]
         }
         delete: {
-          args: Prisma.AuditLogDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+          args: Prisma.AuditActivityDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditActivityPayload>
         }
         update: {
-          args: Prisma.AuditLogUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+          args: Prisma.AuditActivityUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditActivityPayload>
         }
         deleteMany: {
-          args: Prisma.AuditLogDeleteManyArgs<ExtArgs>
+          args: Prisma.AuditActivityDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.AuditLogUpdateManyArgs<ExtArgs>
+          args: Prisma.AuditActivityUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.AuditLogUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>[]
+          args: Prisma.AuditActivityUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditActivityPayload>[]
         }
         upsert: {
-          args: Prisma.AuditLogUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+          args: Prisma.AuditActivityUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditActivityPayload>
         }
         aggregate: {
-          args: Prisma.AuditLogAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditLog>
+          args: Prisma.AuditActivityAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditActivity>
         }
         groupBy: {
-          args: Prisma.AuditLogGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AuditLogGroupByOutputType>[]
+          args: Prisma.AuditActivityGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditActivityGroupByOutputType>[]
         }
         count: {
-          args: Prisma.AuditLogCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AuditLogCountAggregateOutputType> | number
+          args: Prisma.AuditActivityCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditActivityCountAggregateOutputType> | number
+        }
+      }
+    }
+    AuditChange: {
+      payload: Prisma.$AuditChangePayload<ExtArgs>
+      fields: Prisma.AuditChangeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AuditChangeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditChangePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AuditChangeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditChangePayload>
+        }
+        findFirst: {
+          args: Prisma.AuditChangeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditChangePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AuditChangeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditChangePayload>
+        }
+        findMany: {
+          args: Prisma.AuditChangeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditChangePayload>[]
+        }
+        create: {
+          args: Prisma.AuditChangeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditChangePayload>
+        }
+        createMany: {
+          args: Prisma.AuditChangeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AuditChangeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditChangePayload>[]
+        }
+        delete: {
+          args: Prisma.AuditChangeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditChangePayload>
+        }
+        update: {
+          args: Prisma.AuditChangeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditChangePayload>
+        }
+        deleteMany: {
+          args: Prisma.AuditChangeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AuditChangeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AuditChangeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditChangePayload>[]
+        }
+        upsert: {
+          args: Prisma.AuditChangeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditChangePayload>
+        }
+        aggregate: {
+          args: Prisma.AuditChangeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditChange>
+        }
+        groupBy: {
+          args: Prisma.AuditChangeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditChangeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AuditChangeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditChangeCountAggregateOutputType> | number
         }
       }
     }
@@ -2120,27 +2195,45 @@ export const NavigationMenuScalarFieldEnum = {
 export type NavigationMenuScalarFieldEnum = (typeof NavigationMenuScalarFieldEnum)[keyof typeof NavigationMenuScalarFieldEnum]
 
 
-export const AuditLogScalarFieldEnum = {
+export const AuditActivityScalarFieldEnum = {
   id: 'id',
   actorId: 'actorId',
-  actorEmail: 'actorEmail',
-  actorRole: 'actorRole',
+  actorSnapshot: 'actorSnapshot',
   action: 'action',
-  resource: 'resource',
+  resourceType: 'resourceType',
   resourceId: 'resourceId',
+  resourceSnapshot: 'resourceSnapshot',
   outcome: 'outcome',
+  riskLevel: 'riskLevel',
+  riskReasons: 'riskReasons',
+  changedFields: 'changedFields',
+  beforeSummary: 'beforeSummary',
+  afterSummary: 'afterSummary',
+  attemptedSummary: 'attemptedSummary',
+  publicImpact: 'publicImpact',
+  requestId: 'requestId',
+  correlationId: 'correlationId',
+  reason: 'reason',
   errorCode: 'errorCode',
   errorMessage: 'errorMessage',
-  method: 'method',
-  path: 'path',
-  ipAddress: 'ipAddress',
-  userAgent: 'userAgent',
-  requestId: 'requestId',
   metadata: 'metadata',
   createdAt: 'createdAt'
 } as const
 
-export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+export type AuditActivityScalarFieldEnum = (typeof AuditActivityScalarFieldEnum)[keyof typeof AuditActivityScalarFieldEnum]
+
+
+export const AuditChangeScalarFieldEnum = {
+  id: 'id',
+  auditActivityId: 'auditActivityId',
+  field: 'field',
+  beforeValueRedacted: 'beforeValueRedacted',
+  afterValueRedacted: 'afterValueRedacted',
+  changeType: 'changeType',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditChangeScalarFieldEnum = (typeof AuditChangeScalarFieldEnum)[keyof typeof AuditChangeScalarFieldEnum]
 
 
 export const ObservabilitySessionScalarFieldEnum = {
@@ -2493,16 +2586,44 @@ export type ListEnumPageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 
 
 /**
- * Reference to a field of type 'AuditLogOutcome'
+ * Reference to a field of type 'AuditOutcome'
  */
-export type EnumAuditLogOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditLogOutcome'>
+export type EnumAuditOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditOutcome'>
     
 
 
 /**
- * Reference to a field of type 'AuditLogOutcome[]'
+ * Reference to a field of type 'AuditOutcome[]'
  */
-export type ListEnumAuditLogOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditLogOutcome[]'>
+export type ListEnumAuditOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditOutcome[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AuditRiskLevel'
+ */
+export type EnumAuditRiskLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditRiskLevel'>
+    
+
+
+/**
+ * Reference to a field of type 'AuditRiskLevel[]'
+ */
+export type ListEnumAuditRiskLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditRiskLevel[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AuditChangeType'
+ */
+export type EnumAuditChangeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditChangeType'>
+    
+
+
+/**
+ * Reference to a field of type 'AuditChangeType[]'
+ */
+export type ListEnumAuditChangeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditChangeType[]'>
     
 
 
@@ -2725,7 +2846,8 @@ export type GlobalOmitConfig = {
   articleTag?: Prisma.ArticleTagOmit
   page?: Prisma.PageOmit
   navigationMenu?: Prisma.NavigationMenuOmit
-  auditLog?: Prisma.AuditLogOmit
+  auditActivity?: Prisma.AuditActivityOmit
+  auditChange?: Prisma.AuditChangeOmit
   observabilitySession?: Prisma.ObservabilitySessionOmit
   observabilityEvent?: Prisma.ObservabilityEventOmit
   errorGroup?: Prisma.ErrorGroupOmit

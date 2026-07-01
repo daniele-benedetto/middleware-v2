@@ -63,7 +63,8 @@ export const ModelName = {
   ArticleTag: 'ArticleTag',
   Page: 'Page',
   NavigationMenu: 'NavigationMenu',
-  AuditLog: 'AuditLog',
+  AuditActivity: 'AuditActivity',
+  AuditChange: 'AuditChange',
   ObservabilitySession: 'ObservabilitySession',
   ObservabilityEvent: 'ObservabilityEvent',
   ErrorGroup: 'ErrorGroup',
@@ -267,27 +268,45 @@ export const NavigationMenuScalarFieldEnum = {
 export type NavigationMenuScalarFieldEnum = (typeof NavigationMenuScalarFieldEnum)[keyof typeof NavigationMenuScalarFieldEnum]
 
 
-export const AuditLogScalarFieldEnum = {
+export const AuditActivityScalarFieldEnum = {
   id: 'id',
   actorId: 'actorId',
-  actorEmail: 'actorEmail',
-  actorRole: 'actorRole',
+  actorSnapshot: 'actorSnapshot',
   action: 'action',
-  resource: 'resource',
+  resourceType: 'resourceType',
   resourceId: 'resourceId',
+  resourceSnapshot: 'resourceSnapshot',
   outcome: 'outcome',
+  riskLevel: 'riskLevel',
+  riskReasons: 'riskReasons',
+  changedFields: 'changedFields',
+  beforeSummary: 'beforeSummary',
+  afterSummary: 'afterSummary',
+  attemptedSummary: 'attemptedSummary',
+  publicImpact: 'publicImpact',
+  requestId: 'requestId',
+  correlationId: 'correlationId',
+  reason: 'reason',
   errorCode: 'errorCode',
   errorMessage: 'errorMessage',
-  method: 'method',
-  path: 'path',
-  ipAddress: 'ipAddress',
-  userAgent: 'userAgent',
-  requestId: 'requestId',
   metadata: 'metadata',
   createdAt: 'createdAt'
 } as const
 
-export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+export type AuditActivityScalarFieldEnum = (typeof AuditActivityScalarFieldEnum)[keyof typeof AuditActivityScalarFieldEnum]
+
+
+export const AuditChangeScalarFieldEnum = {
+  id: 'id',
+  auditActivityId: 'auditActivityId',
+  field: 'field',
+  beforeValueRedacted: 'beforeValueRedacted',
+  afterValueRedacted: 'afterValueRedacted',
+  changeType: 'changeType',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditChangeScalarFieldEnum = (typeof AuditChangeScalarFieldEnum)[keyof typeof AuditChangeScalarFieldEnum]
 
 
 export const ObservabilitySessionScalarFieldEnum = {

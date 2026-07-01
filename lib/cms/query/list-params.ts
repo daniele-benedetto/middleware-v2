@@ -1,11 +1,14 @@
 import { z } from "zod";
 
-import {
-  auditLogOutcomeValues,
-  auditLogResourceValues,
-  auditLogSortByValues,
-} from "@/lib/audit-logs/constants";
 import { paginationDefaults } from "@/lib/http/pagination";
+import {
+  auditOutcomeValues,
+  auditRiskLevelValues,
+} from "@/lib/server/modules/observability/model/vocabulary";
+import {
+  observabilityAuditActionValues,
+  observabilityAuditResourceTypeValues,
+} from "@/lib/server/modules/observability-audit/schema";
 
 import type { RouterInputs } from "@/lib/trpc/types";
 
@@ -207,7 +210,7 @@ type TagsListInput = RouterInputs["tags"]["list"];
 type AuthorsListInput = RouterInputs["authors"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
-type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
+type ObservabilityAuditListInput = RouterInputs["observabilityAudit"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 type ObservabilityErrorsListInput = RouterInputs["observabilityErrors"]["list"];
 
@@ -336,23 +339,41 @@ export function parsePagesListSearchParams(input: CmsSearchParamsInput): PagesLi
   };
 }
 
-export function parseAuditLogsListSearchParams(input: CmsSearchParamsInput): AuditLogsListInput {
+export function parseObservabilityAuditListSearchParams(
+  input: CmsSearchParamsInput,
+): ObservabilityAuditListInput {
   const base = parseCmsListSearchParams(input, {
-    allowedSortBy: auditLogSortByValues,
+    allowedSortBy: ["createdAt", "riskLevel", "outcome", "publicImpact"],
     defaultSortBy: "createdAt",
     defaultSortOrder: "desc",
   });
-  const sortBy = parseEnumQueryParam(base.sortBy, auditLogSortByValues) ?? "createdAt";
+  const sortBy =
+    parseEnumQueryParam(base.sortBy, ["createdAt", "riskLevel", "outcome", "publicImpact"]) ??
+    "createdAt";
 
   return {
     page: base.page,
     pageSize: base.pageSize,
     query: compactObject({
-      outcome: parseEnumQueryParam(cleanString(readParam(input, "outcome")), auditLogOutcomeValues),
-      resource: parseEnumQueryParam(
-        cleanString(readParam(input, "resource")),
-        auditLogResourceValues,
+      outcome: parseEnumQueryParam(cleanString(readParam(input, "outcome")), auditOutcomeValues),
+      riskLevel: parseEnumQueryParam(
+        cleanString(readParam(input, "riskLevel")),
+        auditRiskLevelValues,
       ),
+      resourceType: parseEnumQueryParam(
+        cleanString(readParam(input, "resourceType")),
+        observabilityAuditResourceTypeValues,
+      ),
+      action: parseEnumQueryParam(
+        cleanString(readParam(input, "action")),
+        observabilityAuditActionValues,
+      ),
+      publicImpact:
+        parseBooleanQueryParam(cleanString(readParam(input, "publicImpact"))) === "true"
+          ? true
+          : parseBooleanQueryParam(cleanString(readParam(input, "publicImpact"))) === "false"
+            ? false
+            : undefined,
       q: base.q,
       sortBy,
       sortOrder: base.sortOrder,
