@@ -6,6 +6,67 @@ L'obiettivo non è produrre dati quantitativi superficiali, ma dati qualitativi:
 
 Rispetto alla prima stesura, questa versione chiude quattro buchi che reggevano l'intero modello e che erano nominati ma non progettati: l'algoritmo del tempo attivo, la formula del quality score, la regola di fingerprint degli errori, e l'identità del visitatore. In più risolve una contraddizione sui ritorni multi-giorno, separa in modo esplicito i campi catturati dai campi derivati, sposta bot filtering e rate limit dove servono davvero, e aggiunge alerting, stima volumi e calibrazione delle soglie.
 
+## Stato Operativo Del Documento
+
+Questo documento contiene tre livelli diversi e non vanno confusi:
+
+- **Modello definitivo.** Le regole concettuali che definiscono cosa il sistema deve misurare e cosa non deve misurare: privacy-first, niente tracking cross-day per persona, eventi grezzi separati dagli episodi interpretati, timestamp server autorevole, fingerprint errori versionato, active time riproducibile, score spiegabili, raw event non usati come fonte primaria della UI.
+- **Implementazione completata.** Le fasi marcate con `[x]` indicano lavoro implementato nel codice e verificato con i comandi elencati nelle rispettive sezioni. Questa marcatura non significa automaticamente che le soglie siano già ottimali su dati reali.
+- **Calibrazione e validazione reale.** Le soglie di engagement, i pesi degli score, la confidence, gli insight e alcune correlazioni sono implementati con default iniziali. Restano da confermare su traffico reale e su sessioni reali prima di considerarli metriche mature di prodotto.
+
+Regola di lettura: una voce `[x]` certifica che il contratto tecnico esiste e passa le verifiche dichiarate; non certifica, da sola, che il segnale sia già calibrato empiricamente. Dove serve traffico reale, il documento lo deve dire esplicitamente.
+
+### Modello stabile
+
+Le decisioni seguenti sono considerate stabili e non vanno riaperte senza un requisito prodotto o compliance esplicito:
+
+- La metrica primaria è qualitativa, non `page view`.
+- `ObservabilityEvent` è raw append-only e non fonte primaria delle dashboard storiche.
+- Le metriche interpretate vivono su tabelle derivate o interpretate, non come verità autorevole sui raw event.
+- `sessionId` è anonimo e temporaneo; `visitorHash` è server-side con salt giornaliero; niente identificatore persistente cross-day.
+- `receivedAtServer` è il timestamp autorevole; il client invia solo sequenze e delta monotonici non autorevoli.
+- Errori e audit critici non vengono persi per privacy minimal, DNT/GPC o bot filtering pubblico.
+- `FID`, `WebVital`, `AnalyticsEvent`, `ErrorLog`, `AuditLog` e `/cms/analytics` non sono contratti ufficiali del sistema finale.
+
+### Implementato nel codice
+
+Lo stato implementativo corrente copre i domini principali:
+
+- Collector pubblico batch/sessionizzato con privacy gating, rate limit, bot filtering e risposta non informativa.
+- Telemetry qualitativa basata su `ContentEngagement` e `AudioEngagement`.
+- Errori operativi basati su `ErrorGroup` e `ErrorOccurrence`.
+- Performance qualitativa basata su `PerformanceExperience`.
+- Audit qualitativo basato su `AuditActivity` e `AuditChange`.
+- Aggregati giornalieri persistenti per contenuti, errori, performance e audit.
+- Overview osservabilità insight-driven.
+- UI CMS autorevole su `/cms/observability`, `/cms/telemetry`, `/cms/performance`, `/cms/errors` e `/cms/audit`.
+- Export e hardening privacy/redaction come parte della Fase 10.
+
+Queste parti devono restare allineate allo schema Prisma, ai moduli server e alle route CMS effettivamente presenti. Se il codice e il documento divergono, il documento va corretto oppure il codice va riallineato nella fase relativa.
+
+### Da calibrare su dati reali
+
+Queste parti sono implementate con default iniziali ma non vanno trattate come verità empirica finché non esiste un campione reale sufficiente:
+
+- Soglie `glance`, `scan`, `engaged`, `completed` per `pageType` e `contentType`.
+- Pesi del `qualityScore` contenuto e del `systemHealthScore`.
+- Soglie di `sampleConfidence` e penalizzazioni per campioni piccoli.
+- Soglie di insight come alto interesse, contenuto aperto ma poco letto, regressione performance e opportunità referrer.
+- Finestra temporale e forza della correlazione per errori associati a exit, audit high risk seguito da errore e release regression.
+
+La calibrazione richiede traffico reale, controllo manuale di un sottoinsieme di sessioni/contenuti, confronto con segnali proxy come completamento audio o ritorni significativi, e aggiornamento esplicito di soglie/versioni. Fino ad allora gli score sono riproducibili ma provvisori.
+
+### Da verificare in ambiente reale
+
+Prima di considerare il sistema maturo per uso operativo continuativo, restano verifiche non sostituibili dai soli unit test:
+
+- Smoke browser reale del collector: `sendBeacon`, fallback `fetch keepalive`, `pagehide`, tab background, focus/blur, DNT/GPC e privacy minimal.
+- Verifica produzione o ambiente equivalente di rate limit Redis e comportamento safe-fail del collector.
+- Esecuzione reale dei job `observability:aggregate`, `observability:prune` e `observability:jobs` su un database con dati rappresentativi.
+- Controllo manuale delle pagine CMS finali con zero dati, pochi dati, dati sufficienti, filtri stretti e campione a bassa confidence.
+- Verifica che export CSV non includano campi sensibili e rispettino limiti, policy e escaping anti CSV injection.
+- Verifica che alerting, se richiesto come requisito operativo, sia implementato e non solo descritto come raccomandazione.
+
 ## Regole Generali
 
 ### Stato del progetto e retrocompatibilità
