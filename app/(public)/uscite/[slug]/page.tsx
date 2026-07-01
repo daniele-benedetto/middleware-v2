@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { PublicIssuePage as PublicIssuePageView } from "@/components/public/pages";
+import { PublicObservabilityTracker } from "@/components/telemetry/public-observability-tracker";
 import { i18n } from "@/lib/i18n";
 import { getPublicIssuePageData, getPublicIssueStaticParams } from "@/lib/public/server/issue-page";
 import { buildPageMetadata } from "@/lib/seo";
@@ -49,5 +50,16 @@ export default async function PublicIssueRoute({ params }: PublicIssuePageProps)
     notFound();
   }
 
-  return <PublicIssuePageView issue={issue} publishedIssues={publishedIssues} />;
+  return (
+    <>
+      <PublicObservabilityTracker
+        pageType="issue"
+        contentType="issue"
+        contentId={issue.id}
+        slug={issue.slug}
+        path={getIssuePath(issue.slug)}
+      />
+      <PublicIssuePageView issue={issue} publishedIssues={publishedIssues} />
+    </>
+  );
 }

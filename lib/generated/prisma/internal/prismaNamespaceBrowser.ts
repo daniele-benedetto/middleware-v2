@@ -67,7 +67,9 @@ export const ModelName = {
   ObservabilitySession: 'ObservabilitySession',
   ObservabilityEvent: 'ObservabilityEvent',
   ErrorGroup: 'ErrorGroup',
-  ErrorOccurrence: 'ErrorOccurrence'
+  ErrorOccurrence: 'ErrorOccurrence',
+  ContentEngagement: 'ContentEngagement',
+  AudioEngagement: 'AudioEngagement'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -378,6 +380,55 @@ export const ErrorOccurrenceScalarFieldEnum = {
 } as const
 
 export type ErrorOccurrenceScalarFieldEnum = (typeof ErrorOccurrenceScalarFieldEnum)[keyof typeof ErrorOccurrenceScalarFieldEnum]
+
+
+export const ContentEngagementScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  visitorHash: 'visitorHash',
+  contentType: 'contentType',
+  contentId: 'contentId',
+  slug: 'slug',
+  path: 'path',
+  pageType: 'pageType',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt',
+  activeTimeMs: 'activeTimeMs',
+  maxScrollDepth: 'maxScrollDepth',
+  scrollMilestones: 'scrollMilestones',
+  interactionCount: 'interactionCount',
+  returnCountInSession: 'returnCountInSession',
+  refreshCount: 'refreshCount',
+  completed: 'completed',
+  engagementLevel: 'engagementLevel',
+  exitType: 'exitType',
+  sampleRate: 'sampleRate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContentEngagementScalarFieldEnum = (typeof ContentEngagementScalarFieldEnum)[keyof typeof ContentEngagementScalarFieldEnum]
+
+
+export const AudioEngagementScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  visitorHash: 'visitorHash',
+  articleId: 'articleId',
+  path: 'path',
+  started: 'started',
+  completed: 'completed',
+  listenedMs: 'listenedMs',
+  completionRate: 'completionRate',
+  seekCount: 'seekCount',
+  replayCount: 'replayCount',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AudioEngagementScalarFieldEnum = (typeof AudioEngagementScalarFieldEnum)[keyof typeof AudioEngagementScalarFieldEnum]
 
 
 export const SortOrder = {

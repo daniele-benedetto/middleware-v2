@@ -11,6 +11,15 @@ type TelemetryEvent = {
     | "page_exit"
     | "visibility_change"
     | "scroll_milestone"
+    | "content_interaction"
+    | "navigation_click"
+    | "audio_start"
+    | "audio_progress"
+    | "audio_complete"
+    | "audio_seek"
+    | "audio_replay"
+    | "media_open"
+    | "media_download"
     | "client_error";
   path?: string | null;
   pageType?: string | null;
@@ -40,15 +49,34 @@ type TelemetryBatch = {
 
 type PageObservation = {
   path: string;
+  pageType?: string | null;
+  contentId?: string | null;
+  contentType?: string | null;
+  slug?: string | null;
   pageInstanceId: string;
   sentScrollMilestones: Set<number>;
   exited: boolean;
+};
+
+type ObservePublicPageInput = {
+  path?: string | null;
+  pageType?: string | null;
+  contentId?: string | null;
+  contentType?: string | null;
+  slug?: string | null;
 };
 
 type ReportClientErrorInput = {
   error: Error & { digest?: string };
   source?: ClientErrorSource;
   path?: string;
+  metadata?: TelemetryMetadata;
+};
+
+type AudioEngagementInput = {
+  type: "audio_start" | "audio_progress" | "audio_complete" | "audio_seek" | "audio_replay";
+  listenedMs?: number;
+  completionRate?: number;
   metadata?: TelemetryMetadata;
 };
 
@@ -72,6 +100,7 @@ let lastInteractionAt = 0;
 let heartbeatTimer: number | null = null;
 let flushTimer: number | null = null;
 let listenersInstalled = false;
+let interactionCount = 0;
 
 function now() {
   return typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -271,7 +300,9 @@ function enqueue(
   buffer.push({
     ...event,
     path,
-    pageType: event.pageType ?? inferPageType(path),
+    pageType: event.pageType ?? currentPage?.pageType ?? inferPageType(path),
+    contentId: event.contentId ?? currentPage?.contentId,
+    contentType: event.contentType ?? currentPage?.contentType,
     sampleRate: event.sampleRate ?? 1,
     clientSequence: nextSequence(),
     clientElapsedMs: Math.max(0, Math.round(now())),
@@ -323,6 +354,7 @@ function flush() {
 
 function handleInteraction() {
   lastInteractionAt = now();
+  interactionCount += 1;
   persistSession();
 }
 
@@ -365,7 +397,7 @@ function handleScroll() {
   }
 
   currentPage.sentScrollMilestones.add(milestone);
-  enqueue({ type: "scroll_milestone", metadata: { milestone } });
+  enqueue({ type: "scroll_milestone", metadata: { milestone }, sampleRate: 0.5 });
 }
 
 function installListeners() {
@@ -386,6 +418,18 @@ function installListeners() {
   });
   window.addEventListener("pointerdown", handleInteraction, { passive: true });
   window.addEventListener("keydown", handleInteraction);
+  window.addEventListener(
+    "click",
+    (event) => {
+      const target = event.target instanceof Element ? event.target.closest("a") : null;
+      const href = target?.getAttribute("href");
+
+      if (href?.startsWith("/") && currentPage) {
+        enqueue({ type: "navigation_click", metadata: { href: href.slice(0, 500) } });
+      }
+    },
+    { passive: true },
+  );
   window.addEventListener("scroll", handleScroll, { passive: true });
   document.addEventListener("visibilitychange", handleVisibilityChange);
   window.addEventListener("pagehide", () => {
@@ -396,15 +440,16 @@ function installListeners() {
 
   heartbeatTimer = window.setInterval(() => {
     if (isActive()) {
-      enqueue({ type: "session_heartbeat", metadata: { interactionCount: 1 } });
+      enqueue({ type: "session_heartbeat", metadata: { interactionCount }, sampleRate: 0.5 });
     }
   }, heartbeatIntervalMs);
 
   flushTimer = window.setInterval(flush, flushIntervalMs);
 }
 
-export function observePublicPage(path: string | null | undefined) {
-  const normalizedPath = normalizePath(path ?? undefined);
+export function observePublicPage(input: ObservePublicPageInput | string | null | undefined) {
+  const pageInput = typeof input === "string" || input == null ? { path: input } : input;
+  const normalizedPath = normalizePath(pageInput.path ?? undefined);
 
   if (shouldSkipPath(normalizedPath)) {
     return () => undefined;
@@ -416,6 +461,10 @@ export function observePublicPage(path: string | null | undefined) {
 
   currentPage = {
     path: normalizedPath ?? "/",
+    pageType: pageInput.pageType ?? inferPageType(normalizedPath),
+    contentId: pageInput.contentId ?? null,
+    contentType: pageInput.contentType ?? null,
+    slug: pageInput.slug ?? null,
     pageInstanceId: randomId("page"),
     sentScrollMilestones: new Set<number>(),
     exited: false,
@@ -426,7 +475,11 @@ export function observePublicPage(path: string | null | undefined) {
     enqueue({ type: "session_start", path: currentPage.path });
   }
 
-  enqueue({ type: "page_enter", path: currentPage.path });
+  enqueue({
+    type: "page_enter",
+    path: currentPage.path,
+    metadata: { slug: currentPage.slug ?? null },
+  });
 
   return () => {
     recordPageExit();
@@ -446,6 +499,10 @@ export function reportClientError({
     const normalizedPath = normalizePath(path);
     currentPage = {
       path: normalizedPath ?? "/",
+      pageType: inferPageType(normalizedPath),
+      contentId: null,
+      contentType: null,
+      slug: null,
       pageInstanceId: randomId("page"),
       sentScrollMilestones: new Set<number>(),
       exited: false,
@@ -465,6 +522,37 @@ export function reportClientError({
   flush();
 }
 
+export function recordContentInteraction(metadata?: TelemetryMetadata) {
+  handleInteraction();
+  enqueue({ type: "content_interaction", metadata });
+}
+
+export function recordMediaEngagement(
+  type: "media_open" | "media_download",
+  metadata?: TelemetryMetadata,
+) {
+  handleInteraction();
+  enqueue({ type, metadata });
+}
+
+export function recordAudioEngagement({
+  type,
+  listenedMs,
+  completionRate,
+  metadata,
+}: AudioEngagementInput) {
+  handleInteraction();
+  enqueue({
+    type,
+    metadata: {
+      ...(metadata ?? {}),
+      listenedMs: typeof listenedMs === "number" ? Math.max(0, Math.round(listenedMs)) : null,
+      completionRate:
+        typeof completionRate === "number" ? Math.max(0, Math.min(1, completionRate)) : null,
+    },
+  });
+}
+
 export function stopTelemetryTimersForTest() {
   if (heartbeatTimer) {
     window.clearInterval(heartbeatTimer);
@@ -475,6 +563,7 @@ export function stopTelemetryTimersForTest() {
     window.clearInterval(flushTimer);
     flushTimer = null;
   }
+  interactionCount = 0;
 
   sessionId = null;
   sequence = 0;

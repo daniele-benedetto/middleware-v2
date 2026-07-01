@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { ArticleListenPage } from "@/components/public/listen/article-listen-page";
+import { PublicObservabilityTracker } from "@/components/telemetry/public-observability-tracker";
 import { i18n } from "@/lib/i18n";
 import {
   getPublicArticleListenPageData,
@@ -50,5 +51,16 @@ export default async function PublicArticleListenRoute({ params }: PublicArticle
     notFound();
   }
 
-  return <ArticleListenPage data={data} />;
+  return (
+    <>
+      <PublicObservabilityTracker
+        pageType="listen"
+        contentType="article"
+        contentId={data.article.id}
+        slug={data.article.slug}
+        path={`/articoli/${data.article.slug}/ascolta`}
+      />
+      <ArticleListenPage data={data} />
+    </>
+  );
 }

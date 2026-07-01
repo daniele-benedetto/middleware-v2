@@ -19,15 +19,21 @@ import type {
 } from "@/lib/generated/prisma/enums";
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
+  TelemetryContentEngagementDetailDto,
+  TelemetryEngagementSummaryDto,
   TelemetryErrorGroupDetailDto,
   TelemetryErrorGroupDto,
   TelemetryErrorOccurrenceDto,
+  TelemetryTopContentDto,
 } from "@/lib/server/modules/telemetry/dto";
 import type {
+  ContentEngagementDetailQuery,
+  ListContentEngagementQuery,
   ListTelemetryErrorsQuery,
   ObservabilityErrorSource,
   ObservabilityErrorStatus,
   ObservabilityMetadata,
+  TelemetryEngagementQuery,
   TelemetryCollectorEvent,
   TelemetryCollectorPayload,
 } from "@/lib/server/modules/telemetry/schema";
@@ -35,6 +41,37 @@ import type {
 const technicalPathPrefixes = ["/_next", "/api", "/cms"] as const;
 const technicalPaths = new Set(["/favicon.ico", "/robots.txt", "/sitemap.xml"]);
 const fingerprintVersion = 1;
+const maxHeartbeatContributionMs = 20_000;
+const maxExitContributionMs = 30_000;
+const engagementThresholdVersion = "engagement-v1";
+const engagementThresholds = {
+  article: {
+    scanScroll: 25,
+    engagedScroll: 50,
+    completedScroll: 85,
+    scanActiveMs: 5_000,
+    engagedActiveMs: 30_000,
+    completedActiveMs: 45_000,
+  },
+  home: {
+    scanScroll: 25,
+    engagedScroll: 50,
+    completedScroll: 90,
+    scanActiveMs: 5_000,
+    engagedActiveMs: 30_000,
+    completedActiveMs: 60_000,
+  },
+  issue: {
+    scanScroll: 25,
+    engagedScroll: 50,
+    completedScroll: 90,
+    scanActiveMs: 5_000,
+    engagedActiveMs: 30_000,
+    completedActiveMs: 60_000,
+  },
+  listen: { engagedCompletionRate: 0.25, completedCompletionRate: 0.9, engagedActiveMs: 30_000 },
+  media: { scanActiveMs: 5_000, engagedActiveMs: 15_000 },
+} as const;
 
 type DailyVisitorHashInput = {
   ipAddress: string | null | undefined;
@@ -114,6 +151,26 @@ type ErrorOccurrenceRecord = {
 
 type ErrorGroupDetailRecord = ErrorGroupRecord & {
   occurrences: ErrorOccurrenceRecord[];
+};
+
+type ContentEngagementRecord = {
+  id: string;
+  contentId: string | null;
+  slug: string | null;
+  path: string;
+  pageType: string;
+  contentType: string | null;
+  firstSeenAt: Date;
+  activeTimeMs: number;
+  maxScrollDepth: number;
+  scrollMilestones: unknown;
+  interactionCount: number;
+  completed: boolean;
+  engagementLevel: string;
+  exitType: string;
+  returnCountInSession: number;
+  refreshCount: number;
+  lastSeenAt: Date;
 };
 
 async function getTelemetryRepository() {
@@ -219,15 +276,160 @@ function toEventCategory(type: string) {
     return "SESSION" as const;
   }
 
-  if (type === "page_enter" || type === "page_exit" || type === "visibility_change") {
+  if (
+    type === "page_enter" ||
+    type === "page_exit" ||
+    type === "visibility_change" ||
+    type === "navigation_click"
+  ) {
     return "NAVIGATION" as const;
   }
 
-  if (type === "scroll_milestone") {
+  if (
+    type === "scroll_milestone" ||
+    type === "content_interaction" ||
+    type.startsWith("audio_") ||
+    type.startsWith("media_")
+  ) {
     return "INTERACTION" as const;
   }
 
   return "ERROR" as const;
+}
+
+function readMetadataNumber(metadata: ObservabilityMetadata | undefined, key: string) {
+  const value = metadata?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function readMetadataString(metadata: ObservabilityMetadata | undefined, key: string) {
+  const value = metadata?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function clampPercent(value: number | null) {
+  return value === null ? 0 : Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function calculateActiveTimeDelta(input: {
+  event: TelemetryCollectorEvent;
+  previousClientElapsedMs?: number | null;
+}) {
+  if (input.previousClientElapsedMs === null || input.previousClientElapsedMs === undefined) {
+    return 0;
+  }
+
+  const delta = input.event.clientElapsedMs - input.previousClientElapsedMs;
+
+  if (delta <= 0) {
+    return 0;
+  }
+
+  if (input.event.type === "session_heartbeat") {
+    return Math.min(delta, maxHeartbeatContributionMs);
+  }
+
+  if (input.event.type === "page_exit") {
+    return Math.min(delta, maxExitContributionMs);
+  }
+
+  return 0;
+}
+
+function deriveEngagementLevel(input: {
+  pageType?: string | null;
+  activeTimeDeltaMs: number;
+  scrollDepth: number;
+  interactionDelta: number;
+  audioCompleted: boolean;
+  audioCompletionRate: number;
+}) {
+  if (input.pageType === "listen") {
+    if (
+      input.audioCompleted ||
+      input.audioCompletionRate >= engagementThresholds.listen.completedCompletionRate
+    ) {
+      return "completed";
+    }
+
+    if (
+      input.audioCompletionRate >= engagementThresholds.listen.engagedCompletionRate ||
+      input.activeTimeDeltaMs >= engagementThresholds.listen.engagedActiveMs
+    ) {
+      return "engaged";
+    }
+
+    return input.interactionDelta > 0 ? "scan" : "glance";
+  }
+
+  if (input.pageType === "home" || input.pageType === "issue") {
+    const thresholds =
+      input.pageType === "home" ? engagementThresholds.home : engagementThresholds.issue;
+
+    if (input.scrollDepth >= thresholds.completedScroll && input.interactionDelta > 0) {
+      return "completed";
+    }
+
+    if (
+      input.scrollDepth >= thresholds.engagedScroll ||
+      input.interactionDelta >= 2 ||
+      input.activeTimeDeltaMs >= thresholds.engagedActiveMs
+    ) {
+      return "engaged";
+    }
+
+    return input.scrollDepth >= thresholds.scanScroll || input.interactionDelta > 0
+      ? "scan"
+      : "glance";
+  }
+
+  if (input.pageType === "media") {
+    if (input.audioCompleted) return "completed";
+    if (
+      input.activeTimeDeltaMs >= engagementThresholds.media.engagedActiveMs ||
+      input.interactionDelta > 0
+    ) {
+      return "engaged";
+    }
+    return input.activeTimeDeltaMs >= engagementThresholds.media.scanActiveMs ? "scan" : "glance";
+  }
+
+  if (
+    input.scrollDepth >= engagementThresholds.article.completedScroll &&
+    input.activeTimeDeltaMs >= engagementThresholds.article.completedActiveMs
+  ) {
+    return "completed";
+  }
+
+  if (
+    input.scrollDepth >= engagementThresholds.article.engagedScroll &&
+    input.activeTimeDeltaMs >= engagementThresholds.article.engagedActiveMs
+  ) {
+    return "engaged";
+  }
+
+  return input.scrollDepth >= engagementThresholds.article.scanScroll ||
+    input.activeTimeDeltaMs >= engagementThresholds.article.scanActiveMs ||
+    input.interactionDelta > 0
+    ? "scan"
+    : "glance";
+}
+
+function isEngagementEvent(type: string) {
+  return (
+    type === "page_enter" ||
+    type === "page_exit" ||
+    type === "session_heartbeat" ||
+    type === "scroll_milestone" ||
+    type === "content_interaction" ||
+    type === "navigation_click" ||
+    type.startsWith("audio_") ||
+    type.startsWith("media_")
+  );
+}
+
+function isAudioEvent(type: string) {
+  return type.startsWith("audio_");
 }
 
 function readInteractionCount(events: TelemetryCollectorEvent[]) {
@@ -525,6 +727,172 @@ function toErrorGroupDetailDto(record: ErrorGroupDetailRecord): TelemetryErrorGr
   };
 }
 
+function isQualifiedEngagement(record: ContentEngagementRecord) {
+  return record.engagementLevel === "engaged" || record.engagementLevel === "completed";
+}
+
+function toCompletionRate(completedReads: number, qualifiedVisits: number) {
+  return qualifiedVisits > 0 ? completedReads / qualifiedVisits : 0;
+}
+
+function toSampleConfidence(total: number) {
+  if (total >= 100) {
+    return "high" as const;
+  }
+
+  if (total >= 30) {
+    return "medium" as const;
+  }
+
+  return "low" as const;
+}
+
+function readScrollMilestones(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter((item): item is number => typeof item === "number" && Number.isFinite(item))
+    : [];
+}
+
+function summarizeContentRecords(records: ContentEngagementRecord[]) {
+  const qualifiedRecords = records.filter(isQualifiedEngagement);
+  const completedReads = records.filter((record) => record.completed).length;
+  const qualifiedVisits = qualifiedRecords.length;
+  const averageActiveTimeMs = qualifiedVisits
+    ? Math.round(
+        qualifiedRecords.reduce((total, record) => total + record.activeTimeMs, 0) /
+          qualifiedVisits,
+      )
+    : 0;
+
+  return {
+    qualifiedVisits,
+    completedReads,
+    completionRate: toCompletionRate(completedReads, qualifiedVisits),
+    averageActiveTimeMs,
+  };
+}
+
+function toTopContentDto(records: ContentEngagementRecord[]): TelemetryTopContentDto[] {
+  const grouped = new Map<string, ContentEngagementRecord[]>();
+
+  for (const record of records) {
+    const key = record.contentId ?? record.path;
+    grouped.set(key, [...(grouped.get(key) ?? []), record]);
+  }
+
+  return Array.from(grouped.values())
+    .map((groupRecords) => {
+      const first = groupRecords[0];
+      const summary = summarizeContentRecords(groupRecords);
+
+      return {
+        contentId: first?.contentId ?? null,
+        slug: first?.slug ?? null,
+        path: first?.path ?? "/",
+        pageType: (first?.pageType ?? "static_page") as TelemetryTopContentDto["pageType"],
+        contentType: (first?.contentType ?? null) as TelemetryTopContentDto["contentType"],
+        qualifiedVisits: summary.qualifiedVisits,
+        completedReads: summary.completedReads,
+        completionRate: summary.completionRate,
+        averageActiveTimeMs: summary.averageActiveTimeMs,
+        returnCountInSession: groupRecords.reduce(
+          (total, record) => total + record.returnCountInSession,
+          0,
+        ),
+        refreshCount: groupRecords.reduce((total, record) => total + record.refreshCount, 0),
+        lastSeenAt: new Date(
+          Math.max(...groupRecords.map((record) => record.lastSeenAt.getTime())),
+        ).toISOString(),
+      };
+    })
+    .sort((first, second) => second.qualifiedVisits - first.qualifiedVisits);
+}
+
+function toEngagementSummaryDto(records: ContentEngagementRecord[]): TelemetryEngagementSummaryDto {
+  const summary = summarizeContentRecords(records);
+  const levels = ["glance", "scan", "engaged", "completed"] as const;
+  const topContent = toTopContentDto(records);
+
+  return {
+    ...summary,
+    engagementBreakdown: levels.map((level) => ({
+      level,
+      count: records.filter((record) => record.engagementLevel === level).length,
+    })),
+    topContent: topContent.slice(0, 10),
+    lowQualityContent: topContent
+      .filter((item) => item.qualifiedVisits === 0 && item.completedReads === 0)
+      .slice(0, 10),
+    sampleConfidence: toSampleConfidence(records.length),
+  };
+}
+
+function countBy<T extends string | number>(values: T[]) {
+  const map = new Map<T, number>();
+  for (const value of values) map.set(value, (map.get(value) ?? 0) + 1);
+  return map;
+}
+
+function toContentEngagementDetailDto(input: {
+  records: ContentEngagementRecord[];
+  audio: {
+    _count: { _all: number };
+    _avg: { listenedMs: number | null; completionRate: number | null };
+    _sum: { seekCount: number | null; replayCount: number | null };
+  };
+}): TelemetryContentEngagementDetailDto {
+  const first = input.records[0];
+
+  if (!first) {
+    throw new ApiError(404, "NOT_FOUND", "Content engagement not found");
+  }
+
+  const summary = summarizeContentRecords(input.records);
+  const levels = ["glance", "scan", "engaged", "completed"] as const;
+  const scrollCounts = countBy(
+    input.records.flatMap((record) => readScrollMilestones(record.scrollMilestones)),
+  );
+  const exitCounts = countBy(input.records.map((record) => record.exitType || "unknown"));
+
+  return {
+    contentId: first.contentId,
+    slug: first.slug,
+    path: first.path,
+    pageType: first.pageType as TelemetryContentEngagementDetailDto["pageType"],
+    contentType: first.contentType as TelemetryContentEngagementDetailDto["contentType"],
+    ...summary,
+    engagementBreakdown: levels.map((level) => ({
+      level,
+      count: input.records.filter((record) => record.engagementLevel === level).length,
+    })),
+    maxScrollDepth: Math.max(...input.records.map((record) => record.maxScrollDepth), 0),
+    scrollDistribution: Array.from(scrollCounts.entries()).map(([milestone, count]) => ({
+      milestone,
+      count,
+    })),
+    returnCountInSession: input.records.reduce(
+      (total, record) => total + record.returnCountInSession,
+      0,
+    ),
+    refreshCount: input.records.reduce((total, record) => total + record.refreshCount, 0),
+    exitBreakdown: Array.from(exitCounts.entries()).map(([exitType, count]) => ({
+      exitType,
+      count,
+    })),
+    audio:
+      input.audio._count._all > 0
+        ? {
+            starts: input.audio._count._all,
+            averageListenedMs: Math.round(input.audio._avg.listenedMs ?? 0),
+            averageCompletionRate: input.audio._avg.completionRate ?? 0,
+            seekCount: input.audio._sum.seekCount ?? 0,
+            replayCount: input.audio._sum.replayCount ?? 0,
+          }
+        : null,
+    sampleConfidence: toSampleConfidence(input.records.length),
+  };
+}
+
 async function recordError(input: {
   source: ObservabilityErrorSource;
   sessionId?: string | null;
@@ -737,6 +1105,80 @@ async function recordCollectorEvent(input: {
       receivedAtServer: input.receivedAtServer,
     },
   });
+
+  if (!isEngagementEvent(input.event.type) || !path) {
+    return;
+  }
+
+  const maxScrollDepth =
+    input.event.type === "scroll_milestone"
+      ? clampPercent(readMetadataNumber(input.event.metadata, "milestone"))
+      : 0;
+  const activeTimeDeltaMs = calculateActiveTimeDelta({
+    event: input.event,
+    previousClientElapsedMs: input.previousClientElapsedMs,
+  });
+  const interactionDelta =
+    input.event.type === "content_interaction" ||
+    input.event.type === "navigation_click" ||
+    input.event.type.startsWith("media_")
+      ? 1
+      : (readMetadataNumber(input.event.metadata, "interactionCount") ?? 0);
+  const audioCompletionRate = Math.max(
+    0,
+    Math.min(1, readMetadataNumber(input.event.metadata, "completionRate") ?? 0),
+  );
+  const audioCompleted =
+    input.event.type === "audio_complete" ||
+    audioCompletionRate >= engagementThresholds.listen.completedCompletionRate;
+  const engagementLevel = deriveEngagementLevel({
+    pageType: input.event.pageType,
+    activeTimeDeltaMs,
+    scrollDepth: maxScrollDepth,
+    interactionDelta,
+    audioCompleted,
+    audioCompletionRate,
+  });
+  const completed =
+    engagementLevel === "completed" ||
+    input.event.type === "audio_complete" ||
+    input.event.type === "media_download";
+
+  await repository.upsertContentEngagement({
+    sessionId: input.payload.sessionId,
+    visitorHash: input.visitorHash,
+    contentType: truncate(input.event.contentType, 80),
+    contentId: truncate(input.event.contentId, 120),
+    slug: truncate(readMetadataString(input.event.metadata, "slug"), 120),
+    path,
+    pageType: truncate(input.event.pageType, 80) ?? "static_page",
+    observedAt: input.receivedAtServer,
+    activeTimeDeltaMs,
+    maxScrollDepth,
+    scrollMilestones: maxScrollDepth > 0 ? [maxScrollDepth] : [],
+    interactionDelta,
+    completed,
+    engagementLevel,
+    exitType: input.event.type === "page_exit" ? "unknown" : undefined,
+    eventType: input.event.type,
+    sampleRate: normalizeSampleRate(input.event.sampleRate),
+  });
+
+  if (isAudioEvent(input.event.type)) {
+    await repository.upsertAudioEngagement({
+      sessionId: input.payload.sessionId,
+      visitorHash: input.visitorHash,
+      articleId: truncate(input.event.contentId, 120),
+      path,
+      observedAt: input.receivedAtServer,
+      started: input.event.type === "audio_start",
+      completed: audioCompleted,
+      listenedMs: readMetadataNumber(input.event.metadata, "listenedMs") ?? 0,
+      completionRate: audioCompletionRate,
+      seekDelta: input.event.type === "audio_seek" ? 1 : 0,
+      replayDelta: input.event.type === "audio_replay" ? 1 : 0,
+    });
+  }
 }
 
 export async function recordTelemetryPayload(
@@ -808,6 +1250,47 @@ export async function recordServerError(input: ServerErrorTelemetryInput) {
 export const telemetryService = {
   createErrorFingerprint,
   createErrorSignature,
+  engagementThresholdVersion,
+  async getEngagementSummary(query: TelemetryEngagementQuery) {
+    const repository = await getTelemetryRepository();
+    const records = (await repository.listContentEngagementSummaryRecords(
+      query,
+    )) as ContentEngagementRecord[];
+
+    return toEngagementSummaryDto(records);
+  },
+  async listContentEngagement(query: ListContentEngagementQuery, pagination: PaginationParams) {
+    const repository = await getTelemetryRepository();
+    const [records, total] = await Promise.all([
+      repository.listContentEngagementRecords(query, pagination),
+      repository.countContentEngagementRecords(query),
+    ]);
+
+    return {
+      items: toTopContentDto(records as ContentEngagementRecord[]),
+      total,
+    };
+  },
+  async getContentEngagementDetail(query: ContentEngagementDetailQuery) {
+    if (!query.contentId && !query.path) {
+      throw new ApiError(400, "VALIDATION_ERROR", "contentId or path is required");
+    }
+
+    const repository = await getTelemetryRepository();
+    const [records, audio] = await Promise.all([
+      repository.listContentEngagementDetailRecords(query),
+      repository.getAudioEngagementForContent({
+        days: query.days,
+        articleId: query.contentId,
+        path: query.path,
+      }),
+    ]);
+
+    return toContentEngagementDetailDto({
+      records: records as ContentEngagementRecord[],
+      audio,
+    });
+  },
   deriveDailyVisitorHash,
   fingerprintVersion,
   async getErrorGroupById(id: string) {

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { PublicArticlePage } from "@/components/public/pages";
+import { PublicObservabilityTracker } from "@/components/telemetry/public-observability-tracker";
 import { i18n } from "@/lib/i18n";
 import {
   getPublicArticlePageData,
@@ -51,10 +52,19 @@ export default async function PublicArticleRoute({ params }: PublicArticleRouteP
   }
 
   return (
-    <PublicArticlePage
-      article={article}
-      articleNumber={articleNumber}
-      relatedArticles={relatedArticles}
-    />
+    <>
+      <PublicObservabilityTracker
+        pageType="article"
+        contentType="article"
+        contentId={article.id}
+        slug={article.slug}
+        path={`/articoli/${article.slug}`}
+      />
+      <PublicArticlePage
+        article={article}
+        articleNumber={articleNumber}
+        relatedArticles={relatedArticles}
+      />
+    </>
   );
 }

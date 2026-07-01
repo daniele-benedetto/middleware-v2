@@ -1,5 +1,6 @@
 import {
   observePublicPage,
+  recordAudioEngagement,
   reportClientError,
   stopTelemetryTimersForTest,
 } from "@/lib/telemetry/client";
@@ -51,7 +52,12 @@ function readBeaconPayload(sendBeacon: ReturnType<typeof vi.fn>, callIndex = 0) 
     sessionId: string;
     pageInstanceId: string;
     collectionMode: string;
-    events: Array<{ type: string; path?: string; message?: string }>;
+    events: Array<{
+      type: string;
+      path?: string;
+      message?: string;
+      metadata?: Record<string, unknown>;
+    }>;
   };
 }
 
@@ -122,5 +128,28 @@ describe("observability telemetry client", () => {
     observePublicPage("/articoli/test")();
 
     expect(readBeaconPayload(sendBeacon).collectionMode).toBe("minimal");
+  });
+
+  it("records audio engagement inside the active page batch", () => {
+    const { sendBeacon } = installBrowserGlobals();
+
+    const cleanup = observePublicPage({
+      path: "/articoli/test/ascolta",
+      pageType: "listen",
+      contentType: "article",
+      contentId: "article-1",
+      slug: "test",
+    });
+    recordAudioEngagement({ type: "audio_complete", listenedMs: 90_000, completionRate: 1 });
+    cleanup();
+
+    const payload = readBeaconPayload(sendBeacon);
+    const audioEvent = payload.events.find((event) => event.type === "audio_complete");
+
+    expect(audioEvent).toMatchObject({
+      type: "audio_complete",
+      path: "/articoli/test/ascolta",
+      metadata: { listenedMs: 90_000, completionRate: 1 },
+    });
   });
 });

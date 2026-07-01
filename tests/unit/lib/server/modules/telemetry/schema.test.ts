@@ -43,6 +43,39 @@ describe("telemetry payload schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts engagement audio and media events", () => {
+    const result = telemetryCollectorPayloadSchema.safeParse({
+      sessionId: "obs_session_1_0000",
+      pageInstanceId: "page_0000",
+      collectionMode: "full",
+      events: [
+        {
+          type: "audio_complete",
+          path: "/articoli/test/ascolta",
+          pageType: "listen",
+          contentType: "article",
+          contentId: "article-1",
+          sampleRate: 1,
+          clientSequence: 1,
+          clientElapsedMs: 90_000,
+          metadata: { listenedMs: 90_000, completionRate: 1 },
+        },
+        {
+          type: "media_open",
+          path: "/articoli/test",
+          pageType: "article",
+          contentType: "article",
+          contentId: "article-1",
+          sampleRate: 1,
+          clientSequence: 2,
+          clientElapsedMs: 91_000,
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it("rejects legacy analytics payloads", () => {
     const result = telemetryCollectorPayloadSchema.safeParse({
       type: "analytics",

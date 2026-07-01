@@ -1,4 +1,5 @@
 import { PublicIssuesArchivePage } from "@/components/public/pages";
+import { PublicObservabilityTracker } from "@/components/telemetry/public-observability-tracker";
 import { i18n } from "@/lib/i18n";
 import { getPublicIssuesArchiveData } from "@/lib/public/server/issues-archive";
 import { buildPageMetadata } from "@/lib/seo";
@@ -20,5 +21,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function PublicIssuesArchiveRoute() {
   const { issues } = await getPublicIssuesArchiveData();
 
-  return <PublicIssuesArchivePage issues={issues} />;
+  return (
+    <>
+      <PublicObservabilityTracker pageType="issue" path={archivePath} />
+      <PublicIssuesArchivePage issues={issues} />
+    </>
+  );
 }

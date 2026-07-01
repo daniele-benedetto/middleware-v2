@@ -1,4 +1,5 @@
 import { PublicHomePage } from "@/components/public/pages";
+import { PublicObservabilityTracker } from "@/components/telemetry/public-observability-tracker";
 import { getPublicHomeData } from "@/lib/public/server/home";
 import { buildPageMetadata } from "@/lib/seo";
 
@@ -21,5 +22,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const { currentIssue, publishedIssues } = await getPublicHomeData();
 
-  return <PublicHomePage currentIssue={currentIssue} publishedIssues={publishedIssues} />;
+  return (
+    <>
+      <PublicObservabilityTracker pageType="home" path="/" />
+      <PublicHomePage currentIssue={currentIssue} publishedIssues={publishedIssues} />
+    </>
+  );
 }

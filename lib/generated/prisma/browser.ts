@@ -102,3 +102,13 @@ export type ErrorGroup = Prisma.ErrorGroupModel
  * 
  */
 export type ErrorOccurrence = Prisma.ErrorOccurrenceModel
+/**
+ * Model ContentEngagement
+ * 
+ */
+export type ContentEngagement = Prisma.ContentEngagementModel
+/**
+ * Model AudioEngagement
+ * 
+ */
+export type AudioEngagement = Prisma.AudioEngagementModel

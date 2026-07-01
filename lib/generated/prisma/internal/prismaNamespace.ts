@@ -400,7 +400,9 @@ export const ModelName = {
   ObservabilitySession: 'ObservabilitySession',
   ObservabilityEvent: 'ObservabilityEvent',
   ErrorGroup: 'ErrorGroup',
-  ErrorOccurrence: 'ErrorOccurrence'
+  ErrorOccurrence: 'ErrorOccurrence',
+  ContentEngagement: 'ContentEngagement',
+  AudioEngagement: 'AudioEngagement'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -416,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "navigationMenu" | "auditLog" | "observabilitySession" | "observabilityEvent" | "errorGroup" | "errorOccurrence"
+    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "navigationMenu" | "auditLog" | "observabilitySession" | "observabilityEvent" | "errorGroup" | "errorOccurrence" | "contentEngagement" | "audioEngagement"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1678,6 +1680,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ContentEngagement: {
+      payload: Prisma.$ContentEngagementPayload<ExtArgs>
+      fields: Prisma.ContentEngagementFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ContentEngagementFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentEngagementPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ContentEngagementFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentEngagementPayload>
+        }
+        findFirst: {
+          args: Prisma.ContentEngagementFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentEngagementPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ContentEngagementFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentEngagementPayload>
+        }
+        findMany: {
+          args: Prisma.ContentEngagementFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentEngagementPayload>[]
+        }
+        create: {
+          args: Prisma.ContentEngagementCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentEngagementPayload>
+        }
+        createMany: {
+          args: Prisma.ContentEngagementCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ContentEngagementCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentEngagementPayload>[]
+        }
+        delete: {
+          args: Prisma.ContentEngagementDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentEngagementPayload>
+        }
+        update: {
+          args: Prisma.ContentEngagementUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentEngagementPayload>
+        }
+        deleteMany: {
+          args: Prisma.ContentEngagementDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ContentEngagementUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ContentEngagementUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentEngagementPayload>[]
+        }
+        upsert: {
+          args: Prisma.ContentEngagementUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContentEngagementPayload>
+        }
+        aggregate: {
+          args: Prisma.ContentEngagementAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateContentEngagement>
+        }
+        groupBy: {
+          args: Prisma.ContentEngagementGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContentEngagementGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ContentEngagementCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContentEngagementCountAggregateOutputType> | number
+        }
+      }
+    }
+    AudioEngagement: {
+      payload: Prisma.$AudioEngagementPayload<ExtArgs>
+      fields: Prisma.AudioEngagementFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AudioEngagementFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioEngagementPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AudioEngagementFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioEngagementPayload>
+        }
+        findFirst: {
+          args: Prisma.AudioEngagementFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioEngagementPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AudioEngagementFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioEngagementPayload>
+        }
+        findMany: {
+          args: Prisma.AudioEngagementFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioEngagementPayload>[]
+        }
+        create: {
+          args: Prisma.AudioEngagementCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioEngagementPayload>
+        }
+        createMany: {
+          args: Prisma.AudioEngagementCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AudioEngagementCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioEngagementPayload>[]
+        }
+        delete: {
+          args: Prisma.AudioEngagementDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioEngagementPayload>
+        }
+        update: {
+          args: Prisma.AudioEngagementUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioEngagementPayload>
+        }
+        deleteMany: {
+          args: Prisma.AudioEngagementDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AudioEngagementUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AudioEngagementUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioEngagementPayload>[]
+        }
+        upsert: {
+          args: Prisma.AudioEngagementUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioEngagementPayload>
+        }
+        aggregate: {
+          args: Prisma.AudioEngagementAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAudioEngagement>
+        }
+        groupBy: {
+          args: Prisma.AudioEngagementGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AudioEngagementGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AudioEngagementCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AudioEngagementCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2009,6 +2159,55 @@ export const ErrorOccurrenceScalarFieldEnum = {
 } as const
 
 export type ErrorOccurrenceScalarFieldEnum = (typeof ErrorOccurrenceScalarFieldEnum)[keyof typeof ErrorOccurrenceScalarFieldEnum]
+
+
+export const ContentEngagementScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  visitorHash: 'visitorHash',
+  contentType: 'contentType',
+  contentId: 'contentId',
+  slug: 'slug',
+  path: 'path',
+  pageType: 'pageType',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt',
+  activeTimeMs: 'activeTimeMs',
+  maxScrollDepth: 'maxScrollDepth',
+  scrollMilestones: 'scrollMilestones',
+  interactionCount: 'interactionCount',
+  returnCountInSession: 'returnCountInSession',
+  refreshCount: 'refreshCount',
+  completed: 'completed',
+  engagementLevel: 'engagementLevel',
+  exitType: 'exitType',
+  sampleRate: 'sampleRate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContentEngagementScalarFieldEnum = (typeof ContentEngagementScalarFieldEnum)[keyof typeof ContentEngagementScalarFieldEnum]
+
+
+export const AudioEngagementScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  visitorHash: 'visitorHash',
+  articleId: 'articleId',
+  path: 'path',
+  started: 'started',
+  completed: 'completed',
+  listenedMs: 'listenedMs',
+  completionRate: 'completionRate',
+  seekCount: 'seekCount',
+  replayCount: 'replayCount',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AudioEngagementScalarFieldEnum = (typeof AudioEngagementScalarFieldEnum)[keyof typeof AudioEngagementScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2408,6 +2607,8 @@ export type GlobalOmitConfig = {
   observabilityEvent?: Prisma.ObservabilityEventOmit
   errorGroup?: Prisma.ErrorGroupOmit
   errorOccurrence?: Prisma.ErrorOccurrenceOmit
+  contentEngagement?: Prisma.ContentEngagementOmit
+  audioEngagement?: Prisma.AudioEngagementOmit
 }
 
 /* Types for Logging */

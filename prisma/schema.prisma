@@ -326,8 +326,10 @@ model ObservabilitySession {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  events           ObservabilityEvent[]
-  errorOccurrences ErrorOccurrence[]
+  events             ObservabilityEvent[]
+  errorOccurrences   ErrorOccurrence[]
+  contentEngagements ContentEngagement[]
+  audioEngagements   AudioEngagement[]
 
   @@index([visitorHash, startedAt])
   @@index([startedAt])
@@ -425,4 +427,66 @@ model ErrorOccurrence {
   @@index([requestId])
   @@index([occurredAt])
   @@map("error_occurrences")
+}
+
+model ContentEngagement {
+  id                   String   @id @default(uuid())
+  sessionId            String?
+  visitorHash          String?
+  contentType          String?
+  contentId            String?
+  slug                 String?
+  path                 String
+  pageType             String
+  firstSeenAt          DateTime
+  lastSeenAt           DateTime
+  activeTimeMs         Int      @default(0)
+  maxScrollDepth       Int      @default(0)
+  scrollMilestones     Json     @default("[]")
+  interactionCount     Int      @default(0)
+  returnCountInSession Int      @default(0)
+  refreshCount         Int      @default(0)
+  completed            Boolean  @default(false)
+  engagementLevel      String   @default("glance")
+  exitType             String   @default("unknown")
+  sampleRate           Float    @default(1)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  session ObservabilitySession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, path, contentId])
+  @@index([sessionId, path])
+  @@index([sessionId, contentId])
+  @@index([contentType, contentId, firstSeenAt])
+  @@index([pageType, firstSeenAt])
+  @@index([engagementLevel, firstSeenAt])
+  @@index([completed, firstSeenAt])
+  @@map("content_engagements")
+}
+
+model AudioEngagement {
+  id             String   @id @default(uuid())
+  sessionId      String?
+  visitorHash    String?
+  articleId      String?
+  path           String
+  started        Boolean  @default(false)
+  completed      Boolean  @default(false)
+  listenedMs     Int      @default(0)
+  completionRate Float    @default(0)
+  seekCount      Int      @default(0)
+  replayCount    Int      @default(0)
+  firstSeenAt    DateTime
+  lastSeenAt     DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  session ObservabilitySession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, articleId, path])
+  @@index([sessionId, articleId])
+  @@index([articleId, firstSeenAt])
+  @@index([completed, firstSeenAt])
+  @@map("audio_engagements")
 }

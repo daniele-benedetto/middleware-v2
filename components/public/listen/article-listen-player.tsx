@@ -22,6 +22,7 @@ import {
   type AudioProgressStatus,
 } from "@/lib/browser/storage/audio-progress-store";
 import { i18n } from "@/lib/i18n";
+import { recordAudioEngagement } from "@/lib/telemetry/client";
 import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
@@ -173,6 +174,8 @@ export function ArticleListenPlayer({
   const isSeekingRef = useRef(false);
   const startedAtRef = useRef<string | null>(null);
   const lastSavedBucketRef = useRef(-1);
+  const lastReportedProgressBucketRef = useRef(-1);
+  const hasReportedStartRef = useRef(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [seekPreviewTime, setSeekPreviewTime] = useState<number | null>(null);
   const [duration, setDuration] = useState(0);
@@ -322,6 +325,17 @@ export function ArticleListenPlayer({
     if (nextDuration > 0) setDuration(nextDuration);
   };
 
+  const reportAudioProgress = (time: number, durationValue = resolvedDuration) => {
+    const durationSeconds = durationValue > 0 ? durationValue : durationRef.current;
+    const completionRate = durationSeconds > 0 ? time / durationSeconds : 0;
+
+    recordAudioEngagement({
+      type: "audio_progress",
+      listenedMs: time * 1000,
+      completionRate,
+    });
+  };
+
   const seekTo = (seconds: number) => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -330,6 +344,11 @@ export function ArticleListenPlayer({
     currentTimeRef.current = nextTime;
     audio.currentTime = nextTime;
     setCurrentTime(nextTime);
+    recordAudioEngagement({
+      type: "audio_seek",
+      listenedMs: nextTime * 1000,
+      completionRate: resolvedDuration > 0 ? nextTime / resolvedDuration : 0,
+    });
     return nextTime;
   };
 
@@ -341,6 +360,13 @@ export function ArticleListenPlayer({
     setAudioError(false);
 
     if (audio.paused) {
+      if (!hasReportedStartRef.current) {
+        hasReportedStartRef.current = true;
+        recordAudioEngagement({ type: "audio_start", listenedMs: currentTimeRef.current * 1000 });
+      } else if (currentTimeRef.current < 2) {
+        recordAudioEngagement({ type: "audio_replay", listenedMs: 0, completionRate: 0 });
+      }
+
       void persistProgress("listening");
       audio.play().catch(() => {
         setIsPlaying(false);
@@ -426,6 +452,15 @@ export function ArticleListenPlayer({
           if (isSeekingRef.current) return;
           currentTimeRef.current = event.currentTarget.currentTime;
           setCurrentTime(event.currentTarget.currentTime);
+
+          const progressBucket = Math.floor(event.currentTarget.currentTime / 15);
+          if (progressBucket > lastReportedProgressBucketRef.current) {
+            lastReportedProgressBucketRef.current = progressBucket;
+            reportAudioProgress(
+              event.currentTarget.currentTime,
+              getFiniteDuration(event.currentTarget),
+            );
+          }
         }}
         onPlay={(event) => {
           syncDuration(event.currentTarget);
@@ -437,6 +472,11 @@ export function ArticleListenPlayer({
           event.currentTarget.currentTime = 0;
           setCurrentTime(0);
           setIsPlaying(false);
+          recordAudioEngagement({
+            type: "audio_complete",
+            listenedMs: (getFiniteDuration(event.currentTarget) || resolvedDuration) * 1000,
+            completionRate: 1,
+          });
           void persistProgress("completed", 0);
         }}
       />

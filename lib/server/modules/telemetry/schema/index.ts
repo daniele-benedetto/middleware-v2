@@ -54,6 +54,15 @@ const observabilityPathSchema = z.string().trim().min(1).max(512).startsWith("/"
 const nullableTextSchema = z.string().trim().min(1).max(200).optional().nullable();
 const eventTypeSchema = z.enum([
   "session_start",
+  "content_interaction",
+  "navigation_click",
+  "audio_start",
+  "audio_progress",
+  "audio_complete",
+  "audio_seek",
+  "audio_replay",
+  "media_open",
+  "media_download",
   "session_heartbeat",
   "session_end",
   "page_enter",
@@ -109,12 +118,40 @@ export const listTelemetryErrorsQuerySchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
+export const telemetryEngagementQuerySchema = z.object({
+  days: z.number().int().min(1).max(90).default(30),
+  pageType: z.enum(observabilityPageTypeValues).optional(),
+  contentType: z.enum(observabilityContentTypeValues).optional(),
+});
+
+export const listContentEngagementQuerySchema = telemetryEngagementQuerySchema.extend({
+  q: z.string().trim().min(1).optional(),
+  sortBy: z
+    .enum([
+      "lastSeenAt",
+      "qualifiedVisits",
+      "completedReads",
+      "completionRate",
+      "averageActiveTimeMs",
+    ])
+    .default("qualifiedVisits"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
+export const contentEngagementDetailQuerySchema = telemetryEngagementQuerySchema.extend({
+  contentId: z.string().trim().min(1).max(120).optional().nullable(),
+  path: observabilityPathSchema.optional().nullable(),
+});
+
 export const updateTelemetryErrorStatusSchema = z.object({
   id: z.string().uuid(),
   status: z.enum(observabilityErrorStatusValues),
 });
 
 export type TelemetryCollectorEvent = z.infer<typeof telemetryCollectorEventSchema>;
+export type TelemetryEngagementQuery = z.infer<typeof telemetryEngagementQuerySchema>;
+export type ListContentEngagementQuery = z.infer<typeof listContentEngagementQuerySchema>;
+export type ContentEngagementDetailQuery = z.infer<typeof contentEngagementDetailQuerySchema>;
 export type TelemetryCollectorPayload = z.infer<typeof telemetryCollectorPayloadSchema>;
 export type ObservabilityRawEventType = (typeof observabilityRawEventTypeValues)[number];
 export type ObservabilityMetadata = z.infer<typeof observabilityMetadataSchema>;

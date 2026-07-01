@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { PublicStaticPage } from "@/components/public/pages";
+import { PublicObservabilityTracker } from "@/components/telemetry/public-observability-tracker";
 import { i18n } from "@/lib/i18n";
 import { PUBLIC_STATIC_PAGE_SLUGS } from "@/lib/public/pages/static-pages";
 import { getPublicStaticPageData } from "@/lib/public/server/page";
@@ -43,5 +44,16 @@ export default async function PublicStaticPageRoute({ params }: PublicStaticPage
     notFound();
   }
 
-  return <PublicStaticPage page={page} />;
+  return (
+    <>
+      <PublicObservabilityTracker
+        pageType="static_page"
+        contentType="page"
+        contentId={page.id}
+        slug={page.slug}
+        path={`/${page.slug}`}
+      />
+      <PublicStaticPage page={page} />
+    </>
+  );
 }
