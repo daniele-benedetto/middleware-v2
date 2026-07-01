@@ -1734,126 +1734,126 @@ Ordine UI consigliato nella navigazione osservabilità: overview, errors, perfor
 
 Checklist operativa Fase 8:
 
-- [ ] Rimuovere `/cms/analytics` come route ufficiale e sostituirla con `/cms/telemetry`, senza redirect o alias compatibile se non esiste un requisito prodotto esplicito.
-- [ ] Aggiornare navigazione CMS, i18n, metadata, titoli pagina e copy da `Analytics` a `Telemetry` o `Osservabilità`, eliminando riferimenti a page views come metrica primaria.
-- [ ] Aggiungere `/cms/observability` come overview dedicata, senza trasformare implicitamente `/cms` in dashboard osservabilità se il CMS index resta orientato al flusso editoriale.
-- [ ] Aggiornare `cmsNavigation` e visibilità per ruolo usando le policy dei moduli osservabilità già definite, senza hardcodare nuovi ruoli nei componenti UI.
-- [ ] Rimuovere schermate, import, prefetch, query parser, test e copy ancora collegati alla vecchia pagina analytics o a metriche views-based, invece di lasciarli come legacy non raggiungibile.
-- [ ] Introdurre la dipendenza chart scelta, ad esempio `recharts`, solo se non già presente, e aggiungere il componente shadcn `ChartContainer`/`ChartTooltip`/`ChartLegend` o equivalente coerente col progetto.
-- [ ] Non creare grafici custom fragili se i componenti shadcn/recharts coprono il caso; la personalizzazione deve stare in wrapper CMS, non in fork locali della libreria.
-- [ ] Creare modulo UI condiviso `features/cms/observability/components/*` o percorso equivalente con responsabilità chiara e senza mischiare business rules server.
-- [ ] Creare `ObservabilityMetricCard` basato su `Card`, con label, valore, unità, descrizione, trend opzionale, confidence opzionale e stato qualitativo.
-- [ ] Creare `ObservabilityStatusBadge` basato su `Badge`, con mapping unico per severity errori, status errori, risk audit, outcome audit, quality/perceived quality, engagement level e sample confidence.
-- [ ] Creare `ObservabilityChartCard` con titolo, domanda implicita, descrizione, `ChartContainer`, legenda/tooltip coerenti, empty state e sample confidence visibile.
-- [ ] Creare `ObservabilityFilterSheet` con `Sheet`, `Select`, input testo e date range/periodo, riusando pattern CMS esistenti invece di duplicare toolbar per ogni pagina.
-- [ ] Creare `ObservabilityDetailDrawer` per drilldown lungo, preferendo `Sheet` a `Dialog` quando il dettaglio contiene timeline, diff, stack, metriche e ID tecnici.
-- [ ] Riutilizzare `CopyTechnicalValueButton` globale per `requestId`, `correlationId`, `sessionId`, `fingerprint`, `auditActivityId`, `errorGroupId`, `contentId` e `pageInstanceId`, rimuovendo copy button locali duplicati.
-- [ ] Creare `QualityScoreBreakdown` che mostra score, componenti normalizzate, pesi, penalità, threshold version, sample confidence e motivi principali leggibili.
-- [ ] Creare `SampleConfidenceBadge` o integrare la confidence nello status badge, evitando che score o classifiche con campione basso appaiano autorevoli.
-- [ ] Creare empty state osservabilità distinti per: nessun dato raccolto, aggregati non ancora generati, filtri troppo stretti, campione insufficiente e permessi mancanti.
-- [ ] Definire palette e token visuali per osservabilità usando il sistema CMS esistente: severa, editoriale, alto contrasto, senza colori decorativi slegati da severità/qualità/rischio.
-- [ ] Usare grafici solo quando chiariscono andamento, distribuzione o correlazione; non usare chart come decorazione se una card o tabella spiega meglio il dato.
-- [ ] Garantire che ogni card risponda a una domanda operativa esplicita, ad esempio “cosa è peggiorato?”, “cosa blocca utenti/editor?”, “quali contenuti valgono davvero?”.
-- [ ] Garantire che ogni score mostrato abbia breakdown o link immediato al breakdown; nessun numero qualitativo deve apparire come autorità opaca.
-- [ ] Collegare `/cms/observability` a `observabilityAggregates.overview` o procedura overview equivalente basata sugli aggregati Fase 7, non a query raw o runtime pesanti.
-- [ ] La overview deve mostrare KPI globali: quality score contenuti, letture qualificate, completamenti, errori critical/high aperti, esperienze frustrating/broken, audit high/critical recenti e sample confidence.
-- [ ] La overview deve mostrare una sezione “Cosa guardare prima” ordinata per impatto operativo: regressioni/errori critical, performance frustrante, contenuti con qualità anomala, audit failure sensibili.
-- [ ] La overview deve includere grafici sintetici: trend qualità contenuti, breakdown perceived quality, errori per severity/status, audit per risk/outcome, usando aggregati giornalieri.
-- [ ] La overview deve avere deep link verso `/cms/errors`, `/cms/performance`, `/cms/telemetry` e `/cms/audit` con filtri coerenti quando possibile.
-- [ ] Non introdurre insight avanzati non ancora definiti dalla Fase 9; la overview Fase 8 aggrega e priorizza, ma non deve inventare correlazioni non progettate.
-- [ ] Rifare `/cms/telemetry` come pagina di qualità editoriale, non come analytics generico.
-- [ ] `/cms/telemetry` deve leggere aggregati Fase 7 per summary/trend storici e usare `ContentEngagement`/`AudioEngagement` solo per dettaglio operativo recente quando serve.
-- [ ] `/cms/telemetry` deve mostrare KPI primari: letture qualificate, completamenti, completion rate, ritorni significativi, tempo attivo medio, quality score e sample confidence.
-- [ ] `/cms/telemetry` deve includere `QualityScoreBreakdown` per contenuto o aggregato quando viene mostrato `qualityScore`.
-- [ ] `/cms/telemetry` deve includere trend engagement con `AreaChart` o `LineChart`, breakdown engagement con `BarChart`, top contenuti per quality score e tabella contenuti filtrabile.
-- [ ] `/cms/telemetry` deve mostrare contenuti “aperti ma poco letti” solo se calcolati da episodi/aggregati qualitativi, non da page views legacy.
-- [ ] `/cms/telemetry` deve distinguere ritorni significativi da refresh tecnici e spiegare la confidence dei dati con copy breve.
-- [ ] `/cms/telemetry` deve avere detail drawer per contenuto con breakdown `glance`/`scan`/`engaged`/`completed`, active time, scroll/audio, returns, refresh, exit type e technical IDs.
-- [ ] Non mostrare `views` come metrica primaria in `/cms/telemetry`; se serve volume diagnostico, usare nomi coerenti come `episodi`, `sessioni con contenuto` o `total visits` da `ContentEngagement`/aggregati.
-- [ ] Rifare `/cms/performance` su componenti condivisi e chart reali, eliminando KPI/card/table inline duplicati.
-- [ ] `/cms/performance` deve leggere aggregati Fase 7 per storico e `PerformanceExperience` solo per dettaglio recente o diagnosi puntuale.
-- [ ] `/cms/performance` deve aprire con diagnosi qualitativa: esperienze frustrating/broken, early exits, poor rate, pagine peggiori per impatto e sample confidence.
-- [ ] `/cms/performance` deve mostrare cards per `LCP`, `INP`, `CLS`, `FCP`, `TTFB` con p75, unità, soglie, rating e sample count.
-- [ ] `/cms/performance` non deve mostrare `FID` in nessun punto: né label, né colonna, né test, né fallback.
-- [ ] `/cms/performance` deve includere trend p75 con `LineChart`, breakdown perceived quality, worst pages ordinate per impatto qualitativo e segmenti device/browser/connection.
-- [ ] `/cms/performance` deve avere detail drawer pagina con metriche, soglie, release, device/rete, engagement correlato, errori correlati, early exit reasons e copy technical values.
-- [ ] `/cms/performance` deve mostrare sempre sample count e confidence vicino a trend, classifiche e KPI.
-- [ ] Rifare `/cms/errors` mantenendo l’inbox operativa ma sostituendo componenti duplicati con quelli condivisi osservabilità.
-- [ ] `/cms/errors` deve combinare `ErrorGroup`/`ErrorOccurrence` per inbox live e `DailyErrorAggregate` per KPI/trend storici se disponibili.
-- [ ] `/cms/errors` deve aprire con KPI: open, critical/high, regressions, nuovi recenti, blocked actions e affected sessions.
-- [ ] `/cms/errors` deve restare ordinata per priorità operativa e recenza, non per `occurrenceCount` grezzo.
-- [ ] `/cms/errors` deve avere tabs o filtri rapidi per open, investigating, resolved, ignored e regressions, usando `ObservabilityFilterSheet` per filtri avanzati.
-- [ ] `/cms/errors` deve mostrare priority reasons, severity, status, impact area, user impact, regressione, sessioni impattate e release senza costringere l’admin a leggere lo stack.
-- [ ] `/cms/errors` deve usare detail drawer con timeline occorrenze, stack redatto, metadata redatti, request/session/correlation IDs, fingerprint/signature e azioni status.
-- [ ] Rimuovere copy button, badge mapping, detail sections e helper duplicati dallo screen errors quando il componente condiviso li sostituisce.
-- [ ] Rifare `/cms/audit` come timeline di responsabilità su componenti condivisi, non tabella tecnica mascherata.
-- [ ] `/cms/audit` deve combinare `AuditActivity`/`AuditChange` per timeline live e `DailyAuditAggregate` per KPI/trend storici se disponibili.
-- [ ] `/cms/audit` deve aprire con KPI: high/critical, public impact, failures, sensitive actions, active actors e azioni recenti sensibili.
-- [ ] `/cms/audit` deve avere filtri rapidi: tutti, high risk, falliti, impatto pubblico, azioni sensibili.
-- [ ] `/cms/audit` deve mostrare ogni attività come evento di responsabilità con attore, risorsa, azione, outcome, risk, public impact, changed fields e createdAt.
-- [ ] `/cms/audit` deve usare detail drawer con actor/resource snapshot, diff applicato per `SUCCESS`, attempted summary per `FAILURE`, risk reasons, related errors e technical IDs.
-- [ ] Per attività `FAILURE`, la UI non deve mostrare un diff vuoto o suggerire mutazione applicata: deve mostrare tentativo non applicato ed errore redatto.
-- [ ] Rimuovere copy button, badge mapping, detail dialog e helper duplicati dallo screen audit quando il componente condiviso li sostituisce.
-- [ ] Definire loading state per `/cms/observability`, `/cms/telemetry`, `/cms/performance`, `/cms/errors` e `/cms/audit`, coerenti col layout CMS e senza skeleton casuali.
-- [ ] Garantire stati error e forbidden coerenti con il CMS per ogni pagina, senza esporre stack o dettagli tecnici lato UI.
-- [ ] Garantire responsive desktop/mobile: KPI in griglia su desktop e colonna su mobile, chart con altezza leggibile, tabelle dense convertite o rese scrollabili in modo intenzionale, filtri in sheet su mobile.
-- [ ] Usare server-side tRPC caller/prefetch dove utile per prima renderizzazione e hydration dei client screen, senza duplicare fetch server e client per gli stessi dati.
-- [ ] Separare componenti server e client: pagine server per auth/policy/prefetch, screen client solo quando servono filtri interattivi, drawer, mutation status o URL state.
-- [ ] Non mettere business logic di score, severity, risk, quality, percentili o aggregazione nei componenti React; la UI formatta e visualizza DTO già interpretati.
-- [ ] Aggiornare query parser e URL state per i nuovi filtri osservabilità: periodo/date range, pageType, contentType, deviceType, release, severity/status, risk/outcome e testo libero.
-- [ ] Aggiornare `RouterInputs`/`RouterOutputs`, prefetch server e hook CMS per le nuove route/procedure, eliminando riferimenti a route o procedure analytics legacy non più ufficiali.
-- [ ] Aggiornare copy i18n per spiegare in modo breve: sample confidence, aggregati giornalieri, quality score, perceived quality, regressione, rischio audit e differenza tra tentativo fallito e cambiamento applicato.
-- [ ] Non mostrare JSON grezzo come vista primaria; metadata, summary, diff, components e reasons devono essere leggibili, con JSON redatto solo come sezione tecnica secondaria se serve.
-- [ ] Mantenere copy button solo per valori tecnici utili all’indagine, non per ogni campo della pagina.
-- [ ] Aggiungere test unitari per `ObservabilityStatusBadge` su tutti gli enum usati: severity, status, risk, outcome, engagement, perceived quality e confidence.
-- [ ] Aggiungere test unitari per `QualityScoreBreakdown`: componenti, pesi, penalità, threshold version, confidence e denominatori non classificabili.
-- [ ] Aggiungere test unitari per formattatori UI: percentuali, durate, metriche performance, CLS unitless, date, valori null e confidence.
-- [ ] Aggiungere test per query parser URL delle nuove pagine osservabilità: periodo, filtri enum, date range, paginazione, sort e input invalidi.
-- [ ] Aggiungere test tRPC/DTO o page-level per overview, telemetry, performance, errors e audit, verificando che i dati principali arrivino da aggregati o dalle tabelle interpretate corrette.
-- [ ] Aggiungere test che confermino assenza di `FID`, `page_view`, `AnalyticsEvent`, `WebVital`, `AuditLog`, `ErrorLog` e route `/cms/analytics` come contratti UI ufficiali.
-- [ ] Aggiungere test UI essenziali dove l’infrastruttura lo consente: empty state, loading state, metric card, chart wrapper, detail drawer, copy values e azioni status errori.
-- [ ] Verificare accessibilità minima: heading gerarchici, label dei filtri, aria label per copy button, tooltip non necessari per capire il dato, navigazione tastiera nei drawer.
-- [ ] Verificare che chart e tabelle restino leggibili con zero dati, pochi dati, molti dati e campione a bassa confidence.
-- [ ] Verificare con typecheck, lint, unit test pertinenti, test completi e build.
-- [ ] Aggiornare questo documento se durante l’implementazione emergono decisioni su naming route, chart primitives, breakdown score, filtri o layout responsive, senza creare checklist parallele.
+- [x] Rimuovere `/cms/analytics` come route ufficiale e sostituirla con `/cms/telemetry`, senza redirect o alias compatibile se non esiste un requisito prodotto esplicito.
+- [x] Aggiornare navigazione CMS, i18n, metadata, titoli pagina e copy da `Analytics` a `Telemetry` o `Osservabilità`, eliminando riferimenti a page views come metrica primaria.
+- [x] Aggiungere `/cms/observability` come overview dedicata, senza trasformare implicitamente `/cms` in dashboard osservabilità se il CMS index resta orientato al flusso editoriale.
+- [x] Aggiornare `cmsNavigation` e visibilità per ruolo usando le policy dei moduli osservabilità già definite, senza hardcodare nuovi ruoli nei componenti UI.
+- [x] Rimuovere schermate, import, prefetch, query parser, test e copy ancora collegati alla vecchia pagina analytics o a metriche views-based, invece di lasciarli come legacy non raggiungibile.
+- [x] Introdurre la dipendenza chart scelta, ad esempio `recharts`, solo se non già presente, e aggiungere il componente shadcn `ChartContainer`/`ChartTooltip`/`ChartLegend` o equivalente coerente col progetto.
+- [x] Non creare grafici custom fragili se i componenti shadcn/recharts coprono il caso; la personalizzazione deve stare in wrapper CMS, non in fork locali della libreria.
+- [x] Creare modulo UI condiviso `features/cms/observability/components/*` o percorso equivalente con responsabilità chiara e senza mischiare business rules server.
+- [x] Creare `ObservabilityMetricCard` basato su `Card`, con label, valore, unità, descrizione, trend opzionale, confidence opzionale e stato qualitativo.
+- [x] Creare `ObservabilityStatusBadge` basato su `Badge`, con mapping unico per severity errori, status errori, risk audit, outcome audit, quality/perceived quality, engagement level e sample confidence.
+- [x] Creare `ObservabilityChartCard` con titolo, domanda implicita, descrizione, `ChartContainer`, legenda/tooltip coerenti, empty state e sample confidence visibile.
+- [x] Creare `ObservabilityFilterSheet` con `Sheet`, `Select`, input testo e date range/periodo, riusando pattern CMS esistenti invece di duplicare toolbar per ogni pagina.
+- [x] Creare `ObservabilityDetailDrawer` per drilldown lungo, preferendo `Sheet` a `Dialog` quando il dettaglio contiene timeline, diff, stack, metriche e ID tecnici.
+- [x] Riutilizzare `CopyTechnicalValueButton` globale per `requestId`, `correlationId`, `sessionId`, `fingerprint`, `auditActivityId`, `errorGroupId`, `contentId` e `pageInstanceId`, rimuovendo copy button locali duplicati.
+- [x] Creare `QualityScoreBreakdown` che mostra score, componenti normalizzate, pesi, penalità, threshold version, sample confidence e motivi principali leggibili.
+- [x] Creare `SampleConfidenceBadge` o integrare la confidence nello status badge, evitando che score o classifiche con campione basso appaiano autorevoli.
+- [x] Creare empty state osservabilità distinti per: nessun dato raccolto, aggregati non ancora generati, filtri troppo stretti, campione insufficiente e permessi mancanti.
+- [x] Definire palette e token visuali per osservabilità usando il sistema CMS esistente: severa, editoriale, alto contrasto, senza colori decorativi slegati da severità/qualità/rischio.
+- [x] Usare grafici solo quando chiariscono andamento, distribuzione o correlazione; non usare chart come decorazione se una card o tabella spiega meglio il dato.
+- [x] Garantire che ogni card risponda a una domanda operativa esplicita, ad esempio “cosa è peggiorato?”, “cosa blocca utenti/editor?”, “quali contenuti valgono davvero?”.
+- [x] Garantire che ogni score mostrato abbia breakdown o link immediato al breakdown; nessun numero qualitativo deve apparire come autorità opaca.
+- [x] Collegare `/cms/observability` a `observabilityAggregates.overview` o procedura overview equivalente basata sugli aggregati Fase 7, non a query raw o runtime pesanti.
+- [x] La overview deve mostrare KPI globali: quality score contenuti, letture qualificate, completamenti, errori critical/high aperti, esperienze frustrating/broken, audit high/critical recenti e sample confidence.
+- [x] La overview deve mostrare una sezione “Cosa guardare prima” ordinata per impatto operativo: regressioni/errori critical, performance frustrante, contenuti con qualità anomala, audit failure sensibili.
+- [x] La overview deve includere grafici sintetici: trend qualità contenuti, breakdown perceived quality, errori per severity/status, audit per risk/outcome, usando aggregati giornalieri.
+- [x] La overview deve avere deep link verso `/cms/errors`, `/cms/performance`, `/cms/telemetry` e `/cms/audit` con filtri coerenti quando possibile.
+- [x] Non introdurre insight avanzati non ancora definiti dalla Fase 9; la overview Fase 8 aggrega e priorizza, ma non deve inventare correlazioni non progettate.
+- [x] Rifare `/cms/telemetry` come pagina di qualità editoriale, non come analytics generico.
+- [x] `/cms/telemetry` deve leggere aggregati Fase 7 per summary/trend storici e usare `ContentEngagement`/`AudioEngagement` solo per dettaglio operativo recente quando serve.
+- [x] `/cms/telemetry` deve mostrare KPI primari: letture qualificate, completamenti, completion rate, ritorni significativi, tempo attivo medio, quality score e sample confidence.
+- [x] `/cms/telemetry` deve includere `QualityScoreBreakdown` per contenuto o aggregato quando viene mostrato `qualityScore`.
+- [x] `/cms/telemetry` deve includere trend engagement con `AreaChart` o `LineChart`, breakdown engagement con `BarChart`, top contenuti per quality score e tabella contenuti filtrabile.
+- [x] `/cms/telemetry` deve mostrare contenuti “aperti ma poco letti” solo se calcolati da episodi/aggregati qualitativi, non da page views legacy.
+- [x] `/cms/telemetry` deve distinguere ritorni significativi da refresh tecnici e spiegare la confidence dei dati con copy breve.
+- [x] `/cms/telemetry` deve avere detail drawer per contenuto con breakdown `glance`/`scan`/`engaged`/`completed`, active time, scroll/audio, returns, refresh, exit type e technical IDs.
+- [x] Non mostrare `views` come metrica primaria in `/cms/telemetry`; se serve volume diagnostico, usare nomi coerenti come `episodi`, `sessioni con contenuto` o `total visits` da `ContentEngagement`/aggregati.
+- [x] Rifare `/cms/performance` su componenti condivisi e chart reali, eliminando KPI/card/table inline duplicati.
+- [x] `/cms/performance` deve leggere aggregati Fase 7 per storico e `PerformanceExperience` solo per dettaglio recente o diagnosi puntuale.
+- [x] `/cms/performance` deve aprire con diagnosi qualitativa: esperienze frustrating/broken, early exits, poor rate, pagine peggiori per impatto e sample confidence.
+- [x] `/cms/performance` deve mostrare cards per `LCP`, `INP`, `CLS`, `FCP`, `TTFB` con p75, unità, soglie, rating e sample count.
+- [x] `/cms/performance` non deve mostrare `FID` in nessun punto: né label, né colonna, né test, né fallback.
+- [x] `/cms/performance` deve includere trend p75 con `LineChart`, breakdown perceived quality, worst pages ordinate per impatto qualitativo e segmenti device/browser/connection.
+- [x] `/cms/performance` deve avere detail drawer pagina con metriche, soglie, release, device/rete, engagement correlato, errori correlati, early exit reasons e copy technical values.
+- [x] `/cms/performance` deve mostrare sempre sample count e confidence vicino a trend, classifiche e KPI.
+- [x] Rifare `/cms/errors` mantenendo l’inbox operativa ma sostituendo componenti duplicati con quelli condivisi osservabilità.
+- [x] `/cms/errors` deve combinare `ErrorGroup`/`ErrorOccurrence` per inbox live e `DailyErrorAggregate` per KPI/trend storici se disponibili.
+- [x] `/cms/errors` deve aprire con KPI: open, critical/high, regressions, nuovi recenti, blocked actions e affected sessions.
+- [x] `/cms/errors` deve restare ordinata per priorità operativa e recenza, non per `occurrenceCount` grezzo.
+- [x] `/cms/errors` deve avere tabs o filtri rapidi per open, investigating, resolved, ignored e regressions, usando `ObservabilityFilterSheet` per filtri avanzati.
+- [x] `/cms/errors` deve mostrare priority reasons, severity, status, impact area, user impact, regressione, sessioni impattate e release senza costringere l’admin a leggere lo stack.
+- [x] `/cms/errors` deve usare detail drawer con timeline occorrenze, stack redatto, metadata redatti, request/session/correlation IDs, fingerprint/signature e azioni status.
+- [x] Rimuovere copy button, badge mapping, detail sections e helper duplicati dallo screen errors quando il componente condiviso li sostituisce.
+- [x] Rifare `/cms/audit` come timeline di responsabilità su componenti condivisi, non tabella tecnica mascherata.
+- [x] `/cms/audit` deve combinare `AuditActivity`/`AuditChange` per timeline live e `DailyAuditAggregate` per KPI/trend storici se disponibili.
+- [x] `/cms/audit` deve aprire con KPI: high/critical, public impact, failures, sensitive actions, active actors e azioni recenti sensibili.
+- [x] `/cms/audit` deve avere filtri rapidi: tutti, high risk, falliti, impatto pubblico, azioni sensibili.
+- [x] `/cms/audit` deve mostrare ogni attività come evento di responsabilità con attore, risorsa, azione, outcome, risk, public impact, changed fields e createdAt.
+- [x] `/cms/audit` deve usare detail drawer con actor/resource snapshot, diff applicato per `SUCCESS`, attempted summary per `FAILURE`, risk reasons, related errors e technical IDs.
+- [x] Per attività `FAILURE`, la UI non deve mostrare un diff vuoto o suggerire mutazione applicata: deve mostrare tentativo non applicato ed errore redatto.
+- [x] Rimuovere copy button, badge mapping, detail dialog e helper duplicati dallo screen audit quando il componente condiviso li sostituisce.
+- [x] Definire loading state per `/cms/observability`, `/cms/telemetry`, `/cms/performance`, `/cms/errors` e `/cms/audit`, coerenti col layout CMS e senza skeleton casuali.
+- [x] Garantire stati error e forbidden coerenti con il CMS per ogni pagina, senza esporre stack o dettagli tecnici lato UI.
+- [x] Garantire responsive desktop/mobile: KPI in griglia su desktop e colonna su mobile, chart con altezza leggibile, tabelle dense convertite o rese scrollabili in modo intenzionale, filtri in sheet su mobile.
+- [x] Usare server-side tRPC caller/prefetch dove utile per prima renderizzazione e hydration dei client screen, senza duplicare fetch server e client per gli stessi dati.
+- [x] Separare componenti server e client: pagine server per auth/policy/prefetch, screen client solo quando servono filtri interattivi, drawer, mutation status o URL state.
+- [x] Non mettere business logic di score, severity, risk, quality, percentili o aggregazione nei componenti React; la UI formatta e visualizza DTO già interpretati.
+- [x] Aggiornare query parser e URL state per i nuovi filtri osservabilità: periodo/date range, pageType, contentType, deviceType, release, severity/status, risk/outcome e testo libero.
+- [x] Aggiornare `RouterInputs`/`RouterOutputs`, prefetch server e hook CMS per le nuove route/procedure, eliminando riferimenti a route o procedure analytics legacy non più ufficiali.
+- [x] Aggiornare copy i18n per spiegare in modo breve: sample confidence, aggregati giornalieri, quality score, perceived quality, regressione, rischio audit e differenza tra tentativo fallito e cambiamento applicato.
+- [x] Non mostrare JSON grezzo come vista primaria; metadata, summary, diff, components e reasons devono essere leggibili, con JSON redatto solo come sezione tecnica secondaria se serve.
+- [x] Mantenere copy button solo per valori tecnici utili all’indagine, non per ogni campo della pagina.
+- [x] Aggiungere test unitari per `ObservabilityStatusBadge` su tutti gli enum usati: severity, status, risk, outcome, engagement, perceived quality e confidence.
+- [x] Aggiungere test unitari per `QualityScoreBreakdown`: componenti, pesi, penalità, threshold version, confidence e denominatori non classificabili.
+- [x] Aggiungere test unitari per formattatori UI: percentuali, durate, metriche performance, CLS unitless, date, valori null e confidence.
+- [x] Aggiungere test per query parser URL delle nuove pagine osservabilità: periodo, filtri enum, date range, paginazione, sort e input invalidi.
+- [x] Aggiungere test tRPC/DTO o page-level per overview, telemetry, performance, errors e audit, verificando che i dati principali arrivino da aggregati o dalle tabelle interpretate corrette.
+- [x] Aggiungere test che confermino assenza di `FID`, `page_view`, `AnalyticsEvent`, `WebVital`, `AuditLog`, `ErrorLog` e route `/cms/analytics` come contratti UI ufficiali.
+- [x] Aggiungere test UI essenziali dove l’infrastruttura lo consente: empty state, loading state, metric card, chart wrapper, detail drawer, copy values e azioni status errori.
+- [x] Verificare accessibilità minima: heading gerarchici, label dei filtri, aria label per copy button, tooltip non necessari per capire il dato, navigazione tastiera nei drawer.
+- [x] Verificare che chart e tabelle restino leggibili con zero dati, pochi dati, molti dati e campione a bassa confidence.
+- [x] Verificare con typecheck, lint, unit test pertinenti, test completi e build.
+- [x] Aggiornare questo documento se durante l’implementazione emergono decisioni su naming route, chart primitives, breakdown score, filtri o layout responsive, senza creare checklist parallele.
 
 Deliverable Fase 8:
 
-- [ ] Route `/cms/observability` nuova, basata sugli aggregati Fase 7 e orientata a KPI/insight operativi sintetici.
-- [ ] Route `/cms/telemetry` nuova o riscritta, con rimozione di `/cms/analytics` come route ufficiale e senza redirect/alias legacy.
-- [ ] UI `/cms/performance` riscritta con chart reali, confidence, detail drawer e nessun riferimento a `FID`.
-- [ ] UI `/cms/errors` consolidata come inbox operativa con componenti osservabilità condivisi e KPI/trend aggregati.
-- [ ] UI `/cms/audit` consolidata come timeline di responsabilità con componenti osservabilità condivisi e KPI/trend aggregati.
-- [ ] Componenti condivisi osservabilità: metric card, status badge, chart card, filter sheet, detail drawer, quality score breakdown, sample confidence e empty states.
-- [ ] Chart primitives shadcn/recharts configurati e coerenti con palette CMS.
-- [ ] Navigation, i18n, metadata, loading/error/forbidden states e query parser aggiornati ai nuovi nomi e flussi.
-- [ ] Rimozione di route, componenti, helper, copy, test e import legacy non più usati o incoerenti col modello qualitativo.
-- [ ] Test unitari, query parser test, tRPC/DTO test e, dove possibile, UI smoke test sui casi critici.
+- [x] Route `/cms/observability` nuova, basata sugli aggregati Fase 7 e orientata a KPI/insight operativi sintetici.
+- [x] Route `/cms/telemetry` nuova o riscritta, con rimozione di `/cms/analytics` come route ufficiale e senza redirect/alias legacy.
+- [x] UI `/cms/performance` riscritta con chart reali, confidence, detail drawer e nessun riferimento a `FID`.
+- [x] UI `/cms/errors` consolidata come inbox operativa con componenti osservabilità condivisi e KPI/trend aggregati.
+- [x] UI `/cms/audit` consolidata come timeline di responsabilità con componenti osservabilità condivisi e KPI/trend aggregati.
+- [x] Componenti condivisi osservabilità: metric card, status badge, chart card, filter sheet, detail drawer, quality score breakdown, sample confidence e empty states.
+- [x] Chart primitives shadcn/recharts configurati e coerenti con palette CMS.
+- [x] Navigation, i18n, metadata, loading/error/forbidden states e query parser aggiornati ai nuovi nomi e flussi.
+- [x] Rimozione di route, componenti, helper, copy, test e import legacy non più usati o incoerenti col modello qualitativo.
+- [x] Test unitari, query parser test, tRPC/DTO test e, dove possibile, UI smoke test sui casi critici.
 
 Criterio di completamento:
 
-- [ ] Un admin apre `/cms/observability` e capisce in meno di 30 secondi se sistema e contenuti stanno bene e cosa guardare prima.
-- [ ] Ogni pagina osservabilità permette lettura rapida e indagine dettagliata senza cambiare strumento.
-- [ ] Nessuno score qualitativo appare senza componenti, motivazioni o confidence.
-- [ ] Le dashboard storiche leggono aggregati persistenti dove appropriato e non dipendono da raw event o query pesanti oltre la retention.
-- [ ] `/cms/telemetry` misura letture qualificate, completamenti, ritorni, tempo attivo e qualità contenuto, non page views legacy.
-- [ ] `/cms/performance` mostra esperienza percepita, p75, early exit, confidence e segmenti diagnostici, senza `FID` o Web Vitals standalone legacy.
-- [ ] `/cms/errors` resta una inbox ordinata per priorità operativa e impatto, non per conteggio grezzo.
-- [ ] `/cms/audit` mostra responsabilità, rischio, impatto pubblico, diff applicati e tentativi falliti senza JSON grezzo come fonte primaria.
-- [ ] I grafici chiariscono trend, distribuzioni o breakdown; nessun chart è decorativo o disconnesso da una domanda operativa.
-- [ ] Stati loading, empty, error, forbidden e mobile sono progettati, non incidentali.
-- [ ] Route/copy/componenti/test legacy incompatibili sono eliminati o riscritti, non mantenuti per compatibilità preventiva.
-- [ ] Il sistema resta funzionante e verificabile dopo la rimozione del legacy, anche se insight trasversali avanzati arrivano in Fase 9.
+- [x] Un admin apre `/cms/observability` e capisce in meno di 30 secondi se sistema e contenuti stanno bene e cosa guardare prima.
+- [x] Ogni pagina osservabilità permette lettura rapida e indagine dettagliata senza cambiare strumento.
+- [x] Nessuno score qualitativo appare senza componenti, motivazioni o confidence.
+- [x] Le dashboard storiche leggono aggregati persistenti dove appropriato e non dipendono da raw event o query pesanti oltre la retention.
+- [x] `/cms/telemetry` misura letture qualificate, completamenti, ritorni, tempo attivo e qualità contenuto, non page views legacy.
+- [x] `/cms/performance` mostra esperienza percepita, p75, early exit, confidence e segmenti diagnostici, senza `FID` o Web Vitals standalone legacy.
+- [x] `/cms/errors` resta una inbox ordinata per priorità operativa e impatto, non per conteggio grezzo.
+- [x] `/cms/audit` mostra responsabilità, rischio, impatto pubblico, diff applicati e tentativi falliti senza JSON grezzo come fonte primaria.
+- [x] I grafici chiariscono trend, distribuzioni o breakdown; nessun chart è decorativo o disconnesso da una domanda operativa.
+- [x] Stati loading, empty, error, forbidden e mobile sono progettati, non incidentali.
+- [x] Route/copy/componenti/test legacy incompatibili sono eliminati o riscritti, non mantenuti per compatibilità preventiva.
+- [x] Il sistema resta funzionante e verificabile dopo la rimozione del legacy, anche se insight trasversali avanzati arrivano in Fase 9.
 
 Verifiche previste:
 
-- `pnpm typecheck`
-- `pnpm lint`
-- `pnpm test:run tests/unit/lib/cms/query/*`
-- `pnpm test:run tests/unit/features/cms/observability/*`
-- `pnpm test:run tests/unit/lib/server/trpc/routers/observability-aggregates.test.ts`
-- `pnpm test:run`
-- `pnpm build`
+- [x] `pnpm typecheck`
+- [x] `pnpm lint`
+- [x] `pnpm test:run tests/unit/lib/cms/query/*`
+- [x] `pnpm test:run tests/unit/features/cms/observability/*`
+- [x] `pnpm test:run tests/unit/lib/server/trpc/routers/observability-aggregates.test.ts`
+- [x] `pnpm test:run`
+- [x] `pnpm build`
 
 ### Fase 9: Correlazioni E Insight
 

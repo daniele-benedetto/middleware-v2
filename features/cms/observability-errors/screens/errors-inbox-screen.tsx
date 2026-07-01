@@ -1,6 +1,5 @@
 "use client";
 
-import { X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -11,20 +10,12 @@ import {
   CmsPaginationFooter,
 } from "@/components/cms/common";
 import {
-  CmsBadge,
   CmsDataTableShell,
   CmsPageHeader,
   CmsSelect,
   cmsTableClasses,
 } from "@/components/cms/primitives";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -34,7 +25,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CmsListFiltersSheet } from "@/features/cms/shared/components/cms-list-filters-sheet";
+import {
+  ObservabilityDetailDrawer,
+  ObservabilityFilterSheet,
+  ObservabilityMetricCard,
+  ObservabilityStatusBadge,
+  ObservabilityTechnicalValues,
+} from "@/features/cms/observability/components";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import { cmsListQueryOptions, useCmsListUrlState } from "@/features/cms/shared/hooks";
 import { parseObservabilityErrorsListSearchParams } from "@/lib/cms/query";
@@ -119,14 +116,6 @@ function humanize(value: string) {
   return value.replace(/_/g, " ");
 }
 
-function copyTechnicalValue(value: string | null | undefined) {
-  if (!value || typeof navigator === "undefined" || !navigator.clipboard) {
-    return;
-  }
-
-  void navigator.clipboard.writeText(value).catch(() => undefined);
-}
-
 function resolveSourceLabel(source: string) {
   if (source === "server") {
     return "Server";
@@ -137,18 +126,6 @@ function resolveSourceLabel(source: string) {
   }
 
   return "Client";
-}
-
-function resolveSeverityVariant(severity: string) {
-  if (severity === "critical" || severity === "high") {
-    return "category-solid-accent" as const;
-  }
-
-  if (severity === "medium") {
-    return "category-solid-ink" as const;
-  }
-
-  return "status-archived" as const;
 }
 
 function buildErrorsToolbarFiltersState(
@@ -247,30 +224,6 @@ function DetailRowsSkeleton() {
   );
 }
 
-function CopyTechnicalValueButton({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | null | undefined;
-}) {
-  if (!value) {
-    return null;
-  }
-
-  return (
-    <button
-      type="button"
-      className="rounded-[var(--radius-panel)] border border-foreground px-2 py-1 font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-foreground transition-all hover:bg-card-hover focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
-      onClick={() => {
-        copyTechnicalValue(value);
-      }}
-    >
-      Copia {label}
-    </button>
-  );
-}
-
 function ErrorStatusSelect({ detail }: { detail: ObservabilityErrorDetail }) {
   const utils = trpc.useUtils();
   const mutation = trpc.observabilityErrors.updateStatus.useMutation({
@@ -333,10 +286,12 @@ function ErrorDetailContent({ detail }: { detail: ObservabilityErrorDetail }) {
             { label: "Signature", value: detail.errorSignature },
           ]}
         />
-        <div className="flex flex-wrap gap-2">
-          <CopyTechnicalValueButton label="fingerprint" value={detail.fingerprint} />
-          <CopyTechnicalValueButton label="signature" value={detail.errorSignature} />
-        </div>
+        <ObservabilityTechnicalValues
+          values={[
+            { label: "fingerprint", value: detail.fingerprint },
+            { label: "signature", value: detail.errorSignature },
+          ]}
+        />
       </DetailSection>
 
       <DetailSection title="Occorrenze recenti">
@@ -359,12 +314,13 @@ function ErrorDetailContent({ detail }: { detail: ObservabilityErrorDetail }) {
                     { label: "Azione", value: occurrence.actionContext ?? "-" },
                   ]}
                 />
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <CopyTechnicalValueButton label="requestId" value={occurrence.requestId} />
-                  <CopyTechnicalValueButton label="sessionId" value={occurrence.sessionId} />
-                  <CopyTechnicalValueButton
-                    label="correlationId"
-                    value={occurrence.correlationId}
+                <div className="mt-3">
+                  <ObservabilityTechnicalValues
+                    values={[
+                      { label: "requestId", value: occurrence.requestId },
+                      { label: "sessionId", value: occurrence.sessionId },
+                      { label: "correlationId", value: occurrence.correlationId },
+                    ]}
                   />
                 </div>
                 {occurrence.stackTraceRedacted ? (
@@ -397,62 +353,38 @@ function ErrorDetailDialog({ errorId }: { errorId: string }) {
   );
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        className={cn(
-          "inline-flex shrink-0 items-center justify-center gap-2 rounded-[var(--radius-panel)]",
-          "border border-foreground bg-transparent px-3 py-1.5 font-ui text-[12px] font-bold text-foreground",
-          "transition-all hover:bg-card-hover focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2",
-        )}
-      >
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
         Dettagli
-      </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-2 border-foreground bg-card p-0 text-foreground shadow-none sm:max-w-4xl">
-        <div className="border-b-2 border-foreground p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2">
-              <DialogTitle className="font-display text-3xl leading-none">Errore</DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground">
-                Gruppo interpretato con occorrenze raw correlate.
-              </DialogDescription>
-            </div>
-            <DialogClose
-              aria-label={i18n.cms.common.close}
-              className={cn(
-                "inline-flex size-8 cursor-pointer items-center justify-center rounded-[var(--radius-panel)]",
-                "border border-foreground bg-transparent text-foreground transition-all hover:bg-card-hover",
-                "focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2",
-              )}
-            >
-              <X className="size-4" aria-hidden />
-            </DialogClose>
+      </Button>
+      <ObservabilityDetailDrawer
+        open={open}
+        onOpenChange={setOpen}
+        title="Errore"
+        description="Gruppo interpretato con occorrenze raw correlate."
+      >
+        {detailQuery.isPending && open ? (
+          <div className="space-y-6">
+            <DetailSection title="Gruppo">
+              <DetailRowsSkeleton />
+            </DetailSection>
+            <DetailSection title="Occorrenze">
+              <DetailRowsSkeleton />
+            </DetailSection>
           </div>
-        </div>
-
-        <div className="p-5">
-          {detailQuery.isPending && open ? (
-            <div className="space-y-6">
-              <DetailSection title="Gruppo">
-                <DetailRowsSkeleton />
-              </DetailSection>
-              <DetailSection title="Occorrenze">
-                <DetailRowsSkeleton />
-              </DetailSection>
-            </div>
-          ) : detailQuery.isError ? (
-            <CmsErrorState
-              title={mapTrpcErrorToCmsUiMessage(detailQuery.error).title}
-              description={mapTrpcErrorToCmsUiMessage(detailQuery.error).description}
-              onRetry={() => void detailQuery.refetch()}
-            />
-          ) : detailQuery.data ? (
-            <ErrorDetailContent detail={detailQuery.data} />
-          ) : (
-            <div className="text-sm text-muted-foreground">Caricamento dettaglio.</div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+        ) : detailQuery.isError ? (
+          <CmsErrorState
+            title={mapTrpcErrorToCmsUiMessage(detailQuery.error).title}
+            description={mapTrpcErrorToCmsUiMessage(detailQuery.error).description}
+            onRetry={() => void detailQuery.refetch()}
+          />
+        ) : detailQuery.data ? (
+          <ErrorDetailContent detail={detailQuery.data} />
+        ) : (
+          <div className="text-sm text-muted-foreground">Caricamento dettaglio.</div>
+        )}
+      </ObservabilityDetailDrawer>
+    </>
   );
 }
 
@@ -470,6 +402,15 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
     ...cmsListQueryOptions,
     initialData: isSameInput(initialInput, input) ? initialData : undefined,
   });
+  const aggregateQuery = trpc.observabilityAggregates.overview.useQuery(
+    {
+      days: 30,
+      severity: input.query?.severity,
+      status: input.query?.status,
+      release: input.query?.release,
+    },
+    { staleTime: 30_000 },
+  );
 
   const { updateSearchParams } = useCmsListUrlState({
     baseParams: {
@@ -533,6 +474,16 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
   ).length;
   const visibleOpen = query.data.items.filter((entry) => entry.status === "open").length;
   const visibleRegressions = query.data.items.filter((entry) => entry.regression).length;
+  const aggregateErrorRows = aggregateQuery.data?.errors ?? [];
+  const aggregateCriticalOrHigh = aggregateErrorRows.reduce(
+    (total, row) => total + row.criticalHighGroups,
+    0,
+  );
+  const aggregateOpen = aggregateErrorRows.reduce((total, row) => total + row.openGroups, 0);
+  const aggregateRegressions = aggregateErrorRows.reduce(
+    (total, row) => total + row.regressions,
+    0,
+  );
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -547,18 +498,37 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
-              {[
-                { label: "Critical/high visibili", value: visibleCriticalOrHigh },
-                { label: "Open visibili", value: visibleOpen },
-                { label: "Regressioni visibili", value: visibleRegressions },
-              ].map((item) => (
-                <div key={item.label} className="border-2 border-foreground bg-card p-3">
-                  <div className={cmsMetaLabelClass}>{item.label}</div>
-                  <div className="font-display text-3xl leading-none text-foreground">
-                    {item.value}
-                  </div>
-                </div>
-              ))}
+              <ObservabilityMetricCard
+                label="Critical/high"
+                value={aggregateErrorRows.length ? aggregateCriticalOrHigh : visibleCriticalOrHigh}
+                description={
+                  aggregateErrorRows.length ? "Aggregato 30 giorni" : "Visibili nella lista"
+                }
+                tone={
+                  (aggregateErrorRows.length ? aggregateCriticalOrHigh : visibleCriticalOrHigh) > 0
+                    ? "critical"
+                    : "default"
+                }
+              />
+              <ObservabilityMetricCard
+                label="Open"
+                value={aggregateErrorRows.length ? aggregateOpen : visibleOpen}
+                description={
+                  aggregateErrorRows.length ? "Aggregato 30 giorni" : "Visibili nella lista"
+                }
+              />
+              <ObservabilityMetricCard
+                label="Regressioni"
+                value={aggregateErrorRows.length ? aggregateRegressions : visibleRegressions}
+                description={
+                  aggregateErrorRows.length ? "Aggregato 30 giorni" : "Visibili nella lista"
+                }
+                tone={
+                  (aggregateErrorRows.length ? aggregateRegressions : visibleRegressions) > 0
+                    ? "warning"
+                    : "default"
+                }
+              />
             </div>
 
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
@@ -604,7 +574,9 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
                 }}
               />
 
-              <CmsListFiltersSheet
+              <ObservabilityFilterSheet
+                title="Filtri errori"
+                description="Filtra inbox per impatto, stato operativo, regressione, release e finestra temporale."
                 activeFiltersCount={activeFiltersCount}
                 className="md:w-36"
                 onOpenChange={(open) => {
@@ -750,7 +722,7 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
                     }}
                   />
                 </div>
-              </CmsListFiltersSheet>
+              </ObservabilityFilterSheet>
             </div>
           </div>
         }
@@ -786,12 +758,10 @@ export function CmsErrorsScreen({ initialInput, initialData }: CmsErrorsScreenPr
                       {formatDateTime(entry.lastSeenAt)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellBadge}>
-                      <CmsBadge variant={resolveSeverityVariant(entry.severity)}>
-                        {humanize(entry.severity)}
-                      </CmsBadge>
+                      <ObservabilityStatusBadge value={entry.severity} kind="severity" />
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellBadge}>
-                      <CmsBadge variant="status-archived">{humanize(entry.status)}</CmsBadge>
+                      <ObservabilityStatusBadge value={entry.status} kind="status" />
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <div className="max-w-md truncate text-foreground">{entry.title}</div>

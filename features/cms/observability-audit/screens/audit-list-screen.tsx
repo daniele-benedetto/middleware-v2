@@ -9,20 +9,8 @@ import {
   CmsLoadingState,
   CmsPaginationFooter,
 } from "@/components/cms/common";
-import {
-  CmsActionButton,
-  CmsBadge,
-  CmsDataTableShell,
-  CmsPageHeader,
-  cmsTableClasses,
-} from "@/components/cms/primitives";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { CmsDataTableShell, CmsPageHeader, cmsTableClasses } from "@/components/cms/primitives";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -31,6 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  ObservabilityDetailDrawer,
+  ObservabilityMetricCard,
+  ObservabilityStatusBadge,
+  ObservabilityTechnicalValues,
+} from "@/features/cms/observability/components";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import { useCmsListUrlState, useObservabilityAuditListQuery } from "@/features/cms/shared/hooks";
 import { parseObservabilityAuditListSearchParams } from "@/lib/cms/query";
@@ -62,25 +56,6 @@ function formatValue(value: unknown) {
   return JSON.stringify(value);
 }
 
-function CopyValue({ value }: { value: string | null }) {
-  if (!value) return null;
-  return (
-    <button
-      type="button"
-      className="font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground underline decoration-dotted underline-offset-4"
-      onClick={() => void navigator.clipboard.writeText(value)}
-    >
-      copia
-    </button>
-  );
-}
-
-function RiskBadge({ value }: { value: string }) {
-  const variant =
-    value === "critical" || value === "high" ? "category-solid-accent" : "category-outline-ink";
-  return <CmsBadge variant={variant}>{value}</CmsBadge>;
-}
-
 function AuditDetailDialog({ id }: { id: string }) {
   const [open, setOpen] = useState(false);
   const detailQuery = trpc.observabilityAudit.detail.useQuery(
@@ -91,37 +66,18 @@ function AuditDetailDialog({ id }: { id: string }) {
 
   return (
     <>
-      <CmsActionButton variant="outline" size="xs" onClick={() => setOpen(true)}>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
         Dettaglio
-      </CmsActionButton>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent
-          showCloseButton={false}
-          className="flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-3xl flex-col gap-0 overflow-hidden rounded-[8px] border border-foreground bg-background p-0"
-        >
-          <div className="border-b-2 border-foreground px-6 py-4">
-            <DialogTitle className="font-display text-[20px] font-black tracking-[-0.02em]">
-              Dettaglio audit
-            </DialogTitle>
-            <DialogDescription className="mt-2 font-editorial text-[15px] text-body-text">
-              {detail ? formatDateTime(detail.createdAt) : "Caricamento dettaglio audit"}
-            </DialogDescription>
-          </div>
-          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5">
-            {detailQuery.isPending ? <CmsLoadingState /> : null}
-            {detail ? <AuditDetailContent detail={detail} /> : null}
-          </div>
-          <div className="border-t-2 border-foreground px-6 py-4">
-            <DialogClose
-              render={
-                <CmsActionButton variant="outline" size="md">
-                  Chiudi
-                </CmsActionButton>
-              }
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+      </Button>
+      <ObservabilityDetailDrawer
+        open={open}
+        onOpenChange={setOpen}
+        title="Dettaglio audit"
+        description={detail ? formatDateTime(detail.createdAt) : "Caricamento dettaglio audit"}
+      >
+        {detailQuery.isPending ? <CmsLoadingState /> : null}
+        {detail ? <AuditDetailContent detail={detail} /> : null}
+      </ObservabilityDetailDrawer>
     </>
   );
 }
@@ -152,21 +108,11 @@ function AuditDetailContent({ detail }: { detail: AuditDetail }) {
           Perché conta
         </div>
         <div className="flex flex-wrap gap-2">
-          <RiskBadge value={detail.riskLevel} />
-          <CmsBadge
-            variant={detail.publicImpact ? "category-solid-accent" : "category-outline-ink"}
-          >
-            {detail.publicImpact ? "impatto pubblico" : "interno"}
-          </CmsBadge>
-          <CmsBadge
-            variant={detail.outcome === "SUCCESS" ? "category-solid-ink" : "category-solid-accent"}
-          >
-            {detail.outcome}
-          </CmsBadge>
+          <ObservabilityStatusBadge value={detail.riskLevel} kind="risk" />
+          <ObservabilityStatusBadge value={detail.publicImpact ? "impatto pubblico" : "interno"} />
+          <ObservabilityStatusBadge value={detail.outcome} kind="outcome" />
           {detail.riskReasons.map((reason) => (
-            <CmsBadge key={reason} variant="category-outline-ink">
-              {reason}
-            </CmsBadge>
+            <ObservabilityStatusBadge key={reason} value={reason} />
           ))}
         </div>
       </section>
@@ -228,17 +174,13 @@ function AuditDetailContent({ detail }: { detail: AuditDetail }) {
         <div className="font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
           Valori tecnici
         </div>
-        <div className="flex flex-wrap gap-3 text-[12px]">
-          <span>
-            auditId: {detail.id} <CopyValue value={detail.id} />
-          </span>
-          <span>
-            requestId: {detail.requestId ?? "-"} <CopyValue value={detail.requestId} />
-          </span>
-          <span>
-            correlationId: {detail.correlationId ?? "-"} <CopyValue value={detail.correlationId} />
-          </span>
-        </div>
+        <ObservabilityTechnicalValues
+          values={[
+            { label: "auditId", value: detail.id },
+            { label: "requestId", value: detail.requestId },
+            { label: "correlationId", value: detail.correlationId },
+          ]}
+        />
       </section>
     </div>
   );
@@ -272,24 +214,70 @@ export function CmsAuditListScreen({ initialInput, initialData }: CmsAuditListSc
     <div className="flex h-full min-h-0 flex-col">
       <CmsPageHeader title="Audit" />
       <div className="grid gap-3 px-5 pb-4 md:grid-cols-4">
-        {[
-          ["High/Critical", summaryQuery.data?.highRiskCount ?? 0],
-          ["Impatto pubblico", summaryQuery.data?.publicImpactCount ?? 0],
-          ["Fallimenti", summaryQuery.data?.failureCount ?? 0],
-          ["Attori attivi", summaryQuery.data?.activeActorCount ?? 0],
-        ].map(([label, value]) => (
-          <div key={label} className="border border-foreground bg-card px-4 py-3">
-            <div className="font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-              {label}
-            </div>
-            <div className="mt-2 font-display text-[28px] font-black">{value}</div>
-          </div>
-        ))}
+        <ObservabilityMetricCard
+          label="High/Critical"
+          value={summaryQuery.data?.highRiskCount ?? 0}
+          tone={(summaryQuery.data?.highRiskCount ?? 0) > 0 ? "warning" : "default"}
+        />
+        <ObservabilityMetricCard
+          label="Impatto pubblico"
+          value={summaryQuery.data?.publicImpactCount ?? 0}
+        />
+        <ObservabilityMetricCard
+          label="Fallimenti"
+          value={summaryQuery.data?.failureCount ?? 0}
+          tone={(summaryQuery.data?.failureCount ?? 0) > 0 ? "critical" : "default"}
+        />
+        <ObservabilityMetricCard
+          label="Attori attivi"
+          value={summaryQuery.data?.activeActorCount ?? 0}
+        />
       </div>
       <CmsDataTableShell
         toolbar={
           <div className="space-y-3">
             <div className={cmsMetaLabelClass}>{listQuery.pagination.total} attività audit</div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={input.query?.riskLevel === "high" ? "default" : "outline"}
+                onClick={() => updateSearchParams({ riskLevel: "high", page: 1 })}
+              >
+                High risk
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={input.query?.outcome === "FAILURE" ? "default" : "outline"}
+                onClick={() => updateSearchParams({ outcome: "FAILURE", page: 1 })}
+              >
+                Falliti
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={input.query?.publicImpact === true ? "default" : "outline"}
+                onClick={() => updateSearchParams({ publicImpact: true, page: 1 })}
+              >
+                Impatto pubblico
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  updateSearchParams({
+                    riskLevel: undefined,
+                    outcome: undefined,
+                    publicImpact: undefined,
+                    page: 1,
+                  })
+                }
+              >
+                Tutti
+              </Button>
+            </div>
             <CmsListSearchInput
               initialValue={input.query?.q ?? ""}
               placeholder="Cerca attore, risorsa, request, errore"
@@ -319,7 +307,7 @@ export function CmsAuditListScreen({ initialInput, initialData }: CmsAuditListSc
                       {formatDateTime(entry.createdAt)}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellBadge}>
-                      <RiskBadge value={entry.riskLevel} />
+                      <ObservabilityStatusBadge value={entry.riskLevel} kind="risk" />
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <div className="space-y-1">
