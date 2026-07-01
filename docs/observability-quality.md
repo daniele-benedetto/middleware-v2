@@ -1995,11 +1995,121 @@ Verifiche previste:
 
 Obiettivo: rendere il sistema credibile, sicuro e mantenibile. Rispetto alla prima stesura, bot filtering, rate limit e campionamento non sono qui: sono già in Fase 0 e 2, perché incidono sui dati a monte.
 
-Lavori principali: redazione di stack trace, metadata, diff audit; limiti di cardinalità su path/referrer/metadata; export CSV filtrato per audit/errors/telemetry quando utile; test privacy (nessun token, body request, Authorization header o dato personale non necessario; DNT e GPC rispettati); documentazione retention; documentazione interpretazione metriche per admin.
+Assunzione operativa: la Fase 1, la Fase 2, la Fase 3, la Fase 4, la Fase 5, la Fase 6, la Fase 7, la Fase 8 e la Fase 9 sono state completate come descritte. Esistono quindi schema autorevole, collector qualitativo, session tracking, bot filtering, rate limit, privacy gating, engagement contenuti, errori operativi, performance qualitativa, audit qualitativo, aggregati giornalieri persistenti, UI CMS osservabilità e overview insight-driven. La Fase 10 non deve costruire nuove metriche di base, nuove dashboard primarie o nuovi modelli qualitativi: chiude il sistema verificando privacy, sicurezza, export, documentazione, qualità e rimozione dei residui.
 
-Controlli di qualità: typecheck, lint, unit test service/schema/repository, test route collector, test parser URL UI, test aggregazioni idempotenti, test sample-rate-aware.
+Principio di questa fase: hardening-first, no retrocompatibilità. Codice, route, export, DTO, test, copy, script o documentazione che esistono solo per proteggere contratti provvisori vanno eliminati o riscritti. Non si mantengono alias, redirect, wrapper, mapping legacy, doppie procedure, vecchi nomi per nuove metriche, export grezzi, fallback a raw event, supporto a `page_view`, `web-vital`, `FID`, `AnalyticsEvent`, `WebVital`, `ErrorLog`, `AuditLog`, `/cms/analytics` o modelli views-based. Se una cosa non serve più al modello qualitativo finale, si butta via.
 
-Criterio di completamento: il sistema raccoglie dati utili senza diventare invasivo; ogni dato visibile ha una definizione e una ragione operativa.
+Checklist operativa Fase 10:
+
+- [ ] Eseguire un audit finale dei contratti ufficiali osservabilità, confermando che le sole pagine CMS autorevoli siano `/cms/observability`, `/cms/telemetry`, `/cms/performance`, `/cms/errors` e `/cms/audit`.
+- [ ] Rimuovere definitivamente route, navigazione, metadata, prefetch, query parser, test e copy collegati a `/cms/analytics` o ad analytics views-based, senza redirect o alias compatibili.
+- [ ] Cercare e rimuovere residui raggiungibili di `page_view`, `article_view`, `issue_view`, `listen_view`, `web-vital`, `FID`, `AnalyticsEvent`, `WebVital`, `ErrorLog`, `AuditLog`, `auditLogs`, `analyticsSummary`, `reportWebVital`, `track()` e nomi equivalenti non più ufficiali.
+- [ ] Rimuovere export/import pubblici che espongono DTO, schema, procedure o helper legacy come API ufficiali, invece di lasciarli inutilizzati ma raggiungibili.
+- [ ] Rimuovere test che proteggono comportamenti legacy e sostituirli con test di assenza esplicita dei vecchi contratti dove il rischio di regressione è alto.
+- [ ] Confermare che `ObservabilityEvent` non sia usato come fonte primaria da dashboard, overview, insight, aggregati storici o export, salvo diagnostica recente esplicitamente nominata e testata.
+- [ ] Confermare che nessuna logica di scoring, severity, risk, quality score, health score, percentile, ranking insight o correlazione viva nei componenti React; la UI deve visualizzare DTO già interpretati.
+- [ ] Consolidare una sola pipeline autorevole di redazione per metadata, path, referrer, user-agent, stack trace, messaggi errore, diff audit, actor/resource snapshot, attempted summary, reasons, metrics ed export.
+- [ ] Rimuovere redattori duplicati o locali se divergono dalle regole canoniche; se servono wrapper di dominio, devono chiamare la pipeline condivisa e non ridefinire blacklist o limiti.
+- [ ] Impedire in modo deterministico la persistenza o esposizione di `Authorization`, bearer token, cookie, password, secret, API key, session token, CSRF token, body request, query string sensibili e payload completi non necessari.
+- [ ] Redigere stack trace rimuovendo path assoluti, numeri di riga/colonna quando non necessari, UUID, hex, query string, valori utente e frame vendor non utili al fingerprint o alla diagnosi.
+- [ ] Redigere messaggi errore e metadata senza distruggere il valore operativo: mantenere tipo, area, action context e reason leggibili, eliminando dati dinamici o personali.
+- [ ] Redigere diff audit e snapshot salvando solo summary ammessi: niente rich text completo, niente JSON arbitrari completi, niente payload input integrale, niente dati auth sensibili.
+- [ ] Applicare limiti globali e testati a metadata e snapshot: dimensione massima totale, numero massimo chiavi, profondità massima, lunghezza stringhe, cardinalità campi liberi e comportamento di truncation/redaction.
+- [ ] Normalizzare path lato server in tutti i punti finali: rimuovere query string, fragment, token, ID dinamici non necessari e valori ad alta cardinalità quando il template o bucket è sufficiente.
+- [ ] Normalizzare referrer salvando solo dominio o categoria ammessa, senza full URL con query o path invasivi.
+- [ ] Introdurre o verificare bucket espliciti per dimensioni assenti o troppo variabili: `unknown`, `other`, path normalizzato, release assente, referrer non classificabile e contentId nullo.
+- [ ] Verificare che i limiti di cardinalità si applichino anche ad aggregati, insight e export, non solo al collector.
+- [ ] Verificare end-to-end `collectionMode = "minimal"`: niente heartbeat, niente scroll milestone, niente segnali comportamentali opzionali, niente performance context invasivo.
+- [ ] Verificare che Do Not Track e Global Privacy Control riducano realmente la raccolta e non siano solo copy o flag ignorati.
+- [ ] Confermare che non esista tracking cross-day per persona: niente cookie identificativi osservabilità, niente localStorage persistente per visitor identity, niente hash stabile multi-giorno e niente identificatori marketing.
+- [ ] Confermare che `visitorHash` resti derivato lato server con salt giornaliero e che nessun export o DTO lo trasformi in identificatore utente leggibile.
+- [ ] Confermare che bot filtering e rate limit non vengano spostati o duplicati in Fase 10: questa fase verifica e testa il comportamento esistente, non lo reinterpreta.
+- [ ] Confermare che errori operativi e audit CMS critici non siano persi per privacy minimal, DNT/GPC o bot filtering pubblico: sono segnali operativi, non tracking pubblico opzionale.
+- [ ] Definire esplicitamente quali export CSV sono ammessi nella prima versione: errori, audit e telemetry contenuti; performance solo se c'è un uso operativo chiaro.
+- [ ] Non esportare raw event, payload collector grezzi, metadata completi, stack non redatti, body request, header sensibili, cookie, token, IP grezzi o dati personali non necessari.
+- [ ] Implementare export CSV come procedure o route protette da policy del dominio, senza hardcodare ruoli nei router o nei componenti UI.
+- [ ] Fare in modo che ogni export usi DTO già redatti o mapper di export dedicati che applicano le stesse regole di privacy della UI.
+- [ ] Applicare a ogni export filtri obbligatori o default sicuri: periodo massimo, paginazione/limite righe, sort deterministico e campi esplicitamente allowlisted.
+- [ ] Implementare CSV escaping corretto per virgole, virgolette, newline e formule potenzialmente pericolose, evitando CSV injection in celle che iniziano con `=`, `+`, `-` o `@`.
+- [ ] Aggiungere filename e intestazioni export stabili e non contenenti dati sensibili; includere periodo, dominio e timestamp server se utile.
+- [ ] Documentare che gli export sono viste operative filtrate, non dump completi del database o meccanismi di portabilità dati personali.
+- [ ] Aggiornare UI solo dove utile con azioni export chiare e subordinate ai filtri correnti; niente pulsanti export generici se il dominio non ha un export sicuro.
+- [ ] Aggiornare `docs/architecture.md` con il modello finale di osservabilità: collector, tabelle interpretate, aggregati, overview insight, retention, privacy, export e responsabilità dei moduli.
+- [ ] Aggiornare `README.md` solo per istruzioni operative essenziali: comandi osservabilità, env retention, job schedule consigliato, verifica manuale e cosa non va esportato o loggato.
+- [ ] Aggiornare `docs/observability-quality.md` con eventuali decisioni finali su export, redazione, limiti cardinalità, retention o privacy emerse durante Fase 10, senza creare documenti paralleli.
+- [ ] Aggiornare `scripts/README.md` se i comandi o le env di job/retention cambiano, eliminando istruzioni non eseguibili invece di marcarle come legacy.
+- [ ] Documentare per admin il significato operativo di quality score, health score, insight severity, sample confidence, perceived quality, regressione, rischio audit e differenza tra correlazione e causalità.
+- [ ] Documentare per admin perché non esistono page views come metrica primaria e quali nomi usare al loro posto: letture qualificate, completamenti, episodi, total visits da engagement e sessioni impattate.
+- [ ] Documentare retention finale: raw breve, interpretati medi, occorrenze errore secondo policy, aggregati lunghi e audit più conservativo, con impatto sulle dashboard storiche.
+- [ ] Documentare comportamento privacy: consenso, DNT, GPC, collection minimal/full, visitor hash giornaliero, niente tracking cross-day e limiti degli insight referrer.
+- [ ] Verificare che pagine privacy/cookie pubbliche non promettano meno o più di ciò che il collector fa realmente; se il copy non è allineato, aggiornarlo senza mantenere formulazioni obsolete.
+- [ ] Aggiungere test unitari per redazione di token, bearer token, cookie, password, secret, API key, email, query sensibili, body-like metadata, path assoluti, UUID, numeri dinamici e stack trace rumorosi.
+- [ ] Aggiungere test unitari per limiti metadata/snapshot: dimensione, profondità, numero chiavi, lunghezza stringhe, array grandi, oggetti annidati e valori non serializzabili.
+- [ ] Aggiungere test collector per DNT, GPC, `collectionMode = "minimal"`, payload legacy ignorati, `FID` rifiutato, metadata oversized, path tecnico e risposta non informativa.
+- [ ] Aggiungere test route o service per export CSV: policy, filtri, limiti, escaping, CSV injection, assenza campi sensibili e uso di DTO redatti.
+- [ ] Aggiungere test per assenza di contratti legacy ufficiali: route `/cms/analytics`, payload `web-vital`, `FID`, `AnalyticsEvent`, `WebVital`, `ErrorLog`, `AuditLog`, page views come metrica primaria e raw event come fonte overview.
+- [ ] Aggiungere test parser URL UI per eventuali filtri export o filtri insight finali, rifiutando parametri non supportati invece di generarli nei deep link.
+- [ ] Rieseguire test aggregazioni idempotenti, lock job, prune retention, sample-rate-aware counts, quality score, p75 performance, insight ranking e health score dopo eventuali modifiche di hardening.
+- [ ] Verificare accessibilità finale delle pagine osservabilità: heading, label filtri, pulsanti export, copy technical values, drawer, keyboard navigation, empty state e chart leggibili senza tooltip obbligatori.
+- [ ] Verificare responsive finale su mobile: overview insight, tabelle scrollabili, drawer, filtri, export e KPI non devono dipendere da hover o layout desktop.
+- [ ] Verificare che empty state distinguano correttamente nessun dato, aggregati non generati, filtri troppo stretti, campione insufficiente, permessi mancanti e privacy minimal.
+- [ ] Verificare che ogni score, insight, KPI qualitativo o classifica mostri confidence, reasons, breakdown o link immediato al dettaglio; nessun numero qualitativo deve apparire opaco.
+- [ ] Verificare che log interni e fallback console non stampino body, header sensibili, cookie, token, metadata completi, stack non redatti o dati personali non necessari.
+- [ ] Verificare che errori di persistenza audit/errori/collector degradino in modo sicuro: niente leak nei log e niente rottura di mutation CMS non correlate quando il fallback previsto lo consente.
+- [ ] Verificare che le policy osservabilità siano coerenti tra overview, telemetry, performance, errors, audit, aggregates, export e job, senza ruoli hardcoded nei router.
+- [ ] Verificare che gli indici e le query dei domini osservabilità coprano i filtri finali usati da UI, export e insight, senza query full-scan evitabili su raw event.
+- [ ] Verificare che le env osservabilità abbiano default sicuri in locale/test e requisiti espliciti in produzione, in particolare Redis rate limiting e retention se richiesti.
+- [ ] Rimuovere componenti UI condivisi non più usati, formatter duplicati, badge mapping duplicati, helper copy locali, schema Zod non importati, DTO morti e mock non raggiungibili.
+- [ ] Rimuovere script, package command o documentazione operativa non più validi, invece di lasciarli come compatibilità non supportata.
+- [ ] Aggiornare eventuali snapshot/test fixture ai contratti finali, eliminando fixture legacy che simulano views, FID, AuditLog, ErrorLog o WebVital.
+- [ ] Eseguire un controllo finale del bundle/import tree per evitare che client pubblico includa codice server-only, redazione server o moduli CMS non necessari.
+- [ ] Eseguire un controllo finale Prisma/schema per confermare che non restino modelli legacy, colonne ponte o campi compatibili non usati introdotti solo per transizione.
+- [ ] Aggiornare questo documento spuntando solo ciò che è davvero completato e aggiungendo le verifiche effettivamente eseguite, senza creare checklist parallele.
+
+Deliverable Fase 10:
+
+- [ ] Hardening privacy/redaction centralizzato e riusato da collector, errori, audit, performance, telemetry, overview, export e log fallback.
+- [ ] Limiti cardinalità e dimensione applicati e testati per metadata, path, referrer, snapshot, diff, reasons e metrics.
+- [ ] Export CSV sicuri e filtrati per i domini scelti, basati su DTO redatti e policy di modulo, senza dump raw o dati sensibili.
+- [ ] Documentazione aggiornata in `docs/observability-quality.md`, `docs/architecture.md`, `README.md` e, se necessario, `scripts/README.md`.
+- [ ] Copy admin aggiornato per spiegare metriche qualitative, confidence, retention, privacy, insight e assenza di page views come metrica primaria.
+- [ ] Test privacy, collector, export, URL parser, aggregati, sample-rate, insight, UI smoke e assenza legacy sui casi critici.
+- [ ] Rimozione definitiva di route, procedure, DTO, helper, script, test, fixture, copy e import non più usati o incoerenti col modello qualitativo.
+- [ ] Verifica finale completa del sistema con typecheck, lint, test e build.
+
+Criterio di completamento:
+
+- [ ] Il sistema raccoglie dati utili senza diventare invasivo: ogni dato raccolto ha una ragione operativa esplicita.
+- [ ] Ogni dato visibile in UI o export ha definizione, confidence, breakdown, reasons o contesto sufficiente per essere interpretato correttamente.
+- [ ] Collector, audit, errors, performance, telemetry, overview, export e log fallback non conservano né espongono token, Authorization header, cookie, body request, password, secret o dati personali non necessari.
+- [ ] DNT, GPC e privacy minimal sono rispettati end-to-end e coperti da test.
+- [ ] Non esiste tracking per-visitatore cross-day e nessun identificatore persistente viene introdotto per aggirare la scelta privacy-first.
+- [ ] Export CSV sono filtrati, limitati, redatti, protetti da policy e immuni da CSV injection sui campi controllabili.
+- [ ] Retention è implementata, documentata e verificata senza rompere dashboard storiche, insight o audit necessario.
+- [ ] Nessuna dashboard, overview, insight o export usa raw event, page views, Web Vitals legacy, `FID`, `AnalyticsEvent`, `WebVital`, `ErrorLog` o `AuditLog` come fonte ufficiale o fallback.
+- [ ] Nessuna route, procedura, tipo, test o documento attivo protegge contratti provvisori solo per retrocompatibilità.
+- [ ] Admin e developer possono capire cosa significa ogni metrica qualitativa, come viene calcolata, quanto è affidabile e quali dati sono esclusi per privacy o bassa confidence.
+- [ ] Il sistema resta funzionante, verificabile e mantenibile dopo la rimozione del codice non più usato.
+
+Verifiche previste:
+
+- `pnpm prisma:validate`
+- `pnpm prisma:generate` se lo schema cambia
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm test:run tests/unit/lib/server/modules/observability/model.test.ts`
+- `pnpm test:run tests/unit/lib/server/modules/telemetry/*`
+- `pnpm test:run tests/unit/lib/server/modules/observability-errors/*`
+- `pnpm test:run tests/unit/lib/server/modules/observability-performance/*`
+- `pnpm test:run tests/unit/lib/server/modules/observability-audit/*`
+- `pnpm test:run tests/unit/lib/server/modules/observability-aggregates/*`
+- `pnpm test:run tests/unit/lib/server/modules/observability-overview/*`
+- `pnpm test:run tests/unit/app/api/telemetry/route.test.ts`
+- `pnpm test:run tests/unit/lib/cms/query/*`
+- `pnpm test:run tests/unit/features/cms/observability/*`
+- `pnpm test:run tests/unit/scripts/observability-cli.test.ts`
+- `pnpm test:run`
+- `pnpm build`
 
 ### Ordine Minimo Consigliato
 
