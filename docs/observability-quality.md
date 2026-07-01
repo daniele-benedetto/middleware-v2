@@ -1286,13 +1286,122 @@ Criterio di completamento:
 
 Obiettivo: trasformare i Web Vitals in esperienza percepita e impatto sulla lettura.
 
-Lavori principali: salvare performance per sessione, path, pageType, contentId, device; normalizzare unità e soglie per LCP, INP, CLS, FCP, TTFB (senza FID); derivare `perceivedQuality` in job; collegare performance poor a bounce o exit precoce; segmentare device/browser/connection; valutare metriche server.
+Assunzione operativa: la Fase 1, la Fase 2, la Fase 3 e la Fase 4 sono state completate come descritte. Esistono quindi schema autorevole `ObservabilitySession`, `ObservabilityEvent`, `ContentEngagement`, `AudioEngagement`, errori operativi autonomi, collector batch/sessionizzato, bot filtering, rate limit, privacy gating, engagement contenuti e inbox errori con regressioni/priorità. La Fase 5 non deve rifare sessionizzazione, engagement o errori: li usa per interpretare l'impatto della performance.
 
-Regole qualitative: poor Web Vital senza impatto comportamentale resta segnale tecnico; con bounce rapido diventa frizione qualitativa; problemi mobile pesano di più se mobile è dominante; campioni piccoli marcati come bassa affidabilità.
+Principio di questa fase: performance-experience-first, no retrocompatibilità. `WebVital`, payload `web-vital`, `reportWebVital`, `FID`, aggregati tecnici legacy, performance summary provvisori e qualsiasi UI basata su metriche isolate non sono vincoli. Se componenti, DTO, procedure, test o schermate continuano a ragionare in termini di Web Vitals standalone, si buttano via o si riscrivono. Non si mantengono alias, wrapper compatibili, doppie query, mapping vecchio-nuovo o fallback a tabelle rimosse. Il collector può salvare segnali tecnici raw, ma la UI CMS lavora su `PerformanceExperience` e qualità percepita.
 
-Deliverable: `PerformanceExperience` popolato, aggregati per giorno/metrica/pageType/device, UI con Vitals cards, trend e worst pages, test su formattazione soglie, `perceivedQuality`, correlazione bounce.
+Scelta dello slice interpretato: `PerformanceExperience`. La tabella rappresenta l'esperienza percepita di una pagina dentro una sessione, collegabile a contenuto, device, rete, release, engagement, exit ed errori. Le metriche server sono utili ma secondarie: se introdotte in questa fase vivono in `ServerPerformanceSample`, separata da `PerformanceExperience`, perché misurano il backend e non l'esperienza browser.
 
-Criterio di completamento: la pagina dice quali esperienze sono frustranti, non solo quali metriche sono alte; ogni valore tecnico ha unità, soglia e contesto.
+Eventi raw ammessi come input di Fase 5: `performance_metric` per metriche browser normalizzate e, se implementate metriche server, `server_performance_sample` solo dal backend/instrumentation. Eventi legacy `web-vital`, payload standalone Web Vitals e `FID` non sono API ufficiali di questa fase.
+
+Checklist operativa Fase 5:
+
+- [ ] Rimuovere dal percorso attivo qualsiasi codice provvisorio che produce o consuma performance legacy: payload `web-vital`, funzioni `reportWebVital`, tipi `WebVital`, query performance summary legacy, test che aspettano `FID` o Web Vitals standalone e placeholder che proteggono il vecchio modello.
+- [ ] Non reintrodurre `FID`: la metrica ufficiale di interazione è `INP`; eventuali payload con `FID` vanno rifiutati o ignorati con risposta non informativa, senza mapping automatico a `INP`.
+- [ ] Definire vocabolari canonici performance riusabili: metriche `lcp`, `inp`, `cls`, `fcp`, `ttfb`; rating tecnico `good`, `needs_improvement`, `poor`; qualità percepita `smooth`, `acceptable`, `frustrating`, `broken`; sample confidence `low`, `medium`, `high`.
+- [ ] Definire unità canoniche e formattazione: `CLS` senza unità, `LCP`, `INP`, `FCP` e `TTFB` in millisecondi salvati come numero e mostrati in ms o secondi leggibili.
+- [ ] Definire soglie iniziali versionate per ogni metrica, includendo almeno soglie Core Web Vitals per `LCP`, `INP`, `CLS` e soglie operative iniziali per `FCP` e `TTFB`.
+- [ ] Rendere soglie e pesi di qualità percepita configurabili e nominati con `thresholdVersion`, senza costanti sparse nei componenti UI.
+- [ ] Creare `PerformanceExperience` nello schema Prisma con campi: `id`, `sessionId`, `visitorHash`, `observabilityEventId`, `path`, `routePath`, `pageType`, `contentId`, `deviceType`, `browser`, `os`, `connectionType`, `effectiveConnectionType`, `saveData`, `viewportWidth`, `viewportHeight`, `lcp`, `inp`, `cls`, `fcp`, `ttfb`, `rating`, `perceivedQuality`, `causedEarlyExit`, `release`, `thresholdVersion`, `sampleRate`, `occurredAt`, `createdAt`, `updatedAt`.
+- [ ] Collegare `PerformanceExperience` a `ObservabilitySession` e opzionalmente a `ObservabilityEvent`, con `sessionId` nullable solo nei casi in cui il collector consente esplicitamente segnali non associabili a sessione, senza inventare sessioni finte.
+- [ ] Aggiungere indici minimi per performance: `sessionId`/`occurredAt`, `path`/`occurredAt`, `pageType`/`occurredAt`, `contentId`/`occurredAt`, `deviceType`/`occurredAt`, `rating`/`occurredAt`, `perceivedQuality`/`occurredAt`, `release`/`occurredAt`.
+- [ ] Generare una migrazione Prisma netta per `PerformanceExperience`, senza tabelle ponte, backfill Web Vitals legacy, mapping da `FID`, preservazione di aggregati tecnici provvisori o colonne di compatibilità.
+- [ ] Decidere se introdurre in questa fase `ServerPerformanceSample`; se sì, creare modello separato con `requestId`, `correlationId`, `routePath`, `method`, `statusCode`, `durationMs`, `dbDurationMs`, `cacheStatus`, `trpcProcedure`, `release`, `createdAt` e indici per route/release/status/date.
+- [ ] Se `ServerPerformanceSample` non viene introdotta in questa fase, non simulare metriche server in UI e non mischiare proxy backend dentro `PerformanceExperience`.
+- [ ] Aggiungere `PERFORMANCE` a `ObservabilityEventCategory` o equivalente, evitando di classificare performance come `INTERACTION`, `SESSION` o `ERROR` solo per riusare enum esistenti.
+- [ ] Aggiungere `performance_metric` ai raw event ufficiali del modello osservabilità, e `server_performance_sample` solo se viene implementato il sotto-slice server.
+- [ ] Definire schema Zod per evento performance nel batch `/api/telemetry`: metric name, value, rating client opzionale non autorevole, path, pageType, contentId, contentType, sampleRate, clientSequence, clientElapsedMs, viewport, network context, release e metadata limitati.
+- [ ] Validare metric name con enum canonico e rifiutare valori non previsti, in particolare `FID`, senza alias o conversioni legacy.
+- [ ] Normalizzare lato server le unità: metriche temporali in millisecondi, `CLS` come float unitless, valori negativi o non finiti rifiutati o ignorati.
+- [ ] Applicare limiti espliciti a valori metrici troppo grandi o impossibili, marcando eventuali timing sospetti senza usarli per qualità percepita.
+- [ ] Aggiornare `/api/telemetry` per accettare eventi performance solo dentro il payload batch sessionizzato della Fase 2, mantenendo risposta `204` non informativa per legacy, invalidi, oversized, rate limited o non applicabili.
+- [ ] Non accettare payload standalone `web-vital`; i vecchi test devono essere rimossi o cambiati per confermare il rifiuto, non per preservare il contratto.
+- [ ] Riusare privacy gating, DNT, Global Privacy Control, path tecnici esclusi, rate limit, bot filtering e metadata redaction già definiti nelle fasi precedenti.
+- [ ] Definire comportamento `collectionMode = "full"`: raccolta di `LCP`, `INP`, `CLS`, `FCP`, `TTFB`, viewport e network context ammesso.
+- [ ] Definire comportamento `collectionMode = "minimal"`: niente metriche opzionali ad alta granularità o raccolta ridotta esplicitamente documentata, senza heartbeat o dati comportamentali aggiuntivi.
+- [ ] Implementare o aggiungere client pubblico di performance, preferibilmente basato sulla libreria `web-vitals`, per misurare `onLCP`, `onINP`, `onCLS`, `onFCP`, `onTTFB` invece di parser custom fragili.
+- [ ] Se si sceglie di non usare `web-vitals`, documentare nel codice il motivo e coprire con test i casi critici di `PerformanceObserver`; non introdurre una misurazione incompleta solo per evitare una dipendenza piccola.
+- [ ] Integrare il performance tracker con il tracker pubblico esistente senza fondere responsabilità: session tracking produce contesto, performance tracker produce metriche.
+- [ ] Allegare `sessionId`, `pageInstanceId`, `clientSequence`, `clientElapsedMs`, path canonico, `pageType`, `contentId`, `contentType` e `release` a ogni evento performance quando disponibili.
+- [ ] Raccogliere network context consentito: `connectionType`, `effectiveConnectionType`, `saveData`, viewport width/height; non raccogliere dati non necessari o fingerprinting invasivo.
+- [ ] Non usare wall clock client come timestamp autorevole; `occurredAt` e `receivedAtServer` restano server-side.
+- [ ] Campionare performance solo se necessario e sempre in modo sample-rate-aware; non campionare segnalazioni di errore o audit correlate.
+- [ ] Salvare `ObservabilityEvent` raw append-only per ogni evento performance valido, senza scrivere campi interpretati autorevoli sul raw event.
+- [ ] Implementare repository performance con metodi espliciti per record metric/event, upsert o merge di `PerformanceExperience`, summary, trend metriche, worst pages, segmenti device/browser/connection e dettaglio pagina.
+- [ ] Implementare service performance con business rules pure per normalizzazione metriche, rating tecnico, qualità percepita, early exit, sample confidence e correlazione con engagement/errori.
+- [ ] Creare o aggiornare una `PerformanceExperience` per sessione + page instance/path/contenuto, aggregando più metriche browser nello stesso episodio quando arrivano separatamente.
+- [ ] Calcolare `rating` tecnico come peggiore rating rilevante tra `LCP`, `INP`, `CLS`, `FCP`, `TTFB`, mantenendo anche il breakdown per metrica nei DTO.
+- [ ] Derivare `perceivedQuality = "smooth"` quando Web Vitals principali sono good e non ci sono segnali di frizione, errori correlati o exit precoce.
+- [ ] Derivare `perceivedQuality = "acceptable"` quando una metrica è needs-improvement ma engagement/exit non indicano frizione reale.
+- [ ] Derivare `perceivedQuality = "frustrating"` quando `LCP` o `INP` sono poor, `CLS` è rilevante, oppure una metrica poor è seguita da bounce, active time molto basso o exit precoce.
+- [ ] Derivare `perceivedQuality = "broken"` solo quando performance degradata è correlata a errore bloccante, caricamento fallito, interazione bloccata o `ErrorGroup` operativo con user impact rilevante.
+- [ ] Impedire che un Web Vital poor isolato diventi automaticamente `broken`; la metrica tecnica aumenta rischio/priorità, ma l'impatto qualitativo richiede contesto.
+- [ ] Collegare performance poor a `ContentEngagement` tramite `sessionId`, `path`, `contentId` e finestra temporale, usando `exitType`, `engagementLevel`, `activeTimeMs` e `completed` per stimare impatto sulla lettura.
+- [ ] Calcolare `causedEarlyExit` quando performance poor precede `page_exit` rapido, `ContentEngagement.exitType = "bounce"`, active time minimo o abbandono prima di segnali di lettura.
+- [ ] Non calcolare `causedEarlyExit` quando l'evidenza temporale manca o quando l'utente resta engaged/completed nonostante una metrica tecnica poor; distinguere frizione certa, probabile e non dimostrata nei reason DTO se utile.
+- [ ] Collegare errori operativi da Fase 4 tramite `sessionId`, `requestId`, `correlationId`, path e finestra temporale per classificare esperienze `broken` quando un errore impatta la pagina.
+- [ ] Escludere di default dagli output qualitativi sessioni `isLikelyBot = true`, pur conservando record per debug se già salvati.
+- [ ] Calcolare sample confidence in base a sample count, sampleRate e distribuzione temporale: pochi campioni non devono produrre classifiche aggressive.
+- [ ] Segmentare output per `pageType`, `deviceType`, browser, OS, connection/effective connection, country se disponibile, release e contenuto quando disponibile.
+- [ ] Calcolare percentili tecnici, almeno p75 per `LCP`, `INP`, `CLS`, `FCP`, `TTFB`, evitando medie ingenue dove i percentili sono la metrica corretta.
+- [ ] Se i dati sono campionati, implementare calcoli coerenti con `sampleRate` o limitare esplicitamente i percentili ai campioni osservati marcando confidence/limite metodologico.
+- [ ] Definire DTO CMS summary performance con: total experiences, smooth/acceptable/frustrating/broken count, frustrating rate, poor rate per metrica, early exits after poor performance, sample confidence e periodo.
+- [ ] Definire DTO CMS Vitals summary con valore p75, rating, soglia good/poor, unità, sample count, trend direction e breakdown per device.
+- [ ] Definire DTO CMS worst pages con path, pageType, contentId/titolo quando disponibile, perceived quality breakdown, p75 metriche principali, early exit count/rate, affected sessions, dominant device, release e sample confidence.
+- [ ] Definire DTO CMS performance detail con timeline metriche, segmenti device/browser/connection, engagement correlato, errori correlati, release, raw technical IDs e spiegazione della qualità percepita.
+- [ ] Creare schema input tRPC per performance summary, trend, worst pages e detail con filtri: periodo, metric, pageType, deviceType, perceivedQuality, release, path/content query, sort e paginazione.
+- [ ] Creare router tRPC dedicato `performance` o `observabilityPerformance`, non procedure annidate in `telemetry`, con policy del modulo performance, service orchestration e `parseOutput` sui DTO.
+- [ ] Non hardcodare ruoli nelle procedure: usare `policy` del modulo performance come per gli altri moduli CMS.
+- [ ] Aggiornare root router, prefetch CMS, tipi `RouterInputs`/`RouterOutputs` e query parser per usare il nuovo router performance, eliminando tipi legacy non più raggiungibili.
+- [ ] Sostituire il placeholder `/cms/performance` con una pagina reale basata su `PerformanceExperience`, non su raw Web Vitals o aggregati legacy.
+- [ ] La UI CMS Performance deve aprire con una diagnosi qualitativa: esperienze frustranti/broken, early exits collegati a performance, pagine peggiori per impatto e sample confidence.
+- [ ] Mostrare cards per `LCP`, `INP`, `CLS`, `FCP`, `TTFB` con valore p75, unità, soglie, rating e campione; non mostrare `FID` in nessun punto.
+- [ ] Implementare trend per metrica con `LineChart` o equivalente, filtrabile per periodo/device/pageType/release.
+- [ ] Implementare worst pages ordinate per impatto qualitativo e confidence, non per singolo valore tecnico massimo.
+- [ ] Implementare segmenti device/browser/connection con breakdown di perceived quality e poor rate.
+- [ ] Implementare dettaglio pagina in `Sheet` o `Dialog` con metriche, soglie, contesto engagement, early exits, errori correlati, release e copy button per `sessionId`, `requestId`, `correlationId` dove disponibili.
+- [ ] Mostrare sempre sample count e affidabilità del campione vicino a score, trend e classifiche.
+- [ ] Aggiungere empty state che spiega che la pagina si popola quando il tracker performance pubblico invia metriche valide e quando esistono abbastanza campioni per interpretarle.
+- [ ] Aggiornare testi i18n CMS da “Web Vitals provvisori” a “performance qualitativa”, esperienza percepita, frizione, early exit, device e soglie.
+- [ ] Non usare `views` nella UI Performance; se serve volume, usare esperienze o sessioni misurate da `PerformanceExperience`.
+- [ ] Aggiungere test unitari per soglie metriche: `LCP`, `INP`, `CLS`, `FCP`, `TTFB`, unità, boundary good/needs/poor e rifiuto di `FID`.
+- [ ] Aggiungere test unitari per normalizzazione valori: ms, CLS unitless, valori negativi, non finiti, troppo grandi, metriche sconosciute e threshold version.
+- [ ] Aggiungere test client per invio `LCP`, `INP`, `CLS`, `FCP`, `TTFB`, path tecnici ignorati, privacy minimal, batching, `sendBeacon`/`fetch keepalive` e assenza di `FID`.
+- [ ] Aggiungere route test collector per batch performance valido, payload `web-vital` legacy ignorato, `FID` rifiutato, payload invalidi, oversized, metadata sensibili, DNT/GPC, rate limit e sampleRate.
+- [ ] Aggiungere test service/repository per creazione e merge di `PerformanceExperience` da metriche arrivate separatamente nello stesso page instance.
+- [ ] Aggiungere test service per `perceivedQuality`: smooth, acceptable, frustrating, broken, Web Vital poor senza bounce, Web Vital poor con bounce, errore correlato, sessione bot esclusa.
+- [ ] Aggiungere test service per `causedEarlyExit` con correlazione temporale a `ContentEngagement`, distinguendo evidenza sufficiente e insufficiente.
+- [ ] Aggiungere test per segmentazione device/browser/connection, p75, sample confidence e ordinamento worst pages per impatto qualitativo.
+- [ ] Aggiungere test tRPC/DTO per summary, trend, worst pages, detail, filtri, sort, paginazione e output validation con `parseOutput`.
+- [ ] Aggiungere test UI essenziali per cards con unità/soglie, assenza `FID`, empty state, sample confidence, worst pages e dettaglio se l'infrastruttura test UI del progetto lo consente.
+- [ ] Verificare con `prisma validate`, generazione client se lo schema cambia, typecheck, lint e unit test pertinenti.
+- [ ] Aggiornare questo documento se durante l'implementazione emergono decisioni su soglie, threshold version, sampling dei percentili, metriche server o definizione di `broken`, senza creare checklist parallele.
+
+Deliverable Fase 5:
+
+- [ ] Migrazione Prisma netta con `PerformanceExperience` e, se scelto, `ServerPerformanceSample`, senza backfill o mapping da Web Vitals legacy.
+- [ ] Modulo server dedicato `observability-performance` con `schema`, `dto`, `policy`, `repository`, `service` e `index` separati.
+- [ ] Contratto collector batch per eventi `performance_metric`, con rifiuto di `web-vital` legacy e `FID`.
+- [ ] Client pubblico performance per `LCP`, `INP`, `CLS`, `FCP`, `TTFB`, integrato con sessione, privacy, bot filtering, rate limit e batching.
+- [ ] Service performance per normalizzazione, rating tecnico, qualità percepita, early exit, correlazione con engagement/errori e sample confidence.
+- [ ] Repository performance per persistenza e query CMS: summary, vitals, trend, worst pages, segmenti e dettaglio.
+- [ ] Procedure tRPC dedicate per summary, trend, worst pages e dettaglio performance.
+- [ ] DTO CMS con unità, soglie, sample count, confidence, breakdown metriche, qualità percepita e motivazioni.
+- [ ] UI CMS Performance basata su esperienza percepita, frizione, trend, worst pages e segmenti, non su Web Vitals grezzi isolati.
+- [ ] Test unitari, route test, client test, service/repository test, tRPC/DTO test e, dove possibile, test UI sui casi critici.
+
+Criterio di completamento:
+
+- [ ] Una visita reale produce metriche `LCP`, `INP`, `CLS`, `FCP` e `TTFB` dentro il batch nuovo e popola `PerformanceExperience` collegata a sessione, path, pageType e contenuto quando disponibile.
+- [ ] La UI Performance dice quali esperienze sono `frustrating` o `broken` e perché, non solo quali metriche sono alte.
+- [ ] Ogni valore tecnico mostra unità, soglia, rating, sample count, confidence e contesto.
+- [ ] `FID`, payload `web-vital`, `WebVital`, performance summary legacy e aggregati tecnici provvisori non sono API ufficiali né fonti UI raggiungibili.
+- [ ] Performance poor senza impatto comportamentale resta segnale tecnico, mentre performance poor con bounce/exit precoce o errore correlato diventa frizione qualitativa.
+- [ ] `causedEarlyExit` viene derivato solo con evidenza sufficiente da performance + engagement/exit, non inventato da una singola metrica.
+- [ ] Sessioni bot sono escluse dagli output qualitativi di default.
+- [ ] Campioni piccoli o campionati sono marcati con affidabilità bassa o media e non producono classifiche aggressive.
+- [ ] Device, browser, connection, pageType, contenuto e release sono disponibili come dimensioni di diagnosi.
+- [ ] Il sistema resta funzionante e verificabile dopo la rimozione del legacy, anche se aggregati giornalieri, audit qualitativo e overview trasversale arrivano nelle fasi successive.
 
 ### Fase 6: Audit Qualitativo
 
