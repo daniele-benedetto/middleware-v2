@@ -250,6 +250,7 @@ export type ObservabilitySessionWhereInput = {
   errorOccurrences?: Prisma.ErrorOccurrenceListRelationFilter
   contentEngagements?: Prisma.ContentEngagementListRelationFilter
   audioEngagements?: Prisma.AudioEngagementListRelationFilter
+  performanceExperiences?: Prisma.PerformanceExperienceListRelationFilter
 }
 
 export type ObservabilitySessionOrderByWithRelationInput = {
@@ -270,6 +271,7 @@ export type ObservabilitySessionOrderByWithRelationInput = {
   errorOccurrences?: Prisma.ErrorOccurrenceOrderByRelationAggregateInput
   contentEngagements?: Prisma.ContentEngagementOrderByRelationAggregateInput
   audioEngagements?: Prisma.AudioEngagementOrderByRelationAggregateInput
+  performanceExperiences?: Prisma.PerformanceExperienceOrderByRelationAggregateInput
 }
 
 export type ObservabilitySessionWhereUniqueInput = Prisma.AtLeast<{
@@ -293,6 +295,7 @@ export type ObservabilitySessionWhereUniqueInput = Prisma.AtLeast<{
   errorOccurrences?: Prisma.ErrorOccurrenceListRelationFilter
   contentEngagements?: Prisma.ContentEngagementListRelationFilter
   audioEngagements?: Prisma.AudioEngagementListRelationFilter
+  performanceExperiences?: Prisma.PerformanceExperienceListRelationFilter
 }, "id">
 
 export type ObservabilitySessionOrderByWithAggregationInput = {
@@ -351,6 +354,7 @@ export type ObservabilitySessionCreateInput = {
   errorOccurrences?: Prisma.ErrorOccurrenceCreateNestedManyWithoutSessionInput
   contentEngagements?: Prisma.ContentEngagementCreateNestedManyWithoutSessionInput
   audioEngagements?: Prisma.AudioEngagementCreateNestedManyWithoutSessionInput
+  performanceExperiences?: Prisma.PerformanceExperienceCreateNestedManyWithoutSessionInput
 }
 
 export type ObservabilitySessionUncheckedCreateInput = {
@@ -371,6 +375,7 @@ export type ObservabilitySessionUncheckedCreateInput = {
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedCreateNestedManyWithoutSessionInput
   contentEngagements?: Prisma.ContentEngagementUncheckedCreateNestedManyWithoutSessionInput
   audioEngagements?: Prisma.AudioEngagementUncheckedCreateNestedManyWithoutSessionInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ObservabilitySessionUpdateInput = {
@@ -391,6 +396,7 @@ export type ObservabilitySessionUpdateInput = {
   errorOccurrences?: Prisma.ErrorOccurrenceUpdateManyWithoutSessionNestedInput
   contentEngagements?: Prisma.ContentEngagementUpdateManyWithoutSessionNestedInput
   audioEngagements?: Prisma.AudioEngagementUpdateManyWithoutSessionNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUpdateManyWithoutSessionNestedInput
 }
 
 export type ObservabilitySessionUncheckedUpdateInput = {
@@ -411,6 +417,7 @@ export type ObservabilitySessionUncheckedUpdateInput = {
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedUpdateManyWithoutSessionNestedInput
   contentEngagements?: Prisma.ContentEngagementUncheckedUpdateManyWithoutSessionNestedInput
   audioEngagements?: Prisma.AudioEngagementUncheckedUpdateManyWithoutSessionNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type ObservabilitySessionCreateManyInput = {
@@ -578,6 +585,22 @@ export type ObservabilitySessionUpdateOneWithoutAudioEngagementsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ObservabilitySessionUpdateToOneWithWhereWithoutAudioEngagementsInput, Prisma.ObservabilitySessionUpdateWithoutAudioEngagementsInput>, Prisma.ObservabilitySessionUncheckedUpdateWithoutAudioEngagementsInput>
 }
 
+export type ObservabilitySessionCreateNestedOneWithoutPerformanceExperiencesInput = {
+  create?: Prisma.XOR<Prisma.ObservabilitySessionCreateWithoutPerformanceExperiencesInput, Prisma.ObservabilitySessionUncheckedCreateWithoutPerformanceExperiencesInput>
+  connectOrCreate?: Prisma.ObservabilitySessionCreateOrConnectWithoutPerformanceExperiencesInput
+  connect?: Prisma.ObservabilitySessionWhereUniqueInput
+}
+
+export type ObservabilitySessionUpdateOneWithoutPerformanceExperiencesNestedInput = {
+  create?: Prisma.XOR<Prisma.ObservabilitySessionCreateWithoutPerformanceExperiencesInput, Prisma.ObservabilitySessionUncheckedCreateWithoutPerformanceExperiencesInput>
+  connectOrCreate?: Prisma.ObservabilitySessionCreateOrConnectWithoutPerformanceExperiencesInput
+  upsert?: Prisma.ObservabilitySessionUpsertWithoutPerformanceExperiencesInput
+  disconnect?: Prisma.ObservabilitySessionWhereInput | boolean
+  delete?: Prisma.ObservabilitySessionWhereInput | boolean
+  connect?: Prisma.ObservabilitySessionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ObservabilitySessionUpdateToOneWithWhereWithoutPerformanceExperiencesInput, Prisma.ObservabilitySessionUpdateWithoutPerformanceExperiencesInput>, Prisma.ObservabilitySessionUncheckedUpdateWithoutPerformanceExperiencesInput>
+}
+
 export type ObservabilitySessionCreateWithoutEventsInput = {
   id: string
   visitorHash: string
@@ -595,6 +618,7 @@ export type ObservabilitySessionCreateWithoutEventsInput = {
   errorOccurrences?: Prisma.ErrorOccurrenceCreateNestedManyWithoutSessionInput
   contentEngagements?: Prisma.ContentEngagementCreateNestedManyWithoutSessionInput
   audioEngagements?: Prisma.AudioEngagementCreateNestedManyWithoutSessionInput
+  performanceExperiences?: Prisma.PerformanceExperienceCreateNestedManyWithoutSessionInput
 }
 
 export type ObservabilitySessionUncheckedCreateWithoutEventsInput = {
@@ -614,6 +638,7 @@ export type ObservabilitySessionUncheckedCreateWithoutEventsInput = {
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedCreateNestedManyWithoutSessionInput
   contentEngagements?: Prisma.ContentEngagementUncheckedCreateNestedManyWithoutSessionInput
   audioEngagements?: Prisma.AudioEngagementUncheckedCreateNestedManyWithoutSessionInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ObservabilitySessionCreateOrConnectWithoutEventsInput = {
@@ -649,6 +674,7 @@ export type ObservabilitySessionUpdateWithoutEventsInput = {
   errorOccurrences?: Prisma.ErrorOccurrenceUpdateManyWithoutSessionNestedInput
   contentEngagements?: Prisma.ContentEngagementUpdateManyWithoutSessionNestedInput
   audioEngagements?: Prisma.AudioEngagementUpdateManyWithoutSessionNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUpdateManyWithoutSessionNestedInput
 }
 
 export type ObservabilitySessionUncheckedUpdateWithoutEventsInput = {
@@ -668,6 +694,7 @@ export type ObservabilitySessionUncheckedUpdateWithoutEventsInput = {
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedUpdateManyWithoutSessionNestedInput
   contentEngagements?: Prisma.ContentEngagementUncheckedUpdateManyWithoutSessionNestedInput
   audioEngagements?: Prisma.AudioEngagementUncheckedUpdateManyWithoutSessionNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type ObservabilitySessionCreateWithoutErrorOccurrencesInput = {
@@ -687,6 +714,7 @@ export type ObservabilitySessionCreateWithoutErrorOccurrencesInput = {
   events?: Prisma.ObservabilityEventCreateNestedManyWithoutSessionInput
   contentEngagements?: Prisma.ContentEngagementCreateNestedManyWithoutSessionInput
   audioEngagements?: Prisma.AudioEngagementCreateNestedManyWithoutSessionInput
+  performanceExperiences?: Prisma.PerformanceExperienceCreateNestedManyWithoutSessionInput
 }
 
 export type ObservabilitySessionUncheckedCreateWithoutErrorOccurrencesInput = {
@@ -706,6 +734,7 @@ export type ObservabilitySessionUncheckedCreateWithoutErrorOccurrencesInput = {
   events?: Prisma.ObservabilityEventUncheckedCreateNestedManyWithoutSessionInput
   contentEngagements?: Prisma.ContentEngagementUncheckedCreateNestedManyWithoutSessionInput
   audioEngagements?: Prisma.AudioEngagementUncheckedCreateNestedManyWithoutSessionInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ObservabilitySessionCreateOrConnectWithoutErrorOccurrencesInput = {
@@ -741,6 +770,7 @@ export type ObservabilitySessionUpdateWithoutErrorOccurrencesInput = {
   events?: Prisma.ObservabilityEventUpdateManyWithoutSessionNestedInput
   contentEngagements?: Prisma.ContentEngagementUpdateManyWithoutSessionNestedInput
   audioEngagements?: Prisma.AudioEngagementUpdateManyWithoutSessionNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUpdateManyWithoutSessionNestedInput
 }
 
 export type ObservabilitySessionUncheckedUpdateWithoutErrorOccurrencesInput = {
@@ -760,6 +790,7 @@ export type ObservabilitySessionUncheckedUpdateWithoutErrorOccurrencesInput = {
   events?: Prisma.ObservabilityEventUncheckedUpdateManyWithoutSessionNestedInput
   contentEngagements?: Prisma.ContentEngagementUncheckedUpdateManyWithoutSessionNestedInput
   audioEngagements?: Prisma.AudioEngagementUncheckedUpdateManyWithoutSessionNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type ObservabilitySessionCreateWithoutContentEngagementsInput = {
@@ -779,6 +810,7 @@ export type ObservabilitySessionCreateWithoutContentEngagementsInput = {
   events?: Prisma.ObservabilityEventCreateNestedManyWithoutSessionInput
   errorOccurrences?: Prisma.ErrorOccurrenceCreateNestedManyWithoutSessionInput
   audioEngagements?: Prisma.AudioEngagementCreateNestedManyWithoutSessionInput
+  performanceExperiences?: Prisma.PerformanceExperienceCreateNestedManyWithoutSessionInput
 }
 
 export type ObservabilitySessionUncheckedCreateWithoutContentEngagementsInput = {
@@ -798,6 +830,7 @@ export type ObservabilitySessionUncheckedCreateWithoutContentEngagementsInput = 
   events?: Prisma.ObservabilityEventUncheckedCreateNestedManyWithoutSessionInput
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedCreateNestedManyWithoutSessionInput
   audioEngagements?: Prisma.AudioEngagementUncheckedCreateNestedManyWithoutSessionInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ObservabilitySessionCreateOrConnectWithoutContentEngagementsInput = {
@@ -833,6 +866,7 @@ export type ObservabilitySessionUpdateWithoutContentEngagementsInput = {
   events?: Prisma.ObservabilityEventUpdateManyWithoutSessionNestedInput
   errorOccurrences?: Prisma.ErrorOccurrenceUpdateManyWithoutSessionNestedInput
   audioEngagements?: Prisma.AudioEngagementUpdateManyWithoutSessionNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUpdateManyWithoutSessionNestedInput
 }
 
 export type ObservabilitySessionUncheckedUpdateWithoutContentEngagementsInput = {
@@ -852,6 +886,7 @@ export type ObservabilitySessionUncheckedUpdateWithoutContentEngagementsInput = 
   events?: Prisma.ObservabilityEventUncheckedUpdateManyWithoutSessionNestedInput
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedUpdateManyWithoutSessionNestedInput
   audioEngagements?: Prisma.AudioEngagementUncheckedUpdateManyWithoutSessionNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type ObservabilitySessionCreateWithoutAudioEngagementsInput = {
@@ -871,6 +906,7 @@ export type ObservabilitySessionCreateWithoutAudioEngagementsInput = {
   events?: Prisma.ObservabilityEventCreateNestedManyWithoutSessionInput
   errorOccurrences?: Prisma.ErrorOccurrenceCreateNestedManyWithoutSessionInput
   contentEngagements?: Prisma.ContentEngagementCreateNestedManyWithoutSessionInput
+  performanceExperiences?: Prisma.PerformanceExperienceCreateNestedManyWithoutSessionInput
 }
 
 export type ObservabilitySessionUncheckedCreateWithoutAudioEngagementsInput = {
@@ -890,6 +926,7 @@ export type ObservabilitySessionUncheckedCreateWithoutAudioEngagementsInput = {
   events?: Prisma.ObservabilityEventUncheckedCreateNestedManyWithoutSessionInput
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedCreateNestedManyWithoutSessionInput
   contentEngagements?: Prisma.ContentEngagementUncheckedCreateNestedManyWithoutSessionInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ObservabilitySessionCreateOrConnectWithoutAudioEngagementsInput = {
@@ -925,6 +962,7 @@ export type ObservabilitySessionUpdateWithoutAudioEngagementsInput = {
   events?: Prisma.ObservabilityEventUpdateManyWithoutSessionNestedInput
   errorOccurrences?: Prisma.ErrorOccurrenceUpdateManyWithoutSessionNestedInput
   contentEngagements?: Prisma.ContentEngagementUpdateManyWithoutSessionNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUpdateManyWithoutSessionNestedInput
 }
 
 export type ObservabilitySessionUncheckedUpdateWithoutAudioEngagementsInput = {
@@ -944,6 +982,103 @@ export type ObservabilitySessionUncheckedUpdateWithoutAudioEngagementsInput = {
   events?: Prisma.ObservabilityEventUncheckedUpdateManyWithoutSessionNestedInput
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedUpdateManyWithoutSessionNestedInput
   contentEngagements?: Prisma.ContentEngagementUncheckedUpdateManyWithoutSessionNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedUpdateManyWithoutSessionNestedInput
+}
+
+export type ObservabilitySessionCreateWithoutPerformanceExperiencesInput = {
+  id: string
+  visitorHash: string
+  startedAt?: Date | string
+  lastSeenAt?: Date | string
+  endedAt?: Date | string | null
+  landingPath?: string | null
+  exitPath?: string | null
+  referrerDomain?: string | null
+  country?: string | null
+  userAgent?: string | null
+  isLikelyBot?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  events?: Prisma.ObservabilityEventCreateNestedManyWithoutSessionInput
+  errorOccurrences?: Prisma.ErrorOccurrenceCreateNestedManyWithoutSessionInput
+  contentEngagements?: Prisma.ContentEngagementCreateNestedManyWithoutSessionInput
+  audioEngagements?: Prisma.AudioEngagementCreateNestedManyWithoutSessionInput
+}
+
+export type ObservabilitySessionUncheckedCreateWithoutPerformanceExperiencesInput = {
+  id: string
+  visitorHash: string
+  startedAt?: Date | string
+  lastSeenAt?: Date | string
+  endedAt?: Date | string | null
+  landingPath?: string | null
+  exitPath?: string | null
+  referrerDomain?: string | null
+  country?: string | null
+  userAgent?: string | null
+  isLikelyBot?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  events?: Prisma.ObservabilityEventUncheckedCreateNestedManyWithoutSessionInput
+  errorOccurrences?: Prisma.ErrorOccurrenceUncheckedCreateNestedManyWithoutSessionInput
+  contentEngagements?: Prisma.ContentEngagementUncheckedCreateNestedManyWithoutSessionInput
+  audioEngagements?: Prisma.AudioEngagementUncheckedCreateNestedManyWithoutSessionInput
+}
+
+export type ObservabilitySessionCreateOrConnectWithoutPerformanceExperiencesInput = {
+  where: Prisma.ObservabilitySessionWhereUniqueInput
+  create: Prisma.XOR<Prisma.ObservabilitySessionCreateWithoutPerformanceExperiencesInput, Prisma.ObservabilitySessionUncheckedCreateWithoutPerformanceExperiencesInput>
+}
+
+export type ObservabilitySessionUpsertWithoutPerformanceExperiencesInput = {
+  update: Prisma.XOR<Prisma.ObservabilitySessionUpdateWithoutPerformanceExperiencesInput, Prisma.ObservabilitySessionUncheckedUpdateWithoutPerformanceExperiencesInput>
+  create: Prisma.XOR<Prisma.ObservabilitySessionCreateWithoutPerformanceExperiencesInput, Prisma.ObservabilitySessionUncheckedCreateWithoutPerformanceExperiencesInput>
+  where?: Prisma.ObservabilitySessionWhereInput
+}
+
+export type ObservabilitySessionUpdateToOneWithWhereWithoutPerformanceExperiencesInput = {
+  where?: Prisma.ObservabilitySessionWhereInput
+  data: Prisma.XOR<Prisma.ObservabilitySessionUpdateWithoutPerformanceExperiencesInput, Prisma.ObservabilitySessionUncheckedUpdateWithoutPerformanceExperiencesInput>
+}
+
+export type ObservabilitySessionUpdateWithoutPerformanceExperiencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  visitorHash?: Prisma.StringFieldUpdateOperationsInput | string
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  landingPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exitPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referrerDomain?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isLikelyBot?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  events?: Prisma.ObservabilityEventUpdateManyWithoutSessionNestedInput
+  errorOccurrences?: Prisma.ErrorOccurrenceUpdateManyWithoutSessionNestedInput
+  contentEngagements?: Prisma.ContentEngagementUpdateManyWithoutSessionNestedInput
+  audioEngagements?: Prisma.AudioEngagementUpdateManyWithoutSessionNestedInput
+}
+
+export type ObservabilitySessionUncheckedUpdateWithoutPerformanceExperiencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  visitorHash?: Prisma.StringFieldUpdateOperationsInput | string
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  landingPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exitPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referrerDomain?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isLikelyBot?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  events?: Prisma.ObservabilityEventUncheckedUpdateManyWithoutSessionNestedInput
+  errorOccurrences?: Prisma.ErrorOccurrenceUncheckedUpdateManyWithoutSessionNestedInput
+  contentEngagements?: Prisma.ContentEngagementUncheckedUpdateManyWithoutSessionNestedInput
+  audioEngagements?: Prisma.AudioEngagementUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 
@@ -956,6 +1091,7 @@ export type ObservabilitySessionCountOutputType = {
   errorOccurrences: number
   contentEngagements: number
   audioEngagements: number
+  performanceExperiences: number
 }
 
 export type ObservabilitySessionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -963,6 +1099,7 @@ export type ObservabilitySessionCountOutputTypeSelect<ExtArgs extends runtime.Ty
   errorOccurrences?: boolean | ObservabilitySessionCountOutputTypeCountErrorOccurrencesArgs
   contentEngagements?: boolean | ObservabilitySessionCountOutputTypeCountContentEngagementsArgs
   audioEngagements?: boolean | ObservabilitySessionCountOutputTypeCountAudioEngagementsArgs
+  performanceExperiences?: boolean | ObservabilitySessionCountOutputTypeCountPerformanceExperiencesArgs
 }
 
 /**
@@ -1003,6 +1140,13 @@ export type ObservabilitySessionCountOutputTypeCountAudioEngagementsArgs<ExtArgs
   where?: Prisma.AudioEngagementWhereInput
 }
 
+/**
+ * ObservabilitySessionCountOutputType without action
+ */
+export type ObservabilitySessionCountOutputTypeCountPerformanceExperiencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PerformanceExperienceWhereInput
+}
+
 
 export type ObservabilitySessionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1022,6 +1166,7 @@ export type ObservabilitySessionSelect<ExtArgs extends runtime.Types.Extensions.
   errorOccurrences?: boolean | Prisma.ObservabilitySession$errorOccurrencesArgs<ExtArgs>
   contentEngagements?: boolean | Prisma.ObservabilitySession$contentEngagementsArgs<ExtArgs>
   audioEngagements?: boolean | Prisma.ObservabilitySession$audioEngagementsArgs<ExtArgs>
+  performanceExperiences?: boolean | Prisma.ObservabilitySession$performanceExperiencesArgs<ExtArgs>
   _count?: boolean | Prisma.ObservabilitySessionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["observabilitySession"]>
 
@@ -1079,6 +1224,7 @@ export type ObservabilitySessionInclude<ExtArgs extends runtime.Types.Extensions
   errorOccurrences?: boolean | Prisma.ObservabilitySession$errorOccurrencesArgs<ExtArgs>
   contentEngagements?: boolean | Prisma.ObservabilitySession$contentEngagementsArgs<ExtArgs>
   audioEngagements?: boolean | Prisma.ObservabilitySession$audioEngagementsArgs<ExtArgs>
+  performanceExperiences?: boolean | Prisma.ObservabilitySession$performanceExperiencesArgs<ExtArgs>
   _count?: boolean | Prisma.ObservabilitySessionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ObservabilitySessionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1091,6 +1237,7 @@ export type $ObservabilitySessionPayload<ExtArgs extends runtime.Types.Extension
     errorOccurrences: Prisma.$ErrorOccurrencePayload<ExtArgs>[]
     contentEngagements: Prisma.$ContentEngagementPayload<ExtArgs>[]
     audioEngagements: Prisma.$AudioEngagementPayload<ExtArgs>[]
+    performanceExperiences: Prisma.$PerformanceExperiencePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1504,6 +1651,7 @@ export interface Prisma__ObservabilitySessionClient<T, Null = never, ExtArgs ext
   errorOccurrences<T extends Prisma.ObservabilitySession$errorOccurrencesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ObservabilitySession$errorOccurrencesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ErrorOccurrencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   contentEngagements<T extends Prisma.ObservabilitySession$contentEngagementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ObservabilitySession$contentEngagementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentEngagementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   audioEngagements<T extends Prisma.ObservabilitySession$audioEngagementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ObservabilitySession$audioEngagementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AudioEngagementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  performanceExperiences<T extends Prisma.ObservabilitySession$performanceExperiencesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ObservabilitySession$performanceExperiencesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PerformanceExperiencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2032,6 +2180,30 @@ export type ObservabilitySession$audioEngagementsArgs<ExtArgs extends runtime.Ty
   take?: number
   skip?: number
   distinct?: Prisma.AudioEngagementScalarFieldEnum | Prisma.AudioEngagementScalarFieldEnum[]
+}
+
+/**
+ * ObservabilitySession.performanceExperiences
+ */
+export type ObservabilitySession$performanceExperiencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PerformanceExperience
+   */
+  select?: Prisma.PerformanceExperienceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PerformanceExperience
+   */
+  omit?: Prisma.PerformanceExperienceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PerformanceExperienceInclude<ExtArgs> | null
+  where?: Prisma.PerformanceExperienceWhereInput
+  orderBy?: Prisma.PerformanceExperienceOrderByWithRelationInput | Prisma.PerformanceExperienceOrderByWithRelationInput[]
+  cursor?: Prisma.PerformanceExperienceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PerformanceExperienceScalarFieldEnum | Prisma.PerformanceExperienceScalarFieldEnum[]
 }
 
 /**

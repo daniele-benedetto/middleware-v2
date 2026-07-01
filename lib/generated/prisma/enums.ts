@@ -47,7 +47,8 @@ export const ObservabilityEventCategory = {
   SESSION: 'SESSION',
   NAVIGATION: 'NAVIGATION',
   INTERACTION: 'INTERACTION',
-  ERROR: 'ERROR'
+  ERROR: 'ERROR',
+  PERFORMANCE: 'PERFORMANCE'
 } as const
 
 export type ObservabilityEventCategory = (typeof ObservabilityEventCategory)[keyof typeof ObservabilityEventCategory]

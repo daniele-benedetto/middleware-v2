@@ -826,8 +826,9 @@ export const cmsIt = {
       },
     },
     performance: {
-      subtitle: "Web Vitals aggregati per pagina e metrica.",
-      emptyDescription: "Le metriche compariranno qui dopo il primo job telemetry.",
+      subtitle: "Performance qualitativa, esperienza percepita e frizione per pagina.",
+      emptyDescription:
+        "Le esperienze compariranno qui quando il tracker pubblico invia metriche performance valide.",
       periodLabel: "Periodo",
       table: {
         metric: "Metrica",
@@ -838,9 +839,9 @@ export const cmsIt = {
         p95: "P95",
         rating: "Rating",
       },
-      good: "Good",
-      needsImprovement: "Needs improvement",
-      poor: "Poor",
+      good: "Buona",
+      needsImprovement: "Da monitorare",
+      poor: "Scarsa",
     },
     errors: {
       subtitle:

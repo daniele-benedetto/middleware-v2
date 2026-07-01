@@ -15,6 +15,7 @@ export const observabilityRawEventTypeValues = [
   "audio_replay",
   "media_open",
   "media_download",
+  "performance_metric",
   "client_error",
   "server_error",
   "audit_activity",

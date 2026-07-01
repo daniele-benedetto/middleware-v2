@@ -76,6 +76,36 @@ describe("telemetry payload schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts performance metrics only inside the batch", () => {
+    const result = telemetryCollectorPayloadSchema.safeParse({
+      sessionId: "obs_session_1_0000",
+      pageInstanceId: "page_0000",
+      collectionMode: "full",
+      events: [
+        {
+          type: "performance_metric",
+          path: "/articoli/test",
+          pageType: "article",
+          contentType: "article",
+          contentId: "article-1",
+          sampleRate: 1,
+          clientSequence: 1,
+          clientElapsedMs: 1200,
+          metadata: {
+            metric: "lcp",
+            value: 1200,
+            metricId: "lcp-1",
+            viewportWidth: 1280,
+            viewportHeight: 720,
+            effectiveConnectionType: "4g",
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it("rejects legacy analytics payloads", () => {
     const result = telemetryCollectorPayloadSchema.safeParse({
       type: "analytics",
@@ -125,6 +155,26 @@ describe("telemetry payload schema", () => {
       value: 1200,
       delta: 1200,
       path: "/",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects FID performance metrics", () => {
+    const result = telemetryCollectorPayloadSchema.safeParse({
+      sessionId: "obs_session_1_0000",
+      pageInstanceId: "page_0000",
+      collectionMode: "full",
+      events: [
+        {
+          type: "performance_metric",
+          path: "/",
+          sampleRate: 1,
+          clientSequence: 1,
+          clientElapsedMs: 10,
+          metadata: { metric: "fid", value: 12 },
+        },
+      ],
     });
 
     expect(result.success).toBe(false);

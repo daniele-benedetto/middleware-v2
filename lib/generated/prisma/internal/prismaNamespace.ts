@@ -402,7 +402,8 @@ export const ModelName = {
   ErrorGroup: 'ErrorGroup',
   ErrorOccurrence: 'ErrorOccurrence',
   ContentEngagement: 'ContentEngagement',
-  AudioEngagement: 'AudioEngagement'
+  AudioEngagement: 'AudioEngagement',
+  PerformanceExperience: 'PerformanceExperience'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -418,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "navigationMenu" | "auditLog" | "observabilitySession" | "observabilityEvent" | "errorGroup" | "errorOccurrence" | "contentEngagement" | "audioEngagement"
+    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "navigationMenu" | "auditLog" | "observabilitySession" | "observabilityEvent" | "errorGroup" | "errorOccurrence" | "contentEngagement" | "audioEngagement" | "performanceExperience"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1828,6 +1829,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PerformanceExperience: {
+      payload: Prisma.$PerformanceExperiencePayload<ExtArgs>
+      fields: Prisma.PerformanceExperienceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PerformanceExperienceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PerformanceExperiencePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PerformanceExperienceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PerformanceExperiencePayload>
+        }
+        findFirst: {
+          args: Prisma.PerformanceExperienceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PerformanceExperiencePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PerformanceExperienceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PerformanceExperiencePayload>
+        }
+        findMany: {
+          args: Prisma.PerformanceExperienceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PerformanceExperiencePayload>[]
+        }
+        create: {
+          args: Prisma.PerformanceExperienceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PerformanceExperiencePayload>
+        }
+        createMany: {
+          args: Prisma.PerformanceExperienceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PerformanceExperienceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PerformanceExperiencePayload>[]
+        }
+        delete: {
+          args: Prisma.PerformanceExperienceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PerformanceExperiencePayload>
+        }
+        update: {
+          args: Prisma.PerformanceExperienceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PerformanceExperiencePayload>
+        }
+        deleteMany: {
+          args: Prisma.PerformanceExperienceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PerformanceExperienceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PerformanceExperienceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PerformanceExperiencePayload>[]
+        }
+        upsert: {
+          args: Prisma.PerformanceExperienceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PerformanceExperiencePayload>
+        }
+        aggregate: {
+          args: Prisma.PerformanceExperienceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePerformanceExperience>
+        }
+        groupBy: {
+          args: Prisma.PerformanceExperienceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PerformanceExperienceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PerformanceExperienceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PerformanceExperienceCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2214,6 +2289,48 @@ export const AudioEngagementScalarFieldEnum = {
 } as const
 
 export type AudioEngagementScalarFieldEnum = (typeof AudioEngagementScalarFieldEnum)[keyof typeof AudioEngagementScalarFieldEnum]
+
+
+export const PerformanceExperienceScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  visitorHash: 'visitorHash',
+  observabilityEventId: 'observabilityEventId',
+  pageInstanceId: 'pageInstanceId',
+  path: 'path',
+  routePath: 'routePath',
+  pageType: 'pageType',
+  contentId: 'contentId',
+  deviceType: 'deviceType',
+  browser: 'browser',
+  os: 'os',
+  connectionType: 'connectionType',
+  effectiveConnectionType: 'effectiveConnectionType',
+  saveData: 'saveData',
+  viewportWidth: 'viewportWidth',
+  viewportHeight: 'viewportHeight',
+  lcp: 'lcp',
+  inp: 'inp',
+  cls: 'cls',
+  fcp: 'fcp',
+  ttfb: 'ttfb',
+  rating: 'rating',
+  perceivedQuality: 'perceivedQuality',
+  causedEarlyExit: 'causedEarlyExit',
+  activeTimeMs: 'activeTimeMs',
+  exitType: 'exitType',
+  hasBlockingError: 'hasBlockingError',
+  correlatedErrorCount: 'correlatedErrorCount',
+  qualityReasons: 'qualityReasons',
+  release: 'release',
+  thresholdVersion: 'thresholdVersion',
+  sampleRate: 'sampleRate',
+  occurredAt: 'occurredAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PerformanceExperienceScalarFieldEnum = (typeof PerformanceExperienceScalarFieldEnum)[keyof typeof PerformanceExperienceScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2615,6 +2732,7 @@ export type GlobalOmitConfig = {
   errorOccurrence?: Prisma.ErrorOccurrenceOmit
   contentEngagement?: Prisma.ContentEngagementOmit
   audioEngagement?: Prisma.AudioEngagementOmit
+  performanceExperience?: Prisma.PerformanceExperienceOmit
 }
 
 /* Types for Logging */

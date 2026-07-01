@@ -20,6 +20,7 @@ type TelemetryEvent = {
     | "audio_replay"
     | "media_open"
     | "media_download"
+    | "performance_metric"
     | "client_error";
   path?: string | null;
   pageType?: string | null;
@@ -80,6 +81,15 @@ type AudioEngagementInput = {
   metadata?: TelemetryMetadata;
 };
 
+type PerformanceMetricName = "lcp" | "inp" | "cls" | "fcp" | "ttfb";
+
+type ReportPerformanceMetricInput = {
+  metric: PerformanceMetricName;
+  value: number;
+  metricId?: string | null;
+  metadata?: TelemetryMetadata;
+};
+
 const telemetryEndpoint = "/api/telemetry";
 const sessionStorageKey = "mw_observability_session";
 const sessionTimeoutMs = 30 * 60 * 1000;
@@ -101,6 +111,8 @@ let heartbeatTimer: number | null = null;
 let flushTimer: number | null = null;
 let listenersInstalled = false;
 let interactionCount = 0;
+let performanceObserversInstalled = false;
+let cumulativeLayoutShift = 0;
 
 function now() {
   return typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -313,6 +325,132 @@ function enqueue(
   }
 }
 
+function readConnectionMetadata(): TelemetryMetadata {
+  if (typeof navigator === "undefined") {
+    return {};
+  }
+
+  const connection = (
+    navigator as Navigator & {
+      connection?: {
+        type?: string;
+        effectiveType?: string;
+        saveData?: boolean;
+      };
+    }
+  ).connection;
+
+  return {
+    connectionType: connection?.type ?? null,
+    effectiveConnectionType: connection?.effectiveType ?? null,
+    saveData: connection?.saveData ?? null,
+  };
+}
+
+function readViewportMetadata(): TelemetryMetadata {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  return {
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
+  };
+}
+
+export function reportPerformanceMetric({
+  metric,
+  value,
+  metricId,
+  metadata,
+}: ReportPerformanceMetricInput) {
+  if (resolveCollectionMode() !== "full" || !Number.isFinite(value) || value < 0) {
+    return;
+  }
+
+  enqueue({
+    type: "performance_metric",
+    sampleRate: 1,
+    metadata: {
+      ...readConnectionMetadata(),
+      ...readViewportMetadata(),
+      ...(metadata ?? {}),
+      metric,
+      value: metric === "cls" ? value : Math.round(value),
+      metricId: metricId ?? null,
+    },
+  });
+}
+
+function observePerformanceEntryTypes(
+  types: string[],
+  callback: (entry: PerformanceEntry) => void,
+) {
+  if (typeof PerformanceObserver === "undefined") {
+    return;
+  }
+
+  for (const type of types) {
+    try {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) callback(entry);
+      });
+      observer.observe({ type, buffered: true });
+    } catch {
+      // Unsupported entry types vary by browser; unsupported metrics are simply absent.
+    }
+  }
+}
+
+function installPerformanceObservers() {
+  if (performanceObserversInstalled || typeof window === "undefined") {
+    return;
+  }
+
+  performanceObserversInstalled = true;
+
+  // Native observers keep the collector dependency-free; unsupported metrics stay absent.
+  observePerformanceEntryTypes(["paint"], (entry) => {
+    if (entry.name === "first-contentful-paint") {
+      reportPerformanceMetric({ metric: "fcp", value: entry.startTime, metricId: entry.name });
+    }
+  });
+
+  observePerformanceEntryTypes(["largest-contentful-paint"], (entry) => {
+    reportPerformanceMetric({ metric: "lcp", value: entry.startTime, metricId: entry.name });
+  });
+
+  observePerformanceEntryTypes(["layout-shift"], (entry) => {
+    const layoutShift = entry as PerformanceEntry & { value?: number; hadRecentInput?: boolean };
+    if (!layoutShift.hadRecentInput && typeof layoutShift.value === "number") {
+      cumulativeLayoutShift += layoutShift.value;
+      reportPerformanceMetric({
+        metric: "cls",
+        value: cumulativeLayoutShift,
+        metricId: entry.name,
+      });
+    }
+  });
+
+  observePerformanceEntryTypes(["event"], (entry) => {
+    const eventEntry = entry as PerformanceEntry & { interactionId?: number; duration?: number };
+    if (eventEntry.interactionId && typeof eventEntry.duration === "number") {
+      reportPerformanceMetric({ metric: "inp", value: eventEntry.duration, metricId: entry.name });
+    }
+  });
+
+  window.setTimeout(() => {
+    const navigationEntry = performance.getEntriesByType("navigation")[0] as
+      | (PerformanceNavigationTiming & { responseStart?: number; requestStart?: number })
+      | undefined;
+    const ttfb = navigationEntry
+      ? navigationEntry.responseStart - navigationEntry.requestStart
+      : performance.timing.responseStart - performance.timing.requestStart;
+
+    reportPerformanceMetric({ metric: "ttfb", value: Math.max(0, ttfb), metricId: "navigation" });
+  }, 0);
+}
+
 function sendBatch(batch: TelemetryBatch) {
   const body = JSON.stringify(batch);
 
@@ -457,6 +595,7 @@ export function observePublicPage(input: ObservePublicPageInput | string | null 
 
   ensureSession();
   installListeners();
+  installPerformanceObservers();
   recordPageExit();
 
   currentPage = {
@@ -571,4 +710,6 @@ export function stopTelemetryTimersForTest() {
   currentPage = null;
   started = false;
   listenersInstalled = false;
+  performanceObserversInstalled = false;
+  cumulativeLayoutShift = 0;
 }

@@ -5,6 +5,7 @@ import {
   observabilityPageTypeValues,
   observabilityRawEventTypeValues,
 } from "@/lib/server/modules/observability/model";
+import { performanceMetricPayloadSchema } from "@/lib/server/modules/observability-performance/schema";
 
 const sensitiveMetadataKeyPattern =
   /(authorization|token|secret|password|cookie|set-cookie|body|payload|email)/i;
@@ -40,6 +41,7 @@ const eventTypeSchema = z.enum([
   "audio_replay",
   "media_open",
   "media_download",
+  "performance_metric",
   "session_heartbeat",
   "session_end",
   "page_enter",
@@ -65,16 +67,32 @@ const baseCollectorEventSchema = z.object({
   metadata: observabilityMetadataSchema.optional(),
 });
 
-export const telemetryCollectorEventSchema = baseCollectorEventSchema.extend({
-  source: z.enum(["client", "boundary"]).optional().nullable(),
-  name: z.string().trim().min(1).max(120).optional().nullable(),
-  message: z.string().trim().min(1).max(1000).optional().nullable(),
-  digest: z.string().trim().min(1).max(160).optional().nullable(),
-  stack: z.string().trim().min(1).max(8000).optional().nullable(),
-  requestId: nullableTextSchema,
-  correlationId: nullableTextSchema,
-  release: z.string().trim().min(1).max(120).optional().nullable(),
-});
+export const telemetryCollectorEventSchema = baseCollectorEventSchema
+  .extend({
+    source: z.enum(["client", "boundary"]).optional().nullable(),
+    name: z.string().trim().min(1).max(120).optional().nullable(),
+    message: z.string().trim().min(1).max(1000).optional().nullable(),
+    digest: z.string().trim().min(1).max(160).optional().nullable(),
+    stack: z.string().trim().min(1).max(8000).optional().nullable(),
+    requestId: nullableTextSchema,
+    correlationId: nullableTextSchema,
+    release: z.string().trim().min(1).max(120).optional().nullable(),
+  })
+  .superRefine((event, context) => {
+    if (event.type !== "performance_metric") {
+      return;
+    }
+
+    const parsedMetric = performanceMetricPayloadSchema.safeParse(event.metadata);
+
+    if (!parsedMetric.success) {
+      context.addIssue({
+        code: "custom",
+        message: "Performance events require valid performance metadata",
+        path: ["metadata"],
+      });
+    }
+  });
 
 export const telemetryCollectorPayloadSchema = z.object({
   sessionId: z.string().trim().min(16).max(120),

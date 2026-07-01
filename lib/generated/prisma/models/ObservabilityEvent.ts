@@ -318,6 +318,7 @@ export type ObservabilityEventWhereInput = {
   receivedAtServer?: Prisma.DateTimeFilter<"ObservabilityEvent"> | Date | string
   session?: Prisma.XOR<Prisma.ObservabilitySessionNullableScalarRelationFilter, Prisma.ObservabilitySessionWhereInput> | null
   errorOccurrences?: Prisma.ErrorOccurrenceListRelationFilter
+  performanceExperiences?: Prisma.PerformanceExperienceListRelationFilter
 }
 
 export type ObservabilityEventOrderByWithRelationInput = {
@@ -340,6 +341,7 @@ export type ObservabilityEventOrderByWithRelationInput = {
   receivedAtServer?: Prisma.SortOrder
   session?: Prisma.ObservabilitySessionOrderByWithRelationInput
   errorOccurrences?: Prisma.ErrorOccurrenceOrderByRelationAggregateInput
+  performanceExperiences?: Prisma.PerformanceExperienceOrderByRelationAggregateInput
 }
 
 export type ObservabilityEventWhereUniqueInput = Prisma.AtLeast<{
@@ -365,6 +367,7 @@ export type ObservabilityEventWhereUniqueInput = Prisma.AtLeast<{
   receivedAtServer?: Prisma.DateTimeFilter<"ObservabilityEvent"> | Date | string
   session?: Prisma.XOR<Prisma.ObservabilitySessionNullableScalarRelationFilter, Prisma.ObservabilitySessionWhereInput> | null
   errorOccurrences?: Prisma.ErrorOccurrenceListRelationFilter
+  performanceExperiences?: Prisma.PerformanceExperienceListRelationFilter
 }, "id">
 
 export type ObservabilityEventOrderByWithAggregationInput = {
@@ -434,6 +437,7 @@ export type ObservabilityEventCreateInput = {
   receivedAtServer?: Date | string
   session?: Prisma.ObservabilitySessionCreateNestedOneWithoutEventsInput
   errorOccurrences?: Prisma.ErrorOccurrenceCreateNestedManyWithoutObservabilityEventInput
+  performanceExperiences?: Prisma.PerformanceExperienceCreateNestedManyWithoutObservabilityEventInput
 }
 
 export type ObservabilityEventUncheckedCreateInput = {
@@ -455,6 +459,7 @@ export type ObservabilityEventUncheckedCreateInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   receivedAtServer?: Date | string
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedCreateNestedManyWithoutObservabilityEventInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedCreateNestedManyWithoutObservabilityEventInput
 }
 
 export type ObservabilityEventUpdateInput = {
@@ -476,6 +481,7 @@ export type ObservabilityEventUpdateInput = {
   receivedAtServer?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   session?: Prisma.ObservabilitySessionUpdateOneWithoutEventsNestedInput
   errorOccurrences?: Prisma.ErrorOccurrenceUpdateManyWithoutObservabilityEventNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUpdateManyWithoutObservabilityEventNestedInput
 }
 
 export type ObservabilityEventUncheckedUpdateInput = {
@@ -497,6 +503,7 @@ export type ObservabilityEventUncheckedUpdateInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   receivedAtServer?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedUpdateManyWithoutObservabilityEventNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedUpdateManyWithoutObservabilityEventNestedInput
 }
 
 export type ObservabilityEventCreateManyInput = {
@@ -721,6 +728,22 @@ export type ObservabilityEventUpdateOneWithoutErrorOccurrencesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ObservabilityEventUpdateToOneWithWhereWithoutErrorOccurrencesInput, Prisma.ObservabilityEventUpdateWithoutErrorOccurrencesInput>, Prisma.ObservabilityEventUncheckedUpdateWithoutErrorOccurrencesInput>
 }
 
+export type ObservabilityEventCreateNestedOneWithoutPerformanceExperiencesInput = {
+  create?: Prisma.XOR<Prisma.ObservabilityEventCreateWithoutPerformanceExperiencesInput, Prisma.ObservabilityEventUncheckedCreateWithoutPerformanceExperiencesInput>
+  connectOrCreate?: Prisma.ObservabilityEventCreateOrConnectWithoutPerformanceExperiencesInput
+  connect?: Prisma.ObservabilityEventWhereUniqueInput
+}
+
+export type ObservabilityEventUpdateOneWithoutPerformanceExperiencesNestedInput = {
+  create?: Prisma.XOR<Prisma.ObservabilityEventCreateWithoutPerformanceExperiencesInput, Prisma.ObservabilityEventUncheckedCreateWithoutPerformanceExperiencesInput>
+  connectOrCreate?: Prisma.ObservabilityEventCreateOrConnectWithoutPerformanceExperiencesInput
+  upsert?: Prisma.ObservabilityEventUpsertWithoutPerformanceExperiencesInput
+  disconnect?: Prisma.ObservabilityEventWhereInput | boolean
+  delete?: Prisma.ObservabilityEventWhereInput | boolean
+  connect?: Prisma.ObservabilityEventWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ObservabilityEventUpdateToOneWithWhereWithoutPerformanceExperiencesInput, Prisma.ObservabilityEventUpdateWithoutPerformanceExperiencesInput>, Prisma.ObservabilityEventUncheckedUpdateWithoutPerformanceExperiencesInput>
+}
+
 export type ObservabilityEventCreateWithoutSessionInput = {
   id?: string
   visitorHash?: string | null
@@ -739,6 +762,7 @@ export type ObservabilityEventCreateWithoutSessionInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   receivedAtServer?: Date | string
   errorOccurrences?: Prisma.ErrorOccurrenceCreateNestedManyWithoutObservabilityEventInput
+  performanceExperiences?: Prisma.PerformanceExperienceCreateNestedManyWithoutObservabilityEventInput
 }
 
 export type ObservabilityEventUncheckedCreateWithoutSessionInput = {
@@ -759,6 +783,7 @@ export type ObservabilityEventUncheckedCreateWithoutSessionInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   receivedAtServer?: Date | string
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedCreateNestedManyWithoutObservabilityEventInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedCreateNestedManyWithoutObservabilityEventInput
 }
 
 export type ObservabilityEventCreateOrConnectWithoutSessionInput = {
@@ -828,6 +853,7 @@ export type ObservabilityEventCreateWithoutErrorOccurrencesInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   receivedAtServer?: Date | string
   session?: Prisma.ObservabilitySessionCreateNestedOneWithoutEventsInput
+  performanceExperiences?: Prisma.PerformanceExperienceCreateNestedManyWithoutObservabilityEventInput
 }
 
 export type ObservabilityEventUncheckedCreateWithoutErrorOccurrencesInput = {
@@ -848,6 +874,7 @@ export type ObservabilityEventUncheckedCreateWithoutErrorOccurrencesInput = {
   clientElapsedMs?: number | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   receivedAtServer?: Date | string
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedCreateNestedManyWithoutObservabilityEventInput
 }
 
 export type ObservabilityEventCreateOrConnectWithoutErrorOccurrencesInput = {
@@ -884,6 +911,7 @@ export type ObservabilityEventUpdateWithoutErrorOccurrencesInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   receivedAtServer?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   session?: Prisma.ObservabilitySessionUpdateOneWithoutEventsNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUpdateManyWithoutObservabilityEventNestedInput
 }
 
 export type ObservabilityEventUncheckedUpdateWithoutErrorOccurrencesInput = {
@@ -904,6 +932,107 @@ export type ObservabilityEventUncheckedUpdateWithoutErrorOccurrencesInput = {
   clientElapsedMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   receivedAtServer?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedUpdateManyWithoutObservabilityEventNestedInput
+}
+
+export type ObservabilityEventCreateWithoutPerformanceExperiencesInput = {
+  id?: string
+  visitorHash?: string | null
+  type: string
+  category: $Enums.ObservabilityEventCategory
+  path?: string | null
+  pageType?: string | null
+  contentId?: string | null
+  contentType?: string | null
+  requestId?: string | null
+  correlationId?: string | null
+  release?: string | null
+  sampleRate?: number
+  clientSequence?: number | null
+  clientElapsedMs?: number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  receivedAtServer?: Date | string
+  session?: Prisma.ObservabilitySessionCreateNestedOneWithoutEventsInput
+  errorOccurrences?: Prisma.ErrorOccurrenceCreateNestedManyWithoutObservabilityEventInput
+}
+
+export type ObservabilityEventUncheckedCreateWithoutPerformanceExperiencesInput = {
+  id?: string
+  sessionId?: string | null
+  visitorHash?: string | null
+  type: string
+  category: $Enums.ObservabilityEventCategory
+  path?: string | null
+  pageType?: string | null
+  contentId?: string | null
+  contentType?: string | null
+  requestId?: string | null
+  correlationId?: string | null
+  release?: string | null
+  sampleRate?: number
+  clientSequence?: number | null
+  clientElapsedMs?: number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  receivedAtServer?: Date | string
+  errorOccurrences?: Prisma.ErrorOccurrenceUncheckedCreateNestedManyWithoutObservabilityEventInput
+}
+
+export type ObservabilityEventCreateOrConnectWithoutPerformanceExperiencesInput = {
+  where: Prisma.ObservabilityEventWhereUniqueInput
+  create: Prisma.XOR<Prisma.ObservabilityEventCreateWithoutPerformanceExperiencesInput, Prisma.ObservabilityEventUncheckedCreateWithoutPerformanceExperiencesInput>
+}
+
+export type ObservabilityEventUpsertWithoutPerformanceExperiencesInput = {
+  update: Prisma.XOR<Prisma.ObservabilityEventUpdateWithoutPerformanceExperiencesInput, Prisma.ObservabilityEventUncheckedUpdateWithoutPerformanceExperiencesInput>
+  create: Prisma.XOR<Prisma.ObservabilityEventCreateWithoutPerformanceExperiencesInput, Prisma.ObservabilityEventUncheckedCreateWithoutPerformanceExperiencesInput>
+  where?: Prisma.ObservabilityEventWhereInput
+}
+
+export type ObservabilityEventUpdateToOneWithWhereWithoutPerformanceExperiencesInput = {
+  where?: Prisma.ObservabilityEventWhereInput
+  data: Prisma.XOR<Prisma.ObservabilityEventUpdateWithoutPerformanceExperiencesInput, Prisma.ObservabilityEventUncheckedUpdateWithoutPerformanceExperiencesInput>
+}
+
+export type ObservabilityEventUpdateWithoutPerformanceExperiencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  visitorHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.EnumObservabilityEventCategoryFieldUpdateOperationsInput | $Enums.ObservabilityEventCategory
+  path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  correlationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  release?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sampleRate?: Prisma.FloatFieldUpdateOperationsInput | number
+  clientSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  clientElapsedMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  receivedAtServer?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  session?: Prisma.ObservabilitySessionUpdateOneWithoutEventsNestedInput
+  errorOccurrences?: Prisma.ErrorOccurrenceUpdateManyWithoutObservabilityEventNestedInput
+}
+
+export type ObservabilityEventUncheckedUpdateWithoutPerformanceExperiencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sessionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visitorHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.EnumObservabilityEventCategoryFieldUpdateOperationsInput | $Enums.ObservabilityEventCategory
+  path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  correlationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  release?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sampleRate?: Prisma.FloatFieldUpdateOperationsInput | number
+  clientSequence?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  clientElapsedMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  receivedAtServer?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  errorOccurrences?: Prisma.ErrorOccurrenceUncheckedUpdateManyWithoutObservabilityEventNestedInput
 }
 
 export type ObservabilityEventCreateManySessionInput = {
@@ -943,6 +1072,7 @@ export type ObservabilityEventUpdateWithoutSessionInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   receivedAtServer?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   errorOccurrences?: Prisma.ErrorOccurrenceUpdateManyWithoutObservabilityEventNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUpdateManyWithoutObservabilityEventNestedInput
 }
 
 export type ObservabilityEventUncheckedUpdateWithoutSessionInput = {
@@ -963,6 +1093,7 @@ export type ObservabilityEventUncheckedUpdateWithoutSessionInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   receivedAtServer?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   errorOccurrences?: Prisma.ErrorOccurrenceUncheckedUpdateManyWithoutObservabilityEventNestedInput
+  performanceExperiences?: Prisma.PerformanceExperienceUncheckedUpdateManyWithoutObservabilityEventNestedInput
 }
 
 export type ObservabilityEventUncheckedUpdateManyWithoutSessionInput = {
@@ -991,10 +1122,12 @@ export type ObservabilityEventUncheckedUpdateManyWithoutSessionInput = {
 
 export type ObservabilityEventCountOutputType = {
   errorOccurrences: number
+  performanceExperiences: number
 }
 
 export type ObservabilityEventCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   errorOccurrences?: boolean | ObservabilityEventCountOutputTypeCountErrorOccurrencesArgs
+  performanceExperiences?: boolean | ObservabilityEventCountOutputTypeCountPerformanceExperiencesArgs
 }
 
 /**
@@ -1012,6 +1145,13 @@ export type ObservabilityEventCountOutputTypeDefaultArgs<ExtArgs extends runtime
  */
 export type ObservabilityEventCountOutputTypeCountErrorOccurrencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ErrorOccurrenceWhereInput
+}
+
+/**
+ * ObservabilityEventCountOutputType without action
+ */
+export type ObservabilityEventCountOutputTypeCountPerformanceExperiencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PerformanceExperienceWhereInput
 }
 
 
@@ -1035,6 +1175,7 @@ export type ObservabilityEventSelect<ExtArgs extends runtime.Types.Extensions.In
   receivedAtServer?: boolean
   session?: boolean | Prisma.ObservabilityEvent$sessionArgs<ExtArgs>
   errorOccurrences?: boolean | Prisma.ObservabilityEvent$errorOccurrencesArgs<ExtArgs>
+  performanceExperiences?: boolean | Prisma.ObservabilityEvent$performanceExperiencesArgs<ExtArgs>
   _count?: boolean | Prisma.ObservabilityEventCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["observabilityEvent"]>
 
@@ -1104,6 +1245,7 @@ export type ObservabilityEventOmit<ExtArgs extends runtime.Types.Extensions.Inte
 export type ObservabilityEventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   session?: boolean | Prisma.ObservabilityEvent$sessionArgs<ExtArgs>
   errorOccurrences?: boolean | Prisma.ObservabilityEvent$errorOccurrencesArgs<ExtArgs>
+  performanceExperiences?: boolean | Prisma.ObservabilityEvent$performanceExperiencesArgs<ExtArgs>
   _count?: boolean | Prisma.ObservabilityEventCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ObservabilityEventIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1118,6 +1260,7 @@ export type $ObservabilityEventPayload<ExtArgs extends runtime.Types.Extensions.
   objects: {
     session: Prisma.$ObservabilitySessionPayload<ExtArgs> | null
     errorOccurrences: Prisma.$ErrorOccurrencePayload<ExtArgs>[]
+    performanceExperiences: Prisma.$PerformanceExperiencePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1533,6 +1676,7 @@ export interface Prisma__ObservabilityEventClient<T, Null = never, ExtArgs exten
   readonly [Symbol.toStringTag]: "PrismaPromise"
   session<T extends Prisma.ObservabilityEvent$sessionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ObservabilityEvent$sessionArgs<ExtArgs>>): Prisma.Prisma__ObservabilitySessionClient<runtime.Types.Result.GetResult<Prisma.$ObservabilitySessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   errorOccurrences<T extends Prisma.ObservabilityEvent$errorOccurrencesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ObservabilityEvent$errorOccurrencesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ErrorOccurrencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  performanceExperiences<T extends Prisma.ObservabilityEvent$performanceExperiencesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ObservabilityEvent$performanceExperiencesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PerformanceExperiencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2020,6 +2164,30 @@ export type ObservabilityEvent$errorOccurrencesArgs<ExtArgs extends runtime.Type
   take?: number
   skip?: number
   distinct?: Prisma.ErrorOccurrenceScalarFieldEnum | Prisma.ErrorOccurrenceScalarFieldEnum[]
+}
+
+/**
+ * ObservabilityEvent.performanceExperiences
+ */
+export type ObservabilityEvent$performanceExperiencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PerformanceExperience
+   */
+  select?: Prisma.PerformanceExperienceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PerformanceExperience
+   */
+  omit?: Prisma.PerformanceExperienceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PerformanceExperienceInclude<ExtArgs> | null
+  where?: Prisma.PerformanceExperienceWhereInput
+  orderBy?: Prisma.PerformanceExperienceOrderByWithRelationInput | Prisma.PerformanceExperienceOrderByWithRelationInput[]
+  cursor?: Prisma.PerformanceExperienceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PerformanceExperienceScalarFieldEnum | Prisma.PerformanceExperienceScalarFieldEnum[]
 }
 
 /**

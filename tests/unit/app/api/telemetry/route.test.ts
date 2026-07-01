@@ -88,8 +88,46 @@ describe("POST /api/telemetry", () => {
     });
   });
 
+  it("records valid performance metric batches", async () => {
+    const payload = {
+      sessionId: "obs_session_1_0000",
+      pageInstanceId: "page_0000",
+      collectionMode: "full",
+      events: [
+        {
+          type: "performance_metric",
+          path: "/articoli/test",
+          pageType: "article",
+          contentType: "article",
+          contentId: "article-1",
+          sampleRate: 1,
+          clientSequence: 1,
+          clientElapsedMs: 1200,
+          metadata: { metric: "lcp", value: 1200, viewportWidth: 1280, viewportHeight: 720 },
+        },
+      ],
+    };
+
+    const response = await POST(createTelemetryRequest(payload));
+
+    expect(response.status).toBe(204);
+    expect(telemetryServiceMock.recordTelemetryPayload).toHaveBeenCalledWith(
+      payload,
+      expect.objectContaining({ requestId: "request-1" }),
+    );
+  });
+
   it("ignores invalid and legacy payloads", async () => {
     const response = await POST(createTelemetryRequest({ type: "analytics", event: "page_view" }));
+
+    expect(response.status).toBe(204);
+    expect(telemetryServiceMock.recordTelemetryPayload).not.toHaveBeenCalled();
+  });
+
+  it("ignores legacy standalone web vital payloads", async () => {
+    const response = await POST(
+      createTelemetryRequest({ type: "web-vital", name: "LCP", value: 1200, path: "/" }),
+    );
 
     expect(response.status).toBe(204);
     expect(telemetryServiceMock.recordTelemetryPayload).not.toHaveBeenCalled();

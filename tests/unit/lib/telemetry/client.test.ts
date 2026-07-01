@@ -1,6 +1,7 @@
 import {
   observePublicPage,
   recordAudioEngagement,
+  reportPerformanceMetric,
   reportClientError,
   stopTelemetryTimersForTest,
 } from "@/lib/telemetry/client";
@@ -25,10 +26,12 @@ function installBrowserGlobals(sendBeacon = vi.fn()) {
     addEventListener: vi.fn(),
     clearInterval: vi.fn(),
     innerHeight: 800,
+    innerWidth: 1280,
     location: { origin: "https://middleware.media", pathname: "/" },
     scrollY: 0,
     sessionStorage,
     setInterval: vi.fn(() => 1),
+    setTimeout: vi.fn(),
   });
   vi.stubGlobal("document", {
     addEventListener: vi.fn(),
@@ -151,5 +154,63 @@ describe("observability telemetry client", () => {
       path: "/articoli/test/ascolta",
       metadata: { listenedMs: 90_000, completionRate: 1 },
     });
+  });
+
+  it("records performance metrics inside the active page batch", () => {
+    const { sendBeacon } = installBrowserGlobals();
+
+    const cleanup = observePublicPage({
+      path: "/articoli/test",
+      pageType: "article",
+      contentType: "article",
+      contentId: "article-1",
+    });
+    reportPerformanceMetric({ metric: "lcp", value: 1234.4, metricId: "lcp-1" });
+    cleanup();
+
+    const payload = readBeaconPayload(sendBeacon);
+    const performanceEvent = payload.events.find((event) => event.type === "performance_metric");
+
+    expect(performanceEvent).toMatchObject({
+      type: "performance_metric",
+      path: "/articoli/test",
+      metadata: expect.objectContaining({
+        metric: "lcp",
+        value: 1234,
+        metricId: "lcp-1",
+        viewportWidth: 1280,
+        viewportHeight: 800,
+      }),
+    });
+  });
+
+  it("records all supported performance metric names", () => {
+    const { sendBeacon } = installBrowserGlobals();
+
+    const cleanup = observePublicPage("/articoli/test");
+    for (const metric of ["lcp", "inp", "cls", "fcp", "ttfb"] as const) {
+      reportPerformanceMetric({ metric, value: metric === "cls" ? 0.12 : 1234, metricId: metric });
+    }
+    cleanup();
+
+    const payload = readBeaconPayload(sendBeacon);
+    const metrics = payload.events
+      .filter((event) => event.type === "performance_metric")
+      .map((event) => event.metadata?.metric);
+
+    expect(metrics).toEqual(["lcp", "inp", "cls", "fcp", "ttfb"]);
+  });
+
+  it("does not record performance metrics in minimal collection mode", () => {
+    const { sendBeacon } = installBrowserGlobals();
+    vi.stubGlobal("navigator", { sendBeacon, doNotTrack: "1" });
+
+    const cleanup = observePublicPage("/articoli/test");
+    reportPerformanceMetric({ metric: "lcp", value: 1234, metricId: "lcp-1" });
+    cleanup();
+
+    const payload = readBeaconPayload(sendBeacon);
+    expect(payload.collectionMode).toBe("minimal");
+    expect(payload.events.some((event) => event.type === "performance_metric")).toBe(false);
   });
 });

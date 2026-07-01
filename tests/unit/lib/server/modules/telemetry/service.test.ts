@@ -11,6 +11,9 @@ const telemetryRepositoryMock = vi.hoisted(() => ({
 const observabilityErrorsServiceMock = vi.hoisted(() => ({
   recordOccurrence: vi.fn(),
 }));
+const observabilityPerformanceServiceMock = vi.hoisted(() => ({
+  recordMetric: vi.fn(),
+}));
 
 vi.mock("@/lib/server/modules/telemetry/repository", () => ({
   telemetryRepository: telemetryRepositoryMock,
@@ -18,12 +21,20 @@ vi.mock("@/lib/server/modules/telemetry/repository", () => ({
 vi.mock("@/lib/server/modules/observability-errors/service", () => ({
   observabilityErrorsService: observabilityErrorsServiceMock,
 }));
+vi.mock("@/lib/server/modules/observability-performance", async () => {
+  const schema = await import("@/lib/server/modules/observability-performance/schema");
+  return {
+    performanceMetricPayloadSchema: schema.performanceMetricPayloadSchema,
+    observabilityPerformanceService: observabilityPerformanceServiceMock,
+  };
+});
 
 import { telemetryService } from "@/lib/server/modules/telemetry/service";
 
 describe("telemetry service helpers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    telemetryRepositoryMock.recordSessionEvent.mockResolvedValue({ id: "event-1" });
     process.env.ANALYTICS_SALT_SECRET = "test-secret";
     process.env.NEXT_PUBLIC_SITE_URL = "https://middleware.media";
   });
@@ -232,6 +243,58 @@ describe("telemetry service helpers", () => {
         completed: true,
         listenedMs: 90_000,
         completionRate: 1,
+      }),
+    );
+  });
+
+  it("delegates performance metrics to the performance domain", async () => {
+    await telemetryService.recordTelemetryPayload(
+      {
+        sessionId: "obs_session_1_0000",
+        pageInstanceId: "page_0000",
+        collectionMode: "full",
+        events: [
+          {
+            type: "performance_metric",
+            path: "/articoli/test",
+            pageType: "article",
+            contentType: "article",
+            contentId: "article-1",
+            sampleRate: 1,
+            clientSequence: 1,
+            clientElapsedMs: 1200,
+            metadata: {
+              metric: "lcp",
+              value: 1200,
+              metricId: "lcp-1",
+              viewportWidth: 1280,
+              viewportHeight: 720,
+            },
+          },
+        ],
+      },
+      {
+        ipAddress: "203.0.113.10",
+        userAgent: "Test browser",
+      },
+    );
+
+    expect(telemetryRepositoryMock.recordSessionEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: expect.objectContaining({
+          type: "performance_metric",
+          category: "PERFORMANCE",
+        }),
+      }),
+    );
+    expect(observabilityPerformanceServiceMock.recordMetric).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: "obs_session_1_0000",
+        observabilityEventId: "event-1",
+        path: "/articoli/test",
+        pageType: "article",
+        contentId: "article-1",
+        metric: expect.objectContaining({ metric: "lcp", value: 1200 }),
       }),
     );
   });

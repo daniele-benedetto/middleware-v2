@@ -10,6 +10,7 @@ import { mediaRouter } from "@/lib/server/trpc/routers/media";
 import { navigationRouter } from "@/lib/server/trpc/routers/navigation";
 import { observabilityErrorsRouter } from "@/lib/server/trpc/routers/observability-errors";
 import { pagesRouter } from "@/lib/server/trpc/routers/pages";
+import { performanceRouter } from "@/lib/server/trpc/routers/performance";
 import { publicRouter } from "@/lib/server/trpc/routers/public";
 import { tagsRouter } from "@/lib/server/trpc/routers/tags";
 import { telemetryRouter } from "@/lib/server/trpc/routers/telemetry";
@@ -24,6 +25,7 @@ export const appRouter = router({
   tags: tagsRouter,
   articles: articlesRouter,
   pages: pagesRouter,
+  performance: performanceRouter,
   media: mediaRouter,
   navigation: navigationRouter,
   observabilityErrors: observabilityErrorsRouter,

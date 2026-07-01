@@ -34,6 +34,7 @@ enum ObservabilityEventCategory {
   NAVIGATION
   INTERACTION
   ERROR
+  PERFORMANCE
 }
 
 enum ObservabilityErrorSource {
@@ -326,10 +327,11 @@ model ObservabilitySession {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  events             ObservabilityEvent[]
-  errorOccurrences   ErrorOccurrence[]
-  contentEngagements ContentEngagement[]
-  audioEngagements   AudioEngagement[]
+  events                 ObservabilityEvent[]
+  errorOccurrences       ErrorOccurrence[]
+  contentEngagements     ContentEngagement[]
+  audioEngagements       AudioEngagement[]
+  performanceExperiences PerformanceExperience[]
 
   @@index([visitorHash, startedAt])
   @@index([startedAt])
@@ -356,8 +358,9 @@ model ObservabilityEvent {
   metadata         Json?
   receivedAtServer DateTime                   @default(now())
 
-  session          ObservabilitySession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
-  errorOccurrences ErrorOccurrence[]
+  session                ObservabilitySession?   @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  errorOccurrences       ErrorOccurrence[]
+  performanceExperiences PerformanceExperience[]
 
   @@index([receivedAtServer])
   @@index([sessionId, receivedAtServer])
@@ -498,4 +501,58 @@ model AudioEngagement {
   @@index([articleId, firstSeenAt])
   @@index([completed, firstSeenAt])
   @@map("audio_engagements")
+}
+
+model PerformanceExperience {
+  id                      String   @id @default(uuid())
+  sessionId               String?
+  visitorHash             String?
+  observabilityEventId    String?
+  pageInstanceId          String?
+  path                    String
+  routePath               String?
+  pageType                String
+  contentId               String?
+  deviceType              String?
+  browser                 String?
+  os                      String?
+  connectionType          String?
+  effectiveConnectionType String?
+  saveData                Boolean?
+  viewportWidth           Int?
+  viewportHeight          Int?
+  lcp                     Float?
+  inp                     Float?
+  cls                     Float?
+  fcp                     Float?
+  ttfb                    Float?
+  rating                  String
+  perceivedQuality        String
+  causedEarlyExit         Boolean  @default(false)
+  activeTimeMs            Int?
+  exitType                String?
+  hasBlockingError        Boolean  @default(false)
+  correlatedErrorCount    Int      @default(0)
+  qualityReasons          Json     @default("[]")
+  release                 String?
+  thresholdVersion        String
+  sampleRate              Float    @default(1)
+  occurredAt              DateTime @default(now())
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  session            ObservabilitySession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  observabilityEvent ObservabilityEvent?   @relation(fields: [observabilityEventId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId, occurredAt])
+  @@index([sessionId, pageInstanceId, path])
+  @@index([pageInstanceId, occurredAt])
+  @@index([path, occurredAt])
+  @@index([pageType, occurredAt])
+  @@index([contentId, occurredAt])
+  @@index([deviceType, occurredAt])
+  @@index([rating, occurredAt])
+  @@index([perceivedQuality, occurredAt])
+  @@index([release, occurredAt])
+  @@map("performance_experiences")
 }

@@ -10,6 +10,10 @@ import {
   normalizeSampleRate,
 } from "@/lib/server/modules/observability/model";
 import { observabilityErrorsService } from "@/lib/server/modules/observability-errors/service";
+import {
+  performanceMetricPayloadSchema,
+  observabilityPerformanceService,
+} from "@/lib/server/modules/observability-performance";
 import { observabilityMetadataSchema } from "@/lib/server/modules/telemetry/schema";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
@@ -142,6 +146,10 @@ function buildVisitorHash(context: TelemetryRequestContext) {
 }
 
 function toEventCategory(type: string) {
+  if (type === "performance_metric") {
+    return "PERFORMANCE" as const;
+  }
+
   if (type.startsWith("session_")) {
     return "SESSION" as const;
   }
@@ -647,7 +655,7 @@ async function recordCollectorEvent(input: {
     return;
   }
 
-  await repository.recordSessionEvent({
+  const rawEvent = await repository.recordSessionEvent({
     session: {
       id: input.payload.sessionId,
       visitorHash: input.visitorHash,
@@ -681,6 +689,34 @@ async function recordCollectorEvent(input: {
       receivedAtServer: input.receivedAtServer,
     },
   });
+
+  if (input.event.type === "performance_metric") {
+    if (!path) {
+      return;
+    }
+
+    const metric = performanceMetricPayloadSchema.safeParse(input.event.metadata);
+
+    if (!metric.success) {
+      return;
+    }
+
+    await observabilityPerformanceService.recordMetric({
+      sessionId: input.payload.sessionId,
+      pageInstanceId: input.payload.pageInstanceId,
+      visitorHash: input.visitorHash,
+      observabilityEventId: rawEvent.id,
+      path,
+      pageType: input.event.pageType,
+      contentId: input.event.contentId,
+      release: input.event.release,
+      sampleRate: normalizeSampleRate(input.event.sampleRate),
+      occurredAt: input.receivedAtServer,
+      metric: metric.data,
+      isLikelyBot: input.isLikelyBot,
+    });
+    return;
+  }
 
   if (!isEngagementEvent(input.event.type) || !path) {
     return;

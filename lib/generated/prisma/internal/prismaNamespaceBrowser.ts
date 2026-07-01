@@ -69,7 +69,8 @@ export const ModelName = {
   ErrorGroup: 'ErrorGroup',
   ErrorOccurrence: 'ErrorOccurrence',
   ContentEngagement: 'ContentEngagement',
-  AudioEngagement: 'AudioEngagement'
+  AudioEngagement: 'AudioEngagement',
+  PerformanceExperience: 'PerformanceExperience'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -435,6 +436,48 @@ export const AudioEngagementScalarFieldEnum = {
 } as const
 
 export type AudioEngagementScalarFieldEnum = (typeof AudioEngagementScalarFieldEnum)[keyof typeof AudioEngagementScalarFieldEnum]
+
+
+export const PerformanceExperienceScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  visitorHash: 'visitorHash',
+  observabilityEventId: 'observabilityEventId',
+  pageInstanceId: 'pageInstanceId',
+  path: 'path',
+  routePath: 'routePath',
+  pageType: 'pageType',
+  contentId: 'contentId',
+  deviceType: 'deviceType',
+  browser: 'browser',
+  os: 'os',
+  connectionType: 'connectionType',
+  effectiveConnectionType: 'effectiveConnectionType',
+  saveData: 'saveData',
+  viewportWidth: 'viewportWidth',
+  viewportHeight: 'viewportHeight',
+  lcp: 'lcp',
+  inp: 'inp',
+  cls: 'cls',
+  fcp: 'fcp',
+  ttfb: 'ttfb',
+  rating: 'rating',
+  perceivedQuality: 'perceivedQuality',
+  causedEarlyExit: 'causedEarlyExit',
+  activeTimeMs: 'activeTimeMs',
+  exitType: 'exitType',
+  hasBlockingError: 'hasBlockingError',
+  correlatedErrorCount: 'correlatedErrorCount',
+  qualityReasons: 'qualityReasons',
+  release: 'release',
+  thresholdVersion: 'thresholdVersion',
+  sampleRate: 'sampleRate',
+  occurredAt: 'occurredAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PerformanceExperienceScalarFieldEnum = (typeof PerformanceExperienceScalarFieldEnum)[keyof typeof PerformanceExperienceScalarFieldEnum]
 
 
 export const SortOrder = {

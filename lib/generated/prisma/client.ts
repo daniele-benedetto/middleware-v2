@@ -136,3 +136,8 @@ export type ContentEngagement = Prisma.ContentEngagementModel
  * 
  */
 export type AudioEngagement = Prisma.AudioEngagementModel
+/**
+ * Model PerformanceExperience
+ * 
+ */
+export type PerformanceExperience = Prisma.PerformanceExperienceModel
