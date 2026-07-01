@@ -7,7 +7,6 @@ export {
 export { telemetryPolicy } from "@/lib/server/modules/telemetry/policy";
 export { telemetryRepository } from "@/lib/server/modules/telemetry/repository";
 export {
-  clientErrorTelemetryPayloadSchema,
   listTelemetryErrorsQuerySchema,
   observabilityErrorSeverityValues,
   observabilityErrorSourceValues,
@@ -16,6 +15,7 @@ export {
   observabilityMetadataSchema,
   observabilityUserImpactValues,
   telemetryCollectorPayloadSchema,
+  telemetryCollectorEventSchema,
   updateTelemetryErrorStatusSchema,
 } from "@/lib/server/modules/telemetry/schema";
 export { telemetryService } from "@/lib/server/modules/telemetry/service";
@@ -25,7 +25,6 @@ export type {
   TelemetryErrorOccurrenceDto,
 } from "@/lib/server/modules/telemetry/dto";
 export type {
-  ClientErrorTelemetryPayload,
   ListTelemetryErrorsQuery,
   ObservabilityErrorSeverity,
   ObservabilityErrorSource,
@@ -33,6 +32,7 @@ export type {
   ObservabilityImpactArea,
   ObservabilityMetadata,
   ObservabilityUserImpact,
+  TelemetryCollectorEvent,
   TelemetryCollectorPayload,
   UpdateTelemetryErrorStatusInput,
 } from "@/lib/server/modules/telemetry/schema";

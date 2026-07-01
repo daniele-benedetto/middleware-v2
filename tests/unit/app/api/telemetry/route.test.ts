@@ -6,10 +6,19 @@ const logServerEventMock = vi.hoisted(() => ({
   logServerEvent: vi.fn(),
 }));
 
+const rateLimitMock = vi.hoisted(() => ({
+  enforceRateLimitKey: vi.fn(),
+  rateLimitPolicies: {
+    telemetryIp: { name: "telemetry-ip", limit: 120, windowMs: 60_000 },
+    telemetrySession: { name: "telemetry-session", limit: 60, windowMs: 60_000 },
+  },
+}));
+
 vi.mock("@/lib/server/modules/telemetry/service", () => ({
   telemetryService: telemetryServiceMock,
 }));
 
+vi.mock("@/lib/server/http/rate-limit", () => rateLimitMock);
 vi.mock("@/lib/server/observability/log", () => logServerEventMock);
 
 import { POST } from "@/app/api/telemetry/route";
@@ -23,50 +32,73 @@ function createTelemetryRequest(body: unknown, headers?: HeadersInit) {
       "x-forwarded-for": "203.0.113.10",
       "x-request-id": "request-1",
       "cf-ipcountry": "IT",
+      dnt: "1",
+      "sec-gpc": "1",
       ...headers,
     },
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
 }
 
+function createValidBatch() {
+  return {
+    sessionId: "obs_session_1_0000",
+    pageInstanceId: "page_0000",
+    collectionMode: "minimal",
+    events: [
+      {
+        type: "session_start",
+        path: "/articoli/test",
+        pageType: "article",
+        sampleRate: 1,
+        clientSequence: 1,
+        clientElapsedMs: 10,
+      },
+    ],
+  };
+}
+
 describe("POST /api/telemetry", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    rateLimitMock.enforceRateLimitKey.mockResolvedValue(undefined);
   });
 
-  it("records valid telemetry payloads and returns 204", async () => {
-    const response = await POST(
-      createTelemetryRequest({
-        type: "client-error",
-        source: "boundary",
-        message: "boom",
-        sessionId: "obs_session_1_0000",
-        path: "/articoli/test",
-      }),
-    );
+  it("records valid batch telemetry payloads and returns 204", async () => {
+    const payload = createValidBatch();
+    const response = await POST(createTelemetryRequest(payload));
 
     expect(response.status).toBe(204);
-    expect(telemetryServiceMock.recordTelemetryPayload).toHaveBeenCalledWith(
-      {
-        type: "client-error",
-        source: "boundary",
-        message: "boom",
-        sampleRate: 1,
-        sessionId: "obs_session_1_0000",
-        path: "/articoli/test",
-      },
-      {
-        ipAddress: "203.0.113.10",
-        userAgent: "Test browser",
-        country: "IT",
-        method: "POST",
-        requestId: "request-1",
-      },
+    expect(rateLimitMock.enforceRateLimitKey).toHaveBeenCalledWith(
+      "ip:203.0.113.10",
+      rateLimitMock.rateLimitPolicies.telemetryIp,
     );
+    expect(rateLimitMock.enforceRateLimitKey).toHaveBeenCalledWith(
+      "session:obs_session_1_0000",
+      rateLimitMock.rateLimitPolicies.telemetrySession,
+    );
+    expect(telemetryServiceMock.recordTelemetryPayload).toHaveBeenCalledWith(payload, {
+      ipAddress: "203.0.113.10",
+      userAgent: "Test browser",
+      country: "IT",
+      method: "POST",
+      requestId: "request-1",
+      doNotTrack: "1",
+      globalPrivacyControl: "1",
+    });
   });
 
-  it("ignores invalid payloads", async () => {
+  it("ignores invalid and legacy payloads", async () => {
     const response = await POST(createTelemetryRequest({ type: "analytics", event: "page_view" }));
+
+    expect(response.status).toBe(204);
+    expect(telemetryServiceMock.recordTelemetryPayload).not.toHaveBeenCalled();
+  });
+
+  it("ignores rate limited payloads", async () => {
+    rateLimitMock.enforceRateLimitKey.mockRejectedValue(new Error("limited"));
+
+    const response = await POST(createTelemetryRequest(createValidBatch()));
 
     expect(response.status).toBe(204);
     expect(telemetryServiceMock.recordTelemetryPayload).not.toHaveBeenCalled();
@@ -84,14 +116,7 @@ describe("POST /api/telemetry", () => {
   it("logs internal collector errors without failing the response", async () => {
     telemetryServiceMock.recordTelemetryPayload.mockRejectedValue(new Error("db down"));
 
-    const response = await POST(
-      createTelemetryRequest({
-        type: "client-error",
-        source: "boundary",
-        message: "boom",
-        path: "/articoli/test",
-      }),
-    );
+    const response = await POST(createTelemetryRequest(createValidBatch()));
 
     expect(response.status).toBe(204);
     expect(logServerEventMock.logServerEvent).toHaveBeenCalledWith(

@@ -1,14 +1,43 @@
 import { telemetryCollectorPayloadSchema } from "@/lib/server/modules/telemetry/schema";
 
 describe("telemetry payload schema", () => {
-  it("accepts client error payloads with small metadata", () => {
+  it("accepts phase 2 batch session events", () => {
     const result = telemetryCollectorPayloadSchema.safeParse({
-      type: "client-error",
-      source: "boundary",
       sessionId: "obs_session_1_0000",
-      message: "boom",
-      path: "/articoli/test",
-      metadata: { component: "ArticlePage" },
+      pageInstanceId: "page_0000",
+      collectionMode: "full",
+      events: [
+        {
+          type: "session_start",
+          path: "/articoli/test",
+          pageType: "article",
+          sampleRate: 1,
+          clientSequence: 1,
+          clientElapsedMs: 10,
+          metadata: { component: "ArticlePage" },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts client errors only inside the batch", () => {
+    const result = telemetryCollectorPayloadSchema.safeParse({
+      sessionId: "obs_session_1_0000",
+      pageInstanceId: "page_0000",
+      collectionMode: "full",
+      events: [
+        {
+          type: "client_error",
+          source: "boundary",
+          message: "boom",
+          path: "/articoli/test",
+          sampleRate: 1,
+          clientSequence: 1,
+          clientElapsedMs: 10,
+        },
+      ],
     });
 
     expect(result.success).toBe(true);
@@ -24,13 +53,32 @@ describe("telemetry payload schema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects verbose metadata", () => {
+  it("rejects standalone client error payloads", () => {
     const result = telemetryCollectorPayloadSchema.safeParse({
       type: "client-error",
       source: "client",
       message: "boom",
       path: "/",
-      metadata: { payload: "x".repeat(3000) },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects sensitive metadata", () => {
+    const result = telemetryCollectorPayloadSchema.safeParse({
+      sessionId: "obs_session_1_0000",
+      pageInstanceId: "page_0000",
+      collectionMode: "full",
+      events: [
+        {
+          type: "session_start",
+          path: "/",
+          sampleRate: 1,
+          clientSequence: 1,
+          clientElapsedMs: 10,
+          metadata: { payload: "secret" },
+        },
+      ],
     });
 
     expect(result.success).toBe(false);

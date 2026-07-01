@@ -30,6 +30,9 @@ enum AuditLogOutcome {
 }
 
 enum ObservabilityEventCategory {
+  SESSION
+  NAVIGATION
+  INTERACTION
   ERROR
 }
 

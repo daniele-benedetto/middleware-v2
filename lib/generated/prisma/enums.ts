@@ -44,6 +44,9 @@ export type AuditLogOutcome = (typeof AuditLogOutcome)[keyof typeof AuditLogOutc
 
 
 export const ObservabilityEventCategory = {
+  SESSION: 'SESSION',
+  NAVIGATION: 'NAVIGATION',
+  INTERACTION: 'INTERACTION',
   ERROR: 'ERROR'
 } as const
 

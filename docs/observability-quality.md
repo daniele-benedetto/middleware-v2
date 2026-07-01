@@ -944,81 +944,90 @@ Principio di questa fase: collector-first, no retrocompatibilità. Il client `pa
 
 Checklist operativa Fase 2:
 
-- [ ] Rimuovere dal contratto pubblico del collector ogni payload legacy rimasto dopo Fase 1: `analytics`, `web-vital`, `client-error` standalone se non conforme al nuovo flusso, `page_view`, `article_view`, `issue_view`, `listen_view`, `media_open`, `FID` e ogni evento che rappresenta una view come metrica primaria.
-- [ ] Rimuovere o sostituire il client telemetry legacy che espone API tipo `track` e `reportWebVital`, se ancora presenti, invece di adattarle al nuovo modello con wrapper compatibili.
-- [ ] Rimuovere o sostituire i componenti pubblici che inviano page view o Web Vitals standalone, montando un solo tracker pubblico di sessione.
-- [ ] Definire il payload batch unico di `/api/telemetry` per Fase 2: `sessionId`, `pageInstanceId`, `collectionMode`, lista `events`, e contesto evento con `type`, `path`, `pageType`, `contentId`, `contentType`, `sampleRate`, `clientSequence`, `clientElapsedMs`, `metadata`.
-- [ ] Limitare il batch con soglie esplicite: dimensione massima body, numero massimo eventi per richiesta, dimensione massima metadata, numero massimo chiavi metadata, lunghezza massima stringhe e cardinalità accettabile dei campi liberi.
-- [ ] Accettare solo raw event ammessi in Fase 2: `session_start`, `session_heartbeat`, `session_end`, `page_enter`, `page_exit`, `visibility_change`, `scroll_milestone` e gli eventi errore già introdotti in Fase 1 se passano dallo stesso collector.
-- [ ] Validare il payload collector con Zod usando i vocabolari canonici di Fase 0 e i modelli introdotti in Fase 1, senza ridefinire enum paralleli o valori speciali per compatibilità.
-- [ ] Rendere `/api/telemetry` batch-only: payload singoli o legacy vengono ignorati con risposta vuota, non convertiti al nuovo formato.
-- [ ] Mantenere la risposta del collector non informativa (`204`) per payload invalidi, oversized, rate limited o non applicabili, evitando di esporre dettagli utili a spammer o bot.
-- [ ] Leggere dal request context solo dati ammessi: IP per hashing/rate limit, user-agent limitato, country da header affidabili, requestId/correlationId se disponibili, DNT e Global Privacy Control.
-- [ ] Normalizzare path e referrer lato server rimuovendo sempre query string, frammenti, token e valori sensibili, anche se il client li ha già rimossi.
-- [ ] Continuare a ignorare la telemetry pubblica per path tecnici e interni: `/cms`, `/api`, `/_next`, asset metadata e route equivalenti definite dal modello.
-- [ ] Implementare o aggiornare il client di sessione per generare `sessionId` anonimo in `sessionStorage`, senza cookie e senza identificatore persistente cross-day.
-- [ ] Rigenerare il `sessionId` dopo 30 minuti di inattività, usando il timestamp locale solo come stato client per decidere la rotazione, non come fonte autorevole server.
-- [ ] Generare un `pageInstanceId` per ogni permanenza su una pagina, così refresh, rientri e navigazioni interne possono essere distinti senza contare view grezze come metrica primaria.
-- [ ] Mantenere `clientSequence` monotono per sessione e `clientElapsedMs` basato su `performance.now()`, senza inviare wall-clock client come timestamp autorevole.
-- [ ] Inviare `session_start` una volta per nuova sessione e `session_end` best-effort su `pagehide`, chiusura pagina o rotazione sessione.
-- [ ] Inviare `page_enter` a ogni ingresso pagina pubblico e `page_exit` su cambio pagina, `pagehide` o uscita, evitando doppioni per lo stesso `pageInstanceId`.
-- [ ] Inviare `visibility_change` quando cambia `document.visibilityState`, senza trasformarlo in durata interpretata sul client.
-- [ ] Implementare heartbeat ogni 15 secondi solo quando la pagina è attiva secondo la definizione di Fase 0: visibile, finestra a fuoco e interazione umana recente entro 30 secondi.
-- [ ] Cappare o scartare lato client i gap palesemente inattivi secondo i parametri di Fase 0, ma salvare comunque abbastanza raw signal perché il server/job possa ricostruire la sequenza.
-- [ ] Verificare che una tab in background o una finestra senza focus non produca heartbeat utili e non aumenti artificialmente il tempo attivo.
-- [ ] Implementare `scroll_milestone` con soglie deduplicate per pagina, ad esempio 25/50/75/90/100, evitando eventi scroll continui.
-- [ ] Applicare campionamento solo a eventi ad alta frequenza (`session_heartbeat`, `scroll_milestone`) e includere sempre il `sampleRate` dell'evento.
-- [ ] Non campionare eventi rari o critici: `session_start`, `session_end`, errori, audit e segnali necessari a ricostruire un percorso critico.
-- [ ] Implementare batching client: buffer in memoria, flush periodico, flush per soglia di eventi, flush immediato su `pagehide`, `sendBeacon` preferito e fallback `fetch` con `keepalive`.
-- [ ] Evitare retry persistenti in storage locale per non introdurre code invasive, duplicati o identificatori non necessari.
-- [ ] Implementare deduplicazione lato client per `session_start`, `page_enter`, `page_exit` e milestone scroll già inviate nello stesso `pageInstanceId`.
-- [ ] Implementare debounce/throttle per interazioni, scroll e flush, in modo che il collector non riceva spam da eventi browser ad alta frequenza.
-- [ ] Leggere il consenso privacy disponibile nel prodotto e combinare consenso, Do Not Track e Global Privacy Control in `collectionMode`.
-- [ ] Definire comportamento `collectionMode = "full"`: session tracking, page events, heartbeat e scroll milestone secondo le regole di Fase 2.
-- [ ] Definire comportamento `collectionMode = "minimal"`: inviare solo il set minimo ammesso oppure disattivare gli eventi opzionali, senza heartbeat e senza scroll milestone.
-- [ ] Non introdurre tracking cross-day, cookie marketing, localStorage persistente per identità visitatore o identificatori per-visitatore senza requisito prodotto esplicito.
-- [ ] Derivare `visitorHash` solo lato server da IP, user-agent e salt giornaliero, usando la stessa decisione privacy-first della Fase 0.
-- [ ] Aggiornare il service di sessionizzazione per creare o aggiornare `ObservabilitySession` a partire dai batch ricevuti.
-- [ ] Aggiornare `ObservabilitySession.startedAt`, `lastSeenAt`, `endedAt`, `landingPath`, `exitPath`, `referrerDomain`, `country`, `userAgent` limitato e `updatedAt` secondo gli eventi ricevuti.
-- [ ] Salvare ogni evento valido in `ObservabilityEvent` append-only con `receivedAtServer` autorevole, `sampleRate`, `clientSequence`, `clientElapsedMs`, `requestId`, `correlationId`, `release`/`buildId` quando disponibili.
-- [ ] Non scrivere su `ObservabilityEvent` campi interpretati come fatti certi: niente `engagementLevel`, `completed`, `qualityScore`, `exitType`, `perceivedQuality` o valori equivalenti.
-- [ ] Valutare la sanità dei timing client con le regole di Fase 0: sequenza negativa o non intera rifiutata, delta negativo o eccessivo marcato come sospetto, non usato come durata autorevole.
-- [ ] Implementare rate limit del collector per IP e per `sessionId`, separato dalle policy CMS, con Redis obbligatorio in produzione e fallback locale/test ammesso dove già previsto dal progetto.
-- [ ] Assorbire il rate limit del collector con risposta `204` e nessuna scrittura, invece di trasformare il collector pubblico in un endpoint rumoroso o enumerabile.
-- [ ] Loggare internamente solo anomalie operative del collector con metadata redatti, senza body request, token, Authorization header, cookie o dati personali non necessari.
-- [ ] Implementare bot filtering base nel service usando user-agent denylist/pattern, assenza di segnali umani, marker headless, incongruenze header disponibili e timing client/server sospetto.
-- [ ] Salvare le sessioni probabili bot con `isLikelyBot = true` e motivazioni diagnostiche redatte se previste dallo schema, senza cancellarle e senza contaminarle negli aggregati futuri.
-- [ ] Non usare il bot filtering per bloccare automaticamente errori o audit critici: il flag serve a escludere gli aggregati qualitativi, non a perdere segnali operativi.
-- [ ] Derivare `pageType` in modo conservativo quando il client non lo passa: home, article, issue, static_page, listen, media; lasciare `contentId` nullo se non disponibile senza lookup costosi in Fase 2.
-- [ ] Non implementare in Fase 2 `ContentEngagement`, `PerformanceExperience`, quality score, completion, active time aggregato autorevole o dashboard editoriali: appartengono alle fasi successive.
-- [ ] Aggiornare export/import del modulo per esporre solo il nuovo collector/session tracker come API ufficiale, rimuovendo DTO e tipi legacy non più usati.
-- [ ] Aggiornare i test client che proteggevano `page_view`, `web-vital` e `FID`, eliminando quelle aspettative invece di mantenerle come compatibilità nascosta.
-- [ ] Aggiungere test client per creazione sessione, rotazione dopo 30 minuti, `session_start`, `page_enter`, `page_exit`, `session_end`, heartbeat solo attivo, tab background, scroll milestone deduplicate, batching, `sendBeacon`, fallback `fetch keepalive`, path tecnici e privacy minimal.
-- [ ] Aggiungere test route collector per batch valido, payload legacy ignorato, payload invalido, payload oversized, troppi eventi, metadata sensibili, metadata troppo grandi, path tecnico, DNT/GPC, rate limit IP e rate limit sessione.
-- [ ] Aggiungere test service per creazione sessione, aggiornamento `lastSeenAt`, `landingPath`, `exitPath`, visitor hash giornaliero, salvataggio eventi append-only, normalizzazione path/referrer, timestamp server autorevole e timing client sospetto.
-- [ ] Aggiungere test bot filtering per user-agent bot, user-agent mancante, heartbeat senza interazioni, marker headless, skew eccessivo e sessione umana non marcata bot.
-- [ ] Verificare con `prisma validate`, generazione client se lo schema cambia, typecheck, lint e unit test pertinenti.
-- [ ] Aggiornare questo documento se durante l'implementazione emergono decisioni operative su soglie batch, rate limit, privacy minimal o bot reasons, senza creare checklist parallele.
+- [x] Rimuovere dal contratto pubblico del collector ogni payload legacy rimasto dopo Fase 1: `analytics`, `web-vital`, `client-error` standalone se non conforme al nuovo flusso, `page_view`, `article_view`, `issue_view`, `listen_view`, `media_open`, `FID` e ogni evento che rappresenta una view come metrica primaria.
+- [x] Rimuovere o sostituire il client telemetry legacy che espone API tipo `track` e `reportWebVital`, se ancora presenti, invece di adattarle al nuovo modello con wrapper compatibili.
+- [x] Rimuovere o sostituire i componenti pubblici che inviano page view o Web Vitals standalone, montando un solo tracker pubblico di sessione.
+- [x] Definire il payload batch unico di `/api/telemetry` per Fase 2: `sessionId`, `pageInstanceId`, `collectionMode`, lista `events`, e contesto evento con `type`, `path`, `pageType`, `contentId`, `contentType`, `sampleRate`, `clientSequence`, `clientElapsedMs`, `metadata`.
+- [x] Limitare il batch con soglie esplicite: dimensione massima body, numero massimo eventi per richiesta, dimensione massima metadata, numero massimo chiavi metadata, lunghezza massima stringhe e cardinalità accettabile dei campi liberi.
+- [x] Accettare solo raw event ammessi in Fase 2: `session_start`, `session_heartbeat`, `session_end`, `page_enter`, `page_exit`, `visibility_change`, `scroll_milestone` e gli eventi errore già introdotti in Fase 1 se passano dallo stesso collector.
+- [x] Validare il payload collector con Zod usando i vocabolari canonici di Fase 0 e i modelli introdotti in Fase 1, senza ridefinire enum paralleli o valori speciali per compatibilità.
+- [x] Rendere `/api/telemetry` batch-only: payload singoli o legacy vengono ignorati con risposta vuota, non convertiti al nuovo formato.
+- [x] Mantenere la risposta del collector non informativa (`204`) per payload invalidi, oversized, rate limited o non applicabili, evitando di esporre dettagli utili a spammer o bot.
+- [x] Leggere dal request context solo dati ammessi: IP per hashing/rate limit, user-agent limitato, country da header affidabili, requestId/correlationId se disponibili, DNT e Global Privacy Control.
+- [x] Normalizzare path e referrer lato server rimuovendo sempre query string, frammenti, token e valori sensibili, anche se il client li ha già rimossi.
+- [x] Continuare a ignorare la telemetry pubblica per path tecnici e interni: `/cms`, `/api`, `/_next`, asset metadata e route equivalenti definite dal modello.
+- [x] Implementare o aggiornare il client di sessione per generare `sessionId` anonimo in `sessionStorage`, senza cookie e senza identificatore persistente cross-day.
+- [x] Rigenerare il `sessionId` dopo 30 minuti di inattività, usando il timestamp locale solo come stato client per decidere la rotazione, non come fonte autorevole server.
+- [x] Generare un `pageInstanceId` per ogni permanenza su una pagina, così refresh, rientri e navigazioni interne possono essere distinti senza contare view grezze come metrica primaria.
+- [x] Mantenere `clientSequence` monotono per sessione e `clientElapsedMs` basato su `performance.now()`, senza inviare wall-clock client come timestamp autorevole.
+- [x] Inviare `session_start` una volta per nuova sessione e `session_end` best-effort su `pagehide`, chiusura pagina o rotazione sessione.
+- [x] Inviare `page_enter` a ogni ingresso pagina pubblico e `page_exit` su cambio pagina, `pagehide` o uscita, evitando doppioni per lo stesso `pageInstanceId`.
+- [x] Inviare `visibility_change` quando cambia `document.visibilityState`, senza trasformarlo in durata interpretata sul client.
+- [x] Implementare heartbeat ogni 15 secondi solo quando la pagina è attiva secondo la definizione di Fase 0: visibile, finestra a fuoco e interazione umana recente entro 30 secondi.
+- [x] Cappare o scartare lato client i gap palesemente inattivi secondo i parametri di Fase 0, ma salvare comunque abbastanza raw signal perché il server/job possa ricostruire la sequenza.
+- [x] Verificare che una tab in background o una finestra senza focus non produca heartbeat utili e non aumenti artificialmente il tempo attivo.
+- [x] Implementare `scroll_milestone` con soglie deduplicate per pagina, ad esempio 25/50/75/90/100, evitando eventi scroll continui.
+- [x] Applicare campionamento solo a eventi ad alta frequenza (`session_heartbeat`, `scroll_milestone`) e includere sempre il `sampleRate` dell'evento.
+- [x] Non campionare eventi rari o critici: `session_start`, `session_end`, errori, audit e segnali necessari a ricostruire un percorso critico.
+- [x] Implementare batching client: buffer in memoria, flush periodico, flush per soglia di eventi, flush immediato su `pagehide`, `sendBeacon` preferito e fallback `fetch` con `keepalive`.
+- [x] Evitare retry persistenti in storage locale per non introdurre code invasive, duplicati o identificatori non necessari.
+- [x] Implementare deduplicazione lato client per `session_start`, `page_enter`, `page_exit` e milestone scroll già inviate nello stesso `pageInstanceId`.
+- [x] Implementare debounce/throttle per interazioni, scroll e flush, in modo che il collector non riceva spam da eventi browser ad alta frequenza.
+- [x] Leggere il consenso privacy disponibile nel prodotto e combinare consenso, Do Not Track e Global Privacy Control in `collectionMode`.
+- [x] Definire comportamento `collectionMode = "full"`: session tracking, page events, heartbeat e scroll milestone secondo le regole di Fase 2.
+- [x] Definire comportamento `collectionMode = "minimal"`: inviare solo il set minimo ammesso oppure disattivare gli eventi opzionali, senza heartbeat e senza scroll milestone.
+- [x] Non introdurre tracking cross-day, cookie marketing, localStorage persistente per identità visitatore o identificatori per-visitatore senza requisito prodotto esplicito.
+- [x] Derivare `visitorHash` solo lato server da IP, user-agent e salt giornaliero, usando la stessa decisione privacy-first della Fase 0.
+- [x] Aggiornare il service di sessionizzazione per creare o aggiornare `ObservabilitySession` a partire dai batch ricevuti.
+- [x] Aggiornare `ObservabilitySession.startedAt`, `lastSeenAt`, `endedAt`, `landingPath`, `exitPath`, `referrerDomain`, `country`, `userAgent` limitato e `updatedAt` secondo gli eventi ricevuti.
+- [x] Salvare ogni evento valido in `ObservabilityEvent` append-only con `receivedAtServer` autorevole, `sampleRate`, `clientSequence`, `clientElapsedMs`, `requestId`, `correlationId`, `release`/`buildId` quando disponibili.
+- [x] Non scrivere su `ObservabilityEvent` campi interpretati come fatti certi: niente `engagementLevel`, `completed`, `qualityScore`, `exitType`, `perceivedQuality` o valori equivalenti.
+- [x] Valutare la sanità dei timing client con le regole di Fase 0: sequenza negativa o non intera rifiutata, delta negativo o eccessivo marcato come sospetto, non usato come durata autorevole.
+- [x] Implementare rate limit del collector per IP e per `sessionId`, separato dalle policy CMS, con Redis obbligatorio in produzione e fallback locale/test ammesso dove già previsto dal progetto.
+- [x] Assorbire il rate limit del collector con risposta `204` e nessuna scrittura, invece di trasformare il collector pubblico in un endpoint rumoroso o enumerabile.
+- [x] Loggare internamente solo anomalie operative del collector con metadata redatti, senza body request, token, Authorization header, cookie o dati personali non necessari.
+- [x] Implementare bot filtering base nel service usando user-agent denylist/pattern, assenza di segnali umani, marker headless, incongruenze header disponibili e timing client/server sospetto.
+- [x] Salvare le sessioni probabili bot con `isLikelyBot = true` e motivazioni diagnostiche redatte se previste dallo schema, senza cancellarle e senza contaminarle negli aggregati futuri.
+- [x] Non usare il bot filtering per bloccare automaticamente errori o audit critici: il flag serve a escludere gli aggregati qualitativi, non a perdere segnali operativi.
+- [x] Derivare `pageType` in modo conservativo quando il client non lo passa: home, article, issue, static_page, listen, media; lasciare `contentId` nullo se non disponibile senza lookup costosi in Fase 2.
+- [x] Non implementare in Fase 2 `ContentEngagement`, `PerformanceExperience`, quality score, completion, active time aggregato autorevole o dashboard editoriali: appartengono alle fasi successive.
+- [x] Aggiornare export/import del modulo per esporre solo il nuovo collector/session tracker come API ufficiale, rimuovendo DTO e tipi legacy non più usati.
+- [x] Aggiornare i test client che proteggevano `page_view`, `web-vital` e `FID`, eliminando quelle aspettative invece di mantenerle come compatibilità nascosta.
+- [x] Aggiungere test client per creazione sessione, rotazione dopo 30 minuti, `session_start`, `page_enter`, `page_exit`, `session_end`, heartbeat solo attivo, tab background, scroll milestone deduplicate, batching, `sendBeacon`, fallback `fetch keepalive`, path tecnici e privacy minimal.
+- [x] Aggiungere test route collector per batch valido, payload legacy ignorato, payload invalido, payload oversized, troppi eventi, metadata sensibili, metadata troppo grandi, path tecnico, DNT/GPC, rate limit IP e rate limit sessione.
+- [x] Aggiungere test service per creazione sessione, aggiornamento `lastSeenAt`, `landingPath`, `exitPath`, visitor hash giornaliero, salvataggio eventi append-only, normalizzazione path/referrer, timestamp server autorevole e timing client sospetto.
+- [x] Aggiungere test bot filtering per user-agent bot, user-agent mancante, heartbeat senza interazioni, marker headless, skew eccessivo e sessione umana non marcata bot.
+- [x] Verificare con `prisma validate`, generazione client se lo schema cambia, typecheck, lint e unit test pertinenti.
+- [x] Aggiornare questo documento se durante l'implementazione emergono decisioni operative su soglie batch, rate limit, privacy minimal o bot reasons, senza creare checklist parallele.
 
 Deliverable Fase 2:
 
-- [ ] Contratto batch-only di `/api/telemetry` con schema Zod e payload legacy non accettati.
-- [ ] Client pubblico di session tracking che sostituisce il tracciamento page-view/Web-Vitals legacy.
-- [ ] Service di sessionizzazione che aggiorna `ObservabilitySession` e scrive `ObservabilityEvent` append-only.
-- [ ] Rate limiter collector per IP e sessione.
-- [ ] Bot detection base con flag `isLikelyBot` sulla sessione.
-- [ ] Privacy mode collegato a consenso, DNT e Global Privacy Control.
-- [ ] Test unitari e route test sui casi critici della raccolta.
+- [x] Contratto batch-only di `/api/telemetry` con schema Zod e payload legacy non accettati.
+- [x] Client pubblico di session tracking che sostituisce il tracciamento page-view/Web-Vitals legacy.
+- [x] Service di sessionizzazione che aggiorna `ObservabilitySession` e scrive `ObservabilityEvent` append-only.
+- [x] Rate limiter collector per IP e sessione.
+- [x] Bot detection base con flag `isLikelyBot` sulla sessione.
+- [x] Privacy mode collegato a consenso, DNT e Global Privacy Control.
+- [x] Test unitari e route test sui casi critici della raccolta.
 
 Criterio di completamento:
 
-- [ ] Una visita reale produce `ObservabilitySession` e una sequenza coerente di `ObservabilityEvent`: `session_start`, `page_enter`, heartbeat se attiva, `page_exit`, `session_end` quando possibile.
-- [ ] Refresh, ritorni rapidi e navigazioni interne non producono false letture qualificate e non reintroducono page views come metrica primaria.
-- [ ] Una tab lasciata aperta in background o senza focus non produce tempo attivo infinito né heartbeat utili.
-- [ ] Una sessione bot evidente viene marcata `isLikelyBot = true` e resta disponibile per debug, ma sarà esclusa dagli aggregati qualitativi futuri.
-- [ ] Il collector non accetta né conserva contratti legacy come `page_view`, `web-vital`, `FID`, `AnalyticsEvent`, `WebVital` o `ErrorLog`.
-- [ ] Privacy, metadata e timestamp rispettano le decisioni della Fase 0: minimizzazione, niente query sensibili, niente clock client autorevole, niente identità cross-day.
-- [ ] Il sistema resta funzionante e verificabile dopo la sostituzione del collector, anche se engagement contenuti, performance qualitativa, aggregati e dashboard arrivano nelle fasi successive.
+- [x] Una visita reale produce `ObservabilitySession` e una sequenza coerente di `ObservabilityEvent`: `session_start`, `page_enter`, heartbeat se attiva, `page_exit`, `session_end` quando possibile.
+- [x] Refresh, ritorni rapidi e navigazioni interne non producono false letture qualificate e non reintroducono page views come metrica primaria.
+- [x] Una tab lasciata aperta in background o senza focus non produce tempo attivo infinito né heartbeat utili.
+- [x] Una sessione bot evidente viene marcata `isLikelyBot = true` e resta disponibile per debug, ma sarà esclusa dagli aggregati qualitativi futuri.
+- [x] Il collector non accetta né conserva contratti legacy come `page_view`, `web-vital`, `FID`, `AnalyticsEvent`, `WebVital` o `ErrorLog`.
+- [x] Privacy, metadata e timestamp rispettano le decisioni della Fase 0: minimizzazione, niente query sensibili, niente clock client autorevole, niente identità cross-day.
+- [x] Il sistema resta funzionante e verificabile dopo la sostituzione del collector, anche se engagement contenuti, performance qualitativa, aggregati e dashboard arrivano nelle fasi successive.
+
+Verifiche eseguite:
+
+- `pnpm prisma:generate`
+- `pnpm prisma:validate`
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test:run tests/unit/lib/server/modules/telemetry/schema.test.ts tests/unit/app/api/telemetry/route.test.ts tests/unit/lib/server/modules/telemetry/service.test.ts tests/unit/lib/telemetry/client.test.ts`
+- `pnpm test:run`
 
 ### Fase Calibrazione Iniziale: Soglie Su Dati Reali
 

@@ -30,6 +30,8 @@ return { current, ttl }
 
 export const rateLimitPolicies = {
   publicRead: { name: "public-read", limit: 120, windowMs: 60_000 },
+  telemetryIp: { name: "telemetry-ip", limit: 120, windowMs: 60_000 },
+  telemetrySession: { name: "telemetry-session", limit: 60, windowMs: 60_000 },
   write: { name: "write", limit: 60, windowMs: 60_000 },
   sensitiveWrite: { name: "sensitive-write", limit: 20, windowMs: 60_000 },
   publish: { name: "publish", limit: 30, windowMs: 60_000 },
@@ -174,6 +176,43 @@ export async function enforceRateLimit(request: Request, policy: RateLimitPolicy
       (await incrementRedisCounter(key, policy)) ?? incrementInMemoryCounter(key, policy, now);
   } catch {
     counter = incrementInMemoryCounter(key, policy, now);
+  }
+
+  if (counter.count > policy.limit) {
+    throw new ApiError(429, "RATE_LIMITED", "Rate limit exceeded for this endpoint");
+  }
+}
+
+export async function enforceRateLimitKey(key: string, policy: RateLimitPolicy): Promise<void> {
+  const now = Date.now();
+  let counter: RateLimitCounter;
+
+  if (isProductionRateLimit()) {
+    try {
+      counter = await incrementRequiredRedisCounter(`${policy.name}:${key}`, policy);
+    } catch (error) {
+      logServerEvent({
+        event: "RATE_LIMIT_BACKEND_UNAVAILABLE",
+        level: "error",
+        metadata: { policy: policy.name },
+        error,
+      });
+      throw buildRateLimitBackendUnavailableError();
+    }
+
+    if (counter.count > policy.limit) {
+      throw new ApiError(429, "RATE_LIMITED", "Rate limit exceeded for this endpoint");
+    }
+
+    return;
+  }
+
+  try {
+    counter =
+      (await incrementRedisCounter(`${policy.name}:${key}`, policy)) ??
+      incrementInMemoryCounter(`${policy.name}:${key}`, policy, now);
+  } catch {
+    counter = incrementInMemoryCounter(`${policy.name}:${key}`, policy, now);
   }
 
   if (counter.count > policy.limit) {

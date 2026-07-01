@@ -4,6 +4,7 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 import type {
+  ObservabilityEventCategory as PrismaObservabilityEventCategory,
   ObservabilityErrorSeverity as PrismaObservabilityErrorSeverity,
   ObservabilityErrorSource as PrismaObservabilityErrorSource,
   ObservabilityErrorStatus as PrismaObservabilityErrorStatus,
@@ -64,6 +65,7 @@ export type RecordErrorEntry = {
     referrerDomain?: string | null;
     country?: string | null;
     userAgent?: string | null;
+    isLikelyBot?: boolean;
   } | null;
   event: {
     sessionId?: string | null;
@@ -114,6 +116,38 @@ export type RecordErrorEntry = {
   };
 };
 
+export type UpsertObservabilitySessionEntry = {
+  id: string;
+  visitorHash: string;
+  observedAt: Date;
+  landingPath?: string | null;
+  exitPath?: string | null;
+  referrerDomain?: string | null;
+  country?: string | null;
+  userAgent?: string | null;
+  isLikelyBot?: boolean;
+  endedAt?: Date | null;
+};
+
+export type CreateObservabilityEventEntry = {
+  sessionId?: string | null;
+  visitorHash?: string | null;
+  type: string;
+  category: PrismaObservabilityEventCategory;
+  path?: string | null;
+  pageType?: string | null;
+  contentId?: string | null;
+  contentType?: string | null;
+  requestId?: string | null;
+  correlationId?: string | null;
+  release?: string | null;
+  sampleRate: number;
+  clientSequence?: number | null;
+  clientElapsedMs?: number | null;
+  metadata?: Prisma.InputJsonValue;
+  receivedAtServer: Date;
+};
+
 function toPrismaSource(
   value: ListTelemetryErrorsQuery["source"],
 ): PrismaObservabilityErrorSource | undefined {
@@ -161,6 +195,60 @@ function appendDistinctPath(value: unknown, path: string | null | undefined) {
 }
 
 export const telemetryRepository = {
+  async recordSessionEvent(entry: {
+    session: UpsertObservabilitySessionEntry;
+    event: CreateObservabilityEventEntry;
+  }) {
+    return prisma.$transaction(async (tx) => {
+      await tx.observabilitySession.upsert({
+        where: { id: entry.session.id },
+        create: {
+          id: entry.session.id,
+          visitorHash: entry.session.visitorHash,
+          startedAt: entry.session.observedAt,
+          lastSeenAt: entry.session.observedAt,
+          endedAt: entry.session.endedAt ?? null,
+          landingPath: entry.session.landingPath ?? null,
+          exitPath: entry.session.exitPath ?? null,
+          referrerDomain: entry.session.referrerDomain ?? null,
+          country: entry.session.country ?? null,
+          userAgent: entry.session.userAgent ?? null,
+          isLikelyBot: entry.session.isLikelyBot ?? false,
+        },
+        update: {
+          lastSeenAt: entry.session.observedAt,
+          endedAt: entry.session.endedAt ?? undefined,
+          exitPath: entry.session.exitPath ?? undefined,
+          referrerDomain: entry.session.referrerDomain ?? undefined,
+          country: entry.session.country ?? undefined,
+          userAgent: entry.session.userAgent ?? undefined,
+          isLikelyBot: entry.session.isLikelyBot ? true : undefined,
+        },
+      });
+
+      return tx.observabilityEvent.create({
+        data: {
+          sessionId: entry.event.sessionId ?? null,
+          visitorHash: entry.event.visitorHash ?? null,
+          type: entry.event.type,
+          category: entry.event.category,
+          path: entry.event.path ?? null,
+          pageType: entry.event.pageType ?? null,
+          contentId: entry.event.contentId ?? null,
+          contentType: entry.event.contentType ?? null,
+          requestId: entry.event.requestId ?? null,
+          correlationId: entry.event.correlationId ?? null,
+          release: entry.event.release ?? null,
+          sampleRate: entry.event.sampleRate,
+          clientSequence: entry.event.clientSequence ?? null,
+          clientElapsedMs: entry.event.clientElapsedMs ?? null,
+          metadata: entry.event.metadata,
+          receivedAtServer: entry.event.receivedAtServer,
+        },
+      });
+    });
+  },
+
   async recordError(entry: RecordErrorEntry) {
     return prisma.$transaction(async (tx) => {
       if (entry.session) {
@@ -175,11 +263,13 @@ export const telemetryRepository = {
             referrerDomain: entry.session.referrerDomain ?? null,
             country: entry.session.country ?? null,
             userAgent: entry.session.userAgent ?? null,
+            isLikelyBot: entry.session.isLikelyBot ?? false,
           },
           update: {
             lastSeenAt: entry.event.receivedAtServer,
             exitPath: entry.session.landingPath ?? undefined,
             userAgent: entry.session.userAgent ?? undefined,
+            isLikelyBot: entry.session.isLikelyBot ? true : undefined,
           },
         });
       }

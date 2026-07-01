@@ -1,3 +1,4 @@
+import { enforceRateLimitKey, rateLimitPolicies } from "@/lib/server/http/rate-limit";
 import { getRequestClientIp, getRequestId, getRequestUserAgent } from "@/lib/server/http/request";
 import { telemetryCollectorPayloadSchema } from "@/lib/server/modules/telemetry/schema";
 import { telemetryService } from "@/lib/server/modules/telemetry/service";
@@ -25,6 +26,21 @@ function isOversizedRequest(request: Request) {
   return Number.isFinite(parsedValue) && parsedValue > maxTelemetryPayloadBytes;
 }
 
+function readGlobalPrivacyControl(request: Request) {
+  return request.headers.get("sec-gpc")?.trim() ?? null;
+}
+
+function readDoNotTrack(request: Request) {
+  return request.headers.get("dnt")?.trim() ?? null;
+}
+
+async function enforceCollectorRateLimit(request: Request, sessionId: string) {
+  const ipAddress = getRequestClientIp(request) ?? "unknown";
+
+  await enforceRateLimitKey(`ip:${ipAddress}`, rateLimitPolicies.telemetryIp);
+  await enforceRateLimitKey(`session:${sessionId}`, rateLimitPolicies.telemetrySession);
+}
+
 export async function POST(request: Request) {
   if (isOversizedRequest(request)) {
     return emptyResponse();
@@ -44,12 +60,20 @@ export async function POST(request: Request) {
       return emptyResponse();
     }
 
+    try {
+      await enforceCollectorRateLimit(request, parsedPayload.data.sessionId);
+    } catch {
+      return emptyResponse();
+    }
+
     await telemetryService.recordTelemetryPayload(parsedPayload.data, {
       ipAddress: getRequestClientIp(request),
       userAgent: getRequestUserAgent(request),
       country: readCountryHeader(request),
       method: request.method,
       requestId: getRequestId(request),
+      doNotTrack: readDoNotTrack(request),
+      globalPrivacyControl: readGlobalPrivacyControl(request),
     });
   } catch (error) {
     logServerEvent({

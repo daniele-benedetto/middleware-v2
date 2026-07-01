@@ -1,101 +1,126 @@
-import { reportClientError } from "@/lib/telemetry/client";
+import {
+  observePublicPage,
+  reportClientError,
+  stopTelemetryTimersForTest,
+} from "@/lib/telemetry/client";
 
-function createSessionStorageMock() {
-  const store = new Map<string, string>();
+function createSessionStorage() {
+  const values = new Map<string, string>();
 
   return {
-    getItem: vi.fn((key: string) => store.get(key) ?? null),
-    setItem: vi.fn((key: string, value: string) => {
-      store.set(key, value);
-    }),
+    clear: vi.fn(() => values.clear()),
+    getItem: vi.fn((key: string) => values.get(key) ?? null),
+    removeItem: vi.fn((key: string) => values.delete(key)),
+    setItem: vi.fn((key: string, value: string) => values.set(key, value)),
   };
 }
 
-describe("reportClientError", () => {
+function installBrowserGlobals(sendBeacon = vi.fn()) {
+  const sessionStorage = createSessionStorage();
+  let cookie = "";
+
+  vi.stubGlobal("navigator", { sendBeacon, doNotTrack: "0" });
+  vi.stubGlobal("window", {
+    addEventListener: vi.fn(),
+    clearInterval: vi.fn(),
+    innerHeight: 800,
+    location: { origin: "https://middleware.media", pathname: "/" },
+    scrollY: 0,
+    sessionStorage,
+    setInterval: vi.fn(() => 1),
+  });
+  vi.stubGlobal("document", {
+    addEventListener: vi.fn(),
+    documentElement: { scrollHeight: 1600 },
+    hasFocus: vi.fn(() => true),
+    referrer: "https://example.com",
+    visibilityState: "visible",
+    get cookie() {
+      return cookie;
+    },
+    set cookie(value: string) {
+      cookie = value;
+    },
+  });
+
+  return { sendBeacon, sessionStorage };
+}
+
+function readBeaconPayload(sendBeacon: ReturnType<typeof vi.fn>, callIndex = 0) {
+  return JSON.parse(sendBeacon.mock.calls[callIndex]?.[1] as string) as {
+    sessionId: string;
+    pageInstanceId: string;
+    collectionMode: string;
+    events: Array<{ type: string; path?: string; message?: string }>;
+  };
+}
+
+describe("observability telemetry client", () => {
   beforeEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it("sends boundary errors with a session id when sendBeacon is available", () => {
-    const sendBeacon = vi.fn();
-    const sessionStorage = createSessionStorageMock();
+  afterEach(() => {
+    stopTelemetryTimersForTest();
+  });
 
-    vi.stubGlobal("navigator", { sendBeacon });
-    vi.stubGlobal("sessionStorage", sessionStorage);
-    vi.stubGlobal("crypto", { randomUUID: () => "session-1" });
+  it("sends session and page events in a batch", () => {
+    const { sendBeacon, sessionStorage } = installBrowserGlobals();
 
+    const cleanup = observePublicPage("/articoli/test");
+    cleanup();
+
+    expect(sendBeacon).toHaveBeenCalledWith("/api/telemetry", expect.any(String));
+    const payload = readBeaconPayload(sendBeacon);
+
+    expect(payload.sessionId).toMatch(/^obs_session_/);
+    expect(payload.pageInstanceId).toMatch(/^page_/);
+    expect(payload.collectionMode).toBe("full");
+    expect(payload.events.map((event) => event.type)).toEqual([
+      "session_start",
+      "page_enter",
+      "page_exit",
+    ]);
+    expect(payload.events[0]?.path).toBe("/articoli/test");
+    expect(sessionStorage.getItem("mw_observability_session")).toContain("obs_session_");
+  });
+
+  it("does not observe technical paths", () => {
+    const { sendBeacon } = installBrowserGlobals();
+
+    observePublicPage("/cms/articles")();
+    observePublicPage("/api/health")();
+    observePublicPage("/_next/static/app.js")();
+
+    expect(sendBeacon).not.toHaveBeenCalled();
+  });
+
+  it("reports client errors inside the batch contract", () => {
+    const { sendBeacon } = installBrowserGlobals();
+
+    observePublicPage("/articoli/test");
     reportClientError({
       error: Object.assign(new Error("boom"), { digest: "digest-1" }),
       path: "/articoli/test",
-      metadata: { boundary: "test" },
+      metadata: { component: "ArticlePage" },
     });
 
-    const payload = JSON.parse(sendBeacon.mock.calls[0]?.[1] as string) as Record<string, unknown>;
+    const payload = readBeaconPayload(sendBeacon);
+    const errorEvent = payload.events.find((event) => event.type === "client_error");
 
-    expect(sendBeacon.mock.calls[0]?.[0]).toBe("/api/telemetry");
-    expect(payload).toEqual(
-      expect.objectContaining({
-        type: "client-error",
-        source: "boundary",
-        sessionId: "obs_session-1",
-        name: "Error",
-        message: "boom",
-        digest: "digest-1",
-        path: "/articoli/test",
-        metadata: { boundary: "test" },
-      }),
-    );
-    expect(payload.stack).toEqual(expect.any(String));
+    expect(errorEvent).toMatchObject({
+      type: "client_error",
+      path: "/articoli/test",
+      message: "boom",
+    });
   });
 
-  it("falls back to fetch keepalive", () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+  it("uses minimal collection mode when DNT is enabled", () => {
+    const { sendBeacon } = installBrowserGlobals();
+    vi.stubGlobal("navigator", { sendBeacon, doNotTrack: "1" });
 
-    vi.stubGlobal("navigator", {});
-    vi.stubGlobal("fetch", fetchMock);
-    vi.stubGlobal("sessionStorage", createSessionStorageMock());
-    vi.stubGlobal("crypto", { randomUUID: () => "session-1" });
+    observePublicPage("/articoli/test")();
 
-    reportClientError({
-      error: new Error("boom"),
-      path: "/",
-    });
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/telemetry",
-      expect.objectContaining({
-        method: "POST",
-        keepalive: true,
-        body: expect.stringContaining('"type":"client-error"'),
-      }),
-    );
-  });
-
-  it("rotates the session id after inactivity", () => {
-    const sendBeacon = vi.fn();
-    const sessionStorage = createSessionStorageMock();
-    const now = 1_000_000;
-
-    vi.stubGlobal("navigator", { sendBeacon });
-    vi.stubGlobal("sessionStorage", sessionStorage);
-    vi.stubGlobal("crypto", {
-      randomUUID: vi.fn().mockReturnValueOnce("session-1").mockReturnValueOnce("session-2"),
-    });
-    vi.spyOn(Date, "now")
-      .mockReturnValueOnce(now)
-      .mockReturnValueOnce(now + 31 * 60 * 1000);
-
-    reportClientError({ error: new Error("first"), path: "/" });
-    reportClientError({ error: new Error("second"), path: "/" });
-
-    const firstPayload = JSON.parse(sendBeacon.mock.calls[0]?.[1] as string) as {
-      sessionId: string;
-    };
-    const secondPayload = JSON.parse(sendBeacon.mock.calls[1]?.[1] as string) as {
-      sessionId: string;
-    };
-
-    expect(firstPayload.sessionId).toBe("obs_session-1");
-    expect(secondPayload.sessionId).toBe("obs_session-2");
+    expect(readBeaconPayload(sendBeacon).collectionMode).toBe("minimal");
   });
 });

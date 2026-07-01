@@ -4,6 +4,11 @@ import { createHash } from "node:crypto";
 
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
+import {
+  assessLikelyBot,
+  evaluateClientTimingSanity,
+  normalizeSampleRate,
+} from "@/lib/server/modules/observability/model";
 import { observabilityMetadataSchema } from "@/lib/server/modules/telemetry/schema";
 
 import type {
@@ -19,11 +24,11 @@ import type {
   TelemetryErrorOccurrenceDto,
 } from "@/lib/server/modules/telemetry/dto";
 import type {
-  ClientErrorTelemetryPayload,
   ListTelemetryErrorsQuery,
   ObservabilityErrorSource,
   ObservabilityErrorStatus,
   ObservabilityMetadata,
+  TelemetryCollectorEvent,
   TelemetryCollectorPayload,
 } from "@/lib/server/modules/telemetry/schema";
 
@@ -44,6 +49,8 @@ type TelemetryRequestContext = {
   country?: string | null;
   method?: string | null;
   requestId?: string | null;
+  doNotTrack?: string | null;
+  globalPrivacyControl?: string | null;
 };
 
 type ServerErrorTelemetryInput = {
@@ -205,6 +212,72 @@ function buildVisitorHash(context: TelemetryRequestContext) {
     ipAddress: context.ipAddress,
     userAgent: context.userAgent,
   });
+}
+
+function toEventCategory(type: string) {
+  if (type.startsWith("session_")) {
+    return "SESSION" as const;
+  }
+
+  if (type === "page_enter" || type === "page_exit" || type === "visibility_change") {
+    return "NAVIGATION" as const;
+  }
+
+  if (type === "scroll_milestone") {
+    return "INTERACTION" as const;
+  }
+
+  return "ERROR" as const;
+}
+
+function readInteractionCount(events: TelemetryCollectorEvent[]) {
+  return events.reduce((count, event) => {
+    const value = event.metadata?.interactionCount;
+    return count + (typeof value === "number" && Number.isFinite(value) ? value : 0);
+  }, 0);
+}
+
+function readHeadlessMarker(events: TelemetryCollectorEvent[]) {
+  return events.some((event) => event.metadata?.headless === true);
+}
+
+function resolveLikelyBot(input: {
+  userAgent?: string | null;
+  events: TelemetryCollectorEvent[];
+  timingSuspicious: boolean;
+}) {
+  return assessLikelyBot({
+    userAgent: input.userAgent,
+    heartbeatCount: input.events.filter((event) => event.type === "session_heartbeat").length,
+    scrollEventCount: input.events.filter((event) => event.type === "scroll_milestone").length,
+    interactionCount: readInteractionCount(input.events),
+    headlessMarker: readHeadlessMarker(input.events),
+    suspiciousHeaderMismatch: input.timingSuspicious,
+  });
+}
+
+function withDiagnosticMetadata(input: {
+  metadata?: ObservabilityMetadata;
+  collectionMode: string;
+  pageInstanceId: string;
+  timingReasons: string[];
+  botReasons: string[];
+}) {
+  const metadata: Record<string, string | number | boolean | null> = {
+    ...(input.metadata ?? {}),
+    collectionMode: input.collectionMode,
+    pageInstanceId: input.pageInstanceId,
+  };
+
+  if (input.timingReasons.length > 0) {
+    metadata.timingReasons = input.timingReasons.join(",").slice(0, 500);
+  }
+
+  if (input.botReasons.length > 0) {
+    metadata.botReasons = input.botReasons.join(",").slice(0, 500);
+  }
+
+  return sanitizeTelemetryMetadata(metadata) as Prisma.InputJsonValue | undefined;
 }
 
 function createErrorTitle(name: string | null, message: string) {
@@ -455,6 +528,7 @@ function toErrorGroupDetailDto(record: ErrorGroupDetailRecord): TelemetryErrorGr
 async function recordError(input: {
   source: ObservabilityErrorSource;
   sessionId?: string | null;
+  isLikelyBot?: boolean;
   name?: string | null;
   message: string;
   digest?: string | null;
@@ -520,6 +594,7 @@ async function recordError(input: {
           landingPath: path,
           country: readCountry(input.context.country),
           userAgent,
+          isLikelyBot: input.isLikelyBot,
         }
       : null,
     event: {
@@ -569,29 +644,98 @@ async function recordError(input: {
   });
 }
 
-async function recordClientErrorPayload(
-  payload: ClientErrorTelemetryPayload,
-  context: TelemetryRequestContext,
-) {
-  return recordError({
-    source: payload.source,
-    sessionId: payload.sessionId,
-    name: payload.name,
-    message: payload.message,
-    digest: payload.digest,
-    stack: payload.stack,
-    path: payload.path,
-    pageType: payload.pageType,
-    contentId: payload.contentId,
-    contentType: payload.contentType,
-    requestId: payload.requestId,
-    correlationId: payload.correlationId,
-    release: payload.release,
-    sampleRate: payload.sampleRate,
-    clientSequence: payload.clientSequence,
-    clientElapsedMs: payload.clientElapsedMs,
-    metadata: payload.metadata,
-    context,
+async function recordCollectorEvent(input: {
+  payload: TelemetryCollectorPayload;
+  event: TelemetryCollectorEvent;
+  context: TelemetryRequestContext;
+  visitorHash: string;
+  receivedAtServer: Date;
+  isLikelyBot: boolean;
+  botReasons: string[];
+  previousClientElapsedMs?: number | null;
+}) {
+  const timing = evaluateClientTimingSanity({
+    clientSequence: input.event.clientSequence,
+    clientElapsedMs: input.event.clientElapsedMs,
+    previousClientElapsedMs: input.previousClientElapsedMs,
+  });
+
+  if (!timing.accepted) {
+    return;
+  }
+
+  const path = normalizeNullablePath(input.event.path);
+  const repository = await getTelemetryRepository();
+  const metadata = withDiagnosticMetadata({
+    metadata: input.event.metadata,
+    collectionMode: input.payload.collectionMode,
+    pageInstanceId: input.payload.pageInstanceId,
+    timingReasons: timing.reasons,
+    botReasons: input.botReasons,
+  });
+
+  if (input.event.type === "client_error") {
+    if (!input.event.message) {
+      return;
+    }
+
+    await recordError({
+      source: input.event.source ?? "client",
+      sessionId: input.payload.sessionId,
+      isLikelyBot: input.isLikelyBot,
+      name: input.event.name,
+      message: input.event.message,
+      digest: input.event.digest,
+      stack: input.event.stack,
+      path,
+      pageType: input.event.pageType,
+      contentId: input.event.contentId,
+      contentType: input.event.contentType,
+      requestId: input.event.requestId,
+      correlationId: input.event.correlationId,
+      release: input.event.release,
+      sampleRate: normalizeSampleRate(input.event.sampleRate),
+      clientSequence: input.event.clientSequence,
+      clientElapsedMs: input.event.clientElapsedMs,
+      metadata,
+      context: input.context,
+    });
+    return;
+  }
+
+  await repository.recordSessionEvent({
+    session: {
+      id: input.payload.sessionId,
+      visitorHash: input.visitorHash,
+      observedAt: input.receivedAtServer,
+      landingPath:
+        input.event.type === "session_start" || input.event.type === "page_enter" ? path : null,
+      exitPath:
+        input.event.type === "page_exit" || input.event.type === "session_end" ? path : null,
+      endedAt: input.event.type === "session_end" ? input.receivedAtServer : null,
+      referrerDomain: normalizeTelemetryReferrer(input.payload.referrer),
+      country: readCountry(input.context.country),
+      userAgent: truncate(input.context.userAgent, 500),
+      isLikelyBot: input.isLikelyBot,
+    },
+    event: {
+      sessionId: input.payload.sessionId,
+      visitorHash: input.visitorHash,
+      type: input.event.type,
+      category: toEventCategory(input.event.type),
+      path,
+      pageType: truncate(input.event.pageType, 80),
+      contentId: truncate(input.event.contentId, 120),
+      contentType: truncate(input.event.contentType, 80),
+      requestId: truncate(input.event.requestId ?? input.context.requestId, 200),
+      correlationId: truncate(input.event.correlationId, 200),
+      release: truncate(input.event.release, 120),
+      sampleRate: normalizeSampleRate(input.event.sampleRate),
+      clientSequence: input.event.clientSequence,
+      clientElapsedMs: input.event.clientElapsedMs,
+      metadata,
+      receivedAtServer: input.receivedAtServer,
+    },
   });
 }
 
@@ -599,7 +743,41 @@ export async function recordTelemetryPayload(
   payload: TelemetryCollectorPayload,
   context: TelemetryRequestContext,
 ) {
-  return recordClientErrorPayload(payload, context);
+  const receivedAtServer = new Date();
+  const visitorHash = buildVisitorHash(context);
+  const timingResults = payload.events.map((event, index) =>
+    evaluateClientTimingSanity({
+      clientSequence: event.clientSequence,
+      clientElapsedMs: event.clientElapsedMs,
+      previousClientElapsedMs: index > 0 ? payload.events[index - 1]?.clientElapsedMs : null,
+    }),
+  );
+  const botAssessment = resolveLikelyBot({
+    userAgent: context.userAgent,
+    events: payload.events,
+    timingSuspicious: timingResults.some((result) => result.suspicious),
+  });
+
+  let previousClientElapsedMs: number | null = null;
+
+  for (const event of payload.events) {
+    if (event.path && shouldSkipTelemetryPath(event.path)) {
+      previousClientElapsedMs = event.clientElapsedMs;
+      continue;
+    }
+
+    await recordCollectorEvent({
+      payload,
+      event,
+      context,
+      visitorHash,
+      receivedAtServer,
+      isLikelyBot: botAssessment.isLikelyBot,
+      botReasons: botAssessment.reasons,
+      previousClientElapsedMs,
+    });
+    previousClientElapsedMs = event.clientElapsedMs;
+  }
 }
 
 export async function recordServerError(input: ServerErrorTelemetryInput) {

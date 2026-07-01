@@ -3,6 +3,7 @@ const telemetryRepositoryMock = vi.hoisted(() => ({
   getErrorGroupById: vi.fn(),
   listErrorGroups: vi.fn(),
   recordError: vi.fn(),
+  recordSessionEvent: vi.fn(),
   updateErrorGroupStatus: vi.fn(),
 }));
 
@@ -120,17 +121,25 @@ describe("telemetry service helpers", () => {
   it("records client errors through the phase 1 vertical slice", async () => {
     await telemetryService.recordTelemetryPayload(
       {
-        type: "client-error",
-        source: "boundary",
         sessionId: "obs_session_1_0000",
-        name: "Error",
-        message: "Render failed 550e8400-e29b-41d4-a716-446655440000",
-        stack: "at ArticlePage (/app/article.tsx:10:2)",
-        path: "/articoli/test?token=secret",
-        pageType: "article",
-        contentId: "article-1",
-        sampleRate: 1,
-        metadata: { component: "ArticlePage" },
+        pageInstanceId: "page_0000",
+        collectionMode: "full",
+        events: [
+          {
+            type: "client_error",
+            source: "boundary",
+            name: "Error",
+            message: "Render failed 550e8400-e29b-41d4-a716-446655440000",
+            stack: "at ArticlePage (/app/article.tsx:10:2)",
+            path: "/articoli/test?token=secret",
+            pageType: "article",
+            contentId: "article-1",
+            sampleRate: 1,
+            clientSequence: 1,
+            clientElapsedMs: 10,
+            metadata: { component: "ArticlePage" },
+          },
+        ],
       },
       {
         ipAddress: "203.0.113.10",
@@ -165,7 +174,52 @@ describe("telemetry service helpers", () => {
           sessionId: "obs_session_1_0000",
           path: "/articoli/test",
           requestId: "request-1",
-          metadata: { component: "ArticlePage" },
+          metadata: expect.objectContaining({
+            component: "ArticlePage",
+            pageInstanceId: "page_0000",
+          }),
+        }),
+      }),
+    );
+  });
+
+  it("records session events with bot assessment", async () => {
+    await telemetryService.recordTelemetryPayload(
+      {
+        sessionId: "obs_session_1_0000",
+        pageInstanceId: "page_0000",
+        collectionMode: "full",
+        events: [
+          {
+            type: "session_heartbeat",
+            path: "/articoli/test",
+            pageType: "article",
+            sampleRate: 0.5,
+            clientSequence: 1,
+            clientElapsedMs: 10,
+          },
+        ],
+      },
+      {
+        ipAddress: "203.0.113.10",
+        userAgent: "Googlebot",
+        country: "it",
+      },
+    );
+
+    expect(telemetryRepositoryMock.recordSessionEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        session: expect.objectContaining({
+          id: "obs_session_1_0000",
+          isLikelyBot: true,
+        }),
+        event: expect.objectContaining({
+          type: "session_heartbeat",
+          category: "SESSION",
+          sampleRate: 0.5,
+          metadata: expect.objectContaining({
+            botReasons: expect.stringContaining("bot_user_agent"),
+          }),
         }),
       }),
     );
