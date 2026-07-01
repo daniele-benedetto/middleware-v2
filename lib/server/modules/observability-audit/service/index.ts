@@ -52,6 +52,12 @@ const highActions = new Set<ObservabilityAuditAction>([
   "update_navigation",
 ]);
 
+async function getAggregatesService() {
+  const { observabilityAggregatesService } =
+    await import("@/lib/server/modules/observability-aggregates/service");
+  return observabilityAggregatesService;
+}
+
 function truncate(value: string | null | undefined, maxLength = TEXT_MAX_LENGTH) {
   if (!value) return null;
   return value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
@@ -509,6 +515,9 @@ export const observabilityAuditService = {
   },
 
   async summary(): Promise<ObservabilityAuditSummaryDto> {
+    const aggregateSummary = await (await getAggregatesService()).getAuditSummary();
+    if (aggregateSummary) return aggregateSummary;
+
     return observabilityAuditRepository.summary();
   },
 

@@ -119,29 +119,31 @@ Ultimo esito locale verificato 2026-06-30:
 
 ### Env applicative
 
-| Env                        | Produzione                                              |
-| -------------------------- | ------------------------------------------------------- |
-| `NODE_ENV`                 | `production`                                            |
-| `NEXT_PUBLIC_SITE_URL`     | `https://middleware.media`                              |
-| `BETTER_AUTH_URL`          | `https://middleware.media`                              |
-| `BETTER_AUTH_SECRET`       | Segreto produzione                                      |
-| `DATABASE_URL`             | `postgresql://middleware:PASS@postgres:5432/middleware` |
-| `POSTGRES_URL`             | Uguale a `DATABASE_URL`                                 |
-| `PRISMA_DATABASE_URL`      | Uguale a `DATABASE_URL`                                 |
-| `REDIS_URL`                | `redis://redis:6379`                                    |
-| `S3_ENDPOINT`              | Da bucket Hetzner                                       |
-| `S3_REGION`                | Da bucket Hetzner                                       |
-| `S3_BUCKET`                | `middleware-media-prod`                                 |
-| `S3_ACCESS_KEY`            | Access key dedicata produzione                          |
-| `S3_SECRET_KEY`            | Secret key dedicata produzione                          |
-| `S3_FORCE_PATH_STYLE`      | Valore richiesto da endpoint Hetzner                    |
-| `ANALYTICS_SALT_SECRET`    | Segreto produzione                                      |
-| `BOOTSTRAP_ADMIN_EMAIL`    | Admin produzione                                        |
-| `BOOTSTRAP_ADMIN_PASSWORD` | Password manager                                        |
-| `BOOTSTRAP_ADMIN_NAME`     | Nome admin produzione                                   |
-| `AUDIT_LOG_RETENTION_DAYS` | `365`                                                   |
-| `TELEMETRY_RETENTION_DAYS` | `90`                                                    |
-| `ALERT_WEBHOOK_URL`        | Opzionale                                               |
+| Env                                             | Produzione                                              |
+| ----------------------------------------------- | ------------------------------------------------------- |
+| `NODE_ENV`                                      | `production`                                            |
+| `NEXT_PUBLIC_SITE_URL`                          | `https://middleware.media`                              |
+| `BETTER_AUTH_URL`                               | `https://middleware.media`                              |
+| `BETTER_AUTH_SECRET`                            | Segreto produzione                                      |
+| `DATABASE_URL`                                  | `postgresql://middleware:PASS@postgres:5432/middleware` |
+| `POSTGRES_URL`                                  | Uguale a `DATABASE_URL`                                 |
+| `PRISMA_DATABASE_URL`                           | Uguale a `DATABASE_URL`                                 |
+| `REDIS_URL`                                     | `redis://redis:6379`                                    |
+| `S3_ENDPOINT`                                   | Da bucket Hetzner                                       |
+| `S3_REGION`                                     | Da bucket Hetzner                                       |
+| `S3_BUCKET`                                     | `middleware-media-prod`                                 |
+| `S3_ACCESS_KEY`                                 | Access key dedicata produzione                          |
+| `S3_SECRET_KEY`                                 | Secret key dedicata produzione                          |
+| `S3_FORCE_PATH_STYLE`                           | Valore richiesto da endpoint Hetzner                    |
+| `ANALYTICS_SALT_SECRET`                         | Segreto produzione                                      |
+| `BOOTSTRAP_ADMIN_EMAIL`                         | Admin produzione                                        |
+| `BOOTSTRAP_ADMIN_PASSWORD`                      | Password manager                                        |
+| `BOOTSTRAP_ADMIN_NAME`                          | Nome admin produzione                                   |
+| `OBSERVABILITY_RAW_RETENTION_DAYS`              | `30`                                                    |
+| `OBSERVABILITY_INTERPRETED_RETENTION_DAYS`      | `180`                                                   |
+| `OBSERVABILITY_ERROR_OCCURRENCE_RETENTION_DAYS` | `180`                                                   |
+| `OBSERVABILITY_AGGREGATE_RETENTION_DAYS`        | `730`                                                   |
+| `ALERT_WEBHOOK_URL`                             | Opzionale                                               |
 
 ### Env infrastrutturali
 
@@ -203,13 +205,13 @@ Nota: il `GITHUB_TOKEN` automatico vale solo nel runner. Per il `pull` dal VPS s
 
 ### Criteri di accettazione
 
-- Una visita pubblica genera al massimo un `page_view` per navigazione reale e non blocca render o navigazione.
+- Una visita pubblica genera eventi osservabilità batchati e non reintroduce `page_view` come metrica primaria.
 - Nessuna riga telemetry contiene IP grezzo, cookie, authorization header, session token o body request.
-- `/cms/analytics` legge aggregati e mostra visite, visitatori, top pagine, referrer e paesi.
-- `/cms/performance` mostra p75/p95 per pagina senza query raw pesanti.
-- Un errore server di test crea o aggiorna un gruppo in `ErrorLog`.
+- `/cms/analytics` legge aggregati qualitativi e mostra letture qualificate, completamenti, ritorni e quality score.
+- `/cms/performance` mostra esperienza percepita, p75 e sample confidence senza query raw pesanti.
+- Un errore server di test crea o aggiorna `ErrorGroup` e salva una nuova `ErrorOccurrence`.
 - Un errore intercettato da boundary arriva in `/cms/errors`.
-- `telemetry:jobs` aggiorna aggregati e cancella raw oltre retention.
+- `observability:jobs` aggiorna aggregati qualitativi e cancella raw/interpreted oltre retention.
 - `pnpm check:all` resta verde.
 
 ## Roadmap post-acquisto

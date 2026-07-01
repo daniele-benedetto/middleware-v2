@@ -87,6 +87,21 @@ enum ObservabilityUserImpact {
   LOST_CONTENT
 }
 
+enum ObservabilityJobStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+  SKIPPED
+}
+
+enum ObservabilityAggregateDomain {
+  CONTENT
+  ERRORS
+  PERFORMANCE
+  AUDIT
+  ALL
+}
+
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
@@ -596,4 +611,148 @@ model PerformanceExperience {
   @@index([perceivedQuality, occurredAt])
   @@index([release, occurredAt])
   @@map("performance_experiences")
+}
+
+model DailyContentQualityAggregate {
+  id                      String   @id @default(uuid())
+  date                    DateTime @db.Date
+  pageType                String
+  contentType             String
+  contentId               String
+  path                    String
+  totalVisits             Float    @default(0)
+  qualifiedVisits         Float    @default(0)
+  completedReads          Float    @default(0)
+  significantReturns      Float    @default(0)
+  recurringContentDays    Int      @default(0)
+  averageActiveTimeMs     Int      @default(0)
+  frustrationSignals      Float    @default(0)
+  errorImpactedSessions   Float    @default(0)
+  poorPerformanceSessions Float    @default(0)
+  qualityScore            Int      @default(0)
+  qualityScoreComponents  Json     @default("{}")
+  sampleConfidence        String   @default("low")
+  thresholdVersion        String
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@unique([date, pageType, contentType, contentId, path])
+  @@index([date])
+  @@index([pageType, date])
+  @@index([contentType, contentId, date])
+  @@index([qualityScore, date])
+  @@index([sampleConfidence, date])
+  @@map("daily_content_quality_aggregates")
+}
+
+model DailyErrorAggregate {
+  id                   String   @id @default(uuid())
+  date                 DateTime @db.Date
+  source               String
+  severity             String
+  status               String
+  impactArea           String
+  userImpact           String
+  release              String
+  newGroups            Int      @default(0)
+  openGroups           Int      @default(0)
+  criticalHighGroups   Int      @default(0)
+  regressions          Int      @default(0)
+  occurrences          Int      @default(0)
+  affectedSessions     Int      @default(0)
+  blockedActionGroups  Int      @default(0)
+  priorityScoreAverage Float    @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([date, source, severity, status, impactArea, userImpact, release])
+  @@index([date])
+  @@index([status, severity, date])
+  @@index([impactArea, date])
+  @@index([release, date])
+  @@map("daily_error_aggregates")
+}
+
+model DailyPerformanceAggregate {
+  id               String   @id @default(uuid())
+  date             DateTime @db.Date
+  pageType         String
+  path             String
+  contentId        String
+  deviceType       String
+  release          String
+  totalExperiences Int      @default(0)
+  smoothCount      Int      @default(0)
+  acceptableCount  Int      @default(0)
+  frustratingCount Int      @default(0)
+  brokenCount      Int      @default(0)
+  earlyExitCount   Int      @default(0)
+  lcpP75           Float?
+  inpP75           Float?
+  clsP75           Float?
+  fcpP75           Float?
+  ttfbP75          Float?
+  poorRate         Float    @default(0)
+  sampleConfidence String   @default("low")
+  thresholdVersion String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([date, pageType, path, contentId, deviceType, release])
+  @@index([date])
+  @@index([pageType, date])
+  @@index([path, date])
+  @@index([contentId, date])
+  @@index([deviceType, date])
+  @@index([release, date])
+  @@index([sampleConfidence, date])
+  @@map("daily_performance_aggregates")
+}
+
+model DailyAuditAggregate {
+  id                   String   @id @default(uuid())
+  date                 DateTime @db.Date
+  resourceType         String
+  action               String
+  outcome              String
+  riskLevel            String
+  publicImpact         Boolean
+  activityCount        Int      @default(0)
+  highCriticalCount    Int      @default(0)
+  failureCount         Int      @default(0)
+  sensitiveActionCount Int      @default(0)
+  activeActorCount     Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([date, resourceType, action, outcome, riskLevel, publicImpact])
+  @@index([date])
+  @@index([resourceType, date])
+  @@index([action, date])
+  @@index([outcome, date])
+  @@index([riskLevel, date])
+  @@index([publicImpact, date])
+  @@map("daily_audit_aggregates")
+}
+
+model ObservabilityJobRun {
+  id            String                       @id @default(uuid())
+  jobName       String
+  domain        ObservabilityAggregateDomain @default(ALL)
+  windowStart   DateTime
+  windowEnd     DateTime
+  status        ObservabilityJobStatus       @default(RUNNING)
+  startedAt     DateTime                     @default(now())
+  finishedAt    DateTime?
+  lockedUntil   DateTime?
+  processedRows Int                          @default(0)
+  errorMessage  String?
+  metadata      Json?
+  createdAt     DateTime                     @default(now())
+  updatedAt     DateTime                     @updatedAt
+
+  @@index([jobName, status, lockedUntil])
+  @@index([domain, windowStart, windowEnd])
+  @@index([startedAt])
+  @@map("observability_job_runs")
 }

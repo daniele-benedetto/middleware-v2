@@ -7,9 +7,17 @@ const performanceRepositoryMock = vi.hoisted(() => ({
   listWorstPageRecords: vi.fn(),
   upsertExperience: vi.fn(),
 }));
+const observabilityAggregatesServiceMock = vi.hoisted(() => ({
+  getPerformanceSummary: vi.fn(),
+  getPerformanceTrend: vi.fn(),
+  listPerformanceWorstPages: vi.fn(),
+}));
 
 vi.mock("@/lib/server/modules/observability-performance/repository", () => ({
   observabilityPerformanceRepository: performanceRepositoryMock,
+}));
+vi.mock("@/lib/server/modules/observability-aggregates/service", () => ({
+  observabilityAggregatesService: observabilityAggregatesServiceMock,
 }));
 
 import {
@@ -66,6 +74,9 @@ describe("observability performance service", () => {
     performanceRepositoryMock.findRelatedEngagement.mockResolvedValue(null);
     performanceRepositoryMock.countBlockingErrors.mockResolvedValue(0);
     performanceRepositoryMock.upsertExperience.mockResolvedValue({ id: "perf-1" });
+    observabilityAggregatesServiceMock.getPerformanceSummary.mockResolvedValue(null);
+    observabilityAggregatesServiceMock.getPerformanceTrend.mockResolvedValue(null);
+    observabilityAggregatesServiceMock.listPerformanceWorstPages.mockResolvedValue(null);
   });
 
   it("rates LCP boundaries", () => {

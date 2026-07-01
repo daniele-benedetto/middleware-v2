@@ -404,7 +404,12 @@ export const ModelName = {
   ErrorOccurrence: 'ErrorOccurrence',
   ContentEngagement: 'ContentEngagement',
   AudioEngagement: 'AudioEngagement',
-  PerformanceExperience: 'PerformanceExperience'
+  PerformanceExperience: 'PerformanceExperience',
+  DailyContentQualityAggregate: 'DailyContentQualityAggregate',
+  DailyErrorAggregate: 'DailyErrorAggregate',
+  DailyPerformanceAggregate: 'DailyPerformanceAggregate',
+  DailyAuditAggregate: 'DailyAuditAggregate',
+  ObservabilityJobRun: 'ObservabilityJobRun'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -420,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "navigationMenu" | "auditActivity" | "auditChange" | "observabilitySession" | "observabilityEvent" | "errorGroup" | "errorOccurrence" | "contentEngagement" | "audioEngagement" | "performanceExperience"
+    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "tag" | "article" | "articleTag" | "page" | "navigationMenu" | "auditActivity" | "auditChange" | "observabilitySession" | "observabilityEvent" | "errorGroup" | "errorOccurrence" | "contentEngagement" | "audioEngagement" | "performanceExperience" | "dailyContentQualityAggregate" | "dailyErrorAggregate" | "dailyPerformanceAggregate" | "dailyAuditAggregate" | "observabilityJobRun"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1978,6 +1983,376 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DailyContentQualityAggregate: {
+      payload: Prisma.$DailyContentQualityAggregatePayload<ExtArgs>
+      fields: Prisma.DailyContentQualityAggregateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DailyContentQualityAggregateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyContentQualityAggregatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DailyContentQualityAggregateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyContentQualityAggregatePayload>
+        }
+        findFirst: {
+          args: Prisma.DailyContentQualityAggregateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyContentQualityAggregatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DailyContentQualityAggregateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyContentQualityAggregatePayload>
+        }
+        findMany: {
+          args: Prisma.DailyContentQualityAggregateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyContentQualityAggregatePayload>[]
+        }
+        create: {
+          args: Prisma.DailyContentQualityAggregateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyContentQualityAggregatePayload>
+        }
+        createMany: {
+          args: Prisma.DailyContentQualityAggregateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DailyContentQualityAggregateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyContentQualityAggregatePayload>[]
+        }
+        delete: {
+          args: Prisma.DailyContentQualityAggregateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyContentQualityAggregatePayload>
+        }
+        update: {
+          args: Prisma.DailyContentQualityAggregateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyContentQualityAggregatePayload>
+        }
+        deleteMany: {
+          args: Prisma.DailyContentQualityAggregateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DailyContentQualityAggregateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DailyContentQualityAggregateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyContentQualityAggregatePayload>[]
+        }
+        upsert: {
+          args: Prisma.DailyContentQualityAggregateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyContentQualityAggregatePayload>
+        }
+        aggregate: {
+          args: Prisma.DailyContentQualityAggregateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDailyContentQualityAggregate>
+        }
+        groupBy: {
+          args: Prisma.DailyContentQualityAggregateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyContentQualityAggregateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DailyContentQualityAggregateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyContentQualityAggregateCountAggregateOutputType> | number
+        }
+      }
+    }
+    DailyErrorAggregate: {
+      payload: Prisma.$DailyErrorAggregatePayload<ExtArgs>
+      fields: Prisma.DailyErrorAggregateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DailyErrorAggregateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyErrorAggregatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DailyErrorAggregateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyErrorAggregatePayload>
+        }
+        findFirst: {
+          args: Prisma.DailyErrorAggregateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyErrorAggregatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DailyErrorAggregateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyErrorAggregatePayload>
+        }
+        findMany: {
+          args: Prisma.DailyErrorAggregateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyErrorAggregatePayload>[]
+        }
+        create: {
+          args: Prisma.DailyErrorAggregateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyErrorAggregatePayload>
+        }
+        createMany: {
+          args: Prisma.DailyErrorAggregateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DailyErrorAggregateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyErrorAggregatePayload>[]
+        }
+        delete: {
+          args: Prisma.DailyErrorAggregateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyErrorAggregatePayload>
+        }
+        update: {
+          args: Prisma.DailyErrorAggregateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyErrorAggregatePayload>
+        }
+        deleteMany: {
+          args: Prisma.DailyErrorAggregateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DailyErrorAggregateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DailyErrorAggregateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyErrorAggregatePayload>[]
+        }
+        upsert: {
+          args: Prisma.DailyErrorAggregateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyErrorAggregatePayload>
+        }
+        aggregate: {
+          args: Prisma.DailyErrorAggregateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDailyErrorAggregate>
+        }
+        groupBy: {
+          args: Prisma.DailyErrorAggregateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyErrorAggregateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DailyErrorAggregateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyErrorAggregateCountAggregateOutputType> | number
+        }
+      }
+    }
+    DailyPerformanceAggregate: {
+      payload: Prisma.$DailyPerformanceAggregatePayload<ExtArgs>
+      fields: Prisma.DailyPerformanceAggregateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DailyPerformanceAggregateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyPerformanceAggregatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DailyPerformanceAggregateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyPerformanceAggregatePayload>
+        }
+        findFirst: {
+          args: Prisma.DailyPerformanceAggregateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyPerformanceAggregatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DailyPerformanceAggregateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyPerformanceAggregatePayload>
+        }
+        findMany: {
+          args: Prisma.DailyPerformanceAggregateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyPerformanceAggregatePayload>[]
+        }
+        create: {
+          args: Prisma.DailyPerformanceAggregateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyPerformanceAggregatePayload>
+        }
+        createMany: {
+          args: Prisma.DailyPerformanceAggregateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DailyPerformanceAggregateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyPerformanceAggregatePayload>[]
+        }
+        delete: {
+          args: Prisma.DailyPerformanceAggregateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyPerformanceAggregatePayload>
+        }
+        update: {
+          args: Prisma.DailyPerformanceAggregateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyPerformanceAggregatePayload>
+        }
+        deleteMany: {
+          args: Prisma.DailyPerformanceAggregateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DailyPerformanceAggregateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DailyPerformanceAggregateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyPerformanceAggregatePayload>[]
+        }
+        upsert: {
+          args: Prisma.DailyPerformanceAggregateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyPerformanceAggregatePayload>
+        }
+        aggregate: {
+          args: Prisma.DailyPerformanceAggregateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDailyPerformanceAggregate>
+        }
+        groupBy: {
+          args: Prisma.DailyPerformanceAggregateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyPerformanceAggregateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DailyPerformanceAggregateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyPerformanceAggregateCountAggregateOutputType> | number
+        }
+      }
+    }
+    DailyAuditAggregate: {
+      payload: Prisma.$DailyAuditAggregatePayload<ExtArgs>
+      fields: Prisma.DailyAuditAggregateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DailyAuditAggregateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyAuditAggregatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DailyAuditAggregateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyAuditAggregatePayload>
+        }
+        findFirst: {
+          args: Prisma.DailyAuditAggregateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyAuditAggregatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DailyAuditAggregateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyAuditAggregatePayload>
+        }
+        findMany: {
+          args: Prisma.DailyAuditAggregateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyAuditAggregatePayload>[]
+        }
+        create: {
+          args: Prisma.DailyAuditAggregateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyAuditAggregatePayload>
+        }
+        createMany: {
+          args: Prisma.DailyAuditAggregateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DailyAuditAggregateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyAuditAggregatePayload>[]
+        }
+        delete: {
+          args: Prisma.DailyAuditAggregateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyAuditAggregatePayload>
+        }
+        update: {
+          args: Prisma.DailyAuditAggregateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyAuditAggregatePayload>
+        }
+        deleteMany: {
+          args: Prisma.DailyAuditAggregateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DailyAuditAggregateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DailyAuditAggregateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyAuditAggregatePayload>[]
+        }
+        upsert: {
+          args: Prisma.DailyAuditAggregateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyAuditAggregatePayload>
+        }
+        aggregate: {
+          args: Prisma.DailyAuditAggregateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDailyAuditAggregate>
+        }
+        groupBy: {
+          args: Prisma.DailyAuditAggregateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyAuditAggregateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DailyAuditAggregateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyAuditAggregateCountAggregateOutputType> | number
+        }
+      }
+    }
+    ObservabilityJobRun: {
+      payload: Prisma.$ObservabilityJobRunPayload<ExtArgs>
+      fields: Prisma.ObservabilityJobRunFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ObservabilityJobRunFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ObservabilityJobRunPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ObservabilityJobRunFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ObservabilityJobRunPayload>
+        }
+        findFirst: {
+          args: Prisma.ObservabilityJobRunFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ObservabilityJobRunPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ObservabilityJobRunFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ObservabilityJobRunPayload>
+        }
+        findMany: {
+          args: Prisma.ObservabilityJobRunFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ObservabilityJobRunPayload>[]
+        }
+        create: {
+          args: Prisma.ObservabilityJobRunCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ObservabilityJobRunPayload>
+        }
+        createMany: {
+          args: Prisma.ObservabilityJobRunCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ObservabilityJobRunCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ObservabilityJobRunPayload>[]
+        }
+        delete: {
+          args: Prisma.ObservabilityJobRunDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ObservabilityJobRunPayload>
+        }
+        update: {
+          args: Prisma.ObservabilityJobRunUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ObservabilityJobRunPayload>
+        }
+        deleteMany: {
+          args: Prisma.ObservabilityJobRunDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ObservabilityJobRunUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ObservabilityJobRunUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ObservabilityJobRunPayload>[]
+        }
+        upsert: {
+          args: Prisma.ObservabilityJobRunUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ObservabilityJobRunPayload>
+        }
+        aggregate: {
+          args: Prisma.ObservabilityJobRunAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateObservabilityJobRun>
+        }
+        groupBy: {
+          args: Prisma.ObservabilityJobRunGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ObservabilityJobRunGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ObservabilityJobRunCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ObservabilityJobRunCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2426,6 +2801,126 @@ export const PerformanceExperienceScalarFieldEnum = {
 export type PerformanceExperienceScalarFieldEnum = (typeof PerformanceExperienceScalarFieldEnum)[keyof typeof PerformanceExperienceScalarFieldEnum]
 
 
+export const DailyContentQualityAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  pageType: 'pageType',
+  contentType: 'contentType',
+  contentId: 'contentId',
+  path: 'path',
+  totalVisits: 'totalVisits',
+  qualifiedVisits: 'qualifiedVisits',
+  completedReads: 'completedReads',
+  significantReturns: 'significantReturns',
+  recurringContentDays: 'recurringContentDays',
+  averageActiveTimeMs: 'averageActiveTimeMs',
+  frustrationSignals: 'frustrationSignals',
+  errorImpactedSessions: 'errorImpactedSessions',
+  poorPerformanceSessions: 'poorPerformanceSessions',
+  qualityScore: 'qualityScore',
+  qualityScoreComponents: 'qualityScoreComponents',
+  sampleConfidence: 'sampleConfidence',
+  thresholdVersion: 'thresholdVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DailyContentQualityAggregateScalarFieldEnum = (typeof DailyContentQualityAggregateScalarFieldEnum)[keyof typeof DailyContentQualityAggregateScalarFieldEnum]
+
+
+export const DailyErrorAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  source: 'source',
+  severity: 'severity',
+  status: 'status',
+  impactArea: 'impactArea',
+  userImpact: 'userImpact',
+  release: 'release',
+  newGroups: 'newGroups',
+  openGroups: 'openGroups',
+  criticalHighGroups: 'criticalHighGroups',
+  regressions: 'regressions',
+  occurrences: 'occurrences',
+  affectedSessions: 'affectedSessions',
+  blockedActionGroups: 'blockedActionGroups',
+  priorityScoreAverage: 'priorityScoreAverage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DailyErrorAggregateScalarFieldEnum = (typeof DailyErrorAggregateScalarFieldEnum)[keyof typeof DailyErrorAggregateScalarFieldEnum]
+
+
+export const DailyPerformanceAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  pageType: 'pageType',
+  path: 'path',
+  contentId: 'contentId',
+  deviceType: 'deviceType',
+  release: 'release',
+  totalExperiences: 'totalExperiences',
+  smoothCount: 'smoothCount',
+  acceptableCount: 'acceptableCount',
+  frustratingCount: 'frustratingCount',
+  brokenCount: 'brokenCount',
+  earlyExitCount: 'earlyExitCount',
+  lcpP75: 'lcpP75',
+  inpP75: 'inpP75',
+  clsP75: 'clsP75',
+  fcpP75: 'fcpP75',
+  ttfbP75: 'ttfbP75',
+  poorRate: 'poorRate',
+  sampleConfidence: 'sampleConfidence',
+  thresholdVersion: 'thresholdVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DailyPerformanceAggregateScalarFieldEnum = (typeof DailyPerformanceAggregateScalarFieldEnum)[keyof typeof DailyPerformanceAggregateScalarFieldEnum]
+
+
+export const DailyAuditAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  resourceType: 'resourceType',
+  action: 'action',
+  outcome: 'outcome',
+  riskLevel: 'riskLevel',
+  publicImpact: 'publicImpact',
+  activityCount: 'activityCount',
+  highCriticalCount: 'highCriticalCount',
+  failureCount: 'failureCount',
+  sensitiveActionCount: 'sensitiveActionCount',
+  activeActorCount: 'activeActorCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DailyAuditAggregateScalarFieldEnum = (typeof DailyAuditAggregateScalarFieldEnum)[keyof typeof DailyAuditAggregateScalarFieldEnum]
+
+
+export const ObservabilityJobRunScalarFieldEnum = {
+  id: 'id',
+  jobName: 'jobName',
+  domain: 'domain',
+  windowStart: 'windowStart',
+  windowEnd: 'windowEnd',
+  status: 'status',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  lockedUntil: 'lockedUntil',
+  processedRows: 'processedRows',
+  errorMessage: 'errorMessage',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ObservabilityJobRunScalarFieldEnum = (typeof ObservabilityJobRunScalarFieldEnum)[keyof typeof ObservabilityJobRunScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2724,6 +3219,34 @@ export type EnumObservabilityUserImpactFieldRefInput<$PrismaModel> = FieldRefInp
 export type ListEnumObservabilityUserImpactFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ObservabilityUserImpact[]'>
     
 
+
+/**
+ * Reference to a field of type 'ObservabilityAggregateDomain'
+ */
+export type EnumObservabilityAggregateDomainFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ObservabilityAggregateDomain'>
+    
+
+
+/**
+ * Reference to a field of type 'ObservabilityAggregateDomain[]'
+ */
+export type ListEnumObservabilityAggregateDomainFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ObservabilityAggregateDomain[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ObservabilityJobStatus'
+ */
+export type EnumObservabilityJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ObservabilityJobStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ObservabilityJobStatus[]'
+ */
+export type ListEnumObservabilityJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ObservabilityJobStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -2855,6 +3378,11 @@ export type GlobalOmitConfig = {
   contentEngagement?: Prisma.ContentEngagementOmit
   audioEngagement?: Prisma.AudioEngagementOmit
   performanceExperience?: Prisma.PerformanceExperienceOmit
+  dailyContentQualityAggregate?: Prisma.DailyContentQualityAggregateOmit
+  dailyErrorAggregate?: Prisma.DailyErrorAggregateOmit
+  dailyPerformanceAggregate?: Prisma.DailyPerformanceAggregateOmit
+  dailyAuditAggregate?: Prisma.DailyAuditAggregateOmit
+  observabilityJobRun?: Prisma.ObservabilityJobRunOmit
 }
 
 /* Types for Logging */

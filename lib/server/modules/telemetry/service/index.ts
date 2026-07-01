@@ -107,6 +107,12 @@ async function getTelemetryRepository() {
   return telemetryRepository;
 }
 
+async function getAggregatesService() {
+  const { observabilityAggregatesService } =
+    await import("@/lib/server/modules/observability-aggregates/service");
+  return observabilityAggregatesService;
+}
+
 function sha256(value: string) {
   return createHash("sha256").update(value).digest("hex");
 }
@@ -837,6 +843,11 @@ export async function recordTelemetryPayload(
 export const telemetryService = {
   engagementThresholdVersion,
   async getEngagementSummary(query: TelemetryEngagementQuery) {
+    const aggregateSummary = await (
+      await getAggregatesService()
+    ).getTelemetryEngagementSummary(query);
+    if (aggregateSummary) return aggregateSummary;
+
     const repository = await getTelemetryRepository();
     const records = (await repository.listContentEngagementSummaryRecords(
       query,

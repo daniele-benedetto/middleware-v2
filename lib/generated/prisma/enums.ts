@@ -123,3 +123,24 @@ export const ObservabilityUserImpact = {
 } as const
 
 export type ObservabilityUserImpact = (typeof ObservabilityUserImpact)[keyof typeof ObservabilityUserImpact]
+
+
+export const ObservabilityJobStatus = {
+  RUNNING: 'RUNNING',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED'
+} as const
+
+export type ObservabilityJobStatus = (typeof ObservabilityJobStatus)[keyof typeof ObservabilityJobStatus]
+
+
+export const ObservabilityAggregateDomain = {
+  CONTENT: 'CONTENT',
+  ERRORS: 'ERRORS',
+  PERFORMANCE: 'PERFORMANCE',
+  AUDIT: 'AUDIT',
+  ALL: 'ALL'
+} as const
+
+export type ObservabilityAggregateDomain = (typeof ObservabilityAggregateDomain)[keyof typeof ObservabilityAggregateDomain]

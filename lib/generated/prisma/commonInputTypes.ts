@@ -575,6 +575,40 @@ export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedFloatNullableFilter<$PrismaModel>
 }
 
+export type EnumObservabilityAggregateDomainFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityAggregateDomain | Prisma.EnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityAggregateDomain[] | Prisma.ListEnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityAggregateDomain[] | Prisma.ListEnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityAggregateDomainFilter<$PrismaModel> | $Enums.ObservabilityAggregateDomain
+}
+
+export type EnumObservabilityJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityJobStatus | Prisma.EnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityJobStatus[] | Prisma.ListEnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityJobStatus[] | Prisma.ListEnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityJobStatusFilter<$PrismaModel> | $Enums.ObservabilityJobStatus
+}
+
+export type EnumObservabilityAggregateDomainWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityAggregateDomain | Prisma.EnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityAggregateDomain[] | Prisma.ListEnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityAggregateDomain[] | Prisma.ListEnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityAggregateDomainWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityAggregateDomain
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityAggregateDomainFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityAggregateDomainFilter<$PrismaModel>
+}
+
+export type EnumObservabilityJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityJobStatus | Prisma.EnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityJobStatus[] | Prisma.ListEnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityJobStatus[] | Prisma.ListEnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityJobStatusFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1071,6 +1105,40 @@ export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedFloatNullableFilter<$PrismaModel>
   _min?: Prisma.NestedFloatNullableFilter<$PrismaModel>
   _max?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumObservabilityAggregateDomainFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityAggregateDomain | Prisma.EnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityAggregateDomain[] | Prisma.ListEnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityAggregateDomain[] | Prisma.ListEnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityAggregateDomainFilter<$PrismaModel> | $Enums.ObservabilityAggregateDomain
+}
+
+export type NestedEnumObservabilityJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityJobStatus | Prisma.EnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityJobStatus[] | Prisma.ListEnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityJobStatus[] | Prisma.ListEnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityJobStatusFilter<$PrismaModel> | $Enums.ObservabilityJobStatus
+}
+
+export type NestedEnumObservabilityAggregateDomainWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityAggregateDomain | Prisma.EnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityAggregateDomain[] | Prisma.ListEnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityAggregateDomain[] | Prisma.ListEnumObservabilityAggregateDomainFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityAggregateDomainWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityAggregateDomain
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityAggregateDomainFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityAggregateDomainFilter<$PrismaModel>
+}
+
+export type NestedEnumObservabilityJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ObservabilityJobStatus | Prisma.EnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ObservabilityJobStatus[] | Prisma.ListEnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ObservabilityJobStatus[] | Prisma.ListEnumObservabilityJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumObservabilityJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.ObservabilityJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumObservabilityJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumObservabilityJobStatusFilter<$PrismaModel>
 }
 
 

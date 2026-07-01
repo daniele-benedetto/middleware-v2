@@ -122,3 +122,28 @@ export type AudioEngagement = Prisma.AudioEngagementModel
  * 
  */
 export type PerformanceExperience = Prisma.PerformanceExperienceModel
+/**
+ * Model DailyContentQualityAggregate
+ * 
+ */
+export type DailyContentQualityAggregate = Prisma.DailyContentQualityAggregateModel
+/**
+ * Model DailyErrorAggregate
+ * 
+ */
+export type DailyErrorAggregate = Prisma.DailyErrorAggregateModel
+/**
+ * Model DailyPerformanceAggregate
+ * 
+ */
+export type DailyPerformanceAggregate = Prisma.DailyPerformanceAggregateModel
+/**
+ * Model DailyAuditAggregate
+ * 
+ */
+export type DailyAuditAggregate = Prisma.DailyAuditAggregateModel
+/**
+ * Model ObservabilityJobRun
+ * 
+ */
+export type ObservabilityJobRun = Prisma.ObservabilityJobRunModel

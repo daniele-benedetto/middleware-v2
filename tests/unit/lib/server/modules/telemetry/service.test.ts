@@ -14,6 +14,9 @@ const observabilityErrorsServiceMock = vi.hoisted(() => ({
 const observabilityPerformanceServiceMock = vi.hoisted(() => ({
   recordMetric: vi.fn(),
 }));
+const observabilityAggregatesServiceMock = vi.hoisted(() => ({
+  getTelemetryEngagementSummary: vi.fn(),
+}));
 
 vi.mock("@/lib/server/modules/telemetry/repository", () => ({
   telemetryRepository: telemetryRepositoryMock,
@@ -28,6 +31,9 @@ vi.mock("@/lib/server/modules/observability-performance", async () => {
     observabilityPerformanceService: observabilityPerformanceServiceMock,
   };
 });
+vi.mock("@/lib/server/modules/observability-aggregates/service", () => ({
+  observabilityAggregatesService: observabilityAggregatesServiceMock,
+}));
 
 import { telemetryService } from "@/lib/server/modules/telemetry/service";
 
@@ -35,6 +41,7 @@ describe("telemetry service helpers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     telemetryRepositoryMock.recordSessionEvent.mockResolvedValue({ id: "event-1" });
+    observabilityAggregatesServiceMock.getTelemetryEngagementSummary.mockResolvedValue(null);
     process.env.ANALYTICS_SALT_SECRET = "test-secret";
     process.env.NEXT_PUBLIC_SITE_URL = "https://middleware.media";
   });

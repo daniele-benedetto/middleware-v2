@@ -7,6 +7,7 @@ import { categoriesRouter } from "@/lib/server/trpc/routers/categories";
 import { issuesRouter } from "@/lib/server/trpc/routers/issues";
 import { mediaRouter } from "@/lib/server/trpc/routers/media";
 import { navigationRouter } from "@/lib/server/trpc/routers/navigation";
+import { observabilityAggregatesRouter } from "@/lib/server/trpc/routers/observability-aggregates";
 import { observabilityAuditRouter } from "@/lib/server/trpc/routers/observability-audit";
 import { observabilityErrorsRouter } from "@/lib/server/trpc/routers/observability-errors";
 import { pagesRouter } from "@/lib/server/trpc/routers/pages";
@@ -28,6 +29,7 @@ export const appRouter = router({
   media: mediaRouter,
   navigation: navigationRouter,
   observabilityAudit: observabilityAuditRouter,
+  observabilityAggregates: observabilityAggregatesRouter,
   observabilityErrors: observabilityErrorsRouter,
   public: publicRouter,
   telemetry: telemetryRouter,

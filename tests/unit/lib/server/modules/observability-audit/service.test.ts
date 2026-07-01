@@ -6,6 +6,9 @@ const observabilityAuditRepositoryMock = vi.hoisted(() => ({
   getById: vi.fn(),
   listRelatedErrors: vi.fn(),
 }));
+const observabilityAggregatesServiceMock = vi.hoisted(() => ({
+  getAuditSummary: vi.fn(),
+}));
 
 vi.mock("@/lib/server/modules/observability-audit/repository", () => ({
   observabilityAuditRepository: observabilityAuditRepositoryMock,
@@ -14,6 +17,9 @@ vi.mock("@/lib/server/modules/observability-audit/repository", () => ({
 vi.mock("@/lib/prisma", () => ({
   prisma: {},
 }));
+vi.mock("@/lib/server/modules/observability-aggregates/service", () => ({
+  observabilityAggregatesService: observabilityAggregatesServiceMock,
+}));
 
 import { observabilityAuditService } from "@/lib/server/modules/observability-audit/service";
 
@@ -21,6 +27,7 @@ describe("observability audit service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     observabilityAuditRepositoryMock.create.mockResolvedValue({ id: "activity-1" });
+    observabilityAggregatesServiceMock.getAuditSummary.mockResolvedValue(null);
   });
 
   it("records public publish success as high risk with applied changes", async () => {

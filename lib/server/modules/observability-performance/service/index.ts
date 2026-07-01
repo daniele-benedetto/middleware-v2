@@ -51,6 +51,12 @@ type RecordPerformanceMetricInput = {
   isLikelyBot?: boolean;
 };
 
+async function getAggregatesService() {
+  const { observabilityAggregatesService } =
+    await import("@/lib/server/modules/observability-aggregates/service");
+  return observabilityAggregatesService;
+}
+
 export function ratePerformanceMetric(
   metric: PerformanceMetricName,
   value: number,
@@ -439,9 +445,17 @@ export const observabilityPerformanceService = {
     });
   },
   async getSummary(query: PerformanceQuery) {
+    const aggregateSummary = await (await getAggregatesService()).getPerformanceSummary(query);
+    if (aggregateSummary) return aggregateSummary;
+
     return toSummaryDto(await observabilityPerformanceRepository.listSummaryRecords(query));
   },
   async listWorstPages(query: PerformanceWorstPagesQuery, pagination: PaginationParams) {
+    const aggregateResult = await (
+      await getAggregatesService()
+    ).listPerformanceWorstPages(query, pagination);
+    if (aggregateResult) return aggregateResult;
+
     const records = await observabilityPerformanceRepository.listWorstPageRecords(query);
     const sorted = groupByPath(records)
       .map(toWorstPageDto)
@@ -465,6 +479,9 @@ export const observabilityPerformanceService = {
     };
   },
   async getTrend(query: PerformanceTrendQuery) {
+    const aggregateTrend = await (await getAggregatesService()).getPerformanceTrend(query);
+    if (aggregateTrend) return aggregateTrend;
+
     return toTrendDto(
       await observabilityPerformanceRepository.listTrendRecords(query),
       query.metric,

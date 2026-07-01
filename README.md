@@ -25,7 +25,12 @@ Required vars:
 - `BOOTSTRAP_ADMIN_EMAIL`: first-admin bootstrap email, used only by `pnpm auth:bootstrap-admin`
 - `BOOTSTRAP_ADMIN_PASSWORD`: first-admin bootstrap password, used only by `pnpm auth:bootstrap-admin`
 - `BOOTSTRAP_ADMIN_NAME`: optional first-admin display name
-- `AUDIT_LOG_RETENTION_DAYS`: audit-log retention window for `pnpm audit:prune`
+- `OBSERVABILITY_AGGREGATE_DAYS`: recent days rebuilt by `pnpm observability:jobs` (default `7`)
+- `OBSERVABILITY_RAW_RETENTION_DAYS`: retention window for raw observability events
+- `OBSERVABILITY_INTERPRETED_RETENTION_DAYS`: retention window for interpreted engagement/performance episodes
+- `OBSERVABILITY_ERROR_OCCURRENCE_RETENTION_DAYS`: retention window for error occurrences
+- `OBSERVABILITY_AGGREGATE_RETENTION_DAYS`: retention window for persisted daily aggregates
+- `OBSERVABILITY_JOB_LOCK_MS`: optional aggregation job lock timeout
 - `REDIS_URL`: Redis connection string for CMS rate limiting; required in production, optional in local dev/test
 
 Postgres SSL note:
@@ -98,7 +103,9 @@ Production note:
 - `pnpm build` - production build check
 - `pnpm build:analyze` - run the production build with Next bundle analyzer enabled
 - `pnpm auth:bootstrap-admin` - create the first `ADMIN` when no admin exists
-- `pnpm audit:prune` - delete audit log entries older than `AUDIT_LOG_RETENTION_DAYS`
+- `pnpm observability:aggregate` - rebuild persisted daily observability aggregates for a date window
+- `pnpm observability:prune` - prune raw/interpreted observability data according to retention env vars
+- `pnpm observability:jobs` - run aggregate rebuild and prune in sequence
 - `pnpm prisma:migrate:deploy` - apply versioned Prisma migrations in production/CI
 - `pnpm prisma:studio` - inspect DB with Prisma Studio
 

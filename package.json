@@ -38,7 +38,9 @@
     "fix:tailwind-vars:check": "node scripts/fix-tailwind-color-vars.mjs --check",
     "fix:all": "pnpm fix:tailwind-vars && pnpm format && pnpm lint:fix",
     "auth:bootstrap-admin": "node scripts/bootstrap-admin.mjs",
-    "audit:prune": "node scripts/prune-audit-logs.mjs",
+    "observability:aggregate": "tsx scripts/aggregate-observability.mjs",
+    "observability:prune": "tsx scripts/prune-observability.mjs",
+    "observability:jobs": "tsx scripts/observability-jobs.mjs",
     "check:all": "pnpm fix:tailwind-vars:check && pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:run && pnpm prisma:validate && pnpm build",
     "prisma:format": "prisma format",
     "prisma:validate": "prisma validate",
@@ -118,6 +120,7 @@
     "prisma": "^7.8.0",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.3.1",
+    "tsx": "^4.22.4",
     "typescript": "^5.9.3",
     "vitest": "^4.1.9"
   }

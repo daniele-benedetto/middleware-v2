@@ -71,7 +71,12 @@ export const ModelName = {
   ErrorOccurrence: 'ErrorOccurrence',
   ContentEngagement: 'ContentEngagement',
   AudioEngagement: 'AudioEngagement',
-  PerformanceExperience: 'PerformanceExperience'
+  PerformanceExperience: 'PerformanceExperience',
+  DailyContentQualityAggregate: 'DailyContentQualityAggregate',
+  DailyErrorAggregate: 'DailyErrorAggregate',
+  DailyPerformanceAggregate: 'DailyPerformanceAggregate',
+  DailyAuditAggregate: 'DailyAuditAggregate',
+  ObservabilityJobRun: 'ObservabilityJobRun'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -497,6 +502,126 @@ export const PerformanceExperienceScalarFieldEnum = {
 } as const
 
 export type PerformanceExperienceScalarFieldEnum = (typeof PerformanceExperienceScalarFieldEnum)[keyof typeof PerformanceExperienceScalarFieldEnum]
+
+
+export const DailyContentQualityAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  pageType: 'pageType',
+  contentType: 'contentType',
+  contentId: 'contentId',
+  path: 'path',
+  totalVisits: 'totalVisits',
+  qualifiedVisits: 'qualifiedVisits',
+  completedReads: 'completedReads',
+  significantReturns: 'significantReturns',
+  recurringContentDays: 'recurringContentDays',
+  averageActiveTimeMs: 'averageActiveTimeMs',
+  frustrationSignals: 'frustrationSignals',
+  errorImpactedSessions: 'errorImpactedSessions',
+  poorPerformanceSessions: 'poorPerformanceSessions',
+  qualityScore: 'qualityScore',
+  qualityScoreComponents: 'qualityScoreComponents',
+  sampleConfidence: 'sampleConfidence',
+  thresholdVersion: 'thresholdVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DailyContentQualityAggregateScalarFieldEnum = (typeof DailyContentQualityAggregateScalarFieldEnum)[keyof typeof DailyContentQualityAggregateScalarFieldEnum]
+
+
+export const DailyErrorAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  source: 'source',
+  severity: 'severity',
+  status: 'status',
+  impactArea: 'impactArea',
+  userImpact: 'userImpact',
+  release: 'release',
+  newGroups: 'newGroups',
+  openGroups: 'openGroups',
+  criticalHighGroups: 'criticalHighGroups',
+  regressions: 'regressions',
+  occurrences: 'occurrences',
+  affectedSessions: 'affectedSessions',
+  blockedActionGroups: 'blockedActionGroups',
+  priorityScoreAverage: 'priorityScoreAverage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DailyErrorAggregateScalarFieldEnum = (typeof DailyErrorAggregateScalarFieldEnum)[keyof typeof DailyErrorAggregateScalarFieldEnum]
+
+
+export const DailyPerformanceAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  pageType: 'pageType',
+  path: 'path',
+  contentId: 'contentId',
+  deviceType: 'deviceType',
+  release: 'release',
+  totalExperiences: 'totalExperiences',
+  smoothCount: 'smoothCount',
+  acceptableCount: 'acceptableCount',
+  frustratingCount: 'frustratingCount',
+  brokenCount: 'brokenCount',
+  earlyExitCount: 'earlyExitCount',
+  lcpP75: 'lcpP75',
+  inpP75: 'inpP75',
+  clsP75: 'clsP75',
+  fcpP75: 'fcpP75',
+  ttfbP75: 'ttfbP75',
+  poorRate: 'poorRate',
+  sampleConfidence: 'sampleConfidence',
+  thresholdVersion: 'thresholdVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DailyPerformanceAggregateScalarFieldEnum = (typeof DailyPerformanceAggregateScalarFieldEnum)[keyof typeof DailyPerformanceAggregateScalarFieldEnum]
+
+
+export const DailyAuditAggregateScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  resourceType: 'resourceType',
+  action: 'action',
+  outcome: 'outcome',
+  riskLevel: 'riskLevel',
+  publicImpact: 'publicImpact',
+  activityCount: 'activityCount',
+  highCriticalCount: 'highCriticalCount',
+  failureCount: 'failureCount',
+  sensitiveActionCount: 'sensitiveActionCount',
+  activeActorCount: 'activeActorCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DailyAuditAggregateScalarFieldEnum = (typeof DailyAuditAggregateScalarFieldEnum)[keyof typeof DailyAuditAggregateScalarFieldEnum]
+
+
+export const ObservabilityJobRunScalarFieldEnum = {
+  id: 'id',
+  jobName: 'jobName',
+  domain: 'domain',
+  windowStart: 'windowStart',
+  windowEnd: 'windowEnd',
+  status: 'status',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  lockedUntil: 'lockedUntil',
+  processedRows: 'processedRows',
+  errorMessage: 'errorMessage',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ObservabilityJobRunScalarFieldEnum = (typeof ObservabilityJobRunScalarFieldEnum)[keyof typeof ObservabilityJobRunScalarFieldEnum]
 
 
 export const SortOrder = {
