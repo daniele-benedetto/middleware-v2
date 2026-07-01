@@ -8,9 +8,8 @@ import {
   ObservabilityEmptyState,
   ObservabilityMetricCard,
   QualityScoreBreakdown,
-  formatDuration,
-  formatPercent,
 } from "@/features/cms/observability/components";
+import { formatDuration, formatPercent } from "@/features/cms/observability/components/formatting";
 import { TelemetryContentTable } from "@/features/cms/observability/screens/telemetry-content-table";
 import { hasAnyCmsRole, requireCmsSession } from "@/lib/cms/auth";
 import { buildCmsMetadata } from "@/lib/seo";
@@ -33,6 +32,7 @@ export default async function CmsTelemetryPage({ searchParams }: CmsTelemetryPag
 
   const params = await searchParams;
   const days = readPeriod(params.days);
+  const path = readPath(params.path);
   const caller = await getTrpcCaller();
   const [summary, aggregates] = await Promise.all([
     caller.telemetry.engagementSummary({ days }),
@@ -102,6 +102,7 @@ export default async function CmsTelemetryPage({ searchParams }: CmsTelemetryPag
           days={days}
           items={summary.topContent}
           sampleConfidence={summary.sampleConfidence}
+          initialPath={path}
         />
       </section>
     </div>
@@ -126,4 +127,10 @@ function groupContentTrend(rows: AggregateOverview["content"]) {
 function readPeriod(value: string | string[] | undefined) {
   const parsed = Number(Array.isArray(value) ? value[0] : value);
   return [7, 30, 90].includes(parsed) ? parsed : 30;
+}
+
+function readPath(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const trimmed = raw?.trim();
+  return trimmed?.startsWith("/") ? trimmed.slice(0, 512) : undefined;
 }

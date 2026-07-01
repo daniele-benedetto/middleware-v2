@@ -10,6 +10,7 @@ import { navigationRouter } from "@/lib/server/trpc/routers/navigation";
 import { observabilityAggregatesRouter } from "@/lib/server/trpc/routers/observability-aggregates";
 import { observabilityAuditRouter } from "@/lib/server/trpc/routers/observability-audit";
 import { observabilityErrorsRouter } from "@/lib/server/trpc/routers/observability-errors";
+import { observabilityOverviewRouter } from "@/lib/server/trpc/routers/observability-overview";
 import { pagesRouter } from "@/lib/server/trpc/routers/pages";
 import { performanceRouter } from "@/lib/server/trpc/routers/performance";
 import { publicRouter } from "@/lib/server/trpc/routers/public";
@@ -31,6 +32,7 @@ export const appRouter = router({
   observabilityAudit: observabilityAuditRouter,
   observabilityAggregates: observabilityAggregatesRouter,
   observabilityErrors: observabilityErrorsRouter,
+  observabilityOverview: observabilityOverviewRouter,
   public: publicRouter,
   telemetry: telemetryRouter,
 });

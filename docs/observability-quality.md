@@ -1876,108 +1876,124 @@ Insight iniziali da supportare:
 
 Checklist operativa Fase 9:
 
-- [ ] Rimuovere dalla overview Fase 8 ogni ranking statico o lista “cosa guardare prima” costruita manualmente da KPI separati, sostituendola con insight ordinati dal service.
-- [ ] Rimuovere o riscrivere procedure, DTO, componenti, helper e test che trattano `observabilityAggregates.overview` come overview finale di prodotto se la UI ha bisogno di insight trasversali; gli aggregati restano fonte, non interpretazione finale.
-- [ ] Non reintrodurre `/cms/analytics`, page views, `web-vital`, `FID`, `AuditLog`, `ErrorLog`, `AnalyticsEvent`, route legacy, alias tRPC o fallback su raw event per colmare insight mancanti.
-- [ ] Creare modulo server dedicato `lib/server/modules/observability-overview/*` con `schema`, `dto`, `policy`, `repository`, `service` e `index` separati.
-- [ ] Definire valori canonici `InsightType` iniziali: `critical_error_regression`, `blocking_error_with_exits`, `high_interest_poor_performance`, `opened_not_read`, `content_quality_opportunity`, `release_performance_regression`, `release_error_regression`, `audit_risk_followed_by_error`, `audit_failure_sensitive_action`, `referrer_quality_opportunity`.
-- [ ] Definire valori canonici per severità insight: `low`, `medium`, `high`, `critical`, senza riusare in modo ambiguo severity errori o risk audit come se fossero lo stesso dominio.
-- [ ] Definire valori canonici per entità collegate agli insight: `content`, `path`, `error_group`, `audit_activity`, `release`, `referrer`, `performance_segment`, `unknown`.
-- [ ] Definire reason code stabili e leggibili per gli insight: ad esempio `quality_score_high`, `completion_rate_low`, `poor_performance_high`, `early_exit_after_poor_performance`, `critical_regression`, `blocked_action`, `high_risk_audit`, `release_delta_negative`, `low_sample_confidence`.
-- [ ] Creare schema input Zod per overview/insight: periodo o date range, `pageType`, `contentType`, `contentId`, `path`, `release`, `severity`, `riskLevel`, `includeLowConfidence`, `limit`, con limiti massimi espliciti.
-- [ ] Validare gli input usando vocabolari canonici già definiti nelle fasi precedenti quando disponibili, senza enum paralleli o valori speciali per compatibilità.
-- [ ] Creare DTO `ObservabilityInsightDto` con `id`, `type`, `title`, `description`, `severity`, `score`, `confidence`, `reasons`, `primaryEntity`, `relatedEntities`, `metrics`, `deepLinks`, `dateRange` e `createdAt` logico o periodo di calcolo.
-- [ ] Creare DTO `ObservabilityHealthScoreDto` con `score`, `status`, `components`, `penalties`, `bonuses`, `confidence`, `reasons` e periodo.
-- [ ] Creare DTO `ObservabilityOverviewDto` con `period`, `healthScore`, KPI sintetici, `watchFirst`, `insights`, trend minimi e confidence complessiva.
-- [ ] Garantire che ogni score o insight abbia breakdown, reasons e confidence; nessun numero qualitativo deve apparire come autorità opaca.
-- [ ] Implementare policy del modulo overview, riusando le decisioni di accesso osservabilità ma senza hardcodare ruoli nel router o nei componenti UI.
-- [ ] Implementare repository overview con metodi espliciti per leggere aggregati contenuto, performance, errori e audit nel periodo corrente e nel periodo precedente.
-- [ ] Implementare repository overview con metodi espliciti per correlazioni recenti su tabelle interpretate: contenuto-performance, errore-exit, audit-error, release-error e referrer-engagement.
-- [ ] Non leggere `ObservabilityEvent` come fonte primaria degli insight; se una correlazione richiede raw event, limitarla a diagnostica recente esplicitamente nominata e testata.
-- [ ] Escludere di default sessioni `isLikelyBot = true` da insight qualitativi, mantenendo segnali errori/audit critici quando sono operativi e non telemetry pubblica.
-- [ ] Implementare scoring generale insight con formula riproducibile: impatto, confidence, recency, severità e actionability, con clamp 0-100 e pesi versionati o nominati.
-- [ ] Salvare o restituire `scoreComponents`/`metrics` sufficienti a spiegare perché un insight è stato ordinato sopra un altro.
-- [ ] Penalizzare insight con sample confidence bassa; un insight a bassa evidenza può comparire solo se richiesto o se il rischio operativo è critical.
-- [ ] Implementare deduplicazione insight: lo stesso contenuto/path/release/error group non deve produrre tre card equivalenti che competono tra loro senza aggiungere informazione.
-- [ ] Ordinare `watchFirst` per score, severità, recency e actionability, non per volume grezzo o ordine hardcoded in UI.
-- [ ] Implementare `critical_error_regression` da `ErrorGroup`, `ErrorOccurrence` e `DailyErrorAggregate`, distinguendo regressione confermata da semplice nuovo errore.
-- [ ] Implementare `blocking_error_with_exits` correlando errori operativi con `ContentEngagement` e `PerformanceExperience` tramite `sessionId`, `path`, `contentId`, `requestId`, `correlationId` e finestra temporale ragionevole.
-- [ ] Non dichiarare causalità forte se esiste solo correlazione temporale debole: usare copy e reason come “probabile frizione” o “correlato a exit”, non “ha causato” senza evidenza sufficiente.
-- [ ] Implementare `high_interest_poor_performance` correlando `DailyContentQualityAggregate` e `DailyPerformanceAggregate` per `contentId`, `path`, `pageType` e periodo.
-- [ ] Definire soglie iniziali per “alto interesse”: quality score alto, qualified visits significative, completamenti o ritorni significativi, sempre con sample confidence sufficiente.
-- [ ] Definire soglie iniziali per “performance scarsa”: `frustratingCount`, `brokenCount`, `poorRate`, `earlyExitCount` e p75 critici, senza usare Web Vitals isolati come prova unica di impatto.
-- [ ] Implementare `opened_not_read` da `DailyContentQualityAggregate`, usando `totalVisits`, `qualifiedVisits`, `completedReads`, `qualifiedRatio`, completion rate e active time, senza chiamare il dato “views”.
-- [ ] Implementare `content_quality_opportunity` per contenuti con poche visite ma completion rate/quality score alto, evitando classifiche aggressive su campioni piccoli.
-- [ ] Implementare `release_performance_regression` confrontando periodo corrente e periodo precedente per `release`, `pageType`, `path` e device quando disponibile.
-- [ ] Implementare `release_error_regression` confrontando regressioni, critical/high, blocked actions e occorrenze per `release`, distinguendo volume da severità.
-- [ ] Implementare `audit_risk_followed_by_error` correlando `AuditActivity` high/critical con `ErrorOccurrence`/`ErrorGroup` tramite `requestId`, `correlationId` e finestra temporale stretta, senza dipendenza ciclica tra moduli.
-- [ ] Implementare `audit_failure_sensitive_action` da `AuditActivity` e `DailyAuditAggregate`, privilegiando failure su publish, upload, delete, role change, navigation pubblica e contenuti pubblicati.
-- [ ] Implementare `referrer_quality_opportunity` solo usando dati già raccolti in modo privacy-safe: `ObservabilitySession.referrerDomain`, `ContentEngagement`, `AudioEngagement` e aggregati derivati se introdotti.
+- [x] Rimuovere dalla overview Fase 8 ogni ranking statico o lista “cosa guardare prima” costruita manualmente da KPI separati, sostituendola con insight ordinati dal service.
+- [x] Rimuovere o riscrivere procedure, DTO, componenti, helper e test che trattano `observabilityAggregates.overview` come overview finale di prodotto se la UI ha bisogno di insight trasversali; gli aggregati restano fonte, non interpretazione finale.
+- [x] Non reintrodurre `/cms/analytics`, page views, `web-vital`, `FID`, `AuditLog`, `ErrorLog`, `AnalyticsEvent`, route legacy, alias tRPC o fallback su raw event per colmare insight mancanti.
+- [x] Creare modulo server dedicato `lib/server/modules/observability-overview/*` con `schema`, `dto`, `policy`, `repository`, `service` e `index` separati.
+- [x] Definire valori canonici `InsightType` iniziali: `critical_error_regression`, `blocking_error_with_exits`, `high_interest_poor_performance`, `opened_not_read`, `content_quality_opportunity`, `release_performance_regression`, `release_error_regression`, `audit_risk_followed_by_error`, `audit_failure_sensitive_action`, `referrer_quality_opportunity`.
+- [x] Definire valori canonici per severità insight: `low`, `medium`, `high`, `critical`, senza riusare in modo ambiguo severity errori o risk audit come se fossero lo stesso dominio.
+- [x] Definire valori canonici per entità collegate agli insight: `content`, `path`, `error_group`, `audit_activity`, `release`, `referrer`, `performance_segment`, `unknown`.
+- [x] Definire reason code stabili e leggibili per gli insight: ad esempio `quality_score_high`, `completion_rate_low`, `poor_performance_high`, `early_exit_after_poor_performance`, `critical_regression`, `blocked_action`, `high_risk_audit`, `release_delta_negative`, `low_sample_confidence`.
+- [x] Creare schema input Zod per overview/insight: periodo o date range, `pageType`, `contentType`, `contentId`, `path`, `release`, `severity`, `riskLevel`, `includeLowConfidence`, `limit`, con limiti massimi espliciti.
+- [x] Validare gli input usando vocabolari canonici già definiti nelle fasi precedenti quando disponibili, senza enum paralleli o valori speciali per compatibilità.
+- [x] Creare DTO `ObservabilityInsightDto` con `id`, `type`, `title`, `description`, `severity`, `score`, `confidence`, `reasons`, `primaryEntity`, `relatedEntities`, `metrics`, `deepLinks`, `dateRange` e `createdAt` logico o periodo di calcolo.
+- [x] Creare DTO `ObservabilityHealthScoreDto` con `score`, `status`, `components`, `penalties`, `bonuses`, `confidence`, `reasons` e periodo.
+- [x] Creare DTO `ObservabilityOverviewDto` con `period`, `healthScore`, KPI sintetici, `watchFirst`, `insights`, trend minimi e confidence complessiva.
+- [x] Garantire che ogni score o insight abbia breakdown, reasons e confidence; nessun numero qualitativo deve apparire come autorità opaca.
+- [x] Implementare policy del modulo overview, riusando le decisioni di accesso osservabilità ma senza hardcodare ruoli nel router o nei componenti UI.
+- [x] Implementare repository overview con metodi espliciti per leggere aggregati contenuto, performance, errori e audit nel periodo corrente e nel periodo precedente.
+- [x] Implementare repository overview con metodi espliciti per correlazioni recenti su tabelle interpretate: contenuto-performance, errore-exit, audit-error, release-error e referrer-engagement.
+- [x] Non leggere `ObservabilityEvent` come fonte primaria degli insight; se una correlazione richiede raw event, limitarla a diagnostica recente esplicitamente nominata e testata.
+- [x] Escludere di default sessioni `isLikelyBot = true` da insight qualitativi, mantenendo segnali errori/audit critici quando sono operativi e non telemetry pubblica.
+- [x] Implementare scoring generale insight con formula riproducibile: impatto, confidence, recency, severità e actionability, con clamp 0-100 e pesi versionati o nominati.
+- [x] Salvare o restituire `scoreComponents`/`metrics` sufficienti a spiegare perché un insight è stato ordinato sopra un altro.
+- [x] Penalizzare insight con sample confidence bassa; un insight a bassa evidenza può comparire solo se richiesto o se il rischio operativo è critical.
+- [x] Implementare deduplicazione insight: lo stesso contenuto/path/release/error group non deve produrre tre card equivalenti che competono tra loro senza aggiungere informazione.
+- [x] Ordinare `watchFirst` per score, severità, recency e actionability, non per volume grezzo o ordine hardcoded in UI.
+- [x] Implementare `critical_error_regression` da `ErrorGroup`, `ErrorOccurrence` e `DailyErrorAggregate`, distinguendo regressione confermata da semplice nuovo errore.
+- [x] Implementare `blocking_error_with_exits` correlando errori operativi con `ContentEngagement` e `PerformanceExperience` tramite `sessionId`, `path`, `contentId`, `requestId`, `correlationId` e finestra temporale ragionevole.
+- [x] Non dichiarare causalità forte se esiste solo correlazione temporale debole: usare copy e reason come “probabile frizione” o “correlato a exit”, non “ha causato” senza evidenza sufficiente.
+- [x] Implementare `high_interest_poor_performance` correlando `DailyContentQualityAggregate` e `DailyPerformanceAggregate` per `contentId`, `path`, `pageType` e periodo.
+- [x] Definire soglie iniziali per “alto interesse”: quality score alto, qualified visits significative, completamenti o ritorni significativi, sempre con sample confidence sufficiente.
+- [x] Definire soglie iniziali per “performance scarsa”: `frustratingCount`, `brokenCount`, `poorRate`, `earlyExitCount` e p75 critici, senza usare Web Vitals isolati come prova unica di impatto.
+- [x] Implementare `opened_not_read` da `DailyContentQualityAggregate`, usando `totalVisits`, `qualifiedVisits`, `completedReads`, `qualifiedRatio`, completion rate e active time, senza chiamare il dato “views”.
+- [x] Implementare `content_quality_opportunity` per contenuti con poche visite ma completion rate/quality score alto, evitando classifiche aggressive su campioni piccoli.
+- [x] Implementare `release_performance_regression` confrontando periodo corrente e periodo precedente per `release`, `pageType`, `path` e device quando disponibile.
+- [x] Implementare `release_error_regression` confrontando regressioni, critical/high, blocked actions e occorrenze per `release`, distinguendo volume da severità.
+- [x] Implementare `audit_risk_followed_by_error` correlando `AuditActivity` high/critical con `ErrorOccurrence`/`ErrorGroup` tramite `requestId`, `correlationId` e finestra temporale stretta, senza dipendenza ciclica tra moduli.
+- [x] Implementare `audit_failure_sensitive_action` da `AuditActivity` e `DailyAuditAggregate`, privilegiando failure su publish, upload, delete, role change, navigation pubblica e contenuti pubblicati.
+- [x] Implementare `referrer_quality_opportunity` solo usando dati già raccolti in modo privacy-safe: `ObservabilitySession.referrerDomain`, `ContentEngagement`, `AudioEngagement` e aggregati derivati se introdotti.
 - [ ] Se gli insight referrer risultano troppo costosi o insufficienti sui dati interpretati, introdurre una tabella netta `DailyAcquisitionQualityAggregate` con migrazione nuova, senza backfill legacy, mapping da analytics o compatibilità con page views.
 - [ ] Se `DailyAcquisitionQualityAggregate` viene introdotta, definirla con `date`, `referrerDomain`, `pageType`, `contentType`, `contentId`, `path`, `qualifiedVisits`, `completedReads`, `completionRate`, `averageActiveTimeMs`, `qualityScoreAverage`, `sampleConfidence`, `createdAt`, `updatedAt`.
-- [ ] Se `DailyAcquisitionQualityAggregate` non viene introdotta in questa fase, non simulare storico referrer nella UI: limitare l’insight referrer a finestre recenti sostenibili o marcarlo fuori scope della prima iterazione Fase 9.
-- [ ] Implementare `systemHealthScore` con formula esplicita e breakdown: penalità per errori critical/high aperti, regressioni, performance broken/frustrating, audit failure high/critical e confidence bassa; bonus moderato per contenuti con qualità alta e campione affidabile.
-- [ ] Impedire che il bonus contenuti nasconda rischi operativi critical: errori critical, regressioni o audit security-sensitive devono dominare lo score salute.
-- [ ] Definire deep link per ogni insight verso `/cms/errors`, `/cms/performance`, `/cms/telemetry` o `/cms/audit` con filtri reali supportati dal query parser.
-- [ ] Non generare deep link con parametri non supportati; aggiungere il filtro mancante al query parser o omettere il link specifico.
-- [ ] Aggiornare query parser CMS per eventuali filtri nuovi necessari agli insight: `contentId`, `path`, `release`, `referrerDomain`, `regression`, `riskLevel`, `severity`, periodo e sort.
-- [ ] Creare router tRPC dedicato `observabilityOverview` con procedure `overview` e, se utile, `insights`, usando policy del modulo, service orchestration e `parseOutput` sui DTO.
-- [ ] Collegare il router al root router senza alias legacy o procedure annidate in `telemetry`/`observabilityAggregates`.
-- [ ] Aggiornare `/cms/observability` perché legga `observabilityOverview.overview`, non costruisca insight lato React da array di aggregati.
-- [ ] Creare o aggiornare componenti UI condivisi: `ObservabilityInsightCard`, `ObservabilityHealthScore`, `InsightReasonsList`, `InsightDeepLinks` e `ObservabilityPriorityList`.
-- [ ] La overview deve aprire con health score, confidence e prime 3-5 priorità operative, non con grafici decorativi o KPI isolati.
-- [ ] La sezione “Cosa guardare prima” deve essere generata da `watchFirst` del DTO, con severity, score, reasons e deep link.
-- [ ] Le insight cards devono mostrare titolo, spiegazione, impatto, confidence, motivi principali e azione consigliata o link di indagine.
-- [ ] I grafici overview restano contesto secondario: trend qualità, performance percepita, errori e audit non devono sostituire il ranking insight.
-- [ ] Aggiornare copy i18n CMS per spiegare insight, confidence, correlazione, release regression, audit seguito da errore e differenza tra correlazione e causalità.
-- [ ] Non mostrare JSON grezzo come spiegazione primaria degli insight; `metrics` e `reasons` devono essere leggibili e redatti.
-- [ ] Aggiungere empty state specifico: nessun insight perché non ci sono dati, aggregati non generati, campione insufficiente, filtri troppo stretti o permessi mancanti.
-- [ ] Garantire layout responsive della overview insight: health score e watch-first leggibili su mobile, deep link accessibili, card non dipendenti da hover o tooltip.
-- [ ] Aggiungere test unitari per scoring generale insight: impatto, confidence, recency, severity, actionability, clamp e ordinamento.
-- [ ] Aggiungere test unitari per deduplicazione insight e priorità `watchFirst`.
-- [ ] Aggiungere test per `systemHealthScore`: errori critical dominanti, performance broken, audit failure, low confidence e bonus contenuti.
-- [ ] Aggiungere test per `critical_error_regression` e `release_error_regression`, distinguendo regressione confermata, nuovo errore e volume non critico.
-- [ ] Aggiungere test per `blocking_error_with_exits` con correlazione forte, correlazione debole e nessuna correlazione.
-- [ ] Aggiungere test per `high_interest_poor_performance` e `opened_not_read`, inclusi campione basso, denominatori zero e contenuti bot esclusi.
-- [ ] Aggiungere test per `release_performance_regression` confrontando periodo corrente e precedente, con sample confidence e device/pageType quando disponibili.
-- [ ] Aggiungere test per `audit_risk_followed_by_error` e `audit_failure_sensitive_action`, inclusi `requestId`, `correlationId` e finestra temporale.
-- [ ] Aggiungere test per `referrer_quality_opportunity` oppure test esplicito che lo slice lo esclude quando i dati referrer non sono sufficienti.
-- [ ] Aggiungere test repository per query cross-domain e limiti di periodo, assicurando che non leggano raw event come fonte primaria.
-- [ ] Aggiungere test tRPC/DTO per `overview`, `insights`, filtri, policy, output validation e assenza di alias legacy.
-- [ ] Aggiungere test UI essenziali per health score, insight cards, watch-first, deep link, empty state, confidence bassa e assenza di insight finti se non ci sono dati.
-- [ ] Aggiungere test che confermino assenza di `FID`, `page_view`, `AnalyticsEvent`, `WebVital`, `AuditLog`, `ErrorLog`, `/cms/analytics` e raw event come contratti ufficiali della overview.
-- [ ] Verificare con `prisma validate`, generazione client se lo schema cambia, typecheck, lint, unit test pertinenti, test completi e build.
-- [ ] Aggiornare questo documento se durante l’implementazione emergono decisioni su scoring insight, soglie, referrer aggregate, deep link o health score, senza creare checklist parallele.
+- [x] Se `DailyAcquisitionQualityAggregate` non viene introdotta in questa fase, non simulare storico referrer nella UI: limitare l’insight referrer a finestre recenti sostenibili o marcarlo fuori scope della prima iterazione Fase 9.
+- [x] Implementare `systemHealthScore` con formula esplicita e breakdown: penalità per errori critical/high aperti, regressioni, performance broken/frustrating, audit failure high/critical e confidence bassa; bonus moderato per contenuti con qualità alta e campione affidabile.
+- [x] Impedire che il bonus contenuti nasconda rischi operativi critical: errori critical, regressioni o audit security-sensitive devono dominare lo score salute.
+- [x] Definire deep link per ogni insight verso `/cms/errors`, `/cms/performance`, `/cms/telemetry` o `/cms/audit` con filtri reali supportati dal query parser.
+- [x] Non generare deep link con parametri non supportati; aggiungere il filtro mancante al query parser o omettere il link specifico.
+- [x] Aggiornare query parser CMS o parsing delle route CMS per eventuali filtri nuovi necessari agli insight: `contentId`, `path`, `release`, `referrerDomain`, `regression`, `riskLevel`, `severity`, periodo e sort.
+- [x] Creare router tRPC dedicato `observabilityOverview` con procedure `overview` e, se utile, `insights`, usando policy del modulo, service orchestration e `parseOutput` sui DTO.
+- [x] Collegare il router al root router senza alias legacy o procedure annidate in `telemetry`/`observabilityAggregates`.
+- [x] Aggiornare `/cms/observability` perché legga `observabilityOverview.overview`, non costruisca insight lato React da array di aggregati.
+- [x] Creare o aggiornare componenti UI condivisi: `ObservabilityInsightCard`, `ObservabilityHealthScore`, `InsightReasonsList`, `InsightDeepLinks` e `ObservabilityPriorityList`.
+- [x] La overview deve aprire con health score, confidence e prime 3-5 priorità operative, non con grafici decorativi o KPI isolati.
+- [x] La sezione “Cosa guardare prima” deve essere generata da `watchFirst` del DTO, con severity, score, reasons e deep link.
+- [x] Le insight cards devono mostrare titolo, spiegazione, impatto, confidence, motivi principali e azione consigliata o link di indagine.
+- [x] I grafici overview restano contesto secondario: trend qualità, performance percepita, errori e audit non devono sostituire il ranking insight.
+- [x] Aggiornare copy i18n CMS per spiegare insight, confidence, correlazione, release regression, audit seguito da errore e differenza tra correlazione e causalità.
+- [x] Non mostrare JSON grezzo come spiegazione primaria degli insight; `metrics` e `reasons` devono essere leggibili e redatti.
+- [x] Aggiungere empty state specifico: nessun insight perché non ci sono dati, aggregati non generati, campione insufficiente, filtri troppo stretti o permessi mancanti.
+- [x] Garantire layout responsive della overview insight: health score e watch-first leggibili su mobile, deep link accessibili, card non dipendenti da hover o tooltip.
+- [x] Aggiungere test unitari per scoring generale insight: impatto, confidence, recency, severity, actionability, clamp e ordinamento.
+- [x] Aggiungere test unitari per deduplicazione insight e priorità `watchFirst`.
+- [x] Aggiungere test per `systemHealthScore`: errori critical dominanti, performance broken, audit failure, low confidence e bonus contenuti.
+- [x] Aggiungere test per `critical_error_regression` e `release_error_regression`, distinguendo regressione confermata, nuovo errore e volume non critico.
+- [x] Aggiungere test per `blocking_error_with_exits` con correlazione forte, correlazione debole e nessuna correlazione.
+- [x] Aggiungere test per `high_interest_poor_performance` e `opened_not_read`, inclusi campione basso, denominatori zero e contenuti bot esclusi.
+- [x] Aggiungere test per `release_performance_regression` confrontando periodo corrente e precedente, con sample confidence e device/pageType quando disponibili.
+- [x] Aggiungere test per `audit_risk_followed_by_error` e `audit_failure_sensitive_action`, inclusi `requestId`, `correlationId` e finestra temporale.
+- [x] Aggiungere test per `referrer_quality_opportunity` oppure test esplicito che lo slice lo esclude quando i dati referrer non sono sufficienti.
+- [x] Aggiungere test repository per query cross-domain e limiti di periodo, assicurando che non leggano raw event come fonte primaria.
+- [x] Aggiungere test tRPC/DTO per `overview`, `insights`, filtri, policy, output validation e assenza di alias legacy.
+- [x] Aggiungere test UI essenziali per health score, insight cards, watch-first, deep link, empty state, confidence bassa e assenza di insight finti se non ci sono dati.
+- [x] Aggiungere test che confermino assenza di `FID`, `page_view`, `AnalyticsEvent`, `WebVital`, `AuditLog`, `ErrorLog`, `/cms/analytics` e raw event come contratti ufficiali della overview.
+- [x] Verificare con `prisma validate`, generazione client se lo schema cambia, typecheck, lint, unit test pertinenti, test completi e build.
+- [x] Aggiornare questo documento se durante l’implementazione emergono decisioni su scoring insight, soglie, referrer aggregate, deep link o health score, senza creare checklist parallele.
 
 Deliverable Fase 9:
 
-- [ ] Modulo server dedicato `observability-overview` con `schema`, `dto`, `policy`, `repository`, `service` e `index` separati.
-- [ ] Vocabolario canonico per insight type, severity insight, entity type e reason code.
-- [ ] Service insight con scoring deterministico, confidence, deduplicazione, ranking, health score e deep link.
-- [ ] Repository cross-domain che legge aggregati persistenti e tabelle interpretate recenti, non raw event come fonte primaria.
-- [ ] Router tRPC `observabilityOverview` con procedure `overview` e insight dedicati, collegato al root router senza alias legacy.
-- [ ] DTO overview con health score, KPI sintetici, `watchFirst`, insight cards, trend contestuali e confidence complessiva.
-- [ ] UI `/cms/observability` aggiornata per mostrare priorità operative reali, insight cards e health score, non solo metriche aggregate.
+- [x] Modulo server dedicato `observability-overview` con `schema`, `dto`, `policy`, `repository`, `service` e `index` separati.
+- [x] Vocabolario canonico per insight type, severity insight, entity type e reason code.
+- [x] Service insight con scoring deterministico, confidence, deduplicazione, ranking, health score e deep link.
+- [x] Repository cross-domain che legge aggregati persistenti e tabelle interpretate recenti, non raw event come fonte primaria.
+- [x] Router tRPC `observabilityOverview` con procedure `overview` e insight dedicati, collegato al root router senza alias legacy.
+- [x] DTO overview con health score, KPI sintetici, `watchFirst`, insight cards, trend contestuali e confidence complessiva.
+- [x] UI `/cms/observability` aggiornata per mostrare priorità operative reali, insight cards e health score, non solo metriche aggregate.
 - [ ] Deep link funzionanti verso telemetry, performance, errors e audit con filtri reali supportati.
-- [ ] Eventuale `DailyAcquisitionQualityAggregate` solo se necessario per insight referrer, con migrazione netta e senza mapping legacy.
-- [ ] Test unitari, repository test, service test, tRPC/DTO test e UI smoke test sui casi critici.
+- [x] Eventuale `DailyAcquisitionQualityAggregate` solo se necessario per insight referrer, con migrazione netta e senza mapping legacy.
+- [x] Test unitari, repository test, service test, tRPC/DTO test e UI smoke test sui casi critici.
+
+Deliverable prodotti:
+
+- Modulo `lib/server/modules/observability-overview/*` con `schema`, `dto`, `policy`, `repository`, `service` e `index`.
+- Router `lib/server/trpc/routers/observability-overview.ts` collegato al root router come `observabilityOverview`.
+- DTO `ObservabilityOverviewDto`, `ObservabilityInsightDto` e `ObservabilityHealthScoreDto` con output validation tramite `parseOutput`.
+- Service insight con `calculateInsightScore`, `calculateHealthScore`, ranking `watchFirst`, deduplicazione, confidence penalty e insight iniziali cross-domain.
+- Repository overview che legge aggregati giornalieri e tabelle interpretate recenti, senza usare `ObservabilityEvent` come fonte primaria.
+- UI `/cms/observability` spostata da overview aggregati a overview insight-driven con health score, `watchFirst`, insight cards, KPI e trend di contesto.
+- Componenti condivisi `ObservabilityHealthScore` e `ObservabilityInsightCard` in `features/cms/observability/components/observability-ui.tsx`.
+- Test aggiunti in `tests/unit/lib/server/modules/observability-overview/service.test.ts` e `tests/unit/lib/server/trpc/routers/observability-overview.test.ts`.
+- Test repository aggiunti in `tests/unit/lib/server/modules/observability-overview/repository.test.ts` per confermare query cross-domain e assenza di raw event come fonte primaria.
+- Test UI aggiornati in `tests/unit/features/cms/observability/observability-ui.test.ts` per health score e insight cards.
+- Formatter osservabilità estratti in `features/cms/observability/components/formatting.ts` per evitare chiamate server a funzioni definite in moduli client.
+- Deep link `/cms/performance?path=...&release=...` e `/cms/telemetry?path=...` resi operativi: performance filtra/dettaglia dal server, telemetry apre il drawer dettaglio dal path.
+- Nessuna nuova tabella `DailyAcquisitionQualityAggregate`: per ora l’insight referrer usa solo `ObservabilitySession.referrerDomain` e `ContentEngagement` su finestra recente, senza simulare storico non disponibile.
 
 Criterio di completamento:
 
-- [ ] Un admin apre `/cms/observability` e capisce cosa guardare prima senza interpretare manualmente quattro dashboard separate.
-- [ ] La overview mostra insight ordinati per impatto, severità, confidence, recency e actionability, non per volume grezzo o ordine hardcoded.
-- [ ] Ogni insight mostra score, confidence, reasons, metriche principali e deep link verso la pagina operativa corretta.
-- [ ] Health score e insight sono spiegabili con componenti e penalità, non numeri opachi.
-- [ ] Contenuti ad alto interesse ma performance scarsa emergono come priorità editoriale/tecnica.
-- [ ] Contenuti molto iniziati ma poco letti emergono senza usare page views legacy come metrica primaria.
-- [ ] Errori bloccanti correlati a exit o azioni fallite emergono sopra errori solo frequenti ma poco impattanti.
-- [ ] Audit high risk seguito da errore/regressione emerge come rischio operativo correlato tramite request/correlation/time window.
-- [ ] Release con peggioramento performance o aumento errori emergono con confronto periodo corrente/precedente e confidence.
-- [ ] Insight referrer esiste solo se basato su dati privacy-safe reali e sufficienti; se non c’è evidenza, non viene simulato.
-- [ ] Campione basso riduce autorità e ranking degli insight, salvo rischio critical esplicito.
-- [ ] Nessuna logica di scoring, ranking, severity, correlazione o health score vive nei componenti React.
-- [ ] Raw event, page views, Web Vitals legacy, `FID`, `AuditLog`, `ErrorLog`, `AnalyticsEvent` e route legacy non sono fonti ufficiali o fallback della overview.
-- [ ] Il sistema resta funzionante e verificabile dopo la rimozione del codice non più usato, anche se hardening privacy/export/documentazione finale arrivano in Fase 10.
+- [x] Un admin apre `/cms/observability` e capisce cosa guardare prima senza interpretare manualmente quattro dashboard separate.
+- [x] La overview mostra insight ordinati per impatto, severità, confidence, recency e actionability, non per volume grezzo o ordine hardcoded.
+- [x] Ogni insight mostra score, confidence, reasons, metriche principali e deep link verso la pagina operativa corretta.
+- [x] Health score e insight sono spiegabili con componenti e penalità, non numeri opachi.
+- [x] Contenuti ad alto interesse ma performance scarsa emergono come priorità editoriale/tecnica.
+- [x] Contenuti molto iniziati ma poco letti emergono senza usare page views legacy come metrica primaria.
+- [x] Errori bloccanti correlati a exit o azioni fallite emergono sopra errori solo frequenti ma poco impattanti.
+- [x] Audit high risk seguito da errore/regressione emerge come rischio operativo correlato tramite request/correlation/time window.
+- [x] Release con peggioramento performance o aumento errori emergono con confronto periodo corrente/precedente e confidence.
+- [x] Insight referrer esiste solo se basato su dati privacy-safe reali e sufficienti; se non c’è evidenza, non viene simulato.
+- [x] Campione basso riduce autorità e ranking degli insight, salvo rischio critical esplicito.
+- [x] Nessuna logica di scoring, ranking, severity, correlazione o health score vive nei componenti React.
+- [x] Raw event, page views, Web Vitals legacy, `FID`, `AuditLog`, `ErrorLog`, `AnalyticsEvent` e route legacy non sono fonti ufficiali o fallback della overview.
+- [x] Il sistema resta funzionante e verificabile dopo la rimozione del codice non più usato, anche se hardening privacy/export/documentazione finale arrivano in Fase 10.
 
 Verifiche previste:
 
@@ -1990,6 +2006,16 @@ Verifiche previste:
 - `pnpm test:run tests/unit/features/cms/observability/*`
 - `pnpm test:run`
 - `pnpm build`
+
+Verifiche eseguite:
+
+- `pnpm typecheck`
+- `pnpm test:run tests/unit/lib/server/modules/observability-overview/service.test.ts tests/unit/lib/server/trpc/routers/observability-overview.test.ts`
+- `pnpm test:run tests/unit/lib/server/modules/observability-overview/service.test.ts tests/unit/lib/server/modules/observability-overview/repository.test.ts tests/unit/lib/server/trpc/routers/observability-overview.test.ts tests/unit/features/cms/observability/observability-ui.test.ts`
+- `pnpm lint`
+- `pnpm test:run`
+- `pnpm build`
+- `pnpm prisma:validate`
 
 ### Fase 10: Hardening, Privacy E Qualità
 

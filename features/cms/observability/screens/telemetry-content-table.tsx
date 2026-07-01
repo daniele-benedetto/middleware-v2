@@ -22,14 +22,27 @@ type TelemetryContentTableProps = {
   days: number;
   items: TelemetryTopContent[];
   sampleConfidence: TelemetrySummary["sampleConfidence"];
+  initialPath?: string;
 };
+
+type SelectedContent = Pick<TelemetryTopContent, "contentId" | "path" | "slug">;
 
 export function TelemetryContentTable({
   days,
   items,
   sampleConfidence,
+  initialPath,
 }: TelemetryContentTableProps) {
-  const [selected, setSelected] = useState<TelemetryTopContent | null>(null);
+  const [selected, setSelected] = useState<SelectedContent | null>(() => {
+    if (!initialPath) return null;
+    return (
+      items.find((item) => item.path === initialPath) ?? {
+        contentId: null,
+        path: initialPath,
+        slug: null,
+      }
+    );
+  });
   const detailQuery = trpc.telemetry.contentEngagementDetail.useQuery(
     {
       days,

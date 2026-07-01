@@ -9,9 +9,8 @@ import {
   ObservabilityMetricCard,
   ObservabilityStatusBadge,
   ObservabilityTechnicalValues,
-  formatMetric,
-  formatPercent,
 } from "@/features/cms/observability/components";
+import { formatMetric, formatPercent } from "@/features/cms/observability/components/formatting";
 import { hasAnyCmsRole, requireCmsSession } from "@/lib/cms/auth";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
@@ -24,22 +23,31 @@ export const metadata = buildCmsMetadata({
   path: "/cms/performance",
 });
 
-export default async function CmsPerformancePage() {
+type CmsPerformancePageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function CmsPerformancePage({ searchParams }: CmsPerformancePageProps) {
   const session = await requireCmsSession("/cms/performance");
   if (!hasAnyCmsRole(session, observabilityPerformancePolicy.allowedRoles)) forbidden();
 
+  const params = await searchParams;
+  const days = readPeriod(params.days);
+  const path = readPath(params.path);
+  const release = readText(params.release);
   const caller = await getTrpcCaller();
   const [summary, worstPages, lcpTrend] = await Promise.all([
-    caller.performance.summary({ days: 30 }),
+    caller.performance.summary({ days, release }),
     caller.performance.worstPages({
       page: 1,
       pageSize: 8,
-      query: { days: 30, sortBy: "impact", sortOrder: "desc" },
+      query: { days, release, q: path, sortBy: "impact", sortOrder: "desc" },
     }),
-    caller.performance.trend({ days: 30, metric: "lcp" }),
+    caller.performance.trend({ days, release, metric: "lcp" }),
   ]);
-  const detail = worstPages.items[0]
-    ? await caller.performance.detail({ days: 30, path: worstPages.items[0].path })
+  const detailPath = path ?? worstPages.items[0]?.path;
+  const detail = detailPath
+    ? await caller.performance.detail({ days, release, path: detailPath })
     : null;
   const frustratingCount = summary.qualityBreakdown
     .filter((item) => item.quality === "frustrating" || item.quality === "broken")
@@ -225,4 +233,20 @@ export default async function CmsPerformancePage() {
       ) : null}
     </div>
   );
+}
+
+function readPeriod(value: string | string[] | undefined) {
+  const parsed = Number(Array.isArray(value) ? value[0] : value);
+  return [7, 30, 90].includes(parsed) ? parsed : 30;
+}
+
+function readText(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const trimmed = raw?.trim();
+  return trimmed ? trimmed.slice(0, 120) : undefined;
+}
+
+function readPath(value: string | string[] | undefined) {
+  const raw = readText(value);
+  return raw?.startsWith("/") ? raw.slice(0, 512) : undefined;
 }

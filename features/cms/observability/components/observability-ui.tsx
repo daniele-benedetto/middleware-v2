@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { CopyTechnicalValueButton } from "@/components/cms/common/copy-technical-value-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +16,10 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
+import type {
+  ObservabilityHealthScoreDto,
+  ObservabilityInsightDto,
+} from "@/lib/server/modules/observability-overview/dto";
 import type { ReactNode } from "react";
 
 type MetricCardProps = {
@@ -281,21 +287,109 @@ export function ObservabilityTechnicalValues({
   );
 }
 
-export function formatPercent(value: number | null | undefined) {
-  if (value === null || value === undefined || Number.isNaN(value)) return "n/a";
-  return `${Math.round(value * 100)}%`;
+export function ObservabilityHealthScore({ score }: { score: ObservabilityHealthScoreDto }) {
+  return (
+    <Card className="border-border bg-card p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            Health score
+          </p>
+          <p className="mt-2 font-heading text-5xl font-semibold">{score.score}</p>
+        </div>
+        <div className="flex flex-wrap justify-end gap-2">
+          <ObservabilityStatusBadge value={score.status} kind="quality" />
+          <ObservabilityStatusBadge value={score.confidence} kind="confidence" />
+        </div>
+      </div>
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <ScoreMetricGroup title="Penalita" items={score.penalties} />
+        <ScoreMetricGroup title="Bonus" items={score.bonuses} />
+      </div>
+      {score.reasons.length ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {score.reasons.map((reason) => (
+            <ObservabilityStatusBadge key={reason} value={reason} />
+          ))}
+        </div>
+      ) : null}
+    </Card>
+  );
 }
 
-export function formatDuration(value: number | null | undefined) {
-  if (!value || value < 1000) return "0s";
-  const seconds = Math.round(value / 1000);
-  return seconds >= 60 ? `${Math.floor(seconds / 60)}m ${seconds % 60}s` : `${seconds}s`;
+export function ObservabilityInsightCard({ insight }: { insight: ObservabilityInsightDto }) {
+  return (
+    <Card className={cn("p-5", insight.severity === "critical" && "border-destructive/60")}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            {humanize(insight.type)}
+          </p>
+          <h3 className="mt-2 font-heading text-lg font-semibold">{insight.title}</h3>
+          <p className="mt-2 text-sm text-muted-foreground">{insight.description}</p>
+        </div>
+        <div className="text-right">
+          <p className="font-heading text-3xl font-semibold">{insight.score}</p>
+          <div className="mt-2 flex flex-col items-end gap-2">
+            <ObservabilityStatusBadge value={insight.severity} kind="severity" />
+            <ObservabilityStatusBadge value={insight.confidence} kind="confidence" />
+          </div>
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {insight.reasons.slice(0, 5).map((reason) => (
+          <ObservabilityStatusBadge key={reason} value={reason} />
+        ))}
+      </div>
+      <div className="mt-4 grid gap-2 text-sm md:grid-cols-2">
+        {insight.metrics.slice(0, 4).map((item) => (
+          <div
+            key={item.label}
+            className="flex items-center justify-between gap-3 border border-border px-3 py-2"
+          >
+            <span className="text-muted-foreground">{item.label}</span>
+            <span className="font-mono">
+              {String(item.value)}
+              {item.unit ? ` ${item.unit}` : ""}
+            </span>
+          </div>
+        ))}
+      </div>
+      {insight.deepLinks.length ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {insight.deepLinks.map((deepLink) => (
+            <Link
+              key={`${deepLink.label}-${deepLink.href}`}
+              href={deepLink.href}
+              className="rounded-full border border-border px-3 py-1 text-xs font-medium hover:bg-muted"
+            >
+              {deepLink.label}
+            </Link>
+          ))}
+        </div>
+      ) : null}
+    </Card>
+  );
 }
 
-export function formatMetric(value: number | null | undefined, unit: "ms" | "unitless") {
-  if (value === null || value === undefined) return "n/a";
-  if (unit === "unitless") return value.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
-  return value >= 1000 ? `${(value / 1000).toFixed(1)}s` : `${Math.round(value)}ms`;
+function ScoreMetricGroup({
+  title,
+  items,
+}: {
+  title: string;
+  items: ObservabilityHealthScoreDto["penalties"];
+}) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{title}</p>
+      {items.map((item) => (
+        <div key={item.label} className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-muted-foreground">{item.label}</span>
+          <span className="font-mono">{String(item.value)}</span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function resolveBadgeClass(value: string, kind: StatusBadgeProps["kind"]) {
