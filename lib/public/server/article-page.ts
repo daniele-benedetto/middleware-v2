@@ -47,7 +47,7 @@ async function getArticleBySlug(slug: string) {
     }
 
     console.error("public.getPublicArticlePageData article failed", { slug, error });
-    return null;
+    throw error;
   }
 }
 
@@ -167,6 +167,6 @@ export async function getPublicArticleStaticParams() {
     return ensureNonEmptyStaticParams(articles.map((article) => ({ slug: article.slug })));
   } catch (error) {
     console.error("public.getPublicArticleStaticParams published articles failed", { error });
-    return ensureNonEmptyStaticParams([]);
+    throw error;
   }
 }

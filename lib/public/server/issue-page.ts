@@ -32,7 +32,7 @@ async function getIssueBySlug(slug: string) {
     }
 
     console.error("public.getPublicIssuePageData issue failed", { slug, error });
-    return null;
+    throw error;
   }
 }
 
@@ -66,6 +66,6 @@ export async function getPublicIssueStaticParams() {
     return ensureNonEmptyStaticParams(issues.map((issue) => ({ slug: issue.slug })));
   } catch (error) {
     console.error("public.getPublicIssueStaticParams published issues failed", { error });
-    return ensureNonEmptyStaticParams([]);
+    throw error;
   }
 }

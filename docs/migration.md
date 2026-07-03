@@ -33,19 +33,6 @@ I file domain-ready sono gia presenti sulla VPS:
 - `/opt/middleware/Caddyfile.domain-ready`
 - `/opt/middleware/compose.production.yml.domain-ready`
 
-## Prima Del DNS
-
-Verifiche minime su IP:
-
-1. Home pubblica risponde `200`.
-2. `/cms/login` risponde `200`.
-3. Login CMS funziona in finestra anonima.
-4. `/cms/media` risponde `200` dopo login.
-5. Object Storage e' raggiungibile dal container app.
-6. Upload media funziona.
-7. Publish/unpublish e revalidation funzionano.
-8. Nessun errore nuovo nei log app.
-
 Comandi utili:
 
 ```bash

@@ -169,6 +169,27 @@ const articles = [
   },
 ];
 
+const staticPages = [
+  {
+    title: "Chi siamo",
+    slug: "chi-siamo",
+    excerpt:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer non sem vitae justo luctus facilisis.",
+  },
+  {
+    title: "Privacy policy",
+    slug: "privacy-policy",
+    excerpt:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed at arcu nec libero tempor dictum.",
+  },
+  {
+    title: "Cookie policy",
+    slug: "cookie-policy",
+    excerpt:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec finibus lectus vitae augue varius, sed pretium erat porta.",
+  },
+];
+
 function styledTitle(title) {
   const segments = [];
   const markerPattern = /\[\[([^\]]+)\]\]/g;
@@ -223,6 +244,25 @@ function issueDescriptionRich() {
       ),
       paragraph(
         "Questo numero serve anche come prova editoriale del magazine: definisce un metodo, un tono e una postura. Middleware vuole essere uno spazio in cui i contenuti non siano soltanto pubblicati, ma messi in relazione; in cui le categorie aiutino a orientarsi senza irrigidire il discorso; in cui immagini, tag, issue e articoli costruiscano un archivio navigabile. La sicurezza, qui, non e il punto di arrivo: e il primo banco di prova per capire come raccontare un territorio senza consegnarlo alla paura.",
+      ),
+    ],
+  };
+}
+
+function staticPageContentRich(page) {
+  return {
+    type: "doc",
+    content: [
+      heading(2, page.title),
+      paragraph(page.excerpt),
+      paragraph(
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Curabitur vitae sem non lectus fermentum consequat.",
+      ),
+      paragraph(
+        "Praesent commodo, ipsum non gravida facilisis, erat lorem posuere mi, vitae efficitur justo libero ac risus. Aliquam erat volutpat. Nulla facilisi. Integer ac nibh nec sapien bibendum tempor.",
+      ),
+      paragraph(
+        "Sed non magna ut arcu dignissim tincidunt. Mauris congue, massa at tincidunt suscipit, lectus justo porttitor nisl, at luctus neque justo id urna. Suspendisse potenti.",
       ),
     ],
   };
@@ -545,6 +585,37 @@ async function updateHomeBlocks(client, issueId, articleIdsByKey) {
   );
 }
 
+async function upsertStaticPage(client, page) {
+  const id = randomUUID();
+  const titleStyled = styledTitle(page.title);
+
+  await client.query(
+    `insert into pages (
+        id, title, "titleStyled", slug, status, excerpt, "excerptRich", "contentRich", "publishedAt", "createdAt", "updatedAt"
+      ) values ($1, $2, $3, $4, 'PUBLISHED', $5, $6, $7, $8, $9, $9)
+      on conflict (slug) do update set
+        title = excluded.title,
+        "titleStyled" = excluded."titleStyled",
+        status = 'PUBLISHED',
+        excerpt = excluded.excerpt,
+        "excerptRich" = excluded."excerptRich",
+        "contentRich" = excluded."contentRich",
+        "publishedAt" = excluded."publishedAt",
+        "updatedAt" = excluded."updatedAt"`,
+    [
+      id,
+      page.title,
+      json(titleStyled),
+      page.slug,
+      page.excerpt,
+      json(richText(page.excerpt)),
+      json(staticPageContentRich(page)),
+      now,
+      now,
+    ],
+  );
+}
+
 const client = new Client({ connectionString });
 
 try {
@@ -573,10 +644,16 @@ try {
   }
 
   await updateHomeBlocks(client, issueId, articleIdsByKey);
+
+  for (const page of staticPages) {
+    await upsertStaticPage(client, page);
+  }
+
   await client.query("commit");
 
   console.log(`Created/updated issue: ${issueId}`);
   console.log("Public slug: scomporre-la-sicurezza-primo-numero");
+  console.log(`Created/updated static pages: ${staticPages.map((page) => page.slug).join(", ")}`);
 } catch (error) {
   await client.query("rollback").catch(() => undefined);
   throw error;

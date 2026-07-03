@@ -7,7 +7,7 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends openssl \
   && rm -rf /var/lib/apt/lists/*
 
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@10.28.2 --activate
 
 FROM base AS deps
 WORKDIR /app
@@ -25,15 +25,25 @@ ENV DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
 ENV POSTGRES_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
 ENV PRISMA_DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
 ENV BETTER_AUTH_SECRET=build-time-placeholder-32-characters-minimum
-ENV BETTER_AUTH_URL=http://localhost:3000
-ENV NEXT_PUBLIC_SITE_URL=http://localhost:3000
-ENV REDIS_URL=redis://localhost:6379/0
 ENV AUDIT_LOG_RETENTION_DAYS=365
 ENV BLOB_READ_WRITE_TOKEN=build-time-placeholder
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm prisma:generate
+
+ARG BUILD_DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
+ARG BUILD_REDIS_URL=redis://localhost:6379/0
+ARG BUILD_BETTER_AUTH_URL=http://localhost:3000
+ARG BUILD_NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+ENV DATABASE_URL=$BUILD_DATABASE_URL
+ENV POSTGRES_URL=$BUILD_DATABASE_URL
+ENV PRISMA_DATABASE_URL=$BUILD_DATABASE_URL
+ENV BETTER_AUTH_URL=$BUILD_BETTER_AUTH_URL
+ENV NEXT_PUBLIC_SITE_URL=$BUILD_NEXT_PUBLIC_SITE_URL
+ENV REDIS_URL=$BUILD_REDIS_URL
+
 RUN pnpm build
 
 FROM base AS runner
