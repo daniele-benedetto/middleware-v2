@@ -1,6 +1,5 @@
 const navigationServiceMock = vi.hoisted(() => ({
   getPublicNavigation: vi.fn(),
-  getFallbackPublicNavigation: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({
@@ -14,16 +13,9 @@ vi.mock("@/lib/server/modules/navigation", () => ({
 
 import { getPublicNavigation } from "@/lib/public/server/navigation";
 
-const fallbackNavigation = {
-  main: [{ id: "main-home", label: "Numero corrente", href: "/", external: false }],
-  footerSections: [],
-  footerLegal: [],
-};
-
 describe("getPublicNavigation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    navigationServiceMock.getFallbackPublicNavigation.mockReturnValue(fallbackNavigation);
   });
 
   it("returns public navigation from the service", async () => {
@@ -36,17 +28,12 @@ describe("getPublicNavigation", () => {
     navigationServiceMock.getPublicNavigation.mockResolvedValue(navigation);
 
     await expect(getPublicNavigation()).resolves.toBe(navigation);
-    expect(navigationServiceMock.getFallbackPublicNavigation).not.toHaveBeenCalled();
   });
 
-  it("falls back when public navigation cannot be loaded", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+  it("propagates errors when public navigation cannot be loaded", async () => {
+    const error = new Error("database unavailable");
+    navigationServiceMock.getPublicNavigation.mockRejectedValue(error);
 
-    navigationServiceMock.getPublicNavigation.mockRejectedValue(new Error("database unavailable"));
-
-    await expect(getPublicNavigation()).resolves.toBe(fallbackNavigation);
-    expect(navigationServiceMock.getFallbackPublicNavigation).toHaveBeenCalledWith();
-
-    consoleErrorSpy.mockRestore();
+    await expect(getPublicNavigation()).rejects.toBe(error);
   });
 });

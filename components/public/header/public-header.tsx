@@ -14,7 +14,7 @@ import type { PublicMenuItem } from "@/components/public/header/public-fullscree
 
 type PublicHeaderProps = {
   className?: string;
-  menuItems?: PublicMenuItem[];
+  menuItems: PublicMenuItem[];
 };
 
 type MenuState = "closed" | "opening" | "open" | "closing-content" | "closing-shell";
@@ -56,14 +56,6 @@ function isElementVisible(element: HTMLElement) {
   return element.getClientRects().length > 0;
 }
 
-function getFallbackMenuItems(): PublicMenuItem[] {
-  return i18n.public.menu.items.map((item) => ({
-    id: item.href,
-    label: item.label,
-    href: item.href,
-  }));
-}
-
 export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
   const router = useRouter();
   const [menuState, setMenuState] = useState<MenuState>("closed");
@@ -72,7 +64,7 @@ export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
   const animationTimerRefs = useRef<number[]>([]);
   const text = i18n.public.header;
   const menuText = i18n.public.menu;
-  const resolvedMenuItems = menuItems?.length ? menuItems : getFallbackMenuItems();
+  const resolvedMenuItems = menuItems;
   const menuOpenAnimationDuration = getMenuOpenAnimationDuration(resolvedMenuItems.length);
   const menuContentCloseDuration = getMenuContentCloseDuration(resolvedMenuItems.length);
   const menuVisible = menuState !== "closed";

@@ -32,11 +32,6 @@ export const publicIt = {
     quote_1: "La conoscenza è legata alla lotta.",
     quote_2: "Conosce veramente chi veramente odia.",
     quoteSource: "In memoria di Mario Tronti.",
-    items: [
-      { number: "01", label: "Numero corrente", href: "/" },
-      { number: "02", label: "Archivio", href: "/uscite" },
-      { number: "03", label: "Chi siamo", href: "/chi-siamo" },
-    ],
   },
   home: {
     hero: {
@@ -176,18 +171,9 @@ export const publicIt = {
   footer: {
     sections: {
       title: "Sezioni",
-      links: [
-        { label: "Numero corrente", href: "/" },
-        { label: "Archivio", href: "/uscite" },
-        { label: "Chi siamo", href: "/chi-siamo" },
-      ],
     },
     legalPages: {
       title: "Legale",
-      links: [
-        { label: "Privacy policy", href: "/privacy-policy" },
-        { label: "Cookie policy", href: "/cookie-policy" },
-      ],
     },
     legal: `© ${new Date().getFullYear()} Middleware — Laboratorio di inchiesta`,
     issueMeta: "I contenuti sono liberamente utilizzabili.",

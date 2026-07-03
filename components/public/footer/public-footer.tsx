@@ -7,14 +7,12 @@ import { i18n } from "@/lib/i18n";
 import type { PublicNavigationItemDto } from "@/lib/server/modules/navigation/dto";
 
 type PublicFooterProps = {
-  sectionsLinks?: PublicNavigationItemDto[];
-  legalLinks?: PublicNavigationItemDto[];
+  sectionsLinks: PublicNavigationItemDto[];
+  legalLinks: PublicNavigationItemDto[];
 };
 
 export function PublicFooter({ sectionsLinks, legalLinks }: PublicFooterProps) {
   const text = i18n.public.footer;
-  const resolvedSectionsLinks = sectionsLinks?.length ? sectionsLinks : text.sections.links;
-  const resolvedLegalLinks = legalLinks?.length ? legalLinks : text.legalPages.links;
 
   return (
     <footer
@@ -25,8 +23,8 @@ export function PublicFooter({ sectionsLinks, legalLinks }: PublicFooterProps) {
         className={`${publicContentClassName} grid grid-cols-1 gap-9 pt-13 pb-10 md:grid-cols-[repeat(auto-fit,minmax(220px,1fr))]`}
       >
         <PublicFooterBrand />
-        <PublicFooterLinkGroup title={text.sections.title} links={resolvedSectionsLinks} />
-        <PublicFooterLinkGroup title={text.legalPages.title} links={resolvedLegalLinks} />
+        <PublicFooterLinkGroup title={text.sections.title} links={sectionsLinks} />
+        <PublicFooterLinkGroup title={text.legalPages.title} links={legalLinks} />
       </div>
 
       <PublicFooterBottomBar legal={text.legal} issueMeta={text.issueMeta} />

@@ -2,15 +2,16 @@ import { CookieConsentBanner, PublicFooter, PublicHeader } from "@/components/pu
 import { CustomCursor } from "@/components/public/custom-cursor";
 import { PublicPageTransition } from "@/components/public/public-page-transition";
 import { i18n } from "@/lib/i18n";
+import { publicFeatures } from "@/lib/public/config";
 import { getLegalConsentVersion } from "@/lib/public/server/legal-consent";
 import { getPublicNavigation } from "@/lib/public/server/navigation";
 
 import type { ReactNode } from "react";
 
 export default async function PublicLayout({ children }: { children: ReactNode }) {
-  const [legalConsentVersion, navigation] = await Promise.all([
-    getLegalConsentVersion(),
+  const [navigation, legalConsentVersion] = await Promise.all([
     getPublicNavigation(),
+    publicFeatures.cookieConsentBanner ? getLegalConsentVersion() : Promise.resolve(null),
   ]);
 
   return (
@@ -31,7 +32,9 @@ export default async function PublicLayout({ children }: { children: ReactNode }
           legalLinks={navigation.footerLegal}
         />
       </div>
-      <CookieConsentBanner consentVersion={legalConsentVersion} />
+      {publicFeatures.cookieConsentBanner && legalConsentVersion ? (
+        <CookieConsentBanner consentVersion={legalConsentVersion} />
+      ) : null}
       <CustomCursor />
     </div>
   );

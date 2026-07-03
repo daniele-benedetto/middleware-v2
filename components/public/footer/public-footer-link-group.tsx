@@ -14,6 +14,10 @@ type PublicFooterLinkGroupProps = {
 };
 
 export function PublicFooterLinkGroup({ title, links }: PublicFooterLinkGroupProps) {
+  if (links.length === 0) {
+    return null;
+  }
+
   return (
     <nav aria-label={title}>
       <h2 className={cn("mb-3.5 text-accent", publicTypography.kicker, "font-bold")}>{title}</h2>

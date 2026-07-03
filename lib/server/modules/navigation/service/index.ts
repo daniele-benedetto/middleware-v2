@@ -33,40 +33,13 @@ const menuLabels = {
   footer_legal: "Footer legale",
 } satisfies Record<NavigationMenuKey, string>;
 
-const fallbackDocuments = {
-  main: {
-    version: 1,
-    items: [
-      { id: "main-home", type: "home", label: "Numero corrente" },
-      { id: "main-archive", type: "archive", label: "Archivio" },
-      { id: "main-about", type: "custom", label: "Chi siamo", href: "/chi-siamo" },
-    ],
-  },
-  footer_sections: {
-    version: 1,
-    items: [
-      { id: "footer-sections-home", type: "home", label: "Numero corrente" },
-      { id: "footer-sections-archive", type: "archive", label: "Archivio" },
-      { id: "footer-sections-about", type: "custom", label: "Chi siamo", href: "/chi-siamo" },
-    ],
-  },
-  footer_legal: {
-    version: 1,
-    items: [
-      {
-        id: "footer-legal-privacy",
-        type: "custom",
-        label: "Privacy policy",
-        href: "/privacy-policy",
-      },
-      { id: "footer-legal-cookie", type: "custom", label: "Cookie policy", href: "/cookie-policy" },
-    ],
-  },
-} satisfies Record<NavigationMenuKey, NavigationItemsDocument>;
+function emptyNavigationDocument(): NavigationItemsDocument {
+  return { version: 1, items: [] };
+}
 
-function parseItems(value: unknown, fallback: NavigationItemsDocument): NavigationItemsDocument {
+function parseNavigationItems(value: unknown): NavigationItem[] {
   const parsed = navigationItemsDocumentSchema.safeParse(value);
-  return parsed.success ? parsed.data : fallback;
+  return parsed.success ? parsed.data.items : [];
 }
 
 function toMenuDto(record: MenuRecord): NavigationMenuDto {
@@ -75,7 +48,7 @@ function toMenuDto(record: MenuRecord): NavigationMenuDto {
     id: record.id,
     key,
     label: record.label,
-    items: parseItems(record.items, fallbackDocuments[key]).items,
+    items: parseNavigationItems(record.items),
     updatedAt: record.updatedAt.toISOString(),
   };
 }
@@ -158,26 +131,6 @@ async function resolvePublicItems(items: NavigationItem[]): Promise<PublicNaviga
   return resolved;
 }
 
-function resolveFallbackPublicItems(items: NavigationItem[]): PublicNavigationItemDto[] {
-  const resolved: PublicNavigationItemDto[] = [];
-
-  for (const item of items) {
-    if (item.type === "home") resolved.push(toPublicItem(item, "/"));
-    if (item.type === "archive") resolved.push(toPublicItem(item, "/uscite"));
-    if (item.type === "custom") resolved.push(toPublicItem(item, item.href));
-  }
-
-  return resolved;
-}
-
-function getFallbackPublicNavigation(): PublicNavigationDto {
-  return {
-    main: resolveFallbackPublicItems(fallbackDocuments.main.items),
-    footerSections: resolveFallbackPublicItems(fallbackDocuments.footer_sections.items),
-    footerLegal: resolveFallbackPublicItems(fallbackDocuments.footer_legal.items),
-  };
-}
-
 function toOptionDto(input: {
   id: string;
   title: string;
@@ -201,7 +154,9 @@ async function ensureMenus() {
   await Promise.all(
     navigationMenuKeySchema.options
       .filter((key) => !existingKeys.has(key))
-      .map((key) => navigationRepository.upsertMenu(key, menuLabels[key], fallbackDocuments[key])),
+      .map((key) =>
+        navigationRepository.upsertMenu(key, menuLabels[key], emptyNavigationDocument()),
+      ),
   );
 }
 
@@ -241,15 +196,9 @@ export const navigationService = {
     const menus = await navigationRepository.listMenus();
     const byKey = new Map(menus.map((menu) => [menu.key, menu]));
 
-    const main = parseItems(byKey.get("main")?.items, fallbackDocuments.main).items;
-    const footerSections = parseItems(
-      byKey.get("footer_sections")?.items,
-      fallbackDocuments.footer_sections,
-    ).items;
-    const footerLegal = parseItems(
-      byKey.get("footer_legal")?.items,
-      fallbackDocuments.footer_legal,
-    ).items;
+    const main = parseNavigationItems(byKey.get("main")?.items);
+    const footerSections = parseNavigationItems(byKey.get("footer_sections")?.items);
+    const footerLegal = parseNavigationItems(byKey.get("footer_legal")?.items);
 
     return {
       main: await resolvePublicItems(main),
@@ -257,5 +206,4 @@ export const navigationService = {
       footerLegal: await resolvePublicItems(footerLegal),
     };
   },
-  getFallbackPublicNavigation,
 };

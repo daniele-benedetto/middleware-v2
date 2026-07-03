@@ -1,9 +1,12 @@
 export const auditLogOutcomeValues = ["SUCCESS", "FAILURE"] as const;
 export const auditLogResourceValues = [
   "articles",
+  "authors",
   "categories",
   "issues",
   "media",
+  "navigation",
+  "pages",
   "tags",
   "users",
   "unknown",
