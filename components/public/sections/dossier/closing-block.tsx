@@ -95,7 +95,7 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
           )}
         >
           {image}
-          <div className="px-6 pt-6 pb-6 md:px-8 md:pt-7 md:pb-8">
+          <div className="flex h-full flex-col px-6 pt-6 pb-6 md:px-8 md:pt-7 md:pb-8">
             <div className="mb-5 flex items-start justify-between gap-4">
               <span className={cn(publicTypography.articleNumberLg, "text-accent")}>
                 {formatArticleNumber(getArticleNumber(articleNumbers, article))}
@@ -121,7 +121,7 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
                 {article.excerpt}
               </p>
             ) : null}
-            <div className="pt-7">
+            <div className="mt-auto pt-7">
               <ArticleMeta article={article} />
             </div>
           </div>
