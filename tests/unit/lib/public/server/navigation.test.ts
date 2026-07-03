@@ -30,10 +30,14 @@ describe("getPublicNavigation", () => {
     await expect(getPublicNavigation()).resolves.toBe(navigation);
   });
 
-  it("propagates errors when public navigation cannot be loaded", async () => {
+  it("returns empty navigation when public navigation cannot be loaded", async () => {
     const error = new Error("database unavailable");
     navigationServiceMock.getPublicNavigation.mockRejectedValue(error);
 
-    await expect(getPublicNavigation()).rejects.toBe(error);
+    await expect(getPublicNavigation()).resolves.toEqual({
+      main: [],
+      footerSections: [],
+      footerLegal: [],
+    });
   });
 });
