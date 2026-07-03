@@ -16,6 +16,7 @@ type DossierArticleCardProps = {
   number: number;
   variant: "clusterFeatured" | "constellationSecondary";
   className?: string;
+  showImage?: boolean;
 };
 
 export function DossierArticleCard({
@@ -24,23 +25,25 @@ export function DossierArticleCard({
   number,
   variant,
   className = "",
+  showImage = true,
 }: DossierArticleCardProps) {
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `article-card-title-${article.id}`;
   const isClusterFeatured = variant === "clusterFeatured";
   const summary = article.excerpt;
-  const image = article.imageUrl ? (
-    <div className="mt-5 overflow-hidden border border-foreground grayscale">
-      <Image
-        src={article.imageUrl}
-        alt={editorialImageAlt(article.imageAlt)}
-        width={1200}
-        height={800}
-        sizes="(min-width: 768px) 38vw, 100vw"
-        className={cn("h-auto w-full object-cover", publicInteraction.imageZoom)}
-      />
-    </div>
-  ) : null;
+  const image =
+    showImage && article.imageUrl ? (
+      <div className="mt-5 overflow-hidden border border-foreground grayscale">
+        <Image
+          src={article.imageUrl}
+          alt={editorialImageAlt(article.imageAlt)}
+          width={1200}
+          height={800}
+          sizes="(min-width: 768px) 38vw, 100vw"
+          className={cn("h-auto w-full object-cover", publicInteraction.imageZoom)}
+        />
+      </div>
+    ) : null;
 
   return (
     <Link
