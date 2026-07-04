@@ -119,8 +119,8 @@ Sequenza deploy attesa:
 2. Creare backup DB pre-deploy.
 3. Sincronizzare codice/artifact in `/opt/middleware/app`.
 4. Buildare immagini `middleware-migrate` e `middleware-app`.
-5. Eseguire `prisma migrate deploy` tramite servizio `migrate`.
-6. Ricreare solo `app` con `up -d --no-build app`.
+5. Eseguire `prisma migrate deploy` tramite servizio `migrate` con `--no-deps`, senza ricreare Postgres o Redis.
+6. Ricreare solo `app` con `up -d --no-build --no-deps app`.
 7. Aggiornare `/opt/middleware/DEPLOY_SOURCE`.
 8. Eseguire smoke test dominio.
 

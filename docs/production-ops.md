@@ -62,7 +62,7 @@ Stato servizi:
 cd /opt/middleware
 docker compose --env-file .env.production -f compose.production.yml ps
 docker volume inspect middleware_postgres-data --format 'Name={{.Name}} Created={{.CreatedAt}} Mountpoint={{.Mountpoint}}'
-docker compose --env-file .env.production -f compose.production.yml exec -T postgres sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select migration_name, finished_at from \"_prisma_migrations\" order by finished_at;"'
+docker compose --env-file .env.production -f compose.production.yml exec -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select migration_name, finished_at from \"_prisma_migrations\" order by finished_at;"'
 ```
 
 Log app:
@@ -153,8 +153,10 @@ Backup DB pre-deploy:
 ```bash
 cd /opt/middleware
 mkdir -p backups
-docker compose --env-file .env.production -f compose.production.yml exec -T postgres sh -lc 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-acl' > backups/postgres-predeploy-$(date -u +%Y%m%dT%H%M%SZ).dump
-ls -lh backups/postgres-predeploy-*.dump
+backup_file="backups/postgres-predeploy-$(date -u +%Y%m%dT%H%M%SZ).dump"
+docker compose --env-file .env.production -f compose.production.yml exec -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-acl' > "$backup_file"
+test -s "$backup_file"
+ls -lh "$backup_file"
 ```
 
 Aggiornare sorgente applicativa:
@@ -171,12 +173,19 @@ Build e migrate:
 ```bash
 cd /opt/middleware
 docker compose --env-file .env.production -f compose.production.yml config --quiet
+postgres_container_before="$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)"
+redis_container_before="$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)"
+test -n "$postgres_container_before"
+test -n "$redis_container_before"
+docker compose --env-file .env.production -f compose.production.yml exec -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select 1;" >/dev/null'
 docker network connect --alias postgres middleware_public middleware-postgres-1 2>/dev/null || true
 while IFS="=" read -r key value; do case "$key" in ""|\#*) continue ;; *[!A-Za-z0-9_]*) continue ;; esac; export "$key=$value"; done < .env.production
 docker build --network middleware_public --target builder --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-migrate app
 docker build --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-app app
 docker network disconnect middleware_public middleware-postgres-1 2>/dev/null || true
-docker compose --env-file .env.production -f compose.production.yml run --rm migrate
+docker compose --env-file .env.production -f compose.production.yml run --rm --no-deps migrate
+test "$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)" = "$postgres_container_before"
+test "$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)" = "$redis_container_before"
 ```
 
 Durante `next build` il DB deve essere raggiungibile e la rete di build deve avere egress internet per `next/font`. Se il build logga `P1001`, `Can't reach database server` o genera solo `empty-static-param`, fermarsi: l'artifact puo contenere pagine pubbliche prerenderizzate come 404.
@@ -185,7 +194,7 @@ Ricreare solo app:
 
 ```bash
 cd /opt/middleware
-docker compose --env-file .env.production -f compose.production.yml up -d --no-build app
+docker compose --env-file .env.production -f compose.production.yml up -d --no-build --no-deps app
 docker compose --env-file .env.production -f compose.production.yml ps
 ```
 
@@ -205,11 +214,13 @@ docker compose down
 docker compose down -v
 docker volume rm middleware_postgres-data
 docker compose up --build
+docker compose run migrate
+docker compose up -d app
 prisma migrate reset
 prisma db push --force-reset
 ```
 
-`docker compose up --build` non e sempre distruttivo, ma in production e vietato come shortcut perche rende meno esplicito cosa viene ricreato. Usare sempre build, migrate e `up -d --no-build app` separati.
+`docker compose up --build` non e sempre distruttivo, ma in production e vietato come shortcut perche rende meno esplicito cosa viene ricreato. Usare sempre build, migrate con `run --rm --no-deps migrate` e restart app con `up -d --no-build --no-deps app` separati.
 
 ## Backup E Restore DB
 
