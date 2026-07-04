@@ -1,9 +1,9 @@
-import { BlobAccessError, BlobNotFoundError, get } from "@vercel/blob";
-
-import { cmsMediaBlobAccess, parseMediaPathname } from "@/lib/media/blob";
+import { parseMediaPathname } from "@/lib/media/blob";
 import { getRequestId, getRequestPath } from "@/lib/server/http/request";
 import { publicMediaService } from "@/lib/server/modules/media/service/public";
 import { logServerEvent } from "@/lib/server/observability/log";
+import { StorageAccessError, StorageNotFoundError } from "@/lib/server/storage/errors";
+import { mediaStorage } from "@/lib/server/storage/media-storage";
 
 function buildContentDisposition(pathname: string) {
   const { fileName } = parseMediaPathname(pathname);
@@ -27,16 +27,11 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await get(pathname, {
-      access: cmsMediaBlobAccess,
-      useCache: true,
-    });
+    const result = await mediaStorage.get(pathname);
 
     if (
-      !result ||
-      result.statusCode !== 200 ||
-      (!result.blob.contentType.startsWith("image/") &&
-        !result.blob.contentType.startsWith("audio/"))
+      !result.contentType ||
+      (!result.contentType.startsWith("image/") && !result.contentType.startsWith("audio/"))
     ) {
       return new Response("Not found", { status: 404 });
     }
@@ -44,13 +39,13 @@ export async function GET(request: Request) {
     return new Response(result.stream, {
       status: 200,
       headers: {
-        "content-type": result.blob.contentType,
-        "content-disposition": buildContentDisposition(result.blob.pathname),
+        "content-type": result.contentType,
+        "content-disposition": buildContentDisposition(result.pathname),
         "cache-control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
       },
     });
   } catch (error) {
-    if (error instanceof BlobNotFoundError || error instanceof BlobAccessError) {
+    if (error instanceof StorageNotFoundError || error instanceof StorageAccessError) {
       return new Response("Not found", { status: 404 });
     }
 

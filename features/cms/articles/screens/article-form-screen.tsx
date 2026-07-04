@@ -51,6 +51,7 @@ import { createLivePreviewSessionId, toArticleLivePreviewSnapshot } from "@/lib/
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
 import { i18n } from "@/lib/i18n";
+import { extractCmsMediaPathname } from "@/lib/media/blob";
 import {
   createArticleInputSchema,
   updateArticleInputSchema,
@@ -119,12 +120,18 @@ function extractAudioChunksUrl(value: unknown) {
 }
 
 function isValidOptionalUrl(value: string) {
-  if (!value.trim()) {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return true;
+  }
+
+  if (extractCmsMediaPathname(trimmedValue)) {
     return true;
   }
 
   try {
-    new URL(value);
+    new URL(trimmedValue);
     return true;
   } catch {
     return false;

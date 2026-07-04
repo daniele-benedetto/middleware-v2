@@ -1,7 +1,5 @@
 "use client";
 
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { useEffect, useSyncExternalStore } from "react";
 
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
@@ -91,7 +89,6 @@ export function CookieConsentBanner({ consentVersion }: CookieConsentBannerProps
     getServerConsentSnapshot,
   );
   const text = i18n.public.cookieConsent;
-  const accepted = consentState === "accepted";
   const decided = consentState === "accepted" || consentState === "rejected";
   const ready = consentState !== "pending";
 
@@ -115,13 +112,6 @@ export function CookieConsentBanner({ consentVersion }: CookieConsentBannerProps
 
   return (
     <>
-      {accepted ? (
-        <>
-          <Analytics />
-          <SpeedInsights />
-        </>
-      ) : null}
-
       {ready && !decided ? (
         <>
           <div

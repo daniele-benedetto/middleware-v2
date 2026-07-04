@@ -25,7 +25,7 @@ function shouldUseNativeNavigation(event: MouseEvent<HTMLAnchorElement>) {
 
 function getQuoteDelay(itemCount: number) {
   const lastItemIndex = Math.max(0, itemCount - 1);
-  return 110 + lastItemIndex * 165 + 380 + 80;
+  return 110 + lastItemIndex * 165 + 260;
 }
 
 export function PublicFullscreenMenu({ id, state, items, onNavigate }: PublicFullscreenMenuProps) {

@@ -1,14 +1,6 @@
 import "server-only";
 
 import {
-  BlobAccessError,
-  BlobError,
-  BlobNotFoundError,
-  BlobPreconditionFailedError,
-  BlobServiceRateLimited,
-} from "@vercel/blob";
-
-import {
   buildMediaPathname,
   inferMediaKind,
   parseMediaPathname,
@@ -17,6 +9,12 @@ import {
 import { ApiError } from "@/lib/server/http/api-error";
 import { articlesRepository } from "@/lib/server/modules/articles/repository";
 import { mediaRepository } from "@/lib/server/modules/media/repository";
+import {
+  StorageAccessError,
+  StorageConflictError,
+  StorageError,
+  StorageNotFoundError,
+} from "@/lib/server/storage/errors";
 
 import type { MediaItemDto } from "@/lib/server/modules/media/dto";
 import type { DeleteMediaInput, RenameMediaInput } from "@/lib/server/modules/media/schema";
@@ -34,28 +32,24 @@ type ArticleMediaReferenceRecord = {
 };
 
 function mapMediaError(error: unknown, notFoundMessage: string) {
-  if (error instanceof BlobNotFoundError) {
+  if (error instanceof StorageNotFoundError) {
     return new ApiError(404, "NOT_FOUND", notFoundMessage);
   }
 
-  if (error instanceof BlobPreconditionFailedError) {
+  if (error instanceof StorageConflictError) {
     return new ApiError(409, "CONFLICT", "The selected file changed during the operation");
   }
 
-  if (error instanceof BlobServiceRateLimited) {
-    return new ApiError(429, "RATE_LIMITED", "Vercel Blob rate limit exceeded");
+  if (error instanceof StorageAccessError) {
+    return new ApiError(500, "INTERNAL_ERROR", "Unable to access media storage");
   }
 
-  if (error instanceof BlobAccessError) {
-    return new ApiError(500, "INTERNAL_ERROR", "Unable to access Vercel Blob");
-  }
-
-  if (error instanceof BlobError) {
+  if (error instanceof StorageError) {
     if (/already exists/i.test(error.message)) {
       return new ApiError(409, "CONFLICT", error.message);
     }
 
-    return new ApiError(500, "INTERNAL_ERROR", error.message || "Vercel Blob request failed");
+    return new ApiError(500, "INTERNAL_ERROR", error.message || "Media storage request failed");
   }
 
   return error;
@@ -189,7 +183,7 @@ export const mediaService = {
       try {
         await mediaRepository.delete(current.url, current);
       } catch (error) {
-        if (!(error instanceof BlobNotFoundError)) {
+        if (!(error instanceof StorageNotFoundError)) {
           throw new ApiError(500, "INTERNAL_ERROR", "File renamed but original cleanup failed");
         }
       }

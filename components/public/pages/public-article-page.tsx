@@ -123,6 +123,7 @@ function RelatedArticlesSection({ article, relatedArticles }: RelatedArticlesSec
               number={item.number}
               variant="constellationSecondary"
               className={getRelatedArticleCardClassName(index, relatedArticles.length)}
+              showImage={false}
             />
           ))}
         </div>

@@ -27,7 +27,7 @@ async function getPageBySlug(slug: PublicStaticPageSlug) {
     }
 
     console.error("public.getPublicStaticPageData page failed", { slug, error });
-    return null;
+    throw error;
   }
 }
 

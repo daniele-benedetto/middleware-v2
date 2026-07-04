@@ -40,6 +40,6 @@ export async function getPublicPublishedIssues(
     })) as PublicIssueListItem[];
   } catch (error) {
     console.error(`${context} published issues failed`, error);
-    return [];
+    throw error;
   }
 }

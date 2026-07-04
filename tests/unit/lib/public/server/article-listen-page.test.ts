@@ -1,4 +1,8 @@
-const getBlobMock = vi.hoisted(() => vi.fn());
+const mediaStorageMock = vi.hoisted(() => ({
+  mediaStorage: {
+    get: vi.fn(),
+  },
+}));
 const publicArticlesServiceMock = vi.hoisted(() => ({
   getBySlug: vi.fn(),
   listWithAudio: vi.fn(),
@@ -9,15 +13,16 @@ vi.mock("next/cache", () => ({
   cacheTag: () => {},
 }));
 
-vi.mock("@vercel/blob", () => ({
-  get: getBlobMock,
-}));
+vi.mock("@/lib/server/storage/media-storage", () => mediaStorageMock);
 
 vi.mock("@/lib/server/modules/articles/service/public", () => ({
   publicArticlesService: publicArticlesServiceMock,
 }));
 
 import { getPublicArticleListenPageData } from "@/lib/public/server/article-listen-page";
+import { mediaStorage } from "@/lib/server/storage/media-storage";
+
+const getMediaMock = vi.mocked(mediaStorage.get);
 
 function createJsonStream(value: unknown) {
   return new ReadableStream<Uint8Array>({
@@ -70,22 +75,24 @@ describe("getPublicArticleListenPageData", () => {
     await expect(getPublicArticleListenPageData("article-slug")).resolves.toBeNull();
   });
 
-  it("loads and normalizes chunks from the private blob json reference", async () => {
+  it("loads and normalizes chunks from the private media json reference", async () => {
     publicArticlesServiceMock.getBySlug.mockResolvedValue(
       createArticle({ audioChunks: "/api/cms/media/blob?pathname=chunks%2Farticle.json" }),
     );
-    getBlobMock.mockResolvedValue({
-      statusCode: 200,
+    getMediaMock.mockResolvedValue({
       stream: createJsonStream([{ id: 1, text: " Intro ", start: 0, end: 4 }]),
-      blob: { contentType: "application/json" },
+      contentType: "application/json",
+      url: "/api/public/media/blob?pathname=chunks%2Farticle.json",
+      downloadUrl: "/api/cms/media/blob?pathname=chunks%2Farticle.json&download=1",
+      pathname: "chunks/article.json",
+      size: 10,
+      uploadedAt: new Date("2026-01-01T00:00:00.000Z"),
+      etag: "etag-1",
     });
 
     const result = await getPublicArticleListenPageData("article-slug");
 
-    expect(getBlobMock).toHaveBeenCalledWith("chunks/article.json", {
-      access: expect.any(String),
-      useCache: true,
-    });
+    expect(getMediaMock).toHaveBeenCalledWith("chunks/article.json");
     expect(result?.chunks).toEqual([
       { id: "1", text: "Intro", start: 0, end: 4, confidence: null },
     ]);
@@ -95,7 +102,7 @@ describe("getPublicArticleListenPageData", () => {
     publicArticlesServiceMock.getBySlug.mockResolvedValue(
       createArticle({ audioChunks: "/api/cms/media/blob?pathname=chunks%2Fmissing.json" }),
     );
-    getBlobMock.mockRejectedValue(new Error("missing"));
+    getMediaMock.mockRejectedValue(new Error("missing"));
 
     const result = await getPublicArticleListenPageData("article-slug");
 

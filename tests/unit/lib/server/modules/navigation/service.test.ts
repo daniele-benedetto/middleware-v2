@@ -109,4 +109,10 @@ describe("navigationService", () => {
       { id: "archive", label: "Archivio", href: "/uscite", external: false },
     ]);
   });
+
+  it("returns empty public navigation for empty menu documents", async () => {
+    const result = await navigationService.getPublicNavigation();
+
+    expect(result).toEqual({ main: [], footerSections: [], footerLegal: [] });
+  });
 });

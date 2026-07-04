@@ -1,6 +1,5 @@
 "use client";
 
-import { upload } from "@vercel/blob/client";
 import { X } from "lucide-react";
 import { useState } from "react";
 
@@ -22,7 +21,6 @@ import { i18n } from "@/lib/i18n";
 import {
   buildCmsMediaUploadAccept,
   buildMediaPathname,
-  cmsMediaBlobAccess,
   cmsMediaDefaultKinds,
   cmsMediaUploadMaxSizeInBytes,
   inferMediaKind,
@@ -32,15 +30,22 @@ import {
 } from "@/lib/media/blob";
 
 import type { CmsSupportedMediaKind } from "@/lib/media/blob";
-import type { PutBlobResult } from "@vercel/blob";
 import type { FormEvent } from "react";
 
-const multipartUploadThresholdBytes = 4_500_000;
+export type CmsMediaUploadResult = {
+  url: string;
+  downloadUrl: string;
+  pathname: string;
+  contentType: string | null;
+  size: number;
+  uploadedAt: string;
+  etag: string;
+};
 
 type CmsMediaUploadDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUploaded: (blob: PutBlobResult) => Promise<void>;
+  onUploaded: (blob: CmsMediaUploadResult) => Promise<void>;
   allowedKinds?: CmsSupportedMediaKind[];
 };
 
@@ -105,15 +110,23 @@ export function CmsMediaUploadDialog({
     setIsUploading(true);
 
     try {
-      const blob = await upload(pathname, file, {
-        access: cmsMediaBlobAccess,
-        handleUploadUrl: "/api/cms/media/upload",
-        clientPayload: JSON.stringify({ kinds: allowedKinds }),
-        multipart: file.size > multipartUploadThresholdBytes,
-        contentType,
+      const formData = new FormData();
+      formData.set("file", file);
+      formData.set("pathname", pathname);
+      formData.set("kinds", JSON.stringify({ kinds: allowedKinds }));
+
+      const response = await fetch("/api/cms/media/upload", {
+        method: "POST",
+        body: formData,
       });
 
-      await onUploaded(blob);
+      const payload = (await response.json()) as CmsMediaUploadResult | { error?: string };
+
+      if (!response.ok) {
+        throw new Error("error" in payload ? payload.error : mediaText.previewError);
+      }
+
+      await onUploaded(payload as CmsMediaUploadResult);
       onOpenChange(false);
     } catch (error) {
       cmsToast.error(

@@ -4,6 +4,8 @@ import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 
+const mediaUrlSchema = z.string().trim().min(1);
+
 const articleBaseInputSchema = z.object({
   issueId: z.string().uuid(),
   categoryId: z.string().uuid(),
@@ -13,9 +15,9 @@ const articleBaseInputSchema = z.object({
   slug: z.string().trim().min(1),
   excerptRich: z.unknown().optional(),
   contentRich: z.unknown(),
-  imageUrl: z.string().trim().url().optional(),
+  imageUrl: mediaUrlSchema.optional(),
   imageAlt: z.string().trim().max(240).optional(),
-  audioUrl: z.string().trim().url().optional(),
+  audioUrl: mediaUrlSchema.optional(),
   audioChunks: z.unknown().optional(),
 });
 
@@ -28,9 +30,9 @@ export const updateArticleInputSchema = articleBaseInputSchema
   .partial()
   .extend({
     excerptRich: z.unknown().nullable().optional(),
-    imageUrl: z.string().trim().url().nullable().optional(),
+    imageUrl: mediaUrlSchema.nullable().optional(),
     imageAlt: z.string().trim().max(240).nullable().optional(),
-    audioUrl: z.string().trim().url().nullable().optional(),
+    audioUrl: mediaUrlSchema.nullable().optional(),
     audioChunks: z.unknown().nullable().optional(),
     status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"] satisfies ArticleStatus[]).optional(),
     publishedAt: z.coerce.date().nullable().optional(),

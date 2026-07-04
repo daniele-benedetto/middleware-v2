@@ -31,7 +31,7 @@ async function getCurrentIssue() {
     }
 
     console.error("public.getPublicHomeData current issue failed", error);
-    return null;
+    throw error;
   }
 }
 

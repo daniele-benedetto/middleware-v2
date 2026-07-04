@@ -7,6 +7,7 @@ import {
   getPublicIssueLeadImage,
   getPublicPublishedIssues,
 } from "@/lib/public/server/issues";
+import { ensureNonEmptyStaticParams } from "@/lib/public/server/static-params";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicIssuesService } from "@/lib/server/modules/issues/service/public";
 
@@ -31,7 +32,7 @@ async function getIssueBySlug(slug: string) {
     }
 
     console.error("public.getPublicIssuePageData issue failed", { slug, error });
-    return null;
+    throw error;
   }
 }
 
@@ -60,6 +61,11 @@ export async function getPublicIssueStaticParams() {
   cacheLife("hours");
   cacheTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
 
-  const issues = await getPublicPublishedIssues("public.getPublicIssueStaticParams");
-  return issues.map((issue) => ({ slug: issue.slug }));
+  try {
+    const issues = await getPublicPublishedIssues("public.getPublicIssueStaticParams");
+    return ensureNonEmptyStaticParams(issues.map((issue) => ({ slug: issue.slug })));
+  } catch (error) {
+    console.error("public.getPublicIssueStaticParams published issues failed", { error });
+    throw error;
+  }
 }

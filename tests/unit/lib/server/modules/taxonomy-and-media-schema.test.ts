@@ -64,23 +64,23 @@ describe("categories/tag/media schemas", () => {
   it("validates rename media input", () => {
     expect(
       renameMediaInputSchema.parse({
-        url: " https://example.com/file.jpg ",
+        url: " /api/public/media/blob?pathname=covers%2Ffile.jpg ",
         name: "  hero-image  ",
       }),
     ).toEqual({
-      url: "https://example.com/file.jpg",
+      url: "/api/public/media/blob?pathname=covers%2Ffile.jpg",
       name: "hero-image",
     });
-    expect(renameMediaInputSchema.safeParse({ url: "invalid", name: "x" }).success).toBe(false);
+    expect(renameMediaInputSchema.safeParse({ url: "", name: "x" }).success).toBe(false);
   });
 
   it("validates delete media input", () => {
     expect(
       deleteMediaInputSchema.parse({
-        url: " https://example.com/file.jpg ",
+        url: " /api/public/media/blob?pathname=covers%2Ffile.jpg ",
       }),
     ).toEqual({
-      url: "https://example.com/file.jpg",
+      url: "/api/public/media/blob?pathname=covers%2Ffile.jpg",
     });
   });
 });

@@ -21,6 +21,7 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
   const secondary = featured
     ? block.articles.filter((article) => article.id !== featured.id)
     : block.articles;
+  const hasThreeSecondaryArticles = secondary.length === 3;
   const featuredOnRight = block.featuredPlacement === "right";
   const featuredCard = featured ? (
     <DossierArticleCard
@@ -31,14 +32,17 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
     />
   ) : null;
   const secondaryCards = (
-    <div className="grid h-full md:auto-rows-fr">
-      {secondary.map((article) => (
+    <div
+      className={`grid h-full ${hasThreeSecondaryArticles ? "md:grid-rows-[auto_auto_minmax(0,1fr)] lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)]" : "md:auto-rows-fr"}`}
+    >
+      {secondary.map((article, index) => (
         <DossierArticleCard
           key={article.id}
           article={article}
           eyebrow={articleEyebrow(article)}
           number={getArticleNumber(articleNumbers, article)}
           variant="constellationSecondary"
+          className={hasThreeSecondaryArticles && index === 2 ? "lg:col-span-2" : undefined}
         />
       ))}
     </div>

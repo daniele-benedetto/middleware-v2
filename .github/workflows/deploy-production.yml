@@ -1,0 +1,125 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+env:
+  PRODUCTION_PATH: /opt/middleware
+  PRODUCTION_SMOKE_URL: ${{ vars.PRODUCTION_SMOKE_URL || 'http://46.224.209.184' }}
+  SSH_HOST: ${{ vars.PRODUCTION_SSH_HOST || '46.224.209.184' }}
+  SSH_PORT: ${{ vars.PRODUCTION_SSH_PORT || '22' }}
+  SSH_USER: ${{ vars.PRODUCTION_SSH_USER || 'deploy' }}
+
+jobs:
+  deploy:
+    name: Deploy To VPS
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Require main
+        run: |
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
+            echo "Production deploys must run from main. Current ref: ${GITHUB_REF_NAME}"
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require successful CI
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ci.yml',
+              branch: 'main',
+              head_sha: context.sha,
+              per_page: 10,
+            });
+
+            const successfulRun = data.workflow_runs.find((run) => run.conclusion === 'success');
+            if (!successfulRun) {
+              core.setFailed(`CI has not passed for ${context.sha}. Run CI on main before deploying production.`);
+            }
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test -n "$SSH_PRIVATE_KEY"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/production_key
+          chmod 600 ~/.ssh/production_key
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" > ~/.ssh/known_hosts
+          fi
+
+      - name: Pre-check and backup production
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/production_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "DEPLOY_COMMIT='$GITHUB_SHA' bash -se" <<'REMOTE'
+          set -euo pipefail
+          cd /opt/middleware
+          docker compose --env-file .env.production -f compose.production.yml ps
+          docker volume inspect middleware_postgres-data --format 'Name={{.Name}} Created={{.CreatedAt}} Mountpoint={{.Mountpoint}}'
+          docker compose --env-file .env.production -f compose.production.yml exec -T postgres sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select migration_name, finished_at from \"_prisma_migrations\" order by finished_at;"'
+          mkdir -p backups
+          docker compose --env-file .env.production -f compose.production.yml exec -T postgres sh -lc 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-acl' > "backups/postgres-predeploy-${DEPLOY_COMMIT}-$(date -u +%Y%m%dT%H%M%SZ).dump"
+          cp -a app "app.backup.$(date -u +%Y%m%dT%H%M%SZ)"
+          REMOTE
+
+      - name: Sync application source
+        run: |
+          set -euo pipefail
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/production_key -p $SSH_PORT" \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.husky/' \
+            --exclude='.next/' \
+            --exclude='node_modules/' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            ./ "$SSH_USER@$SSH_HOST:$PRODUCTION_PATH/app/"
+
+      - name: Build migrate and restart app
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/production_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "DEPLOY_COMMIT='$GITHUB_SHA' bash -se" <<'REMOTE'
+          set -euo pipefail
+          cd /opt/middleware
+          docker compose --env-file .env.production -f compose.production.yml config --quiet
+          docker network connect --alias postgres middleware_public middleware-postgres-1 2>/dev/null || true
+          trap 'docker network disconnect middleware_public middleware-postgres-1 2>/dev/null || true' EXIT
+          while IFS="=" read -r key value; do case "$key" in ""|\#*) continue ;; *[!A-Za-z0-9_]*) continue ;; esac; export "$key=$value"; done < .env.production
+          docker build --network middleware_public --target builder --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-migrate app
+          docker build --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-app app
+          docker compose --env-file .env.production -f compose.production.yml run --rm migrate
+          docker compose --env-file .env.production -f compose.production.yml up -d --no-build app
+          docker compose --env-file .env.production -f compose.production.yml ps
+          printf 'branch=main\ncommit=%s\nsynced_at=%s\nmethod=github-actions-rsync\n' "$DEPLOY_COMMIT" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > DEPLOY_SOURCE
+          REMOTE
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          curl -fsSI "$PRODUCTION_SMOKE_URL/"
+          curl -fsSI "$PRODUCTION_SMOKE_URL/cms/login"

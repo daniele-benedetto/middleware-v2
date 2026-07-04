@@ -11,7 +11,7 @@ Use it as the entrypoint before diving into the deeper audit, UI, or checklist d
 - tRPC-only API surface at `app/api/trpc/[trpc]/route.ts`.
 - Prisma + Postgres for application data.
 - Better Auth for session management.
-- Vercel Blob for CMS media upload and private asset proxying.
+- S3-compatible private object storage for CMS media upload and controlled public proxying.
 - Redis-backed rate limiting is mandatory in production.
 
 ## Where Things Live
@@ -162,15 +162,14 @@ Current role matrix:
 Upload flow:
 
 1. The client calls `POST /api/cms/media/upload`.
-2. The route uses `handleUpload()` from Vercel Blob.
-3. `onBeforeGenerateToken` checks session and role, validates file name/path, restricts kinds, and sets max size.
-4. The browser uploads directly to Blob; the app does not proxy file bytes through the app server.
+2. The route checks session and role, validates file name/path, restricts kinds, and sets max size.
+3. The app uploads the file server-side to private S3-compatible object storage.
 
 Read/download flow:
 
 1. CMS UI resolves preview/download URLs through `/api/cms/media/blob?pathname=...`.
 2. `app/api/cms/media/blob/route.ts` checks session and role before reading any blob.
-3. The route fetches the private blob and streams it back with `cache-control: private, no-store, max-age=0`.
+3. The route fetches the private object and streams it back with `cache-control: private, no-store, max-age=0`.
 
 Editorial image semantics:
 

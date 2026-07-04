@@ -5,9 +5,11 @@ import { PublicLink as Link } from "@/components/public/public-link";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
+import type { MouseEventHandler } from "react";
+
 type PublicBrandProps = {
   href?: string;
-  onClick?: () => void;
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
   tone?: "light" | "dark";
   priority?: boolean;
 };
