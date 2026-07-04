@@ -1,4 +1,5 @@
 import { publicContentClassName } from "@/components/public/primitives";
+import { publicFeatures } from "@/lib/public/config";
 
 type PublicFooterBottomBarProps = {
   legal: string;
@@ -9,10 +10,11 @@ export function PublicFooterBottomBar({ legal, issueMeta }: PublicFooterBottomBa
   return (
     <div className="border-t border-dark-line">
       <div
-        className={`${publicContentClassName} flex flex-wrap justify-between gap-4 py-4.5 text-xs text-footer-muted`}
+        className={`${publicContentClassName} grid grid-cols-1 gap-4 py-4.5 text-xs text-footer-muted sm:grid-cols-3`}
       >
         <span>{legal}</span>
-        <span>{issueMeta}</span>
+        <span className="sm:text-center">v{publicFeatures.version}</span>
+        <span className="sm:text-right">{issueMeta}</span>
       </div>
     </div>
   );
