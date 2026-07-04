@@ -49,9 +49,15 @@ FROM deps AS migrate
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
 
 COPY prisma ./prisma
 COPY prisma.config.ts ./
+
+# Bake the Prisma schema engine into the image at build time (internet is
+# available here). The migrate container runs on the internal Docker network
+# with no egress, so it must not try to download the engine at deploy time.
+RUN pnpm exec prisma -v
 
 FROM base AS runner
 WORKDIR /app
