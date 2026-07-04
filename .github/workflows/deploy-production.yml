@@ -184,6 +184,9 @@ jobs:
         run: |
           set -euo pipefail
           home_html="$(curl -fsS "$PRODUCTION_SMOKE_URL/")"
-          printf '%s' "$home_html" | grep -qF '<title>' || { echo "Home did not return HTML with a <title>"; exit 1; }
+          case "$home_html" in
+            *"<title>"*) ;;
+            *) echo "Home did not return HTML with a <title>"; exit 1 ;;
+          esac
           curl -fsSI "$PRODUCTION_SMOKE_URL/cms/login" >/dev/null
           echo "Smoke test passed."
