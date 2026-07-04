@@ -131,8 +131,8 @@ jobs:
           )
           PY
           )"
-          docker build --network middleware_public --target builder --build-arg BUILD_DATABASE_URL="$encoded_database_url" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-migrate app
-          docker build --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$encoded_database_url" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-app app
+          docker build --network middleware_public --target builder --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-migrate app
+          docker build --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-app app
           docker compose --env-file .env.production -f compose.production.yml run --rm --no-deps -e DATABASE_URL="$encoded_database_url" -e POSTGRES_URL="$encoded_database_url" -e PRISMA_DATABASE_URL="$encoded_database_url" migrate
           test "$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)" = "$postgres_container_before"
           test "$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)" = "$redis_container_before"

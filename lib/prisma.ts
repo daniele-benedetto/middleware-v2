@@ -2,29 +2,6 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "@/lib/generated/prisma/client";
 
-type PrismaPgConfig = ConstructorParameters<typeof PrismaPg>[0];
-
-function createPgConfig(rawValue: string): PrismaPgConfig {
-  try {
-    const url = new URL(rawValue);
-    const sslmode = url.searchParams.get("sslmode");
-
-    if (sslmode && sslmode !== "disable") {
-      return normalizeConnectionString(rawValue);
-    }
-
-    return {
-      database: decodeURIComponent(url.pathname.replace(/^\//, "")),
-      host: url.hostname,
-      password: decodeURIComponent(url.password),
-      port: url.port ? Number(url.port) : undefined,
-      user: decodeURIComponent(url.username),
-    };
-  } catch {
-    return rawValue;
-  }
-}
-
 function normalizeConnectionString(rawValue: string): string {
   try {
     const url = new URL(rawValue);
@@ -48,7 +25,7 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is not set");
 }
 
-const adapter = new PrismaPg(createPgConfig(connectionString));
+const adapter = new PrismaPg({ connectionString: normalizeConnectionString(connectionString) });
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;

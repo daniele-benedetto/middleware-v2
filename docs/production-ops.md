@@ -155,7 +155,7 @@ Regole operative del deploy:
 - Prima di `migrate`, salvare gli ID container di `postgres` e `redis` e verificarli dopo `migrate`.
 - Il dump pre-deploy deve essere verificato con `test -s` prima di sincronizzare o ricreare servizi.
 - Nei blocchi SSH via heredoc usare `docker compose exec --interactive=false -T ...`; senza `--interactive=false`, `exec` puo consumare lo stdin del heredoc e saltare i comandi successivi.
-- Per Prisma CLI, costruire una `DATABASE_URL` con user/password/db URL-encoded e passarla esplicitamente a `migrate`; una URL leggibile da `pg` puo comunque fallire in Prisma se contiene caratteri riservati non codificati.
+- Per Prisma CLI, costruire una `DATABASE_URL` con user/password/db URL-encoded e passarla esplicitamente a `migrate`; il build Next e il runtime app restano sulla `DATABASE_URL` raw usata dall'adapter `pg`.
 - Non usare `source .env.production`: alcuni valori possono contenere spazi o caratteri non shell-safe. Per il build usare il parser riga-per-riga gia documentato sotto.
 
 Backup DB pre-deploy:
@@ -203,8 +203,8 @@ print(
 )
 PY
 )"
-docker build --network middleware_public --target builder --build-arg BUILD_DATABASE_URL="$encoded_database_url" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-migrate app
-docker build --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$encoded_database_url" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-app app
+docker build --network middleware_public --target builder --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-migrate app
+docker build --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-app app
 docker network disconnect middleware_public middleware-postgres-1 2>/dev/null || true
 docker compose --env-file .env.production -f compose.production.yml run --rm --no-deps -e DATABASE_URL="$encoded_database_url" -e POSTGRES_URL="$encoded_database_url" -e PRISMA_DATABASE_URL="$encoded_database_url" migrate
 test "$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)" = "$postgres_container_before"
