@@ -68,61 +68,13 @@ Questo documento contiene cosa resta da fare. Per accessi, comandi VPS, backup, 
 - [ ] Preview/download media verificati via `/api/cms/media/blob`.
 - [ ] I media non sono accessibili pubblicamente dal bucket.
 
-### Qualita Codice E CI
+### Qualita Codice E Deploy
 
-- [x] Workflow GitHub CI presente.
-- [ ] CI passa su PR e push a `main`.
-- [x] CI esegue almeno `pnpm check:all` o gli step equivalenti.
-- [ ] Branch protection su `main` configurata.
-- [x] Deploy production non parte se CI fallisce.
-
-## CI/CD Da Implementare
-
-### CI Consigliata
-
-Workflow presente in `.github/workflows/ci.yml` con trigger su PR e push a `main`.
-
-Controlli minimi:
-
-- `pnpm install --frozen-lockfile`
-- `pnpm fix:tailwind-vars:check`
-- `pnpm format:check`
-- `pnpm lint`
-- `pnpm typecheck`
-- `pnpm test:run`
-- `pnpm prisma:validate`
-- `pnpm build`
-
-Lo script unico equivalente e `pnpm check:all`.
-
-### Deploy Production Consigliato
-
-Workflow presente in `.github/workflows/deploy-production.yml`.
-
-Fase iniziale consigliata:
-
-- [x] Trigger `workflow_dispatch` manuale.
-- [ ] Environment GitHub `production` con approval opzionale.
-- [x] Deploy solo da `main`.
-- [ ] SSH con chiave deploy salvata nei GitHub Secrets.
-- [x] Nessun segreto production stampato nei log.
-- [x] Deploy bloccato se la CI non e verde sul commit da rilasciare.
-
-Quando i deploy manuali sono stabili:
-
-- [ ] Aggiungere trigger su push a `main`, se si vuole auto-deploy.
-- [ ] Mantenere branch protection e CI obbligatoria.
-
-Sequenza deploy attesa:
-
-1. Leggere stato container e volume Postgres.
-2. Creare backup DB pre-deploy.
-3. Sincronizzare codice/artifact in `/opt/middleware/app`.
-4. Buildare immagini `middleware-migrate` e `middleware-app`.
-5. Eseguire `prisma migrate deploy` tramite servizio `migrate` con `--no-deps`, senza ricreare Postgres o Redis.
-6. Ricreare solo `app` con `up -d --no-build --no-deps app`.
-7. Aggiornare `/opt/middleware/DEPLOY_SOURCE`.
-8. Eseguire smoke test dominio.
+- [ ] CI verde su `main` dopo le ultime modifiche deploy.
+- [ ] Branch protection/ruleset su `main` attiva con CI obbligatoria.
+- [ ] Environment GitHub `production` configurato con approval, se desiderata.
+- [ ] Primo deploy manuale data-safe riuscito da GitHub Actions.
+- [ ] Smoke IP post-deploy riuscito.
 
 ## Config Temporanea IP
 
@@ -172,7 +124,7 @@ Poi validare e ricreare i servizi necessari:
 ```bash
 cd /opt/middleware
 docker compose --env-file .env.production -f compose.production.yml config --quiet
-docker compose --env-file .env.production -f compose.production.yml up -d --no-build app caddy
+docker compose --env-file .env.production -f compose.production.yml up -d --no-build --no-deps app caddy
 ```
 
 ## Smoke Dominio
