@@ -150,7 +150,7 @@ docker compose --env-file .env.production -f compose.production.yml exec --inter
 
 Regole operative del deploy:
 
-- `migrate` deve sempre girare con `run --rm --no-deps migrate pnpm prisma:migrate:deploy`, cosi Compose non ricrea `postgres` o `redis` e il comando usa l'env override esplicito.
+- `migrate` deve girare con `docker run --rm --network middleware_internal ... middleware-migrate pnpm prisma:migrate:deploy`, cosi Compose non sovrascrive la `DATABASE_URL` esplicita e non ricrea `postgres` o `redis`.
 - Il restart applicativo deve usare `up -d --no-build --no-deps app`, cosi aggiorna solo `app`.
 - Prima di `migrate`, salvare gli ID container di `postgres` e `redis` e verificarli dopo `migrate`.
 - Il dump pre-deploy deve essere verificato con `test -s` prima di sincronizzare o ricreare servizi.
@@ -190,23 +190,11 @@ test -n "$redis_container_before"
 docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select 1;" >/dev/null'
 docker network connect --alias postgres middleware_public middleware-postgres-1 2>/dev/null || true
 while IFS="=" read -r key value; do case "$key" in ""|\#*) continue ;; *[!A-Za-z0-9_]*) continue ;; esac; export "$key=$value"; done < .env.production
-encoded_database_url="$(python3 - <<'PY'
-from urllib.parse import quote
-import os
-
-print(
-    "postgresql://{}:{}@postgres:5432/{}?sslmode=disable".format(
-        quote(os.environ["POSTGRES_USER"], safe=""),
-        quote(os.environ["POSTGRES_PASSWORD"], safe=""),
-        quote(os.environ["POSTGRES_DB"], safe=""),
-    )
-)
-PY
-)"
+encoded_database_url="$(docker compose --env-file .env.production -f compose.production.yml config --format json | python3 -c 'from urllib.parse import quote; import json,sys; cfg=json.load(sys.stdin); env=cfg["services"]["postgres"]["environment"]; print("postgresql://{}:{}@postgres:5432/{}?sslmode=disable".format(quote(env["POSTGRES_USER"], safe=""), quote(env["POSTGRES_PASSWORD"], safe=""), quote(env["POSTGRES_DB"], safe="")))')"
 docker build --network middleware_public --target builder --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-migrate app
 docker build --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-app app
 docker network disconnect middleware_public middleware-postgres-1 2>/dev/null || true
-docker compose --env-file .env.production -f compose.production.yml run --rm --no-deps -e DATABASE_URL="$encoded_database_url" -e POSTGRES_URL="$encoded_database_url" -e PRISMA_DATABASE_URL="$encoded_database_url" migrate pnpm prisma:migrate:deploy
+docker run --rm --network middleware_internal -e DATABASE_URL="$encoded_database_url" -e POSTGRES_URL="$encoded_database_url" -e PRISMA_DATABASE_URL="$encoded_database_url" middleware-migrate pnpm prisma:migrate:deploy
 test "$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)" = "$postgres_container_before"
 test "$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)" = "$redis_container_before"
 ```
@@ -244,7 +232,7 @@ prisma migrate reset
 prisma db push --force-reset
 ```
 
-`docker compose up --build` non e sempre distruttivo, ma in production e vietato come shortcut perche rende meno esplicito cosa viene ricreato. Usare sempre build, migrate con `run --rm --no-deps migrate pnpm prisma:migrate:deploy` e restart app con `up -d --no-build --no-deps app` separati.
+`docker compose up --build` non e sempre distruttivo, ma in production e vietato come shortcut perche rende meno esplicito cosa viene ricreato. Usare sempre build, migrate con `docker run --rm --network middleware_internal ... middleware-migrate pnpm prisma:migrate:deploy` e restart app con `up -d --no-build --no-deps app` separati.
 
 ## Backup E Restore DB
 
