@@ -150,7 +150,7 @@ docker compose --env-file .env.production -f compose.production.yml exec --inter
 
 Regole operative del deploy:
 
-- `migrate` deve sempre girare con `run --rm --no-deps migrate`, cosi Compose non ricrea `postgres` o `redis`.
+- `migrate` deve sempre girare con `run --rm --no-deps migrate pnpm prisma:migrate:deploy`, cosi Compose non ricrea `postgres` o `redis` e il comando usa l'env override esplicito.
 - Il restart applicativo deve usare `up -d --no-build --no-deps app`, cosi aggiorna solo `app`.
 - Prima di `migrate`, salvare gli ID container di `postgres` e `redis` e verificarli dopo `migrate`.
 - Il dump pre-deploy deve essere verificato con `test -s` prima di sincronizzare o ricreare servizi.
@@ -206,7 +206,7 @@ PY
 docker build --network middleware_public --target builder --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-migrate app
 docker build --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-app app
 docker network disconnect middleware_public middleware-postgres-1 2>/dev/null || true
-docker compose --env-file .env.production -f compose.production.yml run --rm --no-deps -e DATABASE_URL="$encoded_database_url" -e POSTGRES_URL="$encoded_database_url" -e PRISMA_DATABASE_URL="$encoded_database_url" migrate
+docker compose --env-file .env.production -f compose.production.yml run --rm --no-deps -e DATABASE_URL="$encoded_database_url" -e POSTGRES_URL="$encoded_database_url" -e PRISMA_DATABASE_URL="$encoded_database_url" migrate pnpm prisma:migrate:deploy
 test "$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)" = "$postgres_container_before"
 test "$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)" = "$redis_container_before"
 ```
@@ -244,7 +244,7 @@ prisma migrate reset
 prisma db push --force-reset
 ```
 
-`docker compose up --build` non e sempre distruttivo, ma in production e vietato come shortcut perche rende meno esplicito cosa viene ricreato. Usare sempre build, migrate con `run --rm --no-deps migrate` e restart app con `up -d --no-build --no-deps app` separati.
+`docker compose up --build` non e sempre distruttivo, ma in production e vietato come shortcut perche rende meno esplicito cosa viene ricreato. Usare sempre build, migrate con `run --rm --no-deps migrate pnpm prisma:migrate:deploy` e restart app con `up -d --no-build --no-deps app` separati.
 
 ## Backup E Restore DB
 
