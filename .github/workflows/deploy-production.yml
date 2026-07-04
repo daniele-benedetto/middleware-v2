@@ -118,9 +118,22 @@ jobs:
           docker network connect --alias postgres middleware_public middleware-postgres-1 2>/dev/null || true
           trap 'docker network disconnect middleware_public middleware-postgres-1 2>/dev/null || true' EXIT
           while IFS="=" read -r key value; do case "$key" in ""|\#*) continue ;; *[!A-Za-z0-9_]*) continue ;; esac; export "$key=$value"; done < .env.production
-          docker build --network middleware_public --target builder --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-migrate app
-          docker build --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-app app
-          docker compose --env-file .env.production -f compose.production.yml run --rm --no-deps migrate
+          encoded_database_url="$(python3 - <<'PY'
+          from urllib.parse import quote
+          import os
+
+          print(
+              "postgresql://{}:{}@postgres:5432/{}?sslmode=disable".format(
+                  quote(os.environ["POSTGRES_USER"], safe=""),
+                  quote(os.environ["POSTGRES_PASSWORD"], safe=""),
+                  quote(os.environ["POSTGRES_DB"], safe=""),
+              )
+          )
+          PY
+          )"
+          docker build --network middleware_public --target builder --build-arg BUILD_DATABASE_URL="$encoded_database_url" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-migrate app
+          docker build --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$encoded_database_url" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-app app
+          docker compose --env-file .env.production -f compose.production.yml run --rm --no-deps -e DATABASE_URL="$encoded_database_url" -e POSTGRES_URL="$encoded_database_url" -e PRISMA_DATABASE_URL="$encoded_database_url" migrate
           test "$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)" = "$postgres_container_before"
           test "$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)" = "$redis_container_before"
           docker compose --env-file .env.production -f compose.production.yml up -d --no-build --no-deps app
