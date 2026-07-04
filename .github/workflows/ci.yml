@@ -9,31 +9,88 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  NEXT_PUBLIC_SITE_URL: http://localhost:3000
+  SITE_URL: http://localhost:3000
+  DATABASE_URL: postgresql://middleware:middleware@localhost:5432/middleware?sslmode=disable
+  POSTGRES_URL: postgresql://middleware:middleware@localhost:5432/middleware?sslmode=disable
+  PRISMA_DATABASE_URL: postgresql://middleware:middleware@localhost:5432/middleware?sslmode=disable
+  REDIS_URL: redis://localhost:6379/0
+  BETTER_AUTH_SECRET: ci-placeholder-secret-32-characters-minimum
+  BETTER_AUTH_URL: http://localhost:3000
+  BOOTSTRAP_ADMIN_EMAIL: admin@example.com
+  BOOTSTRAP_ADMIN_PASSWORD: replace-with-at-least-8-characters
+  BOOTSTRAP_ADMIN_NAME: Admin
+  AUDIT_LOG_RETENTION_DAYS: "365"
+  BLOB_READ_WRITE_TOKEN: ci-placeholder
+  CMS_MEDIA_BLOB_ACCESS: private
+  S3_ENDPOINT: http://localhost:9000
+  S3_PUBLIC_ENDPOINT: http://localhost:9000
+  S3_REGION: eu-central-1
+  S3_BUCKET: middleware-media
+  S3_ACCESS_KEY: minioadmin
+  S3_SECRET_KEY: minioadmin
+  S3_FORCE_PATH_STYLE: "true"
+
 jobs:
-  checks:
+  check:
+    name: Quality Gates
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://user:password@localhost:5432/db?sslmode=disable' }}
-      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET || 'ci-secret-placeholder' }}
-      BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL || 'http://localhost:3000' }}
-      NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000' }}
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: middleware
+          POSTGRES_USER: middleware
+          POSTGRES_PASSWORD: middleware
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U middleware -d middleware"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.28.2
+          run_install: false
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run full checks
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
+      - name: Apply database migrations
+        run: pnpm prisma:migrate:deploy
+
+      - name: Run checks
         run: pnpm check:all

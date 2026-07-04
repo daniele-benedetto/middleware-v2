@@ -1,27 +1,132 @@
-# Go-Live Production
+# Go-Live Production Checklist
 
-Piano residuo per portare `middleware.media` live dalla production gia preparata su Hetzner.
+Piano residuo per portare `middleware.media` live e stabilizzare la production self-hosted gia preparata su Hetzner.
 
-Questo documento non contiene lo storico del setup gia eseguito. Per accessi, comandi VPS e stato operativo corrente vedere `docs/production-ops.md`.
+Questo documento contiene cosa resta da fare. Per accessi, comandi VPS, backup, deploy e guardrail operativi vedere `docs/production-ops.md`.
 
 ## Stato Corrente
 
-| Area             | Stato                                                    |
-| ---------------- | -------------------------------------------------------- |
-| VPS              | Hetzner `CX43`, Ubuntu 24.04 LTS x86_64                  |
-| IP               | `46.224.209.184`                                         |
-| Runtime          | Docker Compose in `/opt/middleware`                      |
-| App              | Next.js production via Caddy                             |
-| DB               | Postgres container production                            |
-| Rate limit       | Redis container production                               |
-| Media            | Hetzner Object Storage, bucket privato `middlewaremedia` |
-| Smoke temporaneo | `http://46.224.209.184`                                  |
-| Dominio finale   | `https://middleware.media`                               |
-| Redirect         | `www.middleware.media` -> `middleware.media`             |
+| Area           | Stato                                                    |
+| -------------- | -------------------------------------------------------- |
+| VPS            | Hetzner `CX43`, Ubuntu 24.04 LTS x86_64                  |
+| IP             | `46.224.209.184`                                         |
+| Runtime        | Docker Compose in `/opt/middleware`                      |
+| App            | Next.js production via Caddy                             |
+| DB             | Postgres container production                            |
+| Rate limit     | Redis container production                               |
+| Media          | Hetzner Object Storage, bucket privato `middlewaremedia` |
+| Smoke IP       | Completato su `http://46.224.209.184`                    |
+| Dominio finale | `https://middleware.media`                               |
+| Redirect       | `www.middleware.media` -> `middleware.media`             |
 
-## Config Temporanea
+## Principi Di Go-Live
 
-La production e' attualmente configurata per smoke via IP HTTP:
+- Non fare reset distruttivi in production.
+- Non pubblicare porte dirette di `app`, `postgres` o `redis`; ingresso solo da Caddy.
+- Fare backup DB prima di deploy/migrazioni e prima dello switch finale a dominio.
+- Applicare DNS/HTTPS prima in modalita semplice, poi Cloudflare proxy solo dopo smoke riuscito.
+- Tenere Object Storage privato; i media passano dalle route applicative.
+- Tenere Redis obbligatorio in production; se non funziona, non considerare la production pronta.
+
+## Checklist Prima Del DNS
+
+### Production VPS
+
+- [ ] `app`, `caddy`, `postgres`, `redis` sono up.
+- [ ] `postgres` e `redis` sono healthy.
+- [ ] Nessun container e in restart loop.
+- [ ] `docker compose --env-file .env.production -f compose.production.yml config --quiet` passa.
+- [ ] Solo Caddy espone porte pubbliche.
+- [ ] `app` non espone porta host.
+- [ ] `postgres` e `redis` non espongono porte host.
+- [ ] `app` e collegata a `middleware_internal` e `middleware_public`.
+- [ ] `postgres` e `redis` sono collegati solo a `middleware_internal`.
+- [ ] Firewall VPS consente solo SSH, HTTP e HTTPS dall'esterno.
+
+### Dati E Backup
+
+- [ ] Volume `middleware_postgres-data` verificato e non appena ricreato.
+- [ ] Dump DB manuale pre-go-live creato in `/opt/middleware/backups`.
+- [ ] Restore testato almeno una volta in ambiente non production o procedura verificata.
+- [ ] Retention backup definita.
+- [ ] Copia backup offsite pianificata o implementata.
+
+### Variabili E Segreti
+
+- [ ] `.env.production` non e mai stampato integralmente in chat/log.
+- [ ] `BETTER_AUTH_SECRET` e forte e non riusato altrove.
+- [ ] Credenziali Postgres, Redis e S3 sono production-only.
+- [ ] `REDIS_URL` punta al Redis production.
+- [ ] `AUDIT_LOG_RETENTION_DAYS` e impostato.
+- [ ] Chiavi Object Storage hanno permessi minimi necessari sul bucket.
+
+### Object Storage
+
+- [ ] Bucket `middlewaremedia` privato.
+- [ ] `S3_ENDPOINT=https://fsn1.your-objectstorage.com` corretto.
+- [ ] Upload CMS verificato.
+- [ ] Preview/download media verificati via `/api/cms/media/blob`.
+- [ ] I media non sono accessibili pubblicamente dal bucket.
+
+### Qualita Codice E CI
+
+- [x] Workflow GitHub CI presente.
+- [ ] CI passa su PR e push a `main`.
+- [x] CI esegue almeno `pnpm check:all` o gli step equivalenti.
+- [ ] Branch protection su `main` configurata.
+- [x] Deploy production non parte se CI fallisce.
+
+## CI/CD Da Implementare
+
+### CI Consigliata
+
+Workflow presente in `.github/workflows/ci.yml` con trigger su PR e push a `main`.
+
+Controlli minimi:
+
+- `pnpm install --frozen-lockfile`
+- `pnpm fix:tailwind-vars:check`
+- `pnpm format:check`
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test:run`
+- `pnpm prisma:validate`
+- `pnpm build`
+
+Lo script unico equivalente e `pnpm check:all`.
+
+### Deploy Production Consigliato
+
+Workflow presente in `.github/workflows/deploy-production.yml`.
+
+Fase iniziale consigliata:
+
+- [x] Trigger `workflow_dispatch` manuale.
+- [ ] Environment GitHub `production` con approval opzionale.
+- [x] Deploy solo da `main`.
+- [ ] SSH con chiave deploy salvata nei GitHub Secrets.
+- [x] Nessun segreto production stampato nei log.
+- [x] Deploy bloccato se la CI non e verde sul commit da rilasciare.
+
+Quando i deploy manuali sono stabili:
+
+- [ ] Aggiungere trigger su push a `main`, se si vuole auto-deploy.
+- [ ] Mantenere branch protection e CI obbligatoria.
+
+Sequenza deploy attesa:
+
+1. Leggere stato container e volume Postgres.
+2. Creare backup DB pre-deploy.
+3. Sincronizzare codice/artifact in `/opt/middleware/app`.
+4. Buildare immagini `middleware-migrate` e `middleware-app`.
+5. Eseguire `prisma migrate deploy` tramite servizio `migrate`.
+6. Ricreare solo `app` con `up -d --no-build app`.
+7. Aggiornare `/opt/middleware/DEPLOY_SOURCE`.
+8. Eseguire smoke test dominio.
+
+## Config Temporanea IP
+
+La production e attualmente configurata per IP HTTP:
 
 - `BETTER_AUTH_URL=http://46.224.209.184`
 - `NEXT_PUBLIC_SITE_URL=http://46.224.209.184`
@@ -33,25 +138,16 @@ I file domain-ready sono gia presenti sulla VPS:
 - `/opt/middleware/Caddyfile.domain-ready`
 - `/opt/middleware/compose.production.yml.domain-ready`
 
-Comandi utili:
-
-```bash
-ssh -i ~/.ssh/middleware_hetzner_ed25519 deploy@46.224.209.184
-cd /opt/middleware
-docker compose --env-file .env.production -f compose.production.yml ps
-docker compose --env-file .env.production -f compose.production.yml logs --no-color --tail=200 app
-```
-
 ## DNS
 
-Puntare i record alla VPS solo dopo smoke IP accettato.
+Preparare i record in Cloudflare in modalita iniziale **DNS only**, senza proxy.
 
 | Host                   | Tipo          | Target                                | Proxy iniziale |
 | ---------------------- | ------------- | ------------------------------------- | -------------- |
 | `middleware.media`     | `A`           | `46.224.209.184`                      | DNS only       |
 | `www.middleware.media` | `A` o `CNAME` | `46.224.209.184` o `middleware.media` | DNS only       |
 
-Se viene configurato anche IPv6, verificare prima che Caddy e firewall siano pronti per il traffico IPv6.
+Se viene configurato anche IPv6, verificare prima che Caddy e firewall siano pronti per traffico IPv6.
 
 ## Switch A Dominio
 
@@ -81,20 +177,19 @@ docker compose --env-file .env.production -f compose.production.yml up -d --no-b
 
 ## Smoke Dominio
 
-Verificare dopo emissione certificati HTTPS:
+- [ ] `https://middleware.media` risponde `200`.
+- [ ] `https://www.middleware.media` redirige a `https://middleware.media`.
+- [ ] `/cms/login` carica senza mixed content.
+- [ ] Login CMS imposta cookie valido e porta a `/cms`.
+- [ ] `/cms/media` carica.
+- [ ] Upload media funziona.
+- [ ] Home pubblica mostra il contenuto atteso.
+- [ ] `/chi-siamo` mostra il contenuto atteso.
+- [ ] Pagina issue pubblica mostra il contenuto atteso.
+- [ ] `robots.txt` e `sitemap.xml` sono coerenti con production indicizzabile.
+- [ ] Caddy ha emesso certificati HTTPS senza errori.
 
-1. `https://middleware.media` risponde `200`.
-2. `https://www.middleware.media` redirige a `https://middleware.media`.
-3. `/cms/login` carica senza mixed content o CSP errors.
-4. Login CMS imposta cookie valido e porta a `/cms`.
-5. tRPC CMS funziona.
-6. `/cms/media` funziona.
-7. Upload media funziona e il bucket resta privato.
-8. Media pubblici sono serviti dalle route applicative.
-9. Pubblicazione articolo e revalidation aggiornano il pubblico.
-10. `robots.txt` e `sitemap.xml` sono coerenti con production indicizzabile.
-
-## Cloudflare
+## Cloudflare Dopo Smoke HTTPS
 
 Abilitare proxy Cloudflare solo dopo smoke HTTPS completato.
 
@@ -104,13 +199,39 @@ Impostazioni consigliate:
 - Nessuna cache HTML globale.
 - Non cachare `/cms/*`, `/api/trpc/*`, `/api/cms/*` e route auth.
 - Cache lunga consentita per `/_next/static/*`.
-- Cache su `/api/public/media/blob` solo rispettando header applicativi.
+- Cache media solo rispettando header applicativi.
 
-## Punti Di Attenzione
+## Post-Go-Live
 
-- Una sola VPS e' single point of failure; non c'e' failover automatico.
+### Monitoring
+
+- [ ] Uptime check esterno su `/`.
+- [ ] Uptime check esterno su `/cms/login`.
+- [ ] Alert per downtime.
+- [ ] Alert disco VPS.
+- [ ] Alert memoria/container restart.
+- [ ] Controllo periodico certificati HTTPS.
+
+### Backup Ricorrenti
+
+- [ ] Backup DB giornaliero automatizzato.
+- [ ] Retention locale definita.
+- [ ] Copia offsite automatizzata.
+- [ ] Restore test periodico pianificato.
+
+### Manutenzione
+
+- [ ] Job periodico per `pnpm audit:prune` definito.
+- [ ] Procedura rollback app documentata e provata.
+- [ ] Rotazione log Docker/Caddy verificata.
+- [ ] Credenziali condivise durante lo smoke ruotate.
+- [ ] Dependabot/Renovate valutato per dipendenze e GitHub Actions.
+
+## Rischi Noti
+
+- Una sola VPS e single point of failure; non c'e failover automatico.
 - Le migrazioni colpiscono direttamente production.
-- Il bucket media deve restare privato.
+- Il build Next.js richiede DB raggiungibile; un build con DB non raggiungibile puo produrre artifact pubblici incompleti.
 - `app` deve restare collegata sia a `internal` sia a `public`: senza `public` non raggiunge Object Storage.
-- Non pubblicare porte dell'app; ingresso solo via Caddy.
-- Dopo go-live ruotare eventuali credenziali condivise in chat durante lo smoke.
+- Il bucket media deve restare privato.
+- Auto-deploy su `main` va abilitato solo dopo CI e deploy manuali stabili.
