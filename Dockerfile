@@ -46,6 +46,14 @@ ENV REDIS_URL=$BUILD_REDIS_URL
 
 RUN pnpm build
 
+FROM deps AS migrate
+WORKDIR /app
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+COPY prisma ./prisma
+COPY prisma.config.ts ./
+
 FROM base AS runner
 WORKDIR /app
 
