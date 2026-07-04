@@ -161,11 +161,11 @@ jobs:
           encoded_database_url="$(docker compose --env-file .env.production -f compose.production.yml config --format json | python3 -c 'from urllib.parse import quote; import json,sys; cfg=json.load(sys.stdin); env=cfg["services"]["postgres"]["environment"]; print("postgresql://{}:{}@postgres:5432/{}?sslmode=disable".format(quote(env["POSTGRES_USER"], safe=""), quote(env["POSTGRES_PASSWORD"], safe=""), quote(env["POSTGRES_DB"], safe="")))')"
           test -n "$encoded_database_url"
 
-          docker compose --env-file .env.production -f compose.production.yml run --rm --no-deps \
+          docker compose --env-file .env.production -f compose.production.yml run --rm --no-deps -T \
             -e DATABASE_URL="$encoded_database_url" \
             -e POSTGRES_URL="$encoded_database_url" \
             -e PRISMA_DATABASE_URL="$encoded_database_url" \
-            migrate
+            migrate </dev/null
 
           test "$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)" = "$postgres_container_before"
           test "$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)" = "$redis_container_before"
@@ -183,6 +183,7 @@ jobs:
       - name: Smoke test
         run: |
           set -euo pipefail
-          curl -fsS "$PRODUCTION_SMOKE_URL/" | grep -qF '<title>' || { echo "Home did not return HTML with a <title>"; exit 1; }
+          home_html="$(curl -fsS "$PRODUCTION_SMOKE_URL/")"
+          printf '%s' "$home_html" | grep -qF '<title>' || { echo "Home did not return HTML with a <title>"; exit 1; }
           curl -fsSI "$PRODUCTION_SMOKE_URL/cms/login" >/dev/null
           echo "Smoke test passed."
