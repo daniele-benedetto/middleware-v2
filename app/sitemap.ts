@@ -1,3 +1,5 @@
+import { connection } from "next/server";
+
 import { prisma } from "@/lib/prisma";
 import {
   PUBLIC_STATIC_PAGE_SLUGS,
@@ -103,6 +105,7 @@ async function getPublishedStaticPages() {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  await connection();
   const [homeLastModified, articlePages, issuePages, staticPages] = await Promise.all([
     getHomeLastModified(),
     getPublishedArticlePages(),

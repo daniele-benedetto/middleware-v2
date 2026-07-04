@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 
 import { PublicStaticPage } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
-import { PUBLIC_STATIC_PAGE_SLUGS } from "@/lib/public/pages/static-pages";
 import { getPublicStaticPageData } from "@/lib/public/server/page";
 import { buildPageMetadata } from "@/lib/seo";
 
@@ -12,11 +12,8 @@ type PublicStaticPageRouteProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return PUBLIC_STATIC_PAGE_SLUGS.map((slug) => ({ slug }));
-}
-
 export async function generateMetadata({ params }: PublicStaticPageRouteProps): Promise<Metadata> {
+  await connection();
   const { slug } = await params;
   const { page, description, canonicalPath } = await getPublicStaticPageData(slug);
 
@@ -36,6 +33,7 @@ export async function generateMetadata({ params }: PublicStaticPageRouteProps): 
 }
 
 export default async function PublicStaticPageRoute({ params }: PublicStaticPageRouteProps) {
+  await connection();
   const { slug } = await params;
   const { page } = await getPublicStaticPageData(slug);
 

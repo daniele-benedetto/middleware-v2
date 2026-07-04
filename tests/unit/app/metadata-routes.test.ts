@@ -5,6 +5,11 @@ const articleFindMany = vi.fn();
 const issueFindFirst = vi.fn();
 const issueFindMany = vi.fn();
 
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return { ...actual, connection: vi.fn().mockResolvedValue(undefined) };
+});
+
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     article: { findMany: articleFindMany },

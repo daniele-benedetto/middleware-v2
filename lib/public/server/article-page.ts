@@ -4,7 +4,6 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { normalizeHomeBlock } from "@/lib/issues/home-block-rules";
 import { type IssueNumberingBlock, buildNumberedIssueArticles } from "@/lib/public/issue-numbering";
-import { ensureNonEmptyStaticParams } from "@/lib/public/server/static-params";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicArticlesService } from "@/lib/server/modules/articles/service/public";
@@ -155,18 +154,4 @@ export async function getPublicArticlePageData(slug: string): Promise<PublicArti
     relatedArticles,
     description: getArticleDescription(article),
   };
-}
-
-export async function getPublicArticleStaticParams() {
-  "use cache";
-  cacheLife("hours");
-  cacheTag(PUBLIC_ARTICLE_PAGE_CACHE_TAG);
-
-  try {
-    const articles = await publicArticlesService.listPublished();
-    return ensureNonEmptyStaticParams(articles.map((article) => ({ slug: article.slug })));
-  } catch (error) {
-    console.error("public.getPublicArticleStaticParams published articles failed", { error });
-    throw error;
-  }
 }

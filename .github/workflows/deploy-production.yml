@@ -6,23 +6,25 @@ on:
 permissions:
   actions: read
   contents: read
+  packages: write
 
 concurrency:
   group: production-deploy
   cancel-in-progress: false
 
 env:
+  IMAGE_PREFIX: ghcr.io/${{ github.repository }}
   PRODUCTION_PATH: /opt/middleware
   PRODUCTION_SMOKE_URL: ${{ vars.PRODUCTION_SMOKE_URL || 'http://46.224.209.184' }}
+  PRODUCTION_PUBLIC_SITE_URL: ${{ vars.PRODUCTION_PUBLIC_SITE_URL || 'http://46.224.209.184' }}
   SSH_HOST: ${{ vars.PRODUCTION_SSH_HOST || '46.224.209.184' }}
   SSH_PORT: ${{ vars.PRODUCTION_SSH_PORT || '22' }}
   SSH_USER: ${{ vars.PRODUCTION_SSH_USER || 'deploy' }}
 
 jobs:
-  deploy:
-    name: Deploy To VPS
+  build:
+    name: Build And Push Images
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
       - name: Require main
@@ -53,6 +55,49 @@ jobs:
               core.setFailed(`CI has not passed for ${context.sha}. Run CI on main before deploying production.`);
             }
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push app image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runner
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/app:${{ github.sha }}
+            ${{ env.IMAGE_PREFIX }}/app:latest
+          build-args: |
+            BUILD_NEXT_PUBLIC_SITE_URL=${{ env.PRODUCTION_PUBLIC_SITE_URL }}
+          cache-from: type=gha,scope=app
+          cache-to: type=gha,mode=max,scope=app
+
+      - name: Build and push migrate image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: migrate
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/migrate:${{ github.sha }}
+            ${{ env.IMAGE_PREFIX }}/migrate:latest
+          cache-from: type=gha,scope=migrate
+          cache-to: type=gha,mode=max,scope=migrate
+
+  deploy:
+    name: Deploy To VPS
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
       - name: Configure SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
@@ -70,7 +115,7 @@ jobs:
             ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" > ~/.ssh/known_hosts
           fi
 
-      - name: Pre-check and backup production
+      - name: Pre-check and backup database
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/production_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
@@ -85,56 +130,59 @@ jobs:
           docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-acl' > "$backup_file"
           test -s "$backup_file"
           ls -lh "$backup_file"
-          cp -a app "app.backup.$(date -u +%Y%m%dT%H%M%SZ)"
           REMOTE
 
-      - name: Sync application source
-        run: |
-          set -euo pipefail
-          rsync -az --delete \
-            -e "ssh -i ~/.ssh/production_key -p $SSH_PORT" \
-            --exclude='.git/' \
-            --exclude='.github/' \
-            --exclude='.husky/' \
-            --exclude='.next/' \
-            --exclude='node_modules/' \
-            --exclude='.env' \
-            --exclude='.env.*' \
-            ./ "$SSH_USER@$SSH_HOST:$PRODUCTION_PATH/app/"
-
-      - name: Build migrate and restart app
+      - name: Pull images, migrate and restart app
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_USER: ${{ github.actor }}
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/production_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
-            "DEPLOY_COMMIT='$GITHUB_SHA' bash -se" <<'REMOTE'
+            "DEPLOY_COMMIT='$GITHUB_SHA' IMAGE_PREFIX='$IMAGE_PREFIX' REGISTRY_TOKEN='$REGISTRY_TOKEN' REGISTRY_USER='$REGISTRY_USER' bash -se" <<'REMOTE'
           set -euo pipefail
           cd /opt/middleware
+          export IMAGE_TAG="$DEPLOY_COMMIT"
+
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin
+          trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
+
           docker compose --env-file .env.production -f compose.production.yml config --quiet
+
           postgres_container_before="$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)"
           redis_container_before="$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)"
           test -n "$postgres_container_before"
           test -n "$redis_container_before"
+
           docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select 1;" >/dev/null'
-          docker network connect --alias postgres middleware_public middleware-postgres-1 2>/dev/null || true
-          trap 'docker network disconnect middleware_public middleware-postgres-1 2>/dev/null || true' EXIT
+
+          docker compose --env-file .env.production -f compose.production.yml pull app migrate
+
           encoded_database_url="$(docker compose --env-file .env.production -f compose.production.yml config --format json | python3 -c 'from urllib.parse import quote; import json,sys; cfg=json.load(sys.stdin); env=cfg["services"]["postgres"]["environment"]; print("postgresql://{}:{}@postgres:5432/{}?sslmode=disable".format(quote(env["POSTGRES_USER"], safe=""), quote(env["POSTGRES_PASSWORD"], safe=""), quote(env["POSTGRES_DB"], safe="")))')"
-          build_redis_url="$(docker compose --env-file .env.production -f compose.production.yml config --format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["services"]["app"]["environment"]["REDIS_URL"])')"
-          build_better_auth_url="$(docker compose --env-file .env.production -f compose.production.yml config --format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["services"]["app"]["environment"]["BETTER_AUTH_URL"])')"
-          build_next_public_site_url="$(docker compose --env-file .env.production -f compose.production.yml config --format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["services"]["app"]["environment"]["NEXT_PUBLIC_SITE_URL"])')"
-          docker run --rm --network middleware_internal -e DATABASE_URL="$encoded_database_url" postgres:17-alpine sh -lc 'psql "$DATABASE_URL" -c "select 1;" >/dev/null'
-          docker build --target migrate -t middleware-migrate app
-          docker build --no-cache --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$encoded_database_url" --build-arg BUILD_REDIS_URL="$build_redis_url" --build-arg BUILD_BETTER_AUTH_URL="$build_better_auth_url" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$build_next_public_site_url" -t middleware-app app
-          docker run --rm --network middleware_internal -e DATABASE_URL="$encoded_database_url" -e POSTGRES_URL="$encoded_database_url" -e PRISMA_DATABASE_URL="$encoded_database_url" middleware-migrate pnpm prisma:migrate:deploy
+          test -n "$encoded_database_url"
+
+          docker compose --env-file .env.production -f compose.production.yml run --rm --no-deps \
+            -e DATABASE_URL="$encoded_database_url" \
+            -e POSTGRES_URL="$encoded_database_url" \
+            -e PRISMA_DATABASE_URL="$encoded_database_url" \
+            migrate
+
           test "$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)" = "$postgres_container_before"
           test "$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)" = "$redis_container_before"
-          docker compose --env-file .env.production -f compose.production.yml up -d --no-build --no-deps app
+
+          docker compose --env-file .env.production -f compose.production.yml up -d --no-deps --wait app
           docker compose --env-file .env.production -f compose.production.yml ps
-          printf 'branch=main\ncommit=%s\nsynced_at=%s\nmethod=github-actions-rsync\n' "$DEPLOY_COMMIT" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > DEPLOY_SOURCE
+
+          printf 'branch=main\ncommit=%s\nsynced_at=%s\nmethod=github-actions-ghcr\nimage=%s/app:%s\n' \
+            "$DEPLOY_COMMIT" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$IMAGE_PREFIX" "$DEPLOY_COMMIT" > DEPLOY_SOURCE
           grep -F "commit=$DEPLOY_COMMIT" DEPLOY_SOURCE
+
+          docker image prune -f >/dev/null 2>&1 || true
           REMOTE
 
       - name: Smoke test
         run: |
           set -euo pipefail
-          curl -fsSI "$PRODUCTION_SMOKE_URL/"
-          curl -fsSI "$PRODUCTION_SMOKE_URL/cms/login"
+          curl -fsS "$PRODUCTION_SMOKE_URL/" | grep -qF '<title>' || { echo "Home did not return HTML with a <title>"; exit 1; }
+          curl -fsSI "$PRODUCTION_SMOKE_URL/cms/login" >/dev/null
+          echo "Smoke test passed."

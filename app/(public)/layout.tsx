@@ -1,3 +1,6 @@
+import { connection } from "next/server";
+import { Suspense } from "react";
+
 import { CookieConsentBanner, PublicFooter, PublicHeader } from "@/components/public";
 import { CustomCursor } from "@/components/public/custom-cursor";
 import { PublicPageTransition } from "@/components/public/public-page-transition";
@@ -8,12 +11,30 @@ import { getPublicNavigation } from "@/lib/public/server/navigation";
 
 import type { ReactNode } from "react";
 
-export default async function PublicLayout({ children }: { children: ReactNode }) {
-  const [navigation, legalConsentVersion] = await Promise.all([
-    getPublicNavigation(),
-    publicFeatures.cookieConsentBanner ? getLegalConsentVersion() : Promise.resolve(null),
-  ]);
+async function PublicHeaderSlot() {
+  await connection();
+  const navigation = await getPublicNavigation();
 
+  return <PublicHeader menuItems={navigation.main} />;
+}
+
+async function PublicFooterSlot() {
+  await connection();
+  const navigation = await getPublicNavigation();
+
+  return (
+    <PublicFooter sectionsLinks={navigation.footerSections} legalLinks={navigation.footerLegal} />
+  );
+}
+
+async function CookieConsentSlot() {
+  await connection();
+  const legalConsentVersion = await getLegalConsentVersion();
+
+  return legalConsentVersion ? <CookieConsentBanner consentVersion={legalConsentVersion} /> : null;
+}
+
+export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-svh flex-1 flex-col bg-background font-heading text-foreground">
       <a
@@ -22,18 +43,21 @@ export default async function PublicLayout({ children }: { children: ReactNode }
       >
         {i18n.public.header.skipToContent}
       </a>
-      <PublicHeader menuItems={navigation.main} />
+      <Suspense fallback={null}>
+        <PublicHeaderSlot />
+      </Suspense>
       <div data-public-page-content>
         <PublicPageTransition>{children}</PublicPageTransition>
       </div>
       <div data-public-footer>
-        <PublicFooter
-          sectionsLinks={navigation.footerSections}
-          legalLinks={navigation.footerLegal}
-        />
+        <Suspense fallback={null}>
+          <PublicFooterSlot />
+        </Suspense>
       </div>
-      {publicFeatures.cookieConsentBanner && legalConsentVersion ? (
-        <CookieConsentBanner consentVersion={legalConsentVersion} />
+      {publicFeatures.cookieConsentBanner ? (
+        <Suspense fallback={null}>
+          <CookieConsentSlot />
+        </Suspense>
       ) : null}
       <CustomCursor />
     </div>

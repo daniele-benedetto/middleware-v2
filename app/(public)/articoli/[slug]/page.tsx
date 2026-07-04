@@ -1,11 +1,9 @@
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 
 import { PublicArticlePage } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
-import {
-  getPublicArticlePageData,
-  getPublicArticleStaticParams,
-} from "@/lib/public/server/article-page";
+import { getPublicArticlePageData } from "@/lib/public/server/article-page";
 import { buildArticleMetadata, buildPageMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
@@ -14,11 +12,8 @@ type PublicArticleRouteProps = {
   params: Promise<{ slug: string }>;
 };
 
-export async function generateStaticParams() {
-  return getPublicArticleStaticParams();
-}
-
 export async function generateMetadata({ params }: PublicArticleRouteProps): Promise<Metadata> {
+  await connection();
   const { slug } = await params;
   const { article, description } = await getPublicArticlePageData(slug);
 
@@ -43,6 +38,7 @@ export async function generateMetadata({ params }: PublicArticleRouteProps): Pro
 }
 
 export default async function PublicArticleRoute({ params }: PublicArticleRouteProps) {
+  await connection();
   const { slug } = await params;
   const { article, articleNumber, relatedArticles } = await getPublicArticlePageData(slug);
 
