@@ -30,7 +30,6 @@ ENV BLOB_READ_WRITE_TOKEN=build-time-placeholder
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm prisma:generate
 
 ARG BUILD_DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
 ARG BUILD_REDIS_URL=redis://localhost:6379/0
@@ -50,7 +49,7 @@ RUN DATABASE_URL="$BUILD_DATABASE_URL" \
   REDIS_URL="$BUILD_REDIS_URL" \
   BETTER_AUTH_URL="$BUILD_BETTER_AUTH_URL" \
   NEXT_PUBLIC_SITE_URL="$BUILD_NEXT_PUBLIC_SITE_URL" \
-  pnpm build
+  sh -c 'pnpm prisma:generate && pnpm build'
 
 FROM deps AS migrate
 WORKDIR /app
