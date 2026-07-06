@@ -48,7 +48,7 @@ export function StyledTitle({
       {segments.map((segment, index) => (
         <span key={`${segment.text}-${index}`}>
           <span className={segment.tone === "primary" ? primaryClassName : undefined}>
-            {segment.text}
+            {segments[index - 1]?.breakAfter ? segment.text.trimStart() : segment.text}
           </span>
           {segment.breakAfter ? <br /> : null}
         </span>

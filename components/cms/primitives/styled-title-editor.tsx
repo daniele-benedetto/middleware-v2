@@ -26,7 +26,16 @@ type SelectionRange = {
 const emptyTitleSegment = { text: "", tone: "default" as const };
 
 const getPlainText = (segments: IssueTitleStyled) =>
-  segments.map((segment) => segment.text).join("");
+  segments.reduce((title, segment, index) => {
+    const nextSegment = segments[index + 1];
+    const needsBreakSpace =
+      segment.breakAfter &&
+      nextSegment &&
+      !/\s$/.test(segment.text) &&
+      !/^\s/.test(nextSegment.text);
+
+    return `${title}${segment.text}${needsBreakSpace ? " " : ""}`;
+  }, "");
 
 const normalizeSegments = (segments: IssueTitleStyled): IssueTitleStyled => {
   const normalized: IssueTitleStyled = [];
@@ -457,7 +466,7 @@ export function CmsStyledTitleEditor({
         contentEditable={!disabled}
         suppressContentEditableWarning
         className={cn(
-          "min-h-10 w-full rounded-[6px] border border-foreground bg-card py-2.5 pr-20 pl-3 font-editorial text-[16px] leading-[1.2] text-body-text outline-none",
+          "min-h-12 w-full rounded-[6px] border border-foreground bg-card py-2.5 pr-20 pl-3 font-editorial text-[16px] leading-[1.35] text-body-text outline-none",
           "focus-visible:border-accent focus-visible:ring-0 focus-visible:outline-none",
           disabled && "cursor-not-allowed border-border bg-card-hover text-border",
         )}
