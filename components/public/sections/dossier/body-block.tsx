@@ -6,6 +6,7 @@ import {
   getArticleNumber,
 } from "@/components/public/sections/dossier/dossier-format";
 import { i18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
 import type { CSSProperties } from "react";
@@ -33,7 +34,12 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
   ) : null;
   const secondaryCards = (
     <div
-      className={`grid h-full ${hasThreeSecondaryArticles ? "md:grid-rows-[auto_auto_minmax(0,1fr)] lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)]" : "md:auto-rows-fr"}`}
+      className={cn(
+        "h-full",
+        hasThreeSecondaryArticles
+          ? "grid md:grid-rows-[auto_auto_minmax(0,1fr)] lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)]"
+          : "flex flex-col",
+      )}
     >
       {secondary.map((article, index) => (
         <DossierArticleCard
@@ -42,7 +48,10 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
           eyebrow={articleEyebrow(article)}
           number={getArticleNumber(articleNumbers, article)}
           variant="constellationSecondary"
-          className={hasThreeSecondaryArticles && index === 2 ? "lg:col-span-2" : undefined}
+          className={cn(
+            hasThreeSecondaryArticles && index === 2 ? "lg:col-span-2" : undefined,
+            hasThreeSecondaryArticles ? undefined : "h-auto flex-[1_1_auto]",
+          )}
         />
       ))}
     </div>
