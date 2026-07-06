@@ -88,7 +88,10 @@ export function getLivePreviewStorageKey(resource: "article" | "issue", sessionI
 }
 
 export function createLivePreviewSessionId() {
-  return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 }
 
 export function getFallbackPreviewDate() {
