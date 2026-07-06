@@ -46,11 +46,11 @@ export function StyledTitle({
   return (
     <span className={cn("break-words [overflow-wrap:anywhere]", className)}>
       {segments.map((segment, index) => (
-        <span
-          key={`${segment.text}-${index}`}
-          className={segment.tone === "primary" ? primaryClassName : undefined}
-        >
-          {segment.text}
+        <span key={`${segment.text}-${index}`}>
+          <span className={segment.tone === "primary" ? primaryClassName : undefined}>
+            {segment.text}
+          </span>
+          {segment.breakAfter ? <br /> : null}
         </span>
       ))}
     </span>

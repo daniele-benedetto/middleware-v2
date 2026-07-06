@@ -22,7 +22,7 @@ import {
   cmsToast,
   createStyledTitleValue,
   getStyledTitlePlainText,
-  hasStyledTitleAccent,
+  hasStyledTitleFormatting,
 } from "@/components/cms/primitives";
 import { CmsArticleFormLoading } from "@/features/cms/articles/components/article-form-loading";
 import { ArticleMediaFieldPreview } from "@/features/cms/articles/components/article-media-field-preview";
@@ -519,7 +519,7 @@ function ArticleFormContent({
   };
 
   const handleValidSubmit = async (values: ArticleFormValues) => {
-    const titleStyledPayload = hasStyledTitleAccent(titleStyled) ? titleStyled : null;
+    const titleStyledPayload = hasStyledTitleFormatting(titleStyled) ? titleStyled : null;
 
     try {
       if (mode === "create") {
@@ -612,7 +612,7 @@ function ArticleFormContent({
           authorId: values.authorId === noAuthorValue ? null : values.authorId,
           authorName: selectedAuthor?.name ?? null,
           title,
-          titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
+          titleStyled: hasStyledTitleFormatting(titleStyled) ? titleStyled : null,
           slug: resolvedSlug,
           excerptRich: values.excerptRich,
           contentRich: values.contentRich,
@@ -719,6 +719,7 @@ function ArticleFormContent({
               onChange={handleTitleChange}
               placeholder={fieldText.title}
               accentLabel={articleFormText.titleStyledAccentAction}
+              lineBreakLabel={articleFormText.titleStyledLineBreakAction}
               ariaLabel={articleFormText.titleStyledEditorAriaLabel}
             />
             <input type="hidden" {...register("title")} />

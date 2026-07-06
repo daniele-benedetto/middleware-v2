@@ -1,6 +1,6 @@
 "use client";
 
-import { Highlighter } from "lucide-react";
+import { CornerDownLeft, Highlighter } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ type CmsStyledTitleEditorProps = {
   placeholder?: string;
   disabled?: boolean;
   accentLabel: string;
+  lineBreakLabel: string;
   ariaLabel: string;
 };
 
@@ -36,12 +37,16 @@ const normalizeSegments = (segments: IssueTitleStyled): IssueTitleStyled => {
     }
 
     const previous = normalized.at(-1);
-    if (previous?.tone === segment.tone) {
+    if (!previous?.breakAfter && !segment.breakAfter && previous?.tone === segment.tone) {
       previous.text += segment.text;
       continue;
     }
 
-    normalized.push({ text: segment.text, tone: segment.tone ?? "default" });
+    normalized.push({
+      text: segment.text,
+      tone: segment.tone ?? "default",
+      ...(segment.breakAfter ? { breakAfter: true } : {}),
+    });
   }
 
   return normalized.length > 0 ? normalized : [emptyTitleSegment];
@@ -91,6 +96,62 @@ const applyTone = (
   return normalizeSegments(next);
 };
 
+const applyBreakAfter = (segments: IssueTitleStyled, range: SelectionRange): IssueTitleStyled => {
+  if (range.start === range.end) {
+    return segments;
+  }
+
+  const shouldBreak = !getSelectionBreakAfter(segments, range);
+  const next: IssueTitleStyled = [];
+  let cursor = 0;
+
+  for (const segment of segments) {
+    const segmentStart = cursor;
+    const segmentEnd = cursor + segment.text.length;
+    cursor = segmentEnd;
+
+    if (segmentEnd <= range.start || segmentStart >= range.end) {
+      next.push(segment);
+      continue;
+    }
+
+    const selectedStart = Math.max(range.start, segmentStart) - segmentStart;
+    const selectedEnd = Math.min(range.end, segmentEnd) - segmentStart;
+    const before = segment.text.slice(0, selectedStart);
+    const selected = segment.text.slice(selectedStart, selectedEnd);
+    const after = segment.text.slice(selectedEnd);
+    const selectionEndsHere = range.end <= segmentEnd;
+
+    if (before) {
+      next.push({
+        text: before,
+        tone: segment.tone,
+        ...(selectedStart === segment.text.length && segment.breakAfter
+          ? { breakAfter: true }
+          : {}),
+      });
+    }
+
+    if (selected) {
+      next.push({
+        text: selected,
+        tone: segment.tone,
+        ...(selectionEndsHere && shouldBreak ? { breakAfter: true } : {}),
+      });
+    }
+
+    if (after) {
+      next.push({
+        text: after,
+        tone: segment.tone,
+        ...(!selectionEndsHere && segment.breakAfter ? { breakAfter: true } : {}),
+      });
+    }
+  }
+
+  return normalizeSegments(next);
+};
+
 const getSelectionTone = (
   segments: IssueTitleStyled,
   range: SelectionRange | null,
@@ -121,6 +182,25 @@ const getSelectionTone = (
   return selectedTone;
 };
 
+function getSelectionBreakAfter(segments: IssueTitleStyled, range: SelectionRange | null): boolean {
+  if (!range || range.start === range.end) {
+    return false;
+  }
+
+  let cursor = 0;
+
+  for (const segment of segments) {
+    const segmentEnd = cursor + segment.text.length;
+    cursor = segmentEnd;
+
+    if (range.end <= segmentEnd) {
+      return Boolean(segment.breakAfter);
+    }
+  }
+
+  return false;
+}
+
 const parseTitleMarkers = (title: string): IssueTitleStyled | null => {
   const segments: IssueTitleStyled = [];
   const markerPattern = /\[\[([^\]]+)\]\]/g;
@@ -150,6 +230,13 @@ const parseTitleMarkers = (title: string): IssueTitleStyled | null => {
 const extractSegmentsFromDom = (root: HTMLElement): IssueTitleStyled => {
   const segments: IssueTitleStyled = [];
 
+  const markPreviousSegmentBreak = () => {
+    const previous = segments.at(-1);
+    if (previous) {
+      previous.breakAfter = true;
+    }
+  };
+
   const walk = (node: Node, inheritedTone: "default" | "primary") => {
     if (node.nodeType === Node.TEXT_NODE) {
       const text = node.textContent ?? "";
@@ -160,6 +247,11 @@ const extractSegmentsFromDom = (root: HTMLElement): IssueTitleStyled => {
     }
 
     if (!(node instanceof HTMLElement)) {
+      return;
+    }
+
+    if (node.tagName === "BR") {
+      markPreviousSegmentBreak();
       return;
     }
 
@@ -193,6 +285,10 @@ const renderSegmentsToDom = (root: HTMLElement, segments: IssueTitleStyled) => {
     }
 
     root.appendChild(span);
+
+    if (segment.breakAfter) {
+      root.appendChild(document.createElement("br"));
+    }
   }
 };
 
@@ -228,6 +324,7 @@ export function CmsStyledTitleEditor({
   placeholder,
   disabled,
   accentLabel,
+  lineBreakLabel,
   ariaLabel,
 }: CmsStyledTitleEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -240,6 +337,7 @@ export function CmsStyledTitleEditor({
   const hasSelection = Boolean(selectionRange && selectionRange.start !== selectionRange.end);
   const selectedTone = getSelectionTone(value, selectionRange);
   const isAccentActive = selectedTone === "primary";
+  const isLineBreakActive = getSelectionBreakAfter(value, selectionRange);
 
   useLayoutEffect(() => {
     const editor = editorRef.current;
@@ -291,9 +389,20 @@ export function CmsStyledTitleEditor({
     setSelectionRange(null);
   };
 
+  const toggleLineBreak = () => {
+    const selection = selectionRef.current;
+    if (!selection || selection.start === selection.end) {
+      return;
+    }
+
+    onChange(applyBreakAfter(value, selection));
+    selectionRef.current = null;
+    setSelectionRange(null);
+  };
+
   return (
     <div className="relative">
-      <div className="absolute top-1/2 right-2 z-10 flex -translate-y-1/2 items-center">
+      <div className="absolute top-1/2 right-2 z-10 flex -translate-y-1/2 items-center gap-1">
         <button
           type="button"
           disabled={disabled || !hasSelection}
@@ -313,10 +422,29 @@ export function CmsStyledTitleEditor({
         >
           <Highlighter className="size-3.5" aria-hidden />
         </button>
+        <button
+          type="button"
+          disabled={disabled || !hasSelection}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={toggleLineBreak}
+          aria-label={lineBreakLabel}
+          aria-pressed={isLineBreakActive}
+          title={lineBreakLabel}
+          className={cn(
+            "inline-flex size-7 items-center justify-center rounded-[5px] border transition-colors",
+            isLineBreakActive
+              ? "border-accent bg-accent text-background hover:brightness-[0.9]"
+              : hasSelection
+                ? "border-foreground bg-card text-foreground hover:bg-card-hover"
+                : "border-border bg-card-hover text-border",
+          )}
+        >
+          <CornerDownLeft className="size-3.5" aria-hidden />
+        </button>
       </div>
 
       {!plainText && !isFocused ? (
-        <div className="pointer-events-none absolute inset-x-3 top-2.5 pr-10 font-editorial text-[16px] leading-[1.2] text-border">
+        <div className="pointer-events-none absolute inset-x-3 top-2.5 pr-18 font-editorial text-[16px] leading-[1.2] text-border">
           {placeholder}
         </div>
       ) : null}
@@ -325,11 +453,11 @@ export function CmsStyledTitleEditor({
         ref={editorRef}
         role="textbox"
         aria-label={ariaLabel}
-        aria-multiline="false"
+        aria-multiline="true"
         contentEditable={!disabled}
         suppressContentEditableWarning
         className={cn(
-          "min-h-10 w-full rounded-[6px] border border-foreground bg-card py-2.5 pr-12 pl-3 font-editorial text-[16px] leading-[1.2] text-body-text outline-none",
+          "min-h-10 w-full rounded-[6px] border border-foreground bg-card py-2.5 pr-20 pl-3 font-editorial text-[16px] leading-[1.2] text-body-text outline-none",
           "focus-visible:border-accent focus-visible:ring-0 focus-visible:outline-none",
           disabled && "cursor-not-allowed border-border bg-card-hover text-border",
         )}
@@ -354,8 +482,8 @@ export function getStyledTitlePlainText(value: IssueTitleStyled): string {
   return getPlainText(value);
 }
 
-export function hasStyledTitleAccent(value: IssueTitleStyled): boolean {
-  return value.some((segment) => segment.tone === "primary");
+export function hasStyledTitleFormatting(value: IssueTitleStyled): boolean {
+  return value.some((segment) => segment.tone === "primary" || segment.breakAfter);
 }
 
 export function createStyledTitleValue(

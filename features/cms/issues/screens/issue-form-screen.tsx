@@ -17,7 +17,7 @@ import {
   cmsToast,
   createStyledTitleValue,
   getStyledTitlePlainText,
-  hasStyledTitleAccent,
+  hasStyledTitleFormatting,
 } from "@/components/cms/primitives";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -325,7 +325,7 @@ function IssueFormContent({
           createIssueInputSchema,
           {
             title,
-            titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
+            titleStyled: hasStyledTitleFormatting(titleStyled) ? titleStyled : null,
             slug: slugPayload,
             description,
             homeBlocks: homeBlocksPayload,
@@ -349,7 +349,7 @@ function IssueFormContent({
         updateIssueInputSchema,
         {
           title,
-          titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
+          titleStyled: hasStyledTitleFormatting(titleStyled) ? titleStyled : null,
           slug: slugPayload,
           description,
           homeBlocks: homeBlocksPayload,
@@ -392,7 +392,7 @@ function IssueFormContent({
         snapshot: toIssueLivePreviewSnapshot({
           id: issueId,
           title,
-          titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
+          titleStyled: hasStyledTitleFormatting(titleStyled) ? titleStyled : null,
           slug: resolvedSlug,
           description,
           homeBlocks: homeBlocks.length > 0 ? homeBlocks : null,
@@ -494,6 +494,7 @@ function IssueFormContent({
               onChange={setTitleStyled}
               placeholder={fieldText.title}
               accentLabel={issueFormText.titleStyledAccentAction}
+              lineBreakLabel={issueFormText.titleStyledLineBreakAction}
               ariaLabel={issueFormText.titleStyledEditorAriaLabel}
             />
           </CmsFormField>

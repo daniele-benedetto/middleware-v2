@@ -29,7 +29,7 @@ import {
   CmsTextarea,
   createStyledTitleValue,
   getStyledTitlePlainText,
-  hasStyledTitleAccent,
+  hasStyledTitleFormatting,
 } from "@/components/cms/primitives";
 import { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sensors";
 import {
@@ -63,6 +63,7 @@ type IssueHomeBlocksEditorText = {
   blockDescription: string;
   blockTitle: string;
   blockTitleAccentAction: string;
+  blockTitleLineBreakAction: string;
   blockTitleEditorAriaLabel: string;
   blockDropHint: string;
   dropArticlesHint: string;
@@ -135,7 +136,7 @@ function updateBlockTitle(block: IssueHomeBlock, titleStyled: IssueTitleStyled) 
   return {
     ...block,
     title: toNullableText(plainTitle),
-    titleStyled: hasStyledTitleAccent(titleStyled) ? titleStyled : null,
+    titleStyled: hasStyledTitleFormatting(titleStyled) ? titleStyled : null,
   };
 }
 
@@ -488,6 +489,7 @@ export function IssueHomeBlocksEditor({
                                     disabled={disabled}
                                     placeholder={text.blockTitle}
                                     accentLabel={text.blockTitleAccentAction}
+                                    lineBreakLabel={text.blockTitleLineBreakAction}
                                     ariaLabel={text.blockTitleEditorAriaLabel}
                                     onChange={(nextTitleStyled) =>
                                       updateBlock(index, updateBlockTitle(block, nextTitleStyled))

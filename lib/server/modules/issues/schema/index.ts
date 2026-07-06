@@ -3,6 +3,7 @@ import { z } from "zod";
 export const issueTitleStyledSegmentSchema = z.object({
   text: z.string().min(1),
   tone: z.enum(["default", "primary"]).default("default"),
+  breakAfter: z.boolean().optional(),
 });
 
 export const issueTitleStyledSchema = z.array(issueTitleStyledSegmentSchema).min(1);

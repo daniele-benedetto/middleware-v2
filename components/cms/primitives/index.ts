@@ -33,7 +33,7 @@ export {
   CmsStyledTitleEditor,
   createStyledTitleValue,
   getStyledTitlePlainText,
-  hasStyledTitleAccent,
+  hasStyledTitleFormatting,
 } from "@/components/cms/primitives/styled-title-editor";
 export { CmsSurface } from "@/components/cms/primitives/surface";
 export {

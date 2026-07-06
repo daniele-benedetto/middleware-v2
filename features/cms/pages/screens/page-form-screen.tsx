@@ -18,7 +18,7 @@ import {
   cmsToast,
   createStyledTitleValue,
   getStyledTitlePlainText,
-  hasStyledTitleAccent,
+  hasStyledTitleFormatting,
 } from "@/components/cms/primitives";
 import { CmsPageFormLoading } from "@/features/cms/pages/components/page-form-loading";
 import {
@@ -157,7 +157,7 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    const titleStyledPayload = hasStyledTitleAccent(titleStyled) ? titleStyled : null;
+    const titleStyledPayload = hasStyledTitleFormatting(titleStyled) ? titleStyled : null;
     const slug = normalizeSlug(values.slug || values.title);
 
     if (!slug) {
@@ -245,6 +245,7 @@ export function CmsPageFormScreen({ mode, pageId, initialData }: PageFormScreenP
               onChange={handleTitleChange}
               placeholder={formText.fields.title}
               accentLabel={pageFormText.titleStyledAccentAction}
+              lineBreakLabel={pageFormText.titleStyledLineBreakAction}
               ariaLabel={pageFormText.titleStyledEditorAriaLabel}
             />
             <input type="hidden" {...form.register("title")} />
