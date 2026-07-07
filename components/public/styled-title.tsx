@@ -44,7 +44,7 @@ export function StyledTitle({
     : (parseTitleMarkers(title) ?? [{ text: title, tone: "default" as const }]);
 
   return (
-    <span className={cn("break-words [overflow-wrap:anywhere]", className)}>
+    <span className={cn("wrap-break-word", className)}>
       {segments.map((segment, index) => (
         <span key={`${segment.text}-${index}`}>
           <span className={segment.tone === "primary" ? primaryClassName : undefined}>

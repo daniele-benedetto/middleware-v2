@@ -10,6 +10,8 @@ export type InitialCmsListData<TItem> = {
 };
 
 export type IssuesListInitialData = RouterOutputs["issues"]["list"];
+export type CoursesListInitialData = RouterOutputs["courses"]["list"];
+export type LessonsListInitialData = RouterOutputs["lessons"]["list"];
 export type CategoriesListInitialData = RouterOutputs["categories"]["list"];
 export type TagsListInitialData = RouterOutputs["tags"]["list"];
 export type ArticlesListInitialData = RouterOutputs["articles"]["list"];

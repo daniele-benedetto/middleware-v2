@@ -72,6 +72,58 @@ async function getPublishedIssuePages() {
   }
 }
 
+async function getPublishedCoursePages() {
+  try {
+    const courses = await prisma.course.findMany({
+      where: { isActive: true, publishedAt: { not: null } },
+      orderBy: { publishedAt: "desc" },
+      select: { slug: true, publishedAt: true, updatedAt: true },
+    });
+
+    return courses.map((course) => ({
+      url: getCanonicalUrl(`/formazione/${course.slug}`),
+      lastModified: course.updatedAt ?? course.publishedAt ?? undefined,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
+  } catch (error) {
+    console.error("sitemap published courses failed", error);
+    return [];
+  }
+}
+
+async function getPublishedLessonPages() {
+  try {
+    const lessons = await prisma.lesson.findMany({
+      where: {
+        status: "PUBLISHED",
+        publishedAt: { not: null },
+        course: {
+          isActive: true,
+          publishedAt: { not: null },
+        },
+      },
+      orderBy: { publishedAt: "desc" },
+      select: {
+        slug: true,
+        publishedAt: true,
+        updatedAt: true,
+        course: { select: { slug: true } },
+      },
+    });
+
+    return lessons.map((lesson) => ({
+      url: getCanonicalUrl(`/formazione/${lesson.course.slug}/${lesson.slug}`),
+      lastModified: lesson.updatedAt ?? lesson.publishedAt ?? undefined,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }));
+  } catch (error) {
+    console.error("sitemap published lessons failed", error);
+    return [];
+  }
+}
+
 async function getPublishedStaticPages() {
   try {
     const pages = await prisma.page.findMany({
@@ -106,12 +158,15 @@ async function getPublishedStaticPages() {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   await connection();
-  const [homeLastModified, articlePages, issuePages, staticPages] = await Promise.all([
-    getHomeLastModified(),
-    getPublishedArticlePages(),
-    getPublishedIssuePages(),
-    getPublishedStaticPages(),
-  ]);
+  const [homeLastModified, articlePages, issuePages, coursePages, lessonPages, staticPages] =
+    await Promise.all([
+      getHomeLastModified(),
+      getPublishedArticlePages(),
+      getPublishedIssuePages(),
+      getPublishedCoursePages(),
+      getPublishedLessonPages(),
+      getPublishedStaticPages(),
+    ]);
 
   return [
     {
@@ -126,8 +181,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    {
+      url: getCanonicalUrl("/formazione"),
+      lastModified: homeLastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
     ...issuePages,
     ...articlePages,
+    ...coursePages,
+    ...lessonPages,
     ...staticPages,
   ];
 }

@@ -1,4 +1,6 @@
 const articleCountLabel = (count: number) => `${count} ${count === 1 ? "articolo" : "articoli"}`;
+const lessonCountLabel = (count: number) => `${count} ${count === 1 ? "lezione" : "lezioni"}`;
+const paddedNumber = (value: number) => String(value).padStart(2, "0");
 
 export const publicIt = {
   brand: {
@@ -124,10 +126,61 @@ export const publicIt = {
     restart: "Ricomincia",
     playbackError: "Non riesco ad avviare l'audio. Riprova tra poco.",
   },
+  formazione: {
+    metadata: {
+      title: "Formazione",
+      description:
+        "I corsi di Middleware: percorsi di formazione in lezioni, per attraversare strumenti, linguaggi e pratiche dell'inchiesta.",
+    },
+    hero: {
+      title: "[[Formazione]]",
+      description:
+        "Non lezioni isolate, ma percorsi. Ogni corso costruisce un attraversamento progressivo: strumenti di analisi, linguaggi del conflitto e pratiche dell'inchiesta, messi in sequenza per essere ripresi, ascoltati e rimessi in movimento.",
+      totalLabel: (count: number) =>
+        `${count} ${count === 1 ? "corso pubblicato" : "corsi pubblicati"}`,
+    },
+    lessonsCountLabel: lessonCountLabel,
+    empty: {
+      code: "00",
+      kicker: "Formazione",
+      title: "Nessun corso pubblicato",
+      description: "Quando un corso sarà pubblicato, comparirà qui con le sue lezioni.",
+    },
+  },
+  coursePage: {
+    lessonsHeading: "Lezioni del corso",
+    lessonsCountLabel: lessonCountLabel,
+    readingTimeLabel: (minutes: number) => `${minutes} min`,
+    audioLabel: "Audio",
+    empty: {
+      code: "404",
+      kicker: "Corso",
+      title: "Corso non trovato",
+      description: "Il corso richiesto non è disponibile.",
+    },
+  },
+  lessonPage: {
+    audioCta: "Ascolta la lezione",
+    backToCourse: "Torna al corso",
+    otherLessonsTitle: "Altre lezioni del corso",
+    viewCourse: "Visualizza il corso  →",
+    previousLabel: "Lezione precedente",
+    nextLabel: "Lezione successiva",
+    lessonLabel: (value: number) => `Lezione ${paddedNumber(value)}`,
+    readingTimeLabel: (minutes: number) => `${minutes} min`,
+    audioLabel: "Audio",
+    listen: {
+      backToLesson: "Torna alla lezione",
+      metadataTitle: (title: string) => `Ascolta la lezione: ${title}`,
+      notFoundTitle: "Audiolettura non trovata",
+    },
+  },
   metadata: {
     staticPageNotFound: "Pagina non trovata",
     issueNotFound: "Uscita non trovata",
     articleNotFound: "Articolo non trovato",
+    courseNotFound: "Corso non trovato",
+    lessonNotFound: "Lezione non trovata",
   },
   issueFormat: {
     monthsShort: [

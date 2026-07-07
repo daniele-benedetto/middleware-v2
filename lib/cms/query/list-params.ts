@@ -36,10 +36,13 @@ const articleStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
 const pageStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
 const roleValues = ["ADMIN", "EDITOR"] as const;
 const issuesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
+const coursesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
 const categoriesSortByValues = ["createdAt", "name", "slug"] as const;
 const tagsSortByValues = ["createdAt", "name", "slug"] as const;
 const authorsSortByValues = ["createdAt", "name", "slug"] as const;
 const articlesSortByValues = ["createdAt", "publishedAt"] as const;
+const lessonStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
+const lessonsSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
 const pagesSortByValues = ["createdAt", "updatedAt", "publishedAt", "title"] as const;
 const usersSortByValues = ["createdAt", "email"] as const;
 
@@ -177,6 +180,8 @@ export function serializeCmsSearchParams(input: CmsSerializableSearchParams) {
 }
 
 type IssuesListInput = RouterInputs["issues"]["list"];
+type CoursesListInput = RouterInputs["courses"]["list"];
+type LessonsListInput = RouterInputs["lessons"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
 type AuthorsListInput = RouterInputs["authors"]["list"];
@@ -199,6 +204,48 @@ export function parseIssuesListSearchParams(input: CmsSearchParamsInput): Issues
     query: compactObject({
       isActive: parseBooleanQueryParam(readParam(input, "isActive")),
       published: parseBooleanQueryParam(readParam(input, "published")),
+      q: base.q,
+      sortBy,
+      sortOrder: base.sortOrder,
+    }),
+  };
+}
+
+export function parseCoursesListSearchParams(input: CmsSearchParamsInput): CoursesListInput {
+  const base = parseCmsListSearchParams(input, {
+    allowedSortBy: coursesSortByValues,
+    defaultSortBy: "sortOrder",
+    defaultSortOrder: "asc",
+  });
+  const sortBy = parseEnumQueryParam(base.sortBy, coursesSortByValues) ?? "sortOrder";
+
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      isActive: parseBooleanQueryParam(readParam(input, "isActive")),
+      published: parseBooleanQueryParam(readParam(input, "published")),
+      q: base.q,
+      sortBy,
+      sortOrder: base.sortOrder,
+    }),
+  };
+}
+
+export function parseLessonsListSearchParams(input: CmsSearchParamsInput): LessonsListInput {
+  const base = parseCmsListSearchParams(input, {
+    allowedSortBy: lessonsSortByValues,
+    defaultSortBy: "sortOrder",
+    defaultSortOrder: "asc",
+  });
+  const sortBy = parseEnumQueryParam(base.sortBy, lessonsSortByValues) ?? "sortOrder";
+
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      status: parseEnumQueryParam(cleanString(readParam(input, "status")), lessonStatusValues),
+      courseId: parseUuidQueryParam(readParam(input, "courseId")),
       q: base.q,
       sortBy,
       sortOrder: base.sortOrder,

@@ -37,6 +37,7 @@ type CmsNavigationBuilderScreenProps = {
     pageOptions: NavigationOptions;
     articleOptions: NavigationOptions;
     issueOptions: NavigationOptions;
+    courseOptions: NavigationOptions;
   };
 };
 
@@ -44,9 +45,11 @@ const menuOrder: NavigationMenuKey[] = ["main", "footer_sections", "footer_legal
 const itemTypeOptions = [
   { value: "home", label: "Home" },
   { value: "archive", label: "Archivio uscite" },
+  { value: "formazione", label: "Formazione" },
   { value: "page", label: "Pagina statica" },
   { value: "article", label: "Articolo" },
   { value: "issue", label: "Uscita" },
+  { value: "course", label: "Corso" },
   { value: "custom", label: "Link custom" },
 ] as const;
 
@@ -61,9 +64,11 @@ function createItemId() {
 function getDefaultLabel(type: NavigationItem["type"]) {
   if (type === "home") return "Numero corrente";
   if (type === "archive") return "Archivio";
+  if (type === "formazione") return "Formazione";
   if (type === "page") return "Pagina";
   if (type === "article") return "Articolo";
   if (type === "issue") return "Uscita";
+  if (type === "course") return "Corso";
   return "Nuovo link";
 }
 
@@ -73,6 +78,7 @@ function createEmptyItem(type: NavigationItem["type"], options: ResourceOptions)
   if (type === "page") return { ...base, type, resourceId: options.page[0]?.id ?? "" };
   if (type === "article") return { ...base, type, resourceId: options.article[0]?.id ?? "" };
   if (type === "issue") return { ...base, type, resourceId: options.issue[0]?.id ?? "" };
+  if (type === "course") return { ...base, type, resourceId: options.course[0]?.id ?? "" };
   if (type === "custom") return { ...base, type, href: "/" };
   return { ...base, type };
 }
@@ -108,11 +114,13 @@ type ResourceOptions = {
   page: NavigationOptions;
   article: NavigationOptions;
   issue: NavigationOptions;
+  course: NavigationOptions;
 };
 
 function resolveItemHref(item: NavigationItem, options: ResourceOptions) {
   if (item.type === "home") return "/";
   if (item.type === "archive") return "/uscite";
+  if (item.type === "formazione") return "/formazione";
   if (item.type === "custom") return item.href;
 
   const source = options[item.type];
@@ -127,7 +135,10 @@ function validateItems(items: NavigationItem[], options: ResourceOptions) {
     if (item.type === "custom" && !isSafeCustomHref(item.href)) {
       errors.push(`Voce ${index + 1}: URL custom non valido.`);
     }
-    if (["page", "article", "issue"].includes(item.type) && !resolveItemHref(item, options)) {
+    if (
+      ["page", "article", "issue", "course"].includes(item.type) &&
+      !resolveItemHref(item, options)
+    ) {
       errors.push(`Voce ${index + 1}: seleziona una risorsa pubblicata.`);
     }
 
@@ -163,6 +174,10 @@ export function CmsNavigationBuilderScreen({ initialData }: CmsNavigationBuilder
     { type: "issue" },
     { staleTime: 30_000, initialData: initialData?.issueOptions },
   );
+  const courseOptionsQuery = trpc.navigation.listOptions.useQuery(
+    { type: "course" },
+    { staleTime: 30_000, initialData: initialData?.courseOptions },
+  );
   const updateMutation = trpc.navigation.update.useMutation();
   const [activeKey, setActiveKey] = useState<NavigationMenuKey>("main");
   const [draftMenus, setDraftMenus] = useState<NavigationMenus>(() => initialDraftMenus);
@@ -174,8 +189,14 @@ export function CmsNavigationBuilderScreen({ initialData }: CmsNavigationBuilder
       page: pageOptionsQuery.data ?? [],
       article: articleOptionsQuery.data ?? [],
       issue: issueOptionsQuery.data ?? [],
+      course: courseOptionsQuery.data ?? [],
     }),
-    [articleOptionsQuery.data, issueOptionsQuery.data, pageOptionsQuery.data],
+    [
+      articleOptionsQuery.data,
+      courseOptionsQuery.data,
+      issueOptionsQuery.data,
+      pageOptionsQuery.data,
+    ],
   );
 
   const activeMenu = draftMenus.find((menu) => menu.key === activeKey) ?? draftMenus[0];
@@ -420,7 +441,10 @@ function NavigationItemCard({
           </CmsFormField>
         ) : null}
 
-        {item.type === "page" || item.type === "article" || item.type === "issue" ? (
+        {item.type === "page" ||
+        item.type === "article" ||
+        item.type === "issue" ||
+        item.type === "course" ? (
           <CmsFormField label="Risorsa pubblicata" htmlFor={`nav-resource-${item.id}`}>
             <CmsSearchSelect
               value={item.resourceId}

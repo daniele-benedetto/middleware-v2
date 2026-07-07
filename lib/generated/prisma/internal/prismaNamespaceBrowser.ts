@@ -61,6 +61,8 @@ export const ModelName = {
   Tag: 'Tag',
   Article: 'Article',
   ArticleTag: 'ArticleTag',
+  Course: 'Course',
+  Lesson: 'Lesson',
   Page: 'Page',
   NavigationMenu: 'NavigationMenu',
   AuditLog: 'AuditLog'
@@ -229,6 +231,46 @@ export const ArticleTagScalarFieldEnum = {
 } as const
 
 export type ArticleTagScalarFieldEnum = (typeof ArticleTagScalarFieldEnum)[keyof typeof ArticleTagScalarFieldEnum]
+
+
+export const CourseScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  titleStyled: 'titleStyled',
+  slug: 'slug',
+  description: 'description',
+  homeVariant: 'homeVariant',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  publishedAt: 'publishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CourseScalarFieldEnum = (typeof CourseScalarFieldEnum)[keyof typeof CourseScalarFieldEnum]
+
+
+export const LessonScalarFieldEnum = {
+  id: 'id',
+  courseId: 'courseId',
+  status: 'status',
+  sortOrder: 'sortOrder',
+  publishedAt: 'publishedAt',
+  title: 'title',
+  titleStyled: 'titleStyled',
+  slug: 'slug',
+  excerpt: 'excerpt',
+  excerptRich: 'excerptRich',
+  contentRich: 'contentRich',
+  imageUrl: 'imageUrl',
+  imageAlt: 'imageAlt',
+  audioUrl: 'audioUrl',
+  audioChunks: 'audioChunks',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LessonScalarFieldEnum = (typeof LessonScalarFieldEnum)[keyof typeof LessonScalarFieldEnum]
 
 
 export const PageScalarFieldEnum = {

@@ -10,7 +10,9 @@ type ConflictResource =
   | "tags"
   | "users"
   | "articles"
-  | "pages";
+  | "pages"
+  | "courses"
+  | "lessons";
 
 const conflictTitles: Record<ConflictResource, string> = {
   issues: i18n.cms.trpcErrors.conflictTitle,
@@ -20,6 +22,8 @@ const conflictTitles: Record<ConflictResource, string> = {
   users: i18n.cms.trpcErrors.conflictTitle,
   articles: i18n.cms.lists.articles.domainErrors.slugConflictTitle,
   pages: i18n.cms.trpcErrors.domain.pageSlugExistsTitle,
+  courses: i18n.cms.trpcErrors.conflictTitle,
+  lessons: i18n.cms.trpcErrors.conflictTitle,
 };
 
 export function mapCrudDomainError(error: unknown, resource: ConflictResource): CmsUiError {

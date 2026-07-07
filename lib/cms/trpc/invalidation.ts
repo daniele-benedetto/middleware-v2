@@ -39,6 +39,17 @@ export type CmsMutationName =
   | "issues.update"
   | "issues.delete"
   | "issues.reorder"
+  | "courses.create"
+  | "courses.update"
+  | "courses.delete"
+  | "courses.reorder"
+  | "lessons.create"
+  | "lessons.update"
+  | "lessons.delete"
+  | "lessons.reorder"
+  | "lessons.publish"
+  | "lessons.unpublish"
+  | "lessons.archive"
   | "categories.create"
   | "categories.update"
   | "categories.delete"
@@ -71,6 +82,18 @@ export type CmsMutationName =
 
 export async function invalidateIssuesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
   await invalidateResource(utils.issues.list.invalidate, utils.issues.getById.invalidate, input);
+}
+
+export async function invalidateCoursesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
+  await invalidateResource(utils.courses.list.invalidate, utils.courses.getById.invalidate, input);
+}
+
+export async function invalidateLessonsAfterMutation(utils: TrpcUtils, input?: MutationInput) {
+  await Promise.all([
+    invalidateResource(utils.lessons.list.invalidate, utils.lessons.getById.invalidate, input),
+    utils.courses.list.invalidate(),
+    utils.courses.getById.invalidate(),
+  ]);
 }
 
 export async function invalidateCategoriesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
@@ -121,6 +144,16 @@ export async function invalidateAfterCmsMutation(
 ) {
   if (mutation.startsWith("issues.")) {
     await invalidateIssuesAfterMutation(utils, input);
+    return;
+  }
+
+  if (mutation.startsWith("courses.")) {
+    await invalidateCoursesAfterMutation(utils, input);
+    return;
+  }
+
+  if (mutation.startsWith("lessons.")) {
+    await invalidateLessonsAfterMutation(utils, input);
     return;
   }
 

@@ -92,6 +92,16 @@ export type Article = Prisma.ArticleModel
  */
 export type ArticleTag = Prisma.ArticleTagModel
 /**
+ * Model Course
+ * 
+ */
+export type Course = Prisma.CourseModel
+/**
+ * Model Lesson
+ * 
+ */
+export type Lesson = Prisma.LessonModel
+/**
  * Model Page
  * 
  */

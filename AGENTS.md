@@ -43,6 +43,7 @@
 - Article URL strategy: article slug is globally unique (`@@unique([slug])`) for canonical `/articoli/:slug` URLs.
 - Editorial status stays minimal for now: `DRAFT`, `PUBLISHED`, `ARCHIVED`.
 - Data invariant to enforce in API layer: `publishedAt` must be set only for `PUBLISHED` articles.
+- Formazione is modeled as its own `Course` → `Lesson` hierarchy (NOT an extension of `Issue`/`Article`): lessons have no issue, no numbering, and no taxonomy (category/tag/author). Public URLs are nested under `/formazione/:courseSlug/:lessonSlug`; lesson slug is unique per course (`@@unique([courseId, slug])`). Lessons are ordered inside a course via `Lesson.sortOrder` (drag-and-drop in the course editor). Same `publishedAt`-only-when-`PUBLISHED` invariant applies to lessons.
 
 ## API Readiness Guardrails
 

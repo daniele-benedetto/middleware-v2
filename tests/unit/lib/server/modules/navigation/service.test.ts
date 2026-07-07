@@ -5,9 +5,11 @@ const navigationRepositoryMock = vi.hoisted(() => ({
   listPublishedPages: vi.fn(),
   listPublishedArticles: vi.fn(),
   listPublishedIssues: vi.fn(),
+  listPublishedCourses: vi.fn(),
   findPublishedPagesByIds: vi.fn(),
   findPublishedArticlesByIds: vi.fn(),
   findPublishedIssuesByIds: vi.fn(),
+  findPublishedCoursesByIds: vi.fn(),
 }));
 
 vi.mock("@/lib/server/modules/navigation/repository", () => ({
@@ -19,6 +21,7 @@ import { navigationService } from "@/lib/server/modules/navigation/service";
 const pageId = "11111111-1111-4111-8111-111111111111";
 const articleId = "22222222-2222-4222-8222-222222222222";
 const issueId = "33333333-3333-4333-8333-333333333333";
+const courseId = "44444444-4444-4444-8444-444444444444";
 
 function menuRecord(key: string, items: unknown) {
   return {
@@ -41,6 +44,7 @@ describe("navigationService", () => {
     navigationRepositoryMock.findPublishedPagesByIds.mockResolvedValue([]);
     navigationRepositoryMock.findPublishedArticlesByIds.mockResolvedValue([]);
     navigationRepositoryMock.findPublishedIssuesByIds.mockResolvedValue([]);
+    navigationRepositoryMock.findPublishedCoursesByIds.mockResolvedValue([]);
   });
 
   it("rejects unsafe custom links on update", async () => {
@@ -60,9 +64,11 @@ describe("navigationService", () => {
         version: 1,
         items: [
           { id: "home", type: "home", label: "Home" },
+          { id: "formazione", type: "formazione", label: "Formazione" },
           { id: "page", type: "page", label: "About", resourceId: pageId },
           { id: "article", type: "article", label: "Story", resourceId: articleId },
           { id: "issue", type: "issue", label: "Issue", resourceId: issueId },
+          { id: "course", type: "course", label: "Corso", resourceId: courseId },
           { id: "custom", type: "custom", label: "External", href: "https://example.com" },
         ],
       }),
@@ -78,14 +84,19 @@ describe("navigationService", () => {
     navigationRepositoryMock.findPublishedIssuesByIds.mockResolvedValue([
       { id: issueId, slug: "numero-1" },
     ]);
+    navigationRepositoryMock.findPublishedCoursesByIds.mockResolvedValue([
+      { id: courseId, slug: "corso-base" },
+    ]);
 
     const result = await navigationService.getPublicNavigation();
 
     expect(result.main).toEqual([
       { id: "home", label: "Home", href: "/", external: false },
+      { id: "formazione", label: "Formazione", href: "/formazione", external: false },
       { id: "page", label: "About", href: "/chi-siamo", external: false },
       { id: "article", label: "Story", href: "/articoli/editoriale", external: false },
       { id: "issue", label: "Issue", href: "/uscite/numero-1", external: false },
+      { id: "course", label: "Corso", href: "/formazione/corso-base", external: false },
       { id: "custom", label: "External", href: "https://example.com", external: true },
     ]);
   });

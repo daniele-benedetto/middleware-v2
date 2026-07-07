@@ -8,6 +8,7 @@ import {
 } from "@/lib/media/blob";
 import { ApiError } from "@/lib/server/http/api-error";
 import { articlesRepository } from "@/lib/server/modules/articles/repository";
+import { lessonsRepository } from "@/lib/server/modules/lessons/repository";
 import { mediaRepository } from "@/lib/server/modules/media/repository";
 import {
   StorageAccessError,
@@ -175,6 +176,7 @@ export const mediaService = {
 
       try {
         articleIds = await articlesRepository.replaceMediaUrl(current.url, renamed.url);
+        await lessonsRepository.replaceMediaUrl(current.url, renamed.url);
       } catch (error) {
         await mediaRepository.delete(renamed.url, renamed).catch(() => undefined);
         throw error;
@@ -203,6 +205,7 @@ export const mediaService = {
       const current = await mediaRepository.head(input.url);
       await mediaRepository.delete(current.url, current);
       const articleIds = await articlesRepository.clearMediaUrl(current.url);
+      await lessonsRepository.clearMediaUrl(current.url);
 
       return {
         success: true as const,

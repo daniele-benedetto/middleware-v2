@@ -95,6 +95,29 @@ export const navigationRepository = {
       select: { id: true, title: true, slug: true, publishedAt: true },
     });
   },
+  async listPublishedCourses(q?: string) {
+    return prisma.course.findMany({
+      where: {
+        isActive: true,
+        publishedAt: { not: null },
+        OR: q
+          ? [
+              { title: { contains: q, mode: "insensitive" } },
+              { slug: { contains: q, mode: "insensitive" } },
+            ]
+          : undefined,
+      },
+      orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }],
+      take: 50,
+      select: { id: true, title: true, slug: true, publishedAt: true },
+    });
+  },
+  async findPublishedCoursesByIds(ids: string[]) {
+    return prisma.course.findMany({
+      where: { id: { in: ids }, isActive: true, publishedAt: { not: null } },
+      select: { id: true, slug: true },
+    });
+  },
   async findPublishedPagesByIds(ids: string[]) {
     return prisma.page.findMany({
       where: { id: { in: ids }, status: "PUBLISHED", publishedAt: { not: null } },

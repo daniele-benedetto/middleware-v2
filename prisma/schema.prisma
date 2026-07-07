@@ -24,6 +24,12 @@ enum PageStatus {
   ARCHIVED
 }
 
+enum LessonStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 enum AuditLogOutcome {
   SUCCESS
   FAILURE
@@ -212,6 +218,56 @@ model ArticleTag {
   @@id([articleId, tagId])
   @@index([tagId])
   @@map("article_tags")
+}
+
+model Course {
+  id          String    @id @default(uuid())
+  title       String
+  titleStyled Json?
+  slug        String    @unique
+  description Json?
+  homeVariant String    @default("black")
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  lessons Lesson[]
+
+  @@index([isActive, sortOrder])
+  @@index([publishedAt])
+  @@map("courses")
+}
+
+model Lesson {
+  id          String       @id @default(uuid())
+  courseId    String
+  status      LessonStatus @default(DRAFT)
+  sortOrder   Int          @default(0)
+  publishedAt DateTime?
+
+  title       String
+  titleStyled Json?
+  slug        String
+  excerpt     String?
+  excerptRich Json?
+  contentRich Json
+
+  imageUrl    String?
+  imageAlt    String?
+  audioUrl    String?
+  audioChunks Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
+
+  @@unique([courseId, slug])
+  @@index([courseId, sortOrder])
+  @@index([status, publishedAt])
+  @@map("lessons")
 }
 
 model Page {

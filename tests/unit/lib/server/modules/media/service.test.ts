@@ -4,6 +4,12 @@ const articlesRepositoryMock = vi.hoisted(() => ({
   clearMediaUrl: vi.fn(),
 }));
 
+const lessonsRepositoryMock = vi.hoisted(() => ({
+  listMediaReferences: vi.fn(),
+  replaceMediaUrl: vi.fn(),
+  clearMediaUrl: vi.fn(),
+}));
+
 const mediaRepositoryMock = vi.hoisted(() => ({
   listAll: vi.fn(),
   head: vi.fn(),
@@ -18,6 +24,10 @@ const publicMediaRepositoryMock = vi.hoisted(() => ({
 
 vi.mock("@/lib/server/modules/articles/repository", () => ({
   articlesRepository: articlesRepositoryMock,
+}));
+
+vi.mock("@/lib/server/modules/lessons/repository", () => ({
+  lessonsRepository: lessonsRepositoryMock,
 }));
 
 vi.mock("@/lib/server/modules/media/repository", () => ({

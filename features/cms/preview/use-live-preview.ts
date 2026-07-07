@@ -7,12 +7,18 @@ import {
   getLivePreviewStorageKey,
   type ArticleLivePreviewMessage,
   type ArticleLivePreviewSnapshot,
+  type CourseLivePreviewMessage,
+  type CourseLivePreviewSnapshot,
   type IssueLivePreviewMessage,
   type IssueLivePreviewSnapshot,
+  type LessonLivePreviewMessage,
+  type LessonLivePreviewSnapshot,
   type LivePreviewMessage,
 } from "@/lib/cms/preview/live";
 
-function readStoredSnapshot<TSnapshot>(resource: "article" | "issue", sessionId: string) {
+type LivePreviewResource = "article" | "issue" | "course" | "lesson";
+
+function readStoredSnapshot<TSnapshot>(resource: LivePreviewResource, sessionId: string) {
   if (typeof window === "undefined") return null;
 
   const raw = window.sessionStorage.getItem(getLivePreviewStorageKey(resource, sessionId));
@@ -26,7 +32,7 @@ function readStoredSnapshot<TSnapshot>(resource: "article" | "issue", sessionId:
 }
 
 function writeStoredSnapshot<TSnapshot>(
-  resource: "article" | "issue",
+  resource: LivePreviewResource,
   sessionId: string,
   snapshot: TSnapshot,
 ) {
@@ -36,10 +42,23 @@ function writeStoredSnapshot<TSnapshot>(
   );
 }
 
+function getMessageResource(message: LivePreviewMessage): LivePreviewResource {
+  switch (message.type) {
+    case "article-preview":
+      return "article";
+    case "issue-preview":
+      return "issue";
+    case "course-preview":
+      return "course";
+    case "lesson-preview":
+      return "lesson";
+  }
+}
+
 export function publishLivePreviewMessage(sessionId: string, message: LivePreviewMessage) {
   if (typeof window === "undefined") return;
 
-  const resource = message.type === "article-preview" ? "article" : "issue";
+  const resource = getMessageResource(message);
   writeStoredSnapshot(resource, sessionId, message.snapshot);
 
   const channel = new BroadcastChannel(getLivePreviewChannel(resource, sessionId));
@@ -91,6 +110,58 @@ export function useIssueLivePreviewSnapshot(
       setSnapshot(event.data.snapshot);
       setIsLive(true);
       writeStoredSnapshot("issue", sessionId, event.data.snapshot);
+    };
+
+    return () => channel.close();
+  }, [sessionId]);
+
+  return { snapshot, isLive };
+}
+
+export function useCourseLivePreviewSnapshot(
+  sessionId: string,
+  initialSnapshot: CourseLivePreviewSnapshot,
+) {
+  const [snapshot, setSnapshot] = useState<CourseLivePreviewSnapshot>(() => {
+    return readStoredSnapshot<CourseLivePreviewSnapshot>("course", sessionId) ?? initialSnapshot;
+  });
+  const [isLive, setIsLive] = useState(() => {
+    return Boolean(readStoredSnapshot<CourseLivePreviewSnapshot>("course", sessionId));
+  });
+
+  useEffect(() => {
+    const channel = new BroadcastChannel(getLivePreviewChannel("course", sessionId));
+    channel.onmessage = (event: MessageEvent<CourseLivePreviewMessage>) => {
+      if (event.data.type !== "course-preview") return;
+      setSnapshot(event.data.snapshot);
+      setIsLive(true);
+      writeStoredSnapshot("course", sessionId, event.data.snapshot);
+    };
+
+    return () => channel.close();
+  }, [sessionId]);
+
+  return { snapshot, isLive };
+}
+
+export function useLessonLivePreviewSnapshot(
+  sessionId: string,
+  initialSnapshot: LessonLivePreviewSnapshot,
+) {
+  const [snapshot, setSnapshot] = useState<LessonLivePreviewSnapshot>(() => {
+    return readStoredSnapshot<LessonLivePreviewSnapshot>("lesson", sessionId) ?? initialSnapshot;
+  });
+  const [isLive, setIsLive] = useState(() => {
+    return Boolean(readStoredSnapshot<LessonLivePreviewSnapshot>("lesson", sessionId));
+  });
+
+  useEffect(() => {
+    const channel = new BroadcastChannel(getLivePreviewChannel("lesson", sessionId));
+    channel.onmessage = (event: MessageEvent<LessonLivePreviewMessage>) => {
+      if (event.data.type !== "lesson-preview") return;
+      setSnapshot(event.data.snapshot);
+      setIsLive(true);
+      writeStoredSnapshot("lesson", sessionId, event.data.snapshot);
     };
 
     return () => channel.close();

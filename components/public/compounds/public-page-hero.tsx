@@ -1,5 +1,6 @@
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { StyledTitle } from "@/components/public/styled-title";
+import { cn } from "@/lib/utils";
 
 import type { IssueTitleStyled } from "@/lib/server/modules/issues/schema";
 import type { CSSProperties, ReactNode } from "react";
@@ -14,6 +15,9 @@ type PublicPageHeroProps = {
   as?: "header" | "section";
   containerClassName?: string;
   titlePrimaryClassName?: string;
+  surfaceClassName?: string;
+  titleClassName?: string;
+  descriptionClassName?: string;
 };
 
 export function PublicPageHero({
@@ -26,6 +30,9 @@ export function PublicPageHero({
   as = "section",
   containerClassName = "py-7 sm:py-9 lg:py-14",
   titlePrimaryClassName,
+  surfaceClassName = "bg-background",
+  titleClassName = "text-foreground",
+  descriptionClassName = "text-body-text",
 }: PublicPageHeroProps) {
   const content = (
     <div className={`${publicContentClassName} relative ${containerClassName}`}>
@@ -51,7 +58,11 @@ export function PublicPageHero({
           </div>
         ) : null}
         <h1
-          className={`${publicTypography.homeHeroTitle} w-full pb-[0.18em] leading-[0.94] text-foreground`}
+          className={cn(
+            publicTypography.homeHeroTitle,
+            "w-full pb-[0.18em] leading-[0.94]",
+            titleClassName,
+          )}
           data-page-reveal="title"
           style={{ "--page-reveal-delay": "170ms" } as CSSProperties}
         >
@@ -68,7 +79,10 @@ export function PublicPageHero({
             style={{ "--page-rule-delay": "300ms" } as CSSProperties}
           >
             <p
-              className="font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] text-body-text italic"
+              className={cn(
+                "font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] italic",
+                descriptionClassName,
+              )}
               data-page-reveal="description"
               style={{ "--page-reveal-delay": "380ms" } as CSSProperties}
             >
@@ -99,11 +113,15 @@ export function PublicPageHero({
 
   if (as === "header") {
     return (
-      <header className="relative isolate w-full overflow-hidden bg-background">{content}</header>
+      <header className={cn("relative isolate w-full overflow-hidden", surfaceClassName)}>
+        {content}
+      </header>
     );
   }
 
   return (
-    <section className="relative isolate w-full overflow-hidden bg-background">{content}</section>
+    <section className={cn("relative isolate w-full overflow-hidden", surfaceClassName)}>
+      {content}
+    </section>
   );
 }

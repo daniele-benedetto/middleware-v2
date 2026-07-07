@@ -1,0 +1,735 @@
+"use client";
+
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+
+import {
+  CmsBulkActionBar,
+  CmsConfirmDialog,
+  CmsEmptyState,
+  CmsErrorState,
+  CmsLoadingState,
+  CmsPaginationFooter,
+} from "@/components/cms/common";
+import {
+  CmsActionButton,
+  CmsDataTableShell,
+  CmsPageHeader,
+  CmsSelect,
+  cmsTableClasses,
+  cmsToast,
+} from "@/components/cms/primitives";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  executeBulk,
+  mapBulkQuickActionError,
+  mapQuickActionError,
+  resolveQuickActions,
+  type CmsQuickAction,
+} from "@/features/cms/shared/actions";
+import { CmsListFiltersSheet } from "@/features/cms/shared/components/cms-list-filters-sheet";
+import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
+import {
+  cmsListQueryOptions,
+  useCmsListUrlState,
+  useCoursesListQuery,
+  useDragReorder,
+  useListSelection,
+  useSortableSensors,
+} from "@/features/cms/shared/hooks";
+import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
+import { parseCoursesListSearchParams } from "@/lib/cms/query";
+import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
+import { cmsInteractiveRailClass, cmsMetaLabelClass } from "@/lib/cms/ui/variants";
+import { paginationDefaults } from "@/lib/http/pagination";
+import { i18n } from "@/lib/i18n";
+import { trpc } from "@/lib/trpc/react";
+import { cn } from "@/lib/utils";
+
+import type { CoursesListInitialData } from "@/features/cms/shared/types/initial-data";
+import type { RouterInputs } from "@/lib/trpc/types";
+
+type CoursesListInput = RouterInputs["courses"]["list"];
+
+function formatDate(value: string | null) {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
+}
+
+type CourseQuickAction = "delete";
+
+type CmsCoursesListScreenProps = {
+  initialInput?: CoursesListInput;
+  initialData?: CoursesListInitialData;
+};
+
+type CourseTableRow = {
+  id: string;
+  title: string;
+  slug: string;
+  isActive: boolean;
+  publishedAt: string | null;
+  lessonsCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type CourseListToolbarFiltersState = {
+  isActiveValue: string;
+  publishedValue: string;
+  sortByValue: string;
+  sortOrderValue: string;
+};
+
+const defaultCourseListToolbarFilters: CourseListToolbarFiltersState = {
+  isActiveValue: "all",
+  publishedValue: "all",
+  sortByValue: "sortOrder",
+  sortOrderValue: "asc",
+};
+
+function buildCourseListToolbarFiltersState(
+  input: CoursesListInput,
+): CourseListToolbarFiltersState {
+  return {
+    isActiveValue: input.query?.isActive ?? defaultCourseListToolbarFilters.isActiveValue,
+    publishedValue: input.query?.published ?? defaultCourseListToolbarFilters.publishedValue,
+    sortByValue: input.query?.sortBy ?? defaultCourseListToolbarFilters.sortByValue,
+    sortOrderValue: input.query?.sortOrder ?? defaultCourseListToolbarFilters.sortOrderValue,
+  };
+}
+
+function countActiveCourseListFilters(filters: CourseListToolbarFiltersState) {
+  return [
+    filters.isActiveValue !== defaultCourseListToolbarFilters.isActiveValue,
+    filters.publishedValue !== defaultCourseListToolbarFilters.publishedValue,
+    filters.sortByValue !== defaultCourseListToolbarFilters.sortByValue,
+    filters.sortOrderValue !== defaultCourseListToolbarFilters.sortOrderValue,
+  ].filter(Boolean).length;
+}
+
+type CourseListToolbarFieldsProps = {
+  filters: CourseListToolbarFiltersState;
+  onIsActiveChange: (value: string) => void;
+  onPublishedChange: (value: string) => void;
+  onSortByChange: (value: string) => void;
+  onSortOrderChange: (value: string) => void;
+};
+
+function CourseListToolbarFields({
+  filters,
+  onIsActiveChange,
+  onPublishedChange,
+  onSortByChange,
+  onSortOrderChange,
+}: CourseListToolbarFieldsProps) {
+  const optionsText = i18n.cms.listOptions;
+
+  return (
+    <>
+      <CmsSelect
+        value={filters.isActiveValue}
+        onValueChange={onIsActiveChange}
+        options={[
+          { value: "all", label: optionsText.statusAllMasculine },
+          { value: "true", label: optionsText.activeOnlyMasculine },
+          { value: "false", label: optionsText.inactiveOnlyMasculine },
+        ]}
+      />
+      <CmsSelect
+        value={filters.publishedValue}
+        onValueChange={onPublishedChange}
+        options={[
+          { value: "all", label: optionsText.publicationAll },
+          { value: "true", label: optionsText.publicationOnly },
+          { value: "false", label: optionsText.publicationNot },
+        ]}
+      />
+      <CmsSelect
+        value={filters.sortByValue}
+        onValueChange={onSortByChange}
+        options={[
+          { value: "createdAt", label: optionsText.sortCreatedAt },
+          { value: "sortOrder", label: optionsText.sortOrder },
+          { value: "publishedAt", label: optionsText.sortPublishedAt },
+        ]}
+      />
+      <CmsSelect
+        value={filters.sortOrderValue}
+        onValueChange={onSortOrderChange}
+        options={[
+          { value: "desc", label: optionsText.desc },
+          { value: "asc", label: optionsText.asc },
+        ]}
+      />
+    </>
+  );
+}
+
+function stopRowReorder(event: { stopPropagation: () => void }) {
+  event.stopPropagation();
+}
+
+type SortableCourseRowProps = {
+  course: CourseTableRow;
+  canReorder: boolean;
+  isPending: boolean;
+  isSelected: boolean;
+  onToggleSelection: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  selectLabel: string;
+  editLabel: string;
+  deleteLabel: string;
+  deleteConfirmTitle: string;
+  deleteConfirmDescription: string;
+  activeLabel: string;
+  inactiveLabel: string;
+};
+
+function SortableCourseRow({
+  course,
+  canReorder,
+  isPending,
+  isSelected,
+  onToggleSelection,
+  onEdit,
+  onDelete,
+  selectLabel,
+  editLabel,
+  deleteLabel,
+  deleteConfirmTitle,
+  deleteConfirmDescription,
+  activeLabel,
+  inactiveLabel,
+}: SortableCourseRowProps) {
+  const isDragEnabled = canReorder && !isPending;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: course.id,
+    disabled: !isDragEnabled,
+  });
+
+  const rowTransform = transform ? { ...transform, x: 0, scaleX: 1, scaleY: 1 } : null;
+
+  return (
+    <TableRow
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(rowTransform), transition }}
+      className={cn(
+        cmsTableClasses.bodyRow,
+        isDragEnabled && "cursor-grab select-none touch-manipulation active:cursor-grabbing",
+        isDragging && "relative z-10 bg-surface-hover",
+        isDragging && cmsInteractiveRailClass,
+      )}
+      {...(isDragEnabled ? attributes : {})}
+      {...(isDragEnabled ? listeners : {})}
+    >
+      <TableCell className={cn(cmsTableClasses.bodyCellMeta, cmsTableClasses.selectionCell)}>
+        <div className={cmsTableClasses.selectionCellInner} onPointerDownCapture={stopRowReorder}>
+          <Checkbox
+            checked={isSelected}
+            disabled={isPending}
+            onCheckedChange={() => {
+              onToggleSelection(course.id);
+            }}
+            aria-label={selectLabel}
+          />
+        </div>
+      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellTitle}>{course.title}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{course.slug}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        {course.isActive ? activeLabel : inactiveLabel}
+      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        {formatDate(course.publishedAt)}
+      </TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{String(course.lessonsCount)}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{formatDate(course.createdAt)}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>{formatDate(course.updatedAt)}</TableCell>
+      <TableCell className={cmsTableClasses.bodyCellMeta}>
+        <div className="flex items-center gap-2" onPointerDownCapture={stopRowReorder}>
+          <CmsActionButton
+            variant="outline"
+            size="xs"
+            className={cmsTableClasses.rowActionButton}
+            onClick={() => onEdit(course.id)}
+            disabled={isPending}
+          >
+            <Pencil aria-hidden />
+            {editLabel}
+          </CmsActionButton>
+          <CmsConfirmDialog
+            triggerLabel={deleteLabel}
+            triggerIcon={<Trash2 aria-hidden />}
+            triggerClassName={cmsTableClasses.rowDeleteActionButton}
+            triggerDisabled={isPending}
+            title={deleteConfirmTitle}
+            description={deleteConfirmDescription}
+            tone="danger"
+            onConfirm={() => onDelete(course.id)}
+          />
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+export function CmsCoursesListScreen({ initialInput, initialData }: CmsCoursesListScreenProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const text = i18n.cms;
+  const listText = text.lists.courses;
+  const commonText = text.common;
+  const quickText = text.quickActions;
+
+  const input = parseCoursesListSearchParams(searchParams);
+  const currentToolbarFilters = buildCourseListToolbarFiltersState(input);
+  const [draftToolbarFilters, setDraftToolbarFilters] = useState(currentToolbarFilters);
+  const listQuery = useCoursesListQuery(input, { initialDataInput: initialInput, initialData });
+  const trpcUtils = trpc.useUtils();
+  const selection = useListSelection();
+
+  const reorderBaseInput: CoursesListInput = {
+    page: 1,
+    pageSize: paginationDefaults.maxPageSize,
+    query: {
+      sortBy: "sortOrder",
+      sortOrder: "asc",
+    },
+  };
+
+  const reorderBaseQuery = trpc.courses.list.useQuery(reorderBaseInput, {
+    ...cmsListQueryOptions,
+    enabled:
+      input.query?.sortBy === "sortOrder" &&
+      input.query.sortOrder === "asc" &&
+      !input.query.q &&
+      input.query.isActive === undefined &&
+      input.query.published === undefined,
+  });
+
+  const reorderBaseData = reorderBaseQuery.data;
+  const hasFullReorderBase = reorderBaseData
+    ? reorderBaseData.pagination.total === reorderBaseData.items.length
+    : false;
+
+  const reorder = useDragReorder(reorderBaseData?.items ?? []);
+  const sortableSensors = useSortableSensors();
+
+  const navigateToCrudRoute = (href: string) => {
+    router.push(href);
+  };
+
+  const deleteMutation = trpc.courses.delete.useMutation();
+  const reorderMutation = trpc.courses.reorder.useMutation();
+
+  const { updateSearchParams } = useCmsListUrlState({
+    baseParams: {
+      page: input.page,
+      pageSize: input.pageSize,
+      q: input.query?.q,
+      sortBy: input.query?.sortBy,
+      sortOrder: input.query?.sortOrder,
+      isActive: input.query?.isActive,
+      published: input.query?.published,
+    },
+    clearSelection: selection.clearSelection,
+  });
+
+  const canReorder =
+    input.query?.sortBy === "sortOrder" &&
+    input.query.sortOrder === "asc" &&
+    !input.query.q &&
+    input.query.isActive === undefined &&
+    input.query.published === undefined &&
+    Boolean(reorderBaseData) &&
+    hasFullReorderBase;
+
+  const displayedCourses = canReorder ? reorder.displayedItems : listQuery.items;
+
+  if (listQuery.isPending) {
+    return <CmsLoadingState />;
+  }
+
+  if (listQuery.isError) {
+    const uiError = mapTrpcErrorToCmsUiMessage(listQuery.error);
+
+    return (
+      <CmsErrorState
+        title={uiError.title}
+        description={uiError.description}
+        onRetry={uiError.retryable ? listQuery.retry : undefined}
+      />
+    );
+  }
+
+  const isActionPending = deleteMutation.isPending || reorderMutation.isPending;
+
+  const pageCourseIds = displayedCourses.map((course) => course.id);
+  const allSelectedOnPage =
+    pageCourseIds.length > 0 && pageCourseIds.every((courseId) => selection.isSelected(courseId));
+
+  const runSingleAction = async (action: CourseQuickAction, id: string) => {
+    try {
+      if (action === "delete") {
+        await deleteMutation.mutateAsync({ id });
+      }
+
+      await invalidateAfterCmsMutation(trpcUtils, "courses.delete", { id });
+      selection.clearSelection();
+      cmsToast.success(commonText.actionCompleted);
+    } catch (error) {
+      const mapped = mapQuickActionError(error);
+      cmsToast.error(mapped.description, mapped.title);
+    }
+  };
+
+  const runBulkAction = async (action: CourseQuickAction) => {
+    if (!selection.hasSelection) {
+      return;
+    }
+
+    const selectedIds = [...selection.selectedIds];
+
+    const result = await executeBulk(selectedIds, (id) => {
+      if (action === "delete") {
+        return deleteMutation.mutateAsync({ id });
+      }
+
+      return Promise.resolve();
+    });
+
+    await invalidateAfterCmsMutation(trpcUtils, "courses.delete", { ids: selectedIds });
+    selection.clearSelection();
+
+    if (result.failed === 0) {
+      cmsToast.success(commonText.actionCompletedOnRecords(result.success));
+      return;
+    }
+
+    const mapped = mapBulkQuickActionError(result);
+
+    if (mapped) {
+      cmsToast.error(mapped.description, mapped.title);
+    }
+  };
+
+  const persistCourseOrder = async (nextOrder: string[]) => {
+    try {
+      const reorderedItems = await reorderMutation.mutateAsync({
+        orderedCourseIds: nextOrder,
+      });
+
+      const visibleStart = (listQuery.pagination.page - 1) * listQuery.pagination.pageSize;
+      const visibleEnd = visibleStart + listQuery.pagination.pageSize;
+
+      trpcUtils.courses.list.setData(input, (current) => {
+        if (!current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          items: reorderedItems.slice(visibleStart, visibleEnd),
+        };
+      });
+
+      trpcUtils.courses.list.setData(reorderBaseInput, (current) => {
+        if (!current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          items: reorderedItems,
+        };
+      });
+
+      reorder.sync(reorderedItems.map((item) => item.id));
+      await invalidateAfterCmsMutation(trpcUtils, "courses.reorder", {
+        ids: nextOrder,
+      });
+      cmsToast.success(listText.reorderUpdated);
+    } catch (error) {
+      reorder.reset();
+      const mapped = mapQuickActionError(error);
+      cmsToast.error(mapped.description, mapped.title);
+    }
+  };
+
+  const handleCourseDrop = async (activeId: string, overId: string) => {
+    const activeIndex = reorder.orderedIds.indexOf(activeId);
+    const overIndex = reorder.orderedIds.indexOf(overId);
+
+    if (activeIndex < 0 || overIndex < 0 || activeIndex === overIndex) {
+      return;
+    }
+
+    const nextOrder = arrayMove(reorder.orderedIds, activeIndex, overIndex);
+
+    reorder.sync(nextOrder);
+
+    await persistCourseOrder(nextOrder);
+  };
+
+  const bulkActions = resolveQuickActions(
+    [
+      {
+        id: "bulk-delete",
+        label: quickText.delete,
+        scope: "bulk",
+        tone: "danger",
+        requiresConfirm: ({ selectedCount }) => selectedCount > 0,
+        confirm: ({ selectedCount }) => ({
+          title: quickText.confirmDeleteTitle,
+          description:
+            selectedCount === 1
+              ? quickText.confirmDeleteCourseSingle
+              : quickText.confirmDeleteCourseBulk(selectedCount),
+        }),
+        isEnabled: ({ selectedCount, isPending }) => selectedCount > 0 && !isPending,
+      } satisfies CmsQuickAction,
+    ],
+    {
+      selectedCount: selection.selectedCount,
+      isPending: isActionPending,
+    },
+  );
+
+  const hasActiveFilters = Boolean(
+    input.query?.q || input.query?.isActive !== undefined || input.query?.published !== undefined,
+  );
+  const activeFiltersCount = countActiveCourseListFilters(currentToolbarFilters);
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <CmsPageHeader
+        title={text.navigation.courses}
+        actions={
+          <div className="flex items-center gap-2">
+            <CmsActionButton
+              variant="outline"
+              onClick={() => navigateToCrudRoute(cmsCrudRoutes.courses.create)}
+            >
+              <Plus aria-hidden />
+              {text.resource.new}
+            </CmsActionButton>
+          </div>
+        }
+      />
+
+      <CmsDataTableShell
+        toolbar={
+          <div className="space-y-3">
+            <div className={cmsMetaLabelClass}>
+              {commonText.totalRecords(listQuery.pagination.total)}
+            </div>
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
+              <CmsListSearchInput
+                initialValue={input.query?.q ?? ""}
+                placeholder={text.listToolbar.searchPlaceholder}
+                onSearchChange={(value) => {
+                  updateSearchParams({ q: value, page: 1 });
+                }}
+              />
+
+              <CmsBulkActionBar
+                selectedCount={selection.selectedCount}
+                actions={bulkActions.map((action) => ({
+                  ...action,
+                  onExecute: () => runBulkAction("delete"),
+                }))}
+                className="md:justify-self-end"
+              />
+
+              <CmsListFiltersSheet
+                activeFiltersCount={activeFiltersCount}
+                className="md:w-36"
+                onOpenChange={(open) => {
+                  if (open) {
+                    setDraftToolbarFilters(currentToolbarFilters);
+                  }
+                }}
+                onApply={() => {
+                  updateSearchParams({
+                    isActive:
+                      draftToolbarFilters.isActiveValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.isActiveValue,
+                    published:
+                      draftToolbarFilters.publishedValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.publishedValue,
+                    sortBy: draftToolbarFilters.sortByValue,
+                    sortOrder: draftToolbarFilters.sortOrderValue,
+                    page: 1,
+                  });
+                }}
+                onClear={() => {
+                  setDraftToolbarFilters(defaultCourseListToolbarFilters);
+                }}
+              >
+                <CourseListToolbarFields
+                  filters={draftToolbarFilters}
+                  onIsActiveChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, isActiveValue: value }));
+                  }}
+                  onPublishedChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, publishedValue: value }));
+                  }}
+                  onSortByChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, sortByValue: value }));
+                  }}
+                  onSortOrderChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, sortOrderValue: value }));
+                  }}
+                />
+              </CmsListFiltersSheet>
+            </div>
+          </div>
+        }
+        table={
+          displayedCourses.length > 0 ? (
+            <DndContext
+              id="cms-courses-list-dnd"
+              sensors={sortableSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={({ active, over }) => {
+                if (!canReorder || reorderMutation.isPending || !over) {
+                  return;
+                }
+
+                void handleCourseDrop(String(active.id), String(over.id));
+              }}
+            >
+              <Table
+                className={cmsTableClasses.table}
+                containerClassName={cmsTableClasses.tableContainer}
+              >
+                <TableHeader>
+                  <TableRow className={cmsTableClasses.headerRow}>
+                    <TableHead
+                      className={cn(cmsTableClasses.headerCell, cmsTableClasses.selectionCell)}
+                    >
+                      <div
+                        className={cmsTableClasses.selectionCellInner}
+                        onPointerDownCapture={stopRowReorder}
+                      >
+                        <Checkbox
+                          checked={allSelectedOnPage}
+                          disabled={isActionPending}
+                          onCheckedChange={() => {
+                            selection.toggleSelectAll(pageCourseIds);
+                          }}
+                          className={cmsTableClasses.headerCheckbox}
+                          aria-label={commonText.selectAll}
+                        />
+                      </div>
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.title}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.slug}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.status}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.published}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.lessons}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.createdAt}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.updatedAt}
+                    </TableHead>
+                    <TableHead className={cmsTableClasses.headerCell}>
+                      {listText.table.actions}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <SortableContext
+                    items={displayedCourses.map((course) => course.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {displayedCourses.map((course) => (
+                      <SortableCourseRow
+                        key={course.id}
+                        course={course}
+                        canReorder={canReorder}
+                        isPending={isActionPending}
+                        isSelected={selection.isSelected(course.id)}
+                        onToggleSelection={selection.toggleSelection}
+                        onEdit={(id) => navigateToCrudRoute(cmsCrudRoutes.courses.edit(id))}
+                        onDelete={(id) => runSingleAction("delete", id)}
+                        selectLabel={listText.selectItem(course.title)}
+                        editLabel={quickText.edit}
+                        deleteLabel={quickText.delete}
+                        deleteConfirmTitle={quickText.confirmDeleteTitle}
+                        deleteConfirmDescription={quickText.confirmDeleteSingleCourse}
+                        activeLabel={listText.active}
+                        inactiveLabel={listText.inactive}
+                      />
+                    ))}
+                  </SortableContext>
+                </TableBody>
+              </Table>
+            </DndContext>
+          ) : (
+            <div className="px-5 py-4">
+              <CmsEmptyState
+                title={text.resource.emptyTitle(text.navigation.courses)}
+                description={text.resource.emptyDescription}
+                descriptionFiltered={text.resource.emptyDescriptionFiltered}
+                hasActiveFilters={hasActiveFilters}
+              />
+            </div>
+          )
+        }
+        pagination={
+          <CmsPaginationFooter
+            currentPage={listQuery.pagination.page}
+            totalPages={Math.max(
+              1,
+              Math.ceil(listQuery.pagination.total / listQuery.pagination.pageSize),
+            )}
+            pageSize={listQuery.pagination.pageSize}
+            onPageChange={(page) => {
+              updateSearchParams({ page });
+            }}
+            onPageSizeChange={(pageSize) => {
+              updateSearchParams({ pageSize, page: 1 });
+            }}
+          />
+        }
+      />
+    </div>
+  );
+}

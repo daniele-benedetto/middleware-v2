@@ -98,21 +98,25 @@ async function resolvePublicItems(items: NavigationItem[]): Promise<PublicNaviga
   const pageIds = items.filter((item) => item.type === "page").map((item) => item.resourceId);
   const articleIds = items.filter((item) => item.type === "article").map((item) => item.resourceId);
   const issueIds = items.filter((item) => item.type === "issue").map((item) => item.resourceId);
+  const courseIds = items.filter((item) => item.type === "course").map((item) => item.resourceId);
 
-  const [pages, articles, issues] = await Promise.all([
+  const [pages, articles, issues, courses] = await Promise.all([
     navigationRepository.findPublishedPagesByIds(pageIds),
     navigationRepository.findPublishedArticlesByIds(articleIds),
     navigationRepository.findPublishedIssuesByIds(issueIds),
+    navigationRepository.findPublishedCoursesByIds(courseIds),
   ]);
 
   const pagesById = new Map(pages.map((page) => [page.id, page]));
   const articlesById = new Map(articles.map((article) => [article.id, article]));
   const issuesById = new Map(issues.map((issue) => [issue.id, issue]));
+  const coursesById = new Map(courses.map((course) => [course.id, course]));
   const resolved: PublicNavigationItemDto[] = [];
 
   for (const item of items) {
     if (item.type === "home") resolved.push(toPublicItem(item, "/"));
     if (item.type === "archive") resolved.push(toPublicItem(item, "/uscite"));
+    if (item.type === "formazione") resolved.push(toPublicItem(item, "/formazione"));
     if (item.type === "custom") resolved.push(toPublicItem(item, item.href));
     if (item.type === "page") {
       const page = pagesById.get(item.resourceId);
@@ -125,6 +129,10 @@ async function resolvePublicItems(items: NavigationItem[]): Promise<PublicNaviga
     if (item.type === "issue") {
       const issue = issuesById.get(item.resourceId);
       if (issue) resolved.push(toPublicItem(item, `/uscite/${issue.slug}`));
+    }
+    if (item.type === "course") {
+      const course = coursesById.get(item.resourceId);
+      if (course) resolved.push(toPublicItem(item, `/formazione/${course.slug}`));
     }
   }
 
@@ -185,6 +193,14 @@ export const navigationService = {
       return articles.map((article) => ({
         ...toOptionDto(article),
         href: `/articoli/${article.slug}`,
+      }));
+    }
+
+    if (input.type === "course") {
+      const courses = await navigationRepository.listPublishedCourses(input.q);
+      return courses.map((course) => ({
+        ...toOptionDto(course),
+        href: `/formazione/${course.slug}`,
       }));
     }
 

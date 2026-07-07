@@ -35,6 +35,15 @@ export const PageStatus = {
 export type PageStatus = (typeof PageStatus)[keyof typeof PageStatus]
 
 
+export const LessonStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type LessonStatus = (typeof LessonStatus)[keyof typeof LessonStatus]
+
+
 export const AuditLogOutcome = {
   SUCCESS: 'SUCCESS',
   FAILURE: 'FAILURE'

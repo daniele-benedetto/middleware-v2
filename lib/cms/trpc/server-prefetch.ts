@@ -6,6 +6,7 @@ import {
   articleIssueOptionsInput,
   articleTagOptionsInput,
 } from "@/lib/cms/article-options";
+import { lessonCourseOptionsInput } from "@/lib/cms/course-options";
 import { getTrpcCaller } from "@/lib/server/trpc/caller";
 
 import type { RouterInputs, RouterOutputs } from "@/lib/trpc/types";
@@ -13,6 +14,8 @@ import type { RouterInputs, RouterOutputs } from "@/lib/trpc/types";
 type TrpcCaller = Awaited<ReturnType<typeof getTrpcCaller>>;
 
 type IssuesListInput = RouterInputs["issues"]["list"];
+type CoursesListInput = RouterInputs["courses"]["list"];
+type LessonsListInput = RouterInputs["lessons"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type TagsListInput = RouterInputs["tags"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
@@ -25,6 +28,8 @@ type NavigationMenusOutput = RouterOutputs["navigation"]["listMenus"];
 type NavigationOptionsOutput = RouterOutputs["navigation"]["listOptions"];
 
 type IssuesListOutput = RouterOutputs["issues"]["list"];
+type CoursesListOutput = RouterOutputs["courses"]["list"];
+type LessonsListOutput = RouterOutputs["lessons"]["list"];
 type CategoriesListOutput = RouterOutputs["categories"]["list"];
 type TagsListOutput = RouterOutputs["tags"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
@@ -34,6 +39,10 @@ type UsersListOutput = RouterOutputs["users"]["list"];
 
 type IssueDetailOutput = RouterOutputs["issues"]["getById"];
 type IssuePreviewOutput = RouterOutputs["issues"]["getPreviewById"];
+type CourseDetailOutput = RouterOutputs["courses"]["getById"];
+type CoursePreviewOutput = RouterOutputs["courses"]["getPreviewById"];
+type LessonDetailOutput = RouterOutputs["lessons"]["getById"];
+type LessonPreviewOutput = RouterOutputs["lessons"]["getPreviewById"];
 type CategoryDetailOutput = RouterOutputs["categories"]["getById"];
 type TagDetailOutput = RouterOutputs["tags"]["getById"];
 type AuthorDetailOutput = RouterOutputs["authors"]["getById"];
@@ -99,16 +108,51 @@ export async function prefetchNavigationBuilder(): Promise<{
   pageOptions: NavigationOptionsOutput;
   articleOptions: NavigationOptionsOutput;
   issueOptions: NavigationOptionsOutput;
+  courseOptions: NavigationOptionsOutput;
 }> {
   const caller = await getTrpcCaller();
-  const [menus, pageOptions, articleOptions, issueOptions] = await Promise.all([
+  const [menus, pageOptions, articleOptions, issueOptions, courseOptions] = await Promise.all([
     caller.navigation.listMenus(),
     caller.navigation.listOptions({ type: "page" }),
     caller.navigation.listOptions({ type: "article" }),
     caller.navigation.listOptions({ type: "issue" }),
+    caller.navigation.listOptions({ type: "course" }),
   ]);
 
-  return { menus, pageOptions, articleOptions, issueOptions };
+  return { menus, pageOptions, articleOptions, issueOptions, courseOptions };
+}
+
+export async function prefetchCoursesList(input: CoursesListInput): Promise<CoursesListOutput> {
+  return prefetchCmsList(input, (caller, listInput) => caller.courses.list(listInput));
+}
+
+export async function prefetchLessonsList(input: LessonsListInput): Promise<LessonsListOutput> {
+  return prefetchCmsList(input, (caller, listInput) => caller.lessons.list(listInput));
+}
+
+export async function prefetchCourseById(id: string): Promise<CourseDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.courses.getById({ id });
+}
+
+export async function prefetchCoursePreviewById(id: string): Promise<CoursePreviewOutput> {
+  const caller = await getTrpcCaller();
+  return caller.courses.getPreviewById({ id });
+}
+
+export async function prefetchLessonById(id: string): Promise<LessonDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.lessons.getById({ id });
+}
+
+export async function prefetchLessonPreviewById(id: string): Promise<LessonPreviewOutput> {
+  const caller = await getTrpcCaller();
+  return caller.lessons.getPreviewById({ id });
+}
+
+export async function prefetchLessonFormCourseOptions(): Promise<CoursesListOutput> {
+  const caller = await getTrpcCaller();
+  return caller.courses.list(lessonCourseOptionsInput);
 }
 
 export async function prefetchIssueById(id: string): Promise<IssueDetailOutput> {

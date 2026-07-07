@@ -5,13 +5,15 @@ export const navigationMenuKeySchema = z.enum(["main", "footer_sections", "foote
 export const navigationItemTypeSchema = z.enum([
   "home",
   "archive",
+  "formazione",
   "page",
   "article",
   "issue",
+  "course",
   "custom",
 ]);
 
-export const navigationResourceTypeSchema = z.enum(["page", "article", "issue"]);
+export const navigationResourceTypeSchema = z.enum(["page", "article", "issue", "course"]);
 
 const navigationBaseItemSchema = z.object({
   id: z.string().trim().min(1),
@@ -21,9 +23,11 @@ const navigationBaseItemSchema = z.object({
 export const navigationItemSchema = z.discriminatedUnion("type", [
   navigationBaseItemSchema.extend({ type: z.literal("home") }),
   navigationBaseItemSchema.extend({ type: z.literal("archive") }),
+  navigationBaseItemSchema.extend({ type: z.literal("formazione") }),
   navigationBaseItemSchema.extend({ type: z.literal("page"), resourceId: z.string().uuid() }),
   navigationBaseItemSchema.extend({ type: z.literal("article"), resourceId: z.string().uuid() }),
   navigationBaseItemSchema.extend({ type: z.literal("issue"), resourceId: z.string().uuid() }),
+  navigationBaseItemSchema.extend({ type: z.literal("course"), resourceId: z.string().uuid() }),
   navigationBaseItemSchema.extend({
     type: z.literal("custom"),
     href: z.string().trim().min(1).max(500),

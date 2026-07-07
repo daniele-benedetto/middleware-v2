@@ -2,11 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   revalidatePublicArticleContent,
+  revalidatePublicCourseContent,
   revalidatePublicIssueContent,
   revalidatePublicPageContent,
 } from "@/lib/public/server/revalidation";
 
 const PUBLIC_ARTICLE_PAGE_CACHE_TAG = "public-article";
+const PUBLIC_COURSE_PAGE_CACHE_TAG = "public-course";
 const PUBLIC_HOME_CACHE_TAG = "public-home";
 const PUBLIC_ISSUE_PAGE_CACHE_TAG = "public-issue";
 const PUBLIC_ISSUES_ARCHIVE_CACHE_TAG = "public-issues-archive";
@@ -22,6 +24,10 @@ vi.mock("next/cache", () => ({
 
 vi.mock("@/lib/public/server/article-page", () => ({
   PUBLIC_ARTICLE_PAGE_CACHE_TAG: "public-article",
+}));
+
+vi.mock("@/lib/public/server/course-page", () => ({
+  PUBLIC_COURSE_PAGE_CACHE_TAG: "public-course",
 }));
 
 vi.mock("@/lib/public/server/home", () => ({
@@ -81,6 +87,16 @@ describe("public cache revalidation", () => {
       expire: 0,
     });
     expect(revalidateTagMock).toHaveBeenNthCalledWith(5, PUBLIC_MEDIA_CACHE_TAG, { expire: 0 });
+  });
+
+  it("expires course-dependent public cache tags", () => {
+    revalidatePublicCourseContent();
+
+    expect(revalidateTagMock).toHaveBeenCalledTimes(2);
+    expect(revalidateTagMock).toHaveBeenNthCalledWith(1, PUBLIC_COURSE_PAGE_CACHE_TAG, {
+      expire: 0,
+    });
+    expect(revalidateTagMock).toHaveBeenNthCalledWith(2, PUBLIC_MEDIA_CACHE_TAG, { expire: 0 });
   });
 
   it("expires static page public cache tags", () => {
