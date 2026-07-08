@@ -72,6 +72,19 @@ describe("seo metadata", () => {
     ]);
   });
 
+  it("builds noindex listen metadata with a custom canonical path", () => {
+    const metadata = buildArticleListenMetadata({
+      title: "Ascolta la lezione: Titolo",
+      slug: "titolo",
+      canonicalPath: "/formazione/corso/titolo",
+    });
+
+    expect(metadata.alternates?.canonical).toBe("http://localhost:3000/formazione/corso/titolo");
+    expect(metadata.openGraph).toMatchObject({
+      url: "http://localhost:3000/formazione/corso/titolo",
+    });
+  });
+
   it("uses local fallback outside production", () => {
     expect(getCanonicalUrl("/")).toBe("http://localhost:3000/");
   });

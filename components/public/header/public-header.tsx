@@ -61,14 +61,13 @@ export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
   const [menuState, setMenuState] = useState<MenuState>("closed");
   const menuId = useId();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const menuCloseButtonRef = useRef<HTMLButtonElement>(null);
   const animationTimerRefs = useRef<number[]>([]);
   const text = i18n.public.header;
-  const menuText = i18n.public.menu;
   const resolvedMenuItems = menuItems;
   const menuOpenAnimationDuration = getMenuOpenAnimationDuration(resolvedMenuItems.length);
   const menuContentCloseDuration = getMenuContentCloseDuration(resolvedMenuItems.length);
   const menuVisible = menuState !== "closed";
-  const headerMenuActive = menuVisible;
   const menuClosing = menuState === "closing-content" || menuState === "closing-shell";
 
   useEffect(() => {
@@ -133,7 +132,7 @@ export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
       return;
     }
 
-    if (headerMenuActive) {
+    if (menuVisible) {
       closeMenu();
       return;
     }
@@ -159,7 +158,7 @@ export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
     inertElements.forEach((element) => {
       element.inert = true;
     });
-    menuButtonRef.current?.focus();
+    menuCloseButtonRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -175,9 +174,7 @@ export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
       const menuFocusableElements = Array.from(
         menu?.querySelectorAll<HTMLElement>(focusableSelector) ?? [],
       );
-      const focusableElements = [menuButtonRef.current, ...menuFocusableElements].filter(
-        (element): element is HTMLElement => Boolean(element && isElementVisible(element)),
-      );
+      const focusableElements = menuFocusableElements.filter(isElementVisible);
 
       if (focusableElements.length === 0) {
         event.preventDefault();
@@ -219,33 +216,19 @@ export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
         className={cn(
           "sticky top-0 z-50 border-b-2 border-foreground bg-background text-foreground",
           "transition-[background-color,border-color,color] duration-(--motion-slow) ease-(--easing-standard)",
-          menuVisible && "z-120",
-          headerMenuActive && "border-dark-border bg-transparent text-background",
           className,
         )}
       >
         <div className={cn(publicHeaderBarClassName, "relative z-130")}>
-          <PublicBrand
-            priority
-            tone={headerMenuActive ? "dark" : "light"}
-            onClick={
-              menuVisible
-                ? (event) => {
-                    event.preventDefault();
-                    navigateAfterMenuClose("/");
-                  }
-                : undefined
-            }
-          />
+          <PublicBrand priority />
           <PublicMenuButton
             ref={menuButtonRef}
-            label={headerMenuActive ? menuText.close : text.openMenu}
-            ariaLabel={headerMenuActive ? menuText.closeAriaLabel : text.openMenuAriaLabel}
-            icon={headerMenuActive ? "close" : "menu"}
-            tone={headerMenuActive ? "dark" : "light"}
-            expanded={headerMenuActive}
+            label={text.openMenu}
+            ariaLabel={text.openMenuAriaLabel}
+            icon="menu"
+            expanded={menuVisible}
             controls={menuId}
-            disabled={menuClosing}
+            disabled={menuVisible}
             onClick={toggleMenu}
           />
         </div>
@@ -256,6 +239,8 @@ export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
           id={menuId}
           state={menuState}
           items={resolvedMenuItems}
+          closeButtonRef={menuCloseButtonRef}
+          onClose={() => closeMenu()}
           onNavigate={navigateAfterMenuClose}
         />
       ) : null}

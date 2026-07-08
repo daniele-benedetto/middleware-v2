@@ -35,6 +35,8 @@ export type MediaStorageRecord = {
 
 export type MediaStorageObject = MediaStorageRecord & {
   stream: ReadableStream<Uint8Array>;
+  contentRange: string | null;
+  responseSize: number;
 };
 
 type PutMediaObjectInput = {
@@ -47,6 +49,10 @@ type PutMediaObjectInput = {
 type DeleteMediaObjectInput = {
   pathname: string;
   etag?: string;
+};
+
+type GetMediaObjectInput = {
+  range?: string;
 };
 
 function normalizeEtag(value: string | undefined) {
@@ -284,12 +290,14 @@ export const mediaStorage = {
     }
   },
 
-  async get(pathname: string): Promise<MediaStorageObject> {
+  async get(pathname: string, input: GetMediaObjectInput = {}): Promise<MediaStorageObject> {
     const client = getS3Client();
     const { bucket } = getS3Config();
 
     try {
-      const result = await client.send(new GetObjectCommand({ Bucket: bucket, Key: pathname }));
+      const result = await client.send(
+        new GetObjectCommand({ Bucket: bucket, Key: pathname, Range: input.range }),
+      );
 
       return {
         ...toStorageRecord({
@@ -300,6 +308,8 @@ export const mediaStorage = {
           etag: result.ETag,
         }),
         stream: toWebStream(result.Body),
+        contentRange: result.ContentRange ?? null,
+        responseSize: result.ContentLength ?? 0,
       };
     } catch (error) {
       mapStorageError(error);

@@ -3,8 +3,10 @@ import { Suspense } from "react";
 
 import { CookieConsentBanner, PublicFooter, PublicHeader } from "@/components/public";
 import { CustomCursor } from "@/components/public/custom-cursor";
+import { PublicOverlayScrollbar } from "@/components/public/public-overlay-scrollbar";
 import { PublicPageTransition } from "@/components/public/public-page-transition";
 import { PublicScrollProgress } from "@/components/public/public-scroll-progress";
+import { PublicSmoothScroll } from "@/components/public/public-smooth-scroll";
 import { i18n } from "@/lib/i18n";
 import { publicFeatures } from "@/lib/public/config";
 import { getLegalConsentVersion } from "@/lib/public/server/legal-consent";
@@ -37,7 +39,10 @@ async function CookieConsentSlot() {
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-svh flex-1 flex-col bg-background font-heading text-foreground">
+    <div
+      data-public-shell
+      className="flex min-h-svh flex-1 flex-col bg-background font-heading text-foreground"
+    >
       <a
         href="#main-content"
         className="sr-only z-200 bg-foreground px-4 py-3 font-heading text-sm font-bold text-background uppercase focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:outline-3 focus:outline-offset-2 focus:outline-accent"
@@ -61,6 +66,10 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           <CookieConsentSlot />
         </Suspense>
       ) : null}
+      <Suspense fallback={null}>
+        <PublicSmoothScroll />
+      </Suspense>
+      <PublicOverlayScrollbar />
       <CustomCursor />
     </div>
   );

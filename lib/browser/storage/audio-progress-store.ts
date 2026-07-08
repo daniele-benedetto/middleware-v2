@@ -1,8 +1,16 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 
 export type AudioProgressStatus = "listening" | "paused" | "completed";
+export type AudioContentKind = "article" | "lesson";
 
 export type AudioProgressRecord = {
+  contentKey: string;
+  contentKind: AudioContentKind;
+  contentId: string;
+  contentSlug: string;
+  contentTitle: string;
+  contentUpdatedAt: string | null;
+  /** Legacy keyPath kept to preserve existing IndexedDB stores. */
   articleId: string;
   articleSlug: string;
   articleTitle: string;
@@ -18,6 +26,13 @@ export type AudioProgressRecord = {
 
 export type AudioBookmarkRecord = {
   id: string;
+  contentKey: string;
+  contentKind: AudioContentKind;
+  contentId: string;
+  contentSlug: string;
+  contentTitle: string;
+  contentUpdatedAt: string | null;
+  /** Legacy field kept for the existing by-articleId index. */
   articleId: string;
   articleSlug: string;
   articleTitle: string;
@@ -86,6 +101,57 @@ function getDatabase() {
   return databasePromise;
 }
 
+function normalizeProgressRecord(record: AudioProgressRecord | undefined) {
+  if (!record) return undefined;
+  const legacyRecord = record as AudioProgressRecord & {
+    contentKey?: string;
+    contentKind?: AudioContentKind;
+    contentId?: string;
+    contentSlug?: string;
+    contentTitle?: string;
+    contentUpdatedAt?: string | null;
+  };
+  const contentKey = legacyRecord.contentKey ?? legacyRecord.articleId;
+
+  return {
+    ...record,
+    contentKey,
+    contentKind: legacyRecord.contentKind ?? "article",
+    contentId: legacyRecord.contentId ?? legacyRecord.articleId,
+    contentSlug: legacyRecord.contentSlug ?? legacyRecord.articleSlug,
+    contentTitle: legacyRecord.contentTitle ?? legacyRecord.articleTitle,
+    contentUpdatedAt: legacyRecord.contentUpdatedAt ?? legacyRecord.articleUpdatedAt,
+    articleId: contentKey,
+  } satisfies AudioProgressRecord;
+}
+
+function normalizeBookmarkRecord(record: AudioBookmarkRecord) {
+  const legacyRecord = record as AudioBookmarkRecord & {
+    contentKey?: string;
+    contentKind?: AudioContentKind;
+    contentId?: string;
+    contentSlug?: string;
+    contentTitle?: string;
+    contentUpdatedAt?: string | null;
+  };
+  const contentKey = legacyRecord.contentKey ?? legacyRecord.articleId;
+
+  return {
+    ...record,
+    contentKey,
+    contentKind: legacyRecord.contentKind ?? "article",
+    contentId: legacyRecord.contentId ?? legacyRecord.articleId,
+    contentSlug: legacyRecord.contentSlug ?? legacyRecord.articleSlug,
+    contentTitle: legacyRecord.contentTitle ?? legacyRecord.articleTitle,
+    contentUpdatedAt: legacyRecord.contentUpdatedAt ?? legacyRecord.articleUpdatedAt,
+    articleId: contentKey,
+  } satisfies AudioBookmarkRecord;
+}
+
+function getLegacyArticleId(contentKey: string) {
+  return contentKey.startsWith("article:") ? contentKey.slice("article:".length) : null;
+}
+
 async function runAudioProgressOperation<T>(
   operation: (database: IDBPDatabase<MiddlewareClientDb>) => Promise<T>,
 ) {
@@ -98,8 +164,16 @@ async function runAudioProgressOperation<T>(
   }
 }
 
-export async function getAudioProgress(articleId: string) {
-  return runAudioProgressOperation((database) => database.get(audioProgressStoreName, articleId));
+export async function getAudioProgress(contentKey: string) {
+  return runAudioProgressOperation(async (database) => {
+    const record = await database.get(audioProgressStoreName, contentKey);
+    if (record) return normalizeProgressRecord(record);
+
+    const legacyArticleId = getLegacyArticleId(contentKey);
+    if (!legacyArticleId) return undefined;
+
+    return normalizeProgressRecord(await database.get(audioProgressStoreName, legacyArticleId));
+  });
 }
 
 export async function saveAudioProgress(record: AudioProgressRecord) {
@@ -110,9 +184,9 @@ export async function saveAudioProgress(record: AudioProgressRecord) {
   });
 }
 
-export async function deleteAudioProgress(articleId: string) {
+export async function deleteAudioProgress(contentKey: string) {
   return runAudioProgressOperation((database) =>
-    database.delete(audioProgressStoreName, articleId),
+    database.delete(audioProgressStoreName, contentKey),
   );
 }
 
@@ -136,14 +210,26 @@ export async function cleanupAudioProgress() {
   });
 }
 
-export function getAudioBookmarkId(articleId: string, chunkId: string) {
-  return `${articleId}:${chunkId}`;
+export function getAudioBookmarkId(contentKey: string, chunkId: string) {
+  return `${contentKey}:${chunkId}`;
 }
 
-export async function getAudioBookmarks(articleId: string) {
-  return runAudioProgressOperation((database) =>
-    database.getAllFromIndex(audioBookmarksStoreName, "by-articleId", articleId),
-  );
+export async function getAudioBookmarks(contentKey: string) {
+  return runAudioProgressOperation(async (database) => {
+    const records = await database.getAllFromIndex(
+      audioBookmarksStoreName,
+      "by-articleId",
+      contentKey,
+    );
+    if (records.length > 0) return records.map(normalizeBookmarkRecord);
+
+    const legacyArticleId = getLegacyArticleId(contentKey);
+    if (!legacyArticleId) return [];
+
+    return (
+      await database.getAllFromIndex(audioBookmarksStoreName, "by-articleId", legacyArticleId)
+    ).map(normalizeBookmarkRecord);
+  });
 }
 
 export async function saveAudioBookmark(record: AudioBookmarkRecord) {
@@ -153,8 +239,8 @@ export async function saveAudioBookmark(record: AudioBookmarkRecord) {
   });
 }
 
-export async function deleteAudioBookmark(articleId: string, chunkId: string) {
+export async function deleteAudioBookmark(contentKey: string, chunkId: string) {
   return runAudioProgressOperation((database) =>
-    database.delete(audioBookmarksStoreName, getAudioBookmarkId(articleId, chunkId)),
+    database.delete(audioBookmarksStoreName, getAudioBookmarkId(contentKey, chunkId)),
   );
 }

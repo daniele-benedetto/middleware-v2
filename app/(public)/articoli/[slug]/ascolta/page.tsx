@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
+import { Suspense } from "react";
 
 import { ArticleListenPage } from "@/components/public/listen/article-listen-page";
 import { i18n } from "@/lib/i18n";
@@ -11,6 +12,18 @@ import type { Metadata } from "next";
 type PublicArticleListenRouteProps = {
   params: Promise<{ slug: string }>;
 };
+
+async function PublicArticleListenRouteContent({ params }: PublicArticleListenRouteProps) {
+  await connection();
+  const { slug } = await params;
+  const data = await getPublicArticleListenPageData(slug);
+
+  if (!data) {
+    notFound();
+  }
+
+  return <ArticleListenPage data={data} />;
+}
 
 export async function generateMetadata({
   params,
@@ -37,14 +50,10 @@ export async function generateMetadata({
   });
 }
 
-export default async function PublicArticleListenRoute({ params }: PublicArticleListenRouteProps) {
-  await connection();
-  const { slug } = await params;
-  const data = await getPublicArticleListenPageData(slug);
-
-  if (!data) {
-    notFound();
-  }
-
-  return <ArticleListenPage data={data} />;
+export default function PublicArticleListenRoute({ params }: PublicArticleListenRouteProps) {
+  return (
+    <Suspense fallback={null}>
+      <PublicArticleListenRouteContent params={params} />
+    </Suspense>
+  );
 }

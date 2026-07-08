@@ -27,6 +27,7 @@ type ArticleListenMetadataInput = {
   title: string;
   description?: string | null;
   slug: string;
+  canonicalPath?: string;
   imageUrl?: string | null;
 };
 
@@ -215,7 +216,7 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
 }
 
 export function buildArticleListenMetadata(input: ArticleListenMetadataInput): Metadata {
-  const canonical = getCanonicalUrl(`/articoli/${input.slug}`);
+  const canonical = getCanonicalUrl(input.canonicalPath ?? `/articoli/${input.slug}`);
   const description = input.description ?? seoConfig.defaultDescription;
   const image = input.imageUrl ? resolveAbsoluteUrl(input.imageUrl) : getOpenGraphImageUrl();
 

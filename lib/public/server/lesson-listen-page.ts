@@ -5,6 +5,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { parseAudioChunks, type AudioChunk } from "@/lib/audio/audio-chunks";
 import { extractCmsMediaPathname } from "@/lib/media/blob";
 import { ApiError } from "@/lib/server/http/api-error";
+import { publicCoursesService } from "@/lib/server/modules/courses/service/public";
 import { publicLessonsService } from "@/lib/server/modules/lessons/service/public";
 import { mediaStorage } from "@/lib/server/storage/media-storage";
 
@@ -15,6 +16,7 @@ export const PUBLIC_LESSON_LISTEN_PAGE_CACHE_TAG = "public-course";
 
 export type PublicLessonListenPageData = {
   lesson: PublicLessonDetailDto;
+  lessonNumber: number | null;
   chunks: AudioChunk[];
 };
 
@@ -84,6 +86,25 @@ async function getLessonBySlug(courseSlug: string, lessonSlug: string) {
   }
 }
 
+async function getLessonNumber(courseSlug: string, lessonId: string) {
+  try {
+    const course = await publicCoursesService.getBySlug(courseSlug);
+    const index = course.lessons.findIndex((lesson) => lesson.id === lessonId);
+    return index >= 0 ? index + 1 : null;
+  } catch (error) {
+    if (error instanceof ApiError && error.code === "NOT_FOUND") {
+      return null;
+    }
+
+    console.error("public.getPublicLessonListenPageData course failed", {
+      courseSlug,
+      lessonId,
+      error,
+    });
+    throw error;
+  }
+}
+
 export async function getPublicLessonListenPageData(
   courseSlug: string,
   lessonSlug: string,
@@ -100,6 +121,7 @@ export async function getPublicLessonListenPageData(
 
   return {
     lesson,
+    lessonNumber: await getLessonNumber(courseSlug, lesson.id),
     chunks: await loadAudioChunks(lesson.audioChunks),
   };
 }

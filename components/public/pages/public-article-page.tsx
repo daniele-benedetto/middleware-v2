@@ -54,6 +54,20 @@ function getRelatedArticleCardClassName(index: number, count: number) {
   return undefined;
 }
 
+function getArticleTitleTypographyClassName(title: string) {
+  const wordCount = title.trim().split(/\s+/).filter(Boolean).length;
+
+  if (wordCount >= 14) {
+    return "font-heading text-[clamp(38px,6vw,88px)] leading-[0.96] font-black tracking-[-0.052em] [text-wrap:balance]";
+  }
+
+  if (wordCount >= 9) {
+    return "font-heading text-[clamp(42px,7vw,108px)] leading-[0.94] font-black tracking-[-0.056em] [text-wrap:balance]";
+  }
+
+  return "font-heading text-[clamp(48px,9.5vw,138px)] leading-[0.86] font-black tracking-[-0.06em] [text-wrap:balance]";
+}
+
 function ArticleMetaRail({ article }: ArticleOnlyProps) {
   const text = i18n.public.articlePage;
   const cardText = i18n.public.home.articleCard;
@@ -138,6 +152,7 @@ export function PublicArticlePage({
           as="header"
           title={article.title}
           titleStyled={article.titleStyled}
+          titleTypographyClassName={getArticleTitleTypographyClassName(article.title)}
           backgroundCode={formatArticleNumber(articleNumber)}
           description={article.excerpt}
           meta={<ArticleMetaRail article={article} />}

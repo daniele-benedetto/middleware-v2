@@ -1,5 +1,6 @@
 import { parseMediaPathname } from "@/lib/media/blob";
 import { getAuthSession } from "@/lib/server/auth/session";
+import { parseByteRangeHeader } from "@/lib/server/http/byte-range";
 import { getRequestId, getRequestPath } from "@/lib/server/http/request";
 import { mediaPolicy } from "@/lib/server/modules/media";
 import { logServerEvent } from "@/lib/server/observability/log";
@@ -11,6 +12,16 @@ function buildContentDisposition(pathname: string, download: boolean) {
   const encodedFileName = encodeURIComponent(fileName);
 
   return `${download ? "attachment" : "inline"}; filename*=UTF-8''${encodedFileName}`;
+}
+
+function buildUnsatisfiableRangeResponse(size: number) {
+  return new Response("Range not satisfiable", {
+    status: 416,
+    headers: {
+      "content-range": `bytes */${size}`,
+      "accept-ranges": "bytes",
+    },
+  });
 }
 
 export async function GET(request: Request) {
@@ -29,13 +40,32 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await mediaStorage.get(pathname);
+    const metadata = await mediaStorage.head(pathname);
+    const contentType = metadata.contentType ?? "application/octet-stream";
+    const range = contentType.startsWith("audio/")
+      ? parseByteRangeHeader(request.headers.get("range"), metadata.size)
+      : null;
+
+    if (range === "invalid") {
+      return buildUnsatisfiableRangeResponse(metadata.size);
+    }
+
+    const result = await mediaStorage.get(
+      pathname,
+      range ? { range: `bytes=${range.start}-${range.end}` } : undefined,
+    );
+    const isPartial = Boolean(range);
 
     return new Response(result.stream, {
-      status: 200,
+      status: isPartial ? 206 : 200,
       headers: {
-        "content-type": result.contentType ?? "application/octet-stream",
+        "content-type": contentType,
         "content-disposition": buildContentDisposition(result.pathname, shouldDownload),
+        "content-length": String(isPartial && range ? range.size : metadata.size),
+        "accept-ranges": contentType.startsWith("audio/") ? "bytes" : "none",
+        ...(isPartial && range
+          ? { "content-range": `bytes ${range.start}-${range.end}/${metadata.size}` }
+          : {}),
         "cache-control": "private, no-store, max-age=0",
       },
     });

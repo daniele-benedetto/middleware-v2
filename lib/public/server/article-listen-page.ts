@@ -4,8 +4,7 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { parseAudioChunks, type AudioChunk } from "@/lib/audio/audio-chunks";
 import { extractCmsMediaPathname } from "@/lib/media/blob";
-import { ApiError } from "@/lib/server/http/api-error";
-import { publicArticlesService } from "@/lib/server/modules/articles/service/public";
+import { getPublicArticlePageData } from "@/lib/public/server/article-page";
 import { mediaStorage } from "@/lib/server/storage/media-storage";
 
 import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
@@ -15,6 +14,7 @@ export const PUBLIC_ARTICLE_LISTEN_PAGE_CACHE_TAG = "public-article";
 
 export type PublicArticleListenPageData = {
   article: PublicArticleDetailDto;
+  articleNumber: number | null;
   chunks: AudioChunk[];
 };
 
@@ -67,19 +67,6 @@ async function loadAudioChunks(value: unknown) {
   return parseAudioChunks(value);
 }
 
-async function getArticleBySlug(slug: string) {
-  try {
-    return await publicArticlesService.getBySlug(slug);
-  } catch (error) {
-    if (error instanceof ApiError && error.code === "NOT_FOUND") {
-      return null;
-    }
-
-    console.error("public.getPublicArticleListenPageData article failed", { slug, error });
-    throw error;
-  }
-}
-
 export async function getPublicArticleListenPageData(
   slug: string,
 ): Promise<PublicArticleListenPageData | null> {
@@ -87,7 +74,7 @@ export async function getPublicArticleListenPageData(
   cacheLife("hours");
   cacheTag(PUBLIC_ARTICLE_LISTEN_PAGE_CACHE_TAG);
 
-  const article = await getArticleBySlug(slug);
+  const { article, articleNumber } = await getPublicArticlePageData(slug);
 
   if (!article?.audioUrl) {
     return null;
@@ -95,6 +82,7 @@ export async function getPublicArticleListenPageData(
 
   return {
     article,
+    articleNumber,
     chunks: await loadAudioChunks(article.audioChunks),
   };
 }

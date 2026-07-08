@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
+import { Suspense } from "react";
 
 import { LessonListenPage } from "@/components/public/listen/lesson-listen-page";
 import { i18n } from "@/lib/i18n";
@@ -11,6 +12,18 @@ import type { Metadata } from "next";
 type PublicLessonListenRouteProps = {
   params: Promise<{ courseSlug: string; lessonSlug: string }>;
 };
+
+async function PublicLessonListenRouteContent({ params }: PublicLessonListenRouteProps) {
+  await connection();
+  const { courseSlug, lessonSlug } = await params;
+  const data = await getPublicLessonListenPageData(courseSlug, lessonSlug);
+
+  if (!data) {
+    notFound();
+  }
+
+  return <LessonListenPage data={data} />;
+}
 
 export async function generateMetadata({
   params,
@@ -24,6 +37,7 @@ export async function generateMetadata({
     return buildArticleListenMetadata({
       title: text.notFoundTitle,
       slug: lessonSlug,
+      canonicalPath: `/formazione/${courseSlug}/${lessonSlug}`,
     });
   }
 
@@ -31,18 +45,15 @@ export async function generateMetadata({
     title: text.metadataTitle(data.lesson.title),
     description: data.lesson.excerpt ?? undefined,
     slug: data.lesson.slug,
+    canonicalPath: `/formazione/${data.lesson.courseSlug}/${data.lesson.slug}`,
     imageUrl: data.lesson.imageUrl,
   });
 }
 
-export default async function PublicLessonListenRoute({ params }: PublicLessonListenRouteProps) {
-  await connection();
-  const { courseSlug, lessonSlug } = await params;
-  const data = await getPublicLessonListenPageData(courseSlug, lessonSlug);
-
-  if (!data) {
-    notFound();
-  }
-
-  return <LessonListenPage data={data} />;
+export default function PublicLessonListenRoute({ params }: PublicLessonListenRouteProps) {
+  return (
+    <Suspense fallback={null}>
+      <PublicLessonListenRouteContent params={params} />
+    </Suspense>
+  );
 }

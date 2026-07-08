@@ -1,6 +1,6 @@
 "use client";
 
-import { ViewTransition, type ReactNode } from "react";
+import { useEffect, ViewTransition, type ReactNode } from "react";
 
 type PublicPageTransitionProps = {
   children: ReactNode;
@@ -23,6 +23,31 @@ type PendingNavigation = { type: string; hasHash: boolean };
 // forward navigation land exactly at the top instead of a few px off (Next's
 // scroll reset otherwise races the view-transition commit).
 let pendingNavigation: PendingNavigation = { type: "push", hasHash: false };
+let cursorTransitionTimer: number | undefined;
+
+const cursorTransitionDuration = 320;
+
+function setCursorTransitioning() {
+  document.documentElement.dataset.publicTransitioning = "true";
+
+  if (cursorTransitionTimer) {
+    window.clearTimeout(cursorTransitionTimer);
+  }
+
+  cursorTransitionTimer = window.setTimeout(() => {
+    delete document.documentElement.dataset.publicTransitioning;
+    cursorTransitionTimer = undefined;
+  }, cursorTransitionDuration);
+}
+
+function clearCursorTransitioning() {
+  if (cursorTransitionTimer) {
+    window.clearTimeout(cursorTransitionTimer);
+    cursorTransitionTimer = undefined;
+  }
+
+  delete document.documentElement.dataset.publicTransitioning;
+}
 
 if (typeof window !== "undefined") {
   const navigation = (window as unknown as { navigation?: NavigationLike }).navigation;
@@ -45,6 +70,7 @@ if (typeof window !== "undefined") {
 function handlePageUpdate() {
   const { type, hasHash } = pendingNavigation;
   pendingNavigation = { type: "push", hasHash: false };
+  setCursorTransitioning();
 
   if (type === "traverse" || hasHash) {
     return undefined;
@@ -58,6 +84,8 @@ function handlePageUpdate() {
 // route's loading.tsx fallback immediately, instead of freezing on the old page
 // until data is ready. That gives click -> fade out -> loading -> fade in.
 export function PublicPageTransition({ children }: PublicPageTransitionProps) {
+  useEffect(() => clearCursorTransitioning, []);
+
   return (
     <ViewTransition update="page-transition" default="none" onUpdate={handlePageUpdate}>
       <div className="flex min-h-svh w-full max-w-full flex-1 flex-col overflow-x-clip">

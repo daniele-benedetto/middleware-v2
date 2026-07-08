@@ -1,4 +1,8 @@
-import { publicInteraction, publicTypography } from "@/components/public/primitives";
+import {
+  publicContentClassName,
+  publicInteraction,
+  publicTypography,
+} from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { StyledTitle } from "@/components/public/styled-title";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
@@ -72,7 +76,7 @@ export function IssueArchiveCard({ issue, countLabel, variant, className }: Issu
       href={`/uscite/${issue.slug}`}
       className={cn(
         publicInteraction.cardBase,
-        "relative isolate block overflow-hidden px-0 py-7 max-lg:border-b max-lg:last:border-b-0 md:px-8 md:py-10 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:px-12 lg:py-14 xl:px-16",
+        "relative isolate block overflow-hidden py-7 max-lg:border-b max-lg:last:border-b-0 md:py-10 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:py-14",
         variantClasses.surface,
         variantClasses.border,
         variantClasses.cardBorder,
@@ -80,18 +84,18 @@ export function IssueArchiveCard({ issue, countLabel, variant, className }: Issu
         className,
       )}
     >
-      <span
-        className={cn(
-          publicTypography.issueBackgroundNumber,
-          "pointer-events-none absolute top-5 right-5 -z-10 select-none",
-          variantClasses.backgroundNumber,
-        )}
-        aria-hidden
-      >
-        {issue.issueNumber}
-      </span>
+      <div className={cn(publicContentClassName, "relative z-10")}>
+        <span
+          className={cn(
+            publicTypography.issueBackgroundNumber,
+            "pointer-events-none absolute top-5 right-5 -z-10 select-none",
+            variantClasses.backgroundNumber,
+          )}
+          aria-hidden
+        >
+          {issue.issueNumber}
+        </span>
 
-      <div className="relative z-10 w-full">
         <h3 className={cn(publicTypography.homeHeroTitle, "w-full", variantClasses.title)}>
           <StyledTitle
             title={issue.title}

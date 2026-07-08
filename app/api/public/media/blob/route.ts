@@ -1,4 +1,5 @@
 import { parseMediaPathname } from "@/lib/media/blob";
+import { parseByteRangeHeader } from "@/lib/server/http/byte-range";
 import { getRequestId, getRequestPath } from "@/lib/server/http/request";
 import { publicMediaService } from "@/lib/server/modules/media/service/public";
 import { logServerEvent } from "@/lib/server/observability/log";
@@ -10,6 +11,16 @@ function buildContentDisposition(pathname: string) {
   const encodedFileName = encodeURIComponent(fileName);
 
   return `inline; filename*=UTF-8''${encodedFileName}`;
+}
+
+function buildUnsatisfiableRangeResponse(size: number) {
+  return new Response("Range not satisfiable", {
+    status: 416,
+    headers: {
+      "content-range": `bytes */${size}`,
+      "accept-ranges": "bytes",
+    },
+  });
 }
 
 export async function GET(request: Request) {
@@ -27,20 +38,39 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await mediaStorage.get(pathname);
+    const metadata = await mediaStorage.head(pathname);
 
     if (
-      !result.contentType ||
-      (!result.contentType.startsWith("image/") && !result.contentType.startsWith("audio/"))
+      !metadata.contentType ||
+      (!metadata.contentType.startsWith("image/") && !metadata.contentType.startsWith("audio/"))
     ) {
       return new Response("Not found", { status: 404 });
     }
 
+    const range = metadata.contentType.startsWith("audio/")
+      ? parseByteRangeHeader(request.headers.get("range"), metadata.size)
+      : null;
+
+    if (range === "invalid") {
+      return buildUnsatisfiableRangeResponse(metadata.size);
+    }
+
+    const result = await mediaStorage.get(
+      pathname,
+      range ? { range: `bytes=${range.start}-${range.end}` } : undefined,
+    );
+    const isPartial = Boolean(range);
+
     return new Response(result.stream, {
-      status: 200,
+      status: isPartial ? 206 : 200,
       headers: {
-        "content-type": result.contentType,
+        "content-type": metadata.contentType,
         "content-disposition": buildContentDisposition(result.pathname),
+        "content-length": String(isPartial && range ? range.size : metadata.size),
+        "accept-ranges": metadata.contentType.startsWith("audio/") ? "bytes" : "none",
+        ...(isPartial && range
+          ? { "content-range": `bytes ${range.start}-${range.end}/${metadata.size}` }
+          : {}),
         "cache-control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
       },
     });

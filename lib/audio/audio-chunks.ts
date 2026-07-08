@@ -10,10 +10,16 @@ export type VisibleAudioChunk = AudioChunk & {
   position: "previous" | "active" | "next";
 };
 
-export function parseAudioChunks(value: unknown): AudioChunk[] {
-  if (!Array.isArray(value)) return [];
+function resolveAudioChunkItems(value: unknown) {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== "object") return [];
 
-  return value
+  const payload = value as { chunks?: unknown };
+  return Array.isArray(payload.chunks) ? payload.chunks : [];
+}
+
+export function parseAudioChunks(value: unknown): AudioChunk[] {
+  return resolveAudioChunkItems(value)
     .map((item): AudioChunk | null => {
       if (!item || typeof item !== "object") return null;
 
@@ -58,14 +64,11 @@ export function getVisibleAudioChunks(
 ): VisibleAudioChunk[] {
   if (chunks.length === 0) return [];
 
-  const activeIndex = Math.max(
-    0,
-    activeChunkId ? chunks.findIndex((chunk) => chunk.id === activeChunkId) : 0,
-  );
+  const activeIndex = activeChunkId ? chunks.findIndex((chunk) => chunk.id === activeChunkId) : 0;
   const boundedActiveIndex = activeIndex < 0 ? 0 : activeIndex;
-  const startIndex = Math.min(Math.max(0, boundedActiveIndex - 1), Math.max(0, chunks.length - 3));
+  const startIndex = Math.max(0, boundedActiveIndex - 1);
 
-  return chunks.slice(startIndex, startIndex + 3).map((chunk, index) => {
+  return chunks.slice(startIndex).map((chunk, index) => {
     const absoluteIndex = startIndex + index;
 
     return {

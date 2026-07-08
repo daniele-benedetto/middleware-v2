@@ -313,6 +313,29 @@ describe("mediaStorage", () => {
       });
     });
 
+    it("passes byte ranges to S3 get object", async () => {
+      const stream = new Response("audio-bytes").body;
+
+      s3ClientMock.send.mockResolvedValue({
+        Body: stream,
+        ContentType: "audio/mpeg",
+        ContentLength: 10,
+        ContentRange: "bytes 10-19/100",
+      });
+
+      const object = await mediaStorage.get("audio/story.mp3", { range: "bytes=10-19" });
+      const command = s3ClientMock.send.mock.calls[0]?.[0];
+
+      expect(command).toBeInstanceOf(GetObjectCommand);
+      expect(commandInput(command)).toMatchObject({
+        Bucket: "middleware-media",
+        Key: "audio/story.mp3",
+        Range: "bytes=10-19",
+      });
+      expect(object.contentRange).toBe("bytes 10-19/100");
+      expect(object.responseSize).toBe(10);
+    });
+
     it("converts a Node stream body to a web stream", async () => {
       s3ClientMock.send.mockResolvedValue({
         Body: Readable.from([new TextEncoder().encode("audio-bytes")]),

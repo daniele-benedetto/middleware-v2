@@ -34,7 +34,6 @@ export const publicIt = {
     closeAriaLabel: "Chiudi menu",
     quote_1: "La conoscenza è legata alla lotta.",
     quote_2: "Conosce veramente chi veramente odia.",
-    quoteSource: "In memoria di Mario Tronti.",
   },
   home: {
     hero: {

@@ -17,9 +17,11 @@ type PublicPageHeroProps = {
   as?: "header" | "section";
   containerClassName?: string;
   titlePrimaryClassName?: string;
+  titleTypographyClassName?: string;
   surfaceClassName?: string;
   titleClassName?: string;
   descriptionClassName?: string;
+  backgroundCodeClassName?: string;
 };
 
 export function PublicPageHero({
@@ -32,9 +34,11 @@ export function PublicPageHero({
   as = "section",
   containerClassName = "py-7 sm:py-9 lg:py-14",
   titlePrimaryClassName,
+  titleTypographyClassName = publicTypography.homeHeroTitle,
   surfaceClassName = "bg-background",
   titleClassName = "text-foreground",
   descriptionClassName = "text-body-text",
+  backgroundCodeClassName,
 }: PublicPageHeroProps) {
   const hasBrandBackground = backgroundCode === "MW";
 
@@ -47,6 +51,7 @@ export function PublicPageHero({
             hasBrandBackground
               ? "size-[clamp(108px,26vw,390px)]"
               : `${publicTypography.issueBackgroundNumber} text-accent/15 [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]`,
+            backgroundCodeClassName,
           )}
           data-page-reveal="code"
           style={{ "--page-reveal-delay": "60ms" } as CSSProperties}
@@ -78,7 +83,7 @@ export function PublicPageHero({
         ) : null}
         <h1
           className={cn(
-            publicTypography.homeHeroTitle,
+            titleTypographyClassName,
             "w-full pb-[0.18em] leading-[0.94]",
             titleClassName,
           )}

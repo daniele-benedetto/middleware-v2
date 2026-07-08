@@ -1,9 +1,12 @@
+import { publicHeaderBarClassName } from "@/components/public/header/constants";
+import { PublicBrand } from "@/components/public/header/public-brand";
+import { PublicMenuButton } from "@/components/public/header/public-menu-button";
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-import type { CSSProperties, MouseEvent } from "react";
+import type { CSSProperties, MouseEvent, RefObject } from "react";
 
 export type PublicMenuItem = {
   id: string;
@@ -16,6 +19,8 @@ type PublicFullscreenMenuProps = {
   id: string;
   state: "opening" | "open" | "closing-content" | "closing-shell";
   items: PublicMenuItem[];
+  closeButtonRef: RefObject<HTMLButtonElement | null>;
+  onClose: () => void;
   onNavigate: (href: string) => void;
 };
 
@@ -28,9 +33,17 @@ function getQuoteDelay(itemCount: number) {
   return 110 + lastItemIndex * 165 + 260;
 }
 
-export function PublicFullscreenMenu({ id, state, items, onNavigate }: PublicFullscreenMenuProps) {
+export function PublicFullscreenMenu({
+  id,
+  state,
+  items,
+  closeButtonRef,
+  onClose,
+  onNavigate,
+}: PublicFullscreenMenuProps) {
   const text = i18n.public.menu;
   const titleId = `${id}-title`;
+  const menuClosing = state === "closing-content" || state === "closing-shell";
 
   return (
     <div
@@ -38,6 +51,7 @@ export function PublicFullscreenMenu({ id, state, items, onNavigate }: PublicFul
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
+      data-lenis-prevent
       data-menu-state={state}
       style={{ "--menu-quote-delay": `${getQuoteDelay(items.length)}ms` } as CSSProperties}
       className="public-menu-overlay fixed inset-0 z-100 flex flex-col overflow-y-auto bg-foreground text-background"
@@ -46,8 +60,31 @@ export function PublicFullscreenMenu({ id, state, items, onNavigate }: PublicFul
         {text.dialogAriaLabel}
       </h2>
 
+      <div className="public-menu-header relative z-20 border-b-2 border-dark-border text-background">
+        <div className={publicHeaderBarClassName}>
+          <PublicBrand
+            tone="dark"
+            onClick={(event) => {
+              event.preventDefault();
+              onNavigate("/");
+            }}
+          />
+          <PublicMenuButton
+            ref={closeButtonRef}
+            label={text.close}
+            ariaLabel={text.closeAriaLabel}
+            icon="close"
+            tone="dark"
+            expanded
+            controls={id}
+            disabled={menuClosing}
+            onClick={onClose}
+          />
+        </div>
+      </div>
+
       <nav
-        className={`${publicContentClassName} relative z-10 flex flex-1 flex-col justify-center py-24 sm:py-28`}
+        className={`${publicContentClassName} relative z-10 flex flex-1 flex-col justify-center py-18 sm:py-22`}
       >
         <div className="public-menu-link-list">
           {items.map((item, index) => (
@@ -93,9 +130,6 @@ export function PublicFullscreenMenu({ id, state, items, onNavigate }: PublicFul
             <br />
             {text.quote_2}
           </blockquote>
-          <p className="mt-4 font-heading text-[11px] font-bold tracking-[0.14em] text-dark-muted uppercase">
-            {text.quoteSource}
-          </p>
         </div>
       </nav>
     </div>

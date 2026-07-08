@@ -202,8 +202,10 @@ function renderBlockNode(node: RichTextNode, key: string, context: RenderContext
   if (node.type === "heading") {
     const level = getHeadingLevel(node);
     const className = cn(
-      "font-heading font-black tracking-[-0.035em] text-foreground",
-      level === 2 ? "text-[clamp(30px,4vw,54px)] leading-[0.95]" : "text-2xl leading-tight",
+      "scroll-mt-24 font-heading font-black text-foreground [text-wrap:balance]",
+      level === 2
+        ? "text-[clamp(25px,2.4vw,34px)] leading-[1.08] tracking-[-0.025em]"
+        : "text-[clamp(20px,1.7vw,25px)] leading-[1.18] tracking-[-0.015em]",
     );
 
     return level === 3 ? (
@@ -345,7 +347,7 @@ export function PublicRichText({ value, className }: PublicRichTextProps) {
     <div
       className={cn(
         publicTypography.editorialBody,
-        "min-w-0 space-y-7 break-words [overflow-wrap:anywhere] [&_a]:break-words [&_a]:underline [&_blockquote_p]:text-[clamp(18px,1.5vw,22px)] [&_blockquote_p]:leading-[1.45] [&_code]:break-words [&_code]:bg-surface [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-ui [&_code]:[overflow-wrap:anywhere] [&_li]:my-2 [&_strong]:font-bold",
+        "min-w-0 space-y-6 break-words [overflow-wrap:anywhere] [&_a]:break-words [&_a]:underline [&_blockquote]:my-9 [&_blockquote_p]:text-[clamp(18px,1.5vw,22px)] [&_blockquote_p]:leading-[1.45] [&_code]:break-words [&_code]:bg-surface [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-ui [&_code]:[overflow-wrap:anywhere] [&_figure]:my-10 [&_h2]:mt-12 [&_h2+*]:mt-4 [&_h3]:mt-9 [&_h3+*]:mt-3 [&_li]:my-2 [&_ol]:my-6 [&_strong]:font-bold [&_ul]:my-6",
         className,
       )}
     >

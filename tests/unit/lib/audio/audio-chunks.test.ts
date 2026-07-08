@@ -31,7 +31,16 @@ describe("audio chunks", () => {
     expect(getActiveAudioChunk(chunks, 10)).toBeNull();
   });
 
-  it("returns a three chunk window around the active chunk", () => {
+  it("normalizes versioned chunk payloads", () => {
+    const chunks = parseAudioChunks({
+      version: 1,
+      chunks: [{ id: "intro", text: "Intro", start: 0, end: 4 }],
+    });
+
+    expect(chunks).toEqual([{ id: "intro", text: "Intro", start: 0, end: 4, confidence: null }]);
+  });
+
+  it("keeps only the previous chunk before the active chunk", () => {
     const chunks = parseAudioChunks([
       { id: "a", text: "A", start: 0, end: 5 },
       { id: "b", text: "B", start: 5, end: 10 },
@@ -46,7 +55,7 @@ describe("audio chunks", () => {
     ]);
   });
 
-  it("does not add previous context before the first active chunk", () => {
+  it("marks every chunk as next after the first active chunk", () => {
     const chunks = parseAudioChunks([
       { id: "a", text: "A", start: 0, end: 5 },
       { id: "b", text: "B", start: 5, end: 10 },
