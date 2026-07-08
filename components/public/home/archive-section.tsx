@@ -131,9 +131,11 @@ export function ArchiveSection({
                 href={`/uscite/${issue.slug}`}
                 className={cn(
                   publicInteraction.cardBase,
-                  "relative isolate flex min-h-96 flex-col overflow-hidden px-5 py-6 sm:px-6 sm:py-7 lg:min-h-112 lg:px-7 lg:py-8",
+                  "relative isolate flex min-h-0 flex-col overflow-hidden px-0 py-6 max-md:border-b max-md:last:border-b-0 md:min-h-96 md:px-6 md:py-7 lg:min-h-112 lg:px-7 lg:py-8",
                   variantClasses.surface,
+                  variantClasses.border,
                   variantClasses.cardBorder,
+                  "max-md:border-x-0 max-md:border-t-0",
                   getArchiveCardClassName(index, issues.length),
                 )}
               >
@@ -160,7 +162,7 @@ export function ArchiveSection({
                   />
                 </h3>
 
-                <div className={cn("mt-6 w-full border-t-2 pt-5", variantClasses.border)}>
+                <div className={cn("mt-6 w-full md:border-t-2 md:pt-5", variantClasses.border)}>
                   {issueDescription ? (
                     <p
                       className={cn(

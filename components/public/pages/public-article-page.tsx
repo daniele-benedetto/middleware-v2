@@ -36,14 +36,14 @@ function formatArticleNumber(value: number | null) {
 
 function getRelatedArticlesGridClassName(count: number) {
   if (count === 1) {
-    return "grid border-l border-t border-foreground";
+    return "grid md:border-l md:border-t md:border-foreground";
   }
 
   if (count === 2) {
-    return "grid border-l border-t border-foreground md:grid-cols-2";
+    return "grid md:grid-cols-2 md:border-l md:border-t md:border-foreground";
   }
 
-  return "grid border-l border-t border-foreground md:grid-cols-2 xl:grid-cols-3";
+  return "grid md:grid-cols-2 md:border-l md:border-t md:border-foreground xl:grid-cols-3";
 }
 
 function getRelatedArticleCardClassName(index: number, count: number) {

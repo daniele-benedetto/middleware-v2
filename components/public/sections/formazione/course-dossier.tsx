@@ -146,7 +146,7 @@ function LessonGrid({ course }: CourseDossierProps) {
     <section className="scroll-mt-20 py-10 lg:py-12">
       <div className={publicContentClassName}>
         <h2 className="sr-only">Lezioni del corso</h2>
-        <div className="grid border-l border-t border-foreground md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid md:grid-cols-2 md:border-l md:border-t md:border-foreground xl:grid-cols-3">
           {lessons.map((lesson, index) => (
             <DossierLessonCard
               key={lesson.id}

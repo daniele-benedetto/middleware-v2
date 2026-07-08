@@ -46,6 +46,7 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
           className={cn(
             hasThreeSecondaryArticles && index === 2 ? "lg:col-span-2" : undefined,
             hasThreeSecondaryArticles ? undefined : "h-auto flex-[1_1_auto]",
+            featuredOnRight && index === secondary.length - 1 ? "max-md:border-b!" : undefined,
           )}
         />
       ))}
@@ -65,7 +66,7 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
         {block.title ? null : <h2 className="sr-only">{i18n.public.home.dossier.articlesLabel}</h2>}
         <BlockSectionIntro block={block} />
         <div
-          className={`grid items-stretch border-l border-t border-foreground ${gridColumnsClass}`}
+          className={`grid items-stretch md:border-l md:border-t md:border-foreground ${gridColumnsClass}`}
         >
           {featuredOnRight ? secondaryCards : featuredCard}
           {featuredOnRight ? featuredCard : secondaryCards}

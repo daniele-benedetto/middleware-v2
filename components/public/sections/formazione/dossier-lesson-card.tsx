@@ -32,7 +32,7 @@ export function DossierLessonCard({
   const isClusterFeatured = variant === "clusterFeatured";
   const image =
     showImage && lesson.imageUrl ? (
-      <div className="mt-5 overflow-hidden border border-foreground grayscale">
+      <div className="mt-5 overflow-hidden grayscale md:border md:border-foreground">
         <Image
           src={lesson.imageUrl}
           alt={editorialImageAlt(lesson.imageAlt)}
@@ -51,7 +51,7 @@ export function DossierLessonCard({
       className={cn(
         publicInteraction.cardSurface,
         "flex h-full overflow-hidden border-foreground bg-background",
-        "flex-col border-r border-b px-5 py-5 sm:px-6 sm:py-6 md:px-7 md:py-7",
+        "flex-col border-b px-0 py-5 last:border-b-0 md:border-r md:border-b md:px-7 md:py-7 md:last:border-b",
         className,
       )}
     >

@@ -127,7 +127,7 @@ function OtherLessonCard({
       href={`/formazione/${courseSlug}/${lesson.slug}`}
       className={cn(
         publicInteraction.cardSurface,
-        "flex h-full flex-col border-r border-b border-foreground bg-background px-5 py-6 sm:px-6 md:px-7",
+        "flex h-full flex-col border-b border-foreground bg-background px-0 py-6 last:border-b-0 md:border-r md:border-b md:px-7 md:last:border-b",
       )}
     >
       <span className="font-heading text-[11px] font-bold tracking-[0.08em] text-accent uppercase">
@@ -164,7 +164,7 @@ function OtherLessonsSection({
           action={{ label: text.viewCourse, href: `/formazione/${courseSlug}` }}
         />
 
-        <div className="grid border-l border-t border-foreground md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid md:grid-cols-2 md:border-l md:border-t md:border-foreground xl:grid-cols-3">
           {otherLessons.map((lesson) => (
             <OtherLessonCard key={lesson.id} courseSlug={courseSlug} lesson={lesson} />
           ))}

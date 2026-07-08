@@ -23,9 +23,11 @@ export function CourseArchiveCard({ course, className }: CourseArchiveCardProps)
       href={`/formazione/${course.slug}`}
       className={cn(
         publicInteraction.cardBase,
-        "relative isolate block overflow-hidden px-5 py-7 sm:px-6 sm:py-9 md:px-8 md:py-10 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:px-12 lg:py-14 xl:px-16",
+        "relative isolate block overflow-hidden px-0 py-7 max-lg:border-b max-lg:last:border-b-0 md:px-8 md:py-10 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:px-12 lg:py-14 xl:px-16",
         variantClasses.surface,
+        variantClasses.border,
         variantClasses.cardBorder,
+        "max-lg:border-x-0 max-lg:border-t-0",
         className,
       )}
     >
@@ -49,7 +51,7 @@ export function CourseArchiveCard({ course, className }: CourseArchiveCardProps)
           />
         </h3>
 
-        <div className={cn("mt-8 w-full border-t-2 pt-5", variantClasses.border)}>
+        <div className={cn("mt-8 w-full lg:border-t-2 lg:pt-5", variantClasses.border)}>
           {course.descriptionPlain ? (
             <p
               className={cn(
