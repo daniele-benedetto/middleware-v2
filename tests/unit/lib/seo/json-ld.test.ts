@@ -67,6 +67,7 @@ const article = {
   authorName: "Autrice",
   excerptRich: null,
   contentRich: { type: "doc", content: [] },
+  readingTimeMinutes: 5,
   audioUrl: null,
   audioChunks: null,
   updatedAt: "2026-01-02T00:00:00.000Z",

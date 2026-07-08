@@ -57,6 +57,9 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     localPatterns: [
       {
+        pathname: "/brand/**",
+      },
+      {
         pathname: "/api/public/media/blob",
       },
     ],

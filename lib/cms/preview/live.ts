@@ -189,6 +189,7 @@ export function toArticleLivePreviewSnapshot(
       authorName: input.authorName,
       excerptRich: input.excerptRich,
       contentRich: input.contentRich,
+      readingTimeMinutes: calculateReadingTimeMinutes(input.contentRich),
       audioUrl: input.audioUrl,
       audioChunks: input.audioChunks ?? null,
       updatedAt: now,

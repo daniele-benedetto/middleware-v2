@@ -53,7 +53,7 @@ export const publicIt = {
     },
     articleCard: {
       readingTimeLabel: (minutes: number) => `${minutes} min`,
-      audioLabel: "Audio",
+      audioLabel: "Versione audio",
     },
     closing: {
       fallback: "Ultimo movimento del dossier.",

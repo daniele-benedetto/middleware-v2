@@ -60,13 +60,7 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
   };
 
   const brandBlock = (
-    <CmsBrand
-      size="sm"
-      priority
-      wordmarkAs="h3"
-      to="/cms/issues"
-      onClick={() => setIsMenuOpen(false)}
-    />
+    <CmsBrand size="sm" priority to="/cms/issues" onClick={() => setIsMenuOpen(false)} />
   );
 
   const navigationLinks = (onNavigate?: () => void) => (

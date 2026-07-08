@@ -56,10 +56,12 @@ function getRelatedArticleCardClassName(index: number, count: number) {
 
 function ArticleMetaRail({ article }: ArticleOnlyProps) {
   const text = i18n.public.articlePage;
+  const cardText = i18n.public.home.articleCard;
   const metaItems = [
     { key: "issue", label: article.issueTitle, href: `/uscite/${article.issueSlug}` },
     { key: "category", label: article.categoryName },
     article.authorName ? { key: "author", label: article.authorName } : null,
+    { key: "reading-time", label: cardText.readingTimeLabel(article.readingTimeMinutes) },
     {
       key: "date",
       label: formatIssueMonthYearLong(article.publishedAt),

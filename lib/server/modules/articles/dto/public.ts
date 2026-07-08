@@ -28,6 +28,7 @@ export const publicArticleDetailDtoSchema = z.object({
   ...publicArticleBaseShape,
   excerptRich: z.unknown().nullable(),
   contentRich: z.unknown(),
+  readingTimeMinutes: z.number().int().min(1),
   audioUrl: z.string().nullable(),
   audioChunks: z.unknown().nullable(),
   updatedAt: z.string(),

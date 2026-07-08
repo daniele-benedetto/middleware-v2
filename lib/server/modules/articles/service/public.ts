@@ -1,6 +1,7 @@
 import "server-only";
 
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
+import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicArticlesRepository } from "@/lib/server/modules/articles/repository/public";
 
@@ -33,6 +34,14 @@ type PublicArticleDetailRecord = PublicArticleSummaryRecord & {
   excerptRich: unknown;
   contentRich: unknown;
   audioChunks: unknown;
+};
+
+const WORDS_PER_MINUTE = 220;
+
+const calculateReadingTimeMinutes = (contentRich: unknown) => {
+  const text = extractPlainText(contentRich);
+  const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+  return Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
 };
 
 const toPublicArticleSummaryDto = (
@@ -72,6 +81,7 @@ const toPublicArticleDetailDto = (article: PublicArticleDetailRecord): PublicArt
     ...toPublicArticleSummaryDto(article),
     excerptRich: article.excerptRich ?? null,
     contentRich: article.contentRich,
+    readingTimeMinutes: calculateReadingTimeMinutes(article.contentRich),
     audioUrl: resolvePublicMediaUrl(article.audioUrl),
     audioChunks: article.audioChunks ?? null,
     updatedAt: article.updatedAt.toISOString(),

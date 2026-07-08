@@ -109,6 +109,14 @@ function createRichTextDocFromPlainText(value: string): unknown {
   };
 }
 
+const WORDS_PER_MINUTE = 220;
+
+function calculateReadingTimeMinutes(contentRich: unknown) {
+  const text = extractPlainTextFromRichText(contentRich);
+  const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+  return Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
+}
+
 function toCreateExcerptPersist(
   input: CreateArticleInput,
 ): Pick<CreateArticlePersistInput, "excerpt" | "excerptRich"> {
@@ -198,6 +206,7 @@ const toPublicArticlePreviewDto = (article: ArticleDetailRecord): PublicArticleD
     authorName: article.author?.name ?? null,
     excerptRich: article.excerptRich ?? null,
     contentRich: article.contentRich,
+    readingTimeMinutes: calculateReadingTimeMinutes(article.contentRich),
     audioUrl: resolvePublicMediaUrl(article.audioUrl),
     audioChunks: article.audioChunks ?? null,
     updatedAt: article.updatedAt.toISOString(),

@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { StyledTitle } from "@/components/public/styled-title";
 import { cn } from "@/lib/utils";
@@ -34,16 +36,33 @@ export function PublicPageHero({
   titleClassName = "text-foreground",
   descriptionClassName = "text-body-text",
 }: PublicPageHeroProps) {
+  const hasBrandBackground = backgroundCode === "MW";
+
   const content = (
     <div className={`${publicContentClassName} relative ${containerClassName}`}>
       {backgroundCode ? (
         <div
-          className={`${publicTypography.issueBackgroundNumber} pointer-events-none absolute top-5 right-5 z-0 text-accent/15 select-none [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]`}
+          className={cn(
+            "pointer-events-none absolute top-5 right-5 z-0 select-none",
+            hasBrandBackground
+              ? "size-[clamp(108px,26vw,390px)]"
+              : `${publicTypography.issueBackgroundNumber} text-accent/15 [-webkit-text-stroke:0.45px_rgba(0,0,0,0.25)]`,
+          )}
           data-page-reveal="code"
           style={{ "--page-reveal-delay": "60ms" } as CSSProperties}
           aria-hidden
         >
-          {backgroundCode}
+          {hasBrandBackground ? (
+            <Image
+              src="/brand/middleware-pictogram-red.png"
+              alt=""
+              width={390}
+              height={390}
+              className="size-full object-contain opacity-15"
+            />
+          ) : (
+            backgroundCode
+          )}
         </div>
       ) : null}
 

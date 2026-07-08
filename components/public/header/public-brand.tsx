@@ -1,9 +1,7 @@
 import Image from "next/image";
 
-import { publicTypography } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { i18n } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
 
 import type { MouseEventHandler } from "react";
 
@@ -12,6 +10,11 @@ type PublicBrandProps = {
   onClick?: MouseEventHandler<HTMLAnchorElement>;
   tone?: "light" | "dark";
   priority?: boolean;
+};
+
+const logoByTone: Record<NonNullable<PublicBrandProps["tone"]>, string> = {
+  light: "/brand/middleware-logo-extended-black.png",
+  dark: "/brand/middleware-logo-extended-white.png",
 };
 
 export function PublicBrand({ href = "/", onClick, tone = "light", priority }: PublicBrandProps) {
@@ -25,22 +28,13 @@ export function PublicBrand({ href = "/", onClick, tone = "light", priority }: P
       aria-label={text.homeAriaLabel}
     >
       <Image
-        src="/brand/middleware-logo.svg"
+        src={logoByTone[tone]}
         alt={text.logoAlt}
-        width={31}
-        height={31}
+        width={221}
+        height={33}
         priority={priority}
-        unoptimized
-        className="size-7.75 shrink-0 object-contain"
+        className="h-7.75 w-auto shrink-0 object-contain md:h-8.5"
       />
-      <span
-        className={cn(
-          publicTypography.brand,
-          tone === "dark" ? "text-background" : "text-foreground",
-        )}
-      >
-        {text.wordmark}
-      </span>
     </Link>
   );
 }

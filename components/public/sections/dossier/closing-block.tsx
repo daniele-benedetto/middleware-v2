@@ -38,6 +38,13 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
   const editorialPanelBorder = variant === "default" ? "border border-foreground" : "";
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `closing-article-title-${article.id}`;
+  const showBorder = variant === "default";
+  const hasImage = Boolean(article.imageUrl);
+  const imageOnRight = block.featuredPlacement === "right";
+  const featureImageBorderClass = imageOnRight
+    ? "border-t md:border-t-0 md:border-l"
+    : "border-b md:border-r md:border-b-0";
+  const featureCardBorderClass = showBorder ? "border-l border-foreground" : "";
   const image = article.imageUrl ? (
     <div className="relative min-h-48 overflow-hidden border border-foreground grayscale sm:min-h-52 md:min-h-64 lg:min-h-[min(34vh,360px)]">
       <Image
@@ -90,15 +97,66 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
   );
 
   if (!blockHasCopy) {
+    const featureImage = article.imageUrl ? (
+      <div
+        className={`relative min-h-70 overflow-hidden sm:min-h-76 md:min-h-full ${showBorder ? `${featureImageBorderClass} ${variantClasses.image}` : "grayscale"}`}
+      >
+        <Image
+          src={article.imageUrl}
+          alt={editorialImageAlt(article.imageAlt)}
+          fill
+          sizes="(min-width: 768px) 42vw, 100vw"
+          className={cn("object-cover", publicInteraction.imageZoom)}
+        />
+      </div>
+    ) : null;
+
     return (
-      <section className="py-10 md:py-12">
+      <section className="scroll-mt-20 py-10 md:py-12">
         <div className={publicContentClassName}>
-          <div aria-hidden="true" className="mb-8 border-t border-foreground md:mb-10" />
-          <div className="md:ml-auto md:max-w-[min(780px,72vw)]">{articleCard}</div>
-          <div
-            aria-hidden="true"
-            className="mt-8 ml-auto w-1/3 border-t border-foreground md:mt-10"
-          />
+          <Link
+            href={articleHref}
+            aria-labelledby={titleId}
+            className={cn(
+              publicInteraction.cardBase,
+              hasImage ? "grid md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]" : "block",
+              variantClasses.section,
+              featureCardBorderClass,
+            )}
+          >
+            {imageOnRight ? null : featureImage}
+            <article className="px-5 py-5 sm:px-6 sm:py-6 md:p-8 lg:p-9">
+              <div className="mb-6 flex items-start justify-between gap-4">
+                <span className={cn(publicTypography.articleNumberLg, variantClasses.titlePrimary)}>
+                  {formatArticleNumber(getArticleNumber(articleNumbers, article))}
+                </span>
+              </div>
+              <h2
+                id={titleId}
+                className={cn(
+                  publicTypography.featureArticleTitle,
+                  hasImage ? "max-w-[14ch] text-balance" : "text-balance",
+                )}
+              >
+                <StyledTitle
+                  title={article.title}
+                  titleStyled={article.titleStyled}
+                  primaryClassName={variantClasses.titlePrimary}
+                />
+              </h2>
+              {article.excerpt ? (
+                <p
+                  className={`mt-6 font-editorial text-[19px] leading-[1.38] md:text-[22px] ${hasImage ? "max-w-[54ch]" : ""} ${variantClasses.excerpt}`}
+                >
+                  {article.excerpt}
+                </p>
+              ) : null}
+              <div className="mt-7">
+                <ArticleMeta article={article} tone={variantClasses.metaTone} />
+              </div>
+            </article>
+            {imageOnRight ? featureImage : null}
+          </Link>
         </div>
       </section>
     );

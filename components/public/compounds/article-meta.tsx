@@ -14,6 +14,7 @@ export function ArticleMeta({ article, tone = "light" }: ArticleMetaProps) {
     tone === "dark" ? "text-dark-muted" : tone === "accent" ? "text-cream-muted" : "text-muted";
   const separator = tone === "accent" ? "bg-foreground" : "bg-accent";
   const items = [
+    article.categoryName,
     article.authorName,
     text.readingTimeLabel(article.readingTimeMinutes),
     article.hasAudio ? text.audioLabel : null,
