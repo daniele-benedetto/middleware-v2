@@ -3,7 +3,7 @@ type ListenEmptyStateProps = {
 };
 
 export function ListenEmptyState({ contentKind = "article" }: ListenEmptyStateProps) {
-  const label = contentKind === "lesson" ? "questa lezione" : "questo articolo";
+  const label = contentKind === "lesson" ? "questo incontro" : "questo articolo";
 
   return (
     <div

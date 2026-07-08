@@ -1,6 +1,6 @@
 const articleCountLabel = (count: number) => `${count} ${count === 1 ? "articolo" : "articoli"}`;
 const audioCountLabel = (count: number) => `${count} in versione audio`;
-const lessonCountLabel = (count: number) => `${count} ${count === 1 ? "lezione" : "lezioni"}`;
+const lessonCountLabel = (count: number) => `${count} ${count === 1 ? "incontro" : "incontri"}`;
 const paddedNumber = (value: number) => String(value).padStart(2, "0");
 
 export const publicIt = {
@@ -129,56 +129,57 @@ export const publicIt = {
   },
   formazione: {
     metadata: {
-      title: "Formazione",
+      title: "Contro-formazione",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     },
     hero: {
-      title: "[[Formazione]]",
+      title: "[[Contro-formazione]]",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
       totalLabel: (count: number) =>
-        `${count} ${count === 1 ? "corso pubblicato" : "corsi pubblicati"}`,
+        `${count} ${count === 1 ? "momento di contro-formazione collettiva pubblicato" : "momenti di contro-formazione collettiva pubblicati"}`,
     },
     lessonsCountLabel: lessonCountLabel,
-    railAriaLabel: "Elenco dei corsi pubblicati",
+    railAriaLabel: "Elenco dei momenti di contro-formazione collettiva pubblicati",
     empty: {
       code: "00",
-      kicker: "Formazione",
-      title: "Nessun corso pubblicato",
-      description: "Quando un corso sarà pubblicato, comparirà qui con le sue lezioni.",
+      kicker: "Contro-formazione",
+      title: "Nessun momento di contro-formazione pubblicato",
+      description:
+        "Quando un momento di contro-formazione collettiva sarà pubblicato, comparirà qui con i suoi incontri.",
     },
   },
   coursePage: {
-    lessonsHeading: "Lezioni del corso",
+    lessonsHeading: "Incontri",
     lessonsCountLabel: lessonCountLabel,
     readingTimeLabel: (minutes: number) => `${minutes} min`,
     audioLabel: "Audio",
     archive: {
-      title: "Altri corsi",
-      description: "Continua la formazione con gli altri percorsi pubblicati.",
-      archiveLabel: "Tutti i corsi",
+      title: "Altre contro-formazioni",
+      description: "Continua con gli altri momenti di contro-formazione collettiva pubblicati.",
+      archiveLabel: "Tutte le contro-formazioni",
     },
     empty: {
       code: "404",
-      kicker: "Corso",
-      title: "Corso non trovato",
-      description: "Il corso richiesto non è disponibile.",
+      kicker: "Contro-formazione",
+      title: "Contro-formazione non trovata",
+      description: "Il momento di contro-formazione richiesto non è disponibile.",
     },
   },
   lessonPage: {
-    audioCta: "Ascolta la lezione",
-    backToCourse: "Torna al corso",
-    otherLessonsTitle: "Altre lezioni del corso",
-    viewCourse: "Visualizza il corso  →",
-    previousLabel: "Lezione precedente",
-    nextLabel: "Lezione successiva",
-    lessonLabel: (value: number) => `Lezione ${paddedNumber(value)}`,
+    audioCta: "Ascolta l'incontro",
+    backToCourse: "Torna alla contro-formazione",
+    otherLessonsTitle: "Altri incontri",
+    viewCourse: "Visualizza la contro-formazione  →",
+    previousLabel: "Incontro precedente",
+    nextLabel: "Incontro successivo",
+    lessonLabel: (value: number) => `Incontro ${paddedNumber(value)}`,
     readingTimeLabel: (minutes: number) => `${minutes} min`,
     audioLabel: "Audio",
     listen: {
-      backToLesson: "Torna alla lezione",
-      metadataTitle: (title: string) => `Ascolta la lezione: ${title}`,
+      backToLesson: "Torna all'incontro",
+      metadataTitle: (title: string) => `Ascolta l'incontro: ${title}`,
       notFoundTitle: "Audiolettura non trovata",
     },
   },
@@ -186,8 +187,8 @@ export const publicIt = {
     staticPageNotFound: "Pagina non trovata",
     issueNotFound: "Uscita non trovata",
     articleNotFound: "Articolo non trovato",
-    courseNotFound: "Corso non trovato",
-    lessonNotFound: "Lezione non trovata",
+    courseNotFound: "Contro-formazione non trovata",
+    lessonNotFound: "Incontro non trovato",
   },
   issueFormat: {
     monthsShort: [

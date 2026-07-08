@@ -116,7 +116,7 @@ async function resolvePublicItems(items: NavigationItem[]): Promise<PublicNaviga
   for (const item of items) {
     if (item.type === "home") resolved.push(toPublicItem(item, "/"));
     if (item.type === "archive") resolved.push(toPublicItem(item, "/uscite"));
-    if (item.type === "formazione") resolved.push(toPublicItem(item, "/formazione"));
+    if (item.type === "formazione") resolved.push(toPublicItem(item, "/contro-formazione"));
     if (item.type === "custom") resolved.push(toPublicItem(item, item.href));
     if (item.type === "page") {
       const page = pagesById.get(item.resourceId);
@@ -132,7 +132,7 @@ async function resolvePublicItems(items: NavigationItem[]): Promise<PublicNaviga
     }
     if (item.type === "course") {
       const course = coursesById.get(item.resourceId);
-      if (course) resolved.push(toPublicItem(item, `/formazione/${course.slug}`));
+      if (course) resolved.push(toPublicItem(item, `/contro-formazione/${course.slug}`));
     }
   }
 
@@ -200,7 +200,7 @@ export const navigationService = {
       const courses = await navigationRepository.listPublishedCourses(input.q);
       return courses.map((course) => ({
         ...toOptionDto(course),
-        href: `/formazione/${course.slug}`,
+        href: `/contro-formazione/${course.slug}`,
       }));
     }
 

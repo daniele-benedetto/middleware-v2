@@ -45,11 +45,11 @@ const menuOrder: NavigationMenuKey[] = ["main", "footer_sections", "footer_legal
 const itemTypeOptions = [
   { value: "home", label: "Home" },
   { value: "archive", label: "Archivio uscite" },
-  { value: "formazione", label: "Formazione" },
+  { value: "formazione", label: "Contro-formazione" },
   { value: "page", label: "Pagina statica" },
   { value: "article", label: "Articolo" },
   { value: "issue", label: "Uscita" },
-  { value: "course", label: "Corso" },
+  { value: "course", label: "Contro-formazione" },
   { value: "custom", label: "Link custom" },
 ] as const;
 
@@ -64,11 +64,11 @@ function createItemId() {
 function getDefaultLabel(type: NavigationItem["type"]) {
   if (type === "home") return "Numero corrente";
   if (type === "archive") return "Archivio";
-  if (type === "formazione") return "Formazione";
+  if (type === "formazione") return "Contro-formazione";
   if (type === "page") return "Pagina";
   if (type === "article") return "Articolo";
   if (type === "issue") return "Uscita";
-  if (type === "course") return "Corso";
+  if (type === "course") return "Contro-formazione";
   return "Nuovo link";
 }
 
@@ -120,7 +120,7 @@ type ResourceOptions = {
 function resolveItemHref(item: NavigationItem, options: ResourceOptions) {
   if (item.type === "home") return "/";
   if (item.type === "archive") return "/uscite";
-  if (item.type === "formazione") return "/formazione";
+  if (item.type === "formazione") return "/contro-formazione";
   if (item.type === "custom") return item.href;
 
   const source = options[item.type];

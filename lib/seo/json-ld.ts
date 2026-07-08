@@ -156,12 +156,12 @@ export function buildArchiveCollectionPageJsonLd(issues: PublicIssueListItem[]) 
 }
 
 export function buildFormazioneCollectionPageJsonLd(courses: PublicCourseDetailDto[]) {
-  const archiveUrl = getCanonicalUrl("/formazione");
+  const archiveUrl = getCanonicalUrl("/contro-formazione");
 
   return {
     "@type": "CollectionPage",
-    "@id": `${archiveUrl}#formazione`,
-    name: "Formazione",
+    "@id": `${archiveUrl}#contro-formazione`,
+    name: "Contro-formazione",
     url: archiveUrl,
     isPartOf: { "@id": `${getRootUrl()}#website` },
     mainEntity: {
@@ -171,26 +171,26 @@ export function buildFormazioneCollectionPageJsonLd(courses: PublicCourseDetailD
         "@type": "ListItem",
         position: index + 1,
         name: course.title,
-        url: getCanonicalUrl(`/formazione/${course.slug}`),
+        url: getCanonicalUrl(`/contro-formazione/${course.slug}`),
       })),
     },
   };
 }
 
 export function buildCourseCollectionPageJsonLd(course: PublicCourseDetailDto) {
-  const courseUrl = getCanonicalUrl(`/formazione/${course.slug}`);
+  const courseUrl = getCanonicalUrl(`/contro-formazione/${course.slug}`);
 
   return {
     "@type": "CollectionPage",
-    "@id": `${courseUrl}#course-page`,
+    "@id": `${courseUrl}#contro-formazione-page`,
     name: course.title,
     description: getCoursePlainDescription(course) ?? undefined,
     url: courseUrl,
     isPartOf: { "@id": `${getRootUrl()}#website` },
     datePublished: toIsoDate(course.publishedAt),
     mainEntity: {
-      "@type": "Course",
-      "@id": `${courseUrl}#course`,
+      "@type": "CreativeWorkSeries",
+      "@id": `${courseUrl}#contro-formazione`,
       name: course.title,
       description: getCoursePlainDescription(course) ?? undefined,
       provider: { "@id": `${getRootUrl()}#organization` },
@@ -200,7 +200,7 @@ export function buildCourseCollectionPageJsonLd(course: PublicCourseDetailDto) {
         name: lesson.title,
         description: lesson.excerpt ?? undefined,
         datePublished: toIsoDate(lesson.publishedAt),
-        url: getCanonicalUrl(`/formazione/${course.slug}/${lesson.slug}`),
+        url: getCanonicalUrl(`/contro-formazione/${course.slug}/${lesson.slug}`),
       })),
     },
   };
@@ -253,7 +253,7 @@ export function buildFormazioneArchiveJsonLd(courses: PublicCourseDetailDto[]) {
     buildOrganizationJsonLd(),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
-      { name: "Formazione", path: "/formazione" },
+      { name: "Contro-formazione", path: "/contro-formazione" },
     ]),
     buildFormazioneCollectionPageJsonLd(courses),
   ]);
@@ -265,8 +265,8 @@ export function buildCoursePageJsonLd(course: PublicCourseDetailDto) {
     buildOrganizationJsonLd(),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
-      { name: "Formazione", path: "/formazione" },
-      { name: course.title, path: `/formazione/${course.slug}` },
+      { name: "Contro-formazione", path: "/contro-formazione" },
+      { name: course.title, path: `/contro-formazione/${course.slug}` },
     ]),
     buildCourseCollectionPageJsonLd(course),
   ]);

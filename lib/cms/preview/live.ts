@@ -238,7 +238,7 @@ export function toCourseLivePreviewSnapshot(
 ): CourseLivePreviewSnapshot {
   const now = getFallbackPreviewDate();
   const title = input.title.trim() || i18n.cms.forms.resources.courses.untitledPreviewTitle;
-  const slug = input.slug.trim() || "anteprima-corso";
+  const slug = input.slug.trim() || "anteprima-contro-formazione";
 
   const course: PublicCourseDetailDto = {
     id: input.id ?? PREVIEW_UUID,
@@ -265,7 +265,7 @@ export function toLessonLivePreviewSnapshot(
 ): LessonLivePreviewSnapshot {
   const now = getFallbackPreviewDate();
   const title = input.title.trim() || i18n.cms.forms.resources.lessons.untitledPreviewTitle;
-  const slug = input.slug.trim() || "anteprima-lezione";
+  const slug = input.slug.trim() || "anteprima-incontro";
   const excerpt = extractPlainText(input.excerptRich);
 
   const lesson: PublicLessonDetailDto = {
@@ -281,7 +281,7 @@ export function toLessonLivePreviewSnapshot(
     readingTimeMinutes: calculateReadingTimeMinutes(input.contentRich),
     publishedAt: now,
     courseId: input.courseId || PREVIEW_UUID,
-    courseSlug: input.courseSlug || "anteprima-corso",
+    courseSlug: input.courseSlug || "anteprima-contro-formazione",
     courseTitle: input.courseTitle || i18n.cms.forms.resources.lessons.previewCourseTitle,
     excerptRich: input.excerptRich,
     contentRich: input.contentRich,

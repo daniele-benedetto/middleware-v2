@@ -46,7 +46,7 @@ export function CoursesArchiveSection({ courses, allCourses }: CoursesArchiveSec
         <HomeSectionHeader
           title={text.title}
           description={text.description}
-          action={{ label: text.archiveLabel, href: "/formazione" }}
+          action={{ label: text.archiveLabel, href: "/contro-formazione" }}
         />
         <div className={getArchiveGridClassName(courses.length)}>
           {courses.map((course, index) => {
@@ -63,7 +63,7 @@ export function CoursesArchiveSection({ courses, allCourses }: CoursesArchiveSec
             return (
               <Link
                 key={course.id}
-                href={`/formazione/${course.slug}`}
+                href={`/contro-formazione/${course.slug}`}
                 className={cn(
                   publicInteraction.cardBase,
                   "relative isolate flex min-h-0 flex-col overflow-hidden px-0 py-6 max-md:border-b max-md:last:border-b-0 md:min-h-96 md:px-6 md:py-7 lg:min-h-112 lg:px-7 lg:py-8",

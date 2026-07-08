@@ -88,7 +88,7 @@ export function IssueArchiveCard({ issue, countLabel, variant, className }: Issu
         <span
           className={cn(
             publicTypography.issueBackgroundNumber,
-            "pointer-events-none absolute top-5 right-5 -z-10 select-none",
+            "pointer-events-none absolute -top-10 right-5 -z-10 select-none",
             variantClasses.backgroundNumber,
           )}
           aria-hidden

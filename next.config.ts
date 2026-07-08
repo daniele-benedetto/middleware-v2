@@ -51,6 +51,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   experimental: {
     authInterrupts: true,
+    proxyClientMaxBodySize: "50mb",
     viewTransition: true,
   },
   images: {

@@ -14,16 +14,9 @@ type PublicCoursePageProps = {
   description?: string;
 };
 
-function CourseMetaRail({
-  course,
-  courseNumber,
-}: {
-  course: PublicCourseDetailDto;
-  courseNumber: string;
-}) {
+function CourseMetaRail({ course }: { course: PublicCourseDetailDto }) {
   const text = i18n.public.coursePage;
   const metaItems = [
-    { key: "course", label: courseNumber },
     { key: "date", label: formatCourseDate(course.publishedAt), dateTime: course.publishedAt },
     { key: "count", label: text.lessonsCountLabel(course.lessonsCount) },
   ];
@@ -54,7 +47,7 @@ export function PublicCoursePage({ course, publishedCourses, description }: Publ
           titleStyled={course.titleStyled}
           backgroundCode={courseNumber}
           description={description}
-          meta={<CourseMetaRail course={course} courseNumber={courseNumber} />}
+          meta={<CourseMetaRail course={course} />}
           containerClassName="py-7 sm:py-9 lg:py-14"
         />
         <CourseDossier course={course} />

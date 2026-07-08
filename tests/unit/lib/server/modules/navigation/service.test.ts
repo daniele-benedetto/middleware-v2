@@ -64,11 +64,11 @@ describe("navigationService", () => {
         version: 1,
         items: [
           { id: "home", type: "home", label: "Home" },
-          { id: "formazione", type: "formazione", label: "Formazione" },
+          { id: "formazione", type: "formazione", label: "Contro-formazione" },
           { id: "page", type: "page", label: "About", resourceId: pageId },
           { id: "article", type: "article", label: "Story", resourceId: articleId },
           { id: "issue", type: "issue", label: "Issue", resourceId: issueId },
-          { id: "course", type: "course", label: "Corso", resourceId: courseId },
+          { id: "course", type: "course", label: "Contro-formazione", resourceId: courseId },
           { id: "custom", type: "custom", label: "External", href: "https://example.com" },
         ],
       }),
@@ -92,11 +92,21 @@ describe("navigationService", () => {
 
     expect(result.main).toEqual([
       { id: "home", label: "Home", href: "/", external: false },
-      { id: "formazione", label: "Formazione", href: "/formazione", external: false },
+      {
+        id: "formazione",
+        label: "Contro-formazione",
+        href: "/contro-formazione",
+        external: false,
+      },
       { id: "page", label: "About", href: "/chi-siamo", external: false },
       { id: "article", label: "Story", href: "/articoli/editoriale", external: false },
       { id: "issue", label: "Issue", href: "/uscite/numero-1", external: false },
-      { id: "course", label: "Corso", href: "/formazione/corso-base", external: false },
+      {
+        id: "course",
+        label: "Contro-formazione",
+        href: "/contro-formazione/corso-base",
+        external: false,
+      },
       { id: "custom", label: "External", href: "https://example.com", external: true },
     ]);
   });

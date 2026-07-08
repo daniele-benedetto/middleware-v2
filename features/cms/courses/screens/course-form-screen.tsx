@@ -144,7 +144,7 @@ function CoursePublishedDatePicker({
 
 export function CmsCourseFormScreen({ mode, courseId, initialData }: CourseFormScreenProps) {
   const trpcUtils = trpc.useUtils();
-  const { cancel, success } = useCmsFormNavigation("/cms/courses");
+  const { cancel, success } = useCmsFormNavigation("/cms/contro-formazioni");
   const text = i18n.cms;
   const formText = text.forms;
   const courseFormText = formText.resources.courses;
@@ -327,8 +327,8 @@ function CourseFormContent({
   const openPreview = () => {
     const previewPath =
       mode === "edit" && courseId
-        ? `/cms/courses/${courseId}/preview`
-        : `/cms/courses/new/preview?session=${encodeURIComponent(previewSessionId)}`;
+        ? `/cms/contro-formazioni/${courseId}/preview`
+        : `/cms/contro-formazioni/new/preview?session=${encodeURIComponent(previewSessionId)}`;
     window.open(previewPath, "_blank", "noreferrer");
     setPreviewOpenCount((count) => count + 1);
   };

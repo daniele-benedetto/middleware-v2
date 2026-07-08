@@ -81,7 +81,7 @@ async function getPublishedCoursePages() {
     });
 
     return courses.map((course) => ({
-      url: getCanonicalUrl(`/formazione/${course.slug}`),
+      url: getCanonicalUrl(`/contro-formazione/${course.slug}`),
       lastModified: course.updatedAt ?? course.publishedAt ?? undefined,
       changeFrequency: "monthly" as const,
       priority: 0.7,
@@ -113,7 +113,7 @@ async function getPublishedLessonPages() {
     });
 
     return lessons.map((lesson) => ({
-      url: getCanonicalUrl(`/formazione/${lesson.course.slug}/${lesson.slug}`),
+      url: getCanonicalUrl(`/contro-formazione/${lesson.course.slug}/${lesson.slug}`),
       lastModified: lesson.updatedAt ?? lesson.publishedAt ?? undefined,
       changeFrequency: "monthly" as const,
       priority: 0.6,
@@ -182,7 +182,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: getCanonicalUrl("/formazione"),
+      url: getCanonicalUrl("/contro-formazione"),
       lastModified: homeLastModified,
       changeFrequency: "weekly",
       priority: 0.8,

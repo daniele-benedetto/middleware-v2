@@ -193,7 +193,7 @@ export function CmsLessonFormScreen({
   initialCourseOptions,
 }: LessonFormScreenProps) {
   const trpcUtils = trpc.useUtils();
-  const { cancel, success } = useCmsFormNavigation("/cms/lessons");
+  const { cancel, success } = useCmsFormNavigation("/cms/incontri");
   const text = i18n.cms;
   const formText = text.forms;
   const lessonFormText = formText.resources.lessons;
@@ -403,8 +403,8 @@ function LessonFormContent({
   const openPreview = () => {
     const previewPath =
       mode === "edit" && lessonId
-        ? `/cms/lessons/${lessonId}/preview`
-        : `/cms/lessons/new/preview?session=${encodeURIComponent(previewSessionId)}`;
+        ? `/cms/incontri/${lessonId}/preview`
+        : `/cms/incontri/new/preview?session=${encodeURIComponent(previewSessionId)}`;
     window.open(previewPath, "_blank", "noreferrer");
     setPreviewOpenCount((count) => count + 1);
   };
@@ -423,7 +423,7 @@ function LessonFormContent({
         snapshot: toLessonLivePreviewSnapshot({
           id: lessonId,
           courseId: values.courseId,
-          courseSlug: selectedCourse?.slug ?? "anteprima-corso",
+          courseSlug: selectedCourse?.slug ?? "anteprima-contro-formazione",
           courseTitle: selectedCourse?.title ?? lessonFormText.previewCourseTitle,
           title,
           titleStyled: hasStyledTitleFormatting(titleStyled) ? titleStyled : null,

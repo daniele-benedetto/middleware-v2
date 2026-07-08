@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { publicInteraction, publicTypography } from "@/components/public/primitives";
+import { publicInteraction } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { formatLessonNumber } from "@/components/public/sections/formazione/course-format";
 import { LessonMeta } from "@/components/public/sections/formazione/lesson-meta";
@@ -27,7 +27,7 @@ export function DossierLessonCard({
   className = "",
   showImage = true,
 }: DossierLessonCardProps) {
-  const lessonHref = `/formazione/${courseSlug}/${lesson.slug}`;
+  const lessonHref = `/contro-formazione/${courseSlug}/${lesson.slug}`;
   const titleId = `lesson-card-title-${lesson.id}`;
   const isClusterFeatured = variant === "clusterFeatured";
   const image =
@@ -57,7 +57,7 @@ export function DossierLessonCard({
     >
       <article className="contents">
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="mb-5 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4">
+          <div className="mb-5 flex items-start justify-between gap-4">
             <span
               className={`shrink-0 font-heading leading-[0.78] font-black tracking-[-0.04em] text-accent ${
                 isClusterFeatured
@@ -66,9 +66,6 @@ export function DossierLessonCard({
               }`}
             >
               {formatLessonNumber(number)}
-            </span>
-            <span className={cn(publicTypography.articleEyebrow, "min-w-0 text-muted")}>
-              Lezione
             </span>
           </div>
 

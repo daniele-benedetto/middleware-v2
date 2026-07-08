@@ -261,44 +261,6 @@ html {
   background: var(--bg-main);
 }
 
-html:has([data-public-shell]),
-html:has([data-public-shell]) body {
-  scrollbar-width: none;
-}
-
-html:has([data-public-shell])::-webkit-scrollbar,
-html:has([data-public-shell]) body::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-.public-overlay-scrollbar {
-  position: fixed;
-  top: 0;
-  right: 4px;
-  bottom: 0;
-  z-index: 220;
-  width: 6px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 180ms var(--easing-standard);
-}
-
-.public-overlay-scrollbar[data-active="true"][data-visible="true"] {
-  opacity: 1;
-}
-
-.public-overlay-scrollbar-thumb {
-  width: 100%;
-  min-height: 44px;
-  background: rgba(0, 0, 0, 0.38);
-  border-radius: 999px;
-}
-
-.public-overlay-scrollbar[data-menu="true"] .public-overlay-scrollbar-thumb {
-  background: rgba(247, 240, 231, 0.42);
-}
-
 body {
   background: var(--bg-main);
   color: var(--ink);

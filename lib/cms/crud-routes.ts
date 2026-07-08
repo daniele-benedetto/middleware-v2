@@ -16,12 +16,12 @@ export const cmsCrudRoutes = {
     edit: (id: string) => `/cms/articles/${id}/edit`,
   },
   courses: {
-    create: "/cms/courses/new",
-    edit: (id: string) => `/cms/courses/${id}/edit`,
+    create: "/cms/contro-formazioni/new",
+    edit: (id: string) => `/cms/contro-formazioni/${id}/edit`,
   },
   lessons: {
-    create: "/cms/lessons/new",
-    edit: (id: string) => `/cms/lessons/${id}/edit`,
+    create: "/cms/incontri/new",
+    edit: (id: string) => `/cms/incontri/${id}/edit`,
   },
   pages: {
     create: "/cms/pages/new",

@@ -24,7 +24,7 @@ export function CourseArchiveCard({ course, className }: CourseArchiveCardProps)
 
   return (
     <Link
-      href={`/formazione/${course.slug}`}
+      href={`/contro-formazione/${course.slug}`}
       className={cn(
         publicInteraction.cardBase,
         "relative isolate block overflow-hidden py-7 max-lg:border-b max-lg:last:border-b-0 md:py-10 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:py-14",
@@ -39,7 +39,7 @@ export function CourseArchiveCard({ course, className }: CourseArchiveCardProps)
         <span
           className={cn(
             publicTypography.issueBackgroundNumber,
-            "pointer-events-none absolute top-5 right-5 -z-10 select-none",
+            "pointer-events-none absolute -top-10 right-5 -z-10 select-none",
             variantClasses.backgroundNumber,
           )}
           aria-hidden

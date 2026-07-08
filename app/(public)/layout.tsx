@@ -3,7 +3,6 @@ import { Suspense } from "react";
 
 import { CookieConsentBanner, PublicFooter, PublicHeader } from "@/components/public";
 import { CustomCursor } from "@/components/public/custom-cursor";
-import { PublicOverlayScrollbar } from "@/components/public/public-overlay-scrollbar";
 import { PublicPageTransition } from "@/components/public/public-page-transition";
 import { PublicScrollProgress } from "@/components/public/public-scroll-progress";
 import { PublicSmoothScroll } from "@/components/public/public-smooth-scroll";
@@ -69,7 +68,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <Suspense fallback={null}>
         <PublicSmoothScroll />
       </Suspense>
-      <PublicOverlayScrollbar />
       <CustomCursor />
     </div>
   );

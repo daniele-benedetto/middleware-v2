@@ -33,7 +33,7 @@ export function CourseLivePreviewPage({
         }
         editHref={editHref}
         refreshHref={refreshHref}
-        publicHref={`/formazione/${snapshot.course.slug}`}
+        publicHref={`/contro-formazione/${snapshot.course.slug}`}
         publicAvailable={snapshot.publicAvailable}
       />
       <PublicCoursePage course={snapshot.course} publishedCourses={[snapshot.course]} />

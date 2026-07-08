@@ -23,12 +23,12 @@ export function LessonListenPage({ data }: LessonListenPageProps) {
   const { lesson, lessonNumber, chunks } = data;
   const text = i18n.public.lessonPage;
   const metaItems = [
-    { key: "course", label: lesson.courseTitle, href: `/formazione/${lesson.courseSlug}` },
+    { key: "course", label: lesson.courseTitle, href: `/contro-formazione/${lesson.courseSlug}` },
     { key: "date", label: formatLessonDate(lesson.publishedAt), dateTime: lesson.publishedAt },
     {
       key: "lesson",
       label: text.listen.backToLesson,
-      href: `/formazione/${lesson.courseSlug}/${lesson.slug}`,
+      href: `/contro-formazione/${lesson.courseSlug}/${lesson.slug}`,
     },
   ];
 

@@ -6,7 +6,6 @@ import { useLessonLivePreviewSnapshot } from "@/features/cms/preview/use-live-pr
 import { i18n } from "@/lib/i18n";
 
 import type { LessonLivePreviewSnapshot } from "@/lib/cms/preview/live";
-import type { PublicLessonSibling } from "@/lib/public/server/course-page";
 import type { PublicCourseLessonSummaryDto } from "@/lib/server/modules/courses/dto/public";
 
 type LessonLivePreviewPageProps = {
@@ -14,8 +13,6 @@ type LessonLivePreviewPageProps = {
   initialSnapshot: LessonLivePreviewSnapshot;
   lessonNumber: number | null;
   otherLessons: PublicCourseLessonSummaryDto[];
-  previousLesson: PublicLessonSibling | null;
-  nextLesson: PublicLessonSibling | null;
   editHref: string;
   refreshHref: string;
 };
@@ -25,8 +22,6 @@ export function LessonLivePreviewPage({
   initialSnapshot,
   lessonNumber,
   otherLessons,
-  previousLesson,
-  nextLesson,
   editHref,
   refreshHref,
 }: LessonLivePreviewPageProps) {
@@ -43,15 +38,13 @@ export function LessonLivePreviewPage({
         }
         editHref={editHref}
         refreshHref={refreshHref}
-        publicHref={`/formazione/${snapshot.lesson.courseSlug}/${snapshot.lesson.slug}`}
+        publicHref={`/contro-formazione/${snapshot.lesson.courseSlug}/${snapshot.lesson.slug}`}
         publicAvailable={snapshot.publicAvailable}
       />
       <PublicLessonPage
         lesson={snapshot.lesson}
         lessonNumber={isLive ? null : lessonNumber}
         otherLessons={isLive ? [] : otherLessons}
-        previousLesson={isLive ? null : previousLesson}
-        nextLesson={isLive ? null : nextLesson}
       />
     </>
   );

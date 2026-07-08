@@ -1,17 +1,15 @@
-import { ArrowLeftIcon, ArrowRightIcon, PlayIcon } from "lucide-react";
+import { PlayIcon } from "lucide-react";
 import Image from "next/image";
 
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { HomeSectionHeader } from "@/components/public/home/home-section-header";
-import { publicContentClassName, publicInteraction } from "@/components/public/primitives";
+import { publicContentClassName } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { PublicRichText } from "@/components/public/rich-text";
-import { StyledTitle } from "@/components/public/styled-title";
+import { DossierLessonCard } from "@/components/public/sections/formazione/dossier-lesson-card";
 import { i18n } from "@/lib/i18n";
 import { editorialImageAlt } from "@/lib/public/format/image";
-import { cn } from "@/lib/utils";
 
-import type { PublicLessonSibling } from "@/lib/public/server/course-page";
 import type { PublicCourseLessonSummaryDto } from "@/lib/server/modules/courses/dto/public";
 import type { PublicLessonDetailDto } from "@/lib/server/modules/lessons/dto/public";
 import type { CSSProperties } from "react";
@@ -20,8 +18,6 @@ type PublicLessonPageProps = {
   lesson: PublicLessonDetailDto;
   lessonNumber: number | null;
   otherLessons: PublicCourseLessonSummaryDto[];
-  previousLesson: PublicLessonSibling | null;
-  nextLesson: PublicLessonSibling | null;
 };
 
 function formatLessonDate(value: string) {
@@ -32,10 +28,44 @@ function formatLessonNumber(value: number | null) {
   return value ? String(value).padStart(2, "0") : "MW";
 }
 
+function getLessonTitleTypographyClassName(title: string) {
+  const wordCount = title.trim().split(/\s+/).filter(Boolean).length;
+
+  if (wordCount >= 14) {
+    return "font-heading text-[clamp(38px,6vw,88px)] leading-[0.96] font-black tracking-[-0.052em] [text-wrap:balance]";
+  }
+
+  if (wordCount >= 9) {
+    return "font-heading text-[clamp(42px,7vw,108px)] leading-[0.94] font-black tracking-[-0.056em] [text-wrap:balance]";
+  }
+
+  return "font-heading text-[clamp(48px,9.5vw,138px)] leading-[0.86] font-black tracking-[-0.06em] [text-wrap:balance]";
+}
+
+function getRelatedLessonsGridClassName(count: number) {
+  if (count === 1) {
+    return "grid md:border-l md:border-t md:border-foreground";
+  }
+
+  if (count === 2) {
+    return "grid md:grid-cols-2 md:border-l md:border-t md:border-foreground";
+  }
+
+  return "grid md:grid-cols-2 md:border-l md:border-t md:border-foreground xl:grid-cols-3";
+}
+
+function getRelatedLessonCardClassName(index: number, count: number) {
+  if (count === 3 && index === 2) {
+    return "md:col-span-2 xl:col-span-1";
+  }
+
+  return undefined;
+}
+
 function LessonMetaRail({ lesson }: { lesson: PublicLessonDetailDto }) {
   const text = i18n.public.lessonPage;
   const metaItems = [
-    { key: "course", label: lesson.courseTitle, href: `/formazione/${lesson.courseSlug}` },
+    { key: "course", label: lesson.courseTitle, href: `/contro-formazione/${lesson.courseSlug}` },
     { key: "readingTime", label: text.readingTimeLabel(lesson.readingTimeMinutes) },
     { key: "date", label: formatLessonDate(lesson.publishedAt), dateTime: lesson.publishedAt },
   ];
@@ -46,7 +76,7 @@ function LessonMetaRail({ lesson }: { lesson: PublicLessonDetailDto }) {
 
       {lesson.audioUrl ? (
         <Link
-          href={`/formazione/${lesson.courseSlug}/${lesson.slug}/ascolta`}
+          href={`/contro-formazione/${lesson.courseSlug}/${lesson.slug}/ascolta`}
           className="inline-flex w-fit shrink-0 items-center gap-2 pb-1 font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"
         >
           <PlayIcon className="size-3.5 fill-current" aria-hidden />
@@ -54,94 +84,6 @@ function LessonMetaRail({ lesson }: { lesson: PublicLessonDetailDto }) {
         </Link>
       ) : null}
     </div>
-  );
-}
-
-function LessonNavigation({
-  courseSlug,
-  previousLesson,
-  nextLesson,
-}: {
-  courseSlug: string;
-  previousLesson: PublicLessonSibling | null;
-  nextLesson: PublicLessonSibling | null;
-}) {
-  const text = i18n.public.lessonPage;
-
-  if (!previousLesson && !nextLesson) return null;
-
-  return (
-    <div className="grid gap-px border-t border-foreground md:grid-cols-2">
-      {previousLesson ? (
-        <Link
-          href={`/formazione/${courseSlug}/${previousLesson.slug}`}
-          className={cn(
-            publicInteraction.cardSurface,
-            "flex flex-col gap-2 border-b border-foreground bg-background px-5 py-6 sm:px-6 md:border-r",
-          )}
-        >
-          <span className="inline-flex items-center gap-2 font-heading text-[11px] font-bold tracking-[0.08em] text-muted uppercase">
-            <ArrowLeftIcon className="size-3.5" aria-hidden />
-            {text.previousLabel}
-          </span>
-          <span className="font-heading text-[19px] leading-[1.1] font-black tracking-[-0.02em] text-foreground sm:text-[21px]">
-            {previousLesson.title}
-          </span>
-        </Link>
-      ) : (
-        <span aria-hidden className="hidden md:block" />
-      )}
-
-      {nextLesson ? (
-        <Link
-          href={`/formazione/${courseSlug}/${nextLesson.slug}`}
-          className={cn(
-            publicInteraction.cardSurface,
-            "flex flex-col items-end gap-2 border-b border-foreground bg-background px-5 py-6 text-right sm:px-6",
-          )}
-        >
-          <span className="inline-flex items-center gap-2 font-heading text-[11px] font-bold tracking-[0.08em] text-muted uppercase">
-            {text.nextLabel}
-            <ArrowRightIcon className="size-3.5" aria-hidden />
-          </span>
-          <span className="font-heading text-[19px] leading-[1.1] font-black tracking-[-0.02em] text-foreground sm:text-[21px]">
-            {nextLesson.title}
-          </span>
-        </Link>
-      ) : null}
-    </div>
-  );
-}
-
-function OtherLessonCard({
-  courseSlug,
-  lesson,
-}: {
-  courseSlug: string;
-  lesson: PublicCourseLessonSummaryDto;
-}) {
-  const text = i18n.public.lessonPage;
-
-  return (
-    <Link
-      href={`/formazione/${courseSlug}/${lesson.slug}`}
-      className={cn(
-        publicInteraction.cardSurface,
-        "flex h-full flex-col border-b border-foreground bg-background px-0 py-6 last:border-b-0 md:border-r md:border-b md:px-7 md:last:border-b",
-      )}
-    >
-      <span className="font-heading text-[11px] font-bold tracking-[0.08em] text-accent uppercase">
-        {text.lessonLabel(lesson.sortOrder + 1)}
-      </span>
-      <h3 className="mt-3 font-heading text-[21px] leading-[1.08] font-black tracking-[-0.03em] text-foreground sm:text-[24px]">
-        <StyledTitle title={lesson.title} titleStyled={lesson.titleStyled} />
-      </h3>
-      {lesson.excerpt ? (
-        <p className="mt-4 font-editorial text-[16px] leading-normal text-body-text">
-          {lesson.excerpt}
-        </p>
-      ) : null}
-    </Link>
   );
 }
 
@@ -161,12 +103,20 @@ function OtherLessonsSection({
       <div className={publicContentClassName}>
         <HomeSectionHeader
           title={text.otherLessonsTitle}
-          action={{ label: text.viewCourse, href: `/formazione/${courseSlug}` }}
+          action={{ label: text.viewCourse, href: `/contro-formazione/${courseSlug}` }}
         />
 
-        <div className="grid md:grid-cols-2 md:border-l md:border-t md:border-foreground xl:grid-cols-3">
-          {otherLessons.map((lesson) => (
-            <OtherLessonCard key={lesson.id} courseSlug={courseSlug} lesson={lesson} />
+        <div className={getRelatedLessonsGridClassName(otherLessons.length)}>
+          {otherLessons.map((lesson, index) => (
+            <DossierLessonCard
+              key={lesson.id}
+              courseSlug={courseSlug}
+              lesson={lesson}
+              number={lesson.sortOrder + 1}
+              variant="constellationSecondary"
+              className={getRelatedLessonCardClassName(index, otherLessons.length)}
+              showImage={false}
+            />
           ))}
         </div>
       </div>
@@ -174,15 +124,7 @@ function OtherLessonsSection({
   );
 }
 
-export function PublicLessonPage({
-  lesson,
-  lessonNumber,
-  otherLessons,
-  previousLesson,
-  nextLesson,
-}: PublicLessonPageProps) {
-  const text = i18n.public.lessonPage;
-
+export function PublicLessonPage({ lesson, lessonNumber, otherLessons }: PublicLessonPageProps) {
   return (
     <main
       id="main-content"
@@ -194,6 +136,7 @@ export function PublicLessonPage({
           as="header"
           title={lesson.title}
           titleStyled={lesson.titleStyled}
+          titleTypographyClassName={getLessonTitleTypographyClassName(lesson.title)}
           backgroundCode={formatLessonNumber(lessonNumber)}
           description={lesson.excerpt}
           meta={<LessonMetaRail lesson={lesson} />}
@@ -225,22 +168,6 @@ export function PublicLessonPage({
           <div className={publicContentClassName}>
             <div className="mx-auto max-w-3xl space-y-10">
               <PublicRichText value={lesson.contentRich} />
-
-              <div className="pt-4">
-                <Link
-                  href={`/formazione/${lesson.courseSlug}`}
-                  className="inline-flex items-center gap-2 font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"
-                >
-                  <ArrowLeftIcon className="size-3.5" aria-hidden />
-                  {text.backToCourse}
-                </Link>
-              </div>
-
-              <LessonNavigation
-                courseSlug={lesson.courseSlug}
-                previousLesson={previousLesson}
-                nextLesson={nextLesson}
-              />
             </div>
           </div>
         </div>
