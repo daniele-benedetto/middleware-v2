@@ -1,4 +1,5 @@
 const articleCountLabel = (count: number) => `${count} ${count === 1 ? "articolo" : "articoli"}`;
+const audioCountLabel = (count: number) => `${count} in versione audio`;
 const lessonCountLabel = (count: number) => `${count} ${count === 1 ? "lezione" : "lezioni"}`;
 const paddedNumber = (value: number) => String(value).padStart(2, "0");
 
@@ -59,6 +60,7 @@ export const publicIt = {
     },
     dossier: {
       articlesLabel: "Articoli del numero",
+      audioCountLabel,
     },
     sectionGrid: {
       showAll: (count: number) => `Vedi tutti (${count})`,
@@ -75,12 +77,12 @@ export const publicIt = {
     metadata: {
       title: "Archivio Magazine",
       description:
-        "Tutti i numeri pubblicati da Middleware, organizzati come uscite editoriali e dossier completi.",
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     },
     hero: {
       title: "Archivio [[Magazine]]",
       description:
-        "Ogni numero nasce attorno a un campo di tensione. Non raccoglie articoli sciolti, ma costruisce un'inchiesta monografica: un attraversamento di conflitti, linguaggi e immaginari che prova a far emergere ciò che nel presente resta disperso, opaco, conteso. L'archivio custodisce queste uscite come dossier da riaprire, mappe parziali per leggere le forme del potere, del lavoro, della cultura e della trasformazione sociale.",
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
       totalLabel: (count: number) =>
         `${count} ${count === 1 ? "numero pubblicato" : "numeri pubblicati"}`,
     },
@@ -130,16 +132,17 @@ export const publicIt = {
     metadata: {
       title: "Formazione",
       description:
-        "I corsi di Middleware: percorsi di formazione in lezioni, per attraversare strumenti, linguaggi e pratiche dell'inchiesta.",
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     },
     hero: {
       title: "[[Formazione]]",
       description:
-        "Non lezioni isolate, ma percorsi. Ogni corso costruisce un attraversamento progressivo: strumenti di analisi, linguaggi del conflitto e pratiche dell'inchiesta, messi in sequenza per essere ripresi, ascoltati e rimessi in movimento.",
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
       totalLabel: (count: number) =>
         `${count} ${count === 1 ? "corso pubblicato" : "corsi pubblicati"}`,
     },
     lessonsCountLabel: lessonCountLabel,
+    railAriaLabel: "Elenco dei corsi pubblicati",
     empty: {
       code: "00",
       kicker: "Formazione",
@@ -152,6 +155,11 @@ export const publicIt = {
     lessonsCountLabel: lessonCountLabel,
     readingTimeLabel: (minutes: number) => `${minutes} min`,
     audioLabel: "Audio",
+    archive: {
+      title: "Altri corsi",
+      description: "Continua la formazione con gli altri percorsi pubblicati.",
+      archiveLabel: "Tutti i corsi",
+    },
     empty: {
       code: "404",
       kicker: "Corso",

@@ -4,7 +4,6 @@ import {
   articleAuthorOptionsInput,
   articleCategoryOptionsInput,
   articleIssueOptionsInput,
-  articleTagOptionsInput,
 } from "@/lib/cms/article-options";
 import { lessonCourseOptionsInput } from "@/lib/cms/course-options";
 import { getTrpcCaller } from "@/lib/server/trpc/caller";
@@ -17,7 +16,6 @@ type IssuesListInput = RouterInputs["issues"]["list"];
 type CoursesListInput = RouterInputs["courses"]["list"];
 type LessonsListInput = RouterInputs["lessons"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
-type TagsListInput = RouterInputs["tags"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
 type AuthorsListInput = RouterInputs["authors"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
@@ -31,7 +29,6 @@ type IssuesListOutput = RouterOutputs["issues"]["list"];
 type CoursesListOutput = RouterOutputs["courses"]["list"];
 type LessonsListOutput = RouterOutputs["lessons"]["list"];
 type CategoriesListOutput = RouterOutputs["categories"]["list"];
-type TagsListOutput = RouterOutputs["tags"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
 type AuthorsListOutput = RouterOutputs["authors"]["list"];
 type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
@@ -44,7 +41,6 @@ type CoursePreviewOutput = RouterOutputs["courses"]["getPreviewById"];
 type LessonDetailOutput = RouterOutputs["lessons"]["getById"];
 type LessonPreviewOutput = RouterOutputs["lessons"]["getPreviewById"];
 type CategoryDetailOutput = RouterOutputs["categories"]["getById"];
-type TagDetailOutput = RouterOutputs["tags"]["getById"];
 type AuthorDetailOutput = RouterOutputs["authors"]["getById"];
 type UserDetailOutput = RouterOutputs["users"]["getById"];
 type ArticleDetailOutput = RouterOutputs["articles"]["getById"];
@@ -70,10 +66,6 @@ export async function prefetchCategoriesList(
   input: CategoriesListInput,
 ): Promise<CategoriesListOutput> {
   return prefetchCmsList(input, (caller, listInput) => caller.categories.list(listInput));
-}
-
-export async function prefetchTagsList(input: TagsListInput): Promise<TagsListOutput> {
-  return prefetchCmsList(input, (caller, listInput) => caller.tags.list(listInput));
 }
 
 export async function prefetchArticlesList(input: ArticlesListInput): Promise<ArticlesListOutput> {
@@ -170,11 +162,6 @@ export async function prefetchCategoryById(id: string): Promise<CategoryDetailOu
   return caller.categories.getById({ id });
 }
 
-export async function prefetchTagById(id: string): Promise<TagDetailOutput> {
-  const caller = await getTrpcCaller();
-  return caller.tags.getById({ id });
-}
-
 export async function prefetchAuthorById(id: string): Promise<AuthorDetailOutput> {
   const caller = await getTrpcCaller();
   return caller.authors.getById({ id });
@@ -201,22 +188,19 @@ export async function prefetchPageById(id: string): Promise<PageDetailOutput> {
 }
 
 export async function prefetchArticleFormOptions(): Promise<{
-  tagsOptions: TagsListOutput;
   issuesOptions: IssuesListOutput;
   categoriesOptions: CategoriesListOutput;
   authorsOptions: AuthorsListOutput;
 }> {
   const caller = await getTrpcCaller();
 
-  const [tagsOptions, issuesOptions, categoriesOptions, authorsOptions] = await Promise.all([
-    caller.tags.list(articleTagOptionsInput),
+  const [issuesOptions, categoriesOptions, authorsOptions] = await Promise.all([
     caller.issues.list(articleIssueOptionsInput),
     caller.categories.list(articleCategoryOptionsInput),
     caller.authors.list(articleAuthorOptionsInput),
   ]);
 
   return {
-    tagsOptions,
     issuesOptions,
     categoriesOptions,
     authorsOptions,

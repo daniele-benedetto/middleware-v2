@@ -3,6 +3,8 @@ export { buildHomeJsonLd } from "@/lib/seo/home-json-ld";
 export {
   buildArticlePageJsonLd,
   buildBreadcrumbJsonLd,
+  buildCoursePageJsonLd,
+  buildFormazioneArchiveJsonLd,
   buildIssuePageJsonLd,
   buildIssuesArchiveJsonLd,
   buildJsonLdGraph,

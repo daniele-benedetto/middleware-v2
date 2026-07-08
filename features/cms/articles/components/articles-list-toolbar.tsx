@@ -23,7 +23,6 @@ type ArticlesListToolbarOption = {
 
 type ArticlesListToolbarFiltersState = {
   statusValue: string;
-  featuredValue: string;
   issueIdValue: string;
   categoryIdValue: string;
   authorIdValue: string;
@@ -33,7 +32,6 @@ type ArticlesListToolbarFiltersState = {
 
 const defaultArticlesListToolbarFilters: ArticlesListToolbarFiltersState = {
   statusValue: "all",
-  featuredValue: "all",
   issueIdValue: "all",
   categoryIdValue: "all",
   authorIdValue: "all",
@@ -47,7 +45,6 @@ type ArticlesListToolbarProps = {
   bulkActions: ArticlesListToolbarAction[];
   searchValue: string;
   statusValue: string;
-  featuredValue: string;
   issueIdValue: string;
   categoryIdValue: string;
   authorIdValue: string;
@@ -65,7 +62,6 @@ type ArticlesListToolbarProps = {
 
 function buildArticlesListToolbarFiltersState({
   statusValue,
-  featuredValue,
   issueIdValue,
   categoryIdValue,
   authorIdValue,
@@ -74,7 +70,6 @@ function buildArticlesListToolbarFiltersState({
 }: ArticlesListToolbarFiltersState): ArticlesListToolbarFiltersState {
   return {
     statusValue,
-    featuredValue,
     issueIdValue,
     categoryIdValue,
     authorIdValue,
@@ -86,7 +81,6 @@ function buildArticlesListToolbarFiltersState({
 function countActiveArticlesListFilters(filters: ArticlesListToolbarFiltersState) {
   return [
     filters.statusValue !== defaultArticlesListToolbarFilters.statusValue,
-    filters.featuredValue !== defaultArticlesListToolbarFilters.featuredValue,
     filters.issueIdValue !== defaultArticlesListToolbarFilters.issueIdValue,
     filters.categoryIdValue !== defaultArticlesListToolbarFilters.categoryIdValue,
     filters.authorIdValue !== defaultArticlesListToolbarFilters.authorIdValue,
@@ -104,7 +98,6 @@ type ArticlesListToolbarFieldsProps = {
   categoriesLoading: boolean;
   authorsLoading: boolean;
   onStatusChange: (value: string) => void;
-  onFeaturedChange: (value: string) => void;
   onIssueChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
   onAuthorChange: (value: string) => void;
@@ -121,7 +114,6 @@ function ArticlesListToolbarFields({
   categoriesLoading,
   authorsLoading,
   onStatusChange,
-  onFeaturedChange,
   onIssueChange,
   onCategoryChange,
   onAuthorChange,
@@ -141,18 +133,6 @@ function ArticlesListToolbarFields({
         { value: "DRAFT", label: listText.statusDraft },
         { value: "PUBLISHED", label: listText.statusPublished },
         { value: "ARCHIVED", label: listText.statusArchived },
-      ]}
-    />
-  );
-
-  const featuredField = (
-    <CmsSelect
-      value={filters.featuredValue}
-      onValueChange={onFeaturedChange}
-      options={[
-        { value: "all", label: optionsText.featuredAll },
-        { value: "true", label: optionsText.featuredOnly },
-        { value: "false", label: optionsText.notFeaturedOnly },
       ]}
     />
   );
@@ -209,7 +189,6 @@ function ArticlesListToolbarFields({
   return (
     <>
       {statusField}
-      {featuredField}
       {issueField}
       {categoryField}
       {authorField}
@@ -225,7 +204,6 @@ export function ArticlesListToolbar({
   bulkActions,
   searchValue,
   statusValue,
-  featuredValue,
   issueIdValue,
   categoryIdValue,
   authorIdValue,
@@ -244,7 +222,6 @@ export function ArticlesListToolbar({
   const commonText = text.common;
   const currentFilters = buildArticlesListToolbarFiltersState({
     statusValue,
-    featuredValue,
     issueIdValue,
     categoryIdValue,
     authorIdValue,
@@ -296,9 +273,6 @@ export function ArticlesListToolbar({
             authorsLoading={authorsLoading}
             onStatusChange={(value) => {
               setDraftFilters((current) => ({ ...current, statusValue: value }));
-            }}
-            onFeaturedChange={(value) => {
-              setDraftFilters((current) => ({ ...current, featuredValue: value }));
             }}
             onIssueChange={(value) => {
               setDraftFilters((current) => ({ ...current, issueIdValue: value }));

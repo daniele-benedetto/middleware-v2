@@ -2,10 +2,7 @@ import { i18n } from "@/lib/i18n";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
-import type {
-  PublicArticleDetailDto,
-  PublicArticleTagDto,
-} from "@/lib/server/modules/articles/dto/public";
+import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
 import type {
   PublicCourseDetailDto,
   PublicCourseLessonSummaryDto,
@@ -93,7 +90,6 @@ export type ArticleLivePreviewInput = {
   imageAlt: string | null;
   audioUrl: string | null;
   audioChunks: unknown;
-  tags: PublicArticleTagDto[];
   statusLabel: string;
   publicAvailable: boolean;
 };
@@ -182,7 +178,6 @@ export function toArticleLivePreviewSnapshot(
       imageUrl: input.imageUrl,
       imageAlt: input.imageAlt,
       hasAudio: Boolean(input.audioUrl),
-      isFeatured: false,
       publishedAt: now,
       issueId: input.issueId || PREVIEW_UUID,
       issueSlug: input.issueSlug || "anteprima-uscita",
@@ -192,13 +187,11 @@ export function toArticleLivePreviewSnapshot(
       categoryName: input.categoryName || i18n.cms.forms.resources.articles.previewCategoryName,
       authorId: input.authorId,
       authorName: input.authorName,
-      tagsCount: input.tags.length,
       excerptRich: input.excerptRich,
       contentRich: input.contentRich,
       audioUrl: input.audioUrl,
       audioChunks: input.audioChunks ?? null,
       updatedAt: now,
-      tags: input.tags,
     },
     publicAvailable: input.publicAvailable,
     statusLabel: input.statusLabel,

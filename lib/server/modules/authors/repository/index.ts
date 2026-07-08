@@ -75,7 +75,6 @@ export const authorsRepository = {
             id: true,
             title: true,
             status: true,
-            isFeatured: true,
           },
           orderBy: [{ issueId: "asc" }, { publishedAt: "asc" }, { createdAt: "asc" }],
         },

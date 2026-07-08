@@ -3,19 +3,8 @@ import type {
   NarrativeHomeBlock,
 } from "@/components/public/home/home-view-model";
 
-export function formatTags(article: HomeIssueArticle) {
-  return article.tags
-    .slice(0, 3)
-    .map((tag) => tag.name)
-    .join(" / ");
-}
-
-export function blockEyebrow(block: NarrativeHomeBlock, article: HomeIssueArticle) {
-  return block.title || formatTags(article) || article.categoryName || "";
-}
-
-export function articleEyebrow(article: HomeIssueArticle) {
-  return formatTags(article) || article.categoryName || "";
+export function blockEyebrow(block: NarrativeHomeBlock) {
+  return block.title || "";
 }
 
 export function formatArticleNumber(value: number) {

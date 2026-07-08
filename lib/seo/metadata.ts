@@ -21,7 +21,6 @@ type ArticleMetadataInput = {
   updatedAt?: string | Date | null;
   imageUrl?: string | null;
   authorName?: string | null;
-  tags?: string[];
 };
 
 type ArticleListenMetadataInput = {
@@ -182,7 +181,7 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
   return {
     title: input.title,
     description,
-    keywords: [...getDefaultKeywords(), ...(input.tags ?? [])],
+    keywords: getDefaultKeywords(),
     alternates: {
       canonical,
     },
@@ -196,7 +195,6 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
       publishedTime,
       modifiedTime,
       authors: input.authorName ? [input.authorName] : undefined,
-      tags: input.tags,
       images: [
         {
           url: image,

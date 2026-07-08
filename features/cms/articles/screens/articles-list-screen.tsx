@@ -142,8 +142,6 @@ type ArticleTableRow = {
   categoryName: string | null;
   authorName: string | null;
   status: ArticleStatus;
-  isFeatured: boolean;
-  tagsCount: number;
   publishedAt: string | null;
   createdAt: string;
 };
@@ -164,8 +162,6 @@ type ArticleRowProps = {
   deleteLabel: string;
   deleteConfirmTitle: string;
   deleteConfirmDescription: string;
-  yesLabel: string;
-  noLabel: string;
 };
 
 function ArticleRow({
@@ -180,8 +176,6 @@ function ArticleRow({
   deleteLabel,
   deleteConfirmTitle,
   deleteConfirmDescription,
-  yesLabel,
-  noLabel,
 }: ArticleRowProps) {
   return (
     <TableRow className={cmsTableClasses.bodyRow}>
@@ -204,10 +198,6 @@ function ArticleRow({
       <TableCell className={cmsTableClasses.bodyCellMeta}>
         {formatArticleStatus(article.status)}
       </TableCell>
-      <TableCell className={cmsTableClasses.bodyCellMeta}>
-        {article.isFeatured ? yesLabel : noLabel}
-      </TableCell>
-      <TableCell className={cmsTableClasses.bodyCellMeta}>{String(article.tagsCount)}</TableCell>
       <TableCell className={cmsTableClasses.bodyCellMeta}>
         {formatDate(article.publishedAt)}
       </TableCell>
@@ -333,7 +323,6 @@ export function CmsArticlesListScreen({
       issueId: input.query?.issueId,
       categoryId: input.query?.categoryId,
       authorId: input.query?.authorId ?? undefined,
-      featured: input.query?.featured,
     },
     clearSelection: selection.clearSelection,
   });
@@ -432,8 +421,7 @@ export function CmsArticlesListScreen({
     input.query?.status !== undefined ||
     input.query?.issueId !== undefined ||
     input.query?.categoryId !== undefined ||
-    input.query?.authorId !== undefined ||
-    input.query?.featured !== undefined,
+    input.query?.authorId !== undefined,
   );
 
   return (
@@ -461,7 +449,6 @@ export function CmsArticlesListScreen({
             bulkActions={toolbarBulkActions}
             searchValue={input.query?.q ?? ""}
             statusValue={input.query?.status ?? "all"}
-            featuredValue={input.query?.featured ?? "all"}
             issueIdValue={input.query?.issueId ?? "all"}
             categoryIdValue={input.query?.categoryId ?? "all"}
             authorIdValue={input.query?.authorId ?? "all"}
@@ -479,7 +466,6 @@ export function CmsArticlesListScreen({
             onApplyFilters={(filters) => {
               updateSearchParams({
                 status: filters.statusValue === "all" ? undefined : filters.statusValue,
-                featured: filters.featuredValue === "all" ? undefined : filters.featuredValue,
                 issueId: filters.issueIdValue === "all" ? undefined : filters.issueIdValue,
                 categoryId: filters.categoryIdValue === "all" ? undefined : filters.categoryIdValue,
                 authorId: filters.authorIdValue === "all" ? undefined : filters.authorIdValue,
@@ -532,12 +518,6 @@ export function CmsArticlesListScreen({
                     {listText.table.status}
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.featured}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
-                    {listText.table.tags}
-                  </TableHead>
-                  <TableHead className={cmsTableClasses.headerCell}>
                     {listText.table.published}
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
@@ -565,8 +545,6 @@ export function CmsArticlesListScreen({
                     deleteLabel={quickText.delete}
                     deleteConfirmTitle={quickText.confirmDeleteTitle}
                     deleteConfirmDescription={quickText.confirmDeleteSingleArticle}
-                    yesLabel={commonText.yes}
-                    noLabel={commonText.no}
                   />
                 ))}
               </TableBody>

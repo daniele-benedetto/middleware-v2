@@ -36,10 +36,6 @@ function takeEditoriale(
 function takeFeature(
   articles: PublicIssueArticleSummaryDto[],
 ): PublicIssueArticleSummaryDto | null {
-  const index = articles.findIndex((article) => article.isFeatured);
-  if (index >= 0) {
-    return articles.splice(index, 1)[0];
-  }
   return articles.shift() ?? null;
 }
 

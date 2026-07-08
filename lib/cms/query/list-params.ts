@@ -38,7 +38,6 @@ const roleValues = ["ADMIN", "EDITOR"] as const;
 const issuesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
 const coursesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
 const categoriesSortByValues = ["createdAt", "name", "slug"] as const;
-const tagsSortByValues = ["createdAt", "name", "slug"] as const;
 const authorsSortByValues = ["createdAt", "name", "slug"] as const;
 const articlesSortByValues = ["createdAt", "publishedAt"] as const;
 const lessonStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
@@ -183,7 +182,6 @@ type IssuesListInput = RouterInputs["issues"]["list"];
 type CoursesListInput = RouterInputs["courses"]["list"];
 type LessonsListInput = RouterInputs["lessons"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
-type TagsListInput = RouterInputs["tags"]["list"];
 type AuthorsListInput = RouterInputs["authors"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
@@ -273,26 +271,6 @@ export function parseCategoriesListSearchParams(input: CmsSearchParamsInput): Ca
   };
 }
 
-export function parseTagsListSearchParams(input: CmsSearchParamsInput): TagsListInput {
-  const base = parseCmsListSearchParams(input, {
-    allowedSortBy: tagsSortByValues,
-    defaultSortBy: "createdAt",
-    defaultSortOrder: "desc",
-  });
-  const sortBy = parseEnumQueryParam(base.sortBy, tagsSortByValues) ?? "createdAt";
-
-  return {
-    page: base.page,
-    pageSize: base.pageSize,
-    query: compactObject({
-      isActive: parseBooleanQueryParam(readParam(input, "isActive")),
-      q: base.q,
-      sortBy,
-      sortOrder: base.sortOrder,
-    }),
-  };
-}
-
 export function parseAuthorsListSearchParams(input: CmsSearchParamsInput): AuthorsListInput {
   const base = parseCmsListSearchParams(input, {
     allowedSortBy: authorsSortByValues,
@@ -329,7 +307,6 @@ export function parseArticlesListSearchParams(input: CmsSearchParamsInput): Arti
       issueId: parseUuidQueryParam(readParam(input, "issueId")),
       categoryId: parseUuidQueryParam(readParam(input, "categoryId")),
       authorId: parseUuidQueryParam(readParam(input, "authorId")),
-      featured: parseBooleanQueryParam(readParam(input, "featured")),
       q: base.q,
       sortBy,
       sortOrder: base.sortOrder,

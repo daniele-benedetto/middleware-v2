@@ -12,13 +12,11 @@ const articleSummaryDtoShape = {
   slug: z.string(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
   publishedAt: z.string().nullable(),
-  isFeatured: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
   issueTitle: z.string().nullable(),
   categoryName: z.string().nullable(),
   authorName: z.string().nullable(),
-  tagsCount: z.number().int(),
 } as const;
 
 export const articleDtoSchema = z.object(articleSummaryDtoShape);
@@ -32,7 +30,6 @@ export const articleDetailDtoSchema = z.object({
   excerpt: z.string().nullable(),
   imageUrl: z.string().nullable(),
   imageAlt: z.string().nullable(),
-  tagIds: z.array(z.string().uuid()),
 });
 
 export const articlesListDtoSchema = z.array(articleDtoSchema);

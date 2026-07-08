@@ -6,12 +6,6 @@ import {
   issueTitleStyledSchema,
 } from "@/lib/server/modules/issues/schema";
 
-const publicIssueArticleTagDtoSchema = z.object({
-  id: z.string().uuid(),
-  slug: z.string(),
-  name: z.string(),
-});
-
 export const publicIssueArticleSummaryDtoSchema = z.object({
   id: z.string().uuid(),
   slug: z.string(),
@@ -21,13 +15,11 @@ export const publicIssueArticleSummaryDtoSchema = z.object({
   imageUrl: z.string().nullable(),
   imageAlt: z.string().nullable(),
   hasAudio: z.boolean(),
-  isFeatured: z.boolean(),
   readingTimeMinutes: z.number().int().min(1),
   publishedAt: z.string(),
   categorySlug: z.string().nullable(),
   categoryName: z.string().nullable(),
   authorName: z.string().nullable(),
-  tags: z.array(publicIssueArticleTagDtoSchema),
 });
 
 export const publicIssueDtoSchema = z.object({

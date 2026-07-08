@@ -12,7 +12,6 @@ import { mediaRouter } from "@/lib/server/trpc/routers/media";
 import { navigationRouter } from "@/lib/server/trpc/routers/navigation";
 import { pagesRouter } from "@/lib/server/trpc/routers/pages";
 import { publicRouter } from "@/lib/server/trpc/routers/public";
-import { tagsRouter } from "@/lib/server/trpc/routers/tags";
 import { usersRouter } from "@/lib/server/trpc/routers/users";
 
 export const appRouter = router({
@@ -21,7 +20,6 @@ export const appRouter = router({
   users: usersRouter,
   issues: issuesRouter,
   categories: categoriesRouter,
-  tags: tagsRouter,
   articles: articlesRouter,
   courses: coursesRouter,
   lessons: lessonsRouter,

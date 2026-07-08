@@ -1,10 +1,7 @@
 import { DossierArticleCard } from "@/components/public/compounds";
 import { publicContentClassName } from "@/components/public/primitives";
 import { BlockSectionIntro } from "@/components/public/sections/dossier/block-section-intro";
-import {
-  articleEyebrow,
-  getArticleNumber,
-} from "@/components/public/sections/dossier/dossier-format";
+import { getArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +24,6 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
   const featuredCard = featured ? (
     <DossierArticleCard
       article={featured}
-      eyebrow={articleEyebrow(featured)}
       number={getArticleNumber(articleNumbers, featured)}
       variant="clusterFeatured"
     />
@@ -45,7 +41,6 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
         <DossierArticleCard
           key={article.id}
           article={article}
-          eyebrow={articleEyebrow(article)}
           number={getArticleNumber(articleNumbers, article)}
           variant="constellationSecondary"
           className={cn(

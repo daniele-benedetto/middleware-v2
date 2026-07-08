@@ -35,11 +35,17 @@ export async function generateMetadata({ params }: PublicCourseRouteProps): Prom
 export default async function PublicCourseRoute({ params }: PublicCourseRouteProps) {
   await connection();
   const { courseSlug } = await params;
-  const { course, description } = await getPublicCoursePageData(courseSlug);
+  const { course, publishedCourses, description } = await getPublicCoursePageData(courseSlug);
 
   if (!course) {
     notFound();
   }
 
-  return <PublicCoursePage course={course} description={description} />;
+  return (
+    <PublicCoursePage
+      course={course}
+      publishedCourses={publishedCourses}
+      description={description}
+    />
+  );
 }

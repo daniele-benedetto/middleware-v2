@@ -41,7 +41,7 @@ export function FeatureBreakBlock({
   }
 
   const variantClasses = getNarrativeVariantClasses(variant);
-  const eyebrow = blockEyebrow(block, article);
+  const eyebrow = blockEyebrow(block);
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `feature-article-title-${article.id}`;
   const showBorder = variant === "default";

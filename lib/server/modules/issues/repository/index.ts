@@ -99,7 +99,6 @@ export const issuesRepository = {
             id: true,
             title: true,
             status: true,
-            isFeatured: true,
             category: {
               select: {
                 name: true,
@@ -143,7 +142,6 @@ export const issuesRepository = {
             imageUrl: true,
             imageAlt: true,
             audioUrl: true,
-            isFeatured: true,
             contentRich: true,
             publishedAt: true,
             createdAt: true,
@@ -157,17 +155,6 @@ export const issuesRepository = {
             author: {
               select: {
                 name: true,
-              },
-            },
-            tags: {
-              select: {
-                tag: {
-                  select: {
-                    id: true,
-                    slug: true,
-                    name: true,
-                  },
-                },
               },
             },
           },

@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { CookieConsentBanner, PublicFooter, PublicHeader } from "@/components/public";
 import { CustomCursor } from "@/components/public/custom-cursor";
 import { PublicPageTransition } from "@/components/public/public-page-transition";
+import { PublicScrollProgress } from "@/components/public/public-scroll-progress";
 import { i18n } from "@/lib/i18n";
 import { publicFeatures } from "@/lib/public/config";
 import { getLegalConsentVersion } from "@/lib/public/server/legal-consent";
@@ -46,6 +47,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <Suspense fallback={null}>
         <PublicHeaderSlot />
       </Suspense>
+      <PublicScrollProgress />
       <div data-public-page-content>
         <PublicPageTransition>{children}</PublicPageTransition>
       </div>

@@ -130,13 +130,11 @@ Folder map:
 - Route entrypoints:
   - `app/(cms)/cms/issues/page.tsx`
   - `app/(cms)/cms/categories/page.tsx`
-  - `app/(cms)/cms/tags/page.tsx`
   - `app/(cms)/cms/articles/page.tsx`
   - `app/(cms)/cms/users/page.tsx`
 - Screen modules:
   - `features/cms/issues/screens/issues-list-screen.tsx`
   - `features/cms/categories/screens/categories-list-screen.tsx`
-  - `features/cms/tags/screens/tags-list-screen.tsx`
   - `features/cms/articles/screens/articles-list-screen.tsx`
   - `features/cms/users/screens/users-list-screen.tsx`
 - Shared list framework:
@@ -165,15 +163,13 @@ Module-specific params:
 
 - `issues`: `isActive`, `published`
 - `categories`: `isActive`
-- `tags`: `isActive`
-- `articles`: `status`, `issueId`, `categoryId`, `authorId`, `featured`
+- `articles`: `status`, `issueId`, `categoryId`, `authorId`
 - `users`: `role`
 
 Normalization/parsing source of truth:
 
 - `parseIssuesListSearchParams`
 - `parseCategoriesListSearchParams`
-- `parseTagsListSearchParams`
 - `parseArticlesListSearchParams`
 - `parseUsersListSearchParams`
 
@@ -245,8 +241,7 @@ Procedures by domain:
 - `users`: `list`, `getById`, `create`, `update`, `updateRole`, `delete`
 - `issues`: `list`, `getById`, `create`, `update`, `delete`
 - `categories`: `list`, `getById`, `create`, `update`, `delete`
-- `tags`: `list`, `getById`, `create`, `update`, `delete`
-- `articles`: `list`, `getById`, `create`, `update`, `delete`, `syncTags`, `publish`, `unpublish`, `archive`, `feature`, `unfeature`, `reorder`
+- `articles`: `list`, `getById`, `create`, `update`, `delete`, `publish`, `unpublish`, `archive`
 
 List procedures validate input with Zod and return typed payload:
 
@@ -257,7 +252,6 @@ List procedures validate input with Zod and return typed payload:
 - `users.*`: `ADMIN` only
 - `issues.*`: `ADMIN`, `EDITOR`
 - `categories.*`: `ADMIN`, `EDITOR`
-- `tags.*`: `ADMIN`, `EDITOR`
 - `articles.*`: `ADMIN`, `EDITOR`
 
 Authorization is enforced in tRPC router middleware using `lib/server/modules/*/policy` as source of truth.
@@ -277,9 +271,8 @@ Input (example `articles.list`):
     issueId?: string;
     categoryId?: string;
     authorId?: string;
-    featured?: boolean;
     q?: string;
-    sortBy?: "createdAt" | "publishedAt" | "position";
+    sortBy?: "createdAt" | "publishedAt";
     sortOrder?: "asc" | "desc";
   };
 }
@@ -311,8 +304,8 @@ Input envelope for update-by-id procedures:
 
 Representative outputs:
 
-- `users.delete`, `issues.delete`, `categories.delete`, `tags.delete`, `articles.delete` -> `{ success: true }`
-- all other mutations -> validated DTO (`UserListItemDto`, `IssueDto`, `CategoryDto`, `TagDto`, `ArticleDto`)
+- `users.delete`, `issues.delete`, `categories.delete`, `articles.delete` -> `{ success: true }`
+- all other mutations -> validated DTO (`UserListItemDto`, `IssueDto`, `CategoryDto`, `ArticleDto`)
 
 ### Representative procedure inputs
 
@@ -403,9 +396,9 @@ Implementation reference:
 
 ### Query/index verification snapshot
 
-- `articles` list filters/sort are covered by existing indexes (`issueId+position`, `status+publishedAt`, `status+isFeatured`, `categoryId`, `authorId`, `slug`).
+- `articles` list filters/sort are covered by existing indexes (`issueId+publishedAt`, `status+publishedAt`, `categoryId`, `authorId`, `slug`).
 - `issues` list is partially covered (`isActive+sortOrder`, `publishedAt`), while `createdAt` sorting has no dedicated index.
-- `categories` and `tags` rely on unique `slug` and `isActive` index; `createdAt` and `name` sorting/filtering are currently not indexed.
+- `categories` rely on unique `slug` and `isActive` index; `createdAt` and `name` sorting/filtering are currently not indexed.
 - `users` has unique `email`; `role` + `createdAt` listing is currently not indexed.
 
 ## Definition of Ready (next phase: API)

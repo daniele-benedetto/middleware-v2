@@ -243,11 +243,9 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
                                   ? listText.resourceIssueLabel
                                   : entry.resource === "media"
                                     ? listText.resourceMediaLabel
-                                    : entry.resource === "tags"
-                                      ? listText.resourceTagLabel
-                                      : entry.resource === "users"
-                                        ? listText.resourceUserLabel
-                                        : listText.resourceUnknownLabel
+                                    : entry.resource === "users"
+                                      ? listText.resourceUserLabel
+                                      : listText.resourceUnknownLabel
                           }`}
                         </div>
                       </div>

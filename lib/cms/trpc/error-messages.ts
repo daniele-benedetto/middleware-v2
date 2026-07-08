@@ -184,16 +184,6 @@ function mapDomainError(
     };
   }
 
-  if (code === "BAD_REQUEST" && reason === "ARTICLE_INVALID_TAGS") {
-    return {
-      code,
-      reason,
-      title: articleText.invalidTagsTitle,
-      description: articleText.invalidTagsDescription,
-      retryable: false,
-    };
-  }
-
   if (code === "BAD_REQUEST" && reason === "ARTICLE_REORDER_IDS_MISMATCH") {
     return {
       code,
@@ -260,26 +250,6 @@ function mapDomainError(
       reason,
       title: text.issueSlugExistsTitle,
       description: text.issueSlugExistsDescription,
-      retryable: false,
-    };
-  }
-
-  if (code === "CONFLICT" && reason === "TAG_DELETE_HAS_ARTICLES") {
-    return {
-      code,
-      reason,
-      title: text.tagDeleteHasArticlesTitle,
-      description: text.tagDeleteHasArticlesDescription,
-      retryable: false,
-    };
-  }
-
-  if (code === "CONFLICT" && reason === "TAG_SLUG_EXISTS") {
-    return {
-      code,
-      reason,
-      title: text.tagSlugExistsTitle,
-      description: text.tagSlugExistsDescription,
       retryable: false,
     };
   }

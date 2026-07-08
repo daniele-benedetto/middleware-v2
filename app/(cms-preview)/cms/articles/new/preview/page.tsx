@@ -42,7 +42,6 @@ export default async function CmsNewArticlePreviewPage({
         imageAlt: null,
         audioUrl: null,
         audioChunks: null,
-        tags: [],
         statusLabel: i18n.cms.forms.resources.articles.newPreviewStatus,
         publicAvailable: false,
       })}

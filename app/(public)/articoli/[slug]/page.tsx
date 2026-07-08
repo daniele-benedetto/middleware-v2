@@ -33,7 +33,6 @@ export async function generateMetadata({ params }: PublicArticleRouteProps): Pro
     updatedAt: article.updatedAt,
     imageUrl: article.imageUrl,
     authorName: article.authorName,
-    tags: article.tags.map((tag) => tag.name),
   });
 }
 

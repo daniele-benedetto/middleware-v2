@@ -14,15 +14,15 @@ function getArticleCountLabel(count: number) {
   return i18n.public.labels.articleCount(count);
 }
 
-function IssueMetaRail({
-  issue,
-  issueNumber,
-}: Pick<CurrentIssueHeroProps, "issue" | "issueNumber">) {
+function IssueMetaRail({ issue }: Pick<CurrentIssueHeroProps, "issue">) {
+  const audioCount = issue.articles.filter((article) => article.hasAudio).length;
   const metaItems = [
-    { key: "issue", label: issueNumber },
     { key: "date", label: formatIssueMonthYearLong(issue.publishedAt) },
     { key: "count", label: getArticleCountLabel(issue.articles.length) },
-  ];
+    audioCount > 0
+      ? { key: "audio", label: i18n.public.home.dossier.audioCountLabel(audioCount) }
+      : null,
+  ].filter((item) => item !== null);
 
   return <PublicMetaRail items={metaItems} />;
 }
@@ -34,7 +34,7 @@ export function CurrentIssueHero({ issue, description, issueNumber }: CurrentIss
       titleStyled={issue.titleStyled}
       backgroundCode={issueNumber}
       description={description}
-      meta={<IssueMetaRail issue={issue} issueNumber={issueNumber} />}
+      meta={<IssueMetaRail issue={issue} />}
     />
   );
 }

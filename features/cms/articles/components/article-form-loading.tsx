@@ -44,10 +44,6 @@ export function CmsArticleFormLoading({ mode = "edit" }: CmsArticleFormLoadingPr
             {mode === "edit" ? (
               <div className="space-y-4">
                 <CmsFieldLoading labelWidth="w-16" />
-                <div className="flex items-center gap-2">
-                  <Skeleton className="size-4 rounded-[5px] border border-border bg-card-hover" />
-                  <Skeleton className="h-3 w-20 rounded-[6px] bg-card-hover" />
-                </div>
               </div>
             ) : (
               <Skeleton className="h-9 w-full rounded-[6px] border border-dashed border-border bg-card-hover" />
@@ -60,19 +56,6 @@ export function CmsArticleFormLoading({ mode = "edit" }: CmsArticleFormLoadingPr
               <CmsFieldLoading labelWidth="w-16" />
               <CmsFieldLoading labelWidth="w-20" />
               <CmsFieldLoading labelWidth="w-16" />
-            </div>
-          </section>
-
-          <section className="space-y-3">
-            <CmsSectionLabelLoading width="w-12" />
-            <CmsFieldLoading labelWidth="w-10" />
-            <div className="flex flex-wrap gap-2">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <Skeleton
-                  key={`tag-${index}`}
-                  className="h-7 w-20 rounded-[6px] border border-border bg-card-hover"
-                />
-              ))}
             </div>
           </section>
 

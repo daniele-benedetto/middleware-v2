@@ -5,12 +5,9 @@ const articlesRepositoryMock = vi.hoisted(() => ({
   create: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
-  syncTags: vi.fn(),
   publish: vi.fn(),
   unpublish: vi.fn(),
   archive: vi.fn(),
-  feature: vi.fn(),
-  unfeature: vi.fn(),
   listIdsByIssue: vi.fn(),
 }));
 
@@ -31,13 +28,11 @@ function createArticleRecord(overrides: Record<string, unknown> = {}) {
     slug: "article-title",
     status: "DRAFT",
     publishedAt: null,
-    isFeatured: false,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-02T00:00:00.000Z"),
     issue: { title: "Issue 01" },
     category: { name: "Politics" },
     author: { name: "Editor", email: "editor@example.com" },
-    _count: { tags: 2 },
     ...overrides,
   };
 }
@@ -51,7 +46,6 @@ function createArticleDetailRecord(overrides: Record<string, unknown> = {}) {
     imageUrl: null,
     audioUrl: null,
     audioChunks: null,
-    tags: [{ tagId: "55555555-5555-5555-5555-555555555555" }],
     ...overrides,
   };
 }
@@ -61,7 +55,7 @@ describe("articlesService", () => {
     vi.clearAllMocks();
   });
 
-  it("creates articles with normalized slug, deduplicated tags and plain excerpt", async () => {
+  it("creates articles with normalized slug and plain excerpt", async () => {
     articlesRepositoryMock.create.mockResolvedValue(createArticleRecord());
 
     const result = await articlesService.create({
@@ -84,24 +78,17 @@ describe("articlesService", () => {
         ],
       },
       contentRich: { type: "doc", content: [{ type: "paragraph" }] },
-      tagIds: [
-        "55555555-5555-5555-5555-555555555555",
-        "55555555-5555-5555-5555-555555555555",
-        "66666666-6666-6666-6666-666666666666",
-      ],
     });
 
     expect(articlesRepositoryMock.create).toHaveBeenCalledWith(
       expect.objectContaining({
         slug: "article-title",
         excerpt: "Intro Second line",
-        tagIds: ["55555555-5555-5555-5555-555555555555", "66666666-6666-6666-6666-666666666666"],
       }),
     );
     expect(result).toMatchObject({
       id: "11111111-1111-1111-1111-111111111111",
       slug: "article-title",
-      tagsCount: 2,
     });
   });
 
@@ -140,7 +127,7 @@ describe("articlesService", () => {
         },
       ],
     });
-    expect(result.tagIds).toEqual(["55555555-5555-5555-5555-555555555555"]);
+    expect(result.contentRich).toEqual({ type: "doc", content: [{ type: "paragraph" }] });
   });
 
   it("validates publishedAt consistency before updating", async () => {
@@ -181,18 +168,6 @@ describe("articlesService", () => {
       repoMethod: "archive",
       run: () => articlesService.archive("11111111-1111-1111-1111-111111111111"),
     },
-    {
-      method: "feature",
-      current: createArticleRecord({ isFeatured: true }),
-      repoMethod: "feature",
-      run: () => articlesService.feature("11111111-1111-1111-1111-111111111111"),
-    },
-    {
-      method: "unfeature",
-      current: createArticleRecord({ isFeatured: false }),
-      repoMethod: "unfeature",
-      run: () => articlesService.unfeature("11111111-1111-1111-1111-111111111111"),
-    },
   ])("returns current record without repository write on idempotent $method", async (testCase) => {
     articlesRepositoryMock.getById.mockResolvedValue(testCase.current);
 
@@ -203,22 +178,6 @@ describe("articlesService", () => {
     ).not.toHaveBeenCalled();
     expect(result).toMatchObject({
       id: "11111111-1111-1111-1111-111111111111",
-    });
-  });
-
-  it("maps invalid tag relations on syncTags", async () => {
-    articlesRepositoryMock.syncTags.mockRejectedValue(
-      createPrismaKnownRequestError("P2003", "invalid tag relation"),
-    );
-
-    await expect(
-      articlesService.syncTags("11111111-1111-1111-1111-111111111111", {
-        tagIds: ["55555555-5555-5555-5555-555555555555"],
-      }),
-    ).rejects.toMatchObject({
-      status: 400,
-      code: "VALIDATION_ERROR",
-      details: { reason: "ARTICLE_INVALID_TAGS" },
     });
   });
 });

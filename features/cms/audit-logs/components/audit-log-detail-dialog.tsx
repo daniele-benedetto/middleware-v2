@@ -158,10 +158,6 @@ function resolveResourceLabel(
     return text.resourceMediaLabel;
   }
 
-  if (resource === "tags") {
-    return text.resourceTagLabel;
-  }
-
   if (resource === "users") {
     return text.resourceUserLabel;
   }
@@ -281,13 +277,6 @@ function resolveResourceAction(detail: AuditLogDetail, text: typeof i18n.cms.lis
     return {
       href: cmsCrudRoutes.issues.edit(detail.resourceId),
       label: text.links.openIssue,
-    } satisfies DetailAction;
-  }
-
-  if (detail.resource === "tags" && detail.resourceId) {
-    return {
-      href: cmsCrudRoutes.tags.edit(detail.resourceId),
-      label: text.links.openTag,
     } satisfies DetailAction;
   }
 

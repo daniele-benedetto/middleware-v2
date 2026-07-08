@@ -7,7 +7,6 @@ import {
 
 type TestArticle = {
   id: string;
-  isFeatured: boolean;
   publishedAt: string;
   title: string;
 };
@@ -15,7 +14,6 @@ type TestArticle = {
 function article(id: string, overrides: Partial<TestArticle> = {}): TestArticle {
   return {
     id,
-    isFeatured: false,
     publishedAt: `2026-01-0${id}.000Z`,
     title: `Article ${id}`,
     ...overrides,
@@ -27,7 +25,7 @@ describe("issue numbering", () => {
     const articles = [
       article("1", { publishedAt: "2026-01-01T00:00:00.000Z" }),
       article("2", { publishedAt: "2026-01-02T00:00:00.000Z" }),
-      article("3", { isFeatured: true, publishedAt: "2026-01-03T00:00:00.000Z" }),
+      article("3", { publishedAt: "2026-01-03T00:00:00.000Z" }),
       article("4", { publishedAt: "2026-01-04T00:00:00.000Z" }),
       article("5", { publishedAt: "2026-01-05T00:00:00.000Z" }),
     ];

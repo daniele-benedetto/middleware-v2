@@ -22,12 +22,6 @@ describe("mapTrpcErrorToCmsUiMessage", () => {
     },
     {
       code: "BAD_REQUEST" as const,
-      reason: "ARTICLE_INVALID_TAGS" as const,
-      title: i18n.cms.lists.articles.domainErrors.invalidTagsTitle,
-      description: i18n.cms.lists.articles.domainErrors.invalidTagsDescription,
-    },
-    {
-      code: "BAD_REQUEST" as const,
       reason: "ARTICLE_REORDER_IDS_MISMATCH" as const,
       title: i18n.cms.lists.articles.domainErrors.reorderInvalidTitle,
       description: i18n.cms.lists.articles.domainErrors.reorderInvalidDescription,
@@ -61,18 +55,6 @@ describe("mapTrpcErrorToCmsUiMessage", () => {
       reason: "ISSUE_SLUG_EXISTS" as const,
       title: i18n.cms.trpcErrors.domain.issueSlugExistsTitle,
       description: i18n.cms.trpcErrors.domain.issueSlugExistsDescription,
-    },
-    {
-      code: "CONFLICT" as const,
-      reason: "TAG_DELETE_HAS_ARTICLES" as const,
-      title: i18n.cms.trpcErrors.domain.tagDeleteHasArticlesTitle,
-      description: i18n.cms.trpcErrors.domain.tagDeleteHasArticlesDescription,
-    },
-    {
-      code: "CONFLICT" as const,
-      reason: "TAG_SLUG_EXISTS" as const,
-      title: i18n.cms.trpcErrors.domain.tagSlugExistsTitle,
-      description: i18n.cms.trpcErrors.domain.tagSlugExistsDescription,
     },
     {
       code: "CONFLICT" as const,

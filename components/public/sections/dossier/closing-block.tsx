@@ -10,12 +10,10 @@ import { PublicLink as Link } from "@/components/public/public-link";
 import { BlockTitle } from "@/components/public/sections/dossier/block-title";
 import {
   formatArticleNumber,
-  formatTags,
   getArticleNumber,
 } from "@/components/public/sections/dossier/dossier-format";
 import { getNarrativeVariantClasses } from "@/components/public/sections/dossier/dossier-variant";
 import { StyledTitle } from "@/components/public/styled-title";
-import { i18n } from "@/lib/i18n";
 import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
@@ -35,10 +33,8 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
     return null;
   }
 
-  const tagLine = formatTags(article);
   const variantClasses = getNarrativeVariantClasses(variant);
   const blockHasCopy = Boolean(block.title || block.description);
-  const closingText = i18n.public.home.closing;
   const editorialPanelBorder = variant === "default" ? "border border-foreground" : "";
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `closing-article-title-${article.id}`;
@@ -53,6 +49,60 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
       />
     </div>
   ) : null;
+  const articleCard = (
+    <Link
+      href={articleHref}
+      aria-labelledby={titleId}
+      className={cn(
+        publicInteraction.cardSurface,
+        "min-w-0 border border-foreground bg-background text-foreground",
+      )}
+    >
+      {image}
+      <div className="flex h-full flex-col px-6 pt-6 pb-6 md:px-8 md:pt-7 md:pb-8">
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <span className={cn(publicTypography.articleNumberLg, "text-accent")}>
+            {formatArticleNumber(getArticleNumber(articleNumbers, article))}
+          </span>
+        </div>
+
+        <h3
+          id={titleId}
+          className={cn(publicTypography.closingArticleTitle, "w-full text-balance")}
+        >
+          <StyledTitle
+            title={article.title}
+            titleStyled={article.titleStyled}
+            primaryClassName="text-accent"
+          />
+        </h3>
+
+        {article.excerpt ? (
+          <p className="mt-5 w-full font-editorial text-[18px] leading-[1.42] text-body-text italic md:text-[21px]">
+            {article.excerpt}
+          </p>
+        ) : null}
+        <div className="mt-auto pt-7">
+          <ArticleMeta article={article} />
+        </div>
+      </div>
+    </Link>
+  );
+
+  if (!blockHasCopy) {
+    return (
+      <section className="py-10 md:py-12">
+        <div className={publicContentClassName}>
+          <div aria-hidden="true" className="mb-8 border-t border-foreground md:mb-10" />
+          <div className="md:ml-auto md:max-w-[min(780px,72vw)]">{articleCard}</div>
+          <div
+            aria-hidden="true"
+            className="mt-8 ml-auto w-1/3 border-t border-foreground md:mt-10"
+          />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-10 md:py-12">
@@ -60,72 +110,23 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
         className={`${publicContentClassName} grid gap-8 md:grid-cols-[minmax(220px,0.38fr)_minmax(0,0.62fr)] md:gap-10 lg:grid-cols-[minmax(240px,0.38fr)_minmax(0,0.62fr)] lg:gap-12`}
       >
         <aside className={`p-6 md:p-8 lg:p-9 ${variantClasses.section} ${editorialPanelBorder}`}>
-          {blockHasCopy ? (
-            <div>
-              {block.title ? (
-                <h2 className={cn(publicTypography.closingPanelTitle, "max-w-[11ch] text-balance")}>
-                  <BlockTitle block={block} primaryClassName={variantClasses.titlePrimary} />
-                </h2>
-              ) : null}
-              {block.description ? (
-                <p
-                  className={`mt-5 max-w-[36ch] font-editorial text-[18px] leading-[1.44] md:text-[20px] ${variantClasses.description}`}
-                >
-                  {block.description}
-                </p>
-              ) : null}
-            </div>
-          ) : (
-            <div className="flex h-full items-end">
+          <div>
+            {block.title ? (
+              <h2 className={cn(publicTypography.closingPanelTitle, "max-w-[11ch] text-balance")}>
+                <BlockTitle block={block} primaryClassName={variantClasses.titlePrimary} />
+              </h2>
+            ) : null}
+            {block.description ? (
               <p
-                className={`max-w-[28ch] font-editorial text-[18px] leading-[1.44] italic md:text-[20px] ${variantClasses.description}`}
+                className={`mt-5 max-w-[36ch] font-editorial text-[18px] leading-[1.44] md:text-[20px] ${variantClasses.description}`}
               >
-                {closingText.fallback}
-              </p>
-            </div>
-          )}
-        </aside>
-
-        <Link
-          href={articleHref}
-          aria-labelledby={titleId}
-          className={cn(
-            publicInteraction.cardSurface,
-            "min-w-0 border border-foreground bg-background text-foreground",
-          )}
-        >
-          {image}
-          <div className="flex h-full flex-col px-6 pt-6 pb-6 md:px-8 md:pt-7 md:pb-8">
-            <div className="mb-5 flex items-start justify-between gap-4">
-              <span className={cn(publicTypography.articleNumberLg, "text-accent")}>
-                {formatArticleNumber(getArticleNumber(articleNumbers, article))}
-              </span>
-              {tagLine ? (
-                <p className={cn(publicTypography.articleEyebrowWide, "text-muted")}>{tagLine}</p>
-              ) : null}
-            </div>
-
-            <h3
-              id={titleId}
-              className={cn(publicTypography.closingArticleTitle, "w-full text-balance")}
-            >
-              <StyledTitle
-                title={article.title}
-                titleStyled={article.titleStyled}
-                primaryClassName="text-accent"
-              />
-            </h3>
-
-            {article.excerpt ? (
-              <p className="mt-5 w-full font-editorial text-[18px] leading-[1.42] text-body-text italic md:text-[21px]">
-                {article.excerpt}
+                {block.description}
               </p>
             ) : null}
-            <div className="mt-auto pt-7">
-              <ArticleMeta article={article} />
-            </div>
           </div>
-        </Link>
+        </aside>
+
+        {articleCard}
       </div>
     </section>
   );

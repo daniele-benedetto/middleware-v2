@@ -8,7 +8,6 @@ export {
   parseIssuesListSearchParams,
   parseLessonsListSearchParams,
   parsePagesListSearchParams,
-  parseTagsListSearchParams,
   parseUsersListSearchParams,
   serializeCmsSearchParams,
 } from "@/lib/cms/query/list-params";

@@ -7,7 +7,6 @@ export {
   useIssuesListQuery,
   useLessonsListQuery,
   usePagesListQuery,
-  useTagsListQuery,
   useUsersListQuery,
 } from "@/features/cms/shared/hooks/use-cms-domain-list-hooks";
 export {

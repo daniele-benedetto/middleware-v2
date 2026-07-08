@@ -11,7 +11,6 @@ import {
   articlesService,
   createArticleInputSchema,
   listArticlesQuerySchema,
-  syncArticleTagsInputSchema,
   updateArticleInputSchema,
 } from "@/lib/server/modules/articles";
 import { publicArticleDetailDtoSchema } from "@/lib/server/modules/articles/dto/public";
@@ -110,26 +109,6 @@ export const articlesRouter = router({
       revalidatePublicArticleContent();
       return parseOutput({ success: true }, successOutputSchema);
     }),
-  syncTags: writeProcedure
-    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
-    .input(articleIdInputSchema.extend({ data: syncArticleTagsInputSchema }))
-    .use(
-      auditMiddleware<{ id: string; data: z.infer<typeof syncArticleTagsInputSchema> }>(
-        (input) => ({
-          action: "sync-tags",
-          resource: "articles",
-          resourceId: input.id,
-        }),
-      ),
-    )
-    .mutation(async ({ input }) => {
-      const article = parseOutput(
-        await articlesService.syncTags(input.id, input.data),
-        articleDtoSchema,
-      );
-      revalidatePublicArticleContent();
-      return article;
-    }),
   publish: publishProcedure
     .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
     .input(articleIdInputSchema)
@@ -172,36 +151,6 @@ export const articlesRouter = router({
     )
     .mutation(async ({ input }) => {
       const article = parseOutput(await articlesService.archive(input.id), articleDtoSchema);
-      revalidatePublicArticleContent();
-      return article;
-    }),
-  feature: writeProcedure
-    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
-    .input(articleIdInputSchema)
-    .use(
-      auditMiddleware<{ id: string }>((input) => ({
-        action: "feature",
-        resource: "articles",
-        resourceId: input.id,
-      })),
-    )
-    .mutation(async ({ input }) => {
-      const article = parseOutput(await articlesService.feature(input.id), articleDtoSchema);
-      revalidatePublicArticleContent();
-      return article;
-    }),
-  unfeature: writeProcedure
-    .use(requireRoleMiddleware(articlesPolicy.allowedRoles))
-    .input(articleIdInputSchema)
-    .use(
-      auditMiddleware<{ id: string }>((input) => ({
-        action: "unfeature",
-        resource: "articles",
-        resourceId: input.id,
-      })),
-    )
-    .mutation(async ({ input }) => {
-      const article = parseOutput(await articlesService.unfeature(input.id), articleDtoSchema);
       revalidatePublicArticleContent();
       return article;
     }),

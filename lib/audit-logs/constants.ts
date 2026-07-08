@@ -7,7 +7,6 @@ export const auditLogResourceValues = [
   "media",
   "navigation",
   "pages",
-  "tags",
   "users",
   "unknown",
 ] as const;

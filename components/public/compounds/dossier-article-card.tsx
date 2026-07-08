@@ -12,7 +12,7 @@ import type { HomeIssueArticle } from "@/components/public/home/home-view-model"
 
 type DossierArticleCardProps = {
   article: HomeIssueArticle;
-  eyebrow: string;
+  eyebrow?: string;
   number: number;
   variant: "clusterFeatured" | "constellationSecondary";
   className?: string;
@@ -58,7 +58,7 @@ export function DossierArticleCard({
     >
       <article className="contents">
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="mb-5 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4">
+          <div className="mb-5 flex items-start justify-between gap-4">
             <span
               className={`shrink-0 font-heading leading-[0.78] font-black tracking-[-0.04em] text-accent ${
                 isClusterFeatured
@@ -68,9 +68,11 @@ export function DossierArticleCard({
             >
               {formatArticleNumber(number)}
             </span>
-            <span className={cn(publicTypography.articleEyebrow, "min-w-0 text-muted")}>
-              {eyebrow}
-            </span>
+            {eyebrow ? (
+              <span className={cn(publicTypography.articleEyebrow, "min-w-0 text-muted")}>
+                {eyebrow}
+              </span>
+            ) : null}
           </div>
 
           <h3

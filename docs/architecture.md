@@ -153,7 +153,6 @@ Current role matrix:
 - `auditLogs.*`: `ADMIN`
 - `issues.*`: `ADMIN`, `EDITOR`
 - `categories.*`: `ADMIN`, `EDITOR`
-- `tags.*`: `ADMIN`, `EDITOR`
 - `articles.*`: `ADMIN`, `EDITOR`
 - `media.*`: `ADMIN`, `EDITOR`
 
@@ -193,7 +192,7 @@ Editorial image semantics:
 ## Issue Home Regia
 
 - Public home composition is issue-centric. `Issue.homeBlocks` is the editorial source of truth for the current issue home layout.
-- Articles remain content entities with category, tags, author, media, and publication metadata. They do not own home placement state.
+- Articles remain content entities with category, author, media, and publication metadata. They do not own home placement state.
 - `Issue.homeVariant` stores the visual variant for the issue across dossier blocks and issue archive cards (`black`, `red`, or `default`).
 - `Issue.homeBlocks` is a validated JSON array. Each block stores `id`, `type`, optional `title`, optional `description`, `articleIds`, and optional `featuredArticleId`; visual variant state belongs to the issue, not to individual blocks.
 - Blocks use only manually assigned articles. Empty blocks are allowed in CMS state and are skipped by the public renderer.

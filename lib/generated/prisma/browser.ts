@@ -53,20 +53,10 @@ export type Issue = Prisma.IssueModel
  */
 export type Category = Prisma.CategoryModel
 /**
- * Model Tag
- * 
- */
-export type Tag = Prisma.TagModel
-/**
  * Model Article
  * 
  */
 export type Article = Prisma.ArticleModel
-/**
- * Model ArticleTag
- * 
- */
-export type ArticleTag = Prisma.ArticleTagModel
 /**
  * Model Course
  * 

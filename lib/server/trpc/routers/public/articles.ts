@@ -7,8 +7,6 @@ import {
 import {
   publicArticleByCategoryInputSchema,
   publicArticleByIssueInputSchema,
-  publicArticleByTagInputSchema,
-  publicArticleFeaturedInputSchema,
   publicArticleSearchInputSchema,
   publicArticleSlugInputSchema,
 } from "@/lib/server/modules/articles/schema/public";
@@ -43,20 +41,6 @@ export const publicArticlesRouter = router({
     .query(async ({ input }) => {
       return parseOutput(
         await publicArticlesService.listByCategory(input.categorySlug),
-        publicArticlesListDtoSchema,
-      );
-    }),
-  listByTag: publicReadProcedure.input(publicArticleByTagInputSchema).query(async ({ input }) => {
-    return parseOutput(
-      await publicArticlesService.listByTag(input.tagSlug),
-      publicArticlesListDtoSchema,
-    );
-  }),
-  listFeatured: publicReadProcedure
-    .input(publicArticleFeaturedInputSchema)
-    .query(async ({ input }) => {
-      return parseOutput(
-        await publicArticlesService.listFeatured(input.limit),
         publicArticlesListDtoSchema,
       );
     }),

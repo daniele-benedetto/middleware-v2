@@ -23,7 +23,6 @@ const PUBLIC_ARTICLE_SUMMARY_SELECT = {
   imageUrl: true,
   imageAlt: true,
   audioUrl: true,
-  isFeatured: true,
   publishedAt: true,
   issueId: true,
   categoryId: true,
@@ -37,9 +36,6 @@ const PUBLIC_ARTICLE_SUMMARY_SELECT = {
   author: {
     select: { name: true },
   },
-  _count: {
-    select: { tags: true },
-  },
 } as const satisfies Prisma.ArticleSelect;
 
 const PUBLIC_ARTICLE_DETAIL_SELECT = {
@@ -48,13 +44,6 @@ const PUBLIC_ARTICLE_DETAIL_SELECT = {
   excerptRich: true,
   contentRich: true,
   audioChunks: true,
-  tags: {
-    select: {
-      tag: {
-        select: { id: true, slug: true, name: true },
-      },
-    },
-  },
 } as const satisfies Prisma.ArticleSelect;
 
 export const publicArticlesRepository = {
@@ -100,24 +89,6 @@ export const publicArticlesRepository = {
         category: { slug: categorySlug, isActive: true },
       },
       orderBy: { publishedAt: "desc" },
-      select: PUBLIC_ARTICLE_SUMMARY_SELECT,
-    });
-  },
-  async listByTagSlug(tagSlug: string) {
-    return prisma.article.findMany({
-      where: {
-        ...PUBLIC_ARTICLE_WHERE,
-        tags: { some: { tag: { slug: tagSlug, isActive: true } } },
-      },
-      orderBy: { publishedAt: "desc" },
-      select: PUBLIC_ARTICLE_SUMMARY_SELECT,
-    });
-  },
-  async listFeatured(limit: number) {
-    return prisma.article.findMany({
-      where: { ...PUBLIC_ARTICLE_WHERE, isFeatured: true },
-      orderBy: { publishedAt: "desc" },
-      take: limit,
       select: PUBLIC_ARTICLE_SUMMARY_SELECT,
     });
   },

@@ -110,7 +110,6 @@ export function CmsMediaPreviewSheet({
     ].map((reference) => ({
       id: reference.id,
       title: reference.title,
-      isFeatured: false,
       href: `/cms/articles/${reference.id}/edit`,
     }));
   }, [item.articleReferences]);
@@ -347,7 +346,6 @@ export function CmsMediaPreviewSheet({
               <CmsArticleListPanel
                 title={i18n.cms.navigation.articles}
                 emptyText={mediaText.referencesEmpty}
-                featuredAriaLabel={i18n.cms.lists.issues.articlesPanelFeaturedAria}
                 articles={relatedArticles}
               />
             </div>

@@ -9,7 +9,6 @@ import {
 import { PublicLink as Link } from "@/components/public/public-link";
 import {
   formatArticleNumber,
-  formatTags,
   getArticleNumber,
 } from "@/components/public/sections/dossier/dossier-format";
 import { getNarrativeVariantClasses } from "@/components/public/sections/dossier/dossier-variant";
@@ -35,7 +34,6 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
     return null;
   }
 
-  const tagLine = formatTags(article);
   const variantClasses = getNarrativeVariantClasses(variant);
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `lead-article-title-${article.id}`;
@@ -58,11 +56,6 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
               <span className={cn(publicTypography.articleNumberLg, variantClasses.titlePrimary)}>
                 {formatArticleNumber(getArticleNumber(articleNumbers, article))}
               </span>
-              {tagLine ? (
-                <p className={cn(publicTypography.articleEyebrowWide, variantClasses.eyebrow)}>
-                  {tagLine}
-                </p>
-              ) : null}
             </div>
             <h2
               id={titleId}

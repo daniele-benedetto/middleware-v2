@@ -19,10 +19,6 @@ export type NarrativeHomeBlock = {
 
 export function sortHomeArticles(articles: HomeIssueArticle[]) {
   return [...articles].sort((a, b) => {
-    if (a.isFeatured !== b.isFeatured) {
-      return a.isFeatured ? -1 : 1;
-    }
-
     return new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
   });
 }

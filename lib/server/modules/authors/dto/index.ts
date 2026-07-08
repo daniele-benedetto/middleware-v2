@@ -15,7 +15,6 @@ export const authorArticleSummaryDtoSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
-  isFeatured: z.boolean(),
 });
 
 export const authorDetailDtoSchema = authorDtoSchema.extend({

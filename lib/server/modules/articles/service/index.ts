@@ -20,7 +20,6 @@ import type {
   ArticleTitleStyled,
   CreateArticleInput,
   ListArticlesQuery,
-  SyncArticleTagsInput,
   UpdateArticleInput,
 } from "@/lib/server/modules/articles/schema";
 
@@ -44,13 +43,11 @@ type ArticleRecord = {
   slug: string;
   status: ArticleStatus;
   publishedAt: Date | null;
-  isFeatured: boolean;
   createdAt: Date;
   updatedAt: Date;
   issue?: { slug?: string; title: string } | null;
   category?: { slug?: string; name: string } | null;
   author?: { name: string } | null;
-  _count?: { tags: number };
 };
 
 type ArticleDetailRecord = ArticleRecord & {
@@ -61,7 +58,6 @@ type ArticleDetailRecord = ArticleRecord & {
   imageAlt: string | null;
   audioUrl: string | null;
   audioChunks: unknown;
-  tags?: Array<{ tagId: string; tag?: { id: string; slug: string; name: string } }>;
 };
 
 function collectRichTextFragments(value: unknown, fragments: string[]) {
@@ -150,13 +146,11 @@ const toArticleDto = (article: ArticleRecord): ArticleDto => {
     slug: article.slug,
     status: article.status,
     publishedAt: article.publishedAt?.toISOString() ?? null,
-    isFeatured: article.isFeatured,
     createdAt: article.createdAt.toISOString(),
     updatedAt: article.updatedAt.toISOString(),
     issueTitle: article.issue?.title ?? null,
     categoryName: article.category?.name ?? null,
     authorName: article.author?.name ?? null,
-    tagsCount: article._count?.tags ?? 0,
   };
 };
 
@@ -172,7 +166,6 @@ const toArticleDetailDto = (article: ArticleDetailRecord): ArticleDetailDto => {
     imageAlt: article.imageAlt,
     audioUrl: article.audioUrl,
     audioChunks: (article.audioChunks ?? null) as ArticleDetailDto["audioChunks"],
-    tagIds: (article.tags ?? []).map((relation) => relation.tagId),
   };
 };
 
@@ -194,7 +187,6 @@ const toPublicArticlePreviewDto = (article: ArticleDetailRecord): PublicArticleD
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
     imageAlt: article.imageAlt,
     hasAudio: Boolean(article.audioUrl),
-    isFeatured: article.isFeatured,
     publishedAt: toPreviewPublishedAt(article),
     issueId: article.issueId,
     issueSlug: article.issue.slug,
@@ -204,15 +196,11 @@ const toPublicArticlePreviewDto = (article: ArticleDetailRecord): PublicArticleD
     categoryName: article.category.name,
     authorId: article.authorId,
     authorName: article.author?.name ?? null,
-    tagsCount: article._count?.tags ?? 0,
     excerptRich: article.excerptRich ?? null,
     contentRich: article.contentRich,
     audioUrl: resolvePublicMediaUrl(article.audioUrl),
     audioChunks: article.audioChunks ?? null,
     updatedAt: article.updatedAt.toISOString(),
-    tags: (article.tags ?? [])
-      .map((entry) => entry.tag)
-      .filter((tag): tag is { id: string; slug: string; name: string } => Boolean(tag)),
   };
 };
 
@@ -267,7 +255,6 @@ export const articlesService = {
       ...input,
       slug: ensureSlug(input.slug),
       ...toCreateExcerptPersist(input),
-      tagIds: input.tagIds?.length ? Array.from(new Set(input.tagIds)) : undefined,
     };
 
     try {
@@ -354,32 +341,6 @@ export const articlesService = {
       throw error;
     }
   },
-  async syncTags(id: string, input: SyncArticleTagsInput) {
-    try {
-      const article = await articlesRepository.syncTags(id, input);
-
-      if (!article) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
-      return toArticleDto(article);
-    } catch (error) {
-      if (isNotFoundError(error)) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
-      if (isRelationError(error)) {
-        throw new ApiError(
-          400,
-          "VALIDATION_ERROR",
-          "One or more tags are invalid",
-          createCmsDomainErrorDetails("ARTICLE_INVALID_TAGS"),
-        );
-      }
-
-      throw error;
-    }
-  },
   async publish(id: string) {
     const current = await articlesRepository.getById(id);
 
@@ -437,50 +398,6 @@ export const articlesService = {
 
     try {
       const article = await articlesRepository.archive(id);
-      return toArticleDto(article);
-    } catch (error) {
-      if (isNotFoundError(error)) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
-      throw error;
-    }
-  },
-  async feature(id: string) {
-    const current = await articlesRepository.getById(id);
-
-    if (!current) {
-      throw new ApiError(404, "NOT_FOUND", "Article not found");
-    }
-
-    if (current.isFeatured) {
-      return toArticleDto(current);
-    }
-
-    try {
-      const article = await articlesRepository.feature(id);
-      return toArticleDto(article);
-    } catch (error) {
-      if (isNotFoundError(error)) {
-        throw new ApiError(404, "NOT_FOUND", "Article not found");
-      }
-
-      throw error;
-    }
-  },
-  async unfeature(id: string) {
-    const current = await articlesRepository.getById(id);
-
-    if (!current) {
-      throw new ApiError(404, "NOT_FOUND", "Article not found");
-    }
-
-    if (!current.isFeatured) {
-      return toArticleDto(current);
-    }
-
-    try {
-      const article = await articlesRepository.unfeature(id);
       return toArticleDto(article);
     } catch (error) {
       if (isNotFoundError(error)) {

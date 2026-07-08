@@ -10,7 +10,6 @@ import { CmsConfirmDialog, CmsErrorState } from "@/components/cms/common";
 import {
   CmsActionButton,
   CmsBody,
-  CmsCheckbox,
   CmsFormField,
   CmsMetaText,
   CmsPageHeader,
@@ -26,16 +25,13 @@ import {
 } from "@/components/cms/primitives";
 import { CmsArticleFormLoading } from "@/features/cms/articles/components/article-form-loading";
 import { ArticleMediaFieldPreview } from "@/features/cms/articles/components/article-media-field-preview";
-import { ArticleTagsMultiSelect } from "@/features/cms/articles/components/article-tags-multi-select";
 import {
   useArticleById,
   useArticleCreate,
-  useArticleSyncTags,
   useArticleUpdate,
   useAuthorOptions,
   useCategoryOptions,
   useIssueOptions,
-  useTagOptions,
   type ArticleDetail,
   type CreateArticleInput,
   type UpdateArticleInput,
@@ -64,7 +60,6 @@ import type {
   AuthorsListInitialData,
   CategoriesListInitialData,
   IssuesListInitialData,
-  TagsListInitialData,
 } from "@/features/cms/shared/types/initial-data";
 import type { ArticleTitleStyled } from "@/lib/server/modules/articles/schema";
 
@@ -79,7 +74,6 @@ type ArticleFormScreenProps = {
 };
 
 type ArticleFormOptionsInitialData = {
-  tagsOptions: TagsListInitialData;
   issuesOptions: IssuesListInitialData;
   categoriesOptions: CategoriesListInitialData;
   authorsOptions: AuthorsListInitialData;
@@ -101,19 +95,10 @@ const articleFormStateSchema = z.object({
   imageAlt: z.string().trim().max(240),
   audioUrl: z.string().trim().refine(isValidOptionalUrl),
   audioChunksUrl: z.string().trim().refine(isValidOptionalUrl),
-  tagIds: z.array(z.string().uuid()),
   status: z.enum(articleStatusOptions),
-  isFeatured: z.boolean(),
 });
 
 type ArticleFormValues = z.infer<typeof articleFormStateSchema>;
-
-function tagIdsEqual(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) return false;
-  const sortedA = [...a].sort();
-  const sortedB = [...b].sort();
-  return sortedA.every((value, index) => value === sortedB[index]);
-}
 
 function extractAudioChunksUrl(value: unknown) {
   return typeof value === "string" ? value : "";
@@ -164,9 +149,7 @@ function getArticleFormDefaultValues(article?: ArticleDetail): ArticleFormValues
     imageAlt: article?.imageAlt ?? "",
     audioUrl: article?.audioUrl ?? "",
     audioChunksUrl: extractAudioChunksUrl(article?.audioChunks),
-    tagIds: article?.tagIds ?? [],
     status: article?.status ?? "DRAFT",
-    isFeatured: article?.isFeatured ?? false,
   };
 }
 
@@ -188,8 +171,6 @@ function buildCreateArticlePayload(
     imageAlt: values.imageAlt || undefined,
     audioUrl: values.audioUrl || undefined,
     audioChunks: values.audioChunksUrl || undefined,
-    tagIds: values.tagIds.length > 0 ? values.tagIds : undefined,
-    isFeatured: values.isFeatured,
   };
 }
 
@@ -218,7 +199,6 @@ function buildUpdateArticlePayload(
         : undefined,
     status: values.status,
     publishedAt: resolvePublishedAtForStatus(values.status, article?.publishedAt ?? null),
-    isFeatured: values.isFeatured,
   };
 }
 
@@ -235,7 +215,6 @@ export function CmsArticleFormScreen({
   const articleFormText = formText.resources.articles;
 
   const articleQuery = useArticleById(mode === "edit" ? articleId : undefined, { initialData });
-  const tagOptionsQuery = useTagOptions({ initialData: initialOptionsData?.tagsOptions });
   const issueOptionsQuery = useIssueOptions({ initialData: initialOptionsData?.issuesOptions });
   const categoryOptionsQuery = useCategoryOptions({
     initialData: initialOptionsData?.categoriesOptions,
@@ -244,7 +223,6 @@ export function CmsArticleFormScreen({
   const createMutation = useArticleCreate();
   const updateMutation = useArticleUpdate();
   const deleteMutation = trpc.articles.delete.useMutation();
-  const syncTagsMutation = useArticleSyncTags();
 
   if (mode === "edit" && !articleId) {
     return (
@@ -267,8 +245,7 @@ export function CmsArticleFormScreen({
   const optionsError =
     (issueOptionsQuery.isError ? issueOptionsQuery.error : null) ??
     (categoryOptionsQuery.isError ? categoryOptionsQuery.error : null) ??
-    (authorOptionsQuery.isError ? authorOptionsQuery.error : null) ??
-    (tagOptionsQuery.isError ? tagOptionsQuery.error : null);
+    (authorOptionsQuery.isError ? authorOptionsQuery.error : null);
 
   if (optionsError) {
     const mapped = mapTrpcErrorToCmsUiMessage(optionsError);
@@ -284,7 +261,6 @@ export function CmsArticleFormScreen({
                   issueOptionsQuery.refetch(),
                   categoryOptionsQuery.refetch(),
                   authorOptionsQuery.refetch(),
-                  tagOptionsQuery.refetch(),
                 ]);
               }
             : undefined
@@ -299,40 +275,21 @@ export function CmsArticleFormScreen({
       mode={mode}
       articleId={articleId}
       article={articleQuery.data}
-      tagsAvailable={tagOptionsQuery.data?.items ?? []}
       issuesAvailable={issueOptionsQuery.data?.items ?? []}
       categoriesAvailable={categoryOptionsQuery.data?.items ?? []}
       authorsAvailable={authorOptionsQuery.data?.items ?? []}
-      tagsLoading={tagOptionsQuery.isPending}
       issuesLoading={issueOptionsQuery.isPending}
       categoriesLoading={categoryOptionsQuery.isPending}
       authorsLoading={authorOptionsQuery.isPending}
-      isMutating={
-        createMutation.isPending ||
-        updateMutation.isPending ||
-        syncTagsMutation.isPending ||
-        deleteMutation.isPending
-      }
+      isMutating={createMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
       onCancel={cancel}
       onCreate={async (payload) => {
         await createMutation.mutateAsync(payload);
         await invalidateAfterCmsMutation(trpcUtils, "articles.create");
         success(articleFormText.created);
       }}
-      onUpdate={async ({ id, data, tagIds }) => {
+      onUpdate={async ({ id, data }) => {
         await updateMutation.mutateAsync({ id, data });
-
-        if (tagIds) {
-          try {
-            await syncTagsMutation.mutateAsync({ id, data: { tagIds } });
-          } catch (error) {
-            const mapped = mapCrudDomainError(error, "articles");
-            await invalidateAfterCmsMutation(trpcUtils, "articles.update", { id });
-            cmsToast.error(articleFormText.syncTagsFailed(mapped.description), mapped.title);
-            cancel();
-            return;
-          }
-        }
 
         await invalidateAfterCmsMutation(trpcUtils, "articles.update", { id });
         success(articleFormText.updated);
@@ -357,11 +314,9 @@ type ArticleFormContentProps = {
   mode: "create" | "edit";
   articleId?: string;
   article?: ArticleDetail;
-  tagsAvailable: Array<{ id: string; name: string; slug: string }>;
   issuesAvailable: Array<{ id: string; title: string; slug: string }>;
   categoriesAvailable: Array<{ id: string; name: string }>;
   authorsAvailable: Array<{ id: string; name: string }>;
-  tagsLoading: boolean;
   issuesLoading: boolean;
   categoriesLoading: boolean;
   authorsLoading: boolean;
@@ -377,18 +332,15 @@ type ArticleFormContentProps = {
 type ArticleUpdatePayload = {
   id: string;
   data: UpdateArticleInput;
-  tagIds?: string[];
 };
 
 function ArticleFormContent({
   mode,
   articleId,
   article,
-  tagsAvailable,
   issuesAvailable,
   categoriesAvailable,
   authorsAvailable,
-  tagsLoading,
   issuesLoading,
   categoriesLoading,
   authorsLoading,
@@ -405,7 +357,6 @@ function ArticleFormContent({
   const articleFormText = formText.resources.articles;
   const fieldText = formText.fields;
   const listText = text.lists.articles;
-  const commonText = text.common;
   const formFieldLabels = {
     issueId: fieldText.issue,
     categoryId: fieldText.category,
@@ -455,7 +406,6 @@ function ArticleFormContent({
   const imageAlt = useWatch({ control, name: "imageAlt" }) ?? "";
   const audioUrl = useWatch({ control, name: "audioUrl" }) ?? "";
   const audioChunksUrl = useWatch({ control, name: "audioChunksUrl" }) ?? "";
-  const selectedTagIds = useWatch({ control, name: "tagIds" }) ?? [];
 
   const issueOptions = issuesAvailable.map((issue) => ({
     value: issue.id,
@@ -498,16 +448,6 @@ function ArticleFormContent({
     setValue("slug", autoSlug, { shouldDirty: true, shouldValidate: true });
     setHasManualSlugOverride(false);
     setIsSlugEditing(false);
-  };
-
-  const toggleTag = (tagId: string, checked: boolean) => {
-    const nextTagIds = checked
-      ? selectedTagIds.includes(tagId)
-        ? selectedTagIds
-        : [...selectedTagIds, tagId]
-      : selectedTagIds.filter((id) => id !== tagId);
-
-    setValue("tagIds", nextTagIds, { shouldDirty: true, shouldValidate: true });
   };
 
   const handleTitleChange = (nextTitleStyled: ArticleTitleStyled) => {
@@ -558,12 +498,9 @@ function ArticleFormContent({
         return;
       }
 
-      const tagsChanged = !tagIdsEqual(values.tagIds, article?.tagIds ?? []);
-
       await onUpdate({
         id: articleId!,
         data: validation.value,
-        tagIds: tagsChanged ? values.tagIds : undefined,
       });
     } catch (error) {
       onMutationError(error);
@@ -592,7 +529,6 @@ function ArticleFormContent({
     const selectedIssue = issuesAvailable.find((item) => item.id === values.issueId);
     const selectedCategory = categoriesAvailable.find((item) => item.id === values.categoryId);
     const selectedAuthor = authorsAvailable.find((item) => item.id === values.authorId);
-    const selectedTags = tagsAvailable.filter((tag) => values.tagIds.includes(tag.id));
     const statusLabel =
       mode === "create"
         ? articleFormText.createTitle
@@ -620,7 +556,6 @@ function ArticleFormContent({
           imageAlt: values.imageAlt || null,
           audioUrl: values.audioUrl || null,
           audioChunks: values.audioChunksUrl || null,
-          tags: selectedTags,
           statusLabel,
           publicAvailable: article?.status === "PUBLISHED" && Boolean(article.publishedAt),
         }),
@@ -657,7 +592,6 @@ function ArticleFormContent({
     previewSessionId,
     resolvedSlug,
     statusOptions,
-    tagsAvailable,
     title,
     titleStyled,
   ]);
@@ -834,18 +768,6 @@ function ArticleFormContent({
                     )}
                   />
                 </CmsFormField>
-
-                <Controller
-                  name="isFeatured"
-                  control={control}
-                  render={({ field }) => (
-                    <CmsCheckbox
-                      label={commonText.featured}
-                      checked={field.value}
-                      onChange={field.onChange}
-                    />
-                  )}
-                />
               </div>
             ) : (
               <div
@@ -916,29 +838,6 @@ function ArticleFormContent({
                 />
               </CmsFormField>
             </div>
-          </section>
-
-          <section className="space-y-3">
-            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-              {articleFormText.tagsSection}
-            </div>
-
-            <CmsFormField label={articleFormText.tagsFieldLabel} htmlFor="article-tags">
-              <ArticleTagsMultiSelect
-                availableTags={tagsAvailable}
-                selectedTagIds={selectedTagIds}
-                disabled={isMutating}
-                loading={tagsLoading}
-                loadingText={articleFormText.tagsLoading}
-                emptyText={articleFormText.noTagsAvailable}
-                searchPlaceholder={articleFormText.tagSearchPlaceholder}
-                searchEmptyText={articleFormText.tagSearchEmpty}
-                triggerEmptyText={articleFormText.tagSelectEmpty}
-                clearText={articleFormText.clearTags}
-                selectedCountText={articleFormText.selectedTagsCount}
-                onChange={toggleTag}
-              />
-            </CmsFormField>
           </section>
 
           <section className="space-y-3">

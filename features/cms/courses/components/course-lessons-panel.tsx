@@ -28,11 +28,9 @@ export function CourseLessonsPanel({
     <CmsArticleListPanel
       title={listText.lessonsPanelTitle}
       emptyText={listText.lessonsPanelEmpty}
-      featuredAriaLabel={listText.lessonsPanelFeaturedAria}
       articles={lessons.map((lesson) => ({
         id: lesson.id,
         title: lesson.title,
-        isFeatured: false,
         href: cmsCrudRoutes.lessons.edit(lesson.id),
       }))}
       disabled={disabled}

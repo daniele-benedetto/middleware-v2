@@ -7,7 +7,6 @@ type ConflictResource =
   | "issues"
   | "authors"
   | "categories"
-  | "tags"
   | "users"
   | "articles"
   | "pages"
@@ -18,7 +17,6 @@ const conflictTitles: Record<ConflictResource, string> = {
   issues: i18n.cms.trpcErrors.conflictTitle,
   authors: i18n.cms.trpcErrors.domain.authorSlugExistsTitle,
   categories: i18n.cms.trpcErrors.conflictTitle,
-  tags: i18n.cms.trpcErrors.conflictTitle,
   users: i18n.cms.trpcErrors.conflictTitle,
   articles: i18n.cms.lists.articles.domainErrors.slugConflictTitle,
   pages: i18n.cms.trpcErrors.domain.pageSlugExistsTitle,

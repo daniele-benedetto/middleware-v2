@@ -58,9 +58,7 @@ export const ModelName = {
   Verification: 'Verification',
   Issue: 'Issue',
   Category: 'Category',
-  Tag: 'Tag',
   Article: 'Article',
-  ArticleTag: 'ArticleTag',
   Course: 'Course',
   Lesson: 'Lesson',
   Page: 'Page',
@@ -186,26 +184,12 @@ export const CategoryScalarFieldEnum = {
 export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
 
 
-export const TagScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  slug: 'slug',
-  description: 'description',
-  isActive: 'isActive',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type TagScalarFieldEnum = (typeof TagScalarFieldEnum)[keyof typeof TagScalarFieldEnum]
-
-
 export const ArticleScalarFieldEnum = {
   id: 'id',
   issueId: 'issueId',
   categoryId: 'categoryId',
   authorId: 'authorId',
   status: 'status',
-  isFeatured: 'isFeatured',
   publishedAt: 'publishedAt',
   title: 'title',
   titleStyled: 'titleStyled',
@@ -222,15 +206,6 @@ export const ArticleScalarFieldEnum = {
 } as const
 
 export type ArticleScalarFieldEnum = (typeof ArticleScalarFieldEnum)[keyof typeof ArticleScalarFieldEnum]
-
-
-export const ArticleTagScalarFieldEnum = {
-  articleId: 'articleId',
-  tagId: 'tagId',
-  createdAt: 'createdAt'
-} as const
-
-export type ArticleTagScalarFieldEnum = (typeof ArticleTagScalarFieldEnum)[keyof typeof ArticleTagScalarFieldEnum]
 
 
 export const CourseScalarFieldEnum = {

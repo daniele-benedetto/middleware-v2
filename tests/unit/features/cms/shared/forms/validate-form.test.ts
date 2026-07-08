@@ -23,11 +23,13 @@ describe("validateFormInput", () => {
   });
 
   it("formats array minimum errors", () => {
-    const schema = z.object({ tagIds: z.array(z.string()).min(2) });
+    const schema = z.object({ categoryIds: z.array(z.string()).min(2) });
 
-    expect(validateFormInput(schema, { tagIds: ["a"] }, { tagIds: "Tag" })).toMatchObject({
+    expect(
+      validateFormInput(schema, { categoryIds: ["a"] }, { categoryIds: "Categorie" }),
+    ).toMatchObject({
       ok: false,
-      message: i18n.cms.validation.arrayMinimum("Tag", 2),
+      message: i18n.cms.validation.arrayMinimum("Categorie", 2),
     });
   });
 

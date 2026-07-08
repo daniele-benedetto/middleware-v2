@@ -152,28 +152,12 @@ model Category {
   @@map("categories")
 }
 
-model Tag {
-  id          String   @id @default(uuid())
-  name        String
-  slug        String   @unique
-  description Json?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  articles ArticleTag[]
-
-  @@index([isActive])
-  @@map("tags")
-}
-
 model Article {
   id          String        @id @default(uuid())
   issueId     String
   categoryId  String
   authorId    String?
   status      ArticleStatus @default(DRAFT)
-  isFeatured  Boolean       @default(false)
   publishedAt DateTime?
 
   title       String
@@ -191,10 +175,9 @@ model Article {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  issue    Issue        @relation(fields: [issueId], references: [id], onDelete: Restrict)
-  category Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  author   Author?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  tags     ArticleTag[]
+  issue    Issue    @relation(fields: [issueId], references: [id], onDelete: Restrict)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  author   Author?  @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@unique([issueId, slug])
   @@unique([slug])
@@ -203,21 +186,7 @@ model Article {
   @@index([categoryId])
   @@index([authorId])
   @@index([status, publishedAt])
-  @@index([status, isFeatured])
   @@map("articles")
-}
-
-model ArticleTag {
-  articleId String
-  tagId     String
-  createdAt DateTime @default(now())
-
-  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  @@id([articleId, tagId])
-  @@index([tagId])
-  @@map("article_tags")
 }
 
 model Course {

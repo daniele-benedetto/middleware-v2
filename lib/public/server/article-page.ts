@@ -74,9 +74,7 @@ function resolveNarrativeBlocks(issue: PublicIssueDetailDto): NarrativeBlock[] {
     const featuredArticle =
       (block.featuredArticleId
         ? articles.find((item) => item.id === block.featuredArticleId)
-        : null) ??
-      articles.find((item) => item.isFeatured) ??
-      fallbackArticle;
+        : null) ?? fallbackArticle;
 
     blocks.push({
       type: block.type,

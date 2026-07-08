@@ -7,7 +7,6 @@ export type IssueArticleRow = {
   id: string;
   title: string;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  isFeatured: boolean;
 };
 
 type IssueArticlesPanelProps = {
@@ -29,7 +28,6 @@ export function IssueArticlesPanel({
     <CmsArticleListPanel
       title={listText.articlesPanelTitle}
       emptyText={listText.articlesPanelEmpty}
-      featuredAriaLabel={listText.articlesPanelFeaturedAria}
       articles={articles}
       disabled={disabled}
       className={className}

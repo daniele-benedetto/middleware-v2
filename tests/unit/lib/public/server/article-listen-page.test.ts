@@ -45,7 +45,6 @@ function createArticle(overrides: Record<string, unknown> = {}) {
     hasAudio: true,
     audioUrl: "/api/public/media/blob?pathname=audio%2Farticle.mp3",
     audioChunks: null,
-    isFeatured: false,
     publishedAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-02T00:00:00.000Z",
     issueId: "00000000-0000-0000-0000-000000000001",
@@ -56,10 +55,8 @@ function createArticle(overrides: Record<string, unknown> = {}) {
     categoryName: "Category",
     authorId: null,
     authorName: null,
-    tagsCount: 0,
     excerptRich: null,
     contentRich: { type: "doc" },
-    tags: [],
     ...overrides,
   };
 }

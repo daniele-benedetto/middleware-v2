@@ -1,10 +1,12 @@
 import { getIssuePlainDescription } from "@/components/public/home/home-view-model";
+import { getCoursePlainDescription } from "@/components/public/sections/formazione/course-archive-view-model";
 import { seoConfig } from "@/lib/seo/config";
 import { getCanonicalUrl, getOpenGraphImageUrl } from "@/lib/seo/metadata";
 import { resolveAbsoluteUrl, toIsoDate } from "@/lib/seo/url";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
+import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
 
 type BreadcrumbItem = {
   name: string;
@@ -86,7 +88,6 @@ export function buildArticleJsonLd(article: PublicArticleDetailDto, description?
     publisher: { "@id": `${getRootUrl()}#organization` },
     mainEntityOfPage: articleUrl,
     articleSection: article.categoryName,
-    keywords: article.tags.map((tag) => tag.name).join(", ") || undefined,
     isPartOf: {
       "@type": "PublicationIssue",
       name: article.issueTitle,
@@ -154,6 +155,57 @@ export function buildArchiveCollectionPageJsonLd(issues: PublicIssueListItem[]) 
   };
 }
 
+export function buildFormazioneCollectionPageJsonLd(courses: PublicCourseDetailDto[]) {
+  const archiveUrl = getCanonicalUrl("/formazione");
+
+  return {
+    "@type": "CollectionPage",
+    "@id": `${archiveUrl}#formazione`,
+    name: "Formazione",
+    url: archiveUrl,
+    isPartOf: { "@id": `${getRootUrl()}#website` },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: courses.length,
+      itemListElement: courses.map((course, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: course.title,
+        url: getCanonicalUrl(`/formazione/${course.slug}`),
+      })),
+    },
+  };
+}
+
+export function buildCourseCollectionPageJsonLd(course: PublicCourseDetailDto) {
+  const courseUrl = getCanonicalUrl(`/formazione/${course.slug}`);
+
+  return {
+    "@type": "CollectionPage",
+    "@id": `${courseUrl}#course-page`,
+    name: course.title,
+    description: getCoursePlainDescription(course) ?? undefined,
+    url: courseUrl,
+    isPartOf: { "@id": `${getRootUrl()}#website` },
+    datePublished: toIsoDate(course.publishedAt),
+    mainEntity: {
+      "@type": "Course",
+      "@id": `${courseUrl}#course`,
+      name: course.title,
+      description: getCoursePlainDescription(course) ?? undefined,
+      provider: { "@id": `${getRootUrl()}#organization` },
+      hasPart: course.lessons.map((lesson, index) => ({
+        "@type": "CreativeWork",
+        position: index + 1,
+        name: lesson.title,
+        description: lesson.excerpt ?? undefined,
+        datePublished: toIsoDate(lesson.publishedAt),
+        url: getCanonicalUrl(`/formazione/${course.slug}/${lesson.slug}`),
+      })),
+    },
+  };
+}
+
 export function buildArticlePageJsonLd(
   article: PublicArticleDetailDto,
   description?: string | null,
@@ -192,6 +244,31 @@ export function buildIssuesArchiveJsonLd(issues: PublicIssueListItem[]) {
       { name: "Archivio", path: "/uscite" },
     ]),
     buildArchiveCollectionPageJsonLd(issues),
+  ]);
+}
+
+export function buildFormazioneArchiveJsonLd(courses: PublicCourseDetailDto[]) {
+  return buildJsonLdGraph([
+    buildWebsiteJsonLd(),
+    buildOrganizationJsonLd(),
+    buildBreadcrumbJsonLd([
+      { name: seoConfig.siteName, path: "/" },
+      { name: "Formazione", path: "/formazione" },
+    ]),
+    buildFormazioneCollectionPageJsonLd(courses),
+  ]);
+}
+
+export function buildCoursePageJsonLd(course: PublicCourseDetailDto) {
+  return buildJsonLdGraph([
+    buildWebsiteJsonLd(),
+    buildOrganizationJsonLd(),
+    buildBreadcrumbJsonLd([
+      { name: seoConfig.siteName, path: "/" },
+      { name: "Formazione", path: "/formazione" },
+      { name: course.title, path: `/formazione/${course.slug}` },
+    ]),
+    buildCourseCollectionPageJsonLd(course),
   ]);
 }
 

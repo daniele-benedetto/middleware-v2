@@ -1,79 +1,39 @@
-import { PlayIcon } from "lucide-react";
-
-import { PublicPageHero } from "@/components/public/compounds";
-import { courseVariantClasses } from "@/components/public/course-variant";
-import { HomeSectionHeader } from "@/components/public/home/home-section-header";
-import { publicContentClassName, publicInteraction } from "@/components/public/primitives";
-import { PublicLink as Link } from "@/components/public/public-link";
-import { StyledTitle } from "@/components/public/styled-title";
+import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
+import { getCourseNumberLabel } from "@/components/public/sections/formazione/course-archive-view-model";
+import { CourseDossier } from "@/components/public/sections/formazione/course-dossier";
+import { formatCourseDate } from "@/components/public/sections/formazione/course-format";
+import { CoursesArchiveSection } from "@/components/public/sections/formazione/courses-archive-section";
 import { i18n } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
+import { buildCoursePageJsonLd } from "@/lib/seo";
 
-import type {
-  PublicCourseDetailDto,
-  PublicCourseLessonSummaryDto,
-} from "@/lib/server/modules/courses/dto/public";
+import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
 
 type PublicCoursePageProps = {
   course: PublicCourseDetailDto;
+  publishedCourses: PublicCourseDetailDto[];
   description?: string;
 };
 
-function formatLessonNumber(value: number) {
-  return String(value).padStart(2, "0");
-}
-
-function LessonRow({
-  courseSlug,
-  lesson,
-  number,
+function CourseMetaRail({
+  course,
+  courseNumber,
 }: {
-  courseSlug: string;
-  lesson: PublicCourseLessonSummaryDto;
-  number: number;
+  course: PublicCourseDetailDto;
+  courseNumber: string;
 }) {
   const text = i18n.public.coursePage;
+  const metaItems = [
+    { key: "course", label: courseNumber },
+    { key: "date", label: formatCourseDate(course.publishedAt), dateTime: course.publishedAt },
+    { key: "count", label: text.lessonsCountLabel(course.lessonsCount) },
+  ];
 
-  return (
-    <Link
-      href={`/formazione/${courseSlug}/${lesson.slug}`}
-      className={cn(
-        publicInteraction.cardSurface,
-        "grid grid-cols-[auto_minmax(0,1fr)] items-start gap-5 border-r border-b border-foreground bg-background px-5 py-6 sm:gap-6 sm:px-6 sm:py-7 md:px-7",
-      )}
-    >
-      <span className="shrink-0 font-heading text-[40px] leading-[0.78] font-black tracking-[-0.04em] text-accent sm:text-[48px]">
-        {formatLessonNumber(number)}
-      </span>
-
-      <div className="flex min-w-0 flex-col">
-        <h3 className="font-heading text-[23px] leading-[1.05] font-black tracking-[-0.032em] text-foreground sm:text-[24px] md:text-[28px]">
-          <StyledTitle title={lesson.title} titleStyled={lesson.titleStyled} />
-        </h3>
-
-        {lesson.excerpt ? (
-          <p className="mt-4 font-editorial text-[16px] leading-normal text-body-text md:text-[17px]">
-            {lesson.excerpt}
-          </p>
-        ) : null}
-
-        <div className="mt-5 flex flex-wrap items-center gap-3 font-heading text-[11px] font-bold tracking-[0.08em] text-muted uppercase">
-          <span>{text.readingTimeLabel(lesson.readingTimeMinutes)}</span>
-          {lesson.hasAudio ? (
-            <span className="inline-flex items-center gap-1.5 text-accent">
-              <PlayIcon className="size-3 fill-current" aria-hidden />
-              {text.audioLabel}
-            </span>
-          ) : null}
-        </div>
-      </div>
-    </Link>
-  );
+  return <PublicMetaRail items={metaItems} />;
 }
 
-export function PublicCoursePage({ course, description }: PublicCoursePageProps) {
-  const text = i18n.public.coursePage;
-  const variant = courseVariantClasses[course.homeVariant];
+export function PublicCoursePage({ course, publishedCourses, description }: PublicCoursePageProps) {
+  const courseNumber = getCourseNumberLabel(publishedCourses, course.id);
+  const archiveCourses = publishedCourses.filter((item) => item.id !== course.id).slice(0, 3);
 
   return (
     <main
@@ -81,43 +41,24 @@ export function PublicCoursePage({ course, description }: PublicCoursePageProps)
       tabIndex={-1}
       className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(buildCoursePageJsonLd(course)),
+        }}
+      />
       <article>
         <PublicPageHero
           as="header"
           title={course.title}
           titleStyled={course.titleStyled}
+          backgroundCode={courseNumber}
           description={description}
-          surfaceClassName={variant.surface}
-          titleClassName={variant.title}
-          titlePrimaryClassName={variant.titlePrimary}
-          descriptionClassName={variant.description}
-          meta={
-            <p
-              className={cn("font-heading text-[13px] font-semibold sm:text-[14px]", variant.meta)}
-            >
-              {text.lessonsCountLabel(course.lessonsCount)}
-            </p>
-          }
+          meta={<CourseMetaRail course={course} courseNumber={courseNumber} />}
+          containerClassName="py-7 sm:py-9 lg:py-14"
         />
-
-        <section className="bg-background py-12 lg:py-14">
-          <div className={publicContentClassName}>
-            <HomeSectionHeader title={text.lessonsHeading} />
-
-            {course.lessons.length > 0 ? (
-              <div className="grid border-l border-t border-foreground">
-                {course.lessons.map((lesson, index) => (
-                  <LessonRow
-                    key={lesson.id}
-                    courseSlug={course.slug}
-                    lesson={lesson}
-                    number={index + 1}
-                  />
-                ))}
-              </div>
-            ) : null}
-          </div>
-        </section>
+        <CourseDossier course={course} />
+        <CoursesArchiveSection courses={archiveCourses} allCourses={publishedCourses} />
       </article>
     </main>
   );

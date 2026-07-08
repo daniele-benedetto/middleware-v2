@@ -31,7 +31,6 @@ type CategoryDetailRecord = CategoryRecord & {
     id: string;
     title: string;
     status: ArticleStatus;
-    isFeatured: boolean;
   }>;
 };
 
@@ -55,7 +54,6 @@ const toCategoryDetailDto = (category: CategoryDetailRecord): CategoryDetailDto 
       id: article.id,
       title: article.title,
       status: article.status,
-      isFeatured: article.isFeatured,
     })),
   };
 };

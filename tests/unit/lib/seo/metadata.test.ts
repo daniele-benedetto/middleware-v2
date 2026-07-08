@@ -37,7 +37,6 @@ describe("seo metadata", () => {
       updatedAt: "2026-01-02T00:00:00.000Z",
       imageUrl: "/api/public/media/blob?pathname=covers%2Fhero.jpg",
       authorName: "Autrice",
-      tags: ["inchiesta"],
     });
 
     expect(metadata.alternates?.canonical).toBe("http://localhost:3000/articoli/titolo-articolo");
@@ -46,7 +45,6 @@ describe("seo metadata", () => {
       publishedTime: "2026-01-01T00:00:00.000Z",
       modifiedTime: "2026-01-02T00:00:00.000Z",
       authors: ["Autrice"],
-      tags: ["inchiesta"],
     });
   });
 

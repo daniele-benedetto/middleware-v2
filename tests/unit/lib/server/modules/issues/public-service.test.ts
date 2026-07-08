@@ -35,7 +35,6 @@ function createArticleRecord(overrides: Record<string, unknown> = {}) {
     imageUrl: null,
     imageAlt: null,
     audioUrl: null,
-    isFeatured: false,
     contentRich: {
       type: "doc",
       content: [{ type: "paragraph", content: [{ type: "text", text: "Short text" }] }],
@@ -43,7 +42,6 @@ function createArticleRecord(overrides: Record<string, unknown> = {}) {
     publishedAt: new Date("2026-01-01T00:00:00.000Z"),
     category: null,
     author: null,
-    tags: [],
     ...overrides,
   };
 }

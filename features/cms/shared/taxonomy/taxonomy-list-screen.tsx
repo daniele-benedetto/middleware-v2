@@ -119,10 +119,7 @@ type CmsTaxonomyListScreenProps<TItem extends CmsTaxonomyListItem> = {
   onCreate: () => void;
   onEdit: (id: string) => void;
   deleteMutation: CmsTaxonomyDeleteMutation;
-  deleteMutationName: Extract<
-    CmsMutationName,
-    "authors.delete" | "categories.delete" | "tags.delete"
-  >;
+  deleteMutationName: Extract<CmsMutationName, "authors.delete" | "categories.delete">;
   bulkDeleteDescription: (selectedCount: number) => string;
   statusOptions: Array<{ value: "all" | "true" | "false"; label: string }>;
   sortOptions: Array<{ value: string; label: string }>;

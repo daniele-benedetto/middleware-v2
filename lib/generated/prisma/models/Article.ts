@@ -30,7 +30,6 @@ export type ArticleMinAggregateOutputType = {
   categoryId: string | null
   authorId: string | null
   status: $Enums.ArticleStatus | null
-  isFeatured: boolean | null
   publishedAt: Date | null
   title: string | null
   slug: string | null
@@ -48,7 +47,6 @@ export type ArticleMaxAggregateOutputType = {
   categoryId: string | null
   authorId: string | null
   status: $Enums.ArticleStatus | null
-  isFeatured: boolean | null
   publishedAt: Date | null
   title: string | null
   slug: string | null
@@ -66,7 +64,6 @@ export type ArticleCountAggregateOutputType = {
   categoryId: number
   authorId: number
   status: number
-  isFeatured: number
   publishedAt: number
   title: number
   titleStyled: number
@@ -90,7 +87,6 @@ export type ArticleMinAggregateInputType = {
   categoryId?: true
   authorId?: true
   status?: true
-  isFeatured?: true
   publishedAt?: true
   title?: true
   slug?: true
@@ -108,7 +104,6 @@ export type ArticleMaxAggregateInputType = {
   categoryId?: true
   authorId?: true
   status?: true
-  isFeatured?: true
   publishedAt?: true
   title?: true
   slug?: true
@@ -126,7 +121,6 @@ export type ArticleCountAggregateInputType = {
   categoryId?: true
   authorId?: true
   status?: true
-  isFeatured?: true
   publishedAt?: true
   title?: true
   titleStyled?: true
@@ -221,7 +215,6 @@ export type ArticleGroupByOutputType = {
   categoryId: string
   authorId: string | null
   status: $Enums.ArticleStatus
-  isFeatured: boolean
   publishedAt: Date | null
   title: string
   titleStyled: runtime.JsonValue | null
@@ -264,7 +257,6 @@ export type ArticleWhereInput = {
   categoryId?: Prisma.StringFilter<"Article"> | string
   authorId?: Prisma.StringNullableFilter<"Article"> | string | null
   status?: Prisma.EnumArticleStatusFilter<"Article"> | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFilter<"Article"> | boolean
   publishedAt?: Prisma.DateTimeNullableFilter<"Article"> | Date | string | null
   title?: Prisma.StringFilter<"Article"> | string
   titleStyled?: Prisma.JsonNullableFilter<"Article">
@@ -281,7 +273,6 @@ export type ArticleWhereInput = {
   issue?: Prisma.XOR<Prisma.IssueScalarRelationFilter, Prisma.IssueWhereInput>
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   author?: Prisma.XOR<Prisma.AuthorNullableScalarRelationFilter, Prisma.AuthorWhereInput> | null
-  tags?: Prisma.ArticleTagListRelationFilter
 }
 
 export type ArticleOrderByWithRelationInput = {
@@ -290,7 +281,6 @@ export type ArticleOrderByWithRelationInput = {
   categoryId?: Prisma.SortOrder
   authorId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
-  isFeatured?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
   titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -307,7 +297,6 @@ export type ArticleOrderByWithRelationInput = {
   issue?: Prisma.IssueOrderByWithRelationInput
   category?: Prisma.CategoryOrderByWithRelationInput
   author?: Prisma.AuthorOrderByWithRelationInput
-  tags?: Prisma.ArticleTagOrderByRelationAggregateInput
 }
 
 export type ArticleWhereUniqueInput = Prisma.AtLeast<{
@@ -321,7 +310,6 @@ export type ArticleWhereUniqueInput = Prisma.AtLeast<{
   categoryId?: Prisma.StringFilter<"Article"> | string
   authorId?: Prisma.StringNullableFilter<"Article"> | string | null
   status?: Prisma.EnumArticleStatusFilter<"Article"> | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFilter<"Article"> | boolean
   publishedAt?: Prisma.DateTimeNullableFilter<"Article"> | Date | string | null
   title?: Prisma.StringFilter<"Article"> | string
   titleStyled?: Prisma.JsonNullableFilter<"Article">
@@ -337,7 +325,6 @@ export type ArticleWhereUniqueInput = Prisma.AtLeast<{
   issue?: Prisma.XOR<Prisma.IssueScalarRelationFilter, Prisma.IssueWhereInput>
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   author?: Prisma.XOR<Prisma.AuthorNullableScalarRelationFilter, Prisma.AuthorWhereInput> | null
-  tags?: Prisma.ArticleTagListRelationFilter
 }, "id" | "issueId_slug" | "slug">
 
 export type ArticleOrderByWithAggregationInput = {
@@ -346,7 +333,6 @@ export type ArticleOrderByWithAggregationInput = {
   categoryId?: Prisma.SortOrder
   authorId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
-  isFeatured?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
   titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -374,7 +360,6 @@ export type ArticleScalarWhereWithAggregatesInput = {
   categoryId?: Prisma.StringWithAggregatesFilter<"Article"> | string
   authorId?: Prisma.StringNullableWithAggregatesFilter<"Article"> | string | null
   status?: Prisma.EnumArticleStatusWithAggregatesFilter<"Article"> | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolWithAggregatesFilter<"Article"> | boolean
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Article"> | Date | string | null
   title?: Prisma.StringWithAggregatesFilter<"Article"> | string
   titleStyled?: Prisma.JsonNullableWithAggregatesFilter<"Article">
@@ -393,7 +378,6 @@ export type ArticleScalarWhereWithAggregatesInput = {
 export type ArticleCreateInput = {
   id?: string
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -410,7 +394,6 @@ export type ArticleCreateInput = {
   issue: Prisma.IssueCreateNestedOneWithoutArticlesInput
   category: Prisma.CategoryCreateNestedOneWithoutArticlesInput
   author?: Prisma.AuthorCreateNestedOneWithoutArticlesInput
-  tags?: Prisma.ArticleTagCreateNestedManyWithoutArticleInput
 }
 
 export type ArticleUncheckedCreateInput = {
@@ -419,7 +402,6 @@ export type ArticleUncheckedCreateInput = {
   categoryId: string
   authorId?: string | null
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -433,13 +415,11 @@ export type ArticleUncheckedCreateInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
-  tags?: Prisma.ArticleTagUncheckedCreateNestedManyWithoutArticleInput
 }
 
 export type ArticleUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -456,7 +436,6 @@ export type ArticleUpdateInput = {
   issue?: Prisma.IssueUpdateOneRequiredWithoutArticlesNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutArticlesNestedInput
   author?: Prisma.AuthorUpdateOneWithoutArticlesNestedInput
-  tags?: Prisma.ArticleTagUpdateManyWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateInput = {
@@ -465,7 +444,6 @@ export type ArticleUncheckedUpdateInput = {
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   authorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -479,7 +457,6 @@ export type ArticleUncheckedUpdateInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tags?: Prisma.ArticleTagUncheckedUpdateManyWithoutArticleNestedInput
 }
 
 export type ArticleCreateManyInput = {
@@ -488,7 +465,6 @@ export type ArticleCreateManyInput = {
   categoryId: string
   authorId?: string | null
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -507,7 +483,6 @@ export type ArticleCreateManyInput = {
 export type ArticleUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -529,7 +504,6 @@ export type ArticleUncheckedUpdateManyInput = {
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   authorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -566,7 +540,6 @@ export type ArticleCountOrderByAggregateInput = {
   categoryId?: Prisma.SortOrder
   authorId?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  isFeatured?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   title?: Prisma.SortOrder
   titleStyled?: Prisma.SortOrder
@@ -588,7 +561,6 @@ export type ArticleMaxOrderByAggregateInput = {
   categoryId?: Prisma.SortOrder
   authorId?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  isFeatured?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   title?: Prisma.SortOrder
   slug?: Prisma.SortOrder
@@ -606,7 +578,6 @@ export type ArticleMinOrderByAggregateInput = {
   categoryId?: Prisma.SortOrder
   authorId?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  isFeatured?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   title?: Prisma.SortOrder
   slug?: Prisma.SortOrder
@@ -616,11 +587,6 @@ export type ArticleMinOrderByAggregateInput = {
   audioUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type ArticleScalarRelationFilter = {
-  is?: Prisma.ArticleWhereInput
-  isNot?: Prisma.ArticleWhereInput
 }
 
 export type ArticleCreateNestedManyWithoutAuthorInput = {
@@ -753,24 +719,9 @@ export type EnumArticleStatusFieldUpdateOperationsInput = {
   set?: $Enums.ArticleStatus
 }
 
-export type ArticleCreateNestedOneWithoutTagsInput = {
-  create?: Prisma.XOR<Prisma.ArticleCreateWithoutTagsInput, Prisma.ArticleUncheckedCreateWithoutTagsInput>
-  connectOrCreate?: Prisma.ArticleCreateOrConnectWithoutTagsInput
-  connect?: Prisma.ArticleWhereUniqueInput
-}
-
-export type ArticleUpdateOneRequiredWithoutTagsNestedInput = {
-  create?: Prisma.XOR<Prisma.ArticleCreateWithoutTagsInput, Prisma.ArticleUncheckedCreateWithoutTagsInput>
-  connectOrCreate?: Prisma.ArticleCreateOrConnectWithoutTagsInput
-  upsert?: Prisma.ArticleUpsertWithoutTagsInput
-  connect?: Prisma.ArticleWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ArticleUpdateToOneWithWhereWithoutTagsInput, Prisma.ArticleUpdateWithoutTagsInput>, Prisma.ArticleUncheckedUpdateWithoutTagsInput>
-}
-
 export type ArticleCreateWithoutAuthorInput = {
   id?: string
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -786,7 +737,6 @@ export type ArticleCreateWithoutAuthorInput = {
   updatedAt?: Date | string
   issue: Prisma.IssueCreateNestedOneWithoutArticlesInput
   category: Prisma.CategoryCreateNestedOneWithoutArticlesInput
-  tags?: Prisma.ArticleTagCreateNestedManyWithoutArticleInput
 }
 
 export type ArticleUncheckedCreateWithoutAuthorInput = {
@@ -794,7 +744,6 @@ export type ArticleUncheckedCreateWithoutAuthorInput = {
   issueId: string
   categoryId: string
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -808,7 +757,6 @@ export type ArticleUncheckedCreateWithoutAuthorInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
-  tags?: Prisma.ArticleTagUncheckedCreateNestedManyWithoutArticleInput
 }
 
 export type ArticleCreateOrConnectWithoutAuthorInput = {
@@ -846,7 +794,6 @@ export type ArticleScalarWhereInput = {
   categoryId?: Prisma.StringFilter<"Article"> | string
   authorId?: Prisma.StringNullableFilter<"Article"> | string | null
   status?: Prisma.EnumArticleStatusFilter<"Article"> | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFilter<"Article"> | boolean
   publishedAt?: Prisma.DateTimeNullableFilter<"Article"> | Date | string | null
   title?: Prisma.StringFilter<"Article"> | string
   titleStyled?: Prisma.JsonNullableFilter<"Article">
@@ -865,7 +812,6 @@ export type ArticleScalarWhereInput = {
 export type ArticleCreateWithoutIssueInput = {
   id?: string
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -881,7 +827,6 @@ export type ArticleCreateWithoutIssueInput = {
   updatedAt?: Date | string
   category: Prisma.CategoryCreateNestedOneWithoutArticlesInput
   author?: Prisma.AuthorCreateNestedOneWithoutArticlesInput
-  tags?: Prisma.ArticleTagCreateNestedManyWithoutArticleInput
 }
 
 export type ArticleUncheckedCreateWithoutIssueInput = {
@@ -889,7 +834,6 @@ export type ArticleUncheckedCreateWithoutIssueInput = {
   categoryId: string
   authorId?: string | null
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -903,7 +847,6 @@ export type ArticleUncheckedCreateWithoutIssueInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
-  tags?: Prisma.ArticleTagUncheckedCreateNestedManyWithoutArticleInput
 }
 
 export type ArticleCreateOrConnectWithoutIssueInput = {
@@ -935,7 +878,6 @@ export type ArticleUpdateManyWithWhereWithoutIssueInput = {
 export type ArticleCreateWithoutCategoryInput = {
   id?: string
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -951,7 +893,6 @@ export type ArticleCreateWithoutCategoryInput = {
   updatedAt?: Date | string
   issue: Prisma.IssueCreateNestedOneWithoutArticlesInput
   author?: Prisma.AuthorCreateNestedOneWithoutArticlesInput
-  tags?: Prisma.ArticleTagCreateNestedManyWithoutArticleInput
 }
 
 export type ArticleUncheckedCreateWithoutCategoryInput = {
@@ -959,7 +900,6 @@ export type ArticleUncheckedCreateWithoutCategoryInput = {
   issueId: string
   authorId?: string | null
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -973,7 +913,6 @@ export type ArticleUncheckedCreateWithoutCategoryInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
-  tags?: Prisma.ArticleTagUncheckedCreateNestedManyWithoutArticleInput
 }
 
 export type ArticleCreateOrConnectWithoutCategoryInput = {
@@ -1002,116 +941,11 @@ export type ArticleUpdateManyWithWhereWithoutCategoryInput = {
   data: Prisma.XOR<Prisma.ArticleUpdateManyMutationInput, Prisma.ArticleUncheckedUpdateManyWithoutCategoryInput>
 }
 
-export type ArticleCreateWithoutTagsInput = {
-  id?: string
-  status?: $Enums.ArticleStatus
-  isFeatured?: boolean
-  publishedAt?: Date | string | null
-  title: string
-  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  slug: string
-  excerpt?: string | null
-  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  imageUrl?: string | null
-  imageAlt?: string | null
-  audioUrl?: string | null
-  audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  issue: Prisma.IssueCreateNestedOneWithoutArticlesInput
-  category: Prisma.CategoryCreateNestedOneWithoutArticlesInput
-  author?: Prisma.AuthorCreateNestedOneWithoutArticlesInput
-}
-
-export type ArticleUncheckedCreateWithoutTagsInput = {
-  id?: string
-  issueId: string
-  categoryId: string
-  authorId?: string | null
-  status?: $Enums.ArticleStatus
-  isFeatured?: boolean
-  publishedAt?: Date | string | null
-  title: string
-  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  slug: string
-  excerpt?: string | null
-  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  imageUrl?: string | null
-  imageAlt?: string | null
-  audioUrl?: string | null
-  audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
-export type ArticleCreateOrConnectWithoutTagsInput = {
-  where: Prisma.ArticleWhereUniqueInput
-  create: Prisma.XOR<Prisma.ArticleCreateWithoutTagsInput, Prisma.ArticleUncheckedCreateWithoutTagsInput>
-}
-
-export type ArticleUpsertWithoutTagsInput = {
-  update: Prisma.XOR<Prisma.ArticleUpdateWithoutTagsInput, Prisma.ArticleUncheckedUpdateWithoutTagsInput>
-  create: Prisma.XOR<Prisma.ArticleCreateWithoutTagsInput, Prisma.ArticleUncheckedCreateWithoutTagsInput>
-  where?: Prisma.ArticleWhereInput
-}
-
-export type ArticleUpdateToOneWithWhereWithoutTagsInput = {
-  where?: Prisma.ArticleWhereInput
-  data: Prisma.XOR<Prisma.ArticleUpdateWithoutTagsInput, Prisma.ArticleUncheckedUpdateWithoutTagsInput>
-}
-
-export type ArticleUpdateWithoutTagsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
-  excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  issue?: Prisma.IssueUpdateOneRequiredWithoutArticlesNestedInput
-  category?: Prisma.CategoryUpdateOneRequiredWithoutArticlesNestedInput
-  author?: Prisma.AuthorUpdateOneWithoutArticlesNestedInput
-}
-
-export type ArticleUncheckedUpdateWithoutTagsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  issueId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
-  authorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
-  excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
 export type ArticleCreateManyAuthorInput = {
   id?: string
   issueId: string
   categoryId: string
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1130,7 +964,6 @@ export type ArticleCreateManyAuthorInput = {
 export type ArticleUpdateWithoutAuthorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1146,7 +979,6 @@ export type ArticleUpdateWithoutAuthorInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   issue?: Prisma.IssueUpdateOneRequiredWithoutArticlesNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutArticlesNestedInput
-  tags?: Prisma.ArticleTagUpdateManyWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateWithoutAuthorInput = {
@@ -1154,7 +986,6 @@ export type ArticleUncheckedUpdateWithoutAuthorInput = {
   issueId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1168,7 +999,6 @@ export type ArticleUncheckedUpdateWithoutAuthorInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tags?: Prisma.ArticleTagUncheckedUpdateManyWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateManyWithoutAuthorInput = {
@@ -1176,7 +1006,6 @@ export type ArticleUncheckedUpdateManyWithoutAuthorInput = {
   issueId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1197,7 +1026,6 @@ export type ArticleCreateManyIssueInput = {
   categoryId: string
   authorId?: string | null
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1216,7 +1044,6 @@ export type ArticleCreateManyIssueInput = {
 export type ArticleUpdateWithoutIssueInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1232,7 +1059,6 @@ export type ArticleUpdateWithoutIssueInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   category?: Prisma.CategoryUpdateOneRequiredWithoutArticlesNestedInput
   author?: Prisma.AuthorUpdateOneWithoutArticlesNestedInput
-  tags?: Prisma.ArticleTagUpdateManyWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateWithoutIssueInput = {
@@ -1240,7 +1066,6 @@ export type ArticleUncheckedUpdateWithoutIssueInput = {
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   authorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1254,7 +1079,6 @@ export type ArticleUncheckedUpdateWithoutIssueInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tags?: Prisma.ArticleTagUncheckedUpdateManyWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateManyWithoutIssueInput = {
@@ -1262,7 +1086,6 @@ export type ArticleUncheckedUpdateManyWithoutIssueInput = {
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   authorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1283,7 +1106,6 @@ export type ArticleCreateManyCategoryInput = {
   issueId: string
   authorId?: string | null
   status?: $Enums.ArticleStatus
-  isFeatured?: boolean
   publishedAt?: Date | string | null
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1302,7 +1124,6 @@ export type ArticleCreateManyCategoryInput = {
 export type ArticleUpdateWithoutCategoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1318,7 +1139,6 @@ export type ArticleUpdateWithoutCategoryInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   issue?: Prisma.IssueUpdateOneRequiredWithoutArticlesNestedInput
   author?: Prisma.AuthorUpdateOneWithoutArticlesNestedInput
-  tags?: Prisma.ArticleTagUpdateManyWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateWithoutCategoryInput = {
@@ -1326,7 +1146,6 @@ export type ArticleUncheckedUpdateWithoutCategoryInput = {
   issueId?: Prisma.StringFieldUpdateOperationsInput | string
   authorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1340,7 +1159,6 @@ export type ArticleUncheckedUpdateWithoutCategoryInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tags?: Prisma.ArticleTagUncheckedUpdateManyWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateManyWithoutCategoryInput = {
@@ -1348,7 +1166,6 @@ export type ArticleUncheckedUpdateManyWithoutCategoryInput = {
   issueId?: Prisma.StringFieldUpdateOperationsInput | string
   authorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
-  isFeatured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1364,35 +1181,6 @@ export type ArticleUncheckedUpdateManyWithoutCategoryInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-
-/**
- * Count Type ArticleCountOutputType
- */
-
-export type ArticleCountOutputType = {
-  tags: number
-}
-
-export type ArticleCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  tags?: boolean | ArticleCountOutputTypeCountTagsArgs
-}
-
-/**
- * ArticleCountOutputType without action
- */
-export type ArticleCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ArticleCountOutputType
-   */
-  select?: Prisma.ArticleCountOutputTypeSelect<ExtArgs> | null
-}
-
-/**
- * ArticleCountOutputType without action
- */
-export type ArticleCountOutputTypeCountTagsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ArticleTagWhereInput
-}
 
 
 export type ArticleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1401,7 +1189,6 @@ export type ArticleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   categoryId?: boolean
   authorId?: boolean
   status?: boolean
-  isFeatured?: boolean
   publishedAt?: boolean
   title?: boolean
   titleStyled?: boolean
@@ -1418,8 +1205,6 @@ export type ArticleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   issue?: boolean | Prisma.IssueDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   author?: boolean | Prisma.Article$authorArgs<ExtArgs>
-  tags?: boolean | Prisma.Article$tagsArgs<ExtArgs>
-  _count?: boolean | Prisma.ArticleCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["article"]>
 
 export type ArticleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1428,7 +1213,6 @@ export type ArticleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   categoryId?: boolean
   authorId?: boolean
   status?: boolean
-  isFeatured?: boolean
   publishedAt?: boolean
   title?: boolean
   titleStyled?: boolean
@@ -1453,7 +1237,6 @@ export type ArticleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   categoryId?: boolean
   authorId?: boolean
   status?: boolean
-  isFeatured?: boolean
   publishedAt?: boolean
   title?: boolean
   titleStyled?: boolean
@@ -1478,7 +1261,6 @@ export type ArticleSelectScalar = {
   categoryId?: boolean
   authorId?: boolean
   status?: boolean
-  isFeatured?: boolean
   publishedAt?: boolean
   title?: boolean
   titleStyled?: boolean
@@ -1494,13 +1276,11 @@ export type ArticleSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ArticleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issueId" | "categoryId" | "authorId" | "status" | "isFeatured" | "publishedAt" | "title" | "titleStyled" | "slug" | "excerpt" | "excerptRich" | "contentRich" | "imageUrl" | "imageAlt" | "audioUrl" | "audioChunks" | "createdAt" | "updatedAt", ExtArgs["result"]["article"]>
+export type ArticleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issueId" | "categoryId" | "authorId" | "status" | "publishedAt" | "title" | "titleStyled" | "slug" | "excerpt" | "excerptRich" | "contentRich" | "imageUrl" | "imageAlt" | "audioUrl" | "audioChunks" | "createdAt" | "updatedAt", ExtArgs["result"]["article"]>
 export type ArticleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   issue?: boolean | Prisma.IssueDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   author?: boolean | Prisma.Article$authorArgs<ExtArgs>
-  tags?: boolean | Prisma.Article$tagsArgs<ExtArgs>
-  _count?: boolean | Prisma.ArticleCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ArticleIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   issue?: boolean | Prisma.IssueDefaultArgs<ExtArgs>
@@ -1519,7 +1299,6 @@ export type $ArticlePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     issue: Prisma.$IssuePayload<ExtArgs>
     category: Prisma.$CategoryPayload<ExtArgs>
     author: Prisma.$AuthorPayload<ExtArgs> | null
-    tags: Prisma.$ArticleTagPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1527,7 +1306,6 @@ export type $ArticlePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     categoryId: string
     authorId: string | null
     status: $Enums.ArticleStatus
-    isFeatured: boolean
     publishedAt: Date | null
     title: string
     titleStyled: runtime.JsonValue | null
@@ -1938,7 +1716,6 @@ export interface Prisma__ArticleClient<T, Null = never, ExtArgs extends runtime.
   issue<T extends Prisma.IssueDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.IssueDefaultArgs<ExtArgs>>): Prisma.Prisma__IssueClient<runtime.Types.Result.GetResult<Prisma.$IssuePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   category<T extends Prisma.CategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__CategoryClient<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   author<T extends Prisma.Article$authorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Article$authorArgs<ExtArgs>>): Prisma.Prisma__AuthorClient<runtime.Types.Result.GetResult<Prisma.$AuthorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  tags<T extends Prisma.Article$tagsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Article$tagsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ArticleTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1973,7 +1750,6 @@ export interface ArticleFieldRefs {
   readonly categoryId: Prisma.FieldRef<"Article", 'String'>
   readonly authorId: Prisma.FieldRef<"Article", 'String'>
   readonly status: Prisma.FieldRef<"Article", 'ArticleStatus'>
-  readonly isFeatured: Prisma.FieldRef<"Article", 'Boolean'>
   readonly publishedAt: Prisma.FieldRef<"Article", 'DateTime'>
   readonly title: Prisma.FieldRef<"Article", 'String'>
   readonly titleStyled: Prisma.FieldRef<"Article", 'Json'>
@@ -2404,30 +2180,6 @@ export type Article$authorArgs<ExtArgs extends runtime.Types.Extensions.Internal
    */
   include?: Prisma.AuthorInclude<ExtArgs> | null
   where?: Prisma.AuthorWhereInput
-}
-
-/**
- * Article.tags
- */
-export type Article$tagsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ArticleTag
-   */
-  select?: Prisma.ArticleTagSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ArticleTag
-   */
-  omit?: Prisma.ArticleTagOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArticleTagInclude<ExtArgs> | null
-  where?: Prisma.ArticleTagWhereInput
-  orderBy?: Prisma.ArticleTagOrderByWithRelationInput | Prisma.ArticleTagOrderByWithRelationInput[]
-  cursor?: Prisma.ArticleTagWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ArticleTagScalarFieldEnum | Prisma.ArticleTagScalarFieldEnum[]
 }
 
 /**

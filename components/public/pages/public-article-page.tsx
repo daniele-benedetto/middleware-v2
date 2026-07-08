@@ -6,9 +6,9 @@ import { HomeSectionHeader } from "@/components/public/home/home-section-header"
 import { publicContentClassName } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { PublicRichText } from "@/components/public/rich-text";
-import { formatTags } from "@/components/public/sections/dossier/dossier-format";
 import { i18n } from "@/lib/i18n";
 import { editorialImageAlt } from "@/lib/public/format/image";
+import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 import { buildArticlePageJsonLd } from "@/lib/seo";
 
 import type { PublicRelatedIssueArticle } from "@/lib/public/server/article-page";
@@ -29,10 +29,6 @@ type RelatedArticlesSectionProps = {
   article: PublicArticleDetailDto;
   relatedArticles: PublicRelatedIssueArticle[];
 };
-
-function formatArticleDate(value: string) {
-  return new Intl.DateTimeFormat("it-IT", { dateStyle: "long" }).format(new Date(value));
-}
 
 function formatArticleNumber(value: number | null) {
   return value ? String(value).padStart(2, "0") : "MW";
@@ -64,7 +60,11 @@ function ArticleMetaRail({ article }: ArticleOnlyProps) {
     { key: "issue", label: article.issueTitle, href: `/uscite/${article.issueSlug}` },
     { key: "category", label: article.categoryName },
     article.authorName ? { key: "author", label: article.authorName } : null,
-    { key: "date", label: formatArticleDate(article.publishedAt), dateTime: article.publishedAt },
+    {
+      key: "date",
+      label: formatIssueMonthYearLong(article.publishedAt),
+      dateTime: article.publishedAt,
+    },
   ].filter((item) => item !== null);
 
   return (
@@ -81,23 +81,6 @@ function ArticleMetaRail({ article }: ArticleOnlyProps) {
         </Link>
       ) : null}
     </div>
-  );
-}
-
-function ArticleTags({ article }: ArticleOnlyProps) {
-  const tagLine = article.tags.length
-    ? article.tags
-        .slice(0, 3)
-        .map((tag) => tag.name)
-        .join(" / ")
-    : article.categoryName;
-
-  if (!tagLine) return null;
-
-  return (
-    <p className="max-w-3xl font-heading text-[11px] leading-snug font-bold tracking-[0.14em] wrap-break-word whitespace-normal text-muted uppercase">
-      {tagLine}
-    </p>
   );
 }
 
@@ -119,7 +102,6 @@ function RelatedArticlesSection({ article, relatedArticles }: RelatedArticlesSec
             <DossierArticleCard
               key={item.article.id}
               article={item.article}
-              eyebrow={formatTags(item.article) || item.article.categoryName || ""}
               number={item.number}
               variant="constellationSecondary"
               className={getRelatedArticleCardClassName(index, relatedArticles.length)}
@@ -156,7 +138,6 @@ export function PublicArticlePage({
           titleStyled={article.titleStyled}
           backgroundCode={formatArticleNumber(articleNumber)}
           description={article.excerpt}
-          eyebrow={<ArticleTags article={article} />}
           meta={<ArticleMetaRail article={article} />}
         />
 

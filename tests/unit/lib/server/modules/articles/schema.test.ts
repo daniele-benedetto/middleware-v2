@@ -1,7 +1,6 @@
 import {
   createArticleInputSchema,
   listArticlesQuerySchema,
-  syncArticleTagsInputSchema,
   updateArticleInputSchema,
 } from "@/lib/server/modules/articles/schema";
 
@@ -37,23 +36,12 @@ describe("articles schemas", () => {
     expect(parsed.publishedAt).toBeInstanceOf(Date);
   });
 
-  it("parses article list query defaults and boolean filters", () => {
-    const parsed = listArticlesQuerySchema.parse({ featured: "true" });
+  it("parses article list query defaults", () => {
+    const parsed = listArticlesQuerySchema.parse({});
 
     expect(parsed).toMatchObject({
-      featured: true,
       sortBy: "createdAt",
       sortOrder: "desc",
-    });
-  });
-
-  it("accepts uuid arrays for tag sync", () => {
-    expect(
-      syncArticleTagsInputSchema.parse({
-        tagIds: ["00000000-0000-4000-8000-000000000004"],
-      }),
-    ).toEqual({
-      tagIds: ["00000000-0000-4000-8000-000000000004"],
     });
   });
 });

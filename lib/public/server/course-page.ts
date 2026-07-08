@@ -21,6 +21,7 @@ export type PublicFormazioneIndexData = {
 
 export type PublicCoursePageData = {
   course: PublicCourseDetailDto | null;
+  publishedCourses: PublicCourseDetailDto[];
   description?: string;
 };
 
@@ -79,17 +80,20 @@ async function getLessonBySlug(courseSlug: string, lessonSlug: string) {
   }
 }
 
+async function getPublishedCourseDetails() {
+  const courses = await publicCoursesService.listPublishedItems({ page: 1, pageSize: 100 });
+  const detailed = await Promise.all(courses.map((course) => getCourseBySlug(course.slug)));
+
+  return detailed.filter((course): course is PublicCourseDetailDto => Boolean(course));
+}
+
 export async function getPublicFormazioneIndexData(): Promise<PublicFormazioneIndexData> {
   "use cache";
   cacheLife("hours");
   cacheTag(PUBLIC_COURSE_PAGE_CACHE_TAG);
 
-  const courses = await publicCoursesService.listPublishedItems({ page: 1, pageSize: 100 });
-
-  const detailed = await Promise.all(courses.map((course) => getCourseBySlug(course.slug)));
-
   return {
-    courses: detailed.filter((course): course is PublicCourseDetailDto => Boolean(course)),
+    courses: await getPublishedCourseDetails(),
   };
 }
 
@@ -98,10 +102,14 @@ export async function getPublicCoursePageData(slug: string): Promise<PublicCours
   cacheLife("hours");
   cacheTag(PUBLIC_COURSE_PAGE_CACHE_TAG);
 
-  const course = await getCourseBySlug(slug);
+  const [course, publishedCourses] = await Promise.all([
+    getCourseBySlug(slug),
+    getPublishedCourseDetails(),
+  ]);
 
   return {
     course,
+    publishedCourses,
     description: getCourseDescription(course),
   };
 }

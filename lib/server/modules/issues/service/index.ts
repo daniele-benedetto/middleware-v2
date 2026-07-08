@@ -43,7 +43,6 @@ type IssueDetailRecord = IssueRecord & {
     id: string;
     title: string;
     status: ArticleStatus;
-    isFeatured: boolean;
     category: {
       name: string;
       slug: string;
@@ -61,7 +60,6 @@ type IssuePreviewRecord = IssueRecord & {
     imageUrl: string | null;
     imageAlt: string | null;
     audioUrl: string | null;
-    isFeatured: boolean;
     contentRich: unknown;
     publishedAt: Date | null;
     createdAt: Date;
@@ -73,7 +71,6 @@ type IssuePreviewRecord = IssueRecord & {
     author: {
       name: string | null;
     } | null;
-    tags?: Array<{ tag: { id: string; slug: string; name: string } }>;
   }>;
 };
 
@@ -118,7 +115,6 @@ const toIssueDetailDto = (issue: IssueDetailRecord): IssueDetailDto => {
       id: article.id,
       title: article.title,
       status: article.status,
-      isFeatured: article.isFeatured,
       categoryName: article.category?.name ?? null,
       categorySlug: article.category?.slug ?? null,
     })),
@@ -149,13 +145,11 @@ const toPublicIssuePreviewDto = (issue: IssuePreviewRecord): PublicIssueDetailDt
       imageUrl: resolvePublicMediaUrl(article.imageUrl),
       imageAlt: article.imageAlt,
       hasAudio: Boolean(article.audioUrl),
-      isFeatured: article.isFeatured,
       readingTimeMinutes: calculateReadingTimeMinutes(article.contentRich),
       publishedAt: toPreviewPublishedAt(article.publishedAt, article.updatedAt),
       categorySlug: article.category?.slug ?? null,
       categoryName: article.category?.name ?? null,
       authorName: article.author?.name ?? null,
-      tags: (article.tags ?? []).map((relation) => relation.tag),
     })),
   };
 };

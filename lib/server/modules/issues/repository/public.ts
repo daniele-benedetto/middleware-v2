@@ -35,7 +35,6 @@ const PUBLIC_ISSUE_DETAIL_ARTICLE_SELECT = {
   imageUrl: true,
   imageAlt: true,
   audioUrl: true,
-  isFeatured: true,
   contentRich: true,
   publishedAt: true,
   category: {
@@ -43,13 +42,6 @@ const PUBLIC_ISSUE_DETAIL_ARTICLE_SELECT = {
   },
   author: {
     select: { name: true },
-  },
-  tags: {
-    select: {
-      tag: {
-        select: { id: true, slug: true, name: true },
-      },
-    },
   },
 } as const satisfies Prisma.ArticleSelect;
 

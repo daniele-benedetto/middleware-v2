@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 import type { CSSProperties } from "react";
 
-export function HomeScrollProgress() {
+export function PublicScrollProgress() {
   const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export function HomeScrollProgress() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-120 h-1 bg-transparent">
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-90 h-1 bg-transparent">
       <div
         ref={barRef}
         className="h-full origin-left scale-x-(--scroll-progress) bg-accent motion-reduce:hidden"

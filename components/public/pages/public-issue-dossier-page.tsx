@@ -1,7 +1,6 @@
 import { PublicSystemScreen } from "@/components/public";
 import { ArchiveSection } from "@/components/public/home/archive-section";
 import { CurrentIssueHero } from "@/components/public/home/current-issue-hero";
-import { HomeScrollProgress } from "@/components/public/home/home-scroll-progress";
 import {
   getIssueOrderLabel,
   getIssuePlainDescription,
@@ -45,7 +44,6 @@ export function PublicIssueDossierPage({
       className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
       {jsonLd}
-      <HomeScrollProgress />
       <div className="flex flex-col">
         {issue ? (
           <>

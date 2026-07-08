@@ -38,13 +38,11 @@ const issue = {
       imageUrl: "/api/public/media/blob?pathname=covers%2Fhero.jpg",
       imageAlt: "Hero alt",
       hasAudio: false,
-      isFeatured: true,
       readingTimeMinutes: 5,
       publishedAt: "2026-01-01T00:00:00.000Z",
       categorySlug: "territorio",
       categoryName: "Territorio",
       authorName: "Autrice",
-      tags: [],
     },
   ],
 } satisfies PublicCurrentIssueDetail;
@@ -58,7 +56,6 @@ const article = {
   imageUrl: "/api/public/media/blob?pathname=covers%2Fhero.jpg",
   imageAlt: "Hero alt",
   hasAudio: false,
-  isFeatured: true,
   publishedAt: "2026-01-01T00:00:00.000Z",
   issueId: "11111111-1111-4111-8111-111111111111",
   issueSlug: "numero-uno",
@@ -68,13 +65,11 @@ const article = {
   categoryName: "Territorio",
   authorId: null,
   authorName: "Autrice",
-  tagsCount: 1,
   excerptRich: null,
   contentRich: { type: "doc", content: [] },
   audioUrl: null,
   audioChunks: null,
   updatedAt: "2026-01-02T00:00:00.000Z",
-  tags: [{ id: "44444444-4444-4444-8444-444444444444", slug: "tag", name: "Tag" }],
 } satisfies PublicArticleDetailDto;
 
 describe("seo json-ld", () => {

@@ -61,7 +61,6 @@ export default async function CmsArticlePreviewPage({ params }: CmsArticlePrevie
         imageAlt: article.imageAlt,
         audioUrl: article.audioUrl,
         audioChunks: article.audioChunks,
-        tags: article.tags,
         statusLabel: getArticleStatusLabel(cmsArticle.status),
         publicAvailable: isPublic,
       })}

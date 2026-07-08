@@ -1,6 +1,5 @@
 export type IssueNumberingArticle = {
   id: string;
-  isFeatured: boolean;
   publishedAt: string;
 };
 
@@ -20,10 +19,6 @@ export function sortIssueNumberingFallbackArticles<TArticle extends IssueNumberi
   articles: TArticle[],
 ) {
   return [...articles].sort((a, b) => {
-    if (a.isFeatured !== b.isFeatured) {
-      return a.isFeatured ? -1 : 1;
-    }
-
     return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
   });
 }

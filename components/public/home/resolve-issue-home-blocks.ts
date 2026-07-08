@@ -27,9 +27,7 @@ function toNarrativeBlock({
   const preferredArticle =
     (block.featuredArticleId
       ? articles.find((article) => article.id === block.featuredArticleId)
-      : null) ??
-    articles.find((article) => article.isFeatured) ??
-    fallbackArticle;
+      : null) ?? fallbackArticle;
 
   return {
     id: block.id,

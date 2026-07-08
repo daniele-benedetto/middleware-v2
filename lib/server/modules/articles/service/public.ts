@@ -19,7 +19,6 @@ type PublicArticleSummaryRecord = {
   imageUrl: string | null;
   imageAlt: string | null;
   audioUrl: string | null;
-  isFeatured: boolean;
   publishedAt: Date | null;
   issueId: string;
   categoryId: string;
@@ -27,7 +26,6 @@ type PublicArticleSummaryRecord = {
   issue?: { slug: string; title: string } | null;
   category?: { slug: string; name: string } | null;
   author?: { name: string } | null;
-  _count?: { tags: number };
 };
 
 type PublicArticleDetailRecord = PublicArticleSummaryRecord & {
@@ -35,7 +33,6 @@ type PublicArticleDetailRecord = PublicArticleSummaryRecord & {
   excerptRich: unknown;
   contentRich: unknown;
   audioChunks: unknown;
-  tags?: Array<{ tag: { id: string; slug: string; name: string } }>;
 };
 
 const toPublicArticleSummaryDto = (
@@ -58,7 +55,6 @@ const toPublicArticleSummaryDto = (
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
     imageAlt: article.imageAlt,
     hasAudio: Boolean(article.audioUrl),
-    isFeatured: article.isFeatured,
     publishedAt: article.publishedAt.toISOString(),
     issueId: article.issueId,
     issueSlug: article.issue.slug,
@@ -68,7 +64,6 @@ const toPublicArticleSummaryDto = (
     categoryName: article.category.name,
     authorId: article.authorId,
     authorName: article.author?.name ?? null,
-    tagsCount: article._count?.tags ?? 0,
   };
 };
 
@@ -80,7 +75,6 @@ const toPublicArticleDetailDto = (article: PublicArticleDetailRecord): PublicArt
     audioUrl: resolvePublicMediaUrl(article.audioUrl),
     audioChunks: article.audioChunks ?? null,
     updatedAt: article.updatedAt.toISOString(),
-    tags: (article.tags ?? []).map((entry) => entry.tag),
   };
 };
 
@@ -103,14 +97,6 @@ export const publicArticlesService = {
   },
   async listByCategory(categorySlug: string) {
     const articles = await publicArticlesRepository.listByCategorySlug(categorySlug);
-    return toPublicArticleSummaryDtos(articles as PublicArticleSummaryRecord[]);
-  },
-  async listByTag(tagSlug: string) {
-    const articles = await publicArticlesRepository.listByTagSlug(tagSlug);
-    return toPublicArticleSummaryDtos(articles as PublicArticleSummaryRecord[]);
-  },
-  async listFeatured(limit: number) {
-    const articles = await publicArticlesRepository.listFeatured(limit);
     return toPublicArticleSummaryDtos(articles as PublicArticleSummaryRecord[]);
   },
   async search(query: string, limit: number) {

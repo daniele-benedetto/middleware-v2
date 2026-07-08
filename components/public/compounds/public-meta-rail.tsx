@@ -16,7 +16,7 @@ type PublicMetaRailProps = {
 
 export function PublicMetaRail({
   items,
-  className = "flex flex-wrap items-center gap-3 font-heading text-[13px] font-semibold text-muted sm:text-[14px]",
+  className = "flex flex-wrap items-center gap-3 font-heading text-[14px] font-semibold text-muted sm:text-[15px]",
   separatorClassName = "bg-accent",
   linkClassName = "hover:text-accent",
 }: PublicMetaRailProps) {

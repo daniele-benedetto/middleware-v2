@@ -5,7 +5,6 @@ import {
   articleAuthorOptionsInput,
   articleCategoryOptionsInput,
   articleIssueOptionsInput,
-  articleTagOptionsInput,
 } from "@/lib/cms/article-options";
 import { trpc } from "@/lib/trpc/react";
 
@@ -13,9 +12,7 @@ import type { RouterInputs, RouterOutputs } from "@/lib/trpc/types";
 
 type CreateArticleInput = RouterInputs["articles"]["create"];
 type UpdateArticleInput = RouterInputs["articles"]["update"]["data"];
-type SyncArticleTagsInput = RouterInputs["articles"]["syncTags"]["data"];
 type ArticleDetail = RouterOutputs["articles"]["getById"];
-type TagOptionsOutput = RouterOutputs["tags"]["list"];
 type IssueOptionsOutput = RouterOutputs["issues"]["list"];
 type CategoryOptionsOutput = RouterOutputs["categories"]["list"];
 type AuthorOptionsOutput = RouterOutputs["authors"]["list"];
@@ -39,17 +36,6 @@ export function useArticleUpdate() {
   return trpc.articles.update.useMutation();
 }
 
-export function useArticleSyncTags() {
-  return trpc.articles.syncTags.useMutation();
-}
-
-export function useTagOptions(options?: { initialData?: TagOptionsOutput }) {
-  return trpc.tags.list.useQuery(articleTagOptionsInput, {
-    ...cmsOptionsQueryOptions,
-    initialData: options?.initialData,
-  });
-}
-
 export function useIssueOptions(options?: { initialData?: IssueOptionsOutput }) {
   return trpc.issues.list.useQuery(articleIssueOptionsInput, {
     ...cmsOptionsQueryOptions,
@@ -71,4 +57,4 @@ export function useAuthorOptions(options?: { initialData?: AuthorOptionsOutput }
   });
 }
 
-export type { ArticleDetail, CreateArticleInput, SyncArticleTagsInput, UpdateArticleInput };
+export type { ArticleDetail, CreateArticleInput, UpdateArticleInput };

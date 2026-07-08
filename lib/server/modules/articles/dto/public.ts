@@ -2,12 +2,6 @@ import { z } from "zod";
 
 import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 
-export const publicArticleTagDtoSchema = z.object({
-  id: z.string().uuid(),
-  slug: z.string(),
-  name: z.string(),
-});
-
 const publicArticleBaseShape = {
   id: z.string().uuid(),
   slug: z.string(),
@@ -17,7 +11,6 @@ const publicArticleBaseShape = {
   imageUrl: z.string().nullable(),
   imageAlt: z.string().nullable(),
   hasAudio: z.boolean(),
-  isFeatured: z.boolean(),
   publishedAt: z.string(),
   issueId: z.string().uuid(),
   issueSlug: z.string(),
@@ -27,7 +20,6 @@ const publicArticleBaseShape = {
   categoryName: z.string(),
   authorId: z.string().uuid().nullable(),
   authorName: z.string().nullable(),
-  tagsCount: z.number().int(),
 } as const;
 
 export const publicArticleSummaryDtoSchema = z.object(publicArticleBaseShape);
@@ -39,11 +31,9 @@ export const publicArticleDetailDtoSchema = z.object({
   audioUrl: z.string().nullable(),
   audioChunks: z.unknown().nullable(),
   updatedAt: z.string(),
-  tags: z.array(publicArticleTagDtoSchema),
 });
 
 export const publicArticlesListDtoSchema = z.array(publicArticleSummaryDtoSchema);
 
-export type PublicArticleTagDto = z.infer<typeof publicArticleTagDtoSchema>;
 export type PublicArticleSummaryDto = z.infer<typeof publicArticleSummaryDtoSchema>;
 export type PublicArticleDetailDto = z.infer<typeof publicArticleDetailDtoSchema>;

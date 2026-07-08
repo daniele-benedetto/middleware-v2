@@ -1,6 +1,5 @@
 import { DossierArticleCard } from "@/components/public/compounds";
 import { publicContentClassName } from "@/components/public/primitives";
-import { articleEyebrow } from "@/components/public/sections/dossier/dossier-format";
 import { sortUnpaginatedArticles } from "@/components/public/sections/dossier/dossier-view-model";
 import { i18n } from "@/lib/i18n";
 
@@ -32,7 +31,6 @@ export function UnpaginatedArticleRow({
             <DossierArticleCard
               key={article.id}
               article={article}
-              eyebrow={articleEyebrow(article)}
               number={startNumber + index}
               variant="constellationSecondary"
             />

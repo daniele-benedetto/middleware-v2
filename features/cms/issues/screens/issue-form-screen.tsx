@@ -288,13 +288,11 @@ function IssueFormContent({
         imageUrl: null,
         imageAlt: null,
         hasAudio: false,
-        isFeatured: article.isFeatured,
         readingTimeMinutes: 1,
         publishedAt: new Date().toISOString(),
         categorySlug: article.categorySlug,
         categoryName: article.categoryName,
         authorName: null,
-        tags: [],
       })),
     [articles],
   );

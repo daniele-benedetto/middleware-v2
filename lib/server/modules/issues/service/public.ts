@@ -35,12 +35,10 @@ type PublicIssueArticleRecord = {
   imageUrl: string | null;
   imageAlt: string | null;
   audioUrl: string | null;
-  isFeatured: boolean;
   contentRich: unknown;
   publishedAt: Date | null;
   category?: { slug: string; name: string } | null;
   author?: { name: string | null } | null;
-  tags?: Array<{ tag: { id: string; slug: string; name: string } }>;
 };
 
 const WORDS_PER_MINUTE = 220;
@@ -97,13 +95,11 @@ const toPublicIssueArticleSummaryDto = (
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
     imageAlt: article.imageAlt,
     hasAudio: Boolean(article.audioUrl),
-    isFeatured: article.isFeatured,
     readingTimeMinutes: calculateReadingTimeMinutes(article.contentRich),
     publishedAt: article.publishedAt.toISOString(),
     categorySlug: article.category?.slug ?? null,
     categoryName: article.category?.name ?? null,
     authorName: article.author?.name ?? null,
-    tags: (article.tags ?? []).map((relation) => relation.tag),
   };
 };
 

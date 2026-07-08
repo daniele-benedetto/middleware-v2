@@ -180,7 +180,6 @@ Form controls (always wrap in `CmsFormField`):
 Feedback / overlay:
 
 - `CmsBadge`: `category-outline-{accent|ink}`, `category-solid-{accent|ink}`, `status-{new|draft|published|archived}`
-- `CmsRemovableTag`: tag con `×` per selector multi-tag.
 - `CmsBreakingDot`: pallino rosso + label accent uppercase.
 - `CmsTooltip`: variante `short-dark` (bg ink, mono 10px) o `long-accent` (bg rosso, editorial italic 13px). Trigger = termine inline con underline-dashed-accent.
 - `cmsToast.{info|breaking|error}(body, label?)`: toast persistente SG-compliant. Richiede `<Toaster />` montato (già in `app/layout.tsx`).

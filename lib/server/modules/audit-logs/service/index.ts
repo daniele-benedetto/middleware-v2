@@ -8,7 +8,6 @@ import { auditLogsRepository } from "@/lib/server/modules/audit-logs/repository"
 import { categoriesRepository } from "@/lib/server/modules/categories/repository";
 import { issuesRepository } from "@/lib/server/modules/issues/repository";
 import { mediaRepository } from "@/lib/server/modules/media/repository";
-import { tagsRepository } from "@/lib/server/modules/tags/repository";
 import { usersRepository } from "@/lib/server/modules/users/repository";
 import { StorageNotFoundError } from "@/lib/server/storage/errors";
 
@@ -120,27 +119,6 @@ async function resolveCategorySummary(resourceId: string): Promise<AuditLogResou
   };
 }
 
-async function resolveTagSummary(resourceId: string): Promise<AuditLogResourceSummary> {
-  const text = i18n.cms.lists.auditLogs;
-  const tag = await tagsRepository.getById(resourceId);
-
-  if (!tag) {
-    return buildMissingResourceSummary("Tag", resourceId);
-  }
-
-  return {
-    title: tag.name,
-    description: text.resourceTagDescription,
-    missing: false,
-    fields: buildFields([
-      { label: text.fields.id, value: tag.id },
-      { label: text.fields.slug, value: tag.slug },
-      { label: text.fields.activeMasculine, value: formatBoolean(tag.isActive) },
-      { label: text.fields.linkedArticles, value: String(tag._count?.articles ?? 0) },
-    ]),
-  };
-}
-
 async function resolveIssueSummary(resourceId: string): Promise<AuditLogResourceSummary> {
   const text = i18n.cms.lists.auditLogs;
   const issue = await issuesRepository.getById(resourceId);
@@ -205,8 +183,6 @@ async function resolveArticleSummary(resourceId: string): Promise<AuditLogResour
       { label: text.fields.category, value: article.category.name },
       { label: text.fields.author, value: article.author?.name ?? "-" },
       { label: text.fields.publishedMasculine, value: formatNullableDate(article.publishedAt) },
-      { label: text.fields.featured, value: formatBoolean(article.isFeatured) },
-      { label: text.fields.tags, value: String(article._count?.tags ?? 0) },
     ]),
   };
 }
@@ -246,10 +222,6 @@ async function resolveResourceSummary(
 
   if (resource === "categories") {
     return resolveCategorySummary(resourceId);
-  }
-
-  if (resource === "tags") {
-    return resolveTagSummary(resourceId);
   }
 
   if (resource === "issues") {

@@ -8,7 +8,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Star } from "lucide-react";
 import Link from "next/link";
 
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -25,14 +24,12 @@ import { cn } from "@/lib/utils";
 export type CmsArticleListPanelItem = {
   id: string;
   title: string;
-  isFeatured: boolean;
   href?: string;
 };
 
 type CmsArticleListPanelProps = {
   title: string;
   emptyText: string;
-  featuredAriaLabel: string;
   articles: CmsArticleListPanelItem[];
   className?: string;
   disabled?: boolean;
@@ -43,7 +40,6 @@ type CmsArticleListPanelProps = {
 export function CmsArticleListPanel({
   title,
   emptyText,
-  featuredAriaLabel,
   articles,
   className,
   disabled,
@@ -116,7 +112,6 @@ export function CmsArticleListPanel({
                     <SortableArticleListPanelRow
                       key={article.id}
                       article={article}
-                      featuredAriaLabel={featuredAriaLabel}
                       disabled={disabled || !isReorderable}
                       isReorderable={isReorderable}
                     />
@@ -133,14 +128,12 @@ export function CmsArticleListPanel({
 
 type SortableArticleListPanelRowProps = {
   article: CmsArticleListPanelItem;
-  featuredAriaLabel: string;
   disabled?: boolean;
   isReorderable: boolean;
 };
 
 function SortableArticleListPanelRow({
   article,
-  featuredAriaLabel,
   disabled,
   isReorderable,
 }: SortableArticleListPanelRowProps) {
@@ -179,13 +172,6 @@ function SortableArticleListPanelRow({
         ) : (
           <span className="block truncate">{article.title}</span>
         )}
-      </TableCell>
-      <TableCell className="w-7 min-w-7 max-w-7 px-0 py-2 text-center font-ui text-[11px] font-semibold text-muted-foreground">
-        <div className="flex w-full items-center justify-center">
-          {article.isFeatured ? (
-            <Star className="h-3.5 w-3.5 text-accent" aria-label={featuredAriaLabel} />
-          ) : null}
-        </div>
       </TableCell>
     </TableRow>
   );

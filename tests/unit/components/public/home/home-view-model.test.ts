@@ -14,13 +14,11 @@ const article = (overrides: Partial<HomeIssueArticle>): HomeIssueArticle => ({
   imageUrl: null,
   imageAlt: null,
   hasAudio: false,
-  isFeatured: false,
   readingTimeMinutes: 1,
   publishedAt: "2026-01-01T00:00:00.000Z",
   categorySlug: "categoria",
   categoryName: "Categoria",
   authorName: null,
-  tags: [],
   ...overrides,
 });
 
@@ -42,8 +40,7 @@ const issue = (
   }) as PublicCurrentIssueDetail;
 
 describe("home view model", () => {
-  it("sorts articles by featured flag, then published date", () => {
-    const featured = article({ id: crypto.randomUUID(), isFeatured: true });
+  it("sorts articles by published date", () => {
     const older = article({
       id: crypto.randomUUID(),
       publishedAt: "2026-01-01T00:00:00.000Z",
@@ -53,7 +50,7 @@ describe("home view model", () => {
       publishedAt: "2026-01-02T00:00:00.000Z",
     });
 
-    expect(sortHomeArticles([newer, older, featured])).toEqual([featured, older, newer]);
+    expect(sortHomeArticles([newer, older])).toEqual([older, newer]);
   });
 
   it("composes issue-level homeBlocks preserving editorial copy and featured article", () => {
@@ -113,7 +110,6 @@ describe("home view model", () => {
         id: crypto.randomUUID(),
         title: `Article ${index + 1}`,
         publishedAt: `2026-01-0${index + 1}T00:00:00.000Z`,
-        isFeatured: index === 2,
       }),
     );
 

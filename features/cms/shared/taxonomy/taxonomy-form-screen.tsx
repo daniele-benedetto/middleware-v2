@@ -32,7 +32,6 @@ const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
 type CmsTaxonomyArticleSummary = {
   id: string;
   title: string;
-  isFeatured: boolean;
 };
 
 type CmsTaxonomyDetail = {
@@ -57,7 +56,7 @@ type CmsTaxonomyMutationState<TInput> = {
   mutateAsync: (input: TInput) => Promise<unknown>;
 };
 
-type CmsTaxonomyResource = "authors" | "categories" | "tags";
+type CmsTaxonomyResource = "authors" | "categories";
 type CmsTaxonomyRichTextField = "bioRich" | "description";
 type CmsTaxonomyFormText = {
   invalidTitle: string;
@@ -85,14 +84,8 @@ type CmsTaxonomyFormScreenProps<TCreateInput, TUpdateInput, TDetail extends CmsT
   richTextField?: CmsTaxonomyRichTextField;
   resourceText: CmsTaxonomyFormText;
   listPath: string;
-  createMutationName: Extract<
-    CmsMutationName,
-    "authors.create" | "categories.create" | "tags.create"
-  >;
-  updateMutationName: Extract<
-    CmsMutationName,
-    "authors.update" | "categories.update" | "tags.update"
-  >;
+  createMutationName: Extract<CmsMutationName, "authors.create" | "categories.create">;
+  updateMutationName: Extract<CmsMutationName, "authors.update" | "categories.update">;
 };
 
 type CmsTaxonomyFormContentProps<TCreateInput, TUpdateInput, TDetail extends CmsTaxonomyDetail> = {
@@ -137,12 +130,8 @@ export function CmsTaxonomyFormScreen<
   const text = i18n.cms;
   const formText = text.forms;
   const categoryDeleteMutation = trpc.categories.delete.useMutation();
-  const tagDeleteMutation = trpc.tags.delete.useMutation();
   const authorDeleteMutation = trpc.authors.delete.useMutation();
-  const isDeleting =
-    authorDeleteMutation.isPending ||
-    categoryDeleteMutation.isPending ||
-    tagDeleteMutation.isPending;
+  const isDeleting = authorDeleteMutation.isPending || categoryDeleteMutation.isPending;
 
   if (mode === "edit" && !entityId) {
     return (
@@ -190,9 +179,6 @@ export function CmsTaxonomyFormScreen<
         } else if (resource === "categories") {
           await categoryDeleteMutation.mutateAsync({ id });
           await invalidateAfterCmsMutation(trpcUtils, "categories.delete", { id });
-        } else {
-          await tagDeleteMutation.mutateAsync({ id });
-          await invalidateAfterCmsMutation(trpcUtils, "tags.delete", { id });
         }
 
         success();
@@ -258,7 +244,6 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
   const associatedArticles = (detail?.articles ?? []).map((article) => ({
     id: article.id,
     title: article.title,
-    isFeatured: article.isFeatured,
   }));
 
   const openSlugEditor = () => {
@@ -343,9 +328,7 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
                 description={
                   resource === "authors"
                     ? text.quickActions.confirmDeleteSingleAuthor
-                    : resource === "categories"
-                      ? text.quickActions.confirmDeleteSingleCategory
-                      : text.quickActions.confirmDeleteSingleTag
+                    : text.quickActions.confirmDeleteSingleCategory
                 }
                 tone="danger"
                 onConfirm={() => onDelete(entityId)}
@@ -446,7 +429,6 @@ function CmsTaxonomyFormContent<TCreateInput, TUpdateInput, TDetail extends CmsT
               <CmsArticleListPanel
                 title={text.navigation.articles}
                 emptyText={resourceText.articlesPanelEmpty}
-                featuredAriaLabel={i18n.cms.lists.issues.articlesPanelFeaturedAria}
                 articles={associatedArticles}
                 className="min-h-0 flex-1"
               />

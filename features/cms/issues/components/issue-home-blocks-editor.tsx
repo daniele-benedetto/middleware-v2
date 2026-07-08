@@ -51,7 +51,6 @@ type IssueHomeBlockArticle = {
   id: string;
   title: string;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  isFeatured: boolean;
   categoryName?: string | null;
   categorySlug?: string | null;
 };
@@ -644,7 +643,6 @@ function ArticleDragCard({
         </span>
         <span className="mt-1 block font-ui text-[10px] font-bold tracking-[0.08em] text-muted-foreground uppercase">
           {article.status}
-          {article.isFeatured ? " / featured" : ""}
         </span>
       </span>
       {(actions ?? dragHandle) ? (

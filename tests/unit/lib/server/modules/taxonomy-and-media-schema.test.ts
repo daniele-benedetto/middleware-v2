@@ -4,13 +4,8 @@ import {
   updateCategoryInputSchema,
 } from "@/lib/server/modules/categories/schema";
 import { deleteMediaInputSchema, renameMediaInputSchema } from "@/lib/server/modules/media/schema";
-import {
-  createTagInputSchema,
-  listTagsQuerySchema,
-  updateTagInputSchema,
-} from "@/lib/server/modules/tags/schema";
 
-describe("categories/tag/media schemas", () => {
+describe("categories/media schemas", () => {
   it("applies category defaults and trims strings", () => {
     const parsed = createCategoryInputSchema.parse({
       name: "  Politics  ",
@@ -31,31 +26,6 @@ describe("categories/tag/media schemas", () => {
   it("parses category list query defaults and booleans", () => {
     expect(listCategoriesQuerySchema.parse({ isActive: "true" })).toEqual({
       isActive: true,
-      sortBy: "createdAt",
-      sortOrder: "desc",
-    });
-  });
-
-  it("applies tag defaults and trims strings", () => {
-    const parsed = createTagInputSchema.parse({
-      name: "  Audio  ",
-      slug: "  audio  ",
-    });
-
-    expect(parsed).toEqual({
-      name: "Audio",
-      slug: "audio",
-      isActive: true,
-    });
-  });
-
-  it("rejects empty tag updates", () => {
-    expect(updateTagInputSchema.safeParse({}).success).toBe(false);
-  });
-
-  it("parses tag list query defaults and booleans", () => {
-    expect(listTagsQuerySchema.parse({ isActive: "false" })).toEqual({
-      isActive: false,
       sortBy: "createdAt",
       sortOrder: "desc",
     });

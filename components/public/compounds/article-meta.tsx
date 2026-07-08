@@ -14,7 +14,6 @@ export function ArticleMeta({ article, tone = "light" }: ArticleMetaProps) {
     tone === "dark" ? "text-dark-muted" : tone === "accent" ? "text-cream-muted" : "text-muted";
   const separator = tone === "accent" ? "bg-foreground" : "bg-accent";
   const items = [
-    article.categoryName,
     article.authorName,
     text.readingTimeLabel(article.readingTimeMinutes),
     article.hasAudio ? text.audioLabel : null,
@@ -25,7 +24,7 @@ export function ArticleMeta({ article, tone = "light" }: ArticleMetaProps) {
   return (
     <PublicMetaRail
       items={items}
-      className={`flex flex-wrap items-center gap-3 font-heading text-xs font-semibold ${muted}`}
+      className={`flex flex-wrap items-center gap-3 font-heading text-[13px] font-semibold sm:text-[14px] ${muted}`}
       separatorClassName={separator}
     />
   );

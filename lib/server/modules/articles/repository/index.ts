@@ -4,11 +4,7 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
-import type {
-  ListArticlesQuery,
-  SyncArticleTagsInput,
-  UpdateArticleInput,
-} from "@/lib/server/modules/articles/schema";
+import type { ListArticlesQuery, UpdateArticleInput } from "@/lib/server/modules/articles/schema";
 
 export type CreateArticlePersistInput = {
   issueId: string;
@@ -24,8 +20,6 @@ export type CreateArticlePersistInput = {
   imageAlt?: string;
   audioUrl?: string;
   audioChunks?: unknown;
-  tagIds?: string[];
-  isFeatured?: boolean;
 };
 
 export type UpdateArticlePersistInput = UpdateArticleInput & {
@@ -43,7 +37,6 @@ const ARTICLE_DETAIL_SELECT = {
   slug: true,
   status: true,
   publishedAt: true,
-  isFeatured: true,
   createdAt: true,
   updatedAt: true,
   excerpt: true,
@@ -70,23 +63,6 @@ const ARTICLE_DETAIL_SELECT = {
       name: true,
     },
   },
-  tags: {
-    select: {
-      tagId: true,
-      tag: {
-        select: {
-          id: true,
-          slug: true,
-          name: true,
-        },
-      },
-    },
-  },
-  _count: {
-    select: {
-      tags: true,
-    },
-  },
 } as const satisfies Prisma.ArticleSelect;
 
 const toArticleWhereInput = (query: ListArticlesQuery): Prisma.ArticleWhereInput => {
@@ -95,7 +71,6 @@ const toArticleWhereInput = (query: ListArticlesQuery): Prisma.ArticleWhereInput
     issueId: query.issueId,
     categoryId: query.categoryId,
     authorId: query.authorId,
-    isFeatured: query.featured,
     OR: query.q
       ? [
           { title: { contains: query.q, mode: "insensitive" } },
@@ -131,7 +106,6 @@ export const articlesRepository = {
         slug: true,
         status: true,
         publishedAt: true,
-        isFeatured: true,
         createdAt: true,
         updatedAt: true,
         issue: {
@@ -147,11 +121,6 @@ export const articlesRepository = {
         author: {
           select: {
             name: true,
-          },
-        },
-        _count: {
-          select: {
-            tags: true,
           },
         },
       },
@@ -184,19 +153,10 @@ export const articlesRepository = {
       imageAlt: input.imageAlt,
       audioUrl: input.audioUrl,
       audioChunks: input.audioChunks as Prisma.InputJsonValue | undefined,
-      isFeatured: input.isFeatured,
     };
-
-    const tagIds = Array.from(new Set(input.tagIds ?? []));
 
     return prisma.$transaction(async (tx) => {
       const created = await tx.article.create({ data, select: { id: true } });
-
-      if (tagIds.length > 0) {
-        await tx.articleTag.createMany({
-          data: tagIds.map((tagId) => ({ articleId: created.id, tagId })),
-        });
-      }
 
       const article = await tx.article.findUnique({
         where: { id: created.id },
@@ -246,7 +206,6 @@ export const articlesRepository = {
             : (input.audioChunks as Prisma.InputJsonValue),
       status: input.status,
       publishedAt: input.publishedAt,
-      isFeatured: input.isFeatured,
     };
 
     return prisma.article.update({
@@ -265,26 +224,6 @@ export const articlesRepository = {
       where: { issueId },
       select: { id: true },
       orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }],
-    });
-  },
-  async syncTags(id: string, input: SyncArticleTagsInput) {
-    const tagIds = Array.from(new Set(input.tagIds));
-
-    return prisma.$transaction(async (tx) => {
-      await tx.articleTag.deleteMany({
-        where: { articleId: id },
-      });
-
-      if (tagIds.length > 0) {
-        await tx.articleTag.createMany({
-          data: tagIds.map((tagId) => ({ articleId: id, tagId })),
-        });
-      }
-
-      return tx.article.findUnique({
-        where: { id },
-        select: ARTICLE_DETAIL_SELECT,
-      });
     });
   },
   async publish(id: string) {
@@ -313,24 +252,6 @@ export const articlesRepository = {
       data: {
         status: "ARCHIVED",
         publishedAt: null,
-      },
-      select: ARTICLE_DETAIL_SELECT,
-    });
-  },
-  async feature(id: string) {
-    return prisma.article.update({
-      where: { id },
-      data: {
-        isFeatured: true,
-      },
-      select: ARTICLE_DETAIL_SELECT,
-    });
-  },
-  async unfeature(id: string) {
-    return prisma.article.update({
-      where: { id },
-      data: {
-        isFeatured: false,
       },
       select: ARTICLE_DETAIL_SELECT,
     });

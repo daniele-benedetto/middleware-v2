@@ -12,10 +12,7 @@ export function formatAuditActionLabel(value: string, text: AuditLogText): strin
   if (normalized === "publish") return text.actionPublish;
   if (normalized === "unpublish") return text.actionUnpublish;
   if (normalized === "archive") return text.actionArchive;
-  if (normalized === "feature") return text.actionFeature;
-  if (normalized === "unfeature") return text.actionUnfeature;
   if (normalized === "reorder") return text.actionReorder;
-  if (normalized === "sync-tags") return text.actionSyncTags;
   if (normalized === "update-role") return text.actionUpdateRole;
   if (normalized === "upload") return text.actionUpload;
   if (normalized === "rename") return text.actionRename;
