@@ -1,4 +1,4 @@
-export const cmsMediaUploadMaxSizeInBytes = 50 * 1024 * 1024;
+export const cmsMediaUploadMaxSizeInBytes = 100 * 1024 * 1024;
 
 const mediaImageExtensions = new Set([".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif"]);
 const mediaAudioExtensions = new Set([".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac", ".webm"]);
