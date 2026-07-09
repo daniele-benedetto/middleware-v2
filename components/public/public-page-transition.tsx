@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, ViewTransition, type ReactNode } from "react";
+import { useEffect, useSyncExternalStore, ViewTransition, type ReactNode } from "react";
 
 type PublicPageTransitionProps = {
   children: ReactNode;
@@ -26,6 +26,32 @@ let pendingNavigation: PendingNavigation = { type: "push", hasHash: false };
 let cursorTransitionTimer: number | undefined;
 
 const cursorTransitionDuration = 320;
+const mobileViewportQuery = "(max-width: 47.999rem)";
+
+function subscribeToMobileViewport(onStoreChange: () => void) {
+  const mediaQuery = window.matchMedia(mobileViewportQuery);
+  mediaQuery.addEventListener("change", onStoreChange);
+
+  return () => {
+    mediaQuery.removeEventListener("change", onStoreChange);
+  };
+}
+
+function getMobileViewportSnapshot() {
+  return window.matchMedia(mobileViewportQuery).matches;
+}
+
+function getServerMobileViewportSnapshot() {
+  return false;
+}
+
+function PublicPageTransitionFrame({ children }: PublicPageTransitionProps) {
+  return (
+    <div className="flex min-h-svh w-full max-w-full flex-1 flex-col overflow-x-clip">
+      {children}
+    </div>
+  );
+}
 
 function setCursorTransitioning() {
   document.documentElement.dataset.publicTransitioning = "true";
@@ -84,13 +110,21 @@ function handlePageUpdate() {
 // route's loading.tsx fallback immediately, instead of freezing on the old page
 // until data is ready. That gives click -> fade out -> loading -> fade in.
 export function PublicPageTransition({ children }: PublicPageTransitionProps) {
+  const isMobileViewport = useSyncExternalStore(
+    subscribeToMobileViewport,
+    getMobileViewportSnapshot,
+    getServerMobileViewportSnapshot,
+  );
+
   useEffect(() => clearCursorTransitioning, []);
+
+  if (isMobileViewport) {
+    return <PublicPageTransitionFrame>{children}</PublicPageTransitionFrame>;
+  }
 
   return (
     <ViewTransition update="page-transition" default="none" onUpdate={handlePageUpdate}>
-      <div className="flex min-h-svh w-full max-w-full flex-1 flex-col overflow-x-clip">
-        {children}
-      </div>
+      <PublicPageTransitionFrame>{children}</PublicPageTransitionFrame>
     </ViewTransition>
   );
 }
