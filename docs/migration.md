@@ -4,6 +4,8 @@ Piano residuo dopo lo switch di `middleware.media` dalla vecchia Vercel alla VPS
 
 Per accessi, comandi VPS, backup, deploy e guardrail operativi vedere `docs/production-ops.md`.
 
+PROCEDI
+
 ## Stato Attuale
 
 | Area           | Stato                                                                   |
