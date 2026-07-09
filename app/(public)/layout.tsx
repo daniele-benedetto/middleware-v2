@@ -12,7 +12,7 @@ import { PublicPageTransition } from "@/components/public/public-page-transition
 import { PublicScrollProgress } from "@/components/public/public-scroll-progress";
 import { PublicSmoothScroll } from "@/components/public/public-smooth-scroll";
 import { i18n } from "@/lib/i18n";
-import { publicFeatures } from "@/lib/public/config";
+import { publicAnalytics, publicFeatures, publicPrivacy } from "@/lib/public/config";
 import { getLegalConsentVersion } from "@/lib/public/server/legal-consent";
 import { getPublicNavigation } from "@/lib/public/server/navigation";
 
@@ -45,7 +45,14 @@ async function PublicAnalyticsSlot() {
   await connection();
   const legalConsentVersion = await getLegalConsentVersion();
 
-  return <PublicAnalytics consentVersion={legalConsentVersion} />;
+  return (
+    <PublicAnalytics
+      consentVersion={legalConsentVersion}
+      scriptSrc={publicAnalytics.umamiScriptSrc}
+      websiteId={publicAnalytics.umamiWebsiteId}
+      bannerMode={publicPrivacy.bannerMode}
+    />
+  );
 }
 
 export default function PublicLayout({ children }: { children: ReactNode }) {

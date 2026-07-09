@@ -2,29 +2,32 @@
 
 import Script from "next/script";
 
-import { isPublicAnalyticsEnabled, publicAnalytics, publicPrivacy } from "@/lib/public/config";
 import { usePrivacyChoice } from "@/lib/public/privacy-consent";
+
+import type { PrivacyBannerMode } from "@/lib/public/privacy-consent";
 
 type PublicAnalyticsProps = {
   consentVersion: string;
+  scriptSrc: string | null;
+  websiteId: string | null;
+  bannerMode: PrivacyBannerMode;
 };
 
-export function PublicAnalytics({ consentVersion }: PublicAnalyticsProps) {
+export function PublicAnalytics({
+  consentVersion,
+  scriptSrc,
+  websiteId,
+  bannerMode,
+}: PublicAnalyticsProps) {
   const privacyChoice = usePrivacyChoice(consentVersion);
 
-  if (!isPublicAnalyticsEnabled()) {
+  if (!scriptSrc || !websiteId) {
     return null;
   }
 
-  if (publicPrivacy.bannerMode === "consent" && privacyChoice !== "accepted") {
+  if (bannerMode === "consent" && privacyChoice !== "accepted") {
     return null;
   }
 
-  return (
-    <Script
-      src={publicAnalytics.umamiScriptSrc ?? undefined}
-      data-website-id={publicAnalytics.umamiWebsiteId ?? undefined}
-      strategy="afterInteractive"
-    />
-  );
+  return <Script src={scriptSrc} data-website-id={websiteId} strategy="afterInteractive" />;
 }
