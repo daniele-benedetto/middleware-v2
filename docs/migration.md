@@ -32,13 +32,6 @@ Stabilizzare il go-live dominio appena completato e chiudere i residui prima di 
 
 ## Residui Operativi
 
-- [x] Deploy production rebuild con URL canonico HTTPS completato.
-- [x] Canonical e Open Graph URL verificati su dominio finale.
-- [x] Login CMS reale verificato dopo switch dominio.
-- [x] `/cms/media` verificato dopo switch dominio.
-- [x] Upload media verificato dopo switch dominio.
-- [x] `robots.txt` e `sitemap.xml` verificati su dominio finale.
-- [x] Redirect legacy `/it/*` verificati in production.
 - [ ] Umami production installato su `stats.middleware.media`.
 - [ ] Script Umami production abilitato solo sul layout pubblico.
 - [ ] Pageview Umami production verificate.
