@@ -1,6 +1,6 @@
 "use client";
 
-import { Archivo, IBM_Plex_Mono, Spectral } from "next/font/google";
+import { Archivo, Spectral } from "next/font/google";
 
 import {
   CmsSystemActionButton,
@@ -20,14 +20,8 @@ const archivo = Archivo({
 
 const spectral = Spectral({
   variable: "--font-spectral",
-  weight: ["400", "500", "600"],
+  weight: ["300", "400", "600"],
   style: ["normal", "italic"],
-  subsets: ["latin"],
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-ibm-plex-mono",
-  weight: ["300", "400", "500", "600"],
   subsets: ["latin"],
 });
 
@@ -42,12 +36,7 @@ export default function GlobalError({ reset }: GlobalErrorProps) {
   return (
     <html
       lang="it"
-      className={cn(
-        "h-full antialiased font-sans",
-        archivo.variable,
-        spectral.variable,
-        ibmPlexMono.variable,
-      )}
+      className={cn("h-full antialiased font-sans", archivo.variable, spectral.variable)}
     >
       <body className="min-h-svh bg-background text-foreground">
         <CmsSystemScreen

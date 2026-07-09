@@ -8,10 +8,8 @@ import {
   PublicFooter,
   PublicHeader,
 } from "@/components/public";
-import { CustomCursor } from "@/components/public/custom-cursor";
 import { PublicPageTransition } from "@/components/public/public-page-transition";
 import { PublicScrollProgress } from "@/components/public/public-scroll-progress";
-import { PublicSmoothScroll } from "@/components/public/public-smooth-scroll";
 import { i18n } from "@/lib/i18n";
 import { publicAnalytics, publicFeatures, publicPrivacy } from "@/lib/public/config";
 import { getLegalConsentVersion } from "@/lib/public/server/legal-consent";
@@ -82,12 +80,8 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         </Suspense>
       ) : null}
       <Suspense fallback={null}>
-        <PublicSmoothScroll />
-      </Suspense>
-      <Suspense fallback={null}>
         <PublicAnalyticsSlot />
       </Suspense>
-      <CustomCursor />
     </div>
   );
 }

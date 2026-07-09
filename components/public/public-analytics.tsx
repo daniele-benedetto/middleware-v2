@@ -1,6 +1,6 @@
 "use client";
 
-import Script from "next/script";
+import { useEffect } from "react";
 
 import { usePrivacyChoice } from "@/lib/public/privacy-consent";
 
@@ -20,14 +20,30 @@ export function PublicAnalytics({
   bannerMode,
 }: PublicAnalyticsProps) {
   const privacyChoice = usePrivacyChoice(consentVersion);
+  const shouldLoad = Boolean(
+    scriptSrc && websiteId && (bannerMode !== "consent" || privacyChoice === "accepted"),
+  );
 
-  if (!scriptSrc || !websiteId) {
-    return null;
-  }
+  useEffect(() => {
+    if (!shouldLoad || !scriptSrc || !websiteId) return;
+    if (document.querySelector(`script[src="${scriptSrc}"]`)) return;
 
-  if (bannerMode === "consent" && privacyChoice !== "accepted") {
-    return null;
-  }
+    const load = () => {
+      const script = document.createElement("script");
+      script.defer = true;
+      script.src = scriptSrc;
+      script.dataset.websiteId = websiteId;
+      document.body.appendChild(script);
+    };
 
-  return <Script src={scriptSrc} data-website-id={websiteId} strategy="afterInteractive" />;
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(load, { timeout: 3000 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timerId = globalThis.setTimeout(load, 1500);
+    return () => globalThis.clearTimeout(timerId);
+  }, [scriptSrc, shouldLoad, websiteId]);
+
+  return null;
 }

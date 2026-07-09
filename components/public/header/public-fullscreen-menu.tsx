@@ -51,7 +51,6 @@ export function PublicFullscreenMenu({
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
-      data-lenis-prevent
       data-menu-state={state}
       style={{ "--menu-quote-delay": `${getQuoteDelay(items.length)}ms` } as CSSProperties}
       className="public-menu-overlay fixed inset-0 z-100 flex flex-col overflow-y-auto bg-foreground text-background"
