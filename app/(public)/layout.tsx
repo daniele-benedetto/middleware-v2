@@ -1,7 +1,12 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
 
-import { CookieConsentBanner, PublicFooter, PublicHeader } from "@/components/public";
+import {
+  CookieConsentBanner,
+  PublicAnalytics,
+  PublicFooter,
+  PublicHeader,
+} from "@/components/public";
 import { CustomCursor } from "@/components/public/custom-cursor";
 import { PublicPageTransition } from "@/components/public/public-page-transition";
 import { PublicScrollProgress } from "@/components/public/public-scroll-progress";
@@ -36,6 +41,13 @@ async function CookieConsentSlot() {
   return legalConsentVersion ? <CookieConsentBanner consentVersion={legalConsentVersion} /> : null;
 }
 
+async function PublicAnalyticsSlot() {
+  await connection();
+  const legalConsentVersion = await getLegalConsentVersion();
+
+  return <PublicAnalytics consentVersion={legalConsentVersion} />;
+}
+
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <div
@@ -67,6 +79,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       ) : null}
       <Suspense fallback={null}>
         <PublicSmoothScroll />
+      </Suspense>
+      <Suspense fallback={null}>
+        <PublicAnalyticsSlot />
       </Suspense>
       <CustomCursor />
     </div>

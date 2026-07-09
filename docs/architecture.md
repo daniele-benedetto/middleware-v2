@@ -98,6 +98,19 @@ CMS page/request
 - Public components should receive already-shaped props and should not import server loaders.
 - Prefer CSS and small vanilla client components for baseline interaction. Add GSAP only for a concrete editorial motion requirement that cannot be served well by CSS.
 
+## Public Analytics Model
+
+- Analytics target: free, GDPR-friendly, editorial statistics only.
+- Preferred implementation: self-hosted Umami, cookieless, served from a first-party subdomain such as `stats.middleware.media`.
+- Analytics must run only on public routes; CMS routes, tRPC calls, auth routes, and media management screens must not be tracked.
+- Do not send user IDs, emails, session IDs, CMS roles, raw IPs, article author/editor identities as visitor identifiers, or any other custom personal data to analytics events.
+- Allowed measurements are aggregate pageviews, referrers, UTM campaigns, device/browser class, country-level geography when provided by Umami, and explicit editorial events such as newsletter CTA clicks, outbound link clicks, media-download clicks, and issue/article engagement events.
+- Event names must be stable, generic, and non-identifying, for example `newsletter_click`, `outbound_link_click`, `article_audio_play`, `issue_archive_open`.
+- Keep analytics script loading client-side and isolated from public server loaders so Cache Components data paths remain request-safe.
+- Default legal stance: cookieless aggregate analytics use a mandatory informational banner in `acknowledge` mode (`Ho capito`). If legal review requires opt-in, switch `NEXT_PUBLIC_PRIVACY_BANNER_MODE` to `consent` and load analytics only after `mw_cookie_consent` is accepted.
+- Initial analytics retention target: 13 months for annual editorial comparison and seasonality checks.
+- The analytics database is operational telemetry, not editorial source data. Keep it separate from the application database and exclude it from Prisma application migrations.
+
 Minimal route pattern for a new public page:
 
 ```tsx

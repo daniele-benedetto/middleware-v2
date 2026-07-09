@@ -218,11 +218,19 @@ export const publicIt = {
   },
   cookieConsent: {
     kicker: "Privacy e cookie",
-    title: "Preferenze di riservatezza",
-    description:
-      "Questo sito utilizza cookie tecnici necessari e strumenti di misurazione cookieless per statistiche aggregate e anonime, senza cookie di profilazione o pubblicitari. Puoi consentire o rifiutare queste misurazioni: la scelta viene salvata su questo dispositivo fino alla scadenza o al prossimo aggiornamento delle informative.",
+    acknowledge: {
+      title: "Misurazione riservata",
+      description:
+        "Questo sito usa strumenti di misurazione cookieless per capire quali contenuti funzionano, da quali canali arrivano le visite e quali percorsi editoriali sono piu utili. Non usiamo cookie di profilazione, pubblicita, remarketing o identificatori personali. La presa visione viene salvata su questo dispositivo fino alla scadenza o al prossimo aggiornamento delle informative.",
+    },
+    consent: {
+      title: "Preferenze di riservatezza",
+      description:
+        "Questo sito usa strumenti di misurazione cookieless per statistiche aggregate e anonime, senza cookie di profilazione o pubblicitari. Puoi consentire o rifiutare queste misurazioni: la scelta viene salvata su questo dispositivo fino alla scadenza o al prossimo aggiornamento delle informative.",
+    },
     privacyLink: "Privacy policy",
     cookieLink: "Cookie policy",
+    understand: "Ho capito",
     accept: "Consenti",
     reject: "Rifiuta",
   },

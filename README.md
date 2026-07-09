@@ -42,7 +42,7 @@ pnpm prisma:validate
 pnpm prisma:generate
 ```
 
-Current setup runs with a single database as source of truth (Vercel auto-deploy).
+Current production target is the self-hosted Docker stack on the Hetzner VPS, with a single production database.
 
 ## Local self-hosting stack
 
@@ -75,6 +75,34 @@ Stop the stack:
 
 ```bash
 pnpm docker:infra:down
+```
+
+## Local analytics stack
+
+Umami can run locally as a separate analytics stack with its own Postgres database. It does not reuse the application database.
+
+```bash
+cp .env.analytics.example .env.analytics
+pnpm docker:analytics:up
+```
+
+Useful endpoints:
+
+- Umami: `http://localhost:3001`
+- Umami Postgres: `localhost:5433`
+
+Default local Umami credentials are `admin` / `umami`; change them if you keep the local volume around. After the first login, create a local website entry such as `middleware.local` and keep its website id for the later app integration phase.
+
+The public app integration reads these optional variables:
+
+- `NEXT_PUBLIC_UMAMI_SRC`: local default `http://localhost:3001/script.js`
+- `NEXT_PUBLIC_UMAMI_WEBSITE_ID`: website id from the local Umami site
+- `NEXT_PUBLIC_PRIVACY_BANNER_MODE`: `acknowledge` by default, or `consent` to load Umami only after explicit consent
+
+Stop the analytics stack:
+
+```bash
+pnpm docker:analytics:down
 ```
 
 Production note:

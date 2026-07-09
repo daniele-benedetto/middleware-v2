@@ -1,95 +1,25 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { PublicLink } from "@/components/public/public-link";
 import { i18n } from "@/lib/i18n";
+import { publicPrivacy } from "@/lib/public/config";
+import { usePrivacyChoice, writePrivacyDecision } from "@/lib/public/privacy-consent";
 import { cn } from "@/lib/utils";
 
 type CookieConsentBannerProps = {
   consentVersion: string;
 };
 
-type StoredConsent = {
-  version: string;
-  choice: "accepted" | "rejected";
-  decidedAt: string;
-  expiresAt: string;
-};
-
-const consentCookieName = "mw_cookie_consent";
-const consentMaxAgeSeconds = 60 * 60 * 24 * 180;
-const consentChangeEvent = "mw-cookie-consent-change";
-
-function readConsentCookie(): StoredConsent | null {
-  const cookie = document.cookie
-    .split("; ")
-    .find((entry) => entry.startsWith(`${consentCookieName}=`));
-
-  if (!cookie) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(decodeURIComponent(cookie.split("=").slice(1).join("="))) as StoredConsent;
-  } catch {
-    return null;
-  }
-}
-
-function hasValidDecision(consent: StoredConsent | null, consentVersion: string) {
-  if (!consent || consent.version !== consentVersion) {
-    return null;
-  }
-
-  if (new Date(consent.expiresAt).getTime() <= Date.now()) {
-    return null;
-  }
-
-  return consent.choice;
-}
-
-function writeConsentCookie(consentVersion: string, choice: StoredConsent["choice"]) {
-  const decidedAt = new Date();
-  const expiresAt = new Date(decidedAt.getTime() + consentMaxAgeSeconds * 1000);
-  const value = encodeURIComponent(
-    JSON.stringify({
-      version: consentVersion,
-      choice,
-      decidedAt: decidedAt.toISOString(),
-      expiresAt: expiresAt.toISOString(),
-    } satisfies StoredConsent),
-  );
-  const secure = window.location.protocol === "https:" ? "; Secure" : "";
-
-  document.cookie = `${consentCookieName}=${value}; Path=/; Max-Age=${consentMaxAgeSeconds}; SameSite=Lax${secure}`;
-}
-
-function subscribeToConsentChange(callback: () => void) {
-  window.addEventListener(consentChangeEvent, callback);
-
-  return () => {
-    window.removeEventListener(consentChangeEvent, callback);
-  };
-}
-
-function getServerConsentSnapshot() {
-  return "pending";
-}
-
-function getConsentSnapshot(consentVersion: string) {
-  return hasValidDecision(readConsentCookie(), consentVersion) ?? "missing";
-}
-
 export function CookieConsentBanner({ consentVersion }: CookieConsentBannerProps) {
-  const consentState = useSyncExternalStore(
-    subscribeToConsentChange,
-    () => getConsentSnapshot(consentVersion),
-    getServerConsentSnapshot,
-  );
+  const consentState = usePrivacyChoice(consentVersion);
   const text = i18n.public.cookieConsent;
-  const decided = consentState === "accepted" || consentState === "rejected";
+  const mode = publicPrivacy.bannerMode;
+  const copy = mode === "consent" ? text.consent : text.acknowledge;
+  const decided =
+    consentState === "accepted" || consentState === "rejected" || consentState === "acknowledged";
   const ready = consentState !== "pending";
 
   useEffect(() => {
@@ -105,9 +35,8 @@ export function CookieConsentBanner({ consentVersion }: CookieConsentBannerProps
     };
   }, [decided, ready]);
 
-  const saveDecision = (choice: StoredConsent["choice"]) => {
-    writeConsentCookie(consentVersion, choice);
-    window.dispatchEvent(new Event(consentChangeEvent));
+  const saveDecision = (choice: "acknowledged" | "accepted" | "rejected") => {
+    writePrivacyDecision(consentVersion, choice);
   };
 
   return (
@@ -131,12 +60,12 @@ export function CookieConsentBanner({ consentVersion }: CookieConsentBannerProps
                   id="cookie-consent-title"
                   className="font-heading text-[clamp(24px,3vw,34px)] leading-none font-black tracking-[-0.03em] uppercase"
                 >
-                  {text.title}
+                  {copy.title}
                 </h2>
               </div>
 
               <p className="font-editorial text-[15px] leading-relaxed text-body-text sm:text-[16px]">
-                {text.description}{" "}
+                {copy.description}{" "}
                 <PublicLink
                   href="/privacy-policy"
                   className="font-heading font-bold underline underline-offset-4"
@@ -153,19 +82,21 @@ export function CookieConsentBanner({ consentVersion }: CookieConsentBannerProps
               </p>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  className="inline-flex min-h-11 cursor-pointer items-center justify-center border-2 border-foreground bg-background px-5 py-2.5 font-heading text-sm font-extrabold tracking-[0.08em] text-foreground uppercase transition-colors duration-(--motion-fast) hover:bg-surface-hover focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                  onClick={() => saveDecision("rejected")}
-                >
-                  {text.reject}
-                </button>
+                {mode === "consent" ? (
+                  <button
+                    type="button"
+                    className="inline-flex min-h-11 cursor-pointer items-center justify-center border-2 border-foreground bg-background px-5 py-2.5 font-heading text-sm font-extrabold tracking-[0.08em] text-foreground uppercase transition-colors duration-(--motion-fast) hover:bg-surface-hover focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    onClick={() => saveDecision("rejected")}
+                  >
+                    {text.reject}
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   className="inline-flex min-h-11 cursor-pointer items-center justify-center border-2 border-foreground bg-foreground px-5 py-2.5 font-heading text-sm font-extrabold tracking-[0.08em] text-background uppercase transition-colors duration-(--motion-fast) hover:bg-accent hover:text-background focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                  onClick={() => saveDecision("accepted")}
+                  onClick={() => saveDecision(mode === "consent" ? "accepted" : "acknowledged")}
                 >
-                  {text.accept}
+                  {mode === "consent" ? text.accept : text.understand}
                 </button>
               </div>
             </div>

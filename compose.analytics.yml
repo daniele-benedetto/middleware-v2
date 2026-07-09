@@ -1,0 +1,35 @@
+name: middleware-v2-analytics
+
+services:
+  umami-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${UMAMI_POSTGRES_DB:-umami}
+      POSTGRES_USER: ${UMAMI_POSTGRES_USER:-umami}
+      POSTGRES_PASSWORD: ${UMAMI_POSTGRES_PASSWORD:-umami}
+    ports:
+      - "${UMAMI_POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - umami-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U ${UMAMI_POSTGRES_USER:-umami} -d ${UMAMI_POSTGRES_DB:-umami}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    environment:
+      DATABASE_URL: postgresql://${UMAMI_POSTGRES_USER:-umami}:${UMAMI_POSTGRES_PASSWORD:-umami}@umami-postgres:5432/${UMAMI_POSTGRES_DB:-umami}
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET:-local-umami-secret-change-me-32-characters}
+    ports:
+      - "${UMAMI_PORT:-3001}:3000"
+    depends_on:
+      umami-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  umami-postgres-data:

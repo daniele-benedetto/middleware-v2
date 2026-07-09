@@ -46,6 +46,86 @@ const securityHeaders = [
     : []),
 ];
 
+const legacyV1Redirects = [
+  {
+    source: "/it",
+    destination: "/",
+    permanent: true,
+  },
+  {
+    source: "/it/authors",
+    destination: "/chi-siamo",
+    permanent: true,
+  },
+  {
+    source: "/it/categories",
+    destination: "/contro-formazione",
+    permanent: true,
+  },
+  {
+    source: "/it/archive",
+    destination: "/contro-formazione",
+    permanent: true,
+  },
+  {
+    source: "/it/podcasts",
+    destination: "/contro-formazione",
+    permanent: true,
+  },
+  {
+    source: "/it/articles/conricerca-e-stile-della-militanza",
+    destination:
+      "/contro-formazione/operaismo-politico-italiano/conricerca-e-stile-della-militanza",
+    permanent: true,
+  },
+  {
+    source: "/it/articles/contesto-e-origini",
+    destination: "/contro-formazione/operaismo-politico-italiano/contesto-e-origini",
+    permanent: true,
+  },
+  {
+    source: "/it/articles/genealogia-e-lessico",
+    destination: "/contro-formazione/operaismo-politico-italiano/genealogia-e-lessico",
+    permanent: true,
+  },
+  {
+    source: "/it/podcast/conricerca-e-stile-della-militanza",
+    destination:
+      "/contro-formazione/operaismo-politico-italiano/conricerca-e-stile-della-militanza/ascolta",
+    permanent: true,
+  },
+  {
+    source: "/it/podcast/contesto-e-origini",
+    destination: "/contro-formazione/operaismo-politico-italiano/contesto-e-origini/ascolta",
+    permanent: true,
+  },
+  {
+    source: "/it/podcast/genealogia-e-lessico",
+    destination: "/contro-formazione/operaismo-politico-italiano/genealogia-e-lessico/ascolta",
+    permanent: true,
+  },
+  {
+    source: "/it/issues/operaismo-politico-italiano",
+    destination: "/contro-formazione/operaismo-politico-italiano",
+    permanent: true,
+  },
+  {
+    source: "/it/about",
+    destination: "/chi-siamo",
+    permanent: true,
+  },
+  {
+    source: "/it/cookie-policy",
+    destination: "/cookie-policy",
+    permanent: true,
+  },
+  {
+    source: "/it/privacy-policy",
+    destination: "/privacy-policy",
+    permanent: true,
+  },
+];
+
 const nextConfig: NextConfig = {
   output: "standalone",
   cacheComponents: true,
@@ -72,6 +152,9 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
     ];
+  },
+  async redirects() {
+    return legacyV1Redirects;
   },
 };
 

@@ -53,6 +53,7 @@ Regole SSH:
 - `app` non deve avere porte pubblicate; Caddy resta l'unico ingresso HTTP/HTTPS.
 - Bucket Object Storage: `middlewaremedia` su endpoint `https://fsn1.your-objectstorage.com`, bucket privato.
 - Media serviti via route applicative, non tramite bucket pubblico.
+- Analytics previsto: Umami self-hosted cookieless su `stats.middleware.media`, con database dedicato e separato dal DB applicativo.
 
 ## Comandi Base
 
@@ -115,6 +116,7 @@ File da trattare con massima cautela:
 - `/opt/middleware/compose.production.yml`
 - `/opt/middleware/Caddyfile`
 - `/opt/middleware/app`
+- eventuali file compose/env dedicati ad analytics e Umami
 
 Regole:
 
@@ -123,6 +125,102 @@ Regole:
 - Non cambiare `COMPOSE_PROJECT_NAME`, nomi volume o nomi network senza piano di migrazione dati.
 - Dopo ogni modifica a Compose, eseguire `docker compose --env-file .env.production -f compose.production.yml config --quiet`.
 - Dopo ogni modifica a Caddy, ricreare solo `caddy` e controllare i log.
+
+## Analytics Umami Ops
+
+Umami deve restare operativamente separato dall'applicazione editoriale. Il database analytics non e il database Prisma dell'app e non deve essere incluso in migrazioni, seed o restore applicativi.
+
+Invarianti:
+
+- Dominio pubblico analytics: `https://stats.middleware.media`.
+- Ingresso pubblico solo via Caddy; nessuna porta host diretta per `umami` o DB analytics.
+- Umami raccoglie solo statistiche aggregate e cookieless sulle pagine pubbliche.
+- CMS, auth, tRPC e route media CMS non devono caricare script analytics.
+- Le credenziali Umami e DB analytics non vanno stampate in chat/log.
+- Backup e restore del DB analytics sono separati dai backup applicativi.
+
+Prima di modificare config analytics:
+
+```bash
+cd /opt/middleware
+cp compose.production.yml compose.production.yml.backup.$(date -u +%Y%m%dT%H%M%SZ)
+cp Caddyfile Caddyfile.backup.$(date -u +%Y%m%dT%H%M%SZ)
+```
+
+Se analytics usa un file env separato, copiarlo senza stamparne il contenuto:
+
+```bash
+cd /opt/middleware
+cp .env.analytics.production .env.analytics.production.backup.$(date -u +%Y%m%dT%H%M%SZ)
+```
+
+Validazione compose dopo aggiunta Umami:
+
+```bash
+cd /opt/middleware
+docker compose --env-file .env.production -f compose.production.yml config --quiet
+```
+
+Avvio o restart dei soli servizi analytics, usando i nomi effettivi definiti nel compose:
+
+```bash
+cd /opt/middleware
+docker compose --env-file .env.production -f compose.production.yml up -d --no-build umami umami-postgres
+```
+
+Se il DB analytics e gestito in compose separato, usare quel file dedicato e non il compose applicativo. Non usare `docker compose down` come shortcut.
+
+Controllo stato analytics:
+
+```bash
+cd /opt/middleware
+docker compose --env-file .env.production -f compose.production.yml ps umami umami-postgres caddy
+docker compose --env-file .env.production -f compose.production.yml logs --no-color --tail=200 umami
+docker compose --env-file .env.production -f compose.production.yml logs --no-color --tail=200 caddy
+```
+
+Smoke HTTPS analytics:
+
+```bash
+curl -I https://stats.middleware.media/
+curl -L https://middleware.media/ | grep -F 'umami'
+curl -L https://middleware.media/cms/login | grep -F 'umami'
+```
+
+Interpretazione smoke:
+
+- Il primo comando deve rispondere con HTTPS valido.
+- Il secondo deve trovare lo script solo se analytics e abilitato in app.
+- Il terzo non deve trovare lo script; se lo trova, fermare il rollout e correggere l'esclusione CMS.
+
+Backup DB analytics, se Umami usa Postgres container dedicato:
+
+```bash
+cd /opt/middleware
+mkdir -p backups
+backup_file="backups/umami-postgres-$(date -u +%Y%m%dT%H%M%SZ).dump"
+docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T umami-postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-acl' > "$backup_file"
+test -s "$backup_file"
+ls -lh "$backup_file"
+```
+
+Rollback rapido analytics lato app:
+
+```bash
+cd /opt/middleware
+cp .env.production .env.production.backup.$(date -u +%Y%m%dT%H%M%SZ)
+```
+
+Poi rimuovere o svuotare le variabili pubbliche Umami in `.env.production`, validare compose e ricreare solo app:
+
+```bash
+cd /opt/middleware
+docker compose --env-file .env.production -f compose.production.yml config --quiet
+docker compose --env-file .env.production -f compose.production.yml up -d --no-build --no-deps app
+curl -L https://middleware.media/ | grep -F 'umami'
+```
+
+Il `grep` finale non deve trovare lo script. Non cancellare subito volumi o database analytics: prima decidere retention e obblighi documentali.
 
 ## Deploy Production Data-Safe
 
@@ -231,6 +329,16 @@ docker compose up -d app
 prisma migrate reset
 prisma db push --force-reset
 ```
+
+Per analytics valgono anche questi divieti:
+
+```bash
+docker compose rm -f umami-postgres
+docker volume rm <volume-analytics>
+dropdb <umami-db>
+```
+
+Usarli solo dopo richiesta esplicita, backup verificato e decisione documentata sulla retention dei dati analytics.
 
 `docker compose up --build` non e sempre distruttivo, ma in production e vietato come shortcut perche rende meno esplicito cosa viene ricreato. Usare sempre build, migrate con `docker run --rm --network middleware_internal ... middleware-migrate pnpm prisma:migrate:deploy` e restart app con `up -d --no-build --no-deps app` separati.
 
