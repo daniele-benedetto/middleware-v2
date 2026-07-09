@@ -22,15 +22,19 @@ WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build-time placeholders. The build never connects to these services: public
-# pages render at request time (see connection() in app/(public)), so the real
-# DB/Redis/auth values are only needed at container runtime, not during build.
-ENV DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
-ENV POSTGRES_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
-ENV PRISMA_DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
-ENV REDIS_URL=redis://localhost:6379/0
+# Build-time defaults. Production builds may override these so Next.js page-data
+# collection can reach the production-like services instead of emitting partial
+# artifacts when a route needs request-time data during build.
+ARG BUILD_DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
+ARG BUILD_REDIS_URL=redis://localhost:6379/0
+ARG BUILD_BETTER_AUTH_URL=http://localhost:3000
+
+ENV DATABASE_URL=$BUILD_DATABASE_URL
+ENV POSTGRES_URL=$BUILD_DATABASE_URL
+ENV PRISMA_DATABASE_URL=$BUILD_DATABASE_URL
+ENV REDIS_URL=$BUILD_REDIS_URL
 ENV BETTER_AUTH_SECRET=build-time-placeholder-32-characters-minimum
-ENV BETTER_AUTH_URL=http://localhost:3000
+ENV BETTER_AUTH_URL=$BUILD_BETTER_AUTH_URL
 ENV AUDIT_LOG_RETENTION_DAYS=365
 ENV BLOB_READ_WRITE_TOKEN=build-time-placeholder
 
