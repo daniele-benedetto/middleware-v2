@@ -1,0 +1,28 @@
+# Middleware
+
+> Middleware e un laboratorio di inchiesta a Modena: territorio, conflitto sociale, trasformazioni urbane e politica dal basso.
+
+Questo file aiuta agenti e modelli linguistici a trovare le principali sezioni pubbliche del sito. Le regole di scansione sono pubblicate separatamente in `robots.txt`.
+
+## Pagine principali
+
+- [Home](/): Numero corrente e contenuti editoriali in evidenza.
+- [Archivio Magazine](/uscite): Elenco dei numeri pubblicati.
+- [Contro-formazione](/contro-formazione): Percorsi formativi e incontri pubblicati.
+- [Chi siamo](/chi-siamo): Informazioni sul progetto editoriale.
+
+## Contenuti editoriali
+
+- [Articoli](/articoli): Articoli pubblicati, disponibili tramite URL canonici `/articoli/:slug`.
+- [Uscite](/uscite): Numeri del magazine, disponibili tramite URL canonici `/uscite/:slug`.
+- [Lezioni](/contro-formazione): Lezioni dei corsi, disponibili tramite URL canonici `/contro-formazione/:courseSlug/:lessonSlug`.
+
+## File tecnici
+
+- [Sitemap](/sitemap.xml): Indice aggiornato delle URL pubbliche indicizzabili.
+- [Robots](/robots.txt): Regole di accesso per crawler e bot.
+
+## Optional
+
+- [Privacy policy](/privacy-policy): Informativa privacy.
+- [Cookie policy](/cookie-policy): Informativa cookie.

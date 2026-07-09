@@ -31,8 +31,6 @@ Stabilizzare Umami production e chiudere i residui operativi post-rollout.
 
 ## Residui Operativi
 
-- [x] Umami production installato su `stats.middleware.media`.
-- [x] Script Umami production abilitato solo sul layout pubblico.
 - [ ] Pageview Umami production verificate.
 - [ ] Backup DB ricorrenti automatizzati e restore test pianificato.
 - [ ] Uptime check esterni configurati per `/`, `/cms/login` e, dopo rollout analytics, `stats.middleware.media`.
@@ -61,20 +59,6 @@ Stabilizzare Umami production e chiudere i residui operativi post-rollout.
 - Tenere Object Storage privato; i media passano dalle route applicative.
 - Tenere Redis obbligatorio in production.
 - Tenere analytics separata dai dati applicativi: Umami usa database dedicato e non entra nelle migrazioni Prisma dell'app.
-
-## Umami Production Plan
-
-- [x] Creare backup DB applicativo prima di toccare production, anche se Umami usa DB separato.
-- [x] Aggiungere `umami` e database dedicato nel compose production o in compose analytics separato.
-- [x] Creare segreti production: `UMAMI_APP_SECRET`, credenziali DB analytics, eventuale admin iniziale.
-- [x] Configurare Caddy per `stats.middleware.media` con HTTPS.
-- [x] Creare sito `middleware.media` nella dashboard Umami production.
-- [x] Salvare `website-id` production nelle variabili runtime dell'app.
-- [x] Validare compose production con analytics incluso.
-- [x] Avviare servizi analytics e verificare stato container.
-- [x] Verificare login dashboard Umami e cambiare credenziali temporanee/default.
-- [x] Deployare app con variabili Umami production.
-- [x] Verificare che `/cms/*`, `/api/trpc/*` e `/api/cms/*` non carichino script analytics.
 
 ## Rischi Noti
 
