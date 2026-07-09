@@ -2,18 +2,20 @@ import createBundleAnalyzer from "@next/bundle-analyzer";
 
 import type { NextConfig } from "next";
 
+const analyticsOrigin = "https://stats.middleware.media";
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${analyticsOrigin}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
   "media-src 'self' blob:",
-  "connect-src 'self'",
+  `connect-src 'self' ${analyticsOrigin}`,
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
