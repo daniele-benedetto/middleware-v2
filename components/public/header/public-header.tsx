@@ -21,7 +21,7 @@ export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
       )}
     >
       <div className={cn(publicHeaderBarClassName, "relative z-130")}>
-        <PublicBrand priority />
+        <PublicBrand preload />
         <PublicMenuController menuItems={menuItems} />
       </div>
     </header>

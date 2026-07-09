@@ -20,7 +20,9 @@ export function PublicFooterLinkGroup({ title, links }: PublicFooterLinkGroupPro
 
   return (
     <nav aria-label={title}>
-      <h2 className={cn("mb-3.5 text-accent", publicTypography.kicker, "font-bold")}>{title}</h2>
+      <h2 className={cn("mb-3.5 text-cream-on-dark", publicTypography.kicker, "font-bold")}>
+        {title}
+      </h2>
       <div className="flex flex-col gap-2.25 text-sm text-cream-on-dark">
         {links.map((link) => (
           <Link

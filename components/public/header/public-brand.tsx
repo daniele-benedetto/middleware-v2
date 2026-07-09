@@ -9,7 +9,7 @@ type PublicBrandProps = {
   href?: string;
   onClick?: MouseEventHandler<HTMLAnchorElement>;
   tone?: "light" | "dark";
-  priority?: boolean;
+  preload?: boolean;
 };
 
 const logoByTone: Record<NonNullable<PublicBrandProps["tone"]>, string> = {
@@ -17,7 +17,7 @@ const logoByTone: Record<NonNullable<PublicBrandProps["tone"]>, string> = {
   dark: "/brand/middleware-logo-extended-white.png",
 };
 
-export function PublicBrand({ href = "/", onClick, tone = "light", priority }: PublicBrandProps) {
+export function PublicBrand({ href = "/", onClick, tone = "light", preload }: PublicBrandProps) {
   const text = i18n.public.brand;
 
   return (
@@ -32,7 +32,7 @@ export function PublicBrand({ href = "/", onClick, tone = "light", priority }: P
         alt={text.logoAlt}
         width={221}
         height={33}
-        priority={priority}
+        preload={preload}
         className="h-7.75 w-auto shrink-0 object-contain md:h-8.5"
       />
     </Link>

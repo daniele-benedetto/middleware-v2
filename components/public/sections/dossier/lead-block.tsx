@@ -96,7 +96,7 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
                 fill
                 sizes="(min-width: 768px) 45vw, 100vw"
                 className={cn("object-cover", publicInteraction.imageZoom)}
-                priority={priority}
+                preload={priority}
               />
             </div>
           ) : null}

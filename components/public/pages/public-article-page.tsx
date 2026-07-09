@@ -170,7 +170,7 @@ export function PublicArticlePage({
               width={1600}
               height={900}
               sizes="100vw"
-              priority
+              preload
               className="mx-auto aspect-video w-full max-w-400 object-cover"
             />
           </figure>

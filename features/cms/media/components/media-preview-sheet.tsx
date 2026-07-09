@@ -197,7 +197,7 @@ export function CmsMediaPreviewSheet({
                         pathname={item.pathname}
                         alt={item.fileName}
                         sizes="(max-width: 768px) 100vw, 60vw"
-                        priority
+                        preload
                         className="object-contain"
                       />
                     </div>

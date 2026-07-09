@@ -32,10 +32,10 @@ const logoPixelWidth: Record<CmsBrandSize, number> = {
 type CmsLogoProps = {
   size?: CmsBrandSize;
   className?: string;
-  priority?: boolean;
+  preload?: boolean;
 };
 
-export function CmsLogo({ size = "sm", className, priority }: CmsLogoProps) {
+export function CmsLogo({ size = "sm", className, preload }: CmsLogoProps) {
   const text = i18n.cms.brand;
   return (
     <Image
@@ -43,7 +43,7 @@ export function CmsLogo({ size = "sm", className, priority }: CmsLogoProps) {
       alt={text.logoAlt}
       width={logoPixelWidth[size]}
       height={logoPixelHeight[size]}
-      priority={priority}
+      preload={preload}
       className={cn(logoHeight[size], "w-auto shrink-0 object-contain", className)}
     />
   );
@@ -53,7 +53,7 @@ type CmsBrandProps = {
   size?: CmsBrandSize;
   orientation?: "horizontal" | "vertical";
   className?: string;
-  priority?: boolean;
+  preload?: boolean;
   to?: string;
   onClick?: MouseEventHandler<HTMLElement>;
 };
@@ -62,7 +62,7 @@ export function CmsBrand({
   size = "sm",
   orientation = "horizontal",
   className,
-  priority,
+  preload,
   to,
   onClick,
 }: CmsBrandProps) {
@@ -72,7 +72,7 @@ export function CmsBrand({
     className,
   );
 
-  const content = <CmsLogo size={size} priority={priority} />;
+  const content = <CmsLogo size={size} preload={preload} />;
 
   if (to) {
     return (

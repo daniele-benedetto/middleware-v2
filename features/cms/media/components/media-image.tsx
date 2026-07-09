@@ -12,7 +12,7 @@ type CmsMediaImageProps = {
   pathname: string;
   alt: string;
   sizes: string;
-  priority?: boolean;
+  preload?: boolean;
   className?: string;
 };
 
@@ -20,7 +20,7 @@ export function CmsMediaImage({
   pathname,
   alt,
   sizes,
-  priority = false,
+  preload = false,
   className,
 }: CmsMediaImageProps) {
   const [currentSrc, setCurrentSrc] = useState(buildCmsMediaAssetUrl(pathname));
@@ -31,7 +31,7 @@ export function CmsMediaImage({
       src={currentSrc}
       alt={alt}
       sizes={sizes}
-      priority={priority}
+      preload={preload}
       unoptimized
       placeholder="blur"
       blurDataURL={mediaBlurDataUrl}

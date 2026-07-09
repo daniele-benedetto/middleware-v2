@@ -22,7 +22,7 @@ function CmsLoginShell() {
   return (
     <main className="flex min-h-svh items-center justify-center p-6">
       <div className="flex w-full max-w-110 flex-col items-center gap-6">
-        <CmsBrand size="lg" orientation="horizontal" priority />
+        <CmsBrand size="lg" orientation="horizontal" preload />
         <div className="w-full">
           <Suspense fallback={null}>
             <CmsLoginForm />

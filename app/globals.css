@@ -419,6 +419,18 @@ body {
   }
 }
 
+@keyframes public-page-reveal-in-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes public-page-rule-in {
   from {
     opacity: 0;
@@ -718,6 +730,12 @@ body {
     --grid-listing-asym: 1fr;
     --grid-filters: 1fr;
     --grid-covers: repeat(2, minmax(0, 1fr));
+  }
+
+  [data-page-reveal],
+  [data-page-reveal="media"] {
+    clip-path: none;
+    animation-name: public-page-reveal-in-mobile;
   }
 }
 
