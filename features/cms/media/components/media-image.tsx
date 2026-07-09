@@ -37,8 +37,8 @@ export function CmsMediaImage({
       blurDataURL={mediaBlurDataUrl}
       className={className}
       onError={() => {
-        if (currentSrc !== "/brand/icon1.png") {
-          setCurrentSrc("/brand/icon1.png");
+        if (currentSrc !== "/icon1.png") {
+          setCurrentSrc("/icon1.png");
         }
       }}
     />

@@ -78,16 +78,20 @@ export function buildRootMetadata(): Metadata {
     },
     description: seoConfig.defaultDescription,
     keywords: getDefaultKeywords(),
+    manifest: "/manifest.json",
+    appleWebApp: {
+      title: seoConfig.applicationName,
+    },
     alternates: {
       canonical,
     },
     icons: {
       icon: [
         { url: "/favicon.ico", sizes: "any" },
-        { url: "/brand/icon0.svg", type: "image/svg+xml" },
-        { url: "/brand/icon1.png", sizes: "96x96", type: "image/png" },
+        { url: "/icon0.svg", type: "image/svg+xml" },
+        { url: "/icon1.png", sizes: "96x96", type: "image/png" },
       ],
-      apple: [{ url: "/brand/apple-icon.png", sizes: "180x180", type: "image/png" }],
+      apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
       shortcut: ["/favicon.ico"],
     },
     openGraph: {

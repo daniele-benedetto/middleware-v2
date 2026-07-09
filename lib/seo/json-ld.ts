@@ -40,7 +40,7 @@ export function buildOrganizationJsonLd() {
     url: rootUrl,
     logo: {
       "@type": "ImageObject",
-      url: resolveAbsoluteUrl("/brand/apple-icon.png"),
+      url: resolveAbsoluteUrl("/apple-icon.png"),
       width: 180,
       height: 180,
     },

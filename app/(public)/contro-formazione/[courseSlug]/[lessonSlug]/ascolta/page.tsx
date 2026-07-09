@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { LessonListenPage } from "@/components/public/listen/lesson-listen-page";
@@ -14,7 +13,6 @@ type PublicLessonListenRouteProps = {
 };
 
 async function PublicLessonListenRouteContent({ params }: PublicLessonListenRouteProps) {
-  await connection();
   const { courseSlug, lessonSlug } = await params;
   const data = await getPublicLessonListenPageData(courseSlug, lessonSlug);
 
@@ -28,7 +26,6 @@ async function PublicLessonListenRouteContent({ params }: PublicLessonListenRout
 export async function generateMetadata({
   params,
 }: PublicLessonListenRouteProps): Promise<Metadata> {
-  await connection();
   const { courseSlug, lessonSlug } = await params;
   const data = await getPublicLessonListenPageData(courseSlug, lessonSlug);
   const text = i18n.public.lessonPage.listen;

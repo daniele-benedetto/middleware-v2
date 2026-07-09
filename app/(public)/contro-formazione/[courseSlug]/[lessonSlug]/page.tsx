@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 import { PublicLessonPage } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
@@ -13,7 +13,6 @@ type PublicLessonRouteProps = {
 };
 
 export async function generateMetadata({ params }: PublicLessonRouteProps): Promise<Metadata> {
-  await connection();
   const { courseSlug, lessonSlug } = await params;
   const { lesson, description } = await getPublicLessonPageData(courseSlug, lessonSlug);
 
@@ -33,8 +32,7 @@ export async function generateMetadata({ params }: PublicLessonRouteProps): Prom
   });
 }
 
-export default async function PublicLessonRoute({ params }: PublicLessonRouteProps) {
-  await connection();
+async function PublicLessonRouteContent({ params }: PublicLessonRouteProps) {
   const { courseSlug, lessonSlug } = await params;
   const { lesson, lessonNumber, otherLessons } = await getPublicLessonPageData(
     courseSlug,
@@ -47,5 +45,13 @@ export default async function PublicLessonRoute({ params }: PublicLessonRoutePro
 
   return (
     <PublicLessonPage lesson={lesson} lessonNumber={lessonNumber} otherLessons={otherLessons} />
+  );
+}
+
+export default function PublicLessonRoute({ params }: PublicLessonRouteProps) {
+  return (
+    <Suspense fallback={null}>
+      <PublicLessonRouteContent params={params} />
+    </Suspense>
   );
 }

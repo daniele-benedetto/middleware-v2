@@ -1,4 +1,4 @@
-import { connection } from "next/server";
+"use cache";
 
 import { PublicIssuesArchivePage } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
@@ -20,7 +20,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PublicIssuesArchiveRoute() {
-  await connection();
   const { issues } = await getPublicIssuesArchiveData();
 
   return <PublicIssuesArchivePage issues={issues} />;

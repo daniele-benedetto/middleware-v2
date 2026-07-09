@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 import { PublicArticlePage } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
@@ -13,7 +13,6 @@ type PublicArticleRouteProps = {
 };
 
 export async function generateMetadata({ params }: PublicArticleRouteProps): Promise<Metadata> {
-  await connection();
   const { slug } = await params;
   const { article, description } = await getPublicArticlePageData(slug);
 
@@ -36,8 +35,7 @@ export async function generateMetadata({ params }: PublicArticleRouteProps): Pro
   });
 }
 
-export default async function PublicArticleRoute({ params }: PublicArticleRouteProps) {
-  await connection();
+async function PublicArticleRouteContent({ params }: PublicArticleRouteProps) {
   const { slug } = await params;
   const { article, articleNumber, relatedArticles } = await getPublicArticlePageData(slug);
 
@@ -51,5 +49,13 @@ export default async function PublicArticleRoute({ params }: PublicArticleRouteP
       articleNumber={articleNumber}
       relatedArticles={relatedArticles}
     />
+  );
+}
+
+export default function PublicArticleRoute({ params }: PublicArticleRouteProps) {
+  return (
+    <Suspense fallback={null}>
+      <PublicArticleRouteContent params={params} />
+    </Suspense>
   );
 }

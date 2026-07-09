@@ -1,4 +1,5 @@
-import { connection } from "next/server";
+"use cache";
+
 import { Suspense } from "react";
 
 import {
@@ -19,14 +20,12 @@ import { getPublicNavigation } from "@/lib/public/server/navigation";
 import type { ReactNode } from "react";
 
 async function PublicHeaderSlot() {
-  await connection();
   const navigation = await getPublicNavigation();
 
   return <PublicHeader menuItems={navigation.main} />;
 }
 
 async function PublicFooterSlot() {
-  await connection();
   const navigation = await getPublicNavigation();
 
   return (
@@ -35,14 +34,12 @@ async function PublicFooterSlot() {
 }
 
 async function CookieConsentSlot() {
-  await connection();
   const legalConsentVersion = await getLegalConsentVersion();
 
   return legalConsentVersion ? <CookieConsentBanner consentVersion={legalConsentVersion} /> : null;
 }
 
 async function PublicAnalyticsSlot() {
-  await connection();
   const legalConsentVersion = await getLegalConsentVersion();
 
   return (
@@ -55,7 +52,7 @@ async function PublicAnalyticsSlot() {
   );
 }
 
-export default function PublicLayout({ children }: { children: ReactNode }) {
+export default async function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <div
       data-public-shell

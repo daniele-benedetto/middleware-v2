@@ -19,21 +19,20 @@ PROCEDI
 | DB             | Postgres container production                                    |
 | Rate limit     | Redis container production                                       |
 | Media          | Hetzner Object Storage, bucket privato `middlewaremedia`         |
-| Analytics      | Umami locale e integrazione app pronti; production in rollout    |
+| Analytics      | Umami production attivo su `https://stats.middleware.media`      |
 
 ## Prossima Attivita
 
-Stabilizzare il go-live dominio appena completato e chiudere i residui prima di abilitare Umami production.
+Stabilizzare Umami production e chiudere i residui operativi post-rollout.
 
-1. Installare e configurare Umami production su `https://stats.middleware.media`.
-2. Creare sito `middleware.media` nella dashboard Umami production.
-3. Configurare app con variabili Umami production e redeployare solo `app`.
-4. Verificare che lo script analytics carichi solo sul layout pubblico e non su `/cms/*`.
+1. Verificare da browser reale che una pageview pubblica appaia in Umami realtime/dashboard.
+2. Pianificare backup ricorrenti separati per DB applicativo e DB analytics.
+3. Configurare uptime check esterni per `/`, `/cms/login` e `stats.middleware.media`.
 
 ## Residui Operativi
 
-- [ ] Umami production installato su `stats.middleware.media`.
-- [ ] Script Umami production abilitato solo sul layout pubblico.
+- [x] Umami production installato su `stats.middleware.media`.
+- [x] Script Umami production abilitato solo sul layout pubblico.
 - [ ] Pageview Umami production verificate.
 - [ ] Backup DB ricorrenti automatizzati e restore test pianificato.
 - [ ] Uptime check esterni configurati per `/`, `/cms/login` e, dopo rollout analytics, `stats.middleware.media`.
@@ -45,6 +44,13 @@ Stabilizzare il go-live dominio appena completato e chiudere i residui prima di 
   - `PRODUCTION_PUBLIC_SITE_URL=https://middleware.media`
   - `PRODUCTION_SMOKE_URL=https://middleware.media`
 - Deploy manuale data-safe completato su VPS con immagine GHCR `app:0d18f0de671ac552765d63614bb935d0bc88cbb8` e backup DB `postgres-predeploy-0d18f0de671ac552765d63614bb935d0bc88cbb8-20260709T103025Z.dump`.
+- Umami production aggiunto manualmente a Compose/Caddy con database dedicato `umami-postgres`, nessuna porta host diretta e ingresso pubblico solo via Caddy.
+- Certificato HTTPS Caddy emesso per `stats.middleware.media`.
+- Sito Umami production creato: `middleware.media`, website id `98d16cbd-c15e-43ae-bf77-d42b1c923167`.
+- Admin Umami dedicato creato per `daniele.benedetto@outlook.it`; default `admin/umami` disabilitato.
+- Password admin Umami copiata anche in locale in `umami-admin-password.local.txt`, ignorato da Git.
+- App production deployata manualmente al commit `4290cff0fb62a8b932a959b96afd2a97fee96317` con build VPS e DB raggiungibile; backup DB `postgres-predeploy-4290cff0fb62a8b932a959b96afd2a97fee96317-20260709T110537Z.dump`.
+- Smoke analytics: `https://stats.middleware.media` risponde, `script.js` risponde, home pubblica contiene script/id Umami, `/cms/login` non contiene script/id Umami.
 
 ## Guardrail
 
@@ -58,17 +64,17 @@ Stabilizzare il go-live dominio appena completato e chiudere i residui prima di 
 
 ## Umami Production Plan
 
-- [ ] Creare backup DB applicativo prima di toccare production, anche se Umami usa DB separato.
-- [ ] Aggiungere `umami` e database dedicato nel compose production o in compose analytics separato.
-- [ ] Creare segreti production: `UMAMI_APP_SECRET`, credenziali DB analytics, eventuale admin iniziale.
-- [ ] Configurare Caddy per `stats.middleware.media` con HTTPS.
-- [ ] Creare sito `middleware.media` nella dashboard Umami production.
-- [ ] Salvare `website-id` production nelle variabili runtime dell'app.
-- [ ] Validare compose production con analytics incluso.
-- [ ] Avviare solo servizi analytics necessari senza ricreare app, Postgres applicativo o Redis.
-- [ ] Verificare login dashboard Umami e cambiare credenziali temporanee/default.
-- [ ] Deployare app con variabili Umami production.
-- [ ] Verificare che `/cms/*`, `/api/trpc/*` e `/api/cms/*` non carichino script analytics.
+- [x] Creare backup DB applicativo prima di toccare production, anche se Umami usa DB separato.
+- [x] Aggiungere `umami` e database dedicato nel compose production o in compose analytics separato.
+- [x] Creare segreti production: `UMAMI_APP_SECRET`, credenziali DB analytics, eventuale admin iniziale.
+- [x] Configurare Caddy per `stats.middleware.media` con HTTPS.
+- [x] Creare sito `middleware.media` nella dashboard Umami production.
+- [x] Salvare `website-id` production nelle variabili runtime dell'app.
+- [x] Validare compose production con analytics incluso.
+- [x] Avviare servizi analytics e verificare stato container.
+- [x] Verificare login dashboard Umami e cambiare credenziali temporanee/default.
+- [x] Deployare app con variabili Umami production.
+- [x] Verificare che `/cms/*`, `/api/trpc/*` e `/api/cms/*` non carichino script analytics.
 
 ## Rischi Noti
 

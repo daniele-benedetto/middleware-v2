@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 import { PublicCoursePage } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
@@ -13,7 +13,6 @@ type PublicCourseRouteProps = {
 };
 
 export async function generateMetadata({ params }: PublicCourseRouteProps): Promise<Metadata> {
-  await connection();
   const { courseSlug } = await params;
   const { course, description } = await getPublicCoursePageData(courseSlug);
 
@@ -32,8 +31,7 @@ export async function generateMetadata({ params }: PublicCourseRouteProps): Prom
   });
 }
 
-export default async function PublicCourseRoute({ params }: PublicCourseRouteProps) {
-  await connection();
+async function PublicCourseRouteContent({ params }: PublicCourseRouteProps) {
   const { courseSlug } = await params;
   const { course, publishedCourses, description } = await getPublicCoursePageData(courseSlug);
 
@@ -47,5 +45,13 @@ export default async function PublicCourseRoute({ params }: PublicCourseRoutePro
       publishedCourses={publishedCourses}
       description={description}
     />
+  );
+}
+
+export default function PublicCourseRoute({ params }: PublicCourseRouteProps) {
+  return (
+    <Suspense fallback={null}>
+      <PublicCourseRouteContent params={params} />
+    </Suspense>
   );
 }

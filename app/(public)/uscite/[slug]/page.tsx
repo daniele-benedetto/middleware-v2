@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 import { PublicIssuePage as PublicIssuePageView } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
@@ -17,7 +17,6 @@ function getIssuePath(slug: string) {
 }
 
 export async function generateMetadata({ params }: PublicIssuePageProps): Promise<Metadata> {
-  await connection();
   const { slug } = await params;
   const { issue, issueDescription, leadImage, leadImageAlt } = await getPublicIssuePageData(slug);
 
@@ -39,8 +38,7 @@ export async function generateMetadata({ params }: PublicIssuePageProps): Promis
   });
 }
 
-export default async function PublicIssueRoute({ params }: PublicIssuePageProps) {
-  await connection();
+async function PublicIssueRouteContent({ params }: PublicIssuePageProps) {
   const { slug } = await params;
   const { issue, publishedIssues } = await getPublicIssuePageData(slug);
 
@@ -49,4 +47,12 @@ export default async function PublicIssueRoute({ params }: PublicIssuePageProps)
   }
 
   return <PublicIssuePageView issue={issue} publishedIssues={publishedIssues} />;
+}
+
+export default function PublicIssueRoute({ params }: PublicIssuePageProps) {
+  return (
+    <Suspense fallback={null}>
+      <PublicIssueRouteContent params={params} />
+    </Suspense>
+  );
 }

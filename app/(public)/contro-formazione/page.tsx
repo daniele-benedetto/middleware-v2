@@ -1,4 +1,4 @@
-import { connection } from "next/server";
+"use cache";
 
 import { PublicFormazioneIndexPage } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
@@ -20,7 +20,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PublicControFormazioneRoute() {
-  await connection();
   const { courses } = await getPublicFormazioneIndexData();
 
   return <PublicFormazioneIndexPage courses={courses} />;

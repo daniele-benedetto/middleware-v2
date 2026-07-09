@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 import { PublicStaticPage } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
@@ -13,7 +13,6 @@ type PublicStaticPageRouteProps = {
 };
 
 export async function generateMetadata({ params }: PublicStaticPageRouteProps): Promise<Metadata> {
-  await connection();
   const { slug } = await params;
   const { page, description, canonicalPath } = await getPublicStaticPageData(slug);
 
@@ -32,8 +31,7 @@ export async function generateMetadata({ params }: PublicStaticPageRouteProps): 
   });
 }
 
-export default async function PublicStaticPageRoute({ params }: PublicStaticPageRouteProps) {
-  await connection();
+async function PublicStaticPageRouteContent({ params }: PublicStaticPageRouteProps) {
   const { slug } = await params;
   const { page } = await getPublicStaticPageData(slug);
 
@@ -42,4 +40,12 @@ export default async function PublicStaticPageRoute({ params }: PublicStaticPage
   }
 
   return <PublicStaticPage page={page} />;
+}
+
+export default function PublicStaticPageRoute({ params }: PublicStaticPageRouteProps) {
+  return (
+    <Suspense fallback={null}>
+      <PublicStaticPageRouteContent params={params} />
+    </Suspense>
+  );
 }
