@@ -16,6 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: text.title,
     description: text.description,
     path: controFormazionePath,
+    socialImageSection: "contro-formazione",
+    socialImageTheme: "black",
   });
 }
 

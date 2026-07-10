@@ -35,6 +35,8 @@ export async function generateMetadata({ params }: PublicIssuePageProps): Promis
     openGraphImage: leadImage,
     openGraphImageAlt: leadImageAlt,
     twitterImage: leadImage,
+    socialImageSection: "magazine",
+    socialImageTheme: "red",
   });
 }
 

@@ -28,6 +28,8 @@ export async function generateMetadata({ params }: PublicStaticPageRouteProps): 
     title: page.title,
     description,
     path: canonicalPath,
+    socialImageSection: "pagina",
+    socialImageTheme: "white",
   });
 }
 

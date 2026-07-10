@@ -3,6 +3,8 @@ import { resolveAbsoluteUrl, toIsoDate } from "@/lib/seo/url";
 
 import type { Metadata } from "next";
 
+type SocialImageTheme = "cream" | "red" | "white" | "black";
+
 type PageMetadataInput = {
   title?: string;
   description?: string;
@@ -11,6 +13,8 @@ type PageMetadataInput = {
   openGraphImage?: string;
   openGraphImageAlt?: string;
   twitterImage?: string;
+  socialImageSection?: string;
+  socialImageTheme?: SocialImageTheme;
 };
 
 type ArticleMetadataInput = {
@@ -57,11 +61,37 @@ export function getSitemapUrl(): string {
 }
 
 export function getOpenGraphImageUrl(): string {
-  return resolveAbsoluteUrl("/brand/og-default-1200x630.png");
+  return getGeneratedSocialImageUrl({
+    title: seoConfig.defaultTitle,
+    description: seoConfig.defaultDescription,
+  });
 }
 
 export function getTwitterImageUrl(): string {
-  return resolveAbsoluteUrl("/brand/twitter-default-1200x630.png");
+  return getOpenGraphImageUrl();
+}
+
+export function getGeneratedSocialImageUrl(
+  input: {
+    title?: string | null;
+    description?: string | null;
+    section?: string | null;
+    theme?: SocialImageTheme | null;
+  } = {},
+): string {
+  const params = new URLSearchParams();
+  params.set("title", input.title || seoConfig.defaultTitle);
+  params.set("description", input.description || seoConfig.defaultDescription);
+
+  if (input.section) {
+    params.set("section", input.section);
+  }
+
+  if (input.theme) {
+    params.set("theme", input.theme);
+  }
+
+  return resolveAbsoluteUrl(`/api/og?${params.toString()}`);
 }
 
 export function buildRootMetadata(): Metadata {
@@ -126,13 +156,21 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
     description = seoConfig.defaultDescription,
     path = "/",
     index = true,
-    openGraphImage = getOpenGraphImageUrl(),
+    openGraphImage,
     openGraphImageAlt,
-    twitterImage = getTwitterImageUrl(),
+    twitterImage,
+    socialImageSection,
+    socialImageTheme,
   } = input;
   const canonical = getCanonicalUrl(path);
-  const resolvedImage = resolveAbsoluteUrl(openGraphImage);
-  const resolvedTwitterImage = resolveAbsoluteUrl(twitterImage);
+  const fallbackImage = getGeneratedSocialImageUrl({
+    title: title ?? seoConfig.defaultTitle,
+    description,
+    section: socialImageSection,
+    theme: socialImageTheme,
+  });
+  const resolvedImage = resolveAbsoluteUrl(openGraphImage || fallbackImage);
+  const resolvedTwitterImage = resolveAbsoluteUrl(twitterImage || openGraphImage || fallbackImage);
 
   return {
     title,
@@ -179,7 +217,14 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
   const path = `/articoli/${input.slug}`;
   const canonical = getCanonicalUrl(path);
   const description = input.description ?? seoConfig.defaultDescription;
-  const image = input.imageUrl ? resolveAbsoluteUrl(input.imageUrl) : getOpenGraphImageUrl();
+  const image = input.imageUrl
+    ? resolveAbsoluteUrl(input.imageUrl)
+    : getGeneratedSocialImageUrl({
+        title: input.title,
+        description,
+        section: "articolo",
+        theme: "cream",
+      });
   const publishedTime = toIsoDate(input.publishedAt);
   const modifiedTime = toIsoDate(input.updatedAt);
 
@@ -222,7 +267,14 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
 export function buildArticleListenMetadata(input: ArticleListenMetadataInput): Metadata {
   const canonical = getCanonicalUrl(input.canonicalPath ?? `/articoli/${input.slug}`);
   const description = input.description ?? seoConfig.defaultDescription;
-  const image = input.imageUrl ? resolveAbsoluteUrl(input.imageUrl) : getOpenGraphImageUrl();
+  const image = input.imageUrl
+    ? resolveAbsoluteUrl(input.imageUrl)
+    : getGeneratedSocialImageUrl({
+        title: input.title,
+        description,
+        section: "audio",
+        theme: "red",
+      });
 
   return {
     title: input.title,

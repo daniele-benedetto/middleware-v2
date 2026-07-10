@@ -29,6 +29,8 @@ export async function generateMetadata({ params }: PublicLessonRouteProps): Prom
     description,
     path: `/contro-formazione/${lesson.courseSlug}/${lesson.slug}`,
     openGraphImage: lesson.imageUrl ?? undefined,
+    socialImageSection: "incontro",
+    socialImageTheme: "black",
   });
 }
 

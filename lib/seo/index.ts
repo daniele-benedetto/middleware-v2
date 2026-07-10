@@ -18,6 +18,7 @@ export {
   buildPageMetadata,
   buildRootMetadata,
   getCanonicalUrl,
+  getGeneratedSocialImageUrl,
   getOpenGraphImageUrl,
   getSitemapUrl,
   getTwitterImageUrl,

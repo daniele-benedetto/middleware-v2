@@ -5,6 +5,7 @@ import {
   buildArticleMetadata,
   buildPageMetadata,
   getCanonicalUrl,
+  getGeneratedSocialImageUrl,
 } from "@/lib/seo";
 
 describe("seo metadata", () => {
@@ -26,6 +27,29 @@ describe("seo metadata", () => {
       },
     ]);
     expect(metadata.twitter?.images).toEqual(["http://localhost:3000/brand/twitter.png"]);
+  });
+
+  it("builds generated social image URLs for pages without images", () => {
+    const metadata = buildPageMetadata({
+      title: "Archivio",
+      description: "Tutti i numeri pubblicati.",
+      path: "/uscite",
+      socialImageSection: "archivio",
+      socialImageTheme: "white",
+    });
+
+    const expectedImage =
+      "http://localhost:3000/api/og?title=Archivio&description=Tutti+i+numeri+pubblicati.&section=archivio&theme=white";
+
+    expect(metadata.openGraph?.images).toEqual([
+      {
+        url: expectedImage,
+        width: 1200,
+        height: 630,
+        alt: "Archivio",
+      },
+    ]);
+    expect(metadata.twitter?.images).toEqual([expectedImage]);
   });
 
   it("builds article metadata with article fields", () => {
@@ -85,6 +109,22 @@ describe("seo metadata", () => {
     expect(metadata.openGraph).toMatchObject({
       url: "http://localhost:3000/contro-formazione/corso/titolo",
     });
+    expect(metadata.twitter?.images).toEqual([
+      "http://localhost:3000/api/og?title=Ascolta+l%27incontro%3A+Titolo&description=Middleware+%C3%A8+un+laboratorio+di+inchiesta+a+Modena%3A+territorio%2C+conflitto+sociale%2C+trasformazioni+urbane+e+politica+dal+basso.&section=audio&theme=red",
+    ]);
+  });
+
+  it("builds generated social image URLs directly", () => {
+    expect(
+      getGeneratedSocialImageUrl({
+        title: "Titolo pagina",
+        description: "Descrizione pagina",
+        section: "sezione",
+        theme: "black",
+      }),
+    ).toBe(
+      "http://localhost:3000/api/og?title=Titolo+pagina&description=Descrizione+pagina&section=sezione&theme=black",
+    );
   });
 
   it("uses local fallback outside production", () => {

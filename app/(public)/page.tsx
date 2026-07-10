@@ -17,6 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraphImage: leadImage,
     openGraphImageAlt: leadImageAlt,
     twitterImage: leadImage,
+    socialImageSection: "home",
+    socialImageTheme: "cream",
   });
 }
 

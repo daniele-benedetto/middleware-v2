@@ -28,6 +28,8 @@ export async function generateMetadata({ params }: PublicCourseRouteProps): Prom
     title: course.title,
     description,
     path: `/contro-formazione/${course.slug}`,
+    socialImageSection: "contro-formazione",
+    socialImageTheme: "black",
   });
 }
 
