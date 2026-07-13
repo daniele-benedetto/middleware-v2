@@ -32,7 +32,28 @@ export const publicMediaRepository = {
       select: { id: true },
     });
 
-    return Boolean(article);
+    if (article) {
+      return true;
+    }
+
+    const richTextResults = await Promise.all(
+      candidates.map(
+        (candidate) =>
+          prisma.$queryRaw<Array<{ id: string }>>`
+          SELECT a."id"
+          FROM "articles" a
+          INNER JOIN "issues" i ON i."id" = a."issueId"
+          WHERE a."status" = 'PUBLISHED'
+            AND a."publishedAt" IS NOT NULL
+            AND i."isActive" = true
+            AND i."publishedAt" IS NOT NULL
+            AND a."contentRich"::text LIKE ${`%${candidate}%`}
+          LIMIT 1
+        `,
+      ),
+    );
+
+    return richTextResults.some((rows) => rows.length > 0);
   },
   async hasPublishedPageImage(pathname: string) {
     const candidates = getPathnameSearchCandidates(pathname);
