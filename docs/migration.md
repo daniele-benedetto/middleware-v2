@@ -4,8 +4,6 @@ Piano residuo dopo lo switch di `middleware.media` dalla vecchia Vercel alla VPS
 
 Per accessi, comandi VPS, backup, deploy e guardrail operativi vedere `docs/production-ops.md`.
 
-PROCEDI
-
 ## Stato Attuale
 
 | Area           | Stato                                                            |
@@ -28,12 +26,19 @@ Stabilizzare Umami production e chiudere i residui operativi post-rollout.
 1. Verificare da browser reale che una pageview pubblica appaia in Umami realtime/dashboard.
 2. Pianificare backup ricorrenti separati per DB applicativo e DB analytics.
 3. Configurare uptime check esterni per `/`, `/cms/login` e `stats.middleware.media`.
+4. Pianificare hardening performance prima di campagne o picchi traffico importanti.
 
 ## Residui Operativi
 
 - [ ] Pageview Umami production verificate.
 - [ ] Backup DB ricorrenti automatizzati e restore test pianificato.
 - [ ] Uptime check esterni configurati per `/`, `/cms/login` e, dopo rollout analytics, `stats.middleware.media`.
+- [ ] Valutare CDN davanti a `middleware.media` per pagine cacheable, asset, OG image e media pubblici.
+- [ ] Valutare serving diretto dei media da Object Storage con CDN o URL firmati, mantenendo bucket privato e policy accesso coerente.
+- [ ] Valutare cache Caddy per `/api/public/media/blob` e immagini OG dinamiche.
+- [ ] Definire rate limit specifici per media/audio e bot aggressivi.
+- [ ] Preparare load test controllato su staging o finestra concordata prima di campagne social.
+- [ ] Valutare scaling orizzontale dell'app Next.js o separazione media/API se il traffico audio diventa rilevante.
 
 ## Note Deploy
 
@@ -67,3 +72,5 @@ Stabilizzare Umami production e chiudere i residui operativi post-rollout.
 - Il build Next.js inlines `NEXT_PUBLIC_*`; cambi a URL pubblici o Umami richiedono rebuild immagine, non solo restart container.
 - `app` deve restare collegata sia a `internal` sia a `public`: senza `public` non raggiunge Object Storage.
 - Il bucket media deve restare privato.
+- Il collo di bottiglia atteso in caso di crescita non sono le pagine pubbliche cache-hit, ma media/audio serviti via app e object storage.
+- Senza CDN o serving diretto dei media, molti ascolti audio concorrenti possono saturare app, rete o object storage prima della CPU della VPS.

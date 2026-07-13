@@ -9,16 +9,19 @@ export const publicIt = {
     title: "Middleware",
     titleTemplate: (title: string) => `Middleware | ${title}`,
     description:
-      "Middleware è un laboratorio di inchiesta a Modena: territorio, conflitto sociale, trasformazioni urbane e politica dal basso.",
+      "Middleware è un laboratorio di inchiesta militante a Modena. Ci occupiamo di territorio, conflitto sociale, trasformazioni urbane e contro-formazione.",
     keywords: [
       "Middleware",
-      "laboratorio di inchiesta",
+      "inchiesta militante",
       "Modena",
+      "Sacca",
+      "Crocetta",
       "territorio",
       "conflitto sociale",
       "trasformazioni urbane",
-      "politica dal basso",
+      "contro-formazione",
       "inchiesta territoriale",
+      "magazine indipendente",
     ],
     logoAlt: "",
     homeAriaLabel: "Torna all'inizio",
@@ -40,14 +43,15 @@ export const publicIt = {
       issueLabel: (order: number) => `Numero ${String(order).padStart(2, "0")}`,
     },
     editorial: {
-      kicker: "Editoriale — l'apertura del numero",
+      kicker: "Editoriale — il nodo da cui partire",
       cta: "Apri l'editoriale",
       ctaArrow: "→",
     },
     archive: {
-      title: "Altri numeri",
-      description: "",
-      archiveLabel: "Archivio Magazine →",
+      title: "Numeri precedenti",
+      description:
+        "Ogni numero raccoglie materiali, interviste e contributi attorno a un nodo di inchiesta.",
+      archiveLabel: "Apri l'archivio →",
       countLabel: articleCountLabel,
     },
     articleCard: {
@@ -55,10 +59,10 @@ export const publicIt = {
       audioLabel: "Versione audio",
     },
     closing: {
-      fallback: "Ultimo movimento del dossier.",
+      fallback: "Una traccia conclusiva del percorso.",
     },
     dossier: {
-      articlesLabel: "Articoli del numero",
+      articlesLabel: "Materiali del numero",
       audioCountLabel,
     },
     sectionGrid: {
@@ -76,12 +80,12 @@ export const publicIt = {
     metadata: {
       title: "Archivio Magazine",
       description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "Tutti i numeri di Middleware: inchieste, contributi e interviste per leggere territori, conflitti e processi.",
     },
     hero: {
       title: "Archivio [[Magazine]]",
       description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "I numeri pubblicati da Middleware raccolgono materiali di inchiesta, contro-formazione e restituzione collettiva. Ogni uscita apre un nodo di inchiesta, lo attraversa da prospettive diverse e lo rimette in circolazione come strumento di discussione.",
       totalLabel: (count: number) =>
         `${count} ${count === 1 ? "numero pubblicato" : "numeri pubblicati"}`,
     },
@@ -90,30 +94,31 @@ export const publicIt = {
     empty: {
       code: "00",
       kicker: "Archivio",
-      title: "Nessuna uscita pubblicata",
-      description: "Quando i numeri saranno pubblicati, compariranno qui in ordine cronologico.",
+      title: "Nessun numero ancora pubblicato",
+      description:
+        "Quando un nodo di lavoro sarà pronto per essere restituito, comparirà qui come numero del magazine.",
     },
   },
   issuePage: {
     empty: {
       code: "404",
       kicker: "Uscita",
-      title: "Numero non trovato",
-      description: "Il numero richiesto non è disponibile nell'archivio.",
+      title: "Numero non disponibile",
+      description: "Il numero richiesto non è pubblicato o non è più disponibile nell'archivio.",
     },
   },
   articlePage: {
     audioCta: "Ascolta l'articolo",
     audioUnsupported: "Il tuo browser non supporta la riproduzione audio.",
     issuePrefix: "Dal numero:",
-    viewIssue: "Visualizza il numero  →",
+    viewIssue: "Apri il numero →",
   },
   listenPage: {
     backToArticle: "Torna all'articolo",
-    title: "Ascolta l'articolo",
+    title: "Audiolettura",
     notFoundTitle: "Audiolettura non trovata",
     metadataTitle: (title: string) => `Ascolta l'articolo: ${title}`,
-    syncedText: "Testo sincronizzato",
+    syncedText: "Testo in ascolto",
     playingStatus: "Audiolettura in riproduzione",
     pausedStatus: "Audiolettura in pausa",
     resumeFrom: (time: string) => `Riprendi da ${time}`,
@@ -131,23 +136,23 @@ export const publicIt = {
     metadata: {
       title: "Contro-formazione",
       description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "Percorsi di contro-formazione collettiva per costruire strumenti comuni di lettura, inchiesta e intervento.",
     },
     hero: {
       title: "[[Contro-formazione]]",
       description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "La contro-formazione è lo spazio in cui rallentare, ragionare insieme, mettere a disposizione la propria conoscenza. Non teoria separate dalla pratica, ma momenti per costruire strumenti comuni di lettura, inchiesta e intervento.",
       totalLabel: (count: number) =>
-        `${count} ${count === 1 ? "momento di contro-formazione collettiva pubblicato" : "momenti di contro-formazione collettiva pubblicati"}`,
+        `${count} ${count === 1 ? "percorso di contro-formazione pubblicato" : "percorsi di contro-formazione pubblicati"}`,
     },
     lessonsCountLabel: lessonCountLabel,
     railAriaLabel: "Elenco dei momenti di contro-formazione collettiva pubblicati",
     empty: {
       code: "00",
       kicker: "Contro-formazione",
-      title: "Nessun momento di contro-formazione pubblicato",
+      title: "Nessun percorso pubblicato",
       description:
-        "Quando un momento di contro-formazione collettiva sarà pubblicato, comparirà qui con i suoi incontri.",
+        "Quando un percorso di contro-formazione sarà pronto, comparirà qui con i suoi incontri.",
     },
   },
   coursePage: {
@@ -156,14 +161,14 @@ export const publicIt = {
     readingTimeLabel: (minutes: number) => `${minutes} min`,
     audioLabel: "Audio",
     archive: {
-      title: "Altre contro-formazioni",
-      description: "Continua con gli altri momenti di contro-formazione collettiva pubblicati.",
-      archiveLabel: "Tutte le contro-formazioni",
+      title: "Altri percorsi",
+      description: "Continua ad attraversare gli altri percorsi di contro-formazione pubblicati.",
+      archiveLabel: "Tutti i percorsi",
     },
     empty: {
       code: "404",
       kicker: "Contro-formazione",
-      title: "Contro-formazione non trovata",
+      title: "Percorso non disponibile",
       description: "Il momento di contro-formazione richiesto non è disponibile.",
     },
   },
@@ -219,14 +224,14 @@ export const publicIt = {
   cookieConsent: {
     kicker: "Privacy e cookie",
     acknowledge: {
-      title: "Misurazione riservata",
+      title: "Statistiche senza profilazione",
       description:
-        "Questo sito usa strumenti di misurazione cookieless per capire quali contenuti funzionano, da quali canali arrivano le visite e quali percorsi editoriali sono piu utili. Non usiamo cookie di profilazione, pubblicita, remarketing o identificatori personali. La presa visione viene salvata su questo dispositivo fino alla scadenza o al prossimo aggiornamento delle informative.",
+        "Usiamo statistiche cookieless e aggregate per capire quali contenuti vengono letti, da dove arrivano le visite e come migliorare il lavoro editoriale. Non usiamo cookie di profilazione, pubblicità, remarketing o identificatori personali. La presa visione viene salvata su questo dispositivo fino alla scadenza o al prossimo aggiornamento delle informative.",
     },
     consent: {
-      title: "Preferenze di riservatezza",
+      title: "Preferenze privacy",
       description:
-        "Questo sito usa strumenti di misurazione cookieless per statistiche aggregate e anonime, senza cookie di profilazione o pubblicitari. Puoi consentire o rifiutare queste misurazioni: la scelta viene salvata su questo dispositivo fino alla scadenza o al prossimo aggiornamento delle informative.",
+        "Usiamo statistiche cookieless e aggregate per capire quali contenuti vengono letti, da dove arrivano le visite e come migliorare il lavoro editoriale. Non usiamo cookie di profilazione, pubblicità, remarketing o identificatori personali. Puoi consentire o rifiutare queste misurazioni: la scelta viene salvata su questo dispositivo fino alla scadenza o al prossimo aggiornamento delle informative.",
     },
     privacyLink: "Privacy policy",
     cookieLink: "Cookie policy",
@@ -244,7 +249,7 @@ export const publicIt = {
     legalPages: {
       title: "Legale",
     },
-    legal: `© ${new Date().getFullYear()} Middleware — Laboratorio di inchiesta`,
-    issueMeta: "I contenuti sono liberamente utilizzabili.",
+    legal: `© ${new Date().getFullYear()} Middleware — Laboratorio di inchiesta militante`,
+    issueMeta: "I contenuti possono circolare, essere discussi e riutilizzati.",
   },
 } as const;

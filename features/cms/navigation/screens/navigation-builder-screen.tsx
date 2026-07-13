@@ -156,6 +156,7 @@ function sortMenus(menus: NavigationMenus) {
 
 export function CmsNavigationBuilderScreen({ initialData }: CmsNavigationBuilderScreenProps) {
   const text = i18n.cms;
+  const navText = text.navigationBuilder;
   const trpcUtils = trpc.useUtils();
   const initialDraftMenus = sortMenus(cloneMenus(initialData?.menus ?? []));
   const menusQuery = trpc.navigation.listMenus.useQuery(undefined, {
@@ -219,7 +220,10 @@ export function CmsNavigationBuilderScreen({ initialData }: CmsNavigationBuilder
 
   if (!activeMenu) {
     return (
-      <CmsErrorState title="Navigazione non disponibile" description="Nessun menu configurato." />
+      <CmsErrorState
+        title={navText.unavailableTitle}
+        description={navText.unavailableDescription}
+      />
     );
   }
 
@@ -292,7 +296,7 @@ export function CmsNavigationBuilderScreen({ initialData }: CmsNavigationBuilder
               disabled={!isDirty || updateMutation.isPending}
               onClick={resetDraft}
             >
-              Ripristina
+              {navText.reset}
             </CmsActionButton>
             <CmsActionButton
               disabled={!canSave}
@@ -300,7 +304,7 @@ export function CmsNavigationBuilderScreen({ initialData }: CmsNavigationBuilder
               onClick={saveActiveMenu}
             >
               <Save aria-hidden />
-              Salva
+              {navText.save}
             </CmsActionButton>
           </>
         }
@@ -310,7 +314,11 @@ export function CmsNavigationBuilderScreen({ initialData }: CmsNavigationBuilder
         <div className="cms-scroll min-h-0 min-w-0 space-y-4 overflow-y-auto pb-6 lg:pr-6">
           <CmsSurface className="space-y-4">
             <div className="flex flex-wrap items-end justify-between gap-3">
-              <CmsFormField label="Menu" htmlFor="navigation-menu-key" className="min-w-64 flex-1">
+              <CmsFormField
+                label={navText.menuField}
+                htmlFor="navigation-menu-key"
+                className="min-w-64 flex-1"
+              >
                 <CmsSelect
                   value={activeMenu.key}
                   onValueChange={(value) => setActiveKey(value as NavigationMenuKey)}
@@ -318,7 +326,7 @@ export function CmsNavigationBuilderScreen({ initialData }: CmsNavigationBuilder
                 />
               </CmsFormField>
               <div className="flex items-end gap-2">
-                <CmsFormField label="Tipo voce" htmlFor="navigation-new-type">
+                <CmsFormField label={navText.itemTypeField} htmlFor="navigation-new-type">
                   <CmsSelect
                     value={newItemType}
                     onValueChange={(value) => setNewItemType(value as NavigationItem["type"])}
@@ -327,19 +335,19 @@ export function CmsNavigationBuilderScreen({ initialData }: CmsNavigationBuilder
                 </CmsFormField>
                 <CmsActionButton variant="outline" onClick={addItem}>
                   <Plus aria-hidden />
-                  Aggiungi
+                  {navText.addItem}
                 </CmsActionButton>
               </div>
             </div>
             <CmsBody size="sm" tone="muted">
-              Scegli risorse pubblicate o link custom. Le label sono sempre personalizzabili.
+              {navText.helper}
             </CmsBody>
           </CmsSurface>
 
           {activeMenu.items.length === 0 ? (
             <div className="rounded-[8px] border border-dashed border-border bg-card-hover px-4 py-6">
               <CmsBody size="sm" tone="muted">
-                Nessuna voce nel menu selezionato.
+                {navText.emptyMenu}
               </CmsBody>
             </div>
           ) : null}
@@ -351,6 +359,7 @@ export function CmsNavigationBuilderScreen({ initialData }: CmsNavigationBuilder
               index={index}
               total={activeMenu.items.length}
               options={resourceOptions}
+              text={navText}
               onMove={moveItem}
               onRemove={removeItem}
               onUpdate={updateItem}
@@ -359,8 +368,8 @@ export function CmsNavigationBuilderScreen({ initialData }: CmsNavigationBuilder
         </div>
 
         <aside className="cms-scroll min-h-0 min-w-0 space-y-6 overflow-y-auto pb-6 lg:border-l lg:border-foreground lg:pl-6">
-          <PreviewPanel menu={activeMenu} options={resourceOptions} />
-          <DiagnosticsPanel errors={validationErrors} isDirty={isDirty} />
+          <PreviewPanel menu={activeMenu} options={resourceOptions} text={navText} />
+          <DiagnosticsPanel errors={validationErrors} isDirty={isDirty} text={navText} />
         </aside>
       </div>
     </div>
@@ -372,6 +381,7 @@ function NavigationItemCard({
   index,
   total,
   options,
+  text,
   onMove,
   onRemove,
   onUpdate,
@@ -380,6 +390,7 @@ function NavigationItemCard({
   index: number;
   total: number;
   options: ResourceOptions;
+  text: typeof i18n.cms.navigationBuilder;
   onMove: (index: number, direction: -1 | 1) => void;
   onRemove: (itemId: string) => void;
   onUpdate: (itemId: string, patch: Partial<NavigationItem>) => void;
@@ -396,28 +407,28 @@ function NavigationItemCard({
             {String(index + 1).padStart(2, "0")} / {typeLabel}
           </CmsMetaText>
           <p className="mt-1 font-ui text-[11px] font-bold tracking-[0.08em] text-muted-foreground uppercase">
-            {href ?? "Risorsa pubblicata richiesta"}
+            {href ?? text.missingPublishedResource}
           </p>
         </div>
         <div className="flex shrink-0 gap-1">
-          <IconButton label="Sposta su" disabled={index === 0} onClick={() => onMove(index, -1)}>
+          <IconButton label={text.moveUp} disabled={index === 0} onClick={() => onMove(index, -1)}>
             <ArrowUp className="size-3.5" />
           </IconButton>
           <IconButton
-            label="Sposta giù"
+            label={text.moveDown}
             disabled={index === total - 1}
             onClick={() => onMove(index, 1)}
           >
             <ArrowDown className="size-3.5" />
           </IconButton>
-          <IconButton label="Elimina" onClick={() => onRemove(item.id)}>
+          <IconButton label={text.delete} onClick={() => onRemove(item.id)}>
             <Trash2 className="size-3.5" />
           </IconButton>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <CmsFormField label="Label" htmlFor={`nav-label-${item.id}`}>
+        <CmsFormField label={text.labelField} htmlFor={`nav-label-${item.id}`}>
           <CmsTextInput
             id={`nav-label-${item.id}`}
             value={item.label}
@@ -428,7 +439,7 @@ function NavigationItemCard({
         </CmsFormField>
 
         {item.type === "custom" ? (
-          <CmsFormField label="URL" htmlFor={`nav-href-${item.id}`}>
+          <CmsFormField label={text.urlField} htmlFor={`nav-href-${item.id}`}>
             <CmsTextInput
               id={`nav-href-${item.id}`}
               value={item.href}
@@ -445,7 +456,7 @@ function NavigationItemCard({
         item.type === "article" ||
         item.type === "issue" ||
         item.type === "course" ? (
-          <CmsFormField label="Risorsa pubblicata" htmlFor={`nav-resource-${item.id}`}>
+          <CmsFormField label={text.publishedResourceField} htmlFor={`nav-resource-${item.id}`}>
             <CmsSearchSelect
               value={item.resourceId}
               onValueChange={(value) =>
@@ -489,11 +500,19 @@ function IconButton({
   );
 }
 
-function PreviewPanel({ menu, options }: { menu: NavigationMenu; options: ResourceOptions }) {
+function PreviewPanel({
+  menu,
+  options,
+  text,
+}: {
+  menu: NavigationMenu;
+  options: ResourceOptions;
+  text: typeof i18n.cms.navigationBuilder;
+}) {
   return (
     <CmsSurface className="space-y-4">
       <div>
-        <CmsMetaText variant="category">Preview</CmsMetaText>
+        <CmsMetaText variant="category">{text.preview}</CmsMetaText>
         <h2 className="mt-1 font-heading text-[22px] leading-none font-black tracking-[-0.03em]">
           {menu.label}
         </h2>
@@ -508,10 +527,10 @@ function PreviewPanel({ menu, options }: { menu: NavigationMenu; options: Resour
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-ui text-[13px] font-extrabold tracking-[0.08em] uppercase">
-                  {item.label || "Senza label"}
+                  {item.label || text.missingLabel}
                 </p>
                 <p className="truncate font-technical text-[12px] text-muted-foreground">
-                  {href ?? "Non pubblicato"}
+                  {href ?? text.notPublished}
                 </p>
               </div>
               {href?.startsWith("http") ? (
@@ -525,13 +544,21 @@ function PreviewPanel({ menu, options }: { menu: NavigationMenu; options: Resour
   );
 }
 
-function DiagnosticsPanel({ errors, isDirty }: { errors: string[]; isDirty: boolean }) {
+function DiagnosticsPanel({
+  errors,
+  isDirty,
+  text,
+}: {
+  errors: string[];
+  isDirty: boolean;
+  text: typeof i18n.cms.navigationBuilder;
+}) {
   return (
     <CmsSurface className="space-y-3">
-      <CmsMetaText variant="category">Diagnostica</CmsMetaText>
+      <CmsMetaText variant="category">{text.diagnostics}</CmsMetaText>
       <div className="space-y-2">
         <p className="font-editorial text-[15px] leading-normal text-body-text">
-          {isDirty ? "Ci sono modifiche non salvate." : "Menu allineato al salvataggio."}
+          {isDirty ? text.unsavedChanges : text.saved}
         </p>
         {errors.length > 0 ? (
           <ul className="space-y-1 font-ui text-[11px] font-bold tracking-[0.06em] text-accent uppercase">
@@ -541,7 +568,7 @@ function DiagnosticsPanel({ errors, isDirty }: { errors: string[]; isDirty: bool
           </ul>
         ) : (
           <p className="font-ui text-[11px] font-bold tracking-[0.08em] text-muted-foreground uppercase">
-            Nessun problema rilevato.
+            {text.noProblems}
           </p>
         )}
       </div>

@@ -1,9 +1,8 @@
 export const cmsIt = {
   home: {
     brand: "Middleware CMS",
-    title: "Frontend in configurazione",
-    description:
-      "Design system e integrazione tRPC sono pronti. Prossimo passo: shell CMS e moduli operativi.",
+    title: "Pannello editoriale",
+    description: "Gestisci numeri, articoli, pagine, media e percorsi di contro-formazione.",
   },
   app: {
     metadataTitle: "Middleware CMS",
@@ -47,10 +46,34 @@ export const cmsIt = {
     new: "Nuovo",
   },
   navigationBuilder: {
-    subtitle: "Builder dei menu pubblici del sito.",
+    subtitle: "Gestione delle voci pubbliche del menu e del footer.",
+    unavailableTitle: "Navigazione non disponibile",
+    unavailableDescription: "Nessun menu configurato.",
+    reset: "Ripristina",
+    save: "Salva",
+    menuField: "Menu",
+    itemTypeField: "Tipo voce",
+    addItem: "Aggiungi",
+    helper:
+      "Scegli pagine e risorse pubblicate oppure inserisci link personalizzati. Ogni voce può avere una label autonoma.",
+    emptyMenu: "Nessuna voce nel menu selezionato.",
+    missingPublishedResource: "Risorsa pubblicata richiesta",
+    moveUp: "Sposta su",
+    moveDown: "Sposta giù",
+    delete: "Elimina",
+    labelField: "Label",
+    urlField: "URL",
+    publishedResourceField: "Risorsa pubblicata",
+    preview: "Preview",
+    missingLabel: "Senza label",
+    notPublished: "Non pubblicato",
+    diagnostics: "Diagnostica",
+    unsavedChanges: "Ci sono modifiche non salvate.",
+    saved: "Menu allineato al salvataggio.",
+    noProblems: "Nessun problema rilevato.",
   },
   resource: {
-    subtitle: "Lista base con filtri, tabella, paginazione e conferma per azioni distruttive.",
+    subtitle: "Gestisci contenuti, filtri e azioni sui record selezionati.",
     new: "Nuovo",
     deleteSelected: "Elimina selezionati",
     confirmTitle: "Conferma eliminazione",
@@ -132,12 +155,12 @@ export const cmsIt = {
       author: "Autore",
       title: "Titolo",
       slug: "Slug",
-      excerpt: "Excerpt",
+      excerpt: "Sommario",
       content: "Contenuto",
-      imageUrl: "Image URL",
+      imageUrl: "URL immagine",
       imageAlt: "Testo alternativo immagine",
-      audioUrl: "Audio URL",
-      audioChunksUrl: "JSON URL",
+      audioUrl: "URL audio",
+      audioChunksUrl: "URL JSON",
       audioChunksJson: "audioChunks (JSON)",
       description: "Descrizione",
       titleStyled: "Titolo decorato",
@@ -182,7 +205,7 @@ export const cmsIt = {
         openJsonLibrary: "Libreria JSON",
         clearMediaField: "Rimuovi URL",
         imageAltHint:
-          "Descrivi il contenuto informativo dell'immagine. Lascia vuoto solo se e puramente decorativa.",
+          "Descrivi il contenuto informativo dell'immagine. Lascia vuoto solo se è puramente decorativa.",
         imagePlaceholderTitle: "Nessuna immagine selezionata",
         imagePlaceholderDescription:
           "Apri la libreria immagini per scegliere un asset esistente o caricarne uno nuovo.",
@@ -270,7 +293,7 @@ export const cmsIt = {
         openJsonLibrary: "Libreria JSON",
         clearMediaField: "Rimuovi URL",
         imageAltHint:
-          "Descrivi il contenuto informativo dell'immagine. Lascia vuoto solo se e puramente decorativa.",
+          "Descrivi il contenuto informativo dell'immagine. Lascia vuoto solo se è puramente decorativa.",
         imagePlaceholderTitle: "Nessuna immagine selezionata",
         imagePlaceholderDescription:
           "Apri la libreria immagini per scegliere un asset esistente o caricarne uno nuovo.",
@@ -534,7 +557,7 @@ export const cmsIt = {
   },
   lists: {
     issues: {
-      subtitle: "Filtri, ricerca, ordinamento, paginazione e riordino.",
+      subtitle: "Gestisci i numeri del magazine e il loro ordine pubblico.",
       table: {
         title: "Titolo",
         slug: "Slug",
@@ -555,7 +578,7 @@ export const cmsIt = {
       articlesPanelReorderAria: (title: string) => `Riordina ${title}`,
     },
     courses: {
-      subtitle: "Filtri, ricerca, ordinamento, paginazione e riordino.",
+      subtitle: "Gestisci i percorsi di contro-formazione e il loro ordine pubblico.",
       table: {
         title: "Titolo",
         slug: "Slug",
@@ -576,7 +599,7 @@ export const cmsIt = {
       lessonsReorderUpdated: "Ordine incontri aggiornato con successo.",
     },
     lessons: {
-      subtitle: "Filtri, ricerca, ordinamento e paginazione.",
+      subtitle: "Gestisci gli incontri associati ai percorsi di contro-formazione.",
       table: {
         title: "Titolo",
         course: "Contro-formazione",
@@ -593,7 +616,7 @@ export const cmsIt = {
       selectItem: (title: string) => `Seleziona ${title}`,
     },
     categories: {
-      subtitle: "Filtri, ricerca, ordinamento e paginazione.",
+      subtitle: "Gestisci le categorie editoriali degli articoli.",
       table: {
         name: "Nome",
         slug: "Slug",
@@ -609,7 +632,7 @@ export const cmsIt = {
       selectItem: (name: string) => `Seleziona ${name}`,
     },
     authors: {
-      subtitle: "Filtri, ricerca, ordinamento e paginazione.",
+      subtitle: "Gestisci autori, bio e associazioni editoriali.",
       table: {
         name: "Nome",
         slug: "Slug",
@@ -625,7 +648,7 @@ export const cmsIt = {
       selectItem: (name: string) => `Seleziona ${name}`,
     },
     articles: {
-      subtitle: "Filtri avanzati, ricerca, ordinamento e paginazione.",
+      subtitle: "Gestisci articoli, stato editoriale, relazioni e pubblicazione.",
       table: {
         title: "Titolo",
         issue: "Uscita",
@@ -658,7 +681,7 @@ export const cmsIt = {
       },
     },
     pages: {
-      subtitle: "Pagine editoriali semplici gestite dal CMS.",
+      subtitle: "Gestisci le pagine statiche pubbliche.",
       table: {
         title: "Titolo",
         slug: "Slug",
@@ -674,8 +697,7 @@ export const cmsIt = {
       selectItem: (title: string) => `Seleziona ${title}`,
     },
     media: {
-      subtitle:
-        "Archivio media privato con preview, rinomina e sincronizzazione automatica degli articoli.",
+      subtitle: "Archivio media privato per immagini, audio e file JSON editoriali.",
       totalFiles: (count: number) => `Totale: ${count} file nello store`,
       uploadCta: "Carica file",
       uploadShortCta: "Carica",
@@ -749,7 +771,7 @@ export const cmsIt = {
       typeOther: "Altro",
     },
     auditLogs: {
-      subtitle: "Storico persistente delle mutation CMS con esito, attore e contesto request.",
+      subtitle: "Storico delle azioni CMS con esito, attore e contesto della richiesta.",
       searchPlaceholder: "Cerca attore, azione, risorsa, path, request id...",
       emptyDescription: "I log compariranno qui dopo la prima azione auditata.",
       detailsCta: "Dettaglio",
@@ -858,7 +880,7 @@ export const cmsIt = {
       },
     },
     users: {
-      subtitle: "Lista utenti admin-only con filtri, ricerca, ordinamento e paginazione.",
+      subtitle: "Gestisci accessi e ruoli del pannello editoriale.",
       table: {
         email: "Email",
         name: "Nome",

@@ -4,7 +4,7 @@ export const editorialIt = {
     defaultFooter: "TRA INPUT E OUTPUT",
   },
   audioPlayer: {
-    defaultLabel: "ASCOLTA L'ARTICOLO",
+    defaultLabel: "AUDIOLETTURA",
     closeAriaLabel: "Chiudi",
     playAriaLabel: "Riproduci",
     pauseAriaLabel: "Pausa",
