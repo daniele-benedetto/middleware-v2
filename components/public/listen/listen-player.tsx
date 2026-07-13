@@ -138,10 +138,7 @@ function SyncedTranscript({
 
   return (
     <section className="min-h-0 overflow-hidden" role="group" aria-label={text.syncedText}>
-      <div
-        ref={scrollContainerRef}
-        className="h-full overflow-y-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
+      <div ref={scrollContainerRef} className="h-full overflow-y-auto pr-1">
         <div className="space-y-2 py-2 sm:space-y-3 sm:py-5">
           {chunks.map((chunk) => {
             const isActive = chunk.position === "active";

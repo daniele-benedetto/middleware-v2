@@ -109,7 +109,6 @@
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.4",
     "prisma": "^7.8.0",
-    "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.3.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.9"
