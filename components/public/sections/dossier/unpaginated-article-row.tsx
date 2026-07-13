@@ -23,7 +23,7 @@ export function UnpaginatedArticleRow({
   }
 
   return (
-    <section id={id} className="scroll-mt-20 py-10 lg:py-12">
+    <section id={id} className="scroll-mt-20 py-10 md:py-12">
       <div className={publicContentClassName}>
         <h2 className="sr-only">{i18n.public.home.dossier.articlesLabel}</h2>
         <div className="grid md:grid-cols-2 md:border-l md:border-t md:border-foreground xl:grid-cols-3">
