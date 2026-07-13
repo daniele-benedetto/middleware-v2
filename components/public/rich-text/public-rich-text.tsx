@@ -283,7 +283,7 @@ function renderBlockNode(node: RichTextNode, key: string, context: RenderContext
           width={1200}
           height={675}
           sizes="(min-width: 768px) 768px, 100vw"
-          className="aspect-video w-full object-cover"
+          className="aspect-video w-full object-cover grayscale"
         />
       </figure>
     );

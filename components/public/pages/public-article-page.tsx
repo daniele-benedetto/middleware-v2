@@ -171,7 +171,7 @@ export function PublicArticlePage({
               height={900}
               sizes="100vw"
               preload
-              className="mx-auto aspect-video w-full max-w-400 object-cover"
+              className="mx-auto aspect-video w-full max-w-400 object-cover grayscale"
             />
           </figure>
         ) : null}

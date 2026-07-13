@@ -105,7 +105,7 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
                 "grid overflow-hidden border border-foreground bg-background text-foreground md:grid-cols-[minmax(260px,0.46fr)_minmax(0,0.54fr)]",
               )}
             >
-              <div className="relative aspect-[4/3] overflow-hidden bg-foreground p-3 md:aspect-auto md:min-h-0 md:border-r md:border-foreground">
+              <div className="relative aspect-[4/3] overflow-hidden bg-foreground md:aspect-auto md:min-h-0 md:border-r md:border-foreground">
                 <div className="relative h-full min-h-0 overflow-hidden grayscale">
                   <Image
                     src={article.imageUrl}
