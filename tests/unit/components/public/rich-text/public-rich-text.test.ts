@@ -212,6 +212,7 @@ describe("PublicRichText", () => {
     expect(html).toContain('href="#note-1"');
     expect(html).toContain('id="note-1"');
     expect(html).toContain('href="#note-ref-1"');
+    expect(html).toMatch(/<a[^>]*href="#note-ref-1"[^>]*>1\.<\/a><div/);
     expect(html).toContain("[1]");
     expect(html).toContain("[2]");
     expect(html).toContain("<strong>importante</strong>");

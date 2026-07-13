@@ -40,6 +40,14 @@ type RenderContext = {
   renderNoteReferences: boolean;
 };
 
+function getNoteReferenceId(number: number) {
+  return `note-ref-${number}`;
+}
+
+function getNoteId(number: number) {
+  return `note-${number}`;
+}
+
 function getNodeContent(node: RichTextNode): RichTextNode[] {
   return Array.isArray(node.content) ? (node.content as RichTextNode[]) : [];
 }
@@ -159,9 +167,9 @@ function renderInlineNode(node: RichTextNode, key: string, context: RenderContex
     }
 
     return (
-      <sup key={key} id={`note-ref-${number}`} className="scroll-mt-24 align-super">
+      <sup key={key} id={getNoteReferenceId(number)} className="scroll-mt-24 align-super">
         <a
-          href={`#note-${number}`}
+          href={`#${getNoteId(number)}`}
           aria-label={`Vai alla nota ${number}`}
           className="font-heading text-[0.62em] font-black text-accent no-underline hover:text-foreground"
         >
@@ -310,11 +318,11 @@ function renderNotes(entries: NoteEntry[], context: RenderContext): ReactNode {
         {entries.map((entry) => (
           <li
             key={`${entry.number}-${entry.node.attrs && typeof entry.node.attrs === "object" ? (entry.node.attrs as { id?: unknown }).id : "note"}`}
-            id={`note-${entry.number}`}
+            id={getNoteId(entry.number)}
             className="scroll-mt-24"
           >
             <a
-              href={`#note-ref-${entry.number}`}
+              href={`#${getNoteReferenceId(entry.number)}`}
               aria-label={`Torna al riferimento della nota ${entry.number}`}
               className="mr-2 font-heading text-[12px] font-black text-accent no-underline hover:text-foreground"
             >
