@@ -110,7 +110,7 @@ describe("seo metadata", () => {
       url: "http://localhost:3000/contro-formazione/corso/titolo",
     });
     expect(metadata.twitter?.images).toEqual([
-      "http://localhost:3000/api/og?title=Ascolta+l%27incontro%3A+Titolo&description=Middleware+%C3%A8+un+laboratorio+di+inchiesta+militante+a+Modena%3A+territorio%2C+conflitto+sociale%2C+trasformazioni+urbane+e+contro-formazione.&section=audio&theme=red",
+      "http://localhost:3000/api/og?title=Ascolta+l%27incontro%3A+Titolo&description=Middleware+%C3%A8+un+laboratorio+di+inchiesta+militante+a+Modena.+Ci+occupiamo+di+territorio%2C+conflitto+sociale%2C+trasformazioni+urbane+e+contro-formazione.&section=audio&theme=red",
     ]);
   });
 
