@@ -43,7 +43,7 @@ describe("ClosingBlock", () => {
     );
 
     expect(html).toContain("md:grid-cols-[minmax(260px,0.46fr)_minmax(0,0.54fr)]");
-    expect(html).toContain("aspect-[4/3] overflow-hidden bg-foreground p-3 md:aspect-auto");
+    expect(html).toContain("aspect-[4/3] overflow-hidden bg-foreground md:aspect-auto");
     expect(html).toContain("url=%2Fimage.jpg");
     expect(html).toContain("closing-article-title-00000000-0000-4000-8000-000000000001");
     expect(html).not.toContain("md:min-h-[min(58vh,560px)]");
