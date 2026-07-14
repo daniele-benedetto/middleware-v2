@@ -9,10 +9,10 @@ export const publicIt = {
     title: "Middleware",
     titleTemplate: (title: string) => `Middleware | ${title}`,
     description:
-      "Middleware è un laboratorio di inchiesta militante a Modena. Ci occupiamo di territorio, conflitto sociale, trasformazioni urbane e contro-formazione.",
+      "Middleware è un laboratorio di inchiesta a Modena. Ci occupiamo di territorio, conflitto sociale, trasformazioni urbane e contro-formazione.",
     keywords: [
       "Middleware",
-      "inchiesta militante",
+      "inchiesta",
       "Modena",
       "Sacca",
       "Crocetta",
@@ -249,7 +249,7 @@ export const publicIt = {
     legalPages: {
       title: "Legale",
     },
-    legal: `© ${new Date().getFullYear()} Middleware — Laboratorio di inchiesta militante`,
+    legal: `© ${new Date().getFullYear()} Middleware — Laboratorio di inchiesta`,
     issueMeta: "I contenuti possono circolare, essere discussi e riutilizzati.",
   },
 } as const;
