@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Fragment, type ReactNode } from "react";
 
 import { publicTypography } from "@/components/public/primitives";
+import { TrackedExternalLink } from "@/components/public/tracked-external-link";
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import {
   isExternalRichTextLink,
@@ -131,13 +132,18 @@ function renderMarks(children: ReactNode, marks: unknown): ReactNode {
 
       const external = isExternalRichTextLink(href);
 
-      return (
-        <a
+      return external ? (
+        <TrackedExternalLink
           key={index}
           href={href}
-          target={external ? "_blank" : undefined}
-          rel={external ? "noopener noreferrer" : undefined}
+          source="rich_text"
+          target="_blank"
+          rel="noopener noreferrer"
         >
+          {current}
+        </TrackedExternalLink>
+      ) : (
+        <a key={index} href={href}>
           {current}
         </a>
       );

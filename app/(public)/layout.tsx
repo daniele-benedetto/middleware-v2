@@ -46,6 +46,11 @@ async function PublicAnalyticsSlot() {
       scriptSrc={publicAnalytics.umamiScriptSrc}
       websiteId={publicAnalytics.umamiWebsiteId}
       bannerMode={publicPrivacy.bannerMode}
+      domains={publicAnalytics.umamiDomains}
+      performance={publicAnalytics.umamiPerformance}
+      doNotTrack={publicAnalytics.umamiDoNotTrack}
+      excludeSearch={publicAnalytics.umamiExcludeSearch}
+      excludeHash={publicAnalytics.umamiExcludeHash}
     />
   );
 }

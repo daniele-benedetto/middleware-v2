@@ -2,9 +2,10 @@ import Image from "next/image";
 
 import { ArticleMeta } from "@/components/public/compounds/article-meta";
 import { publicInteraction, publicTypography } from "@/components/public/primitives";
-import { PublicLink as Link } from "@/components/public/public-link";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { StyledTitle } from "@/components/public/styled-title";
+import { TrackedPublicLink } from "@/components/public/tracked-public-link";
+import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,9 @@ type DossierArticleCardProps = {
   variant: "clusterFeatured" | "constellationSecondary";
   className?: string;
   showImage?: boolean;
+  analyticsSource?: string;
+  analyticsPosition?: string;
+  analyticsParentSlug?: string;
 };
 
 export function DossierArticleCard({
@@ -26,6 +30,9 @@ export function DossierArticleCard({
   variant,
   className = "",
   showImage = true,
+  analyticsSource = "dossier",
+  analyticsPosition,
+  analyticsParentSlug,
 }: DossierArticleCardProps) {
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `article-card-title-${article.id}`;
@@ -46,8 +53,16 @@ export function DossierArticleCard({
     ) : null;
 
   return (
-    <Link
+    <TrackedPublicLink
       href={articleHref}
+      analyticsEventName={publicAnalyticsEvents.contentCardClick}
+      analyticsEventData={{
+        content_type: "article",
+        slug: article.slug,
+        source: analyticsSource,
+        position: analyticsPosition ?? `article_${number}`,
+        parent_slug: analyticsParentSlug ?? null,
+      }}
       aria-labelledby={titleId}
       className={cn(
         publicInteraction.cardSurface,
@@ -100,6 +115,6 @@ export function DossierArticleCard({
           </div>
         </div>
       </article>
-    </Link>
+    </TrackedPublicLink>
   );
 }

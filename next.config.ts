@@ -2,7 +2,22 @@ import createBundleAnalyzer from "@next/bundle-analyzer";
 
 import type { NextConfig } from "next";
 
-const analyticsOrigin = "https://stats.middleware.media";
+function getAnalyticsOrigins() {
+  const origins = new Set(["https://stats.middleware.media"]);
+  const scriptSrc = process.env.NEXT_PUBLIC_UMAMI_SRC?.trim();
+
+  if (scriptSrc) {
+    try {
+      origins.add(new URL(scriptSrc).origin);
+    } catch {
+      // Ignore invalid optional analytics URLs; app config will disable loading.
+    }
+  }
+
+  return [...origins].join(" ");
+}
+
+const analyticsOrigins = getAnalyticsOrigins();
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -10,12 +25,12 @@ const contentSecurityPolicy = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${analyticsOrigin}`,
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${analyticsOrigins}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
   "media-src 'self' blob:",
-  `connect-src 'self' ${analyticsOrigin}`,
+  `connect-src 'self' ${analyticsOrigins}`,
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),

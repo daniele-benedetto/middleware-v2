@@ -8,9 +8,22 @@ function optionalPublicEnv(value: string | undefined) {
   return trimmedValue ? trimmedValue : null;
 }
 
+function optionalPublicBoolean(value: string | undefined, defaultValue = false) {
+  const trimmedValue = optionalPublicEnv(value)?.toLowerCase();
+
+  if (!trimmedValue) return defaultValue;
+
+  return ["1", "true", "yes", "on"].includes(trimmedValue);
+}
+
 export const publicAnalytics = {
   umamiScriptSrc: optionalPublicEnv(process.env.NEXT_PUBLIC_UMAMI_SRC),
   umamiWebsiteId: optionalPublicEnv(process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID),
+  umamiDomains: optionalPublicEnv(process.env.NEXT_PUBLIC_UMAMI_DOMAINS),
+  umamiPerformance: optionalPublicBoolean(process.env.NEXT_PUBLIC_UMAMI_PERFORMANCE),
+  umamiDoNotTrack: optionalPublicBoolean(process.env.NEXT_PUBLIC_UMAMI_DO_NOT_TRACK, true),
+  umamiExcludeSearch: optionalPublicBoolean(process.env.NEXT_PUBLIC_UMAMI_EXCLUDE_SEARCH),
+  umamiExcludeHash: optionalPublicBoolean(process.env.NEXT_PUBLIC_UMAMI_EXCLUDE_HASH, true),
 } as const;
 
 export const publicPrivacy = {

@@ -6,6 +6,7 @@ import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { PublicFullscreenMenu } from "@/components/public/header/public-fullscreen-menu";
 import { PublicMenuButton } from "@/components/public/header/public-menu-button";
 import { i18n } from "@/lib/i18n";
+import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 
 import type { PublicMenuItem } from "@/components/public/header/public-fullscreen-menu";
 
@@ -108,6 +109,11 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
 
   const navigateAfterMenuClose = (href: string) => {
     if (menuClosing) return;
+    trackPublicAnalyticsEvent(publicAnalyticsEvents.menuNavigate, {
+      target_path: href,
+      target_type: href.startsWith("http") ? "external" : "internal",
+      external: href.startsWith("http"),
+    });
     closeMenu(() => router.push(href));
   };
 
@@ -117,6 +123,7 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
       closeMenu();
       return;
     }
+    trackPublicAnalyticsEvent(publicAnalyticsEvents.menuOpen, { item_count: menuItems.length });
     openMenu();
   };
 

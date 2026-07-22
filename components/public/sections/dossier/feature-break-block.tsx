@@ -6,7 +6,6 @@ import {
   publicInteraction,
   publicTypography,
 } from "@/components/public/primitives";
-import { PublicLink as Link } from "@/components/public/public-link";
 import {
   blockEyebrow,
   formatArticleNumber,
@@ -14,6 +13,8 @@ import {
 } from "@/components/public/sections/dossier/dossier-format";
 import { getNarrativeVariantClasses } from "@/components/public/sections/dossier/dossier-variant";
 import { StyledTitle } from "@/components/public/styled-title";
+import { TrackedPublicLink } from "@/components/public/tracked-public-link";
+import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
@@ -67,8 +68,15 @@ export function FeatureBreakBlock({
   return (
     <section className="scroll-mt-20 py-10 md:py-12">
       <div className={publicContentClassName}>
-        <Link
+        <TrackedPublicLink
           href={articleHref}
+          analyticsEventName={publicAnalyticsEvents.contentCardClick}
+          analyticsEventData={{
+            content_type: "article",
+            slug: article.slug,
+            source: "dossier_feature",
+            position: `article_${getArticleNumber(articleNumbers, article)}`,
+          }}
           aria-labelledby={titleId}
           data-page-reveal={priority ? "body" : undefined}
           style={priority ? ({ "--page-reveal-delay": "660ms" } as CSSProperties) : undefined}
@@ -120,7 +128,7 @@ export function FeatureBreakBlock({
             </div>
           </article>
           {imageOnRight ? image : null}
-        </Link>
+        </TrackedPublicLink>
       </div>
     </section>
   );

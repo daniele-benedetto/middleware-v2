@@ -1,8 +1,9 @@
 import { HomeSectionHeader } from "@/components/public/home/home-section-header";
 import { getIssuePlainDescription } from "@/components/public/home/home-view-model";
 import { publicContentClassName, publicInteraction } from "@/components/public/primitives";
-import { PublicLink as Link } from "@/components/public/public-link";
 import { StyledTitle } from "@/components/public/styled-title";
+import { TrackedPublicLink } from "@/components/public/tracked-public-link";
+import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import {
   buildIssueNumberMap,
   formatIssueMonthYearLong,
@@ -126,9 +127,16 @@ export function ArchiveSection({
             const publishedAtLabel = formatIssueMonthYearLong(issue.publishedAt);
 
             return (
-              <Link
+              <TrackedPublicLink
                 key={issue.id}
                 href={`/uscite/${issue.slug}`}
+                analyticsEventName={publicAnalyticsEvents.contentCardClick}
+                analyticsEventData={{
+                  content_type: "issue",
+                  slug: issue.slug,
+                  source: "home_archive",
+                  position: `archive_${index + 1}`,
+                }}
                 className={cn(
                   publicInteraction.cardBase,
                   "relative isolate flex min-h-0 flex-col overflow-hidden px-0 py-6 max-md:border-b max-md:last:border-b-0 md:min-h-96 md:px-6 md:py-7 lg:min-h-112 lg:px-7 lg:py-8",
@@ -194,7 +202,7 @@ export function ArchiveSection({
                     <span>{countLabel(issue.articlesCount)}</span>
                   </div>
                 </div>
-              </Link>
+              </TrackedPublicLink>
             );
           })}
         </div>

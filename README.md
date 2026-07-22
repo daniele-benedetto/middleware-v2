@@ -97,7 +97,14 @@ The public app integration reads these optional variables:
 
 - `NEXT_PUBLIC_UMAMI_SRC`: local default `http://localhost:3001/script.js`
 - `NEXT_PUBLIC_UMAMI_WEBSITE_ID`: website id from the local Umami site
+- `NEXT_PUBLIC_UMAMI_DOMAINS`: optional comma-separated host allowlist, for example `middleware.media,www.middleware.media`
+- `NEXT_PUBLIC_UMAMI_PERFORMANCE`: set to `true` to enable Umami Core Web Vitals collection; requires Umami `v3.1.0` or newer
+- `NEXT_PUBLIC_UMAMI_DO_NOT_TRACK`: defaults to `true`, forwards browser Do Not Track preference to Umami
+- `NEXT_PUBLIC_UMAMI_EXCLUDE_SEARCH`: set to `true` to avoid collecting URL query strings
+- `NEXT_PUBLIC_UMAMI_EXCLUDE_HASH`: defaults to `true`, avoids collecting URL hash fragments
 - `NEXT_PUBLIC_PRIVACY_BANNER_MODE`: `acknowledge` by default, or `consent` to load Umami only after explicit consent
+
+The local analytics compose file pins the Umami image by digest instead of using a moving `latest` reference. When updating Umami, verify the runtime version supports the enabled tracker attributes, update the digest intentionally, and smoke-test pageviews plus Performance if `NEXT_PUBLIC_UMAMI_PERFORMANCE=true`.
 
 Stop the analytics stack:
 

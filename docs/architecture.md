@@ -106,7 +106,20 @@ CMS page/request
 - Do not send user IDs, emails, session IDs, CMS roles, raw IPs, article author/editor identities as visitor identifiers, or any other custom personal data to analytics events.
 - Allowed measurements are aggregate pageviews, referrers, UTM campaigns, device/browser class, country-level geography when provided by Umami, and explicit editorial events such as newsletter CTA clicks, outbound link clicks, media-download clicks, and issue/article engagement events.
 - Event names must be stable, generic, and non-identifying, for example `newsletter_click`, `outbound_link_click`, `article_audio_play`, `issue_archive_open`.
+- Event data must stay generic and non-identifying. Allowed examples include `content_type`, `slug`, `issue_slug`, `course_slug`, and `position`; do not include raw text entered by users, emails, user IDs, session IDs, IPs, or CMS roles.
+- Current public event taxonomy:
+  - `audio_cta_click`: explicit click from article/lesson page to listen page.
+  - `article_audio_play`: first real play in the listen player for article or lesson audio.
+  - `audio_progress`: coarse listen milestones only (`25`, `50`, `75`), never continuous time updates.
+  - `audio_complete`: audio completion.
+  - `audio_bookmark_add`: user adds a local audio bookmark; bookmark text is not sent.
+  - `content_card_click`: click on major editorial cards where source/position context is useful beyond the destination pageview.
+  - `issue_archive_open` and `course_archive_open`: explicit archive CTA clicks.
+  - `menu_open` and `menu_navigate`: fullscreen menu interaction.
+  - `outbound_link_click`: external link clicks from rich text, footer, or menu; record hostname only, not full URL.
 - Keep analytics script loading client-side and isolated from public server loaders so Cache Components data paths remain request-safe.
+- The tracker should respect browser Do Not Track, exclude URL hashes by default, and use a production domain allowlist when configured.
+- Umami Performance/Core Web Vitals may be enabled with `NEXT_PUBLIC_UMAMI_PERFORMANCE=true` only when the deployed Umami version supports `data-performance` (`v3.1.0` or newer).
 - Default legal stance: cookieless aggregate analytics use a mandatory informational banner in `acknowledge` mode (`Ho capito`). If legal review requires opt-in, switch `NEXT_PUBLIC_PRIVACY_BANNER_MODE` to `consent` and load analytics only after `mw_cookie_consent` is accepted.
 - Initial analytics retention target: 13 months for annual editorial comparison and seasonality checks.
 - The analytics database is operational telemetry, not editorial source data. Keep it separate from the application database and exclude it from Prisma application migrations.

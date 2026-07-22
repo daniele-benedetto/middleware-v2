@@ -1,10 +1,11 @@
 import Image from "next/image";
 
 import { publicInteraction } from "@/components/public/primitives";
-import { PublicLink as Link } from "@/components/public/public-link";
 import { formatLessonNumber } from "@/components/public/sections/formazione/course-format";
 import { LessonMeta } from "@/components/public/sections/formazione/lesson-meta";
 import { StyledTitle } from "@/components/public/styled-title";
+import { TrackedPublicLink } from "@/components/public/tracked-public-link";
+import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,9 @@ type DossierLessonCardProps = {
   variant: "clusterFeatured" | "constellationSecondary";
   className?: string;
   showImage?: boolean;
+  analyticsSource?: string;
+  analyticsPosition?: string;
+  analyticsParentSlug?: string;
 };
 
 export function DossierLessonCard({
@@ -26,6 +30,9 @@ export function DossierLessonCard({
   variant,
   className = "",
   showImage = true,
+  analyticsSource = "course_page",
+  analyticsPosition,
+  analyticsParentSlug,
 }: DossierLessonCardProps) {
   const lessonHref = `/contro-formazione/${courseSlug}/${lesson.slug}`;
   const titleId = `lesson-card-title-${lesson.id}`;
@@ -45,8 +52,17 @@ export function DossierLessonCard({
     ) : null;
 
   return (
-    <Link
+    <TrackedPublicLink
       href={lessonHref}
+      analyticsEventName={publicAnalyticsEvents.contentCardClick}
+      analyticsEventData={{
+        content_type: "lesson",
+        slug: lesson.slug,
+        course_slug: courseSlug,
+        source: analyticsSource,
+        position: analyticsPosition ?? `lesson_${number}`,
+        parent_slug: analyticsParentSlug ?? courseSlug,
+      }}
       aria-labelledby={titleId}
       className={cn(
         publicInteraction.cardSurface,
@@ -94,6 +110,6 @@ export function DossierLessonCard({
           </div>
         </div>
       </article>
-    </Link>
+    </TrackedPublicLink>
   );
 }

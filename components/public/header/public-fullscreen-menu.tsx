@@ -4,6 +4,11 @@ import { PublicMenuButton } from "@/components/public/header/public-menu-button"
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
 import { i18n } from "@/lib/i18n";
+import {
+  getAnalyticsHost,
+  publicAnalyticsEvents,
+  trackPublicAnalyticsEvent,
+} from "@/lib/public/analytics";
 import { cn } from "@/lib/utils";
 
 import type { CSSProperties, MouseEvent, RefObject } from "react";
@@ -92,6 +97,18 @@ export function PublicFullscreenMenu({
               href={item.href}
               onClick={(event) => {
                 if (item.external || shouldUseNativeNavigation(event)) {
+                  trackPublicAnalyticsEvent(publicAnalyticsEvents.menuNavigate, {
+                    target_path: item.external ? null : item.href,
+                    target_host: item.external ? getAnalyticsHost(item.href) : null,
+                    target_type: item.external ? "external" : "internal",
+                    external: Boolean(item.external),
+                  });
+                  if (item.external) {
+                    trackPublicAnalyticsEvent(publicAnalyticsEvents.outboundLinkClick, {
+                      source: "menu",
+                      target_host: getAnalyticsHost(item.href),
+                    });
+                  }
                   return;
                 }
 

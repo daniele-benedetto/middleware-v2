@@ -1,5 +1,7 @@
 import { publicTypography } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
+import { TrackedPublicLink } from "@/components/public/tracked-public-link";
+import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
@@ -47,6 +49,13 @@ export function HomeSectionHeader({
   marker = "none",
   headingLevel = 2,
 }: HomeSectionHeaderProps) {
+  const archiveEventName =
+    action?.href === "/uscite"
+      ? publicAnalyticsEvents.issueArchiveOpen
+      : action?.href === "/contro-formazione"
+        ? publicAnalyticsEvents.courseArchiveOpen
+        : null;
+
   return (
     <div className="mb-7 md:mb-8 lg:mb-10">
       <div className="flex items-end justify-between gap-6 max-md:flex-col max-md:items-start">
@@ -66,7 +75,16 @@ export function HomeSectionHeader({
             {range}
           </span>
         ) : null}
-        {action ? (
+        {action && archiveEventName ? (
+          <TrackedPublicLink
+            href={action.href}
+            analyticsEventName={archiveEventName}
+            analyticsEventData={{ source: "section_header" }}
+            className="shrink-0 pb-1 text-right font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"
+          >
+            {action.label}
+          </TrackedPublicLink>
+        ) : action ? (
           <Link
             href={action.href}
             className="shrink-0 pb-1 text-right font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"

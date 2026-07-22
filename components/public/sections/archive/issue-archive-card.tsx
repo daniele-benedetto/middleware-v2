@@ -3,8 +3,9 @@ import {
   publicInteraction,
   publicTypography,
 } from "@/components/public/primitives";
-import { PublicLink as Link } from "@/components/public/public-link";
 import { StyledTitle } from "@/components/public/styled-title";
+import { TrackedPublicLink } from "@/components/public/tracked-public-link";
+import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 import { cn } from "@/lib/utils";
 
@@ -72,8 +73,15 @@ export function IssueArchiveCard({ issue, countLabel, variant, className }: Issu
   const variantClasses = archiveCoverVariantClasses[variant];
 
   return (
-    <Link
+    <TrackedPublicLink
       href={`/uscite/${issue.slug}`}
+      analyticsEventName={publicAnalyticsEvents.contentCardClick}
+      analyticsEventData={{
+        content_type: "issue",
+        slug: issue.slug,
+        source: "archive",
+        position: issue.issueNumber,
+      }}
       className={cn(
         publicInteraction.cardBase,
         "relative isolate block overflow-hidden py-7 max-lg:border-b max-lg:last:border-b-0 md:py-10 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:py-14",
@@ -130,6 +138,6 @@ export function IssueArchiveCard({ issue, countLabel, variant, className }: Issu
           </div>
         </div>
       </div>
-    </Link>
+    </TrackedPublicLink>
   );
 }

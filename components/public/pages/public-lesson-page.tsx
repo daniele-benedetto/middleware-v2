@@ -4,10 +4,11 @@ import Image from "next/image";
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { HomeSectionHeader } from "@/components/public/home/home-section-header";
 import { publicContentClassName } from "@/components/public/primitives";
-import { PublicLink as Link } from "@/components/public/public-link";
 import { PublicRichText } from "@/components/public/rich-text";
 import { DossierLessonCard } from "@/components/public/sections/formazione/dossier-lesson-card";
+import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { i18n } from "@/lib/i18n";
+import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
 
 import type { PublicCourseLessonSummaryDto } from "@/lib/server/modules/courses/dto/public";
@@ -75,13 +76,20 @@ function LessonMetaRail({ lesson }: { lesson: PublicLessonDetailDto }) {
       <PublicMetaRail items={metaItems} />
 
       {lesson.audioUrl ? (
-        <Link
+        <TrackedPublicLink
           href={`/contro-formazione/${lesson.courseSlug}/${lesson.slug}/ascolta`}
+          analyticsEventName={publicAnalyticsEvents.audioCtaClick}
+          analyticsEventData={{
+            content_type: "lesson",
+            slug: lesson.slug,
+            course_slug: lesson.courseSlug,
+            position: "meta_rail",
+          }}
           className="inline-flex w-fit shrink-0 items-center gap-2 pb-1 font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"
         >
           <PlayIcon className="size-3.5 fill-current" aria-hidden />
           {text.audioCta}
-        </Link>
+        </TrackedPublicLink>
       ) : null}
     </div>
   );
@@ -116,6 +124,9 @@ function OtherLessonsSection({
               variant="constellationSecondary"
               className={getRelatedLessonCardClassName(index, otherLessons.length)}
               showImage={false}
+              analyticsSource="related"
+              analyticsPosition={`related_${index + 1}`}
+              analyticsParentSlug={courseSlug}
             />
           ))}
         </div>

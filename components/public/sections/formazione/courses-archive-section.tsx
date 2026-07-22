@@ -1,14 +1,15 @@
 import { courseVariantClasses } from "@/components/public/course-variant";
 import { HomeSectionHeader } from "@/components/public/home/home-section-header";
 import { publicContentClassName, publicInteraction } from "@/components/public/primitives";
-import { PublicLink as Link } from "@/components/public/public-link";
 import {
   formatCourseNumber,
   getCoursePlainDescription,
 } from "@/components/public/sections/formazione/course-archive-view-model";
 import { formatCourseDate } from "@/components/public/sections/formazione/course-format";
 import { StyledTitle } from "@/components/public/styled-title";
+import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { i18n } from "@/lib/i18n";
+import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { cn } from "@/lib/utils";
 
 import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
@@ -61,9 +62,16 @@ export function CoursesArchiveSection({ courses, allCourses }: CoursesArchiveSec
             const publishedAtLabel = formatCourseDate(course.publishedAt);
 
             return (
-              <Link
+              <TrackedPublicLink
                 key={course.id}
                 href={`/contro-formazione/${course.slug}`}
+                analyticsEventName={publicAnalyticsEvents.contentCardClick}
+                analyticsEventData={{
+                  content_type: "course",
+                  slug: course.slug,
+                  source: "course_archive_section",
+                  position: `course_${index + 1}`,
+                }}
                 className={cn(
                   publicInteraction.cardBase,
                   "relative isolate flex min-h-0 flex-col overflow-hidden px-0 py-6 max-md:border-b max-md:last:border-b-0 md:min-h-96 md:px-6 md:py-7 lg:min-h-112 lg:px-7 lg:py-8",
@@ -129,7 +137,7 @@ export function CoursesArchiveSection({ courses, allCourses }: CoursesArchiveSec
                     <span>{formazioneText.lessonsCountLabel(course.lessonsCount)}</span>
                   </div>
                 </div>
-              </Link>
+              </TrackedPublicLink>
             );
           })}
         </div>

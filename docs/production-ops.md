@@ -135,6 +135,8 @@ Invarianti:
 - Dominio pubblico analytics: `https://stats.middleware.media`.
 - Ingresso pubblico solo via Caddy; nessuna porta host diretta per `umami` o DB analytics.
 - Umami raccoglie solo statistiche aggregate e cookieless sulle pagine pubbliche.
+- Umami Performance/Core Web Vitals puo essere abilitato solo se la versione deployata supporta `data-performance` (`v3.1.0` o superiore).
+- Il tracker deve rispettare Do Not Track, escludere gli URL hash e usare una allowlist domini quando configurata.
 - CMS, auth, tRPC e route media CMS non devono caricare script analytics.
 - Le credenziali Umami e DB analytics non vanno stampate in chat/log.
 - Backup e restore del DB analytics sono separati dai backup applicativi.
@@ -192,6 +194,7 @@ Interpretazione smoke:
 - Il primo comando deve rispondere con HTTPS valido.
 - Il secondo deve trovare lo script solo se analytics e abilitato in app.
 - Il terzo non deve trovare lo script; se lo trova, fermare il rollout e correggere l'esclusione CMS.
+- Se `NEXT_PUBLIC_UMAMI_PERFORMANCE=true`, verificare dalla dashboard Umami che la tab Performance riceva Core Web Vitals reali dopo traffico browser.
 
 Backup DB analytics, se Umami usa Postgres container dedicato:
 

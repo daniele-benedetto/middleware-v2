@@ -22,6 +22,12 @@ import {
   type AudioProgressStatus,
 } from "@/lib/browser/storage/audio-progress-store";
 import { i18n } from "@/lib/i18n";
+import {
+  getAudioDurationBucket,
+  getAudioPositionBucket,
+  publicAnalyticsEvents,
+  trackPublicAnalyticsEvent,
+} from "@/lib/public/analytics";
 import { cn } from "@/lib/utils";
 
 import type { ReactNode } from "react";
@@ -70,6 +76,7 @@ const saveIntervalSeconds = 15;
 const completionThresholdSeconds = 3;
 const seekConfirmationToleranceSeconds = 0.75;
 const playbackRates = [1, 1.25, 1.5] as const;
+const audioProgressMilestones = [25, 50, 75] as const;
 
 function formatPlaybackRate(rate: number) {
   return `${rate.toFixed(2)}x`;
@@ -376,6 +383,9 @@ export function ListenPlayer({
   const scrubTimeRef = useRef(0);
   const pendingSeekTargetRef = useRef<number | null>(null);
   const startedAtRef = useRef<string | null>(null);
+  const playTrackedRef = useRef(false);
+  const completedTrackedRef = useRef(false);
+  const trackedMilestonesRef = useRef(new Set<number>());
   const lastSavedBucketRef = useRef(-1);
   const [currentTime, setCurrentTime] = useState(0);
   const [scrubTime, setScrubTime] = useState<number | null>(null);
@@ -405,6 +415,13 @@ export function ListenPlayer({
     [bookmarks],
   );
   const activeChunkIsBookmarked = activeChunk ? bookmarkedChunkIds.has(activeChunk.id) : false;
+
+  const getAudioAnalyticsData = () => ({
+    content_type: contentKind,
+    slug: contentSlug,
+    duration_bucket: getAudioDurationBucket(durationRef.current || resolvedDuration),
+    has_transcript: chunks.length > 0,
+  });
 
   const persistProgress = useCallback(
     async (status: AudioProgressStatus = "listening", timeOverride?: number) => {
@@ -629,6 +646,22 @@ export function ListenPlayer({
 
     currentTimeRef.current = audioTime;
     setCurrentTime(audioTime);
+
+    const nextDuration = durationRef.current || getFiniteDuration(audio) || resolvedDuration;
+    if (nextDuration <= 0) return;
+
+    const progress = (audioTime / nextDuration) * 100;
+    const milestone = audioProgressMilestones.find(
+      (value) => progress >= value && !trackedMilestonesRef.current.has(value),
+    );
+
+    if (!milestone) return;
+
+    trackedMilestonesRef.current.add(milestone);
+    trackPublicAnalyticsEvent(publicAnalyticsEvents.audioProgress, {
+      ...getAudioAnalyticsData(),
+      milestone,
+    });
   };
 
   const togglePlayback = () => {
@@ -671,6 +704,14 @@ export function ListenPlayer({
       void deleteAudioBookmark(contentKey, activeChunk.id);
       return;
     }
+
+    trackPublicAnalyticsEvent(publicAnalyticsEvents.audioBookmarkAdd, {
+      ...getAudioAnalyticsData(),
+      position_bucket: getAudioPositionBucket(
+        activeChunk.start,
+        durationRef.current || resolvedDuration,
+      ),
+    });
 
     const bookmark: AudioBookmarkRecord = {
       id: bookmarkId,
@@ -727,6 +768,13 @@ export function ListenPlayer({
         onPlay={(event) => {
           syncDuration(event.currentTarget);
           setIsPlaying(true);
+          if (!playTrackedRef.current) {
+            playTrackedRef.current = true;
+            trackPublicAnalyticsEvent(
+              publicAnalyticsEvents.articleAudioPlay,
+              getAudioAnalyticsData(),
+            );
+          }
         }}
         onPause={() => setIsPlaying(false)}
         onError={() => setAudioError(true)}
@@ -741,6 +789,10 @@ export function ListenPlayer({
           setIsScrubbing(false);
           setIsPlaying(false);
           void persistProgress("completed", completedTime);
+          if (!completedTrackedRef.current) {
+            completedTrackedRef.current = true;
+            trackPublicAnalyticsEvent(publicAnalyticsEvents.audioComplete, getAudioAnalyticsData());
+          }
         }}
       />
 

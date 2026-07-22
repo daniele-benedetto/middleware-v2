@@ -11,6 +11,11 @@ type PublicAnalyticsProps = {
   scriptSrc: string | null;
   websiteId: string | null;
   bannerMode: PrivacyBannerMode;
+  domains: string | null;
+  performance: boolean;
+  doNotTrack: boolean;
+  excludeSearch: boolean;
+  excludeHash: boolean;
 };
 
 export function PublicAnalytics({
@@ -18,6 +23,11 @@ export function PublicAnalytics({
   scriptSrc,
   websiteId,
   bannerMode,
+  domains,
+  performance,
+  doNotTrack,
+  excludeSearch,
+  excludeHash,
 }: PublicAnalyticsProps) {
   const privacyChoice = usePrivacyChoice(consentVersion);
   const shouldLoad = Boolean(
@@ -33,6 +43,11 @@ export function PublicAnalytics({
       script.defer = true;
       script.src = scriptSrc;
       script.dataset.websiteId = websiteId;
+      if (domains) script.dataset.domains = domains;
+      if (performance) script.dataset.performance = "true";
+      if (doNotTrack) script.dataset.doNotTrack = "true";
+      if (excludeSearch) script.dataset.excludeSearch = "true";
+      if (excludeHash) script.dataset.excludeHash = "true";
       document.body.appendChild(script);
     };
 
@@ -43,7 +58,16 @@ export function PublicAnalytics({
 
     const timerId = globalThis.setTimeout(load, 1500);
     return () => globalThis.clearTimeout(timerId);
-  }, [scriptSrc, shouldLoad, websiteId]);
+  }, [
+    doNotTrack,
+    domains,
+    excludeHash,
+    excludeSearch,
+    performance,
+    scriptSrc,
+    shouldLoad,
+    websiteId,
+  ]);
 
   return null;
 }

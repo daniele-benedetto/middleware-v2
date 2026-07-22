@@ -4,10 +4,11 @@ import {
   publicInteraction,
   publicTypography,
 } from "@/components/public/primitives";
-import { PublicLink as Link } from "@/components/public/public-link";
 import { formatCourseDate } from "@/components/public/sections/formazione/course-format";
 import { StyledTitle } from "@/components/public/styled-title";
+import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { i18n } from "@/lib/i18n";
+import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { cn } from "@/lib/utils";
 
 import type { CourseArchiveViewModel } from "@/components/public/sections/formazione/course-archive-view-model";
@@ -23,8 +24,15 @@ export function CourseArchiveCard({ course, className }: CourseArchiveCardProps)
   const publishedAtLabel = formatCourseDate(course.publishedAt);
 
   return (
-    <Link
+    <TrackedPublicLink
       href={`/contro-formazione/${course.slug}`}
+      analyticsEventName={publicAnalyticsEvents.contentCardClick}
+      analyticsEventData={{
+        content_type: "course",
+        slug: course.slug,
+        source: "archive",
+        position: course.courseNumber,
+      }}
       className={cn(
         publicInteraction.cardBase,
         "relative isolate block overflow-hidden py-7 max-lg:border-b max-lg:last:border-b-0 md:py-10 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:py-14",
@@ -81,6 +89,6 @@ export function CourseArchiveCard({ course, className }: CourseArchiveCardProps)
           </div>
         </div>
       </div>
-    </Link>
+    </TrackedPublicLink>
   );
 }
