@@ -63,10 +63,10 @@ Stabilizzare l'operativita manuale senza GitHub Actions e ridurre i rischi legat
 
 ### P1: Deploy Manuale Sicuro
 
-- [ ] Standardizzare una procedura manuale di deploy senza GitHub Actions, con tag immagine univoco e `DEPLOY_SOURCE` aggiornato.
-- [ ] Evitare build arg con segreti reali quando possibile; se un build richiede segreti, verificare e pulire metadata/cache prima di considerarlo concluso.
-- [ ] Aggiungere smoke obbligatorio post-deploy tramite `/opt/middleware/bin/healthcheck.sh`.
-- [ ] Definire rollback manuale documentato usando `app.backup.*`, immagine precedente e backup config.
+- [x] Standardizzare una procedura manuale di deploy senza GitHub Actions, con tag immagine univoco e `DEPLOY_SOURCE` aggiornato.
+- [x] Evitare build arg con segreti reali usando BuildKit secret mount per il build Next.
+- [x] Aggiungere smoke obbligatorio post-deploy tramite `/opt/middleware/bin/healthcheck.sh`.
+- [x] Definire rollback manuale documentato usando `app.backup.*`, immagine precedente e backup config.
 - [ ] Valutare creazione futura GitHub Actions solo dopo aver fissato secret handling e known hosts.
 
 ### P2: Analytics E Osservabilita

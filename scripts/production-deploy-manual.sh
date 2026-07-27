@@ -1,0 +1,232 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SSH_HOST="46.224.209.184"
+SSH_USER="deploy"
+SSH_KEY="${HOME}/.ssh/middleware_hetzner_ed25519"
+REMOTE_DIR="/opt/middleware"
+MODE="dry-run"
+ALLOW_DIRTY="false"
+SKIP_LOCAL_CHECKS="false"
+
+usage() {
+  cat <<'EOF'
+Usage: scripts/production-deploy-manual.sh [options]
+
+Options:
+  --dry-run             Run prechecks and rsync dry-run only (default)
+  --execute             Perform the production deploy
+  --allow-dirty         Allow deploy with uncommitted local changes
+  --skip-local-checks   Skip pnpm typecheck and pnpm test:run
+  --host HOST           SSH host/IP (default: 46.224.209.184)
+  --user USER           SSH user (default: deploy)
+  --key PATH            SSH private key path
+  -h, --help            Show this help
+EOF
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --dry-run) MODE="dry-run" ;;
+    --execute) MODE="execute" ;;
+    --allow-dirty) ALLOW_DIRTY="true" ;;
+    --skip-local-checks) SKIP_LOCAL_CHECKS="true" ;;
+    --host) SSH_HOST="$2"; shift ;;
+    --user) SSH_USER="$2"; shift ;;
+    --key) SSH_KEY="$2"; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) printf 'Unknown option: %s\n' "$1" >&2; usage; exit 2 ;;
+  esac
+  shift
+done
+
+require_command() {
+  command -v "$1" >/dev/null 2>&1 || {
+    printf 'Missing required command: %s\n' "$1" >&2
+    exit 1
+  }
+}
+
+require_command git
+require_command pnpm
+require_command rsync
+require_command ssh
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+short_sha="$(git rev-parse --short HEAD)"
+dirty="false"
+if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+  dirty="true"
+fi
+
+if [ "$dirty" = "true" ] && [ "$ALLOW_DIRTY" != "true" ]; then
+  printf 'Refusing to deploy dirty worktree without --allow-dirty.\n' >&2
+  git status --short
+  exit 1
+fi
+
+stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+dirty_suffix=""
+if [ "$dirty" = "true" ]; then
+  dirty_suffix="-dirty"
+fi
+image_tag="manual-${short_sha}${dirty_suffix}-${stamp}"
+ssh_target="${SSH_USER}@${SSH_HOST}"
+ssh_opts=(-i "$SSH_KEY" -o BatchMode=yes)
+
+printf 'mode=%s\n' "$MODE"
+printf 'commit=%s\n' "$short_sha"
+printf 'dirty=%s\n' "$dirty"
+printf 'image=middleware-app:%s\n' "$image_tag"
+
+if [ "$SKIP_LOCAL_CHECKS" != "true" ]; then
+  pnpm typecheck
+  pnpm test:run
+fi
+
+ssh "${ssh_opts[@]}" "$ssh_target" "${REMOTE_DIR}/bin/healthcheck.sh"
+
+rsync_args=(
+  -az
+  -e "ssh -i ${SSH_KEY} -o BatchMode=yes"
+  --delete
+  --exclude '.git/'
+  --exclude '.next/'
+  --exclude 'node_modules/'
+  --exclude '.env*'
+  --exclude '*.local'
+  --exclude '*.local.*'
+  --exclude 'backups/'
+  --exclude 'coverage/'
+  --exclude '.turbo/'
+  --exclude '.vercel/'
+)
+
+if [ "$MODE" = "dry-run" ]; then
+  rsync "${rsync_args[@]}" --dry-run ./ "${ssh_target}:${REMOTE_DIR}/app/"
+  printf 'dry_run=ok\n'
+  exit 0
+fi
+
+rsync "${rsync_args[@]}" ./ "${ssh_target}:${REMOTE_DIR}/app/"
+
+ssh "${ssh_opts[@]}" "$ssh_target" bash -s -- "$image_tag" "$short_sha" "$dirty" <<'REMOTE'
+set -euo pipefail
+
+tag="$1"
+commit="$2"
+dirty="$3"
+cd /opt/middleware
+
+stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+mkdir -p backups
+backup_file="backups/postgres-predeploy-${tag}-${stamp}.dump"
+docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-acl' > "$backup_file"
+test -s "$backup_file"
+
+cp -a app "app.backup.${tag}.${stamp}"
+cp compose.production.yml "compose.production.yml.backup.${tag}.${stamp}"
+
+docker compose --env-file .env.production -f compose.production.yml config --quiet
+postgres_container_before="$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)"
+redis_container_before="$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)"
+test -n "$postgres_container_before"
+test -n "$redis_container_before"
+
+build_env="$(mktemp)"
+migrate_env="$(mktemp)"
+events_file="$(mktemp)"
+inspect_file="$(mktemp)"
+secret_file="$(mktemp)"
+cleanup() {
+  rm -f "$build_env" "$migrate_env" "$events_file" "$inspect_file" "$secret_file"
+  docker network disconnect middleware_public middleware-postgres-1 >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+python3 - <<'PY' "$build_env" "$migrate_env" "$secret_file"
+from pathlib import Path
+import shlex
+import sys
+
+build_env_path = Path(sys.argv[1])
+migrate_env_path = Path(sys.argv[2])
+secret_path = Path(sys.argv[3])
+values = {}
+for line in Path('/opt/middleware/.env.production').read_text().splitlines():
+    if not line or line.lstrip().startswith('#') or '=' not in line:
+        continue
+    key, value = line.split('=', 1)
+    values[key] = value
+
+build_keys = [
+    'DATABASE_URL', 'POSTGRES_URL', 'PRISMA_DATABASE_URL', 'REDIS_URL',
+    'BETTER_AUTH_URL', 'NEXT_PUBLIC_SITE_URL', 'NEXT_PUBLIC_UMAMI_SRC',
+    'NEXT_PUBLIC_UMAMI_WEBSITE_ID', 'NEXT_PUBLIC_UMAMI_DOMAINS',
+    'NEXT_PUBLIC_UMAMI_PERFORMANCE', 'NEXT_PUBLIC_UMAMI_DO_NOT_TRACK',
+    'NEXT_PUBLIC_UMAMI_EXCLUDE_SEARCH', 'NEXT_PUBLIC_UMAMI_EXCLUDE_HASH',
+    'NEXT_PUBLIC_PRIVACY_BANNER_MODE', 'SITE_URL',
+]
+build_env_path.write_text('\n'.join(f'export {key}={shlex.quote(values[key])}' for key in build_keys if key in values) + '\n')
+migrate_keys = ['DATABASE_URL', 'POSTGRES_URL', 'PRISMA_DATABASE_URL']
+migrate_env_path.write_text('\n'.join(f'{key}={values[key]}' for key in migrate_keys if key in values) + '\n')
+secret_path.write_text('\n'.join(values[key] for key in ('POSTGRES_PASSWORD', 'REDIS_PASSWORD') if key in values) + '\n')
+PY
+chmod 600 "$build_env" "$migrate_env" "$secret_file"
+
+docker network connect --alias postgres middleware_public middleware-postgres-1 >/dev/null 2>&1 || true
+DOCKER_BUILDKIT=1 docker build --network middleware_public --target migrate -t "middleware-migrate:${tag}" app
+DOCKER_BUILDKIT=1 docker build --network middleware_public --secret "id=build_env,src=${build_env}" --target runner -t "middleware-app:${tag}" app
+docker network disconnect middleware_public middleware-postgres-1 >/dev/null 2>&1 || true
+
+docker run --rm --network middleware_internal --env-file "$migrate_env" "middleware-migrate:${tag}" pnpm prisma:migrate:deploy
+
+test "$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)" = "$postgres_container_before"
+test "$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)" = "$redis_container_before"
+
+python3 - <<'PY' "$tag"
+from pathlib import Path
+import sys
+
+tag = sys.argv[1]
+path = Path('/opt/middleware/compose.production.yml')
+lines = path.read_text().splitlines()
+changed = False
+for index, line in enumerate(lines):
+    if line.startswith('    image: ghcr.io/daniele-benedetto/middleware-v2/app:') or line.startswith('    image: middleware-app:'):
+        lines[index] = f'    image: middleware-app:{tag}'
+        changed = True
+        break
+if not changed:
+    raise SystemExit('app image line not found')
+path.write_text('\n'.join(lines) + '\n')
+PY
+
+docker compose --env-file .env.production -f compose.production.yml config --quiet
+docker compose --env-file .env.production -f compose.production.yml up -d --no-build --no-deps app
+
+printf 'branch=main\ncommit=%s\ndirty=%s\nsynced_at=%s\nmethod=manual-vps-rsync\nimage=middleware-app:%s\n' "$commit" "$dirty" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$tag" > DEPLOY_SOURCE
+
+/opt/middleware/bin/healthcheck.sh
+
+docker events --since 10m --until 0s > "$events_file" || true
+docker image inspect "middleware-app:${tag}" "middleware-migrate:${tag}" > "$inspect_file"
+
+python3 - <<'PY' "$secret_file" "$events_file" "$inspect_file"
+from pathlib import Path
+import sys
+
+secrets = [secret for secret in Path(sys.argv[1]).read_text().splitlines() if secret]
+events = Path(sys.argv[2]).read_text(errors='ignore')
+inspect = Path(sys.argv[3]).read_text(errors='ignore')
+if any(secret in events for secret in secrets):
+    raise SystemExit('current secret found in recent docker events')
+if any(secret in inspect for secret in secrets):
+    raise SystemExit('current secret found in image metadata')
+PY
+
+docker builder prune -af >/dev/null 2>&1 || true
+printf 'manual_deploy=ok\n'
+REMOTE

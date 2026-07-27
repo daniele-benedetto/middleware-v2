@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.7
+
 FROM node:22-slim AS base
 
 ENV PNPM_HOME=/pnpm
@@ -22,19 +24,7 @@ WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build-time defaults. Production builds may override these so Next.js page-data
-# collection can reach the production-like services instead of emitting partial
-# artifacts when a route needs request-time data during build.
-ARG BUILD_DATABASE_URL=postgresql://user:password@localhost:5432/db?sslmode=disable
-ARG BUILD_REDIS_URL=redis://localhost:6379/0
-ARG BUILD_BETTER_AUTH_URL=http://localhost:3000
-
-ENV DATABASE_URL=$BUILD_DATABASE_URL
-ENV POSTGRES_URL=$BUILD_DATABASE_URL
-ENV PRISMA_DATABASE_URL=$BUILD_DATABASE_URL
-ENV REDIS_URL=$BUILD_REDIS_URL
 ENV BETTER_AUTH_SECRET=build-time-placeholder-32-characters-minimum
-ENV BETTER_AUTH_URL=$BUILD_BETTER_AUTH_URL
 ENV AUDIT_LOG_RETENTION_DAYS=365
 ENV BLOB_READ_WRITE_TOKEN=build-time-placeholder
 
@@ -63,7 +53,19 @@ ENV NEXT_PUBLIC_UMAMI_EXCLUDE_HASH=$BUILD_NEXT_PUBLIC_UMAMI_EXCLUDE_HASH
 ENV NEXT_PUBLIC_PRIVACY_BANNER_MODE=$BUILD_NEXT_PUBLIC_PRIVACY_BANNER_MODE
 ENV SITE_URL=$BUILD_NEXT_PUBLIC_SITE_URL
 
-RUN pnpm prisma:generate && pnpm build
+# Production builds may mount /run/secrets/build_env so Next.js page-data
+# collection can reach production-like services without baking secrets into image
+# metadata. Local builds fall back to harmless placeholders.
+RUN --mount=type=secret,id=build_env,required=false sh -lc '\
+  if [ -f /run/secrets/build_env ]; then . /run/secrets/build_env; else \
+    export DATABASE_URL="postgresql://user:password@localhost:5432/db?sslmode=disable"; \
+    export POSTGRES_URL="$DATABASE_URL"; \
+    export PRISMA_DATABASE_URL="$DATABASE_URL"; \
+    export REDIS_URL="redis://localhost:6379/0"; \
+    export BETTER_AUTH_URL="http://localhost:3000"; \
+  fi; \
+  pnpm prisma:generate && pnpm build \
+'
 
 FROM deps AS migrate
 WORKDIR /app

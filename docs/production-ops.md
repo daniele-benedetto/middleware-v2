@@ -278,6 +278,49 @@ Al momento il deploy production e manuale via SSH sulla VPS. Se in futuro si agg
 
 Se abilitato, il workflow deve essere eseguito solo da `main` e deve verificare automaticamente che la CI sia verde sul commit da rilasciare prima di aprire SSH verso la VPS.
 
+Deploy manuale standard, senza GitHub Actions:
+
+```bash
+scripts/production-deploy-manual.sh --dry-run --allow-dirty
+scripts/production-deploy-manual.sh --execute --allow-dirty
+```
+
+Regole dello script manuale:
+
+- Default `--dry-run`: esegue check locali, healthcheck VPS e `rsync --dry-run`, ma non modifica production.
+- `--execute` e obbligatorio per deploy reale.
+- `--allow-dirty` e obbligatorio se il worktree locale contiene modifiche non committate; in quel caso `DEPLOY_SOURCE` deve registrare `dirty=true`.
+- Prima del deploy reale crea dump DB app verificato con `test -s`, backup `/opt/middleware/app` e backup `compose.production.yml`.
+- Usa `rsync` verso `/opt/middleware/app` escludendo `.env*`, `.git`, `node_modules`, `.next`, backup, coverage e file locali.
+- Usa BuildKit secret mount per i valori necessari al build Next, evitando `ARG` con segreti reali nei metadata immagine.
+- Costruisce immagini `middleware-app:manual-<sha>[-dirty]-<timestamp>` e `middleware-migrate:<same-tag>`.
+- Esegue migrazioni con `docker run --rm --network middleware_internal --env-file <file-temporaneo> ...`, non con `docker compose run migrate`.
+- Verifica che gli ID container di Postgres e Redis non cambino.
+- Aggiorna solo l'image `app` nel compose e ricrea solo `app` con `up -d --no-build --no-deps app`.
+- Esegue `/opt/middleware/bin/healthcheck.sh` e controlla che i segreti correnti non compaiano in `docker events` recenti o metadata delle immagini prodotte.
+- Rimuove file temporanei e fa prune della build cache a fine deploy.
+
+Rollback manuale app-only:
+
+```bash
+cd /opt/middleware
+cp compose.production.yml compose.production.yml.backup.rollback.$(date -u +%Y%m%dT%H%M%SZ)
+```
+
+Poi impostare nel servizio `app` di `compose.production.yml` l'immagine precedente nota, validare e ricreare solo app:
+
+```bash
+docker compose --env-file .env.production -f compose.production.yml config --quiet
+docker compose --env-file .env.production -f compose.production.yml up -d --no-build --no-deps app
+./bin/healthcheck.sh
+```
+
+Rollback file sorgente:
+
+- Usare l'ultimo `app.backup.*` coerente con l'immagine scelta.
+- Fare sempre backup della directory `app` corrente prima di ripristinare una vecchia copia.
+- Il restore DB non e parte del rollback standard: usarlo solo dopo conferma esplicita e con dump verificato.
+
 Pre-check obbligatori:
 
 ```bash
