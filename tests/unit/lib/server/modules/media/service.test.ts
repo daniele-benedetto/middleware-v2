@@ -19,6 +19,7 @@ const mediaRepositoryMock = vi.hoisted(() => ({
 
 const publicMediaRepositoryMock = vi.hoisted(() => ({
   hasPublishedArticleMedia: vi.fn(),
+  hasPublishedLessonMedia: vi.fn(),
   hasPublishedPageImage: vi.fn(),
 }));
 
@@ -216,6 +217,7 @@ describe("publicMediaService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     publicMediaRepositoryMock.hasPublishedArticleMedia.mockResolvedValue(false);
+    publicMediaRepositoryMock.hasPublishedLessonMedia.mockResolvedValue(false);
     publicMediaRepositoryMock.hasPublishedPageImage.mockResolvedValue(false);
   });
 
@@ -228,6 +230,21 @@ describe("publicMediaService", () => {
 
     expect(publicMediaRepositoryMock.hasPublishedArticleMedia).toHaveBeenCalledWith(
       "covers/hero-image.jpg",
+    );
+    expect(publicMediaRepositoryMock.hasPublishedLessonMedia).not.toHaveBeenCalled();
+    expect(publicMediaRepositoryMock.hasPublishedPageImage).not.toHaveBeenCalled();
+  });
+
+  it("authorizes media referenced by published lessons", async () => {
+    publicMediaRepositoryMock.hasPublishedLessonMedia.mockResolvedValue(true);
+
+    await expect(publicMediaService.canServePublishedMedia("audio/lesson.mp3")).resolves.toBe(true);
+
+    expect(publicMediaRepositoryMock.hasPublishedArticleMedia).toHaveBeenCalledWith(
+      "audio/lesson.mp3",
+    );
+    expect(publicMediaRepositoryMock.hasPublishedLessonMedia).toHaveBeenCalledWith(
+      "audio/lesson.mp3",
     );
     expect(publicMediaRepositoryMock.hasPublishedPageImage).not.toHaveBeenCalled();
   });
@@ -252,6 +269,7 @@ describe("publicMediaService", () => {
     expect(publicMediaRepositoryMock.hasPublishedArticleMedia).toHaveBeenCalledWith(
       "audio/story.mp3",
     );
+    expect(publicMediaRepositoryMock.hasPublishedLessonMedia).not.toHaveBeenCalled();
     expect(publicMediaRepositoryMock.hasPublishedPageImage).not.toHaveBeenCalled();
   });
 
@@ -261,6 +279,7 @@ describe("publicMediaService", () => {
     );
 
     expect(publicMediaRepositoryMock.hasPublishedArticleMedia).not.toHaveBeenCalled();
+    expect(publicMediaRepositoryMock.hasPublishedLessonMedia).not.toHaveBeenCalled();
     expect(publicMediaRepositoryMock.hasPublishedPageImage).not.toHaveBeenCalled();
   });
 });

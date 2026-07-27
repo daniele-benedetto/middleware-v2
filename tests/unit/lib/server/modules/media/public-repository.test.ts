@@ -1,9 +1,11 @@
 const articleFindFirstMock = vi.hoisted(() => vi.fn());
+const lessonFindFirstMock = vi.hoisted(() => vi.fn());
 const queryRawMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     article: { findFirst: articleFindFirstMock },
+    lesson: { findFirst: lessonFindFirstMock },
     $queryRaw: queryRawMock,
   },
 }));
@@ -14,6 +16,7 @@ describe("publicMediaRepository", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     articleFindFirstMock.mockResolvedValue(null);
+    lessonFindFirstMock.mockResolvedValue(null);
     queryRawMock.mockResolvedValue([]);
   });
 
@@ -55,5 +58,48 @@ describe("publicMediaRepository", () => {
     );
 
     expect(queryRawMock).not.toHaveBeenCalled();
+  });
+
+  it("authorizes media referenced directly by a published lesson", async () => {
+    lessonFindFirstMock.mockResolvedValue({ id: "lesson-1" });
+
+    await expect(
+      publicMediaRepository.hasPublishedLessonMedia("contesto-e-origini.mp3"),
+    ).resolves.toBe(true);
+
+    expect(lessonFindFirstMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: "PUBLISHED",
+          publishedAt: { not: null },
+          course: { isActive: true, publishedAt: { not: null } },
+          OR: expect.arrayContaining([
+            { imageUrl: { contains: "contesto-e-origini.mp3" } },
+            { audioUrl: { contains: "contesto-e-origini.mp3" } },
+          ]),
+        }),
+      }),
+    );
+    expect(queryRawMock).not.toHaveBeenCalled();
+  });
+
+  it("authorizes media referenced by published lesson rich text", async () => {
+    queryRawMock.mockResolvedValueOnce([{ id: "lesson-1" }]);
+
+    await expect(publicMediaRepository.hasPublishedLessonMedia("slides/intro.jpg")).resolves.toBe(
+      true,
+    );
+
+    expect(lessonFindFirstMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          OR: expect.arrayContaining([
+            { imageUrl: { contains: "slides/intro.jpg" } },
+            { audioUrl: { contains: "slides/intro.jpg" } },
+          ]),
+        }),
+      }),
+    );
+    expect(queryRawMock).toHaveBeenCalledTimes(2);
   });
 });

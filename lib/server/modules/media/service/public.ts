@@ -21,8 +21,14 @@ export const publicMediaService = {
 
     const isArticleMedia = await publicMediaRepository.hasPublishedArticleMedia(pathname);
 
-    if (isArticleMedia || kind === "audio") {
-      return isArticleMedia;
+    if (isArticleMedia) {
+      return true;
+    }
+
+    const isLessonMedia = await publicMediaRepository.hasPublishedLessonMedia(pathname);
+
+    if (isLessonMedia || kind === "audio") {
+      return isLessonMedia;
     }
 
     return publicMediaRepository.hasPublishedPageImage(pathname);
