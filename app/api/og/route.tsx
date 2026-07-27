@@ -10,6 +10,7 @@ const IMAGE_SIZE = {
 
 const MAX_TITLE_LENGTH = 88;
 const MAX_DESCRIPTION_LENGTH = 170;
+const INVALID_PUBLIC_HOSTS = new Set(["0.0.0.0", "::"]);
 
 const themes = {
   cream: {
@@ -77,6 +78,24 @@ function getTheme(value: string | null) {
   return themes.cream;
 }
 
+function getAssetOrigin(requestUrl: string): string {
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
+
+  if (configuredUrl) {
+    return new URL(configuredUrl).origin;
+  }
+
+  const parsedRequestUrl = new URL(requestUrl);
+  const requestOrigin = parsedRequestUrl.origin;
+  const requestHost = parsedRequestUrl.hostname;
+
+  if (INVALID_PUBLIC_HOSTS.has(requestHost)) {
+    return seoConfig.siteUrl.origin;
+  }
+
+  return requestOrigin;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const title = truncateText(
@@ -89,8 +108,9 @@ export async function GET(request: Request) {
   );
   const section = truncateText(cleanText(searchParams.get("section"), "middleware"), 42);
   const theme = getTheme(searchParams.get("theme"));
-  const logoUrl = new URL(theme.logo, request.url).toString();
-  const pictogramUrl = new URL(theme.pictogram, request.url).toString();
+  const assetOrigin = getAssetOrigin(request.url);
+  const logoUrl = new URL(theme.logo, assetOrigin).toString();
+  const pictogramUrl = new URL(theme.pictogram, assetOrigin).toString();
 
   return new ImageResponse(
     <div

@@ -7,6 +7,10 @@ Runbook operativo per lavorare sulla VPS production. Non inserire segreti in que
 - Usare l'utente `deploy`, non `root`.
 - Non committare chiavi SSH, env file, dump DB o output con segreti.
 - Non stampare `.env.production` intero in chat o log.
+- Non stampare `docker compose config` senza `--quiet`: espande variabili e puo rivelare segreti.
+- Non usare `docker events`/`docker inspect` in output condivisi senza redazione: possono includere command line, healthcheck e build metadata.
+- Non passare password in argomenti CLI visibili, es. `redis-cli -a <password>` negli healthcheck. Usare variabili lette nel container, es. `REDISCLI_AUTH`.
+- Non lasciare URL database o Redis con credenziali inline in `compose.production.yml`; usare riferimenti a variabili/env file.
 - Prima di modificare file production, leggere lo stato corrente e creare una copia del file che si tocca.
 - Prima di deploy o migrazioni, creare un dump DB in `/opt/middleware/backups`.
 - Non usare comandi distruttivi se non richiesti esplicitamente e dopo backup verificato.
@@ -27,6 +31,9 @@ Regole SSH:
 - Usare `sudo` solo quando serve davvero.
 - Non copiare chiavi private sulla VPS.
 - Non lasciare agent forwarding attivo se non necessario.
+- La porta SSH resta `22` finche non esiste automazione GitHub Actions o una procedura aggiornata per tutte le postazioni operative.
+- Hardening atteso: `PermitRootLogin no`, `PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `MaxAuthTries 3`, `X11Forwarding no`, `AllowTcpForwarding no`.
+- Fail2ban deve restare attivo sul jail `sshd` con ban temporanei per brute-force.
 
 ## Host E Percorsi
 
@@ -66,6 +73,8 @@ docker volume inspect middleware_postgres-data --format 'Name={{.Name}} Created=
 docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select migration_name, finished_at from \"_prisma_migrations\" order by finished_at;"'
 ```
 
+Nota: usare `docker compose ... config --quiet` per validare il compose. Non stampare `docker compose ... config` completo in chat/log perche espande segreti.
+
 Log app:
 
 ```bash
@@ -101,6 +110,34 @@ cd /opt/middleware
 docker compose --env-file .env.production -f compose.production.yml up -d --no-build caddy
 ```
 
+Healthcheck read-only:
+
+```bash
+cd /opt/middleware
+./bin/healthcheck.sh
+```
+
+Lo script `bin/healthcheck.sh` non deve stampare env o segreti. Controlla host, disco, systemd, compose, Postgres, Redis, smoke HTTPS, `/api/og` e Object Storage.
+
+Timer locali zero-cost:
+
+```bash
+systemctl list-timers --all middleware-backup.timer middleware-restore-test.timer middleware-healthcheck.timer --no-pager
+journalctl -u middleware-backup.service -n 80 --no-pager
+journalctl -u middleware-restore-test.service -n 80 --no-pager
+journalctl -u middleware-healthcheck.service -n 120 --no-pager
+```
+
+Avvio manuale controlli P0:
+
+```bash
+sudo systemctl start middleware-backup.service
+sudo systemctl start middleware-restore-test.service
+sudo systemctl start middleware-healthcheck.service
+```
+
+I timer girano sulla stessa VPS e non sostituiscono un monitor esterno: se la VPS e irraggiungibile, non possono inviare alert.
+
 ## Regole Per Modificare File Sulla VPS
 
 Prima di modificare un file:
@@ -125,6 +162,7 @@ Regole:
 - Non cambiare `COMPOSE_PROJECT_NAME`, nomi volume o nomi network senza piano di migrazione dati.
 - Dopo ogni modifica a Compose, eseguire `docker compose --env-file .env.production -f compose.production.yml config --quiet`.
 - Dopo ogni modifica a Caddy, ricreare solo `caddy` e controllare i log.
+- Gli healthcheck non devono includere password come argomenti letterali. Per Redis preferire `CMD-SHELL` con `REDISCLI_AUTH` letto da env dentro il container.
 
 ## Analytics Umami Ops
 
@@ -229,7 +267,7 @@ Il `grep` finale non deve trovare lo script. Non cancellare subito volumi o data
 
 Obiettivo: aggiornare codice e container senza ricreare Postgres, senza cambiare volume dati e senza eseguire reset distruttivi.
 
-Il workflow GitHub Actions `Deploy Production` replica questa procedura in modalita manuale. Prima di usarlo configurare almeno:
+Al momento il deploy production e manuale via SSH sulla VPS. Se in futuro si aggiunge il workflow GitHub Actions `Deploy Production`, deve replicare questa procedura data-safe e richiedere almeno:
 
 - Secret `PRODUCTION_SSH_PRIVATE_KEY` con la chiave privata deploy.
 - Secret `PRODUCTION_SSH_KNOWN_HOSTS` consigliato; se assente il workflow usa `ssh-keyscan`.
@@ -238,7 +276,7 @@ Il workflow GitHub Actions `Deploy Production` replica questa procedura in modal
 - Variabile `PRODUCTION_SSH_USER`, opzionale se resta `deploy`.
 - Variabile `PRODUCTION_SMOKE_URL`, opzionale; usare `http://46.224.209.184` prima del dominio e `https://middleware.media` dopo go-live.
 
-Il workflow deve essere eseguito solo da `main`; verifica automaticamente che la CI sia verde sul commit da rilasciare prima di aprire SSH verso la VPS.
+Se abilitato, il workflow deve essere eseguito solo da `main` e deve verificare automaticamente che la CI sia verde sul commit da rilasciare prima di aprire SSH verso la VPS.
 
 Pre-check obbligatori:
 
@@ -258,6 +296,7 @@ Regole operative del deploy:
 - Nei blocchi SSH via heredoc usare `docker compose exec --interactive=false -T ...`; senza `--interactive=false`, `exec` puo consumare lo stdin del heredoc e saltare i comandi successivi.
 - Per Prisma CLI, costruire una `DATABASE_URL` con user/password/db URL-encoded e passarla esplicitamente a `migrate`; il build Next e il runtime app restano sulla `DATABASE_URL` raw usata dall'adapter `pg`.
 - Non usare `source .env.production`: alcuni valori possono contenere spazi o caratteri non shell-safe. Per il build usare il parser riga-per-riga gia documentato sotto.
+- Durante il build remoto, se il build usa la rete `middleware_public`, collegare temporaneamente `middleware-postgres-1` a `middleware_public` con alias `postgres` e scollegarlo sempre a fine build. Se `next build` logga `EAI_AGAIN postgres`, fermarsi e non deployare l'immagine.
 
 Backup DB pre-deploy:
 
@@ -347,6 +386,41 @@ Usarli solo dopo richiesta esplicita, backup verificato e decisione documentata 
 
 ## Backup E Restore DB
 
+Retention operativa:
+
+- I dump DB validi devono essere non vuoti (`test -s`).
+- I dump da `0` byte non sono backup validi: spostarli in `backups/quarantine/` e registrare l'azione in un manifest.
+- Le directory `app.backup.*` sono backup deploy temporanei. Tenere almeno le 6 piu recenti salvo esigenze specifiche di rollback.
+- Prima di rimuovere backup o directory storiche, creare un manifest `backups/cleanup-manifest-<timestamp>.txt` con policy, elementi mantenuti, elementi rimossi/quarantinati e spazio disco prima/dopo.
+- Non cancellare dump DB applicativi o analytics validi senza una decisione esplicita di retention.
+
+Backup automatici locali zero-cost:
+
+- Script VPS: `/opt/middleware/bin/backup-databases.sh`.
+- Sorgente repo: `scripts/production-backup-databases.sh`.
+- Timer: `middleware-backup.timer`, giornaliero alle `03:15 UTC` con jitter.
+- Output: `/opt/middleware/backups/automated/daily`.
+- Weekly snapshot: `/opt/middleware/backups/automated/weekly`, creato la domenica UTC.
+- Manifest: `/opt/middleware/backups/automated/manifests`.
+- Retention attuale: 14 dump daily per DB, 8 weekly per DB, 60 manifest.
+
+Restore test locale non distruttivo:
+
+- Script VPS: `/opt/middleware/bin/restore-test.sh`.
+- Sorgente repo: `scripts/production-restore-test.sh`.
+- Timer: `middleware-restore-test.timer`, mensile.
+- Crea DB temporanei `middleware_restore_test_<timestamp>` e li elimina a fine test.
+- Manifest: `/opt/middleware/backups/automated/restore-tests`.
+- Non sostituisce un restore offsite: verifica solo che l'ultimo dump locale sia leggibile e ripristinabile sulla VPS.
+
+Healthcheck automatico locale:
+
+- Script VPS: `/opt/middleware/bin/healthcheck-timer.sh`.
+- Sorgente repo: `scripts/production-healthcheck-timer.sh`.
+- Timer: `middleware-healthcheck.timer`, ogni 15 minuti.
+- Fallisce se l'ultimo backup applicativo manca, e vuoto o ha piu di 26 ore.
+- I log restano locali in `journalctl`; senza servizi esterni non c'e alert se la VPS e down.
+
 Dump manuale on-demand:
 
 ```bash
@@ -406,6 +480,7 @@ curl -I https://middleware.media/
 curl -I https://www.middleware.media/
 curl -I https://middleware.media/cms/login
 curl -I https://middleware.media/cms/media
+curl -I 'https://middleware.media/api/og?title=health'
 ```
 
 Verifica contenuto, non solo status code:
@@ -414,7 +489,10 @@ Verifica contenuto, non solo status code:
 curl -L https://middleware.media/ | grep -F '<title>Middleware | Scomporre la sicurezza</title>'
 curl -L https://middleware.media/chi-siamo | grep -F '<title>Middleware | Chi siamo</title>'
 curl -L https://middleware.media/uscite/scomporre-la-sicurezza-primo-numero | grep -F '<title>Middleware | Scomporre la sicurezza</title>'
+curl -sS -o /dev/null -w '%{http_code} %{content_type}\n' 'https://middleware.media/api/og?title=health'
 ```
+
+Lo smoke `/api/og` deve rispondere `200 image/png`. Se risponde `502`, controllare che la route OG non stia risolvendo asset con origin interno `0.0.0.0:3000`.
 
 Verifica DNS e Object Storage dal container app:
 
@@ -456,6 +534,7 @@ Quando DNS e HTTPS sono pronti, ripristinare i file `*.domain-ready` e riportare
 ## Guardrail
 
 - Non stampare `.env.production` intero in chat o log.
+- Non stampare output completi che possono includere segreti espansi, inclusi `docker compose config`, `docker events`, `docker inspect` e command line con password.
 - Prima di ogni deploy che tocca app/migration, creare un dump DB in `/opt/middleware/backups`.
 - Verificare che `middleware_postgres-data` esista e non sia appena stato ricreato prima di migrare.
 - Non usare `docker compose down -v` in production.
