@@ -25,7 +25,7 @@ Use it as the entrypoint before diving into the deeper audit, UI, or checklist d
 - `components/public/sections/*`: route-agnostic public page sections such as the issue dossier.
 - `components/public/pages/*`: public page-level compositions used by App Router entrypoints.
 - `lib/cms/*`: frontend shared auth, query, invalidation, and error-mapping helpers.
-- `lib/public/server/*`: cache-safe public data loaders for static/ISR page rendering.
+- `lib/public/server/*`: public data loaders for App Router rendering.
 - `lib/public/types/*`: type-only public DTO aliases shared by loaders and components.
 - `lib/server/trpc/*`: transport, context, procedure builders, middleware, and routers.
 - `lib/server/modules/<resource>/*`: per-domain `schema`, `dto`, `policy`, `repository`, `service`.
@@ -74,13 +74,18 @@ CMS page/request
 - List hooks keep previous data visible during filter, sort, and pagination changes.
 - Post-mutation cache invalidation is centralized in `lib/cms/trpc/invalidation.ts`.
 - The public home uses `lib/public/server/home.ts` as its single data loader for page rendering and metadata.
-- Public data loaders use Cache Components primitives: `"use cache"`, `cacheLife`, and `cacheTag`.
+- Public database loaders are currently uncached at `"use cache"` level because production Docker prerender hits `USE_CACHE_TIMEOUT` when filling DB-backed cache scopes. Reintroduce Cache Components caching only after validating with the VPS Docker build, not just local `pnpm build`.
+- When reintroducing cache, keep `"use cache"` close to deterministic async loaders with serializable arguments and return values. Do not add it at public layout/route file level unless the whole segment is intentionally cached and the production Docker build proves it does not create `USE_CACHE_TIMEOUT`.
+- Public layout slots such as navigation, consent, and analytics remain uncached and wrapped in `<Suspense>` because production Docker prerender currently times out when filling shared layout-slot caches from database reads.
+- Public cache tags are already defined per resource and invalidated from CMS mutation flows through `lib/public/server/revalidation.ts`; they become effective again when DB-backed `"use cache"` scopes are safely reintroduced.
 - The public home loader calls the public issue service directly, not the request-bound tRPC caller, so it is safe to reuse across requests.
 - The public home loader uses `publicIssuesService.listPublishedItems()` for archive cards, avoiding the `countPublished()` query used by paginated API responses.
-- Public issue pages use `lib/public/server/issue-page.ts` and are cached through Cache Components.
+- Public issue pages use `lib/public/server/issue-page.ts`.
 - Public static CMS pages use `lib/public/server/page.ts`; only slugs listed in `PUBLIC_STATIC_PAGE_SLUGS` are routed publicly at top level.
 - Route segment config exports such as `runtime`, `dynamic`, `revalidate`, `fetchCache`, and `dynamicParams` must not be added while `cacheComponents: true` is enabled.
 - Public loaders must not call `getTrpcCaller()` because it depends on request headers and makes otherwise static pages request-bound.
+- Public loaders must not read `cookies()`, `headers()`, `searchParams`, sessions, or mutable request state inside `"use cache"` scopes. Read runtime values outside cache scopes and pass plain serializable values into cached functions only when needed.
+- Avoid shared Maps or closures containing unresolved runtime Promises inside cached functions; Next.js 16 documents this as a cause of `USE_CACHE_TIMEOUT` during prerender.
 - Article `contentPreview` is derived and capped server-side before serialization; fully removing `contentRich` from home queries requires persisted derived fields such as `readingTimeMinutes` and `contentPreview`.
 - The public home cache tag is `PUBLIC_HOME_CACHE_TAG` (`public-home`); use `revalidateTag(PUBLIC_HOME_CACHE_TAG, { expire: 0 })` when CMS publish flows need immediate public refresh.
 - The public issue cache tag is `PUBLIC_ISSUE_PAGE_CACHE_TAG` (`public-issue`); use `revalidateTag(PUBLIC_ISSUE_PAGE_CACHE_TAG, { expire: 0 })` when published issue pages need immediate refresh.
@@ -130,8 +135,6 @@ Minimal route pattern for a new public page:
 import { SomePublicPage } from "@/components/public/pages";
 import { getSomePublicData } from "@/lib/public/server/some-page";
 
-export const revalidate = 3600;
-
 export async function generateMetadata() {
   const data = await getSomePublicData();
   return buildPageMetadata({ title: data.title, path: "/some-page" });
@@ -142,6 +145,26 @@ export default async function Page() {
   return <SomePublicPage data={data} />;
 }
 ```
+
+Minimal cached public loader pattern:
+
+```ts
+import "server-only";
+
+import { cacheLife, cacheTag } from "next/cache";
+
+export const PUBLIC_SOME_CACHE_TAG = "public-some";
+
+export async function getSomePublicData(slug: string) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_SOME_CACHE_TAG);
+
+  return publicSomeService.getBySlug(slug);
+}
+```
+
+Before using this pattern for DB-backed production loaders, validate it through `scripts/production-deploy-manual.sh --dry-run --allow-dirty --skip-local-checks` and a real Docker build path, because local `pnpm build` can pass while the VPS Docker build still reports `USE_CACHE_TIMEOUT`.
 
 Minimal section pattern:
 

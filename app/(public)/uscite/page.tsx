@@ -1,5 +1,3 @@
-"use cache";
-
 import { PublicIssuesArchivePage } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
 import { getPublicIssuesArchiveData } from "@/lib/public/server/issues-archive";

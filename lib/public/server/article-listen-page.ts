@@ -1,7 +1,5 @@
 import "server-only";
 
-import { cacheLife, cacheTag } from "next/cache";
-
 import { parseAudioChunks, type AudioChunk } from "@/lib/audio/audio-chunks";
 import { extractCmsMediaPathname } from "@/lib/media/blob";
 import { getPublicArticlePageData } from "@/lib/public/server/article-page";
@@ -70,10 +68,6 @@ async function loadAudioChunks(value: unknown) {
 export async function getPublicArticleListenPageData(
   slug: string,
 ): Promise<PublicArticleListenPageData | null> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag(PUBLIC_ARTICLE_LISTEN_PAGE_CACHE_TAG);
-
   const { article, articleNumber } = await getPublicArticlePageData(slug);
 
   if (!article?.audioUrl) {

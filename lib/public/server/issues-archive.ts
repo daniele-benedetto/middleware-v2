@@ -1,7 +1,5 @@
 import "server-only";
 
-import { cacheLife, cacheTag } from "next/cache";
-
 import {
   PUBLIC_PUBLISHED_ISSUES_PAGE_SIZE,
   getPublicPublishedIssues,
@@ -17,10 +15,6 @@ export type PublicIssuesArchiveData = {
 };
 
 export async function getPublicIssuesArchiveData(): Promise<PublicIssuesArchiveData> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag(PUBLIC_ISSUES_ARCHIVE_CACHE_TAG);
-
   const issues = await getPublicPublishedIssues(
     "public.getPublicIssuesArchiveData",
     PUBLIC_ISSUES_ARCHIVE_PAGE_SIZE,

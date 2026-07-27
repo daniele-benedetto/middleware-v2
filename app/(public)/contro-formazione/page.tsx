@@ -1,5 +1,3 @@
-"use cache";
-
 import { PublicFormazioneIndexPage } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
 import { getPublicFormazioneIndexData } from "@/lib/public/server/course-page";

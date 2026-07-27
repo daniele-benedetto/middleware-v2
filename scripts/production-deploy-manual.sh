@@ -110,14 +110,10 @@ if [ "$MODE" = "dry-run" ]; then
   exit 0
 fi
 
-rsync "${rsync_args[@]}" ./ "${ssh_target}:${REMOTE_DIR}/app/"
-
-ssh "${ssh_opts[@]}" "$ssh_target" bash -s -- "$image_tag" "$short_sha" "$dirty" <<'REMOTE'
+ssh "${ssh_opts[@]}" "$ssh_target" bash -s -- "$image_tag" <<'REMOTE_PRE_SYNC'
 set -euo pipefail
 
 tag="$1"
-commit="$2"
-dirty="$3"
 cd /opt/middleware
 
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
@@ -128,6 +124,19 @@ test -s "$backup_file"
 
 cp -a app "app.backup.${tag}.${stamp}"
 cp compose.production.yml "compose.production.yml.backup.${tag}.${stamp}"
+docker compose --env-file .env.production -f compose.production.yml config --quiet
+printf 'pre_sync_backup=ok backup=%s\n' "$backup_file"
+REMOTE_PRE_SYNC
+
+rsync "${rsync_args[@]}" ./ "${ssh_target}:${REMOTE_DIR}/app/"
+
+ssh "${ssh_opts[@]}" "$ssh_target" bash -s -- "$image_tag" "$short_sha" "$dirty" <<'REMOTE'
+set -euo pipefail
+
+tag="$1"
+commit="$2"
+dirty="$3"
+cd /opt/middleware
 
 docker compose --env-file .env.production -f compose.production.yml config --quiet
 postgres_container_before="$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)"
@@ -140,9 +149,12 @@ migrate_env="$(mktemp)"
 events_file="$(mktemp)"
 inspect_file="$(mktemp)"
 secret_file="$(mktemp)"
+proxy_pid=""
 cleanup() {
   rm -f "$build_env" "$migrate_env" "$events_file" "$inspect_file" "$secret_file"
-  docker network disconnect middleware_public middleware-postgres-1 >/dev/null 2>&1 || true
+  if [ -n "$proxy_pid" ]; then
+    kill "$proxy_pid" >/dev/null 2>&1 || true
+  fi
 }
 trap cleanup EXIT
 
@@ -169,17 +181,40 @@ build_keys = [
     'NEXT_PUBLIC_UMAMI_EXCLUDE_SEARCH', 'NEXT_PUBLIC_UMAMI_EXCLUDE_HASH',
     'NEXT_PUBLIC_PRIVACY_BANNER_MODE', 'SITE_URL',
 ]
-build_env_path.write_text('\n'.join(f'export {key}={shlex.quote(values[key])}' for key in build_keys if key in values) + '\n')
+def build_value(key: str) -> str:
+    value = values[key]
+    if key in {'DATABASE_URL', 'POSTGRES_URL', 'PRISMA_DATABASE_URL'}:
+        value = value.replace('@postgres:5432/', '@host.docker.internal:15432/')
+        value = value.replace('@postgres/', '@host.docker.internal:15432/')
+    return value
+
+build_env_path.write_text('\n'.join(f'export {key}={shlex.quote(build_value(key))}' for key in build_keys if key in values) + '\n')
 migrate_keys = ['DATABASE_URL', 'POSTGRES_URL', 'PRISMA_DATABASE_URL']
 migrate_env_path.write_text('\n'.join(f'{key}={values[key]}' for key in migrate_keys if key in values) + '\n')
 secret_path.write_text('\n'.join(values[key] for key in ('POSTGRES_PASSWORD', 'REDIS_PASSWORD') if key in values) + '\n')
 PY
 chmod 600 "$build_env" "$migrate_env" "$secret_file"
 
-docker network connect --alias postgres middleware_public middleware-postgres-1 >/dev/null 2>&1 || true
-DOCKER_BUILDKIT=1 docker build --network middleware_public --target migrate -t "middleware-migrate:${tag}" app
-DOCKER_BUILDKIT=1 docker build --network middleware_public --secret "id=build_env,src=${build_env}" --target runner -t "middleware-app:${tag}" app
-docker network disconnect middleware_public middleware-postgres-1 >/dev/null 2>&1 || true
+if ! command -v socat >/dev/null 2>&1; then
+  sudo -n apt-get update
+  sudo -n apt-get install -y socat
+fi
+postgres_ip="$(docker inspect -f '{{with index .NetworkSettings.Networks "middleware_internal"}}{{.IPAddress}}{{end}}' middleware-postgres-1)"
+docker_bridge_gateway="$(docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}')"
+test -n "$postgres_ip"
+test -n "$docker_bridge_gateway"
+socat "TCP-LISTEN:15432,bind=${docker_bridge_gateway},fork,reuseaddr" "TCP:${postgres_ip}:5432" &
+proxy_pid="$!"
+sleep 1
+
+if ! docker buildx inspect middleware-host-builder >/dev/null 2>&1; then
+  docker buildx create --name middleware-host-builder --driver docker-container --use >/dev/null
+else
+  docker buildx use middleware-host-builder
+fi
+docker buildx inspect --bootstrap >/dev/null
+docker buildx build --builder middleware-host-builder --load --add-host "host.docker.internal:${docker_bridge_gateway}" --target migrate -t "middleware-migrate:${tag}" app
+docker buildx build --builder middleware-host-builder --load --add-host "host.docker.internal:${docker_bridge_gateway}" --secret "id=build_env,src=${build_env}" --target runner -t "middleware-app:${tag}" app
 
 docker run --rm --network middleware_internal --env-file "$migrate_env" "middleware-migrate:${tag}" pnpm prisma:migrate:deploy
 

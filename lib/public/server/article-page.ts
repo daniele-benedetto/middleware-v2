@@ -1,7 +1,5 @@
 import "server-only";
 
-import { cacheLife, cacheTag } from "next/cache";
-
 import { normalizeHomeBlock } from "@/lib/issues/home-block-rules";
 import { type IssueNumberingBlock, buildNumberedIssueArticles } from "@/lib/public/issue-numbering";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
@@ -139,10 +137,6 @@ async function getIssueArticleContext(article: PublicArticleDetailDto | null) {
 }
 
 export async function getPublicArticlePageData(slug: string): Promise<PublicArticlePageData> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag(PUBLIC_ARTICLE_PAGE_CACHE_TAG);
-
   const article = await getArticleBySlug(slug);
   const { articleNumber, relatedArticles } = await getIssueArticleContext(article);
 
