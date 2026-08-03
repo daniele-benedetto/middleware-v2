@@ -3,7 +3,7 @@ export const publicFeatures = {
 } as const;
 
 function optionalPublicEnv(value: string | undefined) {
-  const trimmedValue = value?.trim();
+  const trimmedValue = value?.trim().replace(/^(["'])(.*)\1$/, "$2");
 
   return trimmedValue ? trimmedValue : null;
 }
