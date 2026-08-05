@@ -15,8 +15,8 @@ concurrency:
 env:
   IMAGE_PREFIX: ghcr.io/${{ github.repository }}
   PRODUCTION_PATH: /opt/middleware
-  PRODUCTION_SMOKE_URL: ${{ vars.PRODUCTION_SMOKE_URL || 'http://46.224.209.184' }}
-  PRODUCTION_PUBLIC_SITE_URL: ${{ vars.PRODUCTION_PUBLIC_SITE_URL || 'http://46.224.209.184' }}
+  PRODUCTION_SMOKE_URL: ${{ vars.PRODUCTION_SMOKE_URL }}
+  PRODUCTION_PUBLIC_SITE_URL: ${{ vars.PRODUCTION_PUBLIC_SITE_URL }}
   PRODUCTION_UMAMI_SRC: ${{ vars.PRODUCTION_UMAMI_SRC || '' }}
   PRODUCTION_UMAMI_WEBSITE_ID: ${{ vars.PRODUCTION_UMAMI_WEBSITE_ID || '' }}
   PRODUCTION_UMAMI_DOMAINS: ${{ vars.PRODUCTION_UMAMI_DOMAINS || '' }}
@@ -25,13 +25,14 @@ env:
   PRODUCTION_UMAMI_EXCLUDE_SEARCH: ${{ vars.PRODUCTION_UMAMI_EXCLUDE_SEARCH || 'false' }}
   PRODUCTION_UMAMI_EXCLUDE_HASH: ${{ vars.PRODUCTION_UMAMI_EXCLUDE_HASH || 'true' }}
   PRODUCTION_PRIVACY_BANNER_MODE: ${{ vars.PRODUCTION_PRIVACY_BANNER_MODE || 'acknowledge' }}
-  SSH_HOST: ${{ vars.PRODUCTION_SSH_HOST || '46.224.209.184' }}
+  SSH_HOST: ${{ vars.PRODUCTION_SSH_HOST }}
   SSH_PORT: ${{ vars.PRODUCTION_SSH_PORT || '22' }}
   SSH_USER: ${{ vars.PRODUCTION_SSH_USER || 'deploy' }}
 
 jobs:
   build:
     name: Build And Push Images
+    if: ${{ vars.PRODUCTION_DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -121,15 +122,15 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$SSH_PRIVATE_KEY"
+          test -n "$SSH_KNOWN_HOSTS"
+          test -n "$SSH_HOST"
+          test -n "$PRODUCTION_SMOKE_URL"
+          test -n "$PRODUCTION_PUBLIC_SITE_URL"
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/production_key
           chmod 600 ~/.ssh/production_key
-          if [ -n "$SSH_KNOWN_HOSTS" ]; then
-            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          else
-            ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" > ~/.ssh/known_hosts
-          fi
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
 
       - name: Pre-check and backup database
         run: |

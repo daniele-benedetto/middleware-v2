@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SSH_HOST="46.224.209.184"
+SSH_HOST="${SSH_HOST:-}"
 SSH_USER="deploy"
 SSH_KEY="${HOME}/.ssh/middleware_hetzner_ed25519"
 REMOTE_DIR="/opt/middleware"
@@ -18,7 +18,7 @@ Options:
   --execute             Perform the production deploy
   --allow-dirty         Allow deploy with uncommitted local changes
   --skip-local-checks   Skip pnpm typecheck and pnpm test:run
-  --host HOST           SSH host/IP (default: 46.224.209.184)
+  --host HOST           SSH host/IP (required unless SSH_HOST is set)
   --user USER           SSH user (default: deploy)
   --key PATH            SSH private key path
   -h, --help            Show this help
@@ -39,6 +39,11 @@ while [ "$#" -gt 0 ]; do
   esac
   shift
 done
+
+if [ -z "$SSH_HOST" ]; then
+  printf 'SSH host is required. Use --host or set SSH_HOST.\n' >&2
+  exit 2
+fi
 
 require_command() {
   command -v "$1" >/dev/null 2>&1 || {

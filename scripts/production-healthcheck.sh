@@ -21,7 +21,9 @@ df -h /
 df -ih /
 
 section "systemd"
-systemctl --failed --no-pager || true
+failed_units="$(systemctl --failed --no-legend --plain | wc -l | tr -d ' ')"
+test "$failed_units" = "0"
+printf 'failed_units=0\n'
 
 section "compose"
 docker compose --env-file .env.production -f compose.production.yml config --quiet
@@ -36,19 +38,36 @@ docker compose --env-file .env.production -f compose.production.yml exec --inter
 printf 'redis=ok\n'
 
 section "public-smoke"
+check_url() {
+  local url="$1"
+  local expected_type="$2"
+  local output
+
+  output="$(curl --fail --location --silent --show-error \
+    --connect-timeout 5 --max-time 20 --retry 2 --retry-connrefused \
+    --output /dev/null \
+    --write-out 'code=%{http_code} content_type=%{content_type} time=%{time_total}' \
+    "$url")"
+  case "$output" in
+    *"content_type=${expected_type}"*) ;;
+    *) printf 'unexpected_response url=%s %s\n' "$url" "$output" >&2; return 1 ;;
+  esac
+  printf 'url=%s %s\n' "$url" "$output"
+}
+
 for url in \
   'https://middleware.media/' \
   'https://www.middleware.media/' \
   'https://middleware.media/cms/login' \
   'https://middleware.media/cms/media' \
-  'https://middleware.media/api/og?title=health' \
   'https://stats.middleware.media/'
 do
-  curl -sS -o /dev/null -w "url=${url} code=%{http_code} content_type=%{content_type} time=%{time_total} redirect=%{redirect_url}\n" "$url"
+  check_url "$url" 'text/html'
 done
+check_url 'https://middleware.media/api/og?title=health' 'image/png'
 
-section "object-storage-egress"
-docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T app node -e "fetch('https://fsn1.your-objectstorage.com',{method:'HEAD'}).then(r=>console.log('object_storage_status='+r.status)).catch(e=>{console.error(e.name+': '+e.message); process.exit(1);})"
+section "object-storage-auth"
+timeout 30s docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T app node -e "import('@aws-sdk/client-s3').then(async({S3Client,HeadObjectCommand})=>{if(!process.env.S3_HEALTHCHECK_KEY)throw new Error('S3_HEALTHCHECK_KEY missing');const c=new S3Client({endpoint:process.env.S3_ENDPOINT,region:process.env.S3_REGION,forcePathStyle:process.env.S3_FORCE_PATH_STYLE!=='false',credentials:{accessKeyId:process.env.S3_ACCESS_KEY,secretAccessKey:process.env.S3_SECRET_KEY}});try{await c.send(new HeadObjectCommand({Bucket:process.env.S3_BUCKET,Key:process.env.S3_HEALTHCHECK_KEY}));console.log('object_storage_auth=ok')}finally{c.destroy()}}).catch(e=>{console.error(e.name);process.exit(1)})"
 
 section "deploy-source"
 sed -n '1,10p' DEPLOY_SOURCE 2>/dev/null || true

@@ -123,9 +123,9 @@ Timer locali zero-cost:
 
 ```bash
 systemctl list-timers --all middleware-backup.timer middleware-restore-test.timer middleware-healthcheck.timer --no-pager
-journalctl -u middleware-backup.service -n 80 --no-pager
-journalctl -u middleware-restore-test.service -n 80 --no-pager
-journalctl -u middleware-healthcheck.service -n 120 --no-pager
+sudo journalctl -u middleware-backup.service -n 80 --no-pager
+sudo journalctl -u middleware-restore-test.service -n 80 --no-pager
+sudo journalctl -u middleware-healthcheck.service -n 120 --no-pager
 ```
 
 Avvio manuale controlli P0:
@@ -270,11 +270,11 @@ Obiettivo: aggiornare codice e container senza ricreare Postgres, senza cambiare
 Al momento il deploy production e manuale via SSH sulla VPS. Se in futuro si aggiunge il workflow GitHub Actions `Deploy Production`, deve replicare questa procedura data-safe e richiedere almeno:
 
 - Secret `PRODUCTION_SSH_PRIVATE_KEY` con la chiave privata deploy.
-- Secret `PRODUCTION_SSH_KNOWN_HOSTS` consigliato; se assente il workflow usa `ssh-keyscan`.
-- Variabile `PRODUCTION_SSH_HOST`, opzionale se resta `46.224.209.184`.
+- Secret `PRODUCTION_SSH_KNOWN_HOSTS` obbligatorio e derivato da fingerprint verificata; nessun fallback `ssh-keyscan`.
+- Variabile `PRODUCTION_SSH_HOST` obbligatoria.
 - Variabile `PRODUCTION_SSH_PORT`, opzionale se resta `22`.
 - Variabile `PRODUCTION_SSH_USER`, opzionale se resta `deploy`.
-- Variabile `PRODUCTION_SMOKE_URL`, opzionale; usare `http://46.224.209.184` prima del dominio e `https://middleware.media` dopo go-live.
+- Variabile `PRODUCTION_SMOKE_URL` obbligatoria e uguale a `https://middleware.media` dopo go-live.
 
 Se abilitato, il workflow deve essere eseguito solo da `main` e deve verificare automaticamente che la CI sia verde sul commit da rilasciare prima di aprire SSH verso la VPS.
 
@@ -336,7 +336,7 @@ Regole operative del deploy:
 - Il restart applicativo deve usare `up -d --no-build --no-deps app`, cosi aggiorna solo `app`.
 - Prima di `migrate`, salvare gli ID container di `postgres` e `redis` e verificarli dopo `migrate`.
 - Il dump pre-deploy deve essere verificato con `test -s` prima di sincronizzare o ricreare servizi.
-- Nei blocchi SSH via heredoc usare `docker compose exec --interactive=false -T ...`; senza `--interactive=false`, `exec` puo consumare lo stdin del heredoc e saltare i comandi successivi.
+- Nei blocchi SSH via heredoc usare `docker compose exec --interactive=false -T ...`; senza `--interactive=false`, `exec` puo consumare lo stdin del heredoc e saltare i comandi successivi. Eccezione: se il comando legge intenzionalmente un file tramite `<`, usare `exec -T` per mantenere stdin aperto.
 - Per Prisma CLI, costruire una `DATABASE_URL` con user/password/db URL-encoded e passarla esplicitamente a `migrate`; il build Next e il runtime app restano sulla `DATABASE_URL` raw usata dall'adapter `pg`.
 - Non usare `source .env.production`: alcuni valori possono contenere spazi o caratteri non shell-safe. Per il build usare il parser riga-per-riga gia documentato sotto.
 - Durante il build remoto, se il build usa la rete `middleware_public`, collegare temporaneamente `middleware-postgres-1` a `middleware_public` con alias `postgres` e scollegarlo sempre a fine build. Se `next build` logga `EAI_AGAIN postgres`, fermarsi e non deployare l'immagine.
@@ -441,11 +441,16 @@ Backup automatici locali zero-cost:
 
 - Script VPS: `/opt/middleware/bin/backup-databases.sh`.
 - Sorgente repo: `scripts/production-backup-databases.sh`.
-- Timer: `middleware-backup.timer`, giornaliero alle `03:15 UTC` con jitter.
+- Timer: `middleware-backup.timer`, alle `00:15`, `05:15`, `10:15`, `15:15` e `20:15 UTC` con jitter.
 - Output: `/opt/middleware/backups/automated/daily`.
 - Weekly snapshot: `/opt/middleware/backups/automated/weekly`, creato la domenica UTC.
 - Manifest: `/opt/middleware/backups/automated/manifests`.
-- Retention attuale: 14 dump daily per DB, 8 weekly per DB, 60 manifest.
+- Ogni coppia e scritta prima come `.partial`, validata con `pg_restore --list` e rinominata atomicamente.
+- Il job usa `flock`, controlla spazio libero e non esegue prune se il backup fallisce.
+- Retention attuale: 70 generazioni per DB, 8 weekly per DB, 90 manifest.
+- Backup cifrato off-host: `/opt/middleware/bin/backup-offsite.sh`, sorgente repo
+  `scripts/production-backup-offsite.sh`; viene eseguito prima del prune e crea
+  `backups/automated/offsite/latest-ok` legato allo stesso manifest.
 
 Restore test locale non distruttivo:
 
@@ -461,8 +466,18 @@ Healthcheck automatico locale:
 - Script VPS: `/opt/middleware/bin/healthcheck-timer.sh`.
 - Sorgente repo: `scripts/production-healthcheck-timer.sh`.
 - Timer: `middleware-healthcheck.timer`, ogni 15 minuti.
-- Fallisce se l'ultimo backup applicativo manca, e vuoto o ha piu di 26 ore.
+- Fallisce se uno dei due dump manca, e vuoto/non valido o ha piu di 5 ore e 45 minuti.
+- Fallisce se manifest completato o marker backup cifrato off-host mancano/hanno piu di 5 ore e 45 minuti.
 - I log restano locali in `journalctl`; senza servizi esterni non c'e alert se la VPS e down.
+- Il timer invia un heartbeat esterno solo dopo tutti i controlli; 30 minuti senza
+  heartbeat devono generare alert.
+
+Replica media DR:
+
+- Script VPS: `/opt/middleware/bin/replicate-media.sh`.
+- Sorgente repo: `scripts/production-replicate-media.sh`.
+- Timer: `middleware-media-replication.timer`, alle `02:30` e `14:30 UTC`.
+- Usa `rclone copy` senza propagare cancellazioni e verifica source -> DR con checksum.
 
 Dump manuale on-demand:
 
@@ -488,7 +503,7 @@ Restore da dump, solo dopo conferma esplicita:
 cd /opt/middleware
 docker compose --env-file .env.production -f compose.production.yml stop app
 docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" dropdb -U "$POSTGRES_USER" "$POSTGRES_DB" && PGPASSWORD="$POSTGRES_PASSWORD" createdb -U "$POSTGRES_USER" "$POSTGRES_DB"'
-docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --no-acl' < backups/<dump-file>.dump
+docker compose --env-file .env.production -f compose.production.yml exec -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --no-acl' < backups/<dump-file>.dump
 docker compose --env-file .env.production -f compose.production.yml up -d --no-build --no-deps app
 ```
 
