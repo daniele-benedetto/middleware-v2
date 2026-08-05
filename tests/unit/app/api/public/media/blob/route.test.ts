@@ -12,10 +12,20 @@ const publicMediaServiceMock = vi.hoisted(() => ({
   },
 }));
 
+const rateLimitMock = vi.hoisted(() => ({
+  enforceRateLimit: vi.fn(),
+  rateLimitPolicies: {
+    publicRead: { name: "public-read", limit: 120, windowMs: 60_000 },
+  },
+}));
+
 vi.mock("@/lib/server/storage/media-storage", () => mediaStorageMock);
 vi.mock("@/lib/server/modules/media/service/public", () => publicMediaServiceMock);
+vi.mock("@/lib/server/http/rate-limit", () => rateLimitMock);
 
 import { GET } from "@/app/api/public/media/blob/route";
+import { ApiError } from "@/lib/server/http/api-error";
+import { enforceRateLimit, rateLimitPolicies } from "@/lib/server/http/rate-limit";
 import { publicMediaService } from "@/lib/server/modules/media/service/public";
 import { StorageAccessError } from "@/lib/server/storage/errors";
 import { mediaStorage } from "@/lib/server/storage/media-storage";
@@ -23,6 +33,7 @@ import { mediaStorage } from "@/lib/server/storage/media-storage";
 const getMediaMock = vi.mocked(mediaStorage.get);
 const headMediaMock = vi.mocked(mediaStorage.head);
 const canServePublishedMediaMock = vi.mocked(publicMediaService.canServePublishedMedia);
+const enforceRateLimitMock = vi.mocked(enforceRateLimit);
 
 function createRequest(pathname?: string, options?: { range?: string }) {
   const url = new URL("https://example.com/api/public/media/blob");
@@ -75,6 +86,22 @@ describe("GET /api/public/media/blob", () => {
     expect(response.status).toBe(400);
     expect(await response.text()).toBe("Missing pathname");
     expect(getMediaMock).not.toHaveBeenCalled();
+    expect(headMediaMock).not.toHaveBeenCalled();
+  });
+
+  it("returns the rate-limit status before authorization or storage reads", async () => {
+    enforceRateLimitMock.mockRejectedValueOnce(
+      new ApiError(429, "RATE_LIMITED", "Rate limit exceeded for this endpoint"),
+    );
+
+    const response = await GET(createRequest("covers/hero.jpg"));
+
+    expect(enforceRateLimitMock).toHaveBeenCalledWith(
+      expect.any(Request),
+      rateLimitPolicies.publicRead,
+    );
+    expect(response.status).toBe(429);
+    expect(canServePublishedMediaMock).not.toHaveBeenCalled();
     expect(headMediaMock).not.toHaveBeenCalled();
   });
 

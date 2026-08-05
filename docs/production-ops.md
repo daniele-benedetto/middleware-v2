@@ -22,7 +22,7 @@ Runbook operativo per lavorare sulla VPS production. Non inserire segreti in que
 VPS production:
 
 ```bash
-ssh -i ~/.ssh/middleware_hetzner_ed25519 deploy@46.224.209.184
+ssh -i ~/.ssh/middleware_hetzner_ed25519 deploy@62.238.105.217
 ```
 
 Regole SSH:
@@ -30,37 +30,47 @@ Regole SSH:
 - Entrare come `deploy`.
 - Usare `sudo` solo quando serve davvero.
 - Non copiare chiavi private sulla VPS.
-- Non lasciare agent forwarding attivo se non necessario.
+- Agent forwarding deve essere disabilitato.
 - La porta SSH resta `22` finche non esiste automazione GitHub Actions o una procedura aggiornata per tutte le postazioni operative.
-- Hardening atteso: `PermitRootLogin no`, `PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `MaxAuthTries 3`, `X11Forwarding no`, `AllowTcpForwarding no`.
+- Hardening atteso: `AuthenticationMethods publickey`, `PermitRootLogin no`,
+  `PasswordAuthentication no`, `KbdInteractiveAuthentication no`,
+  `MaxAuthTries 3`, `X11Forwarding no`, `AllowTcpForwarding no` e
+  `AllowAgentForwarding no`.
 - Fail2ban deve restare attivo sul jail `sshd` con ban temporanei per brute-force.
 
 ## Host E Percorsi
 
-| Risorsa              | Valore                                                |
-| -------------------- | ----------------------------------------------------- |
-| IP VPS               | `46.224.209.184`                                      |
-| OS                   | Ubuntu 24.04 LTS x86_64                               |
-| Workdir production   | `/opt/middleware`                                     |
-| App artifact         | `/opt/middleware/app`                                 |
-| Env production       | `/opt/middleware/.env.production`                     |
-| Compose attivo       | `/opt/middleware/compose.production.yml`              |
-| Caddy attivo         | `/opt/middleware/Caddyfile`                           |
-| Compose domain-ready | `/opt/middleware/compose.production.yml.domain-ready` |
-| Caddy domain-ready   | `/opt/middleware/Caddyfile.domain-ready`              |
-| Deploy source        | `/opt/middleware/DEPLOY_SOURCE`                       |
-| Backup DB            | `/opt/middleware/backups`                             |
+| Risorsa            | Valore                                       |
+| ------------------ | -------------------------------------------- |
+| IP VPS             | `62.238.105.217`                             |
+| OS                 | Ubuntu 24.04 LTS x86_64                      |
+| Workdir production | `/opt/middleware`                            |
+| App artifact       | `/opt/middleware/app`                        |
+| Env production     | `/opt/middleware/.env.production`            |
+| Compose attivo     | `/opt/middleware/compose.production.yml`     |
+| Caddy attivo       | `/opt/middleware/Caddyfile`                  |
+| Caddy recovery     | `/opt/middleware/Caddyfile.production-ready` |
+| Deploy source      | `/opt/middleware/DEPLOY_SOURCE`              |
+| Backup DB          | `/opt/middleware/backups`                    |
 
 ## Infrastruttura Corrente
 
-- Server Hetzner `CX43`, location `NBG1`.
-- Docker Compose gestisce `postgres`, `redis`, `app`, `caddy` e `migrate`.
+- Server Hetzner `CX33`, location `HEL1`.
+- Docker Compose gestisce `postgres`, `redis`, `app`, `caddy`, `migrate`,
+  `umami` e `umami-postgres`.
 - Postgres e Redis girano su rete Docker `internal`.
 - `app` deve stare su `internal` e `public`: `internal` per DB/Redis, `public` per egress verso Object Storage.
 - `app` non deve avere porte pubblicate; Caddy resta l'unico ingresso HTTP/HTTPS.
 - Bucket Object Storage: `middlewaremedia` su endpoint `https://fsn1.your-objectstorage.com`, bucket privato.
 - Media serviti via route applicative, non tramite bucket pubblico.
-- Analytics previsto: Umami self-hosted cookieless su `stats.middleware.media`, con database dedicato e separato dal DB applicativo.
+- Analytics attivo: Umami self-hosted cookieless su `stats.middleware.media`, con database dedicato e separato dal DB applicativo.
+- Immagini third-party production fissate per digest; aggiornare i digest solo
+  dopo test e deploy controllato.
+- Tutti i container hanno limite memoria/CPU/PID, log rotation e
+  `no-new-privileges`; app, database, Redis, Umami e Caddy hanno healthcheck.
+- `vm.overcommit_memory=1` e persistito per l'affidabilita Redis.
+- `auditd` e attivo con watch su SSH, sudoers, env/secrets, Compose e Caddy.
+- Build production richiede il plugin `docker-buildx` sulla VPS.
 
 ## Comandi Base
 
@@ -137,6 +147,28 @@ sudo systemctl start middleware-healthcheck.service
 ```
 
 I timer girano sulla stessa VPS e non sostituiscono un monitor esterno: se la VPS e irraggiungibile, non possono inviare alert.
+Il timer healthcheck invia il ping Healthchecks.io solo dopo tutti i controlli;
+il capability URL vive esclusivamente in `/opt/middleware/secrets/monitoring.env`.
+
+Aggiornamento allowlist SSH dopo un cambio IP pubblico:
+
+1. Verificare il nuovo IP amministrativo da una sessione gia aperta.
+2. Aggiornare prima la regola SSH del Cloud Firewall Hetzner.
+3. Aggiornare UFW mantenendo aperta la sessione corrente.
+4. Aprire una seconda sessione SSH e verificare l'effective config con `sshd -T`.
+5. Chiudere la sessione precedente solo dopo il test positivo.
+
+Se entrambe le allowlist bloccano l'accesso, usare Hetzner Rescue con la chiave
+SSH registrata, montare il filesystem e correggere solo
+`/etc/ufw/user.rules`, quindi riavviare normalmente.
+
+Verifica audit:
+
+```bash
+sudo auditctl -s
+sudo auditctl -l
+sudo ausearch -k middleware_runtime --start today -i
+```
 
 ## Regole Per Modificare File Sulla VPS
 
@@ -361,26 +393,14 @@ cp -a app app.backup.$(date -u +%Y%m%dT%H%M%SZ)
 
 Sincronizzare o aggiornare `/opt/middleware/app` con il commit da deployare. Preferire artifact pulito o sync controllato. Non usare reset distruttivi come shortcut.
 
-Build e migrate:
+Build e migrate sono gestiti dallo script standard dalla workstation locale:
 
 ```bash
-cd /opt/middleware
-docker compose --env-file .env.production -f compose.production.yml config --quiet
-postgres_container_before="$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)"
-redis_container_before="$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)"
-test -n "$postgres_container_before"
-test -n "$redis_container_before"
-docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select 1;" >/dev/null'
-docker network connect --alias postgres middleware_public middleware-postgres-1 2>/dev/null || true
-while IFS="=" read -r key value; do case "$key" in ""|\#*) continue ;; *[!A-Za-z0-9_]*) continue ;; esac; export "$key=$value"; done < .env.production
-encoded_database_url="$(docker compose --env-file .env.production -f compose.production.yml config --format json | python3 -c 'from urllib.parse import quote; import json,sys; cfg=json.load(sys.stdin); env=cfg["services"]["postgres"]["environment"]; print("postgresql://{}:{}@postgres:5432/{}?sslmode=disable".format(quote(env["POSTGRES_USER"], safe=""), quote(env["POSTGRES_PASSWORD"], safe=""), quote(env["POSTGRES_DB"], safe="")))')"
-docker build --network middleware_public --target builder --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-migrate app
-docker build --network middleware_public --target runner --build-arg BUILD_DATABASE_URL="$DATABASE_URL" --build-arg BUILD_REDIS_URL="$REDIS_URL" --build-arg BUILD_BETTER_AUTH_URL="$BETTER_AUTH_URL" --build-arg BUILD_NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" -t middleware-app app
-docker network disconnect middleware_public middleware-postgres-1 2>/dev/null || true
-docker run --rm --network middleware_internal -e DATABASE_URL="$encoded_database_url" -e POSTGRES_URL="$encoded_database_url" -e PRISMA_DATABASE_URL="$encoded_database_url" middleware-migrate pnpm prisma:migrate:deploy
-test "$(docker compose --env-file .env.production -f compose.production.yml ps -q postgres)" = "$postgres_container_before"
-test "$(docker compose --env-file .env.production -f compose.production.yml ps -q redis)" = "$redis_container_before"
+SSH_HOST=62.238.105.217 scripts/production-deploy-manual.sh --dry-run
+SSH_HOST=62.238.105.217 scripts/production-deploy-manual.sh --execute
 ```
+
+Non sostituire questi comandi con `docker build --build-arg` contenenti URL o credenziali. Lo script crea file temporanei con permessi `0600`, passa l'ambiente di build al target `runner` tramite `docker buildx build --secret id=build_env,...` e rimuove i file al termine.
 
 Durante `next build` il DB deve essere raggiungibile e la rete di build deve avere egress internet per `next/font`. Se il build logga `P1001`, `Can't reach database server` o genera solo `empty-static-param`, fermarsi: l'artifact puo contenere pagine pubbliche prerenderizzate come 404.
 
@@ -523,12 +543,12 @@ Note:
 
 ## Smoke Test
 
-HTTP/IP temporaneo:
+Verifica diretta VPS, senza dipendere dal resolver locale:
 
 ```bash
-curl -I http://46.224.209.184/
-curl -I http://46.224.209.184/cms/login
-curl -I http://46.224.209.184/cms/media
+curl --resolve middleware.media:443:62.238.105.217 -I https://middleware.media/
+curl --resolve middleware.media:443:62.238.105.217 -I https://middleware.media/cms/login
+curl --resolve stats.middleware.media:443:62.238.105.217 -I https://stats.middleware.media/
 ```
 
 HTTPS/dominio:
@@ -560,26 +580,16 @@ docker compose --env-file .env.production -f compose.production.yml exec -T app 
 docker compose --env-file .env.production -f compose.production.yml exec -T app node -e "fetch('https://fsn1.your-objectstorage.com',{method:'HEAD'}).then(r=>console.log(r.status)).catch(e=>{console.error(e); process.exit(1);})"
 ```
 
-## Stato Temporaneo IP
+## Stato Production
 
-Finche il dominio non punta alla VPS, la production usa configurazione temporanea per smoke via IP:
-
-- `BETTER_AUTH_URL=http://46.224.209.184`
-- `NEXT_PUBLIC_SITE_URL=http://46.224.209.184`
-- `SITE_URL=http://46.224.209.184`
-- Caddy HTTP-only su `http://46.224.209.184`
-
-Quando DNS e HTTPS sono pronti, ripristinare i file `*.domain-ready` e riportare gli URL a `https://middleware.media`. La checklist go-live vive in `docs/migration.md`.
-
-## Go-Live Rapido
-
-1. Creare dump DB pre-switch.
-2. Puntare `middleware.media` e `www.middleware.media` a `46.224.209.184`.
-3. Ripristinare `/opt/middleware/Caddyfile.domain-ready` su `/opt/middleware/Caddyfile`.
-4. Ripristinare `/opt/middleware/compose.production.yml.domain-ready` su `/opt/middleware/compose.production.yml`.
-5. Aggiornare `.env.production` con URL canonici `https://middleware.media`.
-6. Validare compose e ricreare `app`/`caddy` con `--no-deps`.
-7. Verificare HTTPS, login CMS, cookie auth, `/cms/media`, upload media e pagine pubbliche.
+- URL canonico: `https://middleware.media`.
+- Analytics: `https://stats.middleware.media`.
+- Record A root e `stats`: `62.238.105.217`, TTL `60`.
+- `www` resta alias di `middleware.media`; nessun record `AAAA` production.
+- PTR IPv4: `62.238.105.217 -> middleware.media`.
+- La CX43 precedente e stata eliminata il `2026-08-05`; il recovery host resta
+  possibile dallo snapshot protetto `416553849` e dai dump off-host descritti in
+  `docs/migration.md`.
 
 ## Troubleshooting Rapido
 

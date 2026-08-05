@@ -121,6 +121,8 @@ set -euo pipefail
 tag="$1"
 cd /opt/middleware
 
+docker buildx version >/dev/null
+
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p backups
 backup_file="backups/postgres-predeploy-${tag}-${stamp}.dump"

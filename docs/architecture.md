@@ -189,6 +189,8 @@ export function EditorialSection({ title, description }: EditorialSectionProps) 
 ## Auth And Roles
 
 - Better Auth is the source of truth for sessions.
+- Public email/password signup is disabled. Users are created only through the
+  ADMIN-restricted user-management flow; email/password login remains enabled.
 - `lib/server/auth/session.ts` resolves the request session once at the backend boundary.
 - `lib/cms/auth.ts` wraps CMS session access with `react.cache` for request-local reuse in server components.
 - Authorization is defense-in-depth:
@@ -210,14 +212,21 @@ Current role matrix:
 Upload flow:
 
 1. The client calls `POST /api/cms/media/upload`.
-2. The route checks session and role, validates file name/path, restricts kinds, and sets max size.
-3. The app uploads the file server-side to private S3-compatible object storage.
+2. The route applies Redis-backed rate limiting and requires an exact same-origin
+   request before reading the authenticated session.
+3. The route checks role, file name/path, size, extension, declared MIME type and
+   binary signature before accepting the upload.
+4. The app uploads the file server-side to private S3-compatible object storage.
 
 Read/download flow:
 
 1. CMS UI resolves preview/download URLs through `/api/cms/media/blob?pathname=...`.
 2. `app/api/cms/media/blob/route.ts` checks session and role before reading any blob.
 3. The route fetches the private object and streams it back with `cache-control: private, no-store, max-age=0`.
+
+Public media reads use Redis-backed public-read limits and require an exact
+canonical pathname reference in a published article, lesson, or page. Substring
+matches must never authorize a private object.
 
 Editorial image semantics:
 
@@ -232,6 +241,8 @@ Editorial image semantics:
 - tRPC is the only application API surface.
 - Redis-backed rate limiting is required in production.
 - If Redis is missing or unavailable in production, rate-limited CMS writes fail closed.
+- CMS media uploads and public media reads are included in the production
+  fail-closed rate-limit surface.
 - Local development and tests may fall back to in-memory rate-limit counters.
 - Resource deletion is hard delete.
 - `Article.slug` is globally unique and normalized before persistence to support canonical `/articoli/:slug` URLs.

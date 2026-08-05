@@ -1,5 +1,7 @@
 import { parseMediaPathname } from "@/lib/media/blob";
+import { ApiError } from "@/lib/server/http/api-error";
 import { parseByteRangeHeader } from "@/lib/server/http/byte-range";
+import { enforceRateLimit, rateLimitPolicies } from "@/lib/server/http/rate-limit";
 import { getRequestId, getRequestPath } from "@/lib/server/http/request";
 import { publicMediaService } from "@/lib/server/modules/media/service/public";
 import { logServerEvent } from "@/lib/server/observability/log";
@@ -24,20 +26,21 @@ function buildUnsatisfiableRangeResponse(size: number) {
 }
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const pathname = url.searchParams.get("pathname")?.trim();
-
-  if (!pathname) {
-    return new Response("Missing pathname", { status: 400 });
-  }
-
-  const canServe = await publicMediaService.canServePublishedMedia(pathname);
-
-  if (!canServe) {
-    return new Response("Not found", { status: 404 });
-  }
+  const pathname = new URL(request.url).searchParams.get("pathname")?.trim();
 
   try {
+    await enforceRateLimit(request, rateLimitPolicies.publicRead);
+
+    if (!pathname) {
+      return new Response("Missing pathname", { status: 400 });
+    }
+
+    const canServe = await publicMediaService.canServePublishedMedia(pathname);
+
+    if (!canServe) {
+      return new Response("Not found", { status: 404 });
+    }
+
     const metadata = await mediaStorage.head(pathname);
 
     if (
@@ -75,6 +78,10 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof ApiError) {
+      return new Response(error.message, { status: error.status });
+    }
+
     if (error instanceof StorageNotFoundError || error instanceof StorageAccessError) {
       return new Response("Not found", { status: 404 });
     }

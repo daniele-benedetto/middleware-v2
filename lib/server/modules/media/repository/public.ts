@@ -25,20 +25,46 @@ const PUBLIC_LESSON_MEDIA_WHERE = {
   course: PUBLIC_COURSE_WHERE,
 } as const satisfies Prisma.LessonWhereInput;
 
-function getPathnameSearchCandidates(pathname: string) {
-  return [...new Set([pathname, encodeURIComponent(pathname)])];
+const MEDIA_BLOB_ROUTES = ["/api/cms/media/blob", "/api/public/media/blob"] as const;
+const MEDIA_URL_ORIGINS = [
+  "https://middleware.media",
+  "https://www.middleware.media",
+  "http://localhost:3000",
+] as const;
+
+function getCanonicalMediaReferences(pathname: string) {
+  const encodedPathnames = [
+    encodeURIComponent(pathname),
+    new URLSearchParams({ pathname }).toString().slice("pathname=".length),
+  ];
+
+  const routeReferences = MEDIA_BLOB_ROUTES.flatMap((route) =>
+    [pathname, ...encodedPathnames].flatMap((candidate) => [
+      `${route}?pathname=${candidate}`,
+      `${route}?pathname=${candidate}&download=1`,
+    ]),
+  );
+
+  return [
+    ...new Set([
+      pathname,
+      `/${pathname}`,
+      ...encodedPathnames,
+      ...routeReferences,
+      ...MEDIA_URL_ORIGINS.flatMap((origin) =>
+        routeReferences.map((reference) => `${origin}${reference}`),
+      ),
+    ]),
+  ];
 }
 
 export const publicMediaRepository = {
   async hasPublishedArticleMedia(pathname: string) {
-    const candidates = getPathnameSearchCandidates(pathname);
+    const references = getCanonicalMediaReferences(pathname);
     const article = await prisma.article.findFirst({
       where: {
         ...PUBLIC_ARTICLE_MEDIA_WHERE,
-        OR: candidates.flatMap((candidate) => [
-          { imageUrl: { contains: candidate } },
-          { audioUrl: { contains: candidate } },
-        ]),
+        OR: [{ imageUrl: { in: references } }, { audioUrl: { in: references } }],
       },
       select: { id: true },
     });
@@ -48,8 +74,8 @@ export const publicMediaRepository = {
     }
 
     const richTextResults = await Promise.all(
-      candidates.map(
-        (candidate) =>
+      references.map(
+        (reference) =>
           prisma.$queryRaw<Array<{ id: string }>>`
           SELECT a."id"
           FROM "articles" a
@@ -58,7 +84,18 @@ export const publicMediaRepository = {
             AND a."publishedAt" IS NOT NULL
             AND i."isActive" = true
             AND i."publishedAt" IS NOT NULL
-            AND a."contentRich"::text LIKE ${`%${candidate}%`}
+            AND (
+              jsonb_path_exists(
+                a."contentRich",
+                'lax $.**.attrs.src ? (@ == $reference)',
+                jsonb_build_object('reference', to_jsonb(${reference}::text))
+              )
+              OR jsonb_path_exists(
+                a."contentRich",
+                'lax $.**.attrs.href ? (@ == $reference)',
+                jsonb_build_object('reference', to_jsonb(${reference}::text))
+              )
+            )
           LIMIT 1
         `,
       ),
@@ -67,14 +104,11 @@ export const publicMediaRepository = {
     return richTextResults.some((rows) => rows.length > 0);
   },
   async hasPublishedLessonMedia(pathname: string) {
-    const candidates = getPathnameSearchCandidates(pathname);
+    const references = getCanonicalMediaReferences(pathname);
     const lesson = await prisma.lesson.findFirst({
       where: {
         ...PUBLIC_LESSON_MEDIA_WHERE,
-        OR: candidates.flatMap((candidate) => [
-          { imageUrl: { contains: candidate } },
-          { audioUrl: { contains: candidate } },
-        ]),
+        OR: [{ imageUrl: { in: references } }, { audioUrl: { in: references } }],
       },
       select: { id: true },
     });
@@ -84,8 +118,8 @@ export const publicMediaRepository = {
     }
 
     const richTextResults = await Promise.all(
-      candidates.map(
-        (candidate) =>
+      references.map(
+        (reference) =>
           prisma.$queryRaw<Array<{ id: string }>>`
           SELECT l."id"
           FROM "lessons" l
@@ -94,7 +128,18 @@ export const publicMediaRepository = {
             AND l."publishedAt" IS NOT NULL
             AND c."isActive" = true
             AND c."publishedAt" IS NOT NULL
-            AND l."contentRich"::text LIKE ${`%${candidate}%`}
+            AND (
+              jsonb_path_exists(
+                l."contentRich",
+                'lax $.**.attrs.src ? (@ == $reference)',
+                jsonb_build_object('reference', to_jsonb(${reference}::text))
+              )
+              OR jsonb_path_exists(
+                l."contentRich",
+                'lax $.**.attrs.href ? (@ == $reference)',
+                jsonb_build_object('reference', to_jsonb(${reference}::text))
+              )
+            )
           LIMIT 1
         `,
       ),
@@ -103,16 +148,27 @@ export const publicMediaRepository = {
     return richTextResults.some((rows) => rows.length > 0);
   },
   async hasPublishedPageImage(pathname: string) {
-    const candidates = getPathnameSearchCandidates(pathname);
+    const references = getCanonicalMediaReferences(pathname);
     const results = await Promise.all(
-      candidates.map(
-        (candidate) =>
+      references.map(
+        (reference) =>
           prisma.$queryRaw<Array<{ id: string }>>`
           SELECT "id"
           FROM "pages"
           WHERE "status" = 'PUBLISHED'
             AND "publishedAt" IS NOT NULL
-            AND "contentRich"::text LIKE ${`%${candidate}%`}
+            AND (
+              jsonb_path_exists(
+                "contentRich",
+                'lax $.**.attrs.src ? (@ == $reference)',
+                jsonb_build_object('reference', to_jsonb(${reference}::text))
+              )
+              OR jsonb_path_exists(
+                "contentRich",
+                'lax $.**.attrs.href ? (@ == $reference)',
+                jsonb_build_object('reference', to_jsonb(${reference}::text))
+              )
+            )
           LIMIT 1
         `,
       ),

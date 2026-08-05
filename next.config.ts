@@ -25,7 +25,7 @@ const contentSecurityPolicy = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${analyticsOrigins}`,
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"} ${analyticsOrigins}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
@@ -145,6 +145,7 @@ const legacyV1Redirects = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  poweredByHeader: false,
   cacheComponents: true,
   experimental: {
     authInterrupts: true,

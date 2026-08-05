@@ -5,18 +5,20 @@ import {
   buildMediaPathname,
   cmsMediaDefaultKinds,
   cmsMediaUploadMaxSizeInBytes,
-  getCmsMediaAllowedContentTypes,
   inferMediaKind,
   parseMediaPathname,
-  resolveCmsMediaContentTypeFromExtension,
   sanitizeMediaBaseName,
 } from "@/lib/media/blob";
 import { getAuthSession } from "@/lib/server/auth/session";
+import { ApiError } from "@/lib/server/http/api-error";
+import { enforceSameOrigin } from "@/lib/server/http/origin";
+import { enforceRateLimit, rateLimitPolicies } from "@/lib/server/http/rate-limit";
 import { getRequestId, getRequestPath } from "@/lib/server/http/request";
 import { mediaPolicy } from "@/lib/server/modules/media";
 import { logServerEvent } from "@/lib/server/observability/log";
 import { StorageConflictError } from "@/lib/server/storage/errors";
 import { mediaStorage } from "@/lib/server/storage/media-storage";
+import { validateMediaFile } from "@/lib/server/validation/media-file";
 
 import type { CmsSupportedMediaKind } from "@/lib/media/blob";
 
@@ -79,10 +81,24 @@ export async function POST(request: Request): Promise<NextResponse> {
   const text = i18n.cms.lists.media;
 
   try {
+    await enforceRateLimit(request, rateLimitPolicies.mediaUpload);
+    enforceSameOrigin(request);
+
     const session = await getAuthSession(request);
 
     if (!session || !mediaPolicy.allowedRoles.includes(session.user.role)) {
       throw new Error(text.uploadUnauthorized);
+    }
+
+    const contentLength = Number(request.headers.get("content-length"));
+
+    if (
+      Number.isFinite(contentLength) &&
+      contentLength > cmsMediaUploadMaxSizeInBytes + 1024 * 1024
+    ) {
+      throw new Error(
+        text.uploadSizeHint(Math.round(cmsMediaUploadMaxSizeInBytes / (1024 * 1024))),
+      );
     }
 
     const formData = await request.formData();
@@ -102,26 +118,18 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const allowedKinds = resolveAllowedKinds(formData.get("kinds"));
-    const contentType = file.type || resolveCmsMediaContentTypeFromExtension(pathname);
+    const body = new Uint8Array(await file.arrayBuffer());
+    const contentType = validateMediaFile({
+      pathname,
+      declaredContentType: file.type || null,
+      body,
+    });
     const mediaKind = inferMediaKind(pathname, contentType);
 
     if (!contentType || mediaKind === "other" || !allowedKinds.includes(mediaKind)) {
       throw new Error(text.uploadTypeUnsupported);
     }
 
-    const allowedContentTypes = getCmsMediaAllowedContentTypes(allowedKinds);
-
-    if (
-      !allowedContentTypes.some((allowedContentType) =>
-        allowedContentType.endsWith("/*")
-          ? contentType.startsWith(allowedContentType.slice(0, -1))
-          : contentType === allowedContentType,
-      )
-    ) {
-      throw new Error(text.uploadTypeUnsupported);
-    }
-
-    const body = new Uint8Array(await file.arrayBuffer());
     const uploaded = await mediaStorage.put({
       pathname,
       body,
@@ -145,7 +153,14 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json(
       { error: error instanceof Error ? error.message : text.uploadFailed },
-      { status: error instanceof StorageConflictError ? 409 : 400 },
+      {
+        status:
+          error instanceof ApiError
+            ? error.status
+            : error instanceof StorageConflictError
+              ? 409
+              : 400,
+      },
     );
   }
 }
