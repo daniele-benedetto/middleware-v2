@@ -483,10 +483,20 @@ Divergenza aperta (rilevata 2026-08-10, non ancora risolta):
   successive sono fallite, quindi non c'e heartbeat esterno.
 - `bin/healthcheck.sh` fallisce su `test "$failed_units" = "0"`, quindi blocca
   anche il gate di `scripts/production-deploy-manual.sh`.
-- Remediation attesa, previa copia del file: disabilitare il drop-in orfano,
-  `daemon-reload`, `reset-failed` sulle due unit e riavvio manuale di
-  `middleware-backup.service` con verifica del nuovo dump. Se invece l'offsite
-  backup va ripristinato, va prima ricreato `secrets/backup-offsite.env`.
+- Mitigazione applicata il `2026-08-10T15:41Z` senza `sudo`: ricreato
+  `/opt/middleware/secrets/backup-offsite.env` come placeholder vuoto e commentato
+  (mode `600`, utente `deploy`), cosi systemd riesce a caricare l'EnvironmentFile.
+  `bin/backup-databases.sh` non referenzia piu alcuna variabile offsite, quindi il
+  file resta intenzionalmente vuoto e non riabilita l'offsite backup.
+- Backup verificato eseguendo `./bin/backup-databases.sh` come `deploy` (stesso
+  utente dell'unit): manifest `backup-20260810T154241Z.txt`, dump app e analytics
+  con sha256, exit 0.
+- Residuo da chiudere, richiede `sudo`: rimuovere il drop-in orfano
+  `middleware-backup.service.d/offsite.conf`, poi `daemon-reload` ed eliminare il
+  placeholder. Finche le due unit restano in stato `failed`, `bin/healthcheck.sh`
+  esce 1 e blocca il gate di `scripts/production-deploy-manual.sh`: serve
+  `systemctl reset-failed` oppure attendere il firing del timer, che a quel punto
+  va a buon fine da solo.
 
 Restore test locale non distruttivo:
 
