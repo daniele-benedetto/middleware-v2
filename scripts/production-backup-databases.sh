@@ -93,8 +93,6 @@ prune_oldest() {
 mv "$manifest_partial" "$manifest"
 trap - EXIT
 
-/opt/middleware/bin/backup-offsite.sh "$manifest"
-
 prune_log="${manifest_dir}/cleanup-${stamp}.txt"
 prune_oldest "${daily_dir}/app-postgres-*.dump" 70
 prune_oldest "${daily_dir}/umami-postgres-*.dump" 70

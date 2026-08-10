@@ -4,8 +4,6 @@ set -euo pipefail
 cd /opt/middleware
 
 latest_manifest="$(ls -1t backups/automated/manifests/backup-*.txt 2>/dev/null | head -n 1 || true)"
-offsite_marker="backups/automated/offsite/latest-ok"
-media_marker="backups/automated/media-replication/latest-ok"
 
 : "${HOST_HEARTBEAT_URL:?HOST_HEARTBEAT_URL is required}"
 
@@ -34,20 +32,6 @@ fi
 grep -q '^backup_finished=' "$latest_manifest"
 docker compose --env-file .env.production -f compose.production.yml exec -T postgres pg_restore --list < "$latest_backup" > /dev/null
 docker compose --env-file .env.production -f compose.production.yml exec -T umami-postgres pg_restore --list < "$latest_umami" > /dev/null
-test -s "$offsite_marker"
-grep -q "^backup_stamp=${stamp}$" "$offsite_marker"
-expected_manifest_sha="$(sha256sum "$latest_manifest" | cut -d ' ' -f 1)"
-grep -q "^manifest_sha256=${expected_manifest_sha}$" "$offsite_marker"
-if [ $(( $(date +%s) - $(stat -c %Y "$offsite_marker") )) -gt 20700 ]; then
-  printf 'offsite_backup=stale path=%s\n' "$offsite_marker"
-  exit 1
-fi
-
-test -s "$media_marker"
-if [ $(( $(date +%s) - $(stat -c %Y "$media_marker") )) -gt 46800 ]; then
-  printf 'media_replication=stale path=%s\n' "$media_marker"
-  exit 1
-fi
 
 disk_percent="$(df --output=pcent / | tail -n 1 | tr -dc '0-9')"
 inode_percent="$(df --output=ipcent / | tail -n 1 | tr -dc '0-9')"
@@ -76,4 +60,4 @@ done < <(docker compose --env-file .env.production -f compose.production.yml ps 
 
 curl --fail --silent --show-error --max-time 10 --retry 2 "$HOST_HEARTBEAT_URL" > /dev/null
 
-printf 'latest_backup=ok app=%s umami=%s offsite=%s media=%s\n' "$latest_backup" "$latest_umami" "$offsite_marker" "$media_marker"
+printf 'latest_backup=ok app=%s umami=%s\n' "$latest_backup" "$latest_umami"

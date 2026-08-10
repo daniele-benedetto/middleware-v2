@@ -9,6 +9,18 @@ describe("enforceSameOrigin", () => {
     expect(() => enforceSameOrigin(request)).not.toThrow();
   });
 
+  it("accepts the public origin forwarded by a trusted reverse proxy", () => {
+    const request = new Request("https://0.0.0.0:3000/api/upload", {
+      headers: {
+        origin: "https://middleware.media",
+        "x-forwarded-host": "middleware.media",
+        "x-forwarded-proto": "https",
+      },
+    });
+
+    expect(() => enforceSameOrigin(request)).not.toThrow();
+  });
+
   it.each([
     ["missing", undefined],
     ["cross-origin", "https://attacker.example"],

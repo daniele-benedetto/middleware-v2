@@ -468,9 +468,6 @@ Backup automatici locali zero-cost:
 - Ogni coppia e scritta prima come `.partial`, validata con `pg_restore --list` e rinominata atomicamente.
 - Il job usa `flock`, controlla spazio libero e non esegue prune se il backup fallisce.
 - Retention attuale: 70 generazioni per DB, 8 weekly per DB, 90 manifest.
-- Backup cifrato off-host: `/opt/middleware/bin/backup-offsite.sh`, sorgente repo
-  `scripts/production-backup-offsite.sh`; viene eseguito prima del prune e crea
-  `backups/automated/offsite/latest-ok` legato allo stesso manifest.
 
 Restore test locale non distruttivo:
 
@@ -479,7 +476,7 @@ Restore test locale non distruttivo:
 - Timer: `middleware-restore-test.timer`, mensile.
 - Crea DB temporanei `middleware_restore_test_<timestamp>` e li elimina a fine test.
 - Manifest: `/opt/middleware/backups/automated/restore-tests`.
-- Non sostituisce un restore offsite: verifica solo che l'ultimo dump locale sia leggibile e ripristinabile sulla VPS.
+- Non sostituisce un restore completo: verifica solo che l'ultimo dump locale sia leggibile e ripristinabile sulla VPS.
 
 Healthcheck automatico locale:
 
@@ -491,13 +488,6 @@ Healthcheck automatico locale:
 - I log restano locali in `journalctl`; senza servizi esterni non c'e alert se la VPS e down.
 - Il timer invia un heartbeat esterno solo dopo tutti i controlli; 30 minuti senza
   heartbeat devono generare alert.
-
-Replica media DR:
-
-- Script VPS: `/opt/middleware/bin/replicate-media.sh`.
-- Sorgente repo: `scripts/production-replicate-media.sh`.
-- Timer: `middleware-media-replication.timer`, alle `02:30` e `14:30 UTC`.
-- Usa `rclone copy` senza propagare cancellazioni e verifica source -> DR con checksum.
 
 Dump manuale on-demand:
 

@@ -13,8 +13,8 @@ PRODUCTION_SERVER_ID=158983478
 VERCEL_TEAM_ID=team_1nBYQGF51ql1riyCnEmrLPM5
 ROOT_A_RECORD_ID=rec_4794e9f34340c664b7a94273
 STATS_A_RECORD_ID=rec_df300537cb3e902c6abff23c
-APP_IMAGE=middleware-app:manual-0f90287-dirty-20260805T110924Z
-MIGRATE_IMAGE=middleware-migrate:manual-0f90287-dirty-20260805T110924Z
+APP_IMAGE=middleware-app:manual-0f90287-dirty-20260805T125612Z
+MIGRATE_IMAGE=middleware-migrate:manual-0f90287-dirty-20260805T125612Z
 ```
 
 - CX33 serve root, `www` e `stats`; app e database sono i soli writer.
@@ -22,7 +22,7 @@ MIGRATE_IMAGE=middleware-migrate:manual-0f90287-dirty-20260805T110924Z
 - Nessun record `AAAA` production.
 - PTR IPv4 configurato su `middleware.media`.
 - Workflow GitHub `Deploy Production` disabilitato.
-- Timer backup, restore test, replica media e healthcheck attivi.
+- Timer backup, restore test e healthcheck attivi.
 - Timer temporaneo `middleware-migration-observe` disabilitato.
 
 Credenziali temporanee e recovery key restano fuori dal repository:
@@ -65,9 +65,8 @@ umami_sessions=361
 umami_events=1588
 ```
 
-- Backup locale e cifrato off-host post-restore riuscito.
+- Backup locale post-restore riuscito.
 - Restore test non distruttivo riuscito.
-- Replica media: 27 oggetti, zero differenze.
 - Ultimo backup off-host pre-dismissione: `2026-08-05 10:20 UTC`.
 - Healthcheck completo riuscito, inclusi DB, Redis, S3 e heartbeat.
 - Smoke pubblico e autenticato confermato dal proprietario.
@@ -108,8 +107,8 @@ In caso di perdita della CX33:
 3. Creare una VPS da snapshot CX33 `416531198`; usare lo snapshot CX43
    `416553849` solo come recovery secondario durante la retention.
 4. Assegnare Primary IP protette e applicare firewall/hardening correnti.
-5. Ripristinare i dump app e Umami piu recenti dal bucket DR off-host.
-6. Verificare i 27 oggetti media nel bucket DR e configurare gli endpoint S3.
+5. Ripristinare i dump app e Umami piu recenti dal backup locale disponibile.
+6. Configurare l'endpoint S3 del bucket media primario.
 7. Validare internamente app, Umami, DB, Redis, backup e heartbeat.
 8. Aggiornare root e `stats` usando gli ID record correnti e
    `PATCH /v1/domains/records/{recordId}`.
@@ -121,7 +120,7 @@ In caso di perdita della CX33:
 
 - [ ] Osservare CX33 per almeno 7 giorni dal `2026-08-05 10:11 UTC`.
 - [ ] Verificare ogni giorno healthcheck, heartbeat, backup e log applicativi.
-- [ ] Verificare il prossimo restore test e la prossima replica media schedulata.
+- [ ] Verificare il prossimo restore test schedulato.
 - [ ] Ruotare token Hetzner e Vercel.
 - [ ] Ruotare access key S3 dopo verifica della nuova chiave.
 - [ ] Eliminare lo snapshot CX43 `416553849` dopo il `2026-09-04`.
