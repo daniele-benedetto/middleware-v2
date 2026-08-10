@@ -23,7 +23,10 @@ const lesson = {
   courseSlug: "operaismo-politico-italiano",
   courseTitle: "Operaismo politico italiano",
   excerptRich: null,
-  contentRich: { type: "doc", content: [] },
+  contentRich: {
+    type: "doc",
+    content: [{ type: "paragraph", content: [{ type: "text", text: "Una lezione di prova." }] }],
+  },
   audioUrl: null,
   audioChunks: null,
 } satisfies PublicLessonDetailDto;
@@ -66,6 +69,7 @@ describe("lesson json-ld", () => {
       inLanguage: "it-IT",
       isAccessibleForFree: true,
       timeRequired: "PT12M",
+      wordCount: 4,
       position: 2,
       isPartOf: {
         "@type": "CreativeWorkSeries",

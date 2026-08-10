@@ -217,7 +217,6 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
   return {
     title,
     description,
-    keywords: getDefaultKeywords(),
     alternates: {
       canonical,
     },
@@ -268,7 +267,6 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
   return {
     title: input.title,
     description,
-    keywords: getDefaultKeywords(),
     alternates: {
       canonical,
     },
@@ -311,7 +309,6 @@ export function buildLessonMetadata(input: LessonMetadataInput): Metadata {
   return {
     title: input.title,
     description,
-    keywords: getDefaultKeywords(),
     alternates: {
       canonical,
     },

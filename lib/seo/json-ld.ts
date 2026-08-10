@@ -1,5 +1,6 @@
 import { getIssuePlainDescription } from "@/components/public/home/home-view-model";
 import { getCoursePlainDescription } from "@/components/public/sections/formazione/course-archive-view-model";
+import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { seoConfig } from "@/lib/seo/config";
 import { getCanonicalUrl, getOpenGraphImageUrl } from "@/lib/seo/metadata";
 import { toOptimizedImageUrl } from "@/lib/seo/social-image";
@@ -20,6 +21,16 @@ type BreadcrumbItem = {
 
 function getRootUrl() {
   return getCanonicalUrl("/");
+}
+
+function countWords(contentRich: unknown): number | undefined {
+  const text = extractPlainText(contentRich);
+
+  if (!text) {
+    return undefined;
+  }
+
+  return text.split(/\s+/).filter(Boolean).length;
 }
 
 export function buildWebsiteJsonLd() {
@@ -106,6 +117,7 @@ export function buildArticleJsonLd(article: PublicArticleDetailDto, description?
     inLanguage: seoConfig.language,
     isAccessibleForFree: true,
     timeRequired: `PT${article.readingTimeMinutes}M`,
+    wordCount: countWords(article.contentRich),
     isPartOf: {
       "@type": "PublicationIssue",
       name: article.issueTitle,
@@ -345,6 +357,7 @@ export function buildLessonJsonLd(lesson: PublicLessonDetailDto, description?: s
     isAccessibleForFree: true,
     learningResourceType: "Lezione",
     timeRequired: `PT${lesson.readingTimeMinutes}M`,
+    wordCount: countWords(lesson.contentRich),
     position: lesson.sortOrder,
     isPartOf: {
       "@type": "CreativeWorkSeries",
