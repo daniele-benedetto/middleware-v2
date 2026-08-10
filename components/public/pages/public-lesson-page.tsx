@@ -177,7 +177,7 @@ export function PublicLessonPage({
               alt={editorialImageAlt(lesson.imageAlt)}
               width={1600}
               height={900}
-              sizes="100vw"
+              sizes="(min-width: 1600px) 1600px, 100vw"
               preload
               className="mx-auto aspect-video w-full max-w-400 object-cover grayscale"
             />

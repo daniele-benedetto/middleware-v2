@@ -95,6 +95,17 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Image Optimization needs sharp at runtime. Next's file tracing copies the
+# sharp JS wrapper and the .node addon, but not the libvips shared objects from
+# @img/sharp-libvips-linux-x64: they are dlopen'd, so static tracing cannot see
+# them and the optimizer fails with
+# `ERR_DLOPEN_FAILED: libvips-cpp.so cannot open shared object file`,
+# silently serving unoptimized originals. Reinstalling sharp here with npm gives
+# a flat, self-contained tree that includes the shared objects.
+RUN npm install --no-save --include=optional --os=linux --cpu=x64 sharp@0.35.0 \
+  && node -e 'require("sharp")' \
+  && chown -R nextjs:nodejs /app/node_modules/sharp /app/node_modules/@img
+
 USER nextjs
 
 EXPOSE 3000
