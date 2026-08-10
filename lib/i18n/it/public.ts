@@ -99,6 +99,27 @@ export const publicIt = {
         "Quando un nodo di lavoro sarà pronto per essere restituito, comparirà qui come numero del magazine.",
     },
   },
+  articlesArchive: {
+    metadata: {
+      title: "Articoli",
+      description:
+        "Tutti gli articoli pubblicati da Middleware: inchieste, interviste e contributi su territorio, conflitto sociale e trasformazioni urbane.",
+    },
+    hero: {
+      title: "Tutti gli [[articoli]]",
+      description:
+        "L'elenco completo degli articoli pubblicati, in ordine dal più recente. Ogni pezzo nasce dentro un numero del magazine, ma resta leggibile anche da solo come tassello di un'inchiesta più larga.",
+      totalLabel: (count: number) =>
+        `${count} ${count === 1 ? "articolo pubblicato" : "articoli pubblicati"}`,
+    },
+    empty: {
+      code: "00",
+      kicker: "Articoli",
+      title: "Nessun articolo ancora pubblicato",
+      description:
+        "Quando il primo numero verrà pubblicato, i suoi articoli compariranno qui in elenco.",
+    },
+  },
   issuePage: {
     empty: {
       code: "404",

@@ -13,7 +13,7 @@ Questo file aiuta agenti e modelli linguistici a trovare le principali sezioni p
 
 ## Contenuti editoriali
 
-- [Articoli](/articoli): Articoli pubblicati, disponibili tramite URL canonici `/articoli/:slug`.
+- [Articoli](/articoli): Elenco completo degli articoli pubblicati, disponibili tramite URL canonici `/articoli/:slug`.
 - [Uscite](/uscite): Numeri del magazine, disponibili tramite URL canonici `/uscite/:slug`.
 - [Lezioni](/contro-formazione): Lezioni dei corsi, disponibili tramite URL canonici `/contro-formazione/:courseSlug/:lessonSlug`.
 
@@ -21,6 +21,7 @@ Questo file aiuta agenti e modelli linguistici a trovare le principali sezioni p
 
 - [Sitemap](/sitemap.xml): Indice aggiornato delle URL pubbliche indicizzabili.
 - [Robots](/robots.txt): Regole di accesso per crawler e bot.
+- [Feed RSS](/feed.xml): Articoli pubblicati in ordine cronologico inverso.
 
 ## Optional
 

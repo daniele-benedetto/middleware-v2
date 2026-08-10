@@ -10,6 +10,7 @@ import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
+import { buildLessonPageJsonLd } from "@/lib/seo";
 
 import type { PublicCourseLessonSummaryDto } from "@/lib/server/modules/courses/dto/public";
 import type { PublicLessonDetailDto } from "@/lib/server/modules/lessons/dto/public";
@@ -19,6 +20,7 @@ type PublicLessonPageProps = {
   lesson: PublicLessonDetailDto;
   lessonNumber: number | null;
   otherLessons: PublicCourseLessonSummaryDto[];
+  description?: string | null;
 };
 
 function formatLessonDate(value: string) {
@@ -135,13 +137,24 @@ function OtherLessonsSection({
   );
 }
 
-export function PublicLessonPage({ lesson, lessonNumber, otherLessons }: PublicLessonPageProps) {
+export function PublicLessonPage({
+  lesson,
+  lessonNumber,
+  otherLessons,
+  description,
+}: PublicLessonPageProps) {
   return (
     <main
       id="main-content"
       tabIndex={-1}
       className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(buildLessonPageJsonLd(lesson, description)),
+        }}
+      />
       <article>
         <PublicPageHero
           as="header"

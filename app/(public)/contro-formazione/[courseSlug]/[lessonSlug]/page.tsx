@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { PublicLessonPage } from "@/components/public/pages";
 import { i18n } from "@/lib/i18n";
 import { getPublicLessonPageData } from "@/lib/public/server/course-page";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildLessonMetadata, buildPageMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
@@ -24,19 +24,21 @@ export async function generateMetadata({ params }: PublicLessonRouteProps): Prom
     });
   }
 
-  return buildPageMetadata({
+  return buildLessonMetadata({
     title: lesson.title,
     description,
-    path: `/contro-formazione/${lesson.courseSlug}/${lesson.slug}`,
-    openGraphImage: lesson.imageUrl ?? undefined,
-    socialImageSection: "incontro",
-    socialImageTheme: "black",
+    courseSlug: lesson.courseSlug,
+    slug: lesson.slug,
+    publishedAt: lesson.publishedAt,
+    updatedAt: lesson.updatedAt,
+    imageUrl: lesson.imageUrl,
+    imageAlt: lesson.imageAlt,
   });
 }
 
 async function PublicLessonRouteContent({ params }: PublicLessonRouteProps) {
   const { courseSlug, lessonSlug } = await params;
-  const { lesson, lessonNumber, otherLessons } = await getPublicLessonPageData(
+  const { lesson, lessonNumber, otherLessons, description } = await getPublicLessonPageData(
     courseSlug,
     lessonSlug,
   );
@@ -46,7 +48,12 @@ async function PublicLessonRouteContent({ params }: PublicLessonRouteProps) {
   }
 
   return (
-    <PublicLessonPage lesson={lesson} lessonNumber={lessonNumber} otherLessons={otherLessons} />
+    <PublicLessonPage
+      lesson={lesson}
+      lessonNumber={lessonNumber}
+      otherLessons={otherLessons}
+      description={description}
+    />
   );
 }
 

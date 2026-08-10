@@ -1,4 +1,10 @@
 import { seoConfig } from "@/lib/seo/config";
+import {
+  buildEditorialSocialImage,
+  buildGeneratedSocialImage,
+  toOptimizedImageUrl,
+  type SocialImage,
+} from "@/lib/seo/social-image";
 import { resolveAbsoluteUrl, toIsoDate } from "@/lib/seo/url";
 
 import type { Metadata } from "next";
@@ -25,6 +31,17 @@ type ArticleMetadataInput = {
   updatedAt?: string | Date | null;
   imageUrl?: string | null;
   authorName?: string | null;
+};
+
+type LessonMetadataInput = {
+  title: string;
+  description?: string | null;
+  courseSlug: string;
+  slug: string;
+  publishedAt?: string | Date | null;
+  updatedAt?: string | Date | null;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
 };
 
 type ArticleListenMetadataInput = {
@@ -94,6 +111,23 @@ export function getGeneratedSocialImageUrl(
   return resolveAbsoluteUrl(`/api/og?${params.toString()}`);
 }
 
+function resolveSocialImage(input: {
+  editorialImageUrl?: string | null;
+  alt: string;
+  fallback: {
+    title?: string | null;
+    description?: string | null;
+    section?: string | null;
+    theme?: SocialImageTheme | null;
+  };
+}): SocialImage {
+  if (input.editorialImageUrl) {
+    return buildEditorialSocialImage(input.editorialImageUrl, input.alt);
+  }
+
+  return buildGeneratedSocialImage(getGeneratedSocialImageUrl(input.fallback), input.alt);
+}
+
 export function buildRootMetadata(): Metadata {
   const canonical = getCanonicalUrl("/");
   const defaultOgImage = getOpenGraphImageUrl();
@@ -114,6 +148,11 @@ export function buildRootMetadata(): Metadata {
     },
     alternates: {
       canonical,
+      types: {
+        "application/rss+xml": [
+          { url: resolveAbsoluteUrl("/feed.xml"), title: seoConfig.siteName },
+        ],
+      },
     },
     icons: {
       icon: [
@@ -163,14 +202,17 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
     socialImageTheme,
   } = input;
   const canonical = getCanonicalUrl(path);
-  const fallbackImage = getGeneratedSocialImageUrl({
-    title: title ?? seoConfig.defaultTitle,
-    description,
-    section: socialImageSection,
-    theme: socialImageTheme,
+  const socialImage = resolveSocialImage({
+    editorialImageUrl: openGraphImage,
+    alt: openGraphImageAlt ?? title ?? seoConfig.defaultTitle,
+    fallback: {
+      title: title ?? seoConfig.defaultTitle,
+      description,
+      section: socialImageSection,
+      theme: socialImageTheme,
+    },
   });
-  const resolvedImage = resolveAbsoluteUrl(openGraphImage || fallbackImage);
-  const resolvedTwitterImage = resolveAbsoluteUrl(twitterImage || openGraphImage || fallbackImage);
+  const resolvedTwitterImage = twitterImage ? toOptimizedImageUrl(twitterImage) : socialImage.url;
 
   return {
     title,
@@ -187,14 +229,7 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
       title: title ?? seoConfig.defaultTitle,
       description,
       url: canonical,
-      images: [
-        {
-          url: resolvedImage,
-          width: 1200,
-          height: 630,
-          alt: openGraphImageAlt ?? title ?? seoConfig.defaultTitle,
-        },
-      ],
+      images: [socialImage],
     },
     twitter: {
       card: "summary_large_image",
@@ -217,14 +252,16 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
   const path = `/articoli/${input.slug}`;
   const canonical = getCanonicalUrl(path);
   const description = input.description ?? seoConfig.defaultDescription;
-  const image = input.imageUrl
-    ? resolveAbsoluteUrl(input.imageUrl)
-    : getGeneratedSocialImageUrl({
-        title: input.title,
-        description,
-        section: "articolo",
-        theme: "cream",
-      });
+  const socialImage = resolveSocialImage({
+    editorialImageUrl: input.imageUrl,
+    alt: input.title,
+    fallback: {
+      title: input.title,
+      description,
+      section: "articolo",
+      theme: "cream",
+    },
+  });
   const publishedTime = toIsoDate(input.publishedAt);
   const modifiedTime = toIsoDate(input.updatedAt);
 
@@ -245,21 +282,56 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
       publishedTime,
       modifiedTime,
       authors: input.authorName ? [input.authorName] : undefined,
-      images: [
-        {
-          url: image,
-          width: 1200,
-          height: 630,
-          alt: input.title,
-        },
-      ],
+      images: [socialImage],
     },
     twitter: {
       card: "summary_large_image",
       title: input.title,
       description,
       creator: seoConfig.twitterHandle,
-      images: [image],
+      images: [socialImage.url],
+    },
+  };
+}
+
+export function buildLessonMetadata(input: LessonMetadataInput): Metadata {
+  const canonical = getCanonicalUrl(`/contro-formazione/${input.courseSlug}/${input.slug}`);
+  const description = input.description ?? seoConfig.defaultDescription;
+  const socialImage = resolveSocialImage({
+    editorialImageUrl: input.imageUrl,
+    alt: input.imageAlt || input.title,
+    fallback: {
+      title: input.title,
+      description,
+      section: "incontro",
+      theme: "black",
+    },
+  });
+
+  return {
+    title: input.title,
+    description,
+    keywords: getDefaultKeywords(),
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      type: "article",
+      locale: seoConfig.locale,
+      siteName: seoConfig.siteName,
+      title: input.title,
+      description,
+      url: canonical,
+      publishedTime: toIsoDate(input.publishedAt),
+      modifiedTime: toIsoDate(input.updatedAt),
+      images: [socialImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: input.title,
+      description,
+      creator: seoConfig.twitterHandle,
+      images: [socialImage.url],
     },
   };
 }
@@ -267,14 +339,16 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
 export function buildArticleListenMetadata(input: ArticleListenMetadataInput): Metadata {
   const canonical = getCanonicalUrl(input.canonicalPath ?? `/articoli/${input.slug}`);
   const description = input.description ?? seoConfig.defaultDescription;
-  const image = input.imageUrl
-    ? resolveAbsoluteUrl(input.imageUrl)
-    : getGeneratedSocialImageUrl({
-        title: input.title,
-        description,
-        section: "audio",
-        theme: "red",
-      });
+  const socialImage = resolveSocialImage({
+    editorialImageUrl: input.imageUrl,
+    alt: input.title,
+    fallback: {
+      title: input.title,
+      description,
+      section: "audio",
+      theme: "red",
+    },
+  });
 
   return {
     title: input.title,
@@ -294,21 +368,14 @@ export function buildArticleListenMetadata(input: ArticleListenMetadataInput): M
       title: input.title,
       description,
       url: canonical,
-      images: [
-        {
-          url: image,
-          width: 1200,
-          height: 630,
-          alt: input.title,
-        },
-      ],
+      images: [socialImage],
     },
     twitter: {
       card: "summary_large_image",
       title: input.title,
       description,
       creator: seoConfig.twitterHandle,
-      images: [image],
+      images: [socialImage.url],
     },
   };
 }

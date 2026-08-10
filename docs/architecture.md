@@ -82,6 +82,9 @@ CMS page/request
 - The public home loader uses `publicIssuesService.listPublishedItems()` for archive cards, avoiding the `countPublished()` query used by paginated API responses.
 - Public issue pages use `lib/public/server/issue-page.ts`.
 - Public static CMS pages use `lib/public/server/page.ts`; only slugs listed in `PUBLIC_STATIC_PAGE_SLUGS` are routed publicly at top level.
+- The flat article archive uses `lib/public/server/articles-archive.ts` (`PUBLIC_ARTICLES_ARCHIVE_CACHE_TAG`, `public-articles-archive`), consumed by both `/articoli` and `/feed.xml`.
+- Sitemap data access lives in `lib/public/server/sitemap.ts` (`PUBLIC_SITEMAP_CACHE_TAG`, `public-sitemap`); `app/sitemap.ts` only maps entries to URLs and calls `connection()` so the sitemap is never frozen at build time.
+- `/sitemap.xml` and `/feed.xml` are intentionally dynamic (`ƒ`) for the same `USE_CACHE_TIMEOUT` reason as the other DB-backed public loaders; `/feed.xml` relies on HTTP `s-maxage` instead.
 - Route segment config exports such as `runtime`, `dynamic`, `revalidate`, `fetchCache`, and `dynamicParams` must not be added while `cacheComponents: true` is enabled.
 - Public loaders must not call `getTrpcCaller()` because it depends on request headers and makes otherwise static pages request-bound.
 - Public loaders must not read `cookies()`, `headers()`, `searchParams`, sessions, or mutable request state inside `"use cache"` scopes. Read runtime values outside cache scopes and pass plain serializable values into cached functions only when needed.

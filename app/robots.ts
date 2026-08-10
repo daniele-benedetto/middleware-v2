@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/api/public/media/blob"],
+        allow: ["/", "/api/og", "/api/public/media/blob"],
         disallow: ["/cms", "/cms/", "/api/"],
       },
     ],

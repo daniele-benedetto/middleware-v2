@@ -2,11 +2,16 @@ import { getIssuePlainDescription } from "@/components/public/home/home-view-mod
 import { getCoursePlainDescription } from "@/components/public/sections/formazione/course-archive-view-model";
 import { seoConfig } from "@/lib/seo/config";
 import { getCanonicalUrl, getOpenGraphImageUrl } from "@/lib/seo/metadata";
+import { toOptimizedImageUrl } from "@/lib/seo/social-image";
 import { resolveAbsoluteUrl, toIsoDate } from "@/lib/seo/url";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
-import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
+import type {
+  PublicArticleDetailDto,
+  PublicArticleSummaryDto,
+} from "@/lib/server/modules/articles/dto/public";
 import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
+import type { PublicLessonDetailDto } from "@/lib/server/modules/lessons/dto/public";
 
 type BreadcrumbItem = {
   name: string;
@@ -34,10 +39,18 @@ export function buildOrganizationJsonLd() {
   const rootUrl = getRootUrl();
 
   return {
-    "@type": "Organization",
+    "@type": "NewsMediaOrganization",
     "@id": `${rootUrl}#organization`,
     name: seoConfig.siteName,
+    alternateName: seoConfig.defaultTitle,
     url: rootUrl,
+    description: seoConfig.defaultDescription,
+    inLanguage: seoConfig.language,
+    areaServed: {
+      "@type": "Place",
+      name: seoConfig.areaServed,
+    },
+    sameAs: seoConfig.socialProfiles.length > 0 ? [...seoConfig.socialProfiles] : undefined,
     logo: {
       "@type": "ImageObject",
       url: resolveAbsoluteUrl("/apple-icon.png"),
@@ -74,7 +87,9 @@ export function buildWebPageJsonLd(title: string, path: string) {
 
 export function buildArticleJsonLd(article: PublicArticleDetailDto, description?: string | null) {
   const articleUrl = getCanonicalUrl(`/articoli/${article.slug}`);
-  const imageUrl = article.imageUrl ? resolveAbsoluteUrl(article.imageUrl) : getOpenGraphImageUrl();
+  const imageUrl = article.imageUrl
+    ? toOptimizedImageUrl(article.imageUrl)
+    : getOpenGraphImageUrl();
 
   return {
     "@type": "Article",
@@ -88,6 +103,9 @@ export function buildArticleJsonLd(article: PublicArticleDetailDto, description?
     publisher: { "@id": `${getRootUrl()}#organization` },
     mainEntityOfPage: articleUrl,
     articleSection: article.categoryName,
+    inLanguage: seoConfig.language,
+    isAccessibleForFree: true,
+    timeRequired: `PT${article.readingTimeMinutes}M`,
     isPartOf: {
       "@type": "PublicationIssue",
       name: article.issueTitle,
@@ -153,6 +171,42 @@ export function buildArchiveCollectionPageJsonLd(issues: PublicIssueListItem[]) 
       })),
     },
   };
+}
+
+export function buildArticlesArchiveJsonLd(
+  articles: PublicArticleSummaryDto[],
+  title: string,
+  description: string,
+) {
+  const archiveUrl = getCanonicalUrl("/articoli");
+
+  return buildJsonLdGraph([
+    buildWebsiteJsonLd(),
+    buildOrganizationJsonLd(),
+    buildBreadcrumbJsonLd([
+      { name: seoConfig.siteName, path: "/" },
+      { name: title, path: "/articoli" },
+    ]),
+    {
+      "@type": "CollectionPage",
+      "@id": `${archiveUrl}#articles`,
+      name: title,
+      description,
+      url: archiveUrl,
+      isPartOf: { "@id": `${getRootUrl()}#website` },
+      inLanguage: seoConfig.language,
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: articles.length,
+        itemListElement: articles.map((article, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: article.title,
+          url: getCanonicalUrl(`/articoli/${article.slug}`),
+        })),
+      },
+    },
+  ]);
 }
 
 export function buildFormazioneCollectionPageJsonLd(courses: PublicCourseDetailDto[]) {
@@ -269,6 +323,51 @@ export function buildCoursePageJsonLd(course: PublicCourseDetailDto) {
       { name: course.title, path: `/contro-formazione/${course.slug}` },
     ]),
     buildCourseCollectionPageJsonLd(course),
+  ]);
+}
+
+export function buildLessonJsonLd(lesson: PublicLessonDetailDto, description?: string | null) {
+  const coursePath = `/contro-formazione/${lesson.courseSlug}`;
+  const lessonUrl = getCanonicalUrl(`${coursePath}/${lesson.slug}`);
+  const imageUrl = lesson.imageUrl ? toOptimizedImageUrl(lesson.imageUrl) : getOpenGraphImageUrl();
+
+  return {
+    "@type": ["Article", "LearningResource"],
+    "@id": `${lessonUrl}#lesson`,
+    headline: lesson.title,
+    description: description ?? lesson.excerpt ?? undefined,
+    image: imageUrl,
+    datePublished: toIsoDate(lesson.publishedAt),
+    dateModified: toIsoDate(lesson.updatedAt),
+    publisher: { "@id": `${getRootUrl()}#organization` },
+    mainEntityOfPage: lessonUrl,
+    inLanguage: seoConfig.language,
+    isAccessibleForFree: true,
+    learningResourceType: "Lezione",
+    timeRequired: `PT${lesson.readingTimeMinutes}M`,
+    position: lesson.sortOrder,
+    isPartOf: {
+      "@type": "CreativeWorkSeries",
+      "@id": `${getCanonicalUrl(coursePath)}#contro-formazione`,
+      name: lesson.courseTitle,
+      url: getCanonicalUrl(coursePath),
+    },
+  };
+}
+
+export function buildLessonPageJsonLd(lesson: PublicLessonDetailDto, description?: string | null) {
+  const coursePath = `/contro-formazione/${lesson.courseSlug}`;
+
+  return buildJsonLdGraph([
+    buildWebsiteJsonLd(),
+    buildOrganizationJsonLd(),
+    buildBreadcrumbJsonLd([
+      { name: seoConfig.siteName, path: "/" },
+      { name: "Contro-formazione", path: "/contro-formazione" },
+      { name: lesson.courseTitle, path: coursePath },
+      { name: lesson.title, path: `${coursePath}/${lesson.slug}` },
+    ]),
+    buildLessonJsonLd(lesson, description),
   ]);
 }
 

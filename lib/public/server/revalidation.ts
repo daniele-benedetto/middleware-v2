@@ -3,12 +3,14 @@ import "server-only";
 import { revalidateTag } from "next/cache";
 
 import { PUBLIC_ARTICLE_PAGE_CACHE_TAG } from "@/lib/public/server/article-page";
+import { PUBLIC_ARTICLES_ARCHIVE_CACHE_TAG } from "@/lib/public/server/articles-archive";
 import { PUBLIC_COURSE_PAGE_CACHE_TAG } from "@/lib/public/server/course-page";
 import { PUBLIC_HOME_CACHE_TAG } from "@/lib/public/server/home";
 import { PUBLIC_ISSUE_PAGE_CACHE_TAG } from "@/lib/public/server/issue-page";
 import { PUBLIC_ISSUES_ARCHIVE_CACHE_TAG } from "@/lib/public/server/issues-archive";
 import { PUBLIC_NAVIGATION_CACHE_TAG } from "@/lib/public/server/navigation-cache";
 import { PUBLIC_PAGE_CACHE_TAG } from "@/lib/public/server/page";
+import { PUBLIC_SITEMAP_CACHE_TAG } from "@/lib/public/server/sitemap";
 import { PUBLIC_MEDIA_CACHE_TAG } from "@/lib/server/modules/media/service/public";
 
 function revalidatePublicTag(tag: string) {
@@ -16,29 +18,35 @@ function revalidatePublicTag(tag: string) {
 }
 
 export function revalidatePublicArticleContent() {
+  revalidatePublicTag(PUBLIC_ARTICLES_ARCHIVE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ARTICLE_PAGE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_HOME_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ISSUES_ARCHIVE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_MEDIA_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_SITEMAP_CACHE_TAG);
 }
 
 export function revalidatePublicIssueContent() {
+  revalidatePublicTag(PUBLIC_ARTICLES_ARCHIVE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_HOME_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ARTICLE_PAGE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ISSUES_ARCHIVE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_MEDIA_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_SITEMAP_CACHE_TAG);
 }
 
 export function revalidatePublicCourseContent() {
   revalidatePublicTag(PUBLIC_COURSE_PAGE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_MEDIA_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_SITEMAP_CACHE_TAG);
 }
 
 export function revalidatePublicPageContent() {
   revalidatePublicTag(PUBLIC_PAGE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_MEDIA_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_SITEMAP_CACHE_TAG);
 }
 
 export function revalidatePublicNavigation() {

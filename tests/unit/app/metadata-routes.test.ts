@@ -4,6 +4,8 @@ const pageFindMany = vi.fn();
 const articleFindMany = vi.fn();
 const issueFindFirst = vi.fn();
 const issueFindMany = vi.fn();
+const courseFindMany = vi.fn();
+const lessonFindMany = vi.fn();
 
 vi.mock("next/server", async (importOriginal) => {
   const actual = await importOriginal<typeof import("next/server")>();
@@ -14,6 +16,8 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     article: { findMany: articleFindMany },
     issue: { findFirst: issueFindFirst, findMany: issueFindMany },
+    course: { findMany: courseFindMany },
+    lesson: { findMany: lessonFindMany },
     page: { findMany: pageFindMany },
   },
 }));
@@ -24,6 +28,8 @@ describe("metadata routes", () => {
     issueFindFirst.mockResolvedValue(null);
     articleFindMany.mockResolvedValue([]);
     issueFindMany.mockResolvedValue([]);
+    courseFindMany.mockResolvedValue([]);
+    lessonFindMany.mockResolvedValue([]);
     pageFindMany.mockResolvedValue([]);
   });
 
@@ -58,5 +64,23 @@ describe("metadata routes", () => {
     );
     expect(urls).toContain("http://localhost:3000/chi-siamo");
     expect(urls).not.toContain("http://localhost:3000/non-allowlisted");
+  });
+
+  it("includes the public index routes in sitemap", async () => {
+    const { default: sitemap } = await import("@/app/sitemap");
+    const urls = (await sitemap()).map((entry) => entry.url);
+
+    expect(urls).toContain("http://localhost:3000/");
+    expect(urls).toContain("http://localhost:3000/articoli");
+    expect(urls).toContain("http://localhost:3000/uscite");
+    expect(urls).toContain("http://localhost:3000/contro-formazione");
+  });
+
+  it("allows the OG image endpoint in robots", async () => {
+    const { default: robots } = await import("@/app/robots");
+    const rules = robots().rules;
+    const allow = Array.isArray(rules) ? rules[0]?.allow : rules?.allow;
+
+    expect(allow).toContain("/api/og");
   });
 });

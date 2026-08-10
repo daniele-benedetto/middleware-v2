@@ -40,6 +40,17 @@ const siteUrl = normalizeSiteUrl(
     process.env.VERCEL_PROJECT_PRODUCTION_URL,
 );
 
+function normalizeSocialProfiles(rawValue: string | undefined): readonly string[] {
+  if (!rawValue) {
+    return [];
+  }
+
+  return rawValue
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.startsWith("https://"));
+}
+
 export const seoConfig = {
   siteName: i18n.public.brand.wordmark,
   applicationName: i18n.public.brand.wordmark,
@@ -48,6 +59,9 @@ export const seoConfig = {
   defaultDescription: i18n.public.brand.description,
   keywords: i18n.public.brand.keywords,
   locale: "it_IT",
+  language: "it-IT",
   twitterHandle: "@middleware",
   siteUrl,
+  areaServed: "Modena",
+  socialProfiles: normalizeSocialProfiles(process.env.NEXT_PUBLIC_SOCIAL_PROFILES),
 } as const;

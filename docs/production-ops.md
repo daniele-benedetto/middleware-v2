@@ -469,6 +469,25 @@ Backup automatici locali zero-cost:
 - Il job usa `flock`, controlla spazio libero e non esegue prune se il backup fallisce.
 - Retention attuale: 70 generazioni per DB, 8 weekly per DB, 90 manifest.
 
+Divergenza aperta (rilevata 2026-08-10, non ancora risolta):
+
+- `middleware-backup.service` e `middleware-healthcheck.service` sono in stato `failed`.
+- Causa: il drop-in `/etc/systemd/system/middleware-backup.service.d/offsite.conf`
+  dichiara `EnvironmentFile=/opt/middleware/secrets/backup-offsite.env`, file non
+  piu presente. systemd non avvia affatto l'unit
+  (`Failed to load environment files`).
+- Il drop-in e residuo della rimozione dell'offsite backup (commit `79bb64c`):
+  `bin/backup-databases.sh` e `bin/healthcheck-timer.sh` sulla VPS non
+  referenziano piu `offsite`, solo il drop-in non e stato riconciliato.
+- Ultimo backup automatico riuscito: `2026-08-10T05:24:04Z`. Le esecuzioni
+  successive sono fallite, quindi non c'e heartbeat esterno.
+- `bin/healthcheck.sh` fallisce su `test "$failed_units" = "0"`, quindi blocca
+  anche il gate di `scripts/production-deploy-manual.sh`.
+- Remediation attesa, previa copia del file: disabilitare il drop-in orfano,
+  `daemon-reload`, `reset-failed` sulle due unit e riavvio manuale di
+  `middleware-backup.service` con verifica del nuovo dump. Se invece l'offsite
+  backup va ripristinato, va prima ricreato `secrets/backup-offsite.env`.
+
 Restore test locale non distruttivo:
 
 - Script VPS: `/opt/middleware/bin/restore-test.sh`.

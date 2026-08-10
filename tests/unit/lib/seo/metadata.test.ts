@@ -20,13 +20,30 @@ describe("seo metadata", () => {
     expect(metadata.alternates?.canonical).toBe("http://localhost:3000/uscite");
     expect(metadata.openGraph?.images).toEqual([
       {
-        url: "http://localhost:3000/brand/custom.png",
-        width: 1200,
-        height: 630,
+        url: "http://localhost:3000/_next/image?url=%2Fbrand%2Fcustom.png&w=1200&q=75",
         alt: "Archivio",
       },
     ]);
-    expect(metadata.twitter?.images).toEqual(["http://localhost:3000/brand/twitter.png"]);
+    expect(metadata.twitter?.images).toEqual([
+      "http://localhost:3000/_next/image?url=%2Fbrand%2Ftwitter.png&w=1200&q=75",
+    ]);
+  });
+
+  it("does not declare card dimensions for editorial images of unknown size", () => {
+    const metadata = buildPageMetadata({
+      title: "Uscita",
+      path: "/uscite/numero",
+      openGraphImage: "/api/public/media/blob?pathname=hero.jpg",
+    });
+
+    const images = metadata.openGraph?.images as unknown as {
+      width?: number;
+      height?: number;
+    }[];
+
+    expect(images).toHaveLength(1);
+    expect(images[0]?.width).toBeUndefined();
+    expect(images[0]?.height).toBeUndefined();
   });
 
   it("builds generated social image URLs for pages without images", () => {
@@ -92,7 +109,7 @@ describe("seo metadata", () => {
       url: "http://localhost:3000/articoli/titolo-articolo",
     });
     expect(metadata.twitter?.images).toEqual([
-      "http://localhost:3000/api/public/media/blob?pathname=covers%2Fhero.jpg",
+      "http://localhost:3000/_next/image?url=%2Fapi%2Fpublic%2Fmedia%2Fblob%3Fpathname%3Dcovers%252Fhero.jpg&w=1200&q=75",
     ]);
   });
 

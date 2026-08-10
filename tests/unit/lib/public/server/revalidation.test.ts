@@ -8,12 +8,14 @@ import {
 } from "@/lib/public/server/revalidation";
 
 const PUBLIC_ARTICLE_PAGE_CACHE_TAG = "public-article";
+const PUBLIC_ARTICLES_ARCHIVE_CACHE_TAG = "public-articles-archive";
 const PUBLIC_COURSE_PAGE_CACHE_TAG = "public-course";
 const PUBLIC_HOME_CACHE_TAG = "public-home";
 const PUBLIC_ISSUE_PAGE_CACHE_TAG = "public-issue";
 const PUBLIC_ISSUES_ARCHIVE_CACHE_TAG = "public-issues-archive";
 const PUBLIC_PAGE_CACHE_TAG = "public-page";
 const PUBLIC_MEDIA_CACHE_TAG = "public-media";
+const PUBLIC_SITEMAP_CACHE_TAG = "public-sitemap";
 const revalidateTagMock = vi.hoisted(() => vi.fn());
 
 vi.mock("next/cache", () => ({
@@ -24,6 +26,10 @@ vi.mock("next/cache", () => ({
 
 vi.mock("@/lib/public/server/article-page", () => ({
   PUBLIC_ARTICLE_PAGE_CACHE_TAG: "public-article",
+}));
+
+vi.mock("@/lib/public/server/articles-archive", () => ({
+  PUBLIC_ARTICLES_ARCHIVE_CACHE_TAG: "public-articles-archive",
 }));
 
 vi.mock("@/lib/public/server/course-page", () => ({
@@ -46,9 +52,21 @@ vi.mock("@/lib/public/server/page", () => ({
   PUBLIC_PAGE_CACHE_TAG: "public-page",
 }));
 
+vi.mock("@/lib/public/server/sitemap", () => ({
+  PUBLIC_SITEMAP_CACHE_TAG: "public-sitemap",
+}));
+
 vi.mock("@/lib/server/modules/media/service/public", () => ({
   PUBLIC_MEDIA_CACHE_TAG: "public-media",
 }));
+
+function expectExpiredTags(tags: string[]) {
+  expect(revalidateTagMock).toHaveBeenCalledTimes(tags.length);
+
+  for (const tag of tags) {
+    expect(revalidateTagMock).toHaveBeenCalledWith(tag, { expire: 0 });
+  }
+}
 
 describe("public cache revalidation", () => {
   beforeEach(() => {
@@ -58,52 +76,44 @@ describe("public cache revalidation", () => {
   it("expires article-dependent public cache tags", () => {
     revalidatePublicArticleContent();
 
-    expect(revalidateTagMock).toHaveBeenCalledTimes(5);
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(1, PUBLIC_ARTICLE_PAGE_CACHE_TAG, {
-      expire: 0,
-    });
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(2, PUBLIC_HOME_CACHE_TAG, { expire: 0 });
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(3, PUBLIC_ISSUE_PAGE_CACHE_TAG, {
-      expire: 0,
-    });
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(4, PUBLIC_ISSUES_ARCHIVE_CACHE_TAG, {
-      expire: 0,
-    });
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(5, PUBLIC_MEDIA_CACHE_TAG, { expire: 0 });
+    expectExpiredTags([
+      PUBLIC_ARTICLES_ARCHIVE_CACHE_TAG,
+      PUBLIC_ARTICLE_PAGE_CACHE_TAG,
+      PUBLIC_HOME_CACHE_TAG,
+      PUBLIC_ISSUE_PAGE_CACHE_TAG,
+      PUBLIC_ISSUES_ARCHIVE_CACHE_TAG,
+      PUBLIC_MEDIA_CACHE_TAG,
+      PUBLIC_SITEMAP_CACHE_TAG,
+    ]);
   });
 
   it("expires issue-dependent public cache tags", () => {
     revalidatePublicIssueContent();
 
-    expect(revalidateTagMock).toHaveBeenCalledTimes(5);
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(1, PUBLIC_HOME_CACHE_TAG, { expire: 0 });
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(2, PUBLIC_ISSUE_PAGE_CACHE_TAG, {
-      expire: 0,
-    });
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(3, PUBLIC_ARTICLE_PAGE_CACHE_TAG, {
-      expire: 0,
-    });
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(4, PUBLIC_ISSUES_ARCHIVE_CACHE_TAG, {
-      expire: 0,
-    });
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(5, PUBLIC_MEDIA_CACHE_TAG, { expire: 0 });
+    expectExpiredTags([
+      PUBLIC_ARTICLES_ARCHIVE_CACHE_TAG,
+      PUBLIC_HOME_CACHE_TAG,
+      PUBLIC_ISSUE_PAGE_CACHE_TAG,
+      PUBLIC_ARTICLE_PAGE_CACHE_TAG,
+      PUBLIC_ISSUES_ARCHIVE_CACHE_TAG,
+      PUBLIC_MEDIA_CACHE_TAG,
+      PUBLIC_SITEMAP_CACHE_TAG,
+    ]);
   });
 
   it("expires course-dependent public cache tags", () => {
     revalidatePublicCourseContent();
 
-    expect(revalidateTagMock).toHaveBeenCalledTimes(2);
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(1, PUBLIC_COURSE_PAGE_CACHE_TAG, {
-      expire: 0,
-    });
-    expect(revalidateTagMock).toHaveBeenNthCalledWith(2, PUBLIC_MEDIA_CACHE_TAG, { expire: 0 });
+    expectExpiredTags([
+      PUBLIC_COURSE_PAGE_CACHE_TAG,
+      PUBLIC_MEDIA_CACHE_TAG,
+      PUBLIC_SITEMAP_CACHE_TAG,
+    ]);
   });
 
   it("expires static page public cache tags", () => {
     revalidatePublicPageContent();
 
-    expect(revalidateTagMock).toHaveBeenCalledTimes(2);
-    expect(revalidateTagMock).toHaveBeenCalledWith(PUBLIC_PAGE_CACHE_TAG, { expire: 0 });
-    expect(revalidateTagMock).toHaveBeenCalledWith(PUBLIC_MEDIA_CACHE_TAG, { expire: 0 });
+    expectExpiredTags([PUBLIC_PAGE_CACHE_TAG, PUBLIC_MEDIA_CACHE_TAG, PUBLIC_SITEMAP_CACHE_TAG]);
   });
 });

@@ -2,12 +2,14 @@ export { seoConfig } from "@/lib/seo/config";
 export { buildHomeJsonLd } from "@/lib/seo/home-json-ld";
 export {
   buildArticlePageJsonLd,
+  buildArticlesArchiveJsonLd,
   buildBreadcrumbJsonLd,
   buildCoursePageJsonLd,
   buildFormazioneArchiveJsonLd,
   buildIssuePageJsonLd,
   buildIssuesArchiveJsonLd,
   buildJsonLdGraph,
+  buildLessonPageJsonLd,
   buildStaticPageJsonLd,
   buildWebsiteJsonLd,
 } from "@/lib/seo/json-ld";
@@ -15,6 +17,7 @@ export {
   buildArticleListenMetadata,
   buildArticleMetadata,
   buildCmsMetadata,
+  buildLessonMetadata,
   buildPageMetadata,
   buildRootMetadata,
   getCanonicalUrl,

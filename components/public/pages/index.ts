@@ -1,4 +1,5 @@
 export { PublicArticlePage } from "@/components/public/pages/public-article-page";
+export { PublicArticlesArchivePage } from "@/components/public/pages/public-articles-archive-page";
 export { PublicCoursePage } from "@/components/public/pages/public-course-page";
 export { PublicFormazioneIndexPage } from "@/components/public/pages/public-formazione-index-page";
 export { PublicHomePage } from "@/components/public/pages/public-home-page";
