@@ -16,6 +16,10 @@ import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
+import {
+  getEditorialImageFilterClass,
+  getEditorialImageStyle,
+} from "@/lib/public/format/image-presentation";
 import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
@@ -53,14 +57,19 @@ export function FeatureBreakBlock({
   const cardBorderClass = showBorder ? "border-l border-foreground" : "";
   const image = article.imageUrl ? (
     <div
-      className={`relative min-h-70 overflow-hidden sm:min-h-76 md:min-h-full ${showBorder ? `${imageBorderClass} ${variantClasses.image}` : "grayscale"}`}
+      className={`relative min-h-70 overflow-hidden sm:min-h-76 md:min-h-full ${showBorder ? `${imageBorderClass} ${variantClasses.image}` : ""}`}
     >
       <Image
         src={article.imageUrl}
         alt={editorialImageAlt(article.imageAlt)}
         fill
         sizes="(min-width: 768px) 42vw, 100vw"
-        className={cn("object-cover", publicInteraction.imageZoom)}
+        className={cn(
+          "object-cover",
+          getEditorialImageFilterClass(article),
+          publicInteraction.imageZoom,
+        )}
+        style={getEditorialImageStyle(article)}
       />
     </div>
   ) : null;

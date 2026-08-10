@@ -20,6 +20,10 @@ export type CreateLessonPersistInput = {
   contentRich: unknown;
   imageUrl?: string;
   imageAlt?: string;
+  imageFocalX?: number;
+  imageFocalY?: number;
+  imageFilter?: "GRAYSCALE" | "COLOR";
+  imageZoom?: number;
   audioUrl?: string;
   audioChunks?: unknown;
 };
@@ -45,6 +49,10 @@ const LESSON_DETAIL_SELECT = {
   contentRich: true,
   imageUrl: true,
   imageAlt: true,
+  imageFocalX: true,
+  imageFocalY: true,
+  imageFilter: true,
+  imageZoom: true,
   audioUrl: true,
   audioChunks: true,
   course: {
@@ -134,6 +142,10 @@ export const lessonsRepository = {
         contentRich: input.contentRich as Prisma.InputJsonValue,
         imageUrl: input.imageUrl,
         imageAlt: input.imageAlt,
+        imageFocalX: input.imageFocalX,
+        imageFocalY: input.imageFocalY,
+        imageFilter: input.imageFilter,
+        imageZoom: input.imageZoom,
         audioUrl: input.audioUrl,
         audioChunks: input.audioChunks as Prisma.InputJsonValue | undefined,
       };
@@ -177,6 +189,10 @@ export const lessonsRepository = {
         input.contentRich === undefined ? undefined : (input.contentRich as Prisma.InputJsonValue),
       imageUrl: input.imageUrl,
       imageAlt: input.imageAlt,
+      imageFocalX: input.imageFocalX,
+      imageFocalY: input.imageFocalY,
+      imageFilter: input.imageFilter,
+      imageZoom: input.imageZoom,
       audioUrl: input.audioUrl,
       audioChunks:
         input.audioChunks === undefined

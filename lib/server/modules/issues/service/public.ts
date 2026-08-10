@@ -34,6 +34,10 @@ type PublicIssueArticleRecord = {
   excerpt: string | null;
   imageUrl: string | null;
   imageAlt: string | null;
+  imageFocalX: number;
+  imageFocalY: number;
+  imageFilter: string;
+  imageZoom: number;
   audioUrl: string | null;
   contentRich: unknown;
   publishedAt: Date | null;
@@ -94,6 +98,10 @@ const toPublicIssueArticleSummaryDto = (
     excerpt: article.excerpt,
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
     imageAlt: article.imageAlt,
+    imageFocalX: article.imageFocalX,
+    imageFocalY: article.imageFocalY,
+    imageFilter: article.imageFilter as "GRAYSCALE" | "COLOR",
+    imageZoom: article.imageZoom,
     hasAudio: Boolean(article.audioUrl),
     readingTimeMinutes: calculateReadingTimeMinutes(article.contentRich),
     publishedAt: article.publishedAt.toISOString(),

@@ -88,6 +88,10 @@ export type ArticleLivePreviewInput = {
   contentRich: unknown;
   imageUrl: string | null;
   imageAlt: string | null;
+  imageFocalX?: number;
+  imageFocalY?: number;
+  imageFilter?: "GRAYSCALE" | "COLOR";
+  imageZoom?: number;
   audioUrl: string | null;
   audioChunks: unknown;
   statusLabel: string;
@@ -132,6 +136,10 @@ export type LessonLivePreviewInput = {
   contentRich: unknown;
   imageUrl: string | null;
   imageAlt: string | null;
+  imageFocalX?: number;
+  imageFocalY?: number;
+  imageFilter?: "GRAYSCALE" | "COLOR";
+  imageZoom?: number;
   audioUrl: string | null;
   audioChunks: unknown;
   sortOrder: number;
@@ -177,6 +185,10 @@ export function toArticleLivePreviewSnapshot(
       excerpt,
       imageUrl: input.imageUrl,
       imageAlt: input.imageAlt,
+      imageFocalX: input.imageFocalX ?? 50,
+      imageFocalY: input.imageFocalY ?? 50,
+      imageFilter: input.imageFilter ?? "GRAYSCALE",
+      imageZoom: input.imageZoom ?? 1,
       hasAudio: Boolean(input.audioUrl),
       publishedAt: now,
       issueId: input.issueId || PREVIEW_UUID,
@@ -276,6 +288,10 @@ export function toLessonLivePreviewSnapshot(
     excerpt,
     imageUrl: input.imageUrl,
     imageAlt: input.imageAlt,
+    imageFocalX: input.imageFocalX ?? 50,
+    imageFocalY: input.imageFocalY ?? 50,
+    imageFilter: input.imageFilter ?? "GRAYSCALE",
+    imageZoom: input.imageZoom ?? 1,
     hasAudio: Boolean(input.audioUrl),
     sortOrder: input.sortOrder,
     readingTimeMinutes: calculateReadingTimeMinutes(input.contentRich),

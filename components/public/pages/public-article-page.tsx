@@ -9,6 +9,10 @@ import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
+import {
+  getEditorialImageFilterClass,
+  getEditorialImageStyle,
+} from "@/lib/public/format/image-presentation";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 import { buildArticlePageJsonLd } from "@/lib/seo";
 
@@ -170,21 +174,24 @@ export function PublicArticlePage({
         />
 
         {article.imageUrl ? (
-          <figure
-            className="bg-foreground"
-            data-page-reveal="media"
-            style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
-          >
-            <Image
-              src={article.imageUrl}
-              alt={editorialImageAlt(article.imageAlt)}
-              width={1600}
-              height={900}
-              sizes="100vw"
-              preload
-              className="mx-auto aspect-video w-full max-w-400 object-cover grayscale"
-            />
-          </figure>
+          <div className={publicContentClassName}>
+            <figure
+              className="mx-auto max-w-3xl overflow-hidden bg-foreground"
+              data-page-reveal="media"
+              style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
+            >
+              <Image
+                src={article.imageUrl}
+                alt={editorialImageAlt(article.imageAlt)}
+                width={1600}
+                height={900}
+                sizes="(min-width: 768px) 768px, calc(100vw - 2rem)"
+                preload
+                className={`aspect-video w-full object-cover ${getEditorialImageFilterClass(article) ?? ""}`}
+                style={getEditorialImageStyle(article)}
+              />
+            </figure>
+          </div>
         ) : null}
 
         <div

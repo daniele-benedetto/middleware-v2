@@ -27,6 +27,10 @@ export const lessonDetailDtoSchema = z.object({
   excerpt: z.string().nullable(),
   imageUrl: z.string().nullable(),
   imageAlt: z.string().nullable(),
+  imageFocalX: z.number().min(0).max(100).optional(),
+  imageFocalY: z.number().min(0).max(100).optional(),
+  imageFilter: z.enum(["GRAYSCALE", "COLOR"]).optional(),
+  imageZoom: z.number().min(1).max(3).optional(),
 });
 
 export const lessonsListDtoSchema = z.array(lessonDtoSchema);

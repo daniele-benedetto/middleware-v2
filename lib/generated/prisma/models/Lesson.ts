@@ -28,10 +28,16 @@ export type AggregateLesson = {
 
 export type LessonAvgAggregateOutputType = {
   sortOrder: number | null
+  imageFocalX: number | null
+  imageFocalY: number | null
+  imageZoom: number | null
 }
 
 export type LessonSumAggregateOutputType = {
   sortOrder: number | null
+  imageFocalX: number | null
+  imageFocalY: number | null
+  imageZoom: number | null
 }
 
 export type LessonMinAggregateOutputType = {
@@ -45,6 +51,10 @@ export type LessonMinAggregateOutputType = {
   excerpt: string | null
   imageUrl: string | null
   imageAlt: string | null
+  imageFocalX: number | null
+  imageFocalY: number | null
+  imageFilter: string | null
+  imageZoom: number | null
   audioUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -61,6 +71,10 @@ export type LessonMaxAggregateOutputType = {
   excerpt: string | null
   imageUrl: string | null
   imageAlt: string | null
+  imageFocalX: number | null
+  imageFocalY: number | null
+  imageFilter: string | null
+  imageZoom: number | null
   audioUrl: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -80,6 +94,10 @@ export type LessonCountAggregateOutputType = {
   contentRich: number
   imageUrl: number
   imageAlt: number
+  imageFocalX: number
+  imageFocalY: number
+  imageFilter: number
+  imageZoom: number
   audioUrl: number
   audioChunks: number
   createdAt: number
@@ -90,10 +108,16 @@ export type LessonCountAggregateOutputType = {
 
 export type LessonAvgAggregateInputType = {
   sortOrder?: true
+  imageFocalX?: true
+  imageFocalY?: true
+  imageZoom?: true
 }
 
 export type LessonSumAggregateInputType = {
   sortOrder?: true
+  imageFocalX?: true
+  imageFocalY?: true
+  imageZoom?: true
 }
 
 export type LessonMinAggregateInputType = {
@@ -107,6 +131,10 @@ export type LessonMinAggregateInputType = {
   excerpt?: true
   imageUrl?: true
   imageAlt?: true
+  imageFocalX?: true
+  imageFocalY?: true
+  imageFilter?: true
+  imageZoom?: true
   audioUrl?: true
   createdAt?: true
   updatedAt?: true
@@ -123,6 +151,10 @@ export type LessonMaxAggregateInputType = {
   excerpt?: true
   imageUrl?: true
   imageAlt?: true
+  imageFocalX?: true
+  imageFocalY?: true
+  imageFilter?: true
+  imageZoom?: true
   audioUrl?: true
   createdAt?: true
   updatedAt?: true
@@ -142,6 +174,10 @@ export type LessonCountAggregateInputType = {
   contentRich?: true
   imageUrl?: true
   imageAlt?: true
+  imageFocalX?: true
+  imageFocalY?: true
+  imageFilter?: true
+  imageZoom?: true
   audioUrl?: true
   audioChunks?: true
   createdAt?: true
@@ -249,6 +285,10 @@ export type LessonGroupByOutputType = {
   contentRich: runtime.JsonValue
   imageUrl: string | null
   imageAlt: string | null
+  imageFocalX: number
+  imageFocalY: number
+  imageFilter: string
+  imageZoom: number
   audioUrl: string | null
   audioChunks: runtime.JsonValue | null
   createdAt: Date
@@ -292,6 +332,10 @@ export type LessonWhereInput = {
   contentRich?: Prisma.JsonFilter<"Lesson">
   imageUrl?: Prisma.StringNullableFilter<"Lesson"> | string | null
   imageAlt?: Prisma.StringNullableFilter<"Lesson"> | string | null
+  imageFocalX?: Prisma.FloatFilter<"Lesson"> | number
+  imageFocalY?: Prisma.FloatFilter<"Lesson"> | number
+  imageFilter?: Prisma.StringFilter<"Lesson"> | string
+  imageZoom?: Prisma.FloatFilter<"Lesson"> | number
   audioUrl?: Prisma.StringNullableFilter<"Lesson"> | string | null
   audioChunks?: Prisma.JsonNullableFilter<"Lesson">
   createdAt?: Prisma.DateTimeFilter<"Lesson"> | Date | string
@@ -313,6 +357,10 @@ export type LessonOrderByWithRelationInput = {
   contentRich?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imageAlt?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageFocalX?: Prisma.SortOrder
+  imageFocalY?: Prisma.SortOrder
+  imageFilter?: Prisma.SortOrder
+  imageZoom?: Prisma.SortOrder
   audioUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   audioChunks?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -338,6 +386,10 @@ export type LessonWhereUniqueInput = Prisma.AtLeast<{
   contentRich?: Prisma.JsonFilter<"Lesson">
   imageUrl?: Prisma.StringNullableFilter<"Lesson"> | string | null
   imageAlt?: Prisma.StringNullableFilter<"Lesson"> | string | null
+  imageFocalX?: Prisma.FloatFilter<"Lesson"> | number
+  imageFocalY?: Prisma.FloatFilter<"Lesson"> | number
+  imageFilter?: Prisma.StringFilter<"Lesson"> | string
+  imageZoom?: Prisma.FloatFilter<"Lesson"> | number
   audioUrl?: Prisma.StringNullableFilter<"Lesson"> | string | null
   audioChunks?: Prisma.JsonNullableFilter<"Lesson">
   createdAt?: Prisma.DateTimeFilter<"Lesson"> | Date | string
@@ -359,6 +411,10 @@ export type LessonOrderByWithAggregationInput = {
   contentRich?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imageAlt?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageFocalX?: Prisma.SortOrder
+  imageFocalY?: Prisma.SortOrder
+  imageFilter?: Prisma.SortOrder
+  imageZoom?: Prisma.SortOrder
   audioUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   audioChunks?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -387,6 +443,10 @@ export type LessonScalarWhereWithAggregatesInput = {
   contentRich?: Prisma.JsonWithAggregatesFilter<"Lesson">
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"Lesson"> | string | null
   imageAlt?: Prisma.StringNullableWithAggregatesFilter<"Lesson"> | string | null
+  imageFocalX?: Prisma.FloatWithAggregatesFilter<"Lesson"> | number
+  imageFocalY?: Prisma.FloatWithAggregatesFilter<"Lesson"> | number
+  imageFilter?: Prisma.StringWithAggregatesFilter<"Lesson"> | string
+  imageZoom?: Prisma.FloatWithAggregatesFilter<"Lesson"> | number
   audioUrl?: Prisma.StringNullableWithAggregatesFilter<"Lesson"> | string | null
   audioChunks?: Prisma.JsonNullableWithAggregatesFilter<"Lesson">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Lesson"> | Date | string
@@ -406,6 +466,10 @@ export type LessonCreateInput = {
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   imageAlt?: string | null
+  imageFocalX?: number
+  imageFocalY?: number
+  imageFilter?: string
+  imageZoom?: number
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -427,6 +491,10 @@ export type LessonUncheckedCreateInput = {
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   imageAlt?: string | null
+  imageFocalX?: number
+  imageFocalY?: number
+  imageFilter?: string
+  imageZoom?: number
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -446,6 +514,10 @@ export type LessonUpdateInput = {
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageFocalX?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFocalY?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFilter?: Prisma.StringFieldUpdateOperationsInput | string
+  imageZoom?: Prisma.FloatFieldUpdateOperationsInput | number
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -467,6 +539,10 @@ export type LessonUncheckedUpdateInput = {
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageFocalX?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFocalY?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFilter?: Prisma.StringFieldUpdateOperationsInput | string
+  imageZoom?: Prisma.FloatFieldUpdateOperationsInput | number
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -487,6 +563,10 @@ export type LessonCreateManyInput = {
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   imageAlt?: string | null
+  imageFocalX?: number
+  imageFocalY?: number
+  imageFilter?: string
+  imageZoom?: number
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -506,6 +586,10 @@ export type LessonUpdateManyMutationInput = {
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageFocalX?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFocalY?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFilter?: Prisma.StringFieldUpdateOperationsInput | string
+  imageZoom?: Prisma.FloatFieldUpdateOperationsInput | number
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -526,6 +610,10 @@ export type LessonUncheckedUpdateManyInput = {
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageFocalX?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFocalY?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFilter?: Prisma.StringFieldUpdateOperationsInput | string
+  imageZoom?: Prisma.FloatFieldUpdateOperationsInput | number
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -561,6 +649,10 @@ export type LessonCountOrderByAggregateInput = {
   contentRich?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageAlt?: Prisma.SortOrder
+  imageFocalX?: Prisma.SortOrder
+  imageFocalY?: Prisma.SortOrder
+  imageFilter?: Prisma.SortOrder
+  imageZoom?: Prisma.SortOrder
   audioUrl?: Prisma.SortOrder
   audioChunks?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -569,6 +661,9 @@ export type LessonCountOrderByAggregateInput = {
 
 export type LessonAvgOrderByAggregateInput = {
   sortOrder?: Prisma.SortOrder
+  imageFocalX?: Prisma.SortOrder
+  imageFocalY?: Prisma.SortOrder
+  imageZoom?: Prisma.SortOrder
 }
 
 export type LessonMaxOrderByAggregateInput = {
@@ -582,6 +677,10 @@ export type LessonMaxOrderByAggregateInput = {
   excerpt?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageAlt?: Prisma.SortOrder
+  imageFocalX?: Prisma.SortOrder
+  imageFocalY?: Prisma.SortOrder
+  imageFilter?: Prisma.SortOrder
+  imageZoom?: Prisma.SortOrder
   audioUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -598,6 +697,10 @@ export type LessonMinOrderByAggregateInput = {
   excerpt?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageAlt?: Prisma.SortOrder
+  imageFocalX?: Prisma.SortOrder
+  imageFocalY?: Prisma.SortOrder
+  imageFilter?: Prisma.SortOrder
+  imageZoom?: Prisma.SortOrder
   audioUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -605,6 +708,9 @@ export type LessonMinOrderByAggregateInput = {
 
 export type LessonSumOrderByAggregateInput = {
   sortOrder?: Prisma.SortOrder
+  imageFocalX?: Prisma.SortOrder
+  imageFocalY?: Prisma.SortOrder
+  imageZoom?: Prisma.SortOrder
 }
 
 export type LessonCreateNestedManyWithoutCourseInput = {
@@ -666,6 +772,10 @@ export type LessonCreateWithoutCourseInput = {
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   imageAlt?: string | null
+  imageFocalX?: number
+  imageFocalY?: number
+  imageFilter?: string
+  imageZoom?: number
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -685,6 +795,10 @@ export type LessonUncheckedCreateWithoutCourseInput = {
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   imageAlt?: string | null
+  imageFocalX?: number
+  imageFocalY?: number
+  imageFilter?: string
+  imageZoom?: number
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -734,6 +848,10 @@ export type LessonScalarWhereInput = {
   contentRich?: Prisma.JsonFilter<"Lesson">
   imageUrl?: Prisma.StringNullableFilter<"Lesson"> | string | null
   imageAlt?: Prisma.StringNullableFilter<"Lesson"> | string | null
+  imageFocalX?: Prisma.FloatFilter<"Lesson"> | number
+  imageFocalY?: Prisma.FloatFilter<"Lesson"> | number
+  imageFilter?: Prisma.StringFilter<"Lesson"> | string
+  imageZoom?: Prisma.FloatFilter<"Lesson"> | number
   audioUrl?: Prisma.StringNullableFilter<"Lesson"> | string | null
   audioChunks?: Prisma.JsonNullableFilter<"Lesson">
   createdAt?: Prisma.DateTimeFilter<"Lesson"> | Date | string
@@ -753,6 +871,10 @@ export type LessonCreateManyCourseInput = {
   contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   imageAlt?: string | null
+  imageFocalX?: number
+  imageFocalY?: number
+  imageFilter?: string
+  imageZoom?: number
   audioUrl?: string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -772,6 +894,10 @@ export type LessonUpdateWithoutCourseInput = {
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageFocalX?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFocalY?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFilter?: Prisma.StringFieldUpdateOperationsInput | string
+  imageZoom?: Prisma.FloatFieldUpdateOperationsInput | number
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -791,6 +917,10 @@ export type LessonUncheckedUpdateWithoutCourseInput = {
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageFocalX?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFocalY?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFilter?: Prisma.StringFieldUpdateOperationsInput | string
+  imageZoom?: Prisma.FloatFieldUpdateOperationsInput | number
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -810,6 +940,10 @@ export type LessonUncheckedUpdateManyWithoutCourseInput = {
   contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageFocalX?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFocalY?: Prisma.FloatFieldUpdateOperationsInput | number
+  imageFilter?: Prisma.StringFieldUpdateOperationsInput | string
+  imageZoom?: Prisma.FloatFieldUpdateOperationsInput | number
   audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -832,6 +966,10 @@ export type LessonSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   contentRich?: boolean
   imageUrl?: boolean
   imageAlt?: boolean
+  imageFocalX?: boolean
+  imageFocalY?: boolean
+  imageFilter?: boolean
+  imageZoom?: boolean
   audioUrl?: boolean
   audioChunks?: boolean
   createdAt?: boolean
@@ -853,6 +991,10 @@ export type LessonSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   contentRich?: boolean
   imageUrl?: boolean
   imageAlt?: boolean
+  imageFocalX?: boolean
+  imageFocalY?: boolean
+  imageFilter?: boolean
+  imageZoom?: boolean
   audioUrl?: boolean
   audioChunks?: boolean
   createdAt?: boolean
@@ -874,6 +1016,10 @@ export type LessonSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   contentRich?: boolean
   imageUrl?: boolean
   imageAlt?: boolean
+  imageFocalX?: boolean
+  imageFocalY?: boolean
+  imageFilter?: boolean
+  imageZoom?: boolean
   audioUrl?: boolean
   audioChunks?: boolean
   createdAt?: boolean
@@ -895,13 +1041,17 @@ export type LessonSelectScalar = {
   contentRich?: boolean
   imageUrl?: boolean
   imageAlt?: boolean
+  imageFocalX?: boolean
+  imageFocalY?: boolean
+  imageFilter?: boolean
+  imageZoom?: boolean
   audioUrl?: boolean
   audioChunks?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type LessonOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "courseId" | "status" | "sortOrder" | "publishedAt" | "title" | "titleStyled" | "slug" | "excerpt" | "excerptRich" | "contentRich" | "imageUrl" | "imageAlt" | "audioUrl" | "audioChunks" | "createdAt" | "updatedAt", ExtArgs["result"]["lesson"]>
+export type LessonOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "courseId" | "status" | "sortOrder" | "publishedAt" | "title" | "titleStyled" | "slug" | "excerpt" | "excerptRich" | "contentRich" | "imageUrl" | "imageAlt" | "imageFocalX" | "imageFocalY" | "imageFilter" | "imageZoom" | "audioUrl" | "audioChunks" | "createdAt" | "updatedAt", ExtArgs["result"]["lesson"]>
 export type LessonInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   course?: boolean | Prisma.CourseDefaultArgs<ExtArgs>
 }
@@ -931,6 +1081,10 @@ export type $LessonPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     contentRich: runtime.JsonValue
     imageUrl: string | null
     imageAlt: string | null
+    imageFocalX: number
+    imageFocalY: number
+    imageFilter: string
+    imageZoom: number
     audioUrl: string | null
     audioChunks: runtime.JsonValue | null
     createdAt: Date
@@ -1372,6 +1526,10 @@ export interface LessonFieldRefs {
   readonly contentRich: Prisma.FieldRef<"Lesson", 'Json'>
   readonly imageUrl: Prisma.FieldRef<"Lesson", 'String'>
   readonly imageAlt: Prisma.FieldRef<"Lesson", 'String'>
+  readonly imageFocalX: Prisma.FieldRef<"Lesson", 'Float'>
+  readonly imageFocalY: Prisma.FieldRef<"Lesson", 'Float'>
+  readonly imageFilter: Prisma.FieldRef<"Lesson", 'String'>
+  readonly imageZoom: Prisma.FieldRef<"Lesson", 'Float'>
   readonly audioUrl: Prisma.FieldRef<"Lesson", 'String'>
   readonly audioChunks: Prisma.FieldRef<"Lesson", 'Json'>
   readonly createdAt: Prisma.FieldRef<"Lesson", 'DateTime'>

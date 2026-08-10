@@ -19,6 +19,10 @@ type PublicArticleSummaryRecord = {
   excerpt: string | null;
   imageUrl: string | null;
   imageAlt: string | null;
+  imageFocalX: number;
+  imageFocalY: number;
+  imageFilter: string;
+  imageZoom: number;
   audioUrl: string | null;
   publishedAt: Date | null;
   issueId: string;
@@ -63,6 +67,10 @@ const toPublicArticleSummaryDto = (
     excerpt: article.excerpt,
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
     imageAlt: article.imageAlt,
+    imageFocalX: article.imageFocalX,
+    imageFocalY: article.imageFocalY,
+    imageFilter: article.imageFilter as "GRAYSCALE" | "COLOR",
+    imageZoom: article.imageZoom,
     hasAudio: Boolean(article.audioUrl),
     publishedAt: article.publishedAt.toISOString(),
     issueId: article.issueId,

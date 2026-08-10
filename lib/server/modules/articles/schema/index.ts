@@ -5,6 +5,9 @@ import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
 
 const mediaUrlSchema = z.string().trim().min(1);
+const imageFocalPointSchema = z.number().min(0).max(100);
+const imageFilterSchema = z.enum(["GRAYSCALE", "COLOR"]);
+const imageZoomSchema = z.number().min(1).max(3);
 
 const articleBaseInputSchema = z.object({
   issueId: z.string().uuid(),
@@ -17,6 +20,10 @@ const articleBaseInputSchema = z.object({
   contentRich: z.unknown(),
   imageUrl: mediaUrlSchema.optional(),
   imageAlt: z.string().trim().max(240).optional(),
+  imageFocalX: imageFocalPointSchema.optional(),
+  imageFocalY: imageFocalPointSchema.optional(),
+  imageFilter: imageFilterSchema.optional(),
+  imageZoom: imageZoomSchema.optional(),
   audioUrl: mediaUrlSchema.optional(),
   audioChunks: z.unknown().optional(),
 });

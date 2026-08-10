@@ -10,7 +10,7 @@ export function getNarrativeVariantClasses(variant: IssueHomeVariant) {
         titlePrimary: "text-foreground",
         excerpt: "text-cream-soft",
         description: "text-cream-muted",
-        image: "border-cream-border-muted grayscale",
+        image: "border-cream-border-muted",
       };
     case "default":
       return {
@@ -20,7 +20,7 @@ export function getNarrativeVariantClasses(variant: IssueHomeVariant) {
         titlePrimary: "text-accent",
         excerpt: "text-body-text",
         description: "text-muted",
-        image: "border-foreground grayscale",
+        image: "border-foreground",
       };
     case "black":
       return {
@@ -30,7 +30,7 @@ export function getNarrativeVariantClasses(variant: IssueHomeVariant) {
         titlePrimary: "text-accent",
         excerpt: "text-cream-warm",
         description: "text-dark-muted",
-        image: "border-dark-border grayscale",
+        image: "border-dark-border",
       };
     default: {
       const exhaustiveCheck: never = variant;

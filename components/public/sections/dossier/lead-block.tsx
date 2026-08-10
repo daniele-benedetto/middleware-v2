@@ -15,6 +15,10 @@ import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
+import {
+  getEditorialImageFilterClass,
+  getEditorialImageStyle,
+} from "@/lib/public/format/image-presentation";
 import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
@@ -103,7 +107,12 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
                 alt={editorialImageAlt(article.imageAlt)}
                 fill
                 sizes="(min-width: 768px) 45vw, 100vw"
-                className={cn("object-cover", publicInteraction.imageZoom)}
+                className={cn(
+                  "object-cover",
+                  getEditorialImageFilterClass(article),
+                  publicInteraction.imageZoom,
+                )}
+                style={getEditorialImageStyle(article)}
                 preload={priority}
               />
             </div>

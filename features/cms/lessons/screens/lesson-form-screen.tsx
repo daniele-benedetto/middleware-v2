@@ -34,6 +34,7 @@ import {
   type LessonDetail,
   type UpdateLessonInput,
 } from "@/features/cms/lessons/hooks/use-lesson-crud";
+import { ImagePresentationField } from "@/features/cms/media/components/image-presentation-field";
 import { CmsMediaPickerDialog } from "@/features/cms/media/components/media-picker-dialog";
 import { publishLivePreviewMessage } from "@/features/cms/preview/use-live-preview";
 import {
@@ -98,6 +99,10 @@ const lessonFormStateSchema = z.object({
   contentRich: z.unknown(),
   imageUrl: z.string().trim().refine(isValidOptionalUrl),
   imageAlt: z.string().trim().max(240),
+  imageFocalX: z.number().min(0).max(100),
+  imageFocalY: z.number().min(0).max(100),
+  imageFilter: z.enum(["GRAYSCALE", "COLOR"]),
+  imageZoom: z.number().min(1).max(3),
   audioUrl: z.string().trim().refine(isValidOptionalUrl),
   audioChunksUrl: z.string().trim().refine(isValidOptionalUrl),
   status: z.enum(lessonStatusOptions),
@@ -134,6 +139,10 @@ function getLessonFormDefaultValues(
     contentRich: lesson?.contentRich ?? emptyContentDoc,
     imageUrl: lesson?.imageUrl ?? "",
     imageAlt: lesson?.imageAlt ?? "",
+    imageFocalX: lesson?.imageFocalX ?? 50,
+    imageFocalY: lesson?.imageFocalY ?? 50,
+    imageFilter: lesson?.imageFilter ?? "GRAYSCALE",
+    imageZoom: lesson?.imageZoom ?? 1,
     audioUrl: lesson?.audioUrl ?? "",
     audioChunksUrl: extractAudioChunksUrl(lesson?.audioChunks),
     status: lesson?.status ?? "DRAFT",
@@ -154,6 +163,10 @@ function buildCreateLessonPayload(
     contentRich: values.contentRich,
     imageUrl: values.imageUrl || undefined,
     imageAlt: values.imageAlt || undefined,
+    imageFocalX: values.imageFocalX,
+    imageFocalY: values.imageFocalY,
+    imageFilter: values.imageFilter,
+    imageZoom: values.imageZoom,
     audioUrl: values.audioUrl || undefined,
     audioChunks: values.audioChunksUrl || undefined,
   };
@@ -174,6 +187,10 @@ function buildUpdateLessonPayload(
     contentRich: values.contentRich,
     imageUrl: values.imageUrl ? values.imageUrl : null,
     imageAlt: values.imageAlt ? values.imageAlt : null,
+    imageFocalX: values.imageFocalX,
+    imageFocalY: values.imageFocalY,
+    imageFilter: values.imageFilter,
+    imageZoom: values.imageZoom,
     audioUrl: values.audioUrl ? values.audioUrl : null,
     audioChunks: values.audioChunksUrl
       ? values.audioChunksUrl
@@ -320,6 +337,10 @@ function LessonFormContent({
     excerptRich: fieldText.excerpt,
     imageUrl: fieldText.imageUrl,
     imageAlt: fieldText.imageAlt,
+    imageFocalX: "Posizione immagine",
+    imageFocalY: "Posizione immagine",
+    imageFilter: "Filtro immagine",
+    imageZoom: "Zoom immagine",
     audioUrl: fieldText.audioUrl,
     audioChunksUrl: fieldText.audioChunksUrl,
   };
@@ -357,6 +378,10 @@ function LessonFormContent({
   const manualSlug = useWatch({ control, name: "slug" }) ?? "";
   const imageUrl = useWatch({ control, name: "imageUrl" }) ?? "";
   const imageAlt = useWatch({ control, name: "imageAlt" }) ?? "";
+  const imageFocalX = useWatch({ control, name: "imageFocalX" }) ?? 50;
+  const imageFocalY = useWatch({ control, name: "imageFocalY" }) ?? 50;
+  const imageFilter = useWatch({ control, name: "imageFilter" }) ?? "GRAYSCALE";
+  const imageZoom = useWatch({ control, name: "imageZoom" }) ?? 1;
   const audioUrl = useWatch({ control, name: "audioUrl" }) ?? "";
   const audioChunksUrl = useWatch({ control, name: "audioChunksUrl" }) ?? "";
 
@@ -432,6 +457,10 @@ function LessonFormContent({
           contentRich: values.contentRich,
           imageUrl: values.imageUrl || null,
           imageAlt: values.imageAlt || null,
+          imageFocalX: values.imageFocalX,
+          imageFocalY: values.imageFocalY,
+          imageFilter: values.imageFilter,
+          imageZoom: values.imageZoom,
           audioUrl: values.audioUrl || null,
           audioChunks: values.audioChunksUrl || null,
           sortOrder: lesson?.sortOrder ?? 0,
@@ -738,7 +767,24 @@ function LessonFormContent({
               <CmsFormField label={fieldText.imageUrl} htmlFor="lesson-image-url">
                 <div className="space-y-3">
                   {imageUrl ? (
-                    <ArticleMediaFieldPreview kind="image" url={imageUrl} />
+                    <ImagePresentationField
+                      url={imageUrl}
+                      focalX={imageFocalX}
+                      focalY={imageFocalY}
+                      imageFilter={imageFilter}
+                      zoom={imageZoom}
+                      disabled={isMutating}
+                      onFocalPointChange={({ x, y }) => {
+                        setValue("imageFocalX", x, { shouldDirty: true, shouldValidate: true });
+                        setValue("imageFocalY", y, { shouldDirty: true, shouldValidate: true });
+                      }}
+                      onFilterChange={(value) =>
+                        setValue("imageFilter", value, { shouldDirty: true, shouldValidate: true })
+                      }
+                      onZoomChange={(value) =>
+                        setValue("imageZoom", value, { shouldDirty: true, shouldValidate: true })
+                      }
+                    />
                   ) : (
                     <div className="flex aspect-16/10 items-center justify-center border border-dashed border-border bg-card-hover px-6 text-center">
                       <div className="space-y-1.5">
@@ -768,6 +814,10 @@ function LessonFormContent({
                         onClick={() => {
                           setValue("imageUrl", "", { shouldDirty: true, shouldValidate: true });
                           setValue("imageAlt", "", { shouldDirty: true, shouldValidate: true });
+                          setValue("imageFocalX", 50, { shouldDirty: true });
+                          setValue("imageFocalY", 50, { shouldDirty: true });
+                          setValue("imageFilter", "GRAYSCALE", { shouldDirty: true });
+                          setValue("imageZoom", 1, { shouldDirty: true });
                         }}
                       >
                         {lessonFormText.clearMediaField}

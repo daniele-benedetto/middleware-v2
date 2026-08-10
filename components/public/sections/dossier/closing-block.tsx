@@ -16,6 +16,10 @@ import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
+import {
+  getEditorialImageFilterClass,
+  getEditorialImageStyle,
+} from "@/lib/public/format/image-presentation";
 import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
@@ -40,13 +44,18 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `closing-article-title-${article.id}`;
   const image = article.imageUrl ? (
-    <div className="relative min-h-48 overflow-hidden border border-foreground grayscale sm:min-h-52 md:min-h-64 lg:min-h-[min(34vh,360px)]">
+    <div className="relative min-h-48 overflow-hidden border border-foreground sm:min-h-52 md:min-h-64 lg:min-h-[min(34vh,360px)]">
       <Image
         src={article.imageUrl}
         alt={editorialImageAlt(article.imageAlt)}
         fill
         sizes="(min-width: 768px) 34vw, 100vw"
-        className={cn("object-cover", publicInteraction.imageZoom)}
+        className={cn(
+          "object-cover",
+          getEditorialImageFilterClass(article),
+          publicInteraction.imageZoom,
+        )}
+        style={getEditorialImageStyle(article)}
       />
     </div>
   ) : null;
@@ -121,13 +130,18 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
               )}
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-foreground md:aspect-auto md:min-h-0 md:border-r md:border-foreground">
-                <div className="relative h-full min-h-0 overflow-hidden grayscale">
+                <div className="relative h-full min-h-0 overflow-hidden">
                   <Image
                     src={article.imageUrl}
                     alt={editorialImageAlt(article.imageAlt)}
                     fill
                     sizes="(min-width: 768px) 40vw, 100vw"
-                    className={cn("object-cover", publicInteraction.imageZoom)}
+                    className={cn(
+                      "object-cover",
+                      getEditorialImageFilterClass(article),
+                      publicInteraction.imageZoom,
+                    )}
+                    style={getEditorialImageStyle(article)}
                   />
                 </div>
               </div>

@@ -7,6 +7,10 @@ import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
+import {
+  getEditorialImageFilterClass,
+  getEditorialImageStyle,
+} from "@/lib/public/format/image-presentation";
 import { cn } from "@/lib/utils";
 
 import type { HomeIssueArticle } from "@/components/public/home/home-view-model";
@@ -40,14 +44,19 @@ export function DossierArticleCard({
   const summary = article.excerpt;
   const image =
     showImage && article.imageUrl ? (
-      <div className="mt-5 overflow-hidden grayscale md:border md:border-foreground">
+      <div className="mt-5 overflow-hidden md:border md:border-foreground">
         <Image
           src={article.imageUrl}
           alt={editorialImageAlt(article.imageAlt)}
           width={1200}
           height={800}
           sizes="(min-width: 768px) 38vw, 100vw"
-          className={cn("h-auto w-full object-cover", publicInteraction.imageZoom)}
+          className={cn(
+            "aspect-3/2 w-full object-cover",
+            getEditorialImageFilterClass(article),
+            publicInteraction.imageZoom,
+          )}
+          style={getEditorialImageStyle(article)}
         />
       </div>
     ) : null;

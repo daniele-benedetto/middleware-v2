@@ -1534,6 +1534,10 @@ export const ArticleScalarFieldEnum = {
   contentRich: 'contentRich',
   imageUrl: 'imageUrl',
   imageAlt: 'imageAlt',
+  imageFocalX: 'imageFocalX',
+  imageFocalY: 'imageFocalY',
+  imageFilter: 'imageFilter',
+  imageZoom: 'imageZoom',
   audioUrl: 'audioUrl',
   audioChunks: 'audioChunks',
   createdAt: 'createdAt',
@@ -1574,6 +1578,10 @@ export const LessonScalarFieldEnum = {
   contentRich: 'contentRich',
   imageUrl: 'imageUrl',
   imageAlt: 'imageAlt',
+  imageFocalX: 'imageFocalX',
+  imageFocalY: 'imageFocalY',
+  imageFilter: 'imageFilter',
+  imageZoom: 'imageZoom',
   audioUrl: 'audioUrl',
   audioChunks: 'audioChunks',
   createdAt: 'createdAt',
@@ -1781,6 +1789,20 @@ export type ListEnumArticleStatusFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+/**
  * Reference to a field of type 'LessonStatus'
  */
 export type EnumLessonStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LessonStatus'>
@@ -1819,20 +1841,6 @@ export type EnumAuditLogOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'AuditLogOutcome[]'
  */
 export type ListEnumAuditLogOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditLogOutcome[]'>
-    
-
-
-/**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-/**
- * Reference to a field of type 'Float[]'
- */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**

@@ -7,6 +7,10 @@ import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
+import {
+  getEditorialImageFilterClass,
+  getEditorialImageStyle,
+} from "@/lib/public/format/image-presentation";
 import { cn } from "@/lib/utils";
 
 import type { PublicCourseLessonSummaryDto } from "@/lib/server/modules/courses/dto/public";
@@ -39,14 +43,19 @@ export function DossierLessonCard({
   const isClusterFeatured = variant === "clusterFeatured";
   const image =
     showImage && lesson.imageUrl ? (
-      <div className="mt-5 overflow-hidden grayscale md:border md:border-foreground">
+      <div className="mt-5 overflow-hidden md:border md:border-foreground">
         <Image
           src={lesson.imageUrl}
           alt={editorialImageAlt(lesson.imageAlt)}
           width={1200}
           height={800}
           sizes="(min-width: 768px) 38vw, 100vw"
-          className={cn("h-auto w-full object-cover", publicInteraction.imageZoom)}
+          className={cn(
+            "aspect-3/2 w-full object-cover",
+            getEditorialImageFilterClass(lesson),
+            publicInteraction.imageZoom,
+          )}
+          style={getEditorialImageStyle(lesson)}
         />
       </div>
     ) : null;

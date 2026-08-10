@@ -105,6 +105,10 @@ type LessonDetailRecord = LessonRecord & {
   contentRich: unknown;
   imageUrl: string | null;
   imageAlt: string | null;
+  imageFocalX: number;
+  imageFocalY: number;
+  imageFilter: string;
+  imageZoom: number;
   audioUrl: string | null;
   audioChunks: unknown;
 };
@@ -135,6 +139,10 @@ const toLessonDetailDto = (lesson: LessonDetailRecord): LessonDetailDto => {
     contentRich: lesson.contentRich,
     imageUrl: lesson.imageUrl,
     imageAlt: lesson.imageAlt,
+    imageFocalX: lesson.imageFocalX,
+    imageFocalY: lesson.imageFocalY,
+    imageFilter: lesson.imageFilter as "GRAYSCALE" | "COLOR",
+    imageZoom: lesson.imageZoom,
     audioUrl: lesson.audioUrl,
     audioChunks: (lesson.audioChunks ?? null) as LessonDetailDto["audioChunks"],
   };
@@ -157,6 +165,10 @@ const toPublicLessonPreviewDto = (lesson: LessonDetailRecord): PublicLessonDetai
     excerpt: lesson.excerpt,
     imageUrl: resolvePublicMediaUrl(lesson.imageUrl),
     imageAlt: lesson.imageAlt,
+    imageFocalX: lesson.imageFocalX,
+    imageFocalY: lesson.imageFocalY,
+    imageFilter: lesson.imageFilter as "GRAYSCALE" | "COLOR",
+    imageZoom: lesson.imageZoom,
     hasAudio: Boolean(lesson.audioUrl),
     sortOrder: lesson.sortOrder,
     readingTimeMinutes: calculateReadingTimeMinutes(lesson.contentRich),

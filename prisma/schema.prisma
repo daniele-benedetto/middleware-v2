@@ -169,6 +169,10 @@ model Article {
 
   imageUrl    String?
   imageAlt    String?
+  imageFocalX Float   @default(50)
+  imageFocalY Float   @default(50)
+  imageFilter String  @default("GRAYSCALE")
+  imageZoom   Float   @default(1)
   audioUrl    String?
   audioChunks Json?
 
@@ -225,6 +229,10 @@ model Lesson {
 
   imageUrl    String?
   imageAlt    String?
+  imageFocalX Float   @default(50)
+  imageFocalY Float   @default(50)
+  imageFilter String  @default("GRAYSCALE")
+  imageZoom   Float   @default(1)
   audioUrl    String?
   audioChunks Json?
 

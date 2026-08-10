@@ -19,6 +19,10 @@ type PublicLessonSummaryRecord = {
   excerpt: string | null;
   imageUrl: string | null;
   imageAlt: string | null;
+  imageFocalX: number;
+  imageFocalY: number;
+  imageFilter: string;
+  imageZoom: number;
   audioUrl: string | null;
   sortOrder: number;
   publishedAt: Date | null;
@@ -58,6 +62,10 @@ const toPublicLessonSummaryDto = (lesson: PublicLessonSummaryRecord): PublicLess
     excerpt: lesson.excerpt,
     imageUrl: resolvePublicMediaUrl(lesson.imageUrl),
     imageAlt: lesson.imageAlt,
+    imageFocalX: lesson.imageFocalX,
+    imageFocalY: lesson.imageFocalY,
+    imageFilter: lesson.imageFilter as "GRAYSCALE" | "COLOR",
+    imageZoom: lesson.imageZoom,
     hasAudio: Boolean(lesson.audioUrl),
     sortOrder: lesson.sortOrder,
     readingTimeMinutes: 1,
