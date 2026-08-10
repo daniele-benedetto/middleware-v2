@@ -152,6 +152,16 @@ const nextConfig: NextConfig = {
     proxyClientMaxBodySize: "100mb",
     viewTransition: true,
   },
+  // Next's tracer copies the sharp wrapper and its .node addon, but not the
+  // libvips shared objects: those are dlopen'd, so static tracing never sees
+  // them. Without them the optimizer throws and silently falls back to the
+  // unoptimized original (image-optimizer.js: "If we fail to optimize, fallback
+  // to the original image"), which also makes images.formats below dead config.
+  // Version is globbed so a sharp upgrade does not silently stop matching; the
+  // Dockerfile asserts the load at build time to catch exactly that.
+  outputFileTracingIncludes: {
+    "/**": ["./node_modules/.pnpm/@img+*/node_modules/@img/**/*"],
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     localPatterns: [

@@ -95,16 +95,18 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Image Optimization needs sharp at runtime. Next's file tracing copies the
-# sharp JS wrapper and the .node addon, but not the libvips shared objects from
-# @img/sharp-libvips-linux-x64: they are dlopen'd, so static tracing cannot see
-# them and the optimizer fails with
-# `ERR_DLOPEN_FAILED: libvips-cpp.so cannot open shared object file`,
-# silently serving unoptimized originals. Reinstalling sharp here with npm gives
-# a flat, self-contained tree that includes the shared objects.
-RUN npm install --no-save --include=optional --os=linux --cpu=x64 sharp@0.35.0 \
-  && node -e 'require("sharp")' \
-  && chown -R nextjs:nodejs /app/node_modules/sharp /app/node_modules/@img
+# Assert that Image Optimization can load sharp, resolving it exactly as the
+# optimizer does at runtime. node_modules/next is a pnpm symlink, so Node
+# resolves from its realpath under .pnpm and reaches the pnpm copy of sharp, not
+# a top-level one. A plain require("sharp") from /app therefore passes even when
+# the copy the optimizer reaches is broken, which is how a silent fallback to
+# unoptimized originals shipped unnoticed. The libvips shared objects are pulled
+# in by outputFileTracingIncludes in next.config.ts; this fails the build if that
+# ever stops matching.
+RUN node -e 'const fs=require("fs"),path=require("path"); \
+  const from=path.dirname(fs.realpathSync(require.resolve("next/dist/server/image-optimizer.js"))); \
+  const s=require(require.resolve("sharp",{paths:[from]})); \
+  console.log("optimizer can load sharp, libvips "+s.versions.vips);'
 
 USER nextjs
 
