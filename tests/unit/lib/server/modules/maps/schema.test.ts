@@ -1,5 +1,6 @@
 import { isWithinProvinceOfModena } from "@/lib/server/modules/maps/boundary/province-of-modena";
 import {
+  createMapInputSchema,
   createMapItemInputSchema,
   updateMapItemInputSchema,
 } from "@/lib/server/modules/maps/schema";
@@ -7,6 +8,20 @@ import {
 const mapId = "00000000-0000-4000-8000-000000000001";
 
 describe("maps schemas", () => {
+  it("requires a non-blank map title and accepts an optional description", () => {
+    expect(createMapInputSchema.safeParse({ title: "   " }).success).toBe(false);
+    expect(
+      createMapInputSchema.safeParse({
+        title: "Mappa di Modena",
+        titleStyled: [
+          { text: "Mappa", tone: "primary" },
+          { text: "di Modena", breakAfter: true },
+        ],
+        descriptionRich: { type: "doc", content: [{ type: "paragraph" }] },
+      }).success,
+    ).toBe(true);
+  });
+
   it("accepts Modena coordinates and rejects global coordinate ranges", () => {
     expect(
       createMapItemInputSchema.safeParse({

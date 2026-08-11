@@ -242,6 +242,7 @@ model Lesson {
 model Map {
   id              String   @id @default(uuid())
   title           String
+  titleStyled     Json?
   descriptionRich Json?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

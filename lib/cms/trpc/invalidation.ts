@@ -72,6 +72,13 @@ export type CmsMutationName =
   | "pages.publish"
   | "pages.unpublish"
   | "pages.archive"
+  | "maps.create"
+  | "maps.update"
+  | "maps.delete"
+  | "maps.createItem"
+  | "maps.updateItem"
+  | "maps.deleteItem"
+  | "maps.reorderItems"
   | "navigation.update";
 
 export async function invalidateIssuesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
@@ -116,6 +123,10 @@ export async function invalidateArticlesAfterMutation(utils: TrpcUtils, input?: 
 
 export async function invalidatePagesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
   await invalidateResource(utils.pages.list.invalidate, utils.pages.getById.invalidate, input);
+}
+
+export async function invalidateMapsAfterMutation(utils: TrpcUtils, input?: MutationInput) {
+  await invalidateResource(utils.maps.list.invalidate, utils.maps.getById.invalidate, input);
 }
 
 export async function invalidateNavigationAfterMutation(utils: TrpcUtils) {
@@ -164,6 +175,11 @@ export async function invalidateAfterCmsMutation(
 
   if (mutation.startsWith("pages.")) {
     await invalidatePagesAfterMutation(utils, input);
+    return;
+  }
+
+  if (mutation.startsWith("maps.")) {
+    await invalidateMapsAfterMutation(utils, input);
     return;
   }
 

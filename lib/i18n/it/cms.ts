@@ -327,6 +327,17 @@ export const cmsIt = {
         newPreviewMetadataTitle: "Anteprima nuovo incontro",
         previewCourseTitle: "Contro-formazione di anteprima",
       },
+      maps: {
+        createTitle: "Nuova Mappa",
+        created: "Mappa creata.",
+        descriptionEditorAriaLabel: "Editor descrizione mappa",
+        titleStyledHint:
+          "Seleziona una parola o una porzione del titolo, poi clicca Accent o A capo.",
+        titleStyledAccentAction: "Accent",
+        titleStyledLineBreakAction: "A capo",
+        titleStyledEditorAriaLabel: "Editor titolo mappa",
+        creationHint: "Dopo il salvataggio potrai aggiungere i punti nella mappa.",
+      },
       pages: {
         invalidTitle: "Pagina non valida",
         createTitle: "Nuova Pagina",

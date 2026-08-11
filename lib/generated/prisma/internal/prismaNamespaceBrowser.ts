@@ -253,6 +253,7 @@ export type LessonScalarFieldEnum = (typeof LessonScalarFieldEnum)[keyof typeof 
 export const MapScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  titleStyled: 'titleStyled',
   descriptionRich: 'descriptionRich',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

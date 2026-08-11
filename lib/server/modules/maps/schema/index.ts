@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 import { isWithinProvinceOfModena } from "@/lib/server/modules/maps/boundary/province-of-modena";
 
 const coordinateSchema = z.coerce
@@ -20,12 +21,16 @@ const mapItemLocationSchema = z
 
 export const createMapInputSchema = z.object({
   title: z.string().trim().min(1),
+  titleStyled: issueTitleStyledSchema.nullable().optional(),
   descriptionRich: z.unknown().optional(),
 });
 
 export const updateMapInputSchema = createMapInputSchema
   .partial()
-  .extend({ descriptionRich: z.unknown().nullable().optional() })
+  .extend({
+    titleStyled: issueTitleStyledSchema.nullable().optional(),
+    descriptionRich: z.unknown().nullable().optional(),
+  })
   .refine((input) => Object.keys(input).length > 0, { message: "At least one field is required" });
 
 export const createMapItemInputSchema = z

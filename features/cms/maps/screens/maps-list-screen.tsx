@@ -1,6 +1,7 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { Plus } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   CmsEmptyState,
@@ -8,7 +9,12 @@ import {
   CmsLoadingState,
   CmsPaginationFooter,
 } from "@/components/cms/common";
-import { CmsDataTableShell, CmsPageHeader, cmsTableClasses } from "@/components/cms/primitives";
+import {
+  CmsActionButton,
+  CmsDataTableShell,
+  CmsPageHeader,
+  cmsTableClasses,
+} from "@/components/cms/primitives";
 import {
   Table,
   TableBody,
@@ -19,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import { useCmsListUrlState, useMapsListQuery } from "@/features/cms/shared/hooks";
+import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { parseMapsListSearchParams } from "@/lib/cms/query";
 import { mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
@@ -40,6 +47,7 @@ function formatDate(value: string) {
 }
 
 export function CmsMapsListScreen({ initialInput, initialData }: CmsMapsListScreenProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const text = i18n.cms;
   const listText = text.lists.maps;
@@ -73,7 +81,15 @@ export function CmsMapsListScreen({ initialInput, initialData }: CmsMapsListScre
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <CmsPageHeader title={text.navigation.maps} />
+      <CmsPageHeader
+        title={text.navigation.maps}
+        actions={
+          <CmsActionButton variant="outline" onClick={() => router.push(cmsCrudRoutes.maps.create)}>
+            <Plus aria-hidden />
+            {text.resource.new}
+          </CmsActionButton>
+        }
+      />
 
       <CmsDataTableShell
         toolbar={

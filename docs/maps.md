@@ -30,6 +30,7 @@ The first version uses owned points rather than a reusable location catalogue.
 Map
 - id: UUID
 - title: string
+- titleStyled: optional highlighted/line-break title segments
 - descriptionRich: version-compatible TipTap JSON, optional
 - createdAt
 - updatedAt
@@ -111,18 +112,6 @@ Route helpers belong in `lib/cms/crud-routes.ts`; sidebar configuration belongs 
 ## Delivery Phases
 
 Each phase is completed, reviewed, and verified before starting the next. No later page is implemented early for convenience.
-
-### Phase 3: New Map Page
-
-Implement only `/cms/maps/new` and its loading state.
-
-- Reuse the standard two-column CMS form geometry where appropriate.
-- Collect map title and optional TipTap description.
-- Validate through the shared form conventions and map schema.
-- Save as soon as metadata is valid, then redirect to `/cms/maps/[id]/edit`.
-- Do not create points or load a map canvas before the map record exists.
-
-Complete when creation, validation, cancellation, server errors, navigation, and responsive form behavior meet the same standard as existing CMS editors.
 
 ### Phase 4: Map Workspace Page
 

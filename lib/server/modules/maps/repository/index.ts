@@ -16,6 +16,7 @@ import type {
 const MAP_SELECT = {
   id: true,
   title: true,
+  titleStyled: true,
   descriptionRich: true,
   createdAt: true,
   updatedAt: true,
@@ -64,6 +65,10 @@ export const mapsRepository = {
     return prisma.map.create({
       data: {
         title: input.title,
+        titleStyled:
+          input.titleStyled === undefined
+            ? undefined
+            : (input.titleStyled as Prisma.InputJsonValue),
         descriptionRich:
           input.descriptionRich === undefined
             ? undefined
@@ -76,6 +81,12 @@ export const mapsRepository = {
       where: { id },
       data: {
         title: input.title,
+        titleStyled:
+          input.titleStyled === undefined
+            ? undefined
+            : input.titleStyled === null
+              ? Prisma.JsonNull
+              : (input.titleStyled as Prisma.InputJsonValue),
         descriptionRich:
           input.descriptionRich === undefined
             ? undefined

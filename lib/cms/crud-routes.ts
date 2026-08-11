@@ -23,6 +23,10 @@ export const cmsCrudRoutes = {
     create: "/cms/incontri/new",
     edit: (id: string) => `/cms/incontri/${id}/edit`,
   },
+  maps: {
+    create: "/cms/maps/new",
+    edit: (id: string) => `/cms/maps/${id}/edit`,
+  },
   pages: {
     create: "/cms/pages/new",
     edit: (id: string) => `/cms/pages/${id}/edit`,

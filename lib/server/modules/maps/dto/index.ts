@@ -15,6 +15,7 @@ export const mapItemDtoSchema = z.object({
 export const mapDtoSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
+  titleStyled: z.unknown().nullable(),
   descriptionRich: z.unknown().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),

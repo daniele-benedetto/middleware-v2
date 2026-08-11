@@ -19,6 +19,7 @@ import type {
 type MapRecord = {
   id: string;
   title: string;
+  titleStyled: unknown;
   descriptionRich: unknown;
   createdAt: Date;
   updatedAt: Date;
@@ -38,6 +39,7 @@ type MapItemRecord = {
 const toMapDto = (map: MapRecord): MapDto => ({
   id: map.id,
   title: map.title,
+  titleStyled: (map.titleStyled as MapDto["titleStyled"]) ?? null,
   descriptionRich: map.descriptionRich ?? null,
   createdAt: map.createdAt.toISOString(),
   updatedAt: map.updatedAt.toISOString(),
