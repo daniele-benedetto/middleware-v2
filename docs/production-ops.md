@@ -301,19 +301,20 @@ Le mappe CMS usano solo tile vettoriali self-hosted. Il browser non deve contatt
 
 - Renderer previsto: MapLibre GL JS, caricato solo dalle route CMS delle mappe.
 - Server tile: `maptiler/tileserver-gl:v5.6.0@sha256:3a9ccdb24820b6814c8119bcc8a4376c39867cb0ffe69d62919ef898b90c2427`.
-- Archivio: `modena.mbtiles`, copertura Provincia di Modena e margine operativo, nel volume Docker `middleware_tiles-data`.
+- Archivio: `modena.mbtiles`, tile vettoriali MapLibre-compatible con copertura Provincia di Modena e margine operativo, nel volume Docker `middleware_tiles-data`.
 - Il container TileServer appartiene solo alla rete `internal`; non pubblicare porte host e non aggiungere route Caddy dirette.
 - L'applicazione espone i tile same-origin tramite il rewrite `/tiles/* -> tileserver:8080/*`.
+- Caddy applica su `/tiles/*` `Cache-Control: public, max-age=3600, stale-while-revalidate=86400` dopo il proxy verso l'app. Non usare `immutable`: un archivio aggiornato mantiene gli stessi URL tile.
 - Impostare `TILES_PUBLIC_URL=https://middleware.media/tiles/` nel servizio TileServer production. In locale il default e `http://localhost:3000/tiles/`.
 - Conservare nel registro di manutenzione URL e licenza della sorgente OSM, data di acquisizione, versione del generatore, bounds, checksum SHA-256 e attribuzione visualizzata.
 
 Installazione o aggiornamento dati:
 
-1. Generare un archivio OpenMapTiles-compatible per Modena e provincia fuori dalla directory applicativa, ad esempio `/opt/middleware/tiles-incoming/modena.mbtiles`.
+1. Acquisire un archivio vettoriale MapLibre-compatible fuori dalla directory applicativa, ad esempio il pacchetto Shortbread di Geofabrik, e ritagliarlo a Modena e provincia piu margine in `/opt/middleware/tiles-incoming/modena.mbtiles`.
 2. Verificare che il file sia non vuoto, leggibile da SQLite e che i metadata dichiarino bounds e attribution corretti.
 3. Registrare il checksum con `sha256sum /opt/middleware/tiles-incoming/modena.mbtiles` prima dell'installazione.
 4. Copiare l'archivio nel volume come `modena.mbtiles.next`; rinominarlo in `modena.mbtiles` solo dopo che la copia ha checksum uguale alla sorgente.
-5. Ricreare soltanto `tileserver`, attendere l'healthcheck e verificare `https://middleware.media/tiles/health` e `https://middleware.media/tiles/styles.json`.
+5. Ricreare soltanto `tileserver`, attendere l'healthcheck e verificare `https://middleware.media/tiles/health`, `https://middleware.media/tiles/data.json` e una tile vettoriale dentro il bounding box.
 6. Se il controllo fallisce, ripristinare il precedente archivio nel volume e ricreare soltanto `tileserver`.
 
 Il volume tile non e parte di Prisma, dei dump Postgres o dell'rsync dell'app. Non committare MBTiles: `/tiles-incoming/` e ignorata dal repository.

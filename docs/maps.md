@@ -69,8 +69,9 @@ OSM data extract
 
 - `MapLibre GL JS` is the client-only map renderer.
 - `TileServer GL` serves self-hosted vector tiles from a persistent local MBTiles volume.
+- `public/maps/modena-style.json` is the local MapLibre base style; it references only same-origin tile URLs and retains visible OSM/Geofabrik attribution.
 - The MBTiles coverage includes the Province of Modena and a small surrounding buffer.
-- TileServer is not directly public. A Next rewrite serves it through the application origin to preserve a restrictive CSP and enable normal HTTP tile caching.
+- TileServer is not directly public. A Next rewrite serves it through the application origin to preserve a restrictive CSP; Caddy applies the production cache policy after the application response.
 - The administrative border is stored as versioned boundary data sourced from OpenStreetMap. It supplies both client `maxBounds` and server-side point-in-polygon validation.
 - OSM/OpenMapTiles attribution remains visible in the workspace, as required by the respective data licences.
 - Data acquisition is allowed as an operational maintenance activity; the running CMS does not depend on an external tile, geocoding, or map API.
@@ -110,17 +111,6 @@ Route helpers belong in `lib/cms/crud-routes.ts`; sidebar configuration belongs 
 ## Delivery Phases
 
 Each phase is completed, reviewed, and verified before starting the next. No later page is implemented early for convenience.
-
-### Phase 1: Tile Foundation
-
-Implement no CMS content page in this phase.
-
-- Add MapLibre and TileServer GL integration without loading either on unrelated routes.
-- Add the internal tile service, persistent MBTiles volume, same-origin reverse-proxy route, healthcheck, and cache headers.
-- Define the repeatable data-update procedure: acquire extract, generate/replace MBTiles, validate attribution and bounds, deploy, and healthcheck.
-- Verify that the workspace can render the basemap without browser calls to external map services.
-
-Complete when a local internal development harness renders the Province of Modena basemap and production operations have a documented update procedure.
 
 ### Phase 2: Maps Collection Page
 
