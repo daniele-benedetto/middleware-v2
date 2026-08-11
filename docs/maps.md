@@ -63,14 +63,14 @@ OSM data extract
   -> internal update pipeline
   -> local MBTiles archive
   -> TileServer GL Docker service
-  -> same-origin reverse proxy at /tiles/*
+  -> same-origin Next rewrite at /tiles/*
   -> MapLibre GL JS in the CMS workspace
 ```
 
 - `MapLibre GL JS` is the client-only map renderer.
 - `TileServer GL` serves self-hosted vector tiles from a persistent local MBTiles volume.
 - The MBTiles coverage includes the Province of Modena and a small surrounding buffer.
-- TileServer is not directly public. The deployment reverse proxy serves it through the application origin to preserve a restrictive CSP and enable normal HTTP tile caching.
+- TileServer is not directly public. A Next rewrite serves it through the application origin to preserve a restrictive CSP and enable normal HTTP tile caching.
 - The administrative border is stored as versioned boundary data sourced from OpenStreetMap. It supplies both client `maxBounds` and server-side point-in-polygon validation.
 - OSM/OpenMapTiles attribution remains visible in the workspace, as required by the respective data licences.
 - Data acquisition is allowed as an operational maintenance activity; the running CMS does not depend on an external tile, geocoding, or map API.
@@ -110,17 +110,6 @@ Route helpers belong in `lib/cms/crud-routes.ts`; sidebar configuration belongs 
 ## Delivery Phases
 
 Each phase is completed, reviewed, and verified before starting the next. No later page is implemented early for convenience.
-
-### Phase 0: Domain Foundation
-
-Implement no end-user CMS page in this phase.
-
-- Add additive Prisma models and migration.
-- Add maps schemas, DTOs, policy, repository, service, tRPC router, and root-router registration.
-- Add the versioned Province of Modena boundary asset and deterministic point-in-polygon validation.
-- Add tests for coordinate ranges, boundary enforcement, ownership, cascade deletion, complete-set reordering, roles, and DTO output.
-
-Complete when the CMS-only API can safely create, read, update, delete, and order maps and points without any map UI.
 
 ### Phase 1: Tile Foundation
 

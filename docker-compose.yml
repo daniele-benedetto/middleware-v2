@@ -102,7 +102,27 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  tileserver:
+    profiles: ["maps"]
+    image: maptiler/tileserver-gl:v5.6.0@sha256:3a9ccdb24820b6814c8119bcc8a4376c39867cb0ffe69d62919ef898b90c2427
+    command:
+      [
+        "--file",
+        "modena.mbtiles",
+        "--public_url",
+        "${TILES_PUBLIC_URL:-http://localhost:3000/tiles/}",
+      ]
+    volumes:
+      - tiles-data:/data:ro
+    healthcheck:
+      test: ["CMD", "node", "/usr/src/app/src/healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
 volumes:
   postgres-data:
   redis-data:
   minio-data:
+  tiles-data:

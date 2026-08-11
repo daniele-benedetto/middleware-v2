@@ -176,6 +176,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/tiles/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
         source: "/:path*",
         headers: securityHeaders,
       },
@@ -183,6 +192,14 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return legacyV1Redirects;
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/tiles/:path*",
+        destination: "http://tileserver:8080/:path*",
+      },
+    ];
   },
 };
 

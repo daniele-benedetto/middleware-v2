@@ -11,8 +11,9 @@ async function getContentSecurityPolicy(environment: "development" | "production
   const config = await loadConfig(environment);
   const headerRules = await config.headers?.();
 
-  return headerRules?.[0]?.headers.find((header) => header.key === "Content-Security-Policy")
-    ?.value;
+  return headerRules
+    ?.flatMap((rule) => rule.headers)
+    .find((header) => header.key === "Content-Security-Policy")?.value;
 }
 
 describe("Next.js security config", () => {
@@ -33,5 +34,14 @@ describe("Next.js security config", () => {
 
   it("keeps unsafe-eval in development for Next.js tooling", async () => {
     expect(await getContentSecurityPolicy("development")).toContain("'unsafe-eval'");
+  });
+
+  it("proxies self-hosted tile requests through the application origin", async () => {
+    const config = await loadConfig("production");
+
+    await expect(config.rewrites?.()).resolves.toContainEqual({
+      source: "/tiles/:path*",
+      destination: "http://tileserver:8080/:path*",
+    });
   });
 });
