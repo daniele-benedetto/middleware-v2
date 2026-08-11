@@ -21,6 +21,7 @@ export const cmsIt = {
     articles: "Articoli",
     courses: "Contro-formazioni",
     lessons: "Incontri",
+    maps: "Mappe",
     pages: "Pagine",
     publicNavigation: "Navigazione",
     media: "Media",
@@ -38,6 +39,7 @@ export const cmsIt = {
     categories: "Categorie",
     authors: "Autori",
     articles: "Articoli",
+    maps: "Mappe",
     pages: "Pagine",
     navigation: "Navigazione",
     media: "Media",
@@ -614,6 +616,15 @@ export const cmsIt = {
       statusPublished: "Pubblicata",
       statusArchived: "Archiviata",
       selectItem: (title: string) => `Seleziona ${title}`,
+    },
+    maps: {
+      subtitle: "Gestisci le mappe editoriali e i relativi punti.",
+      table: {
+        title: "Titolo",
+        items: "Punti",
+        createdAt: "Creata",
+        updatedAt: "Aggiornata",
+      },
     },
     categories: {
       subtitle: "Gestisci le categorie editoriali degli articoli.",

@@ -7,6 +7,7 @@ export {
   parseCoursesListSearchParams,
   parseIssuesListSearchParams,
   parseLessonsListSearchParams,
+  parseMapsListSearchParams,
   parsePagesListSearchParams,
   parseUsersListSearchParams,
   serializeCmsSearchParams,

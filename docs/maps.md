@@ -112,18 +112,6 @@ Route helpers belong in `lib/cms/crud-routes.ts`; sidebar configuration belongs 
 
 Each phase is completed, reviewed, and verified before starting the next. No later page is implemented early for convenience.
 
-### Phase 2: Maps Collection Page
-
-Implement only `/cms/maps` and its loading state.
-
-- Add the `Mappe` sidebar entry through the existing navigation mapping.
-- Follow the courses list conventions: RSC prefetch, URL-backed search/pagination, `CmsPageHeader`, `CmsDataTableShell`, empty/loading/error/forbidden states, and a `Nuova mappa` action.
-- Show title, point count, creation/update metadata, and row actions for opening or deleting a map.
-- Use the standard hard-delete confirmation, audit trail, error mapping, toasts, cache invalidation, and visible-page selection behavior.
-- Do not add a map canvas or point creation controls here.
-
-Complete when the collection is responsive and accessible, its URL state survives reload, and all standard list states match the established CMS UI.
-
 ### Phase 3: New Map Page
 
 Implement only `/cms/maps/new` and its loading state.

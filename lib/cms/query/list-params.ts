@@ -187,6 +187,7 @@ type ArticlesListInput = RouterInputs["articles"]["list"];
 type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
+type MapsListInput = RouterInputs["maps"]["list"];
 
 export function parseIssuesListSearchParams(input: CmsSearchParamsInput): IssuesListInput {
   const base = parseCmsListSearchParams(input, {
@@ -373,6 +374,21 @@ export function parseUsersListSearchParams(input: CmsSearchParamsInput): UsersLi
       role: parseEnumQueryParam(cleanString(readParam(input, "role")), roleValues),
       q: base.q,
       sortBy,
+      sortOrder: base.sortOrder,
+    }),
+  };
+}
+
+export function parseMapsListSearchParams(input: CmsSearchParamsInput): MapsListInput {
+  const base = parseCmsListSearchParams(input, {
+    defaultSortOrder: "desc",
+  });
+
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      q: base.q,
       sortOrder: base.sortOrder,
     }),
   };
