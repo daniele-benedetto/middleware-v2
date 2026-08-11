@@ -394,6 +394,8 @@ export const ModelName = {
   Article: 'Article',
   Course: 'Course',
   Lesson: 'Lesson',
+  Map: 'Map',
+  MapItem: 'MapItem',
   Page: 'Page',
   NavigationMenu: 'NavigationMenu',
   AuditLog: 'AuditLog'
@@ -412,7 +414,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "article" | "course" | "lesson" | "page" | "navigationMenu" | "auditLog"
+    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "article" | "course" | "lesson" | "map" | "mapItem" | "page" | "navigationMenu" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1156,6 +1158,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Map: {
+      payload: Prisma.$MapPayload<ExtArgs>
+      fields: Prisma.MapFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MapFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MapFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapPayload>
+        }
+        findFirst: {
+          args: Prisma.MapFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MapFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapPayload>
+        }
+        findMany: {
+          args: Prisma.MapFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapPayload>[]
+        }
+        create: {
+          args: Prisma.MapCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapPayload>
+        }
+        createMany: {
+          args: Prisma.MapCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MapCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapPayload>[]
+        }
+        delete: {
+          args: Prisma.MapDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapPayload>
+        }
+        update: {
+          args: Prisma.MapUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapPayload>
+        }
+        deleteMany: {
+          args: Prisma.MapDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MapUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MapUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapPayload>[]
+        }
+        upsert: {
+          args: Prisma.MapUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapPayload>
+        }
+        aggregate: {
+          args: Prisma.MapAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMap>
+        }
+        groupBy: {
+          args: Prisma.MapGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MapGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MapCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MapCountAggregateOutputType> | number
+        }
+      }
+    }
+    MapItem: {
+      payload: Prisma.$MapItemPayload<ExtArgs>
+      fields: Prisma.MapItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MapItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MapItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapItemPayload>
+        }
+        findFirst: {
+          args: Prisma.MapItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MapItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapItemPayload>
+        }
+        findMany: {
+          args: Prisma.MapItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapItemPayload>[]
+        }
+        create: {
+          args: Prisma.MapItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapItemPayload>
+        }
+        createMany: {
+          args: Prisma.MapItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MapItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapItemPayload>[]
+        }
+        delete: {
+          args: Prisma.MapItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapItemPayload>
+        }
+        update: {
+          args: Prisma.MapItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.MapItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MapItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MapItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.MapItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MapItemPayload>
+        }
+        aggregate: {
+          args: Prisma.MapItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMapItem>
+        }
+        groupBy: {
+          args: Prisma.MapItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MapItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MapItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MapItemCountAggregateOutputType> | number
+        }
+      }
+    }
     Page: {
       payload: Prisma.$PagePayload<ExtArgs>
       fields: Prisma.PageFieldRefs
@@ -1583,6 +1733,32 @@ export const LessonScalarFieldEnum = {
 export type LessonScalarFieldEnum = (typeof LessonScalarFieldEnum)[keyof typeof LessonScalarFieldEnum]
 
 
+export const MapScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  descriptionRich: 'descriptionRich',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MapScalarFieldEnum = (typeof MapScalarFieldEnum)[keyof typeof MapScalarFieldEnum]
+
+
+export const MapItemScalarFieldEnum = {
+  id: 'id',
+  mapId: 'mapId',
+  title: 'title',
+  descriptionRich: 'descriptionRich',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MapItemScalarFieldEnum = (typeof MapItemScalarFieldEnum)[keyof typeof MapItemScalarFieldEnum]
+
+
 export const PageScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -1795,6 +1971,20 @@ export type ListEnumLessonStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'Decimal'
+ */
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal[]'
+ */
+export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+/**
  * Reference to a field of type 'PageStatus'
  */
 export type EnumPageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PageStatus'>
@@ -1955,6 +2145,8 @@ export type GlobalOmitConfig = {
   article?: Prisma.ArticleOmit
   course?: Prisma.CourseOmit
   lesson?: Prisma.LessonOmit
+  map?: Prisma.MapOmit
+  mapItem?: Prisma.MapItemOmit
   page?: Prisma.PageOmit
   navigationMenu?: Prisma.NavigationMenuOmit
   auditLog?: Prisma.AuditLogOmit

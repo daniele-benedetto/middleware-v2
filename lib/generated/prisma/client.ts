@@ -92,6 +92,16 @@ export type Course = Prisma.CourseModel
  */
 export type Lesson = Prisma.LessonModel
 /**
+ * Model Map
+ * 
+ */
+export type Map = Prisma.MapModel
+/**
+ * Model MapItem
+ * 
+ */
+export type MapItem = Prisma.MapItemModel
+/**
  * Model Page
  * 
  */

@@ -8,6 +8,7 @@ import { categoriesRouter } from "@/lib/server/trpc/routers/categories";
 import { coursesRouter } from "@/lib/server/trpc/routers/courses";
 import { issuesRouter } from "@/lib/server/trpc/routers/issues";
 import { lessonsRouter } from "@/lib/server/trpc/routers/lessons";
+import { mapsRouter } from "@/lib/server/trpc/routers/maps";
 import { mediaRouter } from "@/lib/server/trpc/routers/media";
 import { navigationRouter } from "@/lib/server/trpc/routers/navigation";
 import { pagesRouter } from "@/lib/server/trpc/routers/pages";
@@ -23,6 +24,7 @@ export const appRouter = router({
   articles: articlesRouter,
   courses: coursesRouter,
   lessons: lessonsRouter,
+  maps: mapsRouter,
   pages: pagesRouter,
   media: mediaRouter,
   navigation: navigationRouter,

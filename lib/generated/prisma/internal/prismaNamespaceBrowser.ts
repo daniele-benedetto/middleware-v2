@@ -61,6 +61,8 @@ export const ModelName = {
   Article: 'Article',
   Course: 'Course',
   Lesson: 'Lesson',
+  Map: 'Map',
+  MapItem: 'MapItem',
   Page: 'Page',
   NavigationMenu: 'NavigationMenu',
   AuditLog: 'AuditLog'
@@ -246,6 +248,32 @@ export const LessonScalarFieldEnum = {
 } as const
 
 export type LessonScalarFieldEnum = (typeof LessonScalarFieldEnum)[keyof typeof LessonScalarFieldEnum]
+
+
+export const MapScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  descriptionRich: 'descriptionRich',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MapScalarFieldEnum = (typeof MapScalarFieldEnum)[keyof typeof MapScalarFieldEnum]
+
+
+export const MapItemScalarFieldEnum = {
+  id: 'id',
+  mapId: 'mapId',
+  title: 'title',
+  descriptionRich: 'descriptionRich',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MapItemScalarFieldEnum = (typeof MapItemScalarFieldEnum)[keyof typeof MapItemScalarFieldEnum]
 
 
 export const PageScalarFieldEnum = {

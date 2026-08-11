@@ -239,6 +239,36 @@ model Lesson {
   @@map("lessons")
 }
 
+model Map {
+  id              String   @id @default(uuid())
+  title           String
+  descriptionRich Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  items MapItem[]
+
+  @@index([createdAt])
+  @@map("maps")
+}
+
+model MapItem {
+  id              String   @id @default(uuid())
+  mapId           String
+  title           String
+  descriptionRich Json?
+  latitude        Decimal  @db.Decimal(9, 6)
+  longitude       Decimal  @db.Decimal(9, 6)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  map Map @relation(fields: [mapId], references: [id], onDelete: Cascade)
+
+  @@index([mapId, sortOrder])
+  @@map("map_items")
+}
+
 model Page {
   id          String     @id @default(uuid())
   title       String
