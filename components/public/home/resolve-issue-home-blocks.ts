@@ -3,6 +3,7 @@ import { normalizeHomeBlock } from "@/lib/issues/home-block-rules";
 import type {
   HomeIssueArticle,
   NarrativeHomeBlock,
+  ResolvedHomeBlock,
 } from "@/components/public/home/home-view-model";
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
@@ -10,7 +11,10 @@ function toNarrativeBlock({
   block,
   articles,
 }: {
-  block: NonNullable<PublicCurrentIssueDetail["homeBlocks"]>[number];
+  block: Extract<
+    NonNullable<PublicCurrentIssueDetail["homeBlocks"]>[number],
+    { type: "opening" | "body" | "rupture" | "closing" }
+  >;
   articles: HomeIssueArticle[];
 }): NarrativeHomeBlock | null {
   const fallbackArticle = articles[0];
@@ -33,12 +37,34 @@ function toNarrativeBlock({
   };
 }
 
-function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): NarrativeHomeBlock[] {
+function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): ResolvedHomeBlock[] {
   const articlesById = new Map(issue.articles.map((article) => [article.id, article]));
+  const coursesById = new Map(issue.courses.map((course) => [course.id, course]));
+  const mapsById = new Map(issue.maps.map((map) => [map.id, map]));
   const manualArticleIds = new Set<string>();
-  const blocks: NarrativeHomeBlock[] = [];
+  const blocks: ResolvedHomeBlock[] = [];
 
   for (const rawBlock of issue.homeBlocks ?? []) {
+    if (rawBlock.type === "course") {
+      const course = rawBlock.courseId ? coursesById.get(rawBlock.courseId) : null;
+
+      if (course) {
+        blocks.push({ id: rawBlock.id, type: "course", course });
+      }
+
+      continue;
+    }
+
+    if (rawBlock.type === "map") {
+      const map = rawBlock.mapId ? mapsById.get(rawBlock.mapId) : null;
+
+      if (map && map.items.length > 0) {
+        blocks.push({ id: rawBlock.id, type: "map", map });
+      }
+
+      continue;
+    }
+
     const block = normalizeHomeBlock(rawBlock);
     const articles = block.articleIds
       .filter((articleId) => !manualArticleIds.has(articleId))
@@ -61,8 +87,8 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): NarrativeHome
 
 export function resolveIssueHomeBlocks(
   issue: PublicCurrentIssueDetail | null,
-): NarrativeHomeBlock[] {
-  if (!issue || issue.articles.length === 0) {
+): ResolvedHomeBlock[] {
+  if (!issue) {
     return [];
   }
 

@@ -1,4 +1,4 @@
-import { isWithinProvinceOfModena } from "@/lib/server/modules/maps/boundary/province-of-modena";
+import { isWithinComuneOfModena } from "@/lib/server/modules/maps/boundary/modena-comune";
 import {
   createMapInputSchema,
   createMapItemInputSchema,
@@ -25,6 +25,13 @@ describe("maps schemas", () => {
         },
       }).success,
     ).toBe(true);
+  });
+
+  it("defaults maps to active and unpublished", () => {
+    const parsed = createMapInputSchema.parse({ title: "Mappa" });
+
+    expect(parsed.isActive).toBe(true);
+    expect(parsed.publishedAt).toBeUndefined();
   });
 
   it("accepts Modena coordinates and rejects global coordinate ranges", () => {
@@ -54,15 +61,15 @@ describe("maps schemas", () => {
     ).toBe(false);
   });
 
-  it("enforces the Province of Modena boundary when both update coordinates are present", () => {
-    expect(isWithinProvinceOfModena(44.6471, 10.9252)).toBe(true);
-    expect(isWithinProvinceOfModena(44.4949, 11.3426)).toBe(false);
+  it("enforces the Comune di Modena boundary when both update coordinates are present", () => {
+    expect(isWithinComuneOfModena(44.6471, 10.9252)).toBe(true);
+    expect(isWithinComuneOfModena(44.4949, 11.3426)).toBe(false);
     const result = updateMapItemInputSchema.safeParse({ latitude: 44.4949, longitude: 11.3426 });
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0]).toMatchObject({
         path: ["latitude"],
-        message: "Coordinates must be within the Province of Modena boundary",
+        message: "Coordinates must be within the Comune di Modena boundary",
       });
     }
   });

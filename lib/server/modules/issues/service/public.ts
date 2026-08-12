@@ -4,8 +4,10 @@ import { resolveArticleImageSettings } from "@/lib/articles/image-settings";
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
+import { publicCoursesService } from "@/lib/server/modules/courses/service/public";
 import { publicIssuesRepository } from "@/lib/server/modules/issues/repository/public";
 import { issueHomeBlocksSchema, issueHomeVariantSchema } from "@/lib/server/modules/issues/schema";
+import { publicMapsService } from "@/lib/server/modules/maps/service/public";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
@@ -59,6 +61,20 @@ const normalizeIssueHomeBlocks = (value: unknown): IssueHomeBlocks | null => {
   return issueHomeBlocksSchema.parse(value);
 };
 
+const getCourseIds = (blocks: IssueHomeBlocks | null) => [
+  ...new Set(
+    (blocks ?? []).flatMap((block) =>
+      block.type === "course" && block.courseId ? [block.courseId] : [],
+    ),
+  ),
+];
+
+const getMapIds = (blocks: IssueHomeBlocks | null) => [
+  ...new Set(
+    (blocks ?? []).flatMap((block) => (block.type === "map" && block.mapId ? [block.mapId] : [])),
+  ),
+];
+
 type PublicIssueDetailRecord = PublicIssueRecord & {
   articles?: PublicIssueArticleRecord[];
 };
@@ -110,6 +126,8 @@ const toPublicIssueDetailDto = (issue: PublicIssueDetailRecord): PublicIssueDeta
   return {
     ...toPublicIssueDto(issue),
     articles: (issue.articles ?? []).map(toPublicIssueArticleSummaryDto),
+    courses: [],
+    maps: [],
   };
 };
 
@@ -136,7 +154,12 @@ export const publicIssuesService = {
       throw new ApiError(404, "NOT_FOUND", "Current issue not found");
     }
 
-    return toPublicIssueDetailDto(issue);
+    const dto = toPublicIssueDetailDto(issue);
+    const [courses, maps] = await Promise.all([
+      publicCoursesService.getByIds(getCourseIds(dto.homeBlocks)),
+      publicMapsService.getByIds(getMapIds(dto.homeBlocks)),
+    ]);
+    return { ...dto, courses, maps };
   },
   async getBySlug(slug: string) {
     const issue = await publicIssuesRepository.getBySlug(slug);
@@ -145,6 +168,11 @@ export const publicIssuesService = {
       throw new ApiError(404, "NOT_FOUND", "Issue not found");
     }
 
-    return toPublicIssueDetailDto(issue);
+    const dto = toPublicIssueDetailDto(issue);
+    const [courses, maps] = await Promise.all([
+      publicCoursesService.getByIds(getCourseIds(dto.homeBlocks)),
+      publicMapsService.getByIds(getMapIds(dto.homeBlocks)),
+    ]);
+    return { ...dto, courses, maps };
   },
 };

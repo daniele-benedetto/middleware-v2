@@ -18,6 +18,8 @@ const MAP_SELECT = {
   title: true,
   titleStyled: true,
   descriptionRich: true,
+  isActive: true,
+  publishedAt: true,
   createdAt: true,
   updatedAt: true,
   _count: { select: { items: true } },
@@ -73,6 +75,8 @@ export const mapsRepository = {
           input.descriptionRich === undefined
             ? undefined
             : (input.descriptionRich as Prisma.InputJsonValue),
+        isActive: input.isActive,
+        publishedAt: input.publishedAt ?? null,
         items: input.initialItem
           ? {
               create: {
@@ -107,6 +111,8 @@ export const mapsRepository = {
             : input.descriptionRich === null
               ? Prisma.JsonNull
               : (input.descriptionRich as Prisma.InputJsonValue),
+        isActive: input.isActive,
+        publishedAt: input.publishedAt,
       },
     });
   },

@@ -10,7 +10,7 @@ export const issueTitleStyledSchema = z.array(issueTitleStyledSegmentSchema).min
 export const issueHomeVariantSchema = z.enum(["black", "red", "default"]);
 export const issueHomeBlockFeaturedPlacementSchema = z.enum(["left", "right"]);
 
-export const issueHomeBlockSchema = z
+export const issueHomeArticleBlockSchema = z
   .object({
     id: z.string().trim().min(1),
     type: z.enum(["opening", "body", "rupture", "closing"]),
@@ -27,9 +27,29 @@ export const issueHomeBlockSchema = z
     },
   );
 
+export const issueHomeCourseBlockSchema = z.object({
+  id: z.string().trim().min(1),
+  type: z.literal("course"),
+  courseId: z.string().uuid().nullable(),
+});
+
+export const issueHomeMapBlockSchema = z.object({
+  id: z.string().trim().min(1),
+  type: z.literal("map"),
+  mapId: z.string().uuid().nullable(),
+});
+
+export const issueHomeBlockSchema = z.discriminatedUnion("type", [
+  issueHomeArticleBlockSchema,
+  issueHomeCourseBlockSchema,
+  issueHomeMapBlockSchema,
+]);
+
 export const issueHomeBlocksSchema = z.array(issueHomeBlockSchema).refine(
   (blocks) => {
-    const articleIds = blocks.flatMap((block) => block.articleIds);
+    const articleIds = blocks.flatMap((block) =>
+      block.type === "course" || block.type === "map" ? [] : block.articleIds,
+    );
     return new Set(articleIds).size === articleIds.length;
   },
   {
@@ -84,6 +104,9 @@ export const listIssuesQuerySchema = z.object({
 
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
 export type IssueHomeBlock = z.infer<typeof issueHomeBlockSchema>;
+export type IssueHomeArticleBlock = z.infer<typeof issueHomeArticleBlockSchema>;
+export type IssueHomeCourseBlock = z.infer<typeof issueHomeCourseBlockSchema>;
+export type IssueHomeMapBlock = z.infer<typeof issueHomeMapBlockSchema>;
 export type IssueHomeBlocks = z.infer<typeof issueHomeBlocksSchema>;
 export type IssueHomeVariant = z.infer<typeof issueHomeVariantSchema>;
 export type IssueTitleStyled = z.infer<typeof issueTitleStyledSchema>;

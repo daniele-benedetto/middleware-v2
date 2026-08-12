@@ -1,11 +1,13 @@
 import { z } from "zod";
 
 import { articleImageSettingsSchema } from "@/lib/articles/image-settings";
+import { publicCourseDetailDtoSchema } from "@/lib/server/modules/courses/dto/public";
 import {
   issueHomeBlocksSchema,
   issueHomeVariantSchema,
   issueTitleStyledSchema,
 } from "@/lib/server/modules/issues/schema";
+import { publicMapDetailDtoSchema } from "@/lib/server/modules/maps/dto/public";
 
 export const publicIssueArticleSummaryDtoSchema = z.object({
   id: z.string().uuid(),
@@ -38,6 +40,8 @@ export const publicIssueDtoSchema = z.object({
 
 export const publicIssueDetailDtoSchema = publicIssueDtoSchema.extend({
   articles: z.array(publicIssueArticleSummaryDtoSchema),
+  courses: z.array(publicCourseDetailDtoSchema),
+  maps: z.array(publicMapDetailDtoSchema),
 });
 
 export const publicIssuesListDtoSchema = z.array(publicIssueDtoSchema);

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { isSingleArticleBlock, normalizeHomeBlock } from "@/lib/issues/home-block-rules";
+import {
+  createEmptyCourseHomeBlock,
+  createEmptyMapHomeBlock,
+  isSingleArticleBlock,
+  normalizeHomeBlock,
+} from "@/lib/issues/home-block-rules";
 
 describe("home block rules", () => {
   it("identifies constrained single-article blocks", () => {
@@ -55,5 +60,17 @@ describe("home block rules", () => {
     ).toMatchObject({
       featuredPlacement: "right",
     });
+  });
+
+  it("creates empty course blocks without article fields", () => {
+    expect(createEmptyCourseHomeBlock("course")).toEqual({
+      id: "course",
+      type: "course",
+      courseId: null,
+    });
+  });
+
+  it("creates empty map blocks without article fields", () => {
+    expect(createEmptyMapHomeBlock("map")).toEqual({ id: "map", type: "map", mapId: null });
   });
 });

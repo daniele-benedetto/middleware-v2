@@ -2,34 +2,30 @@
 
 import * as L from "leaflet";
 
-import { provinceOfModenaMaxBounds } from "@/lib/server/modules/maps/boundary/province-of-modena";
+import { modenaComuneMaxBounds } from "@/lib/server/modules/maps/boundary/modena-comune";
 
-const saccaCrocettaCenter: [number, number] = [10.9006, 44.6578];
-const saccaCrocettaZoom = 13.4;
+const modenaCenter: [number, number] = [44.6458885, 10.9255707];
+const modenaZoom = 13;
 
 type ModenaMapOptions = {
   container: HTMLElement;
   interactive?: boolean;
-  boundToProvince?: boolean;
   onTileError?: () => void;
 };
 
 export function createModenaMap({
   container,
   interactive = true,
-  boundToProvince = false,
   onTileError,
 }: ModenaMapOptions): L.Map {
   const map = L.map(container, {
-    center: [saccaCrocettaCenter[1], saccaCrocettaCenter[0]],
-    zoom: saccaCrocettaZoom,
-    maxBounds: boundToProvince
-      ? [
-          [provinceOfModenaMaxBounds[0][1], provinceOfModenaMaxBounds[0][0]],
-          [provinceOfModenaMaxBounds[1][1], provinceOfModenaMaxBounds[1][0]],
-        ]
-      : undefined,
-    maxBoundsViscosity: boundToProvince ? 1 : 0,
+    center: modenaCenter,
+    zoom: modenaZoom,
+    maxBounds: [
+      [modenaComuneMaxBounds[0][1], modenaComuneMaxBounds[0][0]],
+      [modenaComuneMaxBounds[1][1], modenaComuneMaxBounds[1][0]],
+    ],
+    maxBoundsViscosity: 1,
     zoomControl: interactive,
     dragging: interactive,
     scrollWheelZoom: interactive,

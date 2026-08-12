@@ -57,6 +57,7 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
         settings={article.imageSettings}
         fill
         sizes="(min-width: 768px) 34vw, 100vw"
+        forceCover
         className={cn(publicInteraction.imageZoom)}
       />
     </TrackedPublicLink>
@@ -113,7 +114,7 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
       <div
         className={cn(
           publicContentClassName,
-          imageCard ? "grid gap-5 md:grid-cols-2 md:gap-8 lg:gap-10" : "max-w-2xl",
+          imageCard ? "group grid gap-5 md:grid-cols-2 md:gap-8 lg:gap-10" : "max-w-2xl",
         )}
       >
         {imageCard ? (imageOnRight ? articleCard : imageCard) : articleCard}

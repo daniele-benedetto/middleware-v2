@@ -14,6 +14,7 @@ type ArticleCoverImageProps = {
   sizes: string;
   preload?: boolean;
   className?: string;
+  forceCover?: boolean;
 };
 
 export function ArticleCoverImage({
@@ -26,6 +27,7 @@ export function ArticleCoverImage({
   sizes,
   preload,
   className,
+  forceCover = false,
 }: ArticleCoverImageProps) {
   const imageSettings = resolveArticleImageSettings(settings);
 
@@ -38,7 +40,7 @@ export function ArticleCoverImage({
       preload={preload}
       className={cn(imageSettings.grayscale && "grayscale", className)}
       style={{
-        objectFit: imageSettings.fit,
+        objectFit: forceCover ? "cover" : imageSettings.fit,
         objectPosition: `${imageSettings.positionX}% ${imageSettings.positionY}%`,
         transform: imageSettings.zoom === 100 ? undefined : `scale(${imageSettings.zoom / 100})`,
       }}

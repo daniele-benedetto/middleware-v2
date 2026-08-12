@@ -28,14 +28,21 @@ import {
 } from "@/components/cms/primitives";
 import { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sensors";
 import {
+  createEmptyCourseHomeBlock,
+  createEmptyMapHomeBlock,
   createEmptyHomeBlock,
+  isArticleHomeBlock,
   isSingleArticleBlock,
   normalizeHomeBlock,
   reorderItems,
 } from "@/lib/issues/home-block-rules";
 import { cn } from "@/lib/utils";
 
-import type { IssueHomeBlock, IssueHomeBlocks } from "@/lib/server/modules/issues/schema";
+import type {
+  IssueHomeArticleBlock,
+  IssueHomeBlock,
+  IssueHomeBlocks,
+} from "@/lib/server/modules/issues/schema";
 
 type IssueHomeBlockArticle = {
   id: string;
@@ -44,6 +51,9 @@ type IssueHomeBlockArticle = {
   categoryName?: string | null;
   categorySlug?: string | null;
 };
+
+type IssueHomeBlockCourse = { id: string; title: string };
+type IssueHomeBlockMap = { id: string; title: string };
 
 type IssueHomeBlocksEditorText = {
   addBlock: string;
@@ -72,11 +82,19 @@ type IssueHomeBlocksEditorText = {
   typeClosing: string;
   typeOpening: string;
   typeRupture: string;
+  typeCourse: string;
+  course: string;
+  coursePlaceholder: string;
+  map: string;
+  mapPlaceholder: string;
+  typeMap: string;
 };
 
 type IssueHomeBlocksEditorProps = {
   value: IssueHomeBlocks;
   articles: IssueHomeBlockArticle[];
+  courses: IssueHomeBlockCourse[];
+  maps: IssueHomeBlockMap[];
   disabled?: boolean;
   text: IssueHomeBlocksEditorText;
   onChange: (value: IssueHomeBlocks) => void;
@@ -87,6 +105,8 @@ const blockTypeOptions = [
   { value: "body", labelKey: "typeBody" },
   { value: "rupture", labelKey: "typeRupture" },
   { value: "closing", labelKey: "typeClosing" },
+  { value: "course", labelKey: "typeCourse" },
+  { value: "map", labelKey: "typeMap" },
 ] as const;
 
 const featuredPlacementOptions = [
@@ -118,6 +138,8 @@ function getArticleCategoryLabel(article: IssueHomeBlockArticle) {
 export function IssueHomeBlocksEditor({
   value,
   articles,
+  courses,
+  maps,
   disabled,
   text,
   onChange,
@@ -134,7 +156,9 @@ export function IssueHomeBlocksEditor({
     value: option.value,
     label: text[option.labelKey],
   }));
-  const manualUsedArticleIds = new Set(value.flatMap((block) => block.articleIds));
+  const manualUsedArticleIds = new Set(
+    value.flatMap((block) => (isArticleHomeBlock(block) ? block.articleIds : [])),
+  );
   const unassignedArticles = sortedArticles.filter(
     (article) => !manualUsedArticleIds.has(article.id),
   );
@@ -146,7 +170,11 @@ export function IssueHomeBlocksEditor({
   const updateBlock = (index: number, nextBlock: IssueHomeBlock) => {
     onChange(
       value.map((block, blockIndex) =>
-        blockIndex === index ? normalizeHomeBlock(nextBlock) : block,
+        blockIndex === index
+          ? isArticleHomeBlock(nextBlock)
+            ? normalizeHomeBlock(nextBlock)
+            : nextBlock
+          : block,
       ),
     );
   };
@@ -162,12 +190,14 @@ export function IssueHomeBlocksEditor({
       return;
     }
 
-    const clone = normalizeHomeBlock({
-      ...block,
-      id: `${block.type}-${Date.now().toString(36)}`,
-      articleIds: [],
-      featuredArticleId: null,
-    });
+    const clone = isArticleHomeBlock(block)
+      ? normalizeHomeBlock({
+          ...block,
+          id: `${block.type}-${Date.now().toString(36)}`,
+          articleIds: [],
+          featuredArticleId: null,
+        })
+      : createEmptyCourseHomeBlock();
     onChange([...value.slice(0, index + 1), clone, ...value.slice(index + 1)]);
   };
 
@@ -237,7 +267,7 @@ export function IssueHomeBlocksEditor({
     onChange(arrayMove(value, oldIndex, newIndex));
   };
 
-  const moveArticle = (block: IssueHomeBlock, articleIndex: number, direction: -1 | 1) => {
+  const moveArticle = (block: IssueHomeArticleBlock, articleIndex: number, direction: -1 | 1) => {
     const nextIndex = articleIndex + direction;
 
     if (nextIndex < 0 || nextIndex >= block.articleIds.length) {
@@ -253,6 +283,7 @@ export function IssueHomeBlocksEditor({
   const removeArticleFromBlocks = (articleId: string) => {
     onChange(
       value.map((rawBlock) => {
+        if (!isArticleHomeBlock(rawBlock)) return rawBlock;
         const block = normalizeHomeBlock(rawBlock);
 
         if (!block.articleIds.includes(articleId)) {
@@ -278,6 +309,7 @@ export function IssueHomeBlocksEditor({
   }) => {
     onChange(
       value.map((rawBlock) => {
+        if (!isArticleHomeBlock(rawBlock)) return rawBlock;
         const block = normalizeHomeBlock(rawBlock);
 
         if (block.id !== targetBlockId) {
@@ -349,17 +381,20 @@ export function IssueHomeBlocksEditor({
           >
             <div className="space-y-4">
               {value.map((rawBlock, index) => {
-                const block = normalizeHomeBlock(rawBlock);
-                const selectedArticles = block.articleIds
+                const block = isArticleHomeBlock(rawBlock)
+                  ? normalizeHomeBlock(rawBlock)
+                  : rawBlock;
+                const selectedArticles = (isArticleHomeBlock(block) ? block.articleIds : [])
                   .map((articleId) => articleById.get(articleId))
                   .filter((article): article is IssueHomeBlockArticle => Boolean(article));
                 const featuredOptions = selectedArticles.map((article) => ({
                   value: article.id,
                   label: article.title,
                 }));
-                const showFeaturedField = !isSingleArticleBlock(block.type);
+                const isArticleBlock = isArticleHomeBlock(block);
+                const showFeaturedField = isArticleBlock && !isSingleArticleBlock(block.type);
                 const showFeaturedPlacementField =
-                  block.type === "body" || block.type === "rupture";
+                  isArticleBlock && ["body", "rupture", "closing"].includes(block.type);
 
                 return (
                   <SortableBlockSection key={block.id} blockId={block.id} disabled={disabled}>
@@ -371,7 +406,9 @@ export function IssueHomeBlocksEditor({
                               {index + 1}. {text.blockTitle}
                             </CmsMetaText>
                             <CmsBody size="sm" tone="muted">
-                              {text.articleCount(block.articleIds.length)}
+                              {isArticleBlock
+                                ? text.articleCount(block.articleIds.length)
+                                : text.course}
                             </CmsBody>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
@@ -438,14 +475,48 @@ export function IssueHomeBlocksEditor({
                                 onValueChange={(nextType) =>
                                   updateBlock(
                                     index,
-                                    normalizeHomeBlock({
-                                      ...block,
-                                      type: nextType as IssueHomeBlock["type"],
-                                    }),
+                                    nextType === "course"
+                                      ? createEmptyCourseHomeBlock(`${block.id}-course`)
+                                      : nextType === "map"
+                                        ? createEmptyMapHomeBlock(`${block.id}-map`)
+                                        : createEmptyHomeBlock(
+                                            nextType as IssueHomeArticleBlock["type"],
+                                            block.id,
+                                          ),
                                   )
                                 }
                               />
                             </CmsFormField>
+
+                            {block.type === "course" ? (
+                              <CmsFormField label={text.course} htmlFor={`${block.id}-course`}>
+                                <CmsSelect
+                                  value={block.courseId ?? ""}
+                                  placeholder={text.coursePlaceholder}
+                                  disabled={disabled || courses.length === 0}
+                                  options={courses.map((course) => ({
+                                    value: course.id,
+                                    label: course.title,
+                                  }))}
+                                  onValueChange={(courseId) =>
+                                    updateBlock(index, { ...block, courseId: courseId || null })
+                                  }
+                                />
+                              </CmsFormField>
+                            ) : null}
+                            {block.type === "map" ? (
+                              <CmsFormField label={text.map} htmlFor={`${block.id}-map`}>
+                                <CmsSelect
+                                  value={block.mapId ?? ""}
+                                  placeholder={text.mapPlaceholder}
+                                  disabled={disabled || maps.length === 0}
+                                  options={maps.map((map) => ({ value: map.id, label: map.title }))}
+                                  onValueChange={(mapId) =>
+                                    updateBlock(index, { ...block, mapId: mapId || null })
+                                  }
+                                />
+                              </CmsFormField>
+                            ) : null}
 
                             {showFeaturedField ? (
                               <CmsFormField
@@ -480,7 +551,7 @@ export function IssueHomeBlocksEditor({
                                     updateBlock(index, {
                                       ...block,
                                       featuredPlacement:
-                                        featuredPlacement as IssueHomeBlock["featuredPlacement"],
+                                        featuredPlacement as IssueHomeArticleBlock["featuredPlacement"],
                                     })
                                   }
                                 />
@@ -488,26 +559,28 @@ export function IssueHomeBlocksEditor({
                             ) : null}
                           </div>
 
-                          <div className="space-y-3">
-                            <div className="space-y-2">
-                              <CmsMetaText variant="category">
-                                {text.selectedArticleOrder}
-                              </CmsMetaText>
-                              <SelectedArticlesDropZone
-                                blockId={block.id}
-                                blockType={block.type}
-                                selectedArticles={selectedArticles}
-                                disabled={disabled}
-                                text={text}
-                                onMoveUp={(articleIndex) =>
-                                  updateBlock(index, moveArticle(block, articleIndex, -1))
-                                }
-                                onMoveDown={(articleIndex) =>
-                                  updateBlock(index, moveArticle(block, articleIndex, 1))
-                                }
-                              />
+                          {isArticleBlock ? (
+                            <div className="space-y-3">
+                              <div className="space-y-2">
+                                <CmsMetaText variant="category">
+                                  {text.selectedArticleOrder}
+                                </CmsMetaText>
+                                <SelectedArticlesDropZone
+                                  blockId={block.id}
+                                  blockType={block.type}
+                                  selectedArticles={selectedArticles}
+                                  disabled={disabled}
+                                  text={text}
+                                  onMoveUp={(articleIndex) =>
+                                    updateBlock(index, moveArticle(block, articleIndex, -1))
+                                  }
+                                  onMoveDown={(articleIndex) =>
+                                    updateBlock(index, moveArticle(block, articleIndex, 1))
+                                  }
+                                />
+                              </div>
                             </div>
-                          </div>
+                          ) : null}
                         </div>
                       </>
                     )}
@@ -630,7 +703,7 @@ function SelectedArticlesDropZone({
   onMoveDown,
 }: {
   blockId: string;
-  blockType: IssueHomeBlock["type"];
+  blockType: IssueHomeArticleBlock["type"];
   selectedArticles: IssueHomeBlockArticle[];
   disabled?: boolean;
   text: IssueHomeBlocksEditorText;

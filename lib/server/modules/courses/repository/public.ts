@@ -72,4 +72,14 @@ export const publicCoursesRepository = {
       select: PUBLIC_COURSE_DETAIL_SELECT,
     });
   },
+  async getByIds(ids: string[]) {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    return prisma.course.findMany({
+      where: { ...PUBLIC_COURSE_WHERE, id: { in: ids } },
+      select: PUBLIC_COURSE_DETAIL_SELECT,
+    });
+  },
 };

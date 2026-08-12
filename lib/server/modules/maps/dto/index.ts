@@ -19,6 +19,8 @@ export const mapDtoSchema = z.object({
   title: z.string(),
   titleStyled: issueTitleStyledSchema.nullable(),
   descriptionRich: z.unknown().nullable(),
+  isActive: z.boolean(),
+  publishedAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
   itemsCount: z.number().int(),

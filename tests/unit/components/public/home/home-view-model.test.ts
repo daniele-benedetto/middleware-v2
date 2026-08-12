@@ -37,6 +37,8 @@ const issue = (
     publishedAt: "2026-01-01T00:00:00.000Z",
     articlesCount: articles.length,
     articles,
+    courses: [],
+    maps: [],
   }) as PublicCurrentIssueDetail;
 
 describe("home view model", () => {
@@ -107,6 +109,28 @@ describe("home view model", () => {
     );
 
     expect(resolveIssueHomeBlocks(issue([...articles].reverse()))).toEqual([]);
+  });
+
+  it("composes course blocks without issue articles", () => {
+    const courseId = crypto.randomUUID();
+    const input = issue([], [{ id: "course", type: "course", courseId }]);
+    input.courses = [
+      {
+        id: courseId,
+        title: "Contro-formazione",
+        titleStyled: null,
+        slug: "contro-formazione",
+        description: null,
+        homeVariant: "black",
+        publishedAt: "2026-01-01T00:00:00.000Z",
+        lessonsCount: 0,
+        lessons: [],
+      },
+    ];
+
+    expect(resolveIssueHomeBlocks(input)).toMatchObject([
+      { id: "course", type: "course", course: { id: courseId } },
+    ]);
   });
 
   it("omits configured blocks with no assigned articles", () => {

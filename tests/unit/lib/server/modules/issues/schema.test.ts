@@ -59,7 +59,9 @@ describe("issues schemas", () => {
       ],
     });
 
-    expect(parsed.homeBlocks?.[0]?.featuredPlacement).toBe("left");
+    expect(parsed.homeBlocks?.[0]?.type === "body" && parsed.homeBlocks[0].featuredPlacement).toBe(
+      "left",
+    );
   });
 
   it("allows body featured placement on the right", () => {
@@ -76,7 +78,29 @@ describe("issues schemas", () => {
       ],
     });
 
-    expect(parsed.homeBlocks?.[0]?.featuredPlacement).toBe("right");
+    expect(parsed.homeBlocks?.[0]?.type === "body" && parsed.homeBlocks[0].featuredPlacement).toBe(
+      "right",
+    );
+  });
+
+  it("allows course blocks without article fields", () => {
+    const courseId = "00000000-0000-4000-8000-000000000001";
+    const parsed = createIssueInputSchema.parse({
+      title: "Issue 01",
+      homeBlocks: [{ id: "corso", type: "course", courseId }],
+    });
+
+    expect(parsed.homeBlocks).toEqual([{ id: "corso", type: "course", courseId }]);
+  });
+
+  it("allows map blocks without article fields", () => {
+    const mapId = "00000000-0000-4000-8000-000000000001";
+    const parsed = createIssueInputSchema.parse({
+      title: "Issue 01",
+      homeBlocks: [{ id: "mappa", type: "map", mapId }],
+    });
+
+    expect(parsed.homeBlocks).toEqual([{ id: "mappa", type: "map", mapId }]);
   });
 
   it("rejects sequence home blocks", () => {

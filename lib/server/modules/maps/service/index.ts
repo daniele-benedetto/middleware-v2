@@ -2,7 +2,7 @@ import "server-only";
 
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
-import { isWithinProvinceOfModena } from "@/lib/server/modules/maps/boundary/province-of-modena";
+import { isWithinComuneOfModena } from "@/lib/server/modules/maps/boundary/modena-comune";
 import { mapsRepository } from "@/lib/server/modules/maps/repository";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
@@ -21,6 +21,8 @@ type MapRecord = {
   title: string;
   titleStyled: unknown;
   descriptionRich: unknown;
+  isActive: boolean;
+  publishedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   _count?: { items: number };
@@ -41,6 +43,8 @@ const toMapDto = (map: MapRecord): MapDto => ({
   title: map.title,
   titleStyled: (map.titleStyled as MapDto["titleStyled"]) ?? null,
   descriptionRich: map.descriptionRich ?? null,
+  isActive: map.isActive,
+  publishedAt: map.publishedAt?.toISOString() ?? null,
   createdAt: map.createdAt.toISOString(),
   updatedAt: map.updatedAt.toISOString(),
   itemsCount: map._count?.items ?? 0,
@@ -116,7 +120,7 @@ export const mapsService = {
   },
   async createItem(input: CreateMapItemInput) {
     await requireMap(input.mapId);
-    if (!isWithinProvinceOfModena(input.latitude, input.longitude)) {
+    if (!isWithinComuneOfModena(input.latitude, input.longitude)) {
       throw new ApiError(
         400,
         "VALIDATION_ERROR",
@@ -129,7 +133,7 @@ export const mapsService = {
     const current = (await requireOwnedItem(mapId, itemId)) as MapItemRecord;
     const latitude = input.latitude ?? Number(current.latitude.toString());
     const longitude = input.longitude ?? Number(current.longitude.toString());
-    if (!isWithinProvinceOfModena(latitude, longitude)) {
+    if (!isWithinComuneOfModena(latitude, longitude)) {
       throw new ApiError(
         400,
         "VALIDATION_ERROR",

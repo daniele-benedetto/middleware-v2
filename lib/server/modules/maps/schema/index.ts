@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
-import { isWithinProvinceOfModena } from "@/lib/server/modules/maps/boundary/province-of-modena";
+import { isWithinComuneOfModena } from "@/lib/server/modules/maps/boundary/modena-comune";
 
 const coordinateSchema = z.coerce
   .number()
@@ -14,8 +14,8 @@ const longitudeSchema = coordinateSchema.min(-180).max(180);
 
 const mapItemLocationSchema = z
   .object({ latitude: latitudeSchema, longitude: longitudeSchema })
-  .refine(({ latitude, longitude }) => isWithinProvinceOfModena(latitude, longitude), {
-    message: "Coordinates must be within the Province of Modena boundary",
+  .refine(({ latitude, longitude }) => isWithinComuneOfModena(latitude, longitude), {
+    message: "Coordinates must be within the Comune di Modena boundary",
     path: ["latitude"],
   });
 
@@ -23,6 +23,8 @@ export const createMapInputSchema = z.object({
   title: z.string().trim().min(1),
   titleStyled: issueTitleStyledSchema.nullable().optional(),
   descriptionRich: z.unknown().optional(),
+  isActive: z.boolean().default(true),
+  publishedAt: z.coerce.date().nullable().optional(),
   initialItem: z
     .object({
       title: z.string().trim().min(1),
@@ -37,6 +39,8 @@ export const updateMapInputSchema = createMapInputSchema
   .extend({
     titleStyled: issueTitleStyledSchema.nullable().optional(),
     descriptionRich: z.unknown().nullable().optional(),
+    isActive: z.boolean().optional(),
+    publishedAt: z.coerce.date().nullable().optional(),
   })
   .refine((input) => Object.keys(input).length > 0, { message: "At least one field is required" });
 
@@ -60,11 +64,11 @@ export const updateMapItemInputSchema = z
     if (
       input.latitude !== undefined &&
       input.longitude !== undefined &&
-      !isWithinProvinceOfModena(input.latitude, input.longitude)
+      !isWithinComuneOfModena(input.latitude, input.longitude)
     ) {
       context.addIssue({
         code: "custom",
-        message: "Coordinates must be within the Province of Modena boundary",
+        message: "Coordinates must be within the Comune di Modena boundary",
         path: ["latitude"],
       });
     }

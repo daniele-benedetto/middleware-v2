@@ -46,6 +46,9 @@ function hasCurrentSchema(client: PrismaClient | undefined) {
           Article?: {
             fields?: Array<{ name?: string }>;
           };
+          Map?: {
+            fields?: Array<{ name?: string }>;
+          };
           Author?: unknown;
         };
       };
@@ -54,12 +57,19 @@ function hasCurrentSchema(client: PrismaClient | undefined) {
 
   const articleRuntimeFields = runtimeModels?.Article?.fields;
   const issueRuntimeFields = runtimeModels?.Issue?.fields;
+  const mapRuntimeFields = runtimeModels?.Map?.fields;
 
-  if (Array.isArray(articleRuntimeFields) && Array.isArray(issueRuntimeFields)) {
+  if (
+    Array.isArray(articleRuntimeFields) &&
+    Array.isArray(issueRuntimeFields) &&
+    Array.isArray(mapRuntimeFields)
+  ) {
     return (
       Boolean(runtimeModels?.Author) &&
       articleRuntimeFields.some((field) => field?.name === "excerptRich") &&
-      issueRuntimeFields.some((field) => field?.name === "homeBlocks")
+      issueRuntimeFields.some((field) => field?.name === "homeBlocks") &&
+      mapRuntimeFields.some((field) => field?.name === "isActive") &&
+      mapRuntimeFields.some((field) => field?.name === "publishedAt")
     );
   }
 
@@ -75,7 +85,10 @@ function hasCurrentSchema(client: PrismaClient | undefined) {
     return (
       inlineSchema.includes("model Author") &&
       inlineSchema.includes("excerptRich") &&
-      inlineSchema.includes("homeBlocks")
+      inlineSchema.includes("homeBlocks") &&
+      inlineSchema.includes("model Map") &&
+      inlineSchema.includes("isActive") &&
+      inlineSchema.includes("publishedAt")
     );
   }
 

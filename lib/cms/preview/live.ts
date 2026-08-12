@@ -15,6 +15,7 @@ import type {
   IssueTitleStyled,
 } from "@/lib/server/modules/issues/schema";
 import type { PublicLessonDetailDto } from "@/lib/server/modules/lessons/dto/public";
+import type { PublicMapDetailDto } from "@/lib/server/modules/maps/dto/public";
 
 type LivePreviewResource = "article" | "issue" | "course" | "lesson";
 
@@ -105,6 +106,8 @@ export type IssueLivePreviewInput = {
   homeBlocks: IssueHomeBlocks | null;
   homeVariant: IssueHomeVariant;
   articles: PublicIssueArticleSummaryDto[];
+  courses?: PublicCourseDetailDto[];
+  maps?: PublicMapDetailDto[];
   publishedIssues?: PublicIssueListItem[];
   statusLabel: string;
   publicAvailable: boolean;
@@ -218,6 +221,8 @@ export function toIssueLivePreviewSnapshot(input: IssueLivePreviewInput): IssueL
     publishedAt: now,
     articlesCount: input.articles.length,
     articles: input.articles,
+    courses: input.courses ?? [],
+    maps: input.maps ?? [],
   };
 
   return {

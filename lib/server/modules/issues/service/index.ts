@@ -154,6 +154,8 @@ const toPublicIssuePreviewDto = (issue: IssuePreviewRecord): PublicIssueDetailDt
       categoryName: article.category?.name ?? null,
       authorName: article.author?.name ?? null,
     })),
+    courses: [],
+    maps: [],
   };
 };
 

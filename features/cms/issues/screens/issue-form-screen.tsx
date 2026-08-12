@@ -36,6 +36,7 @@ import {
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
+import { lessonCourseOptionsInput } from "@/lib/cms/course-options";
 import { createLivePreviewSessionId, toIssueLivePreviewSnapshot } from "@/lib/cms/preview/live";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -271,6 +272,14 @@ function IssueFormContent({
     : formText.generatedFromTitleHint;
 
   const articles = useMemo(() => issue?.articles ?? [], [issue?.articles]);
+  const coursesQuery = trpc.courses.list.useQuery(lessonCourseOptionsInput);
+  const courses = coursesQuery.data?.items ?? [];
+  const mapsQuery = trpc.maps.list.useQuery({
+    page: 1,
+    pageSize: 100,
+    query: { sortOrder: "desc" },
+  });
+  const maps = mapsQuery.data?.items ?? [];
   const isBusy = isMutating;
   const homeVariantOptions = issueHomeVariantOptions.map((option) => ({
     value: option.value,
@@ -558,6 +567,8 @@ function IssueFormContent({
             <IssueHomeBlocksEditor
               value={homeBlocks}
               articles={articles}
+              courses={courses}
+              maps={maps}
               disabled={isBusy}
               text={issueFormText.homeBlocksEditor}
               onChange={setHomeBlocks}

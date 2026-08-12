@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 
+import { revalidatePublicMapContent } from "@/lib/public/server/revalidation";
 import {
   createMapInputSchema,
   createMapItemInputSchema,
@@ -72,7 +73,11 @@ export const mapsRouter = router({
     .use(requireRoleMiddleware(mapsPolicy.allowedRoles))
     .use(auditMiddleware(() => ({ action: "create", resource: "maps" })))
     .input(createMapInputSchema)
-    .mutation(async ({ input }) => parseOutput(await mapsService.create(input), mapDtoSchema)),
+    .mutation(async ({ input }) => {
+      const map = parseOutput(await mapsService.create(input), mapDtoSchema);
+      revalidatePublicMapContent();
+      return map;
+    }),
   update: writeProcedure
     .use(requireRoleMiddleware(mapsPolicy.allowedRoles))
     .input(mapIdInputSchema.extend({ data: updateMapInputSchema }))
@@ -83,9 +88,11 @@ export const mapsRouter = router({
         resourceId: input.id,
       })),
     )
-    .mutation(async ({ input }) =>
-      parseOutput(await mapsService.update(input.id, input.data), mapDtoSchema),
-    ),
+    .mutation(async ({ input }) => {
+      const map = parseOutput(await mapsService.update(input.id, input.data), mapDtoSchema);
+      revalidatePublicMapContent();
+      return map;
+    }),
   delete: writeProcedure
     .use(requireRoleMiddleware(mapsPolicy.allowedRoles))
     .input(mapIdInputSchema)
@@ -98,15 +105,18 @@ export const mapsRouter = router({
     )
     .mutation(async ({ input }) => {
       await mapsService.delete(input.id);
+      revalidatePublicMapContent();
       return parseOutput({ success: true }, successOutputSchema);
     }),
   createItem: writeProcedure
     .use(requireRoleMiddleware(mapsPolicy.allowedRoles))
     .use(auditMiddleware(() => ({ action: "create", resource: "map-items" })))
     .input(createMapItemInputSchema)
-    .mutation(async ({ input }) =>
-      parseOutput(await mapsService.createItem(input), mapItemDtoSchema),
-    ),
+    .mutation(async ({ input }) => {
+      const item = parseOutput(await mapsService.createItem(input), mapItemDtoSchema);
+      revalidatePublicMapContent();
+      return item;
+    }),
   updateItem: writeProcedure
     .use(requireRoleMiddleware(mapsPolicy.allowedRoles))
     .input(mapItemIdInputSchema.extend({ data: updateMapItemInputSchema }))
@@ -117,12 +127,14 @@ export const mapsRouter = router({
         resourceId: input.itemId,
       })),
     )
-    .mutation(async ({ input }) =>
-      parseOutput(
+    .mutation(async ({ input }) => {
+      const item = parseOutput(
         await mapsService.updateItem(input.mapId, input.itemId, input.data),
         mapItemDtoSchema,
-      ),
-    ),
+      );
+      revalidatePublicMapContent();
+      return item;
+    }),
   deleteItem: writeProcedure
     .use(requireRoleMiddleware(mapsPolicy.allowedRoles))
     .input(mapItemIdInputSchema)
@@ -135,13 +147,16 @@ export const mapsRouter = router({
     )
     .mutation(async ({ input }) => {
       await mapsService.deleteItem(input.mapId, input.itemId);
+      revalidatePublicMapContent();
       return parseOutput({ success: true }, successOutputSchema);
     }),
   reorderItems: reorderProcedure
     .use(requireRoleMiddleware(mapsPolicy.allowedRoles))
     .use(auditMiddleware(() => ({ action: "reorder", resource: "map-items" })))
     .input(reorderMapItemsInputSchema)
-    .mutation(async ({ input }) =>
-      parseOutput(await mapsService.reorderItems(input), mapItemsListDtoSchema),
-    ),
+    .mutation(async ({ input }) => {
+      const items = parseOutput(await mapsService.reorderItems(input), mapItemsListDtoSchema);
+      revalidatePublicMapContent();
+      return items;
+    }),
 });

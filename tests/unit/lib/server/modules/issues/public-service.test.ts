@@ -5,8 +5,19 @@ const publicIssuesRepositoryMock = vi.hoisted(() => ({
   getBySlug: vi.fn(),
 }));
 
+const publicCoursesServiceMock = vi.hoisted(() => ({ getByIds: vi.fn().mockResolvedValue([]) }));
+const publicMapsServiceMock = vi.hoisted(() => ({ getByIds: vi.fn().mockResolvedValue([]) }));
+
 vi.mock("@/lib/server/modules/issues/repository/public", () => ({
   publicIssuesRepository: publicIssuesRepositoryMock,
+}));
+
+vi.mock("@/lib/server/modules/courses/service/public", () => ({
+  publicCoursesService: publicCoursesServiceMock,
+}));
+
+vi.mock("@/lib/server/modules/maps/service/public", () => ({
+  publicMapsService: publicMapsServiceMock,
 }));
 
 import { publicIssuesService } from "@/lib/server/modules/issues/service/public";

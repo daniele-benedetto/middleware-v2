@@ -2,6 +2,8 @@ import { getIssueOrderIndex } from "@/lib/public/format/issue";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
+import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
+import type { PublicMapDetailDto } from "@/lib/server/modules/maps/dto/public";
 
 export type HomeIssueArticle = PublicCurrentIssueDetail["articles"][number];
 
@@ -12,6 +14,16 @@ export type NarrativeHomeBlock = {
   featuredArticle: HomeIssueArticle | null;
   featuredPlacement: "left" | "right";
 };
+
+export type CourseHomeBlock = {
+  id: string;
+  type: "course";
+  course: PublicCourseDetailDto;
+};
+
+export type MapHomeBlock = { id: string; type: "map"; map: PublicMapDetailDto };
+
+export type ResolvedHomeBlock = NarrativeHomeBlock | CourseHomeBlock | MapHomeBlock;
 
 export function sortHomeArticles(articles: HomeIssueArticle[]) {
   return [...articles].sort((a, b) => {

@@ -122,4 +122,8 @@ export const publicCoursesService = {
 
     return toPublicCourseDetailDto(course);
   },
+  async getByIds(ids: string[]) {
+    const courses = await publicCoursesRepository.getByIds(ids);
+    return courses.map(toPublicCourseDetailDto);
+  },
 };

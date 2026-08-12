@@ -54,6 +54,10 @@ function resolveNarrativeBlocks(issue: PublicIssueDetailDto): NarrativeBlock[] {
   const blocks: NarrativeBlock[] = [];
 
   for (const rawBlock of issue.homeBlocks ?? []) {
+    if (rawBlock.type === "course" || rawBlock.type === "map") {
+      continue;
+    }
+
     const block = normalizeHomeBlock(rawBlock);
     const articles = block.articleIds
       .filter((articleId) => !manualArticleIds.has(articleId))

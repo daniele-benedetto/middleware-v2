@@ -1,7 +1,7 @@
 "use client";
 
 import * as L from "leaflet";
-import { useDeferredValue, useEffect, useEffectEvent, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import {
   normalizeMapCoordinates,
@@ -9,7 +9,6 @@ import {
 } from "@/features/cms/maps/utils/coordinates";
 import { createModenaMap } from "@/features/cms/maps/utils/leaflet-map";
 import { i18n } from "@/lib/i18n";
-import { trpc } from "@/lib/trpc/react";
 
 type CmsMapPreviewProps = {
   coordinates: MapCoordinates;
@@ -18,35 +17,31 @@ type CmsMapPreviewProps = {
 
 export function CmsMapPreview({ coordinates, onCoordinatesChange }: CmsMapPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<L.Map | null>(null);
+  const mapRef = useRef<ReturnType<typeof createModenaMap> | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
   const initialCoordinatesRef = useRef(coordinates);
   const [isReady, setIsReady] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [addressQuery, setAddressQuery] = useState("");
-  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
-  const deferredAddressQuery = useDeferredValue(addressQuery.trim());
   const notifyCoordinatesChange = useEffectEvent(onCoordinatesChange);
-  const addressSearch = trpc.maps.searchAddress.useQuery(
-    { query: deferredAddressQuery },
-    { enabled: deferredAddressQuery.length >= 3, staleTime: 30_000 },
-  );
-  const mapText = i18n.cms.forms.resources.maps;
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    setIsReady(false);
 
     const map = createModenaMap({
       container,
-      boundToProvince: true,
       onTileError: () => setHasError(true),
     });
     mapRef.current = map;
+    const resizeMap = () => requestAnimationFrame(() => map.invalidateSize());
+    const resizeObserver = new ResizeObserver(resizeMap);
+    resizeObserver.observe(container);
 
     map.whenReady(() => {
       setIsReady(true);
-      map.invalidateSize();
+      resizeMap();
+      window.setTimeout(resizeMap, 100);
     });
     const marker = L.marker(
       [initialCoordinatesRef.current.latitude, initialCoordinatesRef.current.longitude],
@@ -54,7 +49,7 @@ export function CmsMapPreview({ coordinates, onCoordinatesChange }: CmsMapPrevie
         draggable: true,
         icon: L.divIcon({
           className: "cms-map-pin-icon",
-          html: '<span class="cms-map-pin" aria-hidden="true"><span class="cms-map-pin__dot"></span></span>',
+          html: '<span class="cms-map-pin"><span class="cms-map-pin__dot"></span></span>',
           iconSize: [38, 48],
           iconAnchor: [19, 46],
         }),
@@ -72,8 +67,12 @@ export function CmsMapPreview({ coordinates, onCoordinatesChange }: CmsMapPrevie
     markerRef.current = marker;
 
     return () => {
-      markerRef.current = null;
-      mapRef.current = null;
+      resizeObserver.disconnect();
+      if (mapRef.current === map) {
+        markerRef.current = null;
+        mapRef.current = null;
+        setIsReady(false);
+      }
       map.remove();
     };
   }, []);
@@ -82,69 +81,18 @@ export function CmsMapPreview({ coordinates, onCoordinatesChange }: CmsMapPrevie
     markerRef.current?.setLatLng([coordinates.latitude, coordinates.longitude]);
   }, [coordinates]);
 
-  const selectAddress = (address: { latitude: number; longitude: number; label: string }) => {
-    const nextCoordinates = normalizeMapCoordinates(address.latitude, address.longitude);
-    markerRef.current?.setLatLng([nextCoordinates.latitude, nextCoordinates.longitude]);
-    mapRef.current?.flyTo([nextCoordinates.latitude, nextCoordinates.longitude], 16, {
-      duration: 0.35,
-    });
-    onCoordinatesChange(nextCoordinates);
-    setAddressQuery(address.label);
-    setShowAddressSuggestions(false);
-  };
-
   return (
     <section
-      className="relative min-h-72 overflow-hidden rounded-[6px] border border-foreground bg-card"
+      className="relative h-120 min-h-120 shrink-0 overflow-hidden rounded-[6px] border border-foreground bg-card"
       aria-label={i18n.cms.forms.resources.maps.previewLabel}
     >
       <div ref={containerRef} className="absolute inset-0" aria-hidden />
-      <div className="absolute top-3 right-3 left-3 z-400">
-        <input
-          type="search"
-          value={addressQuery}
-          onChange={(event) => {
-            setAddressQuery(event.target.value);
-            setShowAddressSuggestions(true);
-          }}
-          onFocus={() => setShowAddressSuggestions(true)}
-          placeholder={mapText.addressSearchPlaceholder}
-          className="h-10 w-full rounded-[6px] border border-foreground bg-card px-3 font-ui text-[12px] font-bold uppercase tracking-[0.08em] text-foreground shadow-md outline-none placeholder:text-border focus:border-accent"
-        />
-        {showAddressSuggestions && deferredAddressQuery.length >= 3 ? (
-          <div className="max-h-56 overflow-y-auto rounded-b-[6px] border-x border-b border-foreground bg-card shadow-md">
-            {addressSearch.isFetching ? (
-              <div className="px-3 py-2 font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-                {i18n.cms.common.retry}
-              </div>
-            ) : addressSearch.data && addressSearch.data.length > 0 ? (
-              addressSearch.data.map((address) => (
-                <button
-                  key={`${address.latitude}-${address.longitude}`}
-                  type="button"
-                  className="block w-full border-b border-border px-3 py-2 text-left font-editorial text-[14px] leading-[1.3] text-foreground last:border-b-0 hover:bg-surface-hover focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-accent"
-                  onClick={() => selectAddress(address)}
-                >
-                  {address.label}
-                </button>
-              ))
-            ) : !addressSearch.isError ? (
-              <div className="px-3 py-2 font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-                {mapText.addressSearchEmpty}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
       {!isReady && !hasError ? <div className="absolute inset-0 animate-pulse bg-muted" /> : null}
       {hasError ? (
         <div className="absolute inset-0 flex items-center justify-center bg-card px-6 text-center font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
           {i18n.cms.forms.resources.maps.previewUnavailable}
         </div>
       ) : null}
-      <div className="pointer-events-none absolute right-3 bottom-3 rounded-[4px] border border-border bg-card/90 px-2 py-1 font-ui text-[9px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-        {mapText.addressSearchAttribution}
-      </div>
     </section>
   );
 }

@@ -1,15 +1,16 @@
-# CMS Maps Plan
+# CMS Research Maps
 
 ## Scope
 
-Maps are a CMS-only editorial resource. They have no public routes, public tRPC procedures, sitemap entries, public cache tags, or publication status.
+Maps are managed in the CMS and can appear publicly only through a published Issue home block. They have no standalone public routes, public tRPC procedures, or sitemap entries.
 
 - Access: `ADMIN` and `EDITOR`, consistent with the other editorial resources.
-- Geography: only the Province of Modena.
+- Geography: only the Comune di Modena.
 - Geometry in V1: points only.
-- A map owns its points. A point cannot belong to more than one map.
+- A map is an inquiry workspace and owns its evidence points. A point cannot belong to more than one map.
 - A point contains only a title, an optional TipTap description, and a location.
-- Coordinates are not classified as sensitive in this initial scope.
+- Coordinates are precise and visible to every authenticated CMS user.
+- A map is publicly eligible only when active and published; a selected map remains omitted from public issue pages until then.
 
 ## Product Behavior
 
@@ -23,7 +24,7 @@ Maps are a CMS-only editorial resource. They have no public routes, public tRPC 
 - A new, empty map opens around Sacca and Crocetta, Modena.
 - New map creation starts with a provisional point at Sacca/Crocetta; it can be repositioned before saving and is created with the map.
 - A map with points automatically fits its viewport to the complete point set.
-- Points must remain within the Province of Modena administrative boundary.
+- Points must remain within the Comune di Modena administrative boundary.
 
 ## Data Model
 
@@ -35,6 +36,8 @@ Map
 - title: string
 - titleStyled: optional highlighted/line-break title segments
 - descriptionRich: version-compatible TipTap JSON, optional
+- isActive: boolean
+- publishedAt: optional date
 - createdAt
 - updatedAt
 
@@ -60,14 +63,13 @@ Constraints:
 
 ## Cartographic Infrastructure
 
-The CMS uses Leaflet with raster tiles from the public OpenStreetMap tile service.
+The CMS uses Leaflet with OpenStreetMap raster tiles.
 
 - `Leaflet` is the client-only renderer. All map instances are created through `features/cms/maps/utils/leaflet-map.ts`.
 - Tiles are requested from `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`; the Content Security Policy permits this origin.
 - The standard Leaflet attribution control visibly credits OpenStreetMap contributors.
-- The administrative border is stored as versioned boundary data sourced from OpenStreetMap. It supplies both client `maxBounds` and server-side point-in-polygon validation.
-- Address autocomplete uses the external Nominatim API through the authenticated `maps.searchAddress` tRPC procedure. It is rate-limited, requested server-side, and requires `NOMINATIM_USER_AGENT` to identify the deployment.
-- This use is limited to the authenticated CMS. Review the OpenStreetMap Tile Usage Policy before extending maps to public, high-traffic pages.
+- The administrative border is stored as versioned Comune boundary data sourced from OpenStreetMap relation `43336`. It supplies client bounds and server-side point-in-polygon validation.
+- Address autocomplete uses the external Nominatim API through the authenticated `maps.searchAddress` procedure. It is rate-limited, requested server-side, scoped to the Comune bounding box, and requires `NOMINATIM_USER_AGENT` to identify the deployment.
 - The V1 map does not use browser geolocation, import/export, map layers, routes, lines, polygons, clustering, or a persisted manual viewport.
 
 ## Backend Boundary
@@ -129,7 +131,7 @@ Do not add these without a separate product and data-model decision:
 
 - categories, marker styles, images, external links, dates, or sources on points;
 - reusable locations across maps;
-- address search or geocoding;
+- external address search or geocoding;
 - CSV/GeoJSON import and export;
 - public maps or embedding;
 - lines, polygons, routes, layers, clustering, or temporal views;

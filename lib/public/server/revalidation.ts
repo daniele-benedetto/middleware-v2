@@ -39,8 +39,15 @@ export function revalidatePublicIssueContent() {
 
 export function revalidatePublicCourseContent() {
   revalidatePublicTag(PUBLIC_COURSE_PAGE_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_HOME_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_MEDIA_CACHE_TAG);
   revalidatePublicTag(PUBLIC_SITEMAP_CACHE_TAG);
+}
+
+export function revalidatePublicMapContent() {
+  revalidatePublicTag(PUBLIC_HOME_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
 }
 
 export function revalidatePublicPageContent() {

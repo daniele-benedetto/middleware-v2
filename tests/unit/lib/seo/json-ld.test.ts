@@ -28,6 +28,8 @@ const issue = {
   homeVariant: "black",
   publishedAt: "2026-01-01T00:00:00.000Z",
   articlesCount: 1,
+  courses: [],
+  maps: [],
   articles: [
     {
       id: "22222222-2222-4222-8222-222222222222",
@@ -130,8 +132,11 @@ describe("seo json-ld", () => {
         titleStyled: null,
         slug: issue.slug,
         description: issue.description,
+        homeBlocks: null,
+        homeVariant: "black",
         publishedAt: issue.publishedAt,
         articlesCount: issue.articlesCount,
+        courses: [],
       } as PublicIssueListItem,
     ]);
     const graph = getGraph(archiveJsonLd);

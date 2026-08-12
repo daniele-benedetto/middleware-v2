@@ -1,14 +1,23 @@
-import type { IssueHomeBlock } from "@/lib/server/modules/issues/schema";
+import type {
+  IssueHomeArticleBlock,
+  IssueHomeBlock,
+  IssueHomeCourseBlock,
+  IssueHomeMapBlock,
+} from "@/lib/server/modules/issues/schema";
 
-export function isSingleArticleBlock(type: IssueHomeBlock["type"]) {
+export function isArticleHomeBlock(block: IssueHomeBlock): block is IssueHomeArticleBlock {
+  return block.type !== "course" && block.type !== "map";
+}
+
+export function isSingleArticleBlock(type: IssueHomeArticleBlock["type"]) {
   return type === "opening" || type === "rupture" || type === "closing";
 }
 
-function supportsFeaturedPlacement(type: IssueHomeBlock["type"]) {
-  return type === "body" || type === "rupture";
+function supportsFeaturedPlacement(type: IssueHomeArticleBlock["type"]) {
+  return type === "body" || type === "rupture" || type === "closing";
 }
 
-export function normalizeHomeBlock(block: IssueHomeBlock): IssueHomeBlock {
+export function normalizeHomeBlock(block: IssueHomeArticleBlock): IssueHomeArticleBlock {
   const articleIds = isSingleArticleBlock(block.type)
     ? block.articleIds.slice(0, 1)
     : block.articleIds;
@@ -26,7 +35,7 @@ export function normalizeHomeBlock(block: IssueHomeBlock): IssueHomeBlock {
 }
 
 export function createHomeBlock(
-  input: Omit<IssueHomeBlock, "featuredArticleId"> & {
+  input: Omit<IssueHomeArticleBlock, "featuredArticleId"> & {
     featuredArticleId?: string | null;
   },
 ) {
@@ -37,7 +46,7 @@ export function createHomeBlock(
 }
 
 export function createEmptyHomeBlock(
-  type: IssueHomeBlock["type"] = "body",
+  type: IssueHomeArticleBlock["type"] = "body",
   id = `${type}-${Date.now().toString(36)}`,
 ) {
   return createHomeBlock({
@@ -47,6 +56,16 @@ export function createEmptyHomeBlock(
     featuredArticleId: null,
     featuredPlacement: "left",
   });
+}
+
+export function createEmptyCourseHomeBlock(
+  id = `course-${Date.now().toString(36)}`,
+): IssueHomeCourseBlock {
+  return { id, type: "course", courseId: null };
+}
+
+export function createEmptyMapHomeBlock(id = `map-${Date.now().toString(36)}`): IssueHomeMapBlock {
+  return { id, type: "map", mapId: null };
 }
 
 export function reorderItems<T>(items: T[], from: number, to: number) {

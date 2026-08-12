@@ -297,11 +297,7 @@ Il `grep` finale non deve trovare lo script. Non cancellare subito volumi o data
 
 ## Map Tiles Ops
 
-Le mappe CMS usano Leaflet e il servizio pubblico di tile OpenStreetMap. Il browser richiede immagini direttamente a `https://*.tile.openstreetmap.org`; la CSP dell'applicazione autorizza esclusivamente tale origine per queste immagini.
-
-- Il servizio e adatto al traffico limitato del CMS autenticato, non a pagine pubbliche o alto traffico.
-- L'attribuzione OpenStreetMap e visualizzata dal controllo Leaflet e non deve essere rimossa.
-- Prima di estendere le mappe, verificare la OpenStreetMap Tile Usage Policy e valutare un provider o un'infrastruttura dedicata.
+Le mappe CMS usano Leaflet e tile OpenStreetMap. Il browser richiede immagini direttamente a `https://*.tile.openstreetmap.org`; la CSP autorizza esclusivamente tale origine. Il servizio e adatto al CMS autenticato con traffico limitato, non a pagine pubbliche o alto traffico.
 
 ## Deploy Production Data-Safe
 

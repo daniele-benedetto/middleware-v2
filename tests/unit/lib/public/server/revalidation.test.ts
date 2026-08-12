@@ -106,6 +106,8 @@ describe("public cache revalidation", () => {
 
     expectExpiredTags([
       PUBLIC_COURSE_PAGE_CACHE_TAG,
+      PUBLIC_HOME_CACHE_TAG,
+      PUBLIC_ISSUE_PAGE_CACHE_TAG,
       PUBLIC_MEDIA_CACHE_TAG,
       PUBLIC_SITEMAP_CACHE_TAG,
     ]);

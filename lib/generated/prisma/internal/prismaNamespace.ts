@@ -1739,6 +1739,8 @@ export const MapScalarFieldEnum = {
   title: 'title',
   titleStyled: 'titleStyled',
   descriptionRich: 'descriptionRich',
+  isActive: 'isActive',
+  publishedAt: 'publishedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
