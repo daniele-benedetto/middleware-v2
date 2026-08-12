@@ -16,7 +16,7 @@ export function PublicFooter({ sectionsLinks, legalLinks }: PublicFooterProps) {
 
   return (
     <footer
-      className="bg-foreground text-background"
+      className="mt-13 bg-foreground text-background"
       style={{ viewTransitionName: "public-footer" }}
     >
       <div
