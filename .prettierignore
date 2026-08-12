@@ -6,3 +6,6 @@ coverage
 lib/generated/prisma
 pnpm-lock.yaml
 .husky
+
+# vendored by scripts/sync-maplibre-worker.mjs
+public/maplibre

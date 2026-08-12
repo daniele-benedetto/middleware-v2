@@ -35,6 +35,7 @@ export const rateLimitPolicies = {
   sensitiveWrite: { name: "sensitive-write", limit: 20, windowMs: 60_000 },
   publish: { name: "publish", limit: 30, windowMs: 60_000 },
   reorder: { name: "reorder", limit: 15, windowMs: 60_000 },
+  externalRead: { name: "external-read", limit: 30, windowMs: 60_000 },
 } as const satisfies Record<string, RateLimitPolicy>;
 
 const maybePruneCounters = (now: number) => {

@@ -13,6 +13,7 @@ export {
   createMapItemInputSchema,
   listMapsQuerySchema,
   reorderMapItemsInputSchema,
+  searchMapAddressInputSchema,
   updateMapInputSchema,
   updateMapItemInputSchema,
 } from "@/lib/server/modules/maps/schema";
@@ -21,7 +22,12 @@ export type {
   CreateMapItemInput,
   ListMapsQuery,
   ReorderMapItemsInput,
+  SearchMapAddressInput,
   UpdateMapInput,
   UpdateMapItemInput,
 } from "@/lib/server/modules/maps/schema";
+export {
+  mapAddressSuggestionDtoSchema,
+  mapsGeocodingService,
+} from "@/lib/server/modules/maps/geocoding/service";
 export { mapsService } from "@/lib/server/modules/maps/service";

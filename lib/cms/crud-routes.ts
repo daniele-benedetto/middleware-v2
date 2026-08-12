@@ -26,6 +26,10 @@ export const cmsCrudRoutes = {
   maps: {
     create: "/cms/maps/new",
     edit: (id: string) => `/cms/maps/${id}/edit`,
+    items: {
+      create: (mapId: string) => `/cms/maps/${mapId}/items/new`,
+      edit: (mapId: string, itemId: string) => `/cms/maps/${mapId}/items/${itemId}/edit`,
+    },
   },
   pages: {
     create: "/cms/pages/new",

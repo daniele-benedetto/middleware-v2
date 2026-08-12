@@ -18,7 +18,10 @@ Maps are a CMS-only editorial resource. They have no public routes, public tRPC 
 - `/cms/maps/[id]/edit` is the map workspace: map canvas on the left, mapped-point list on the right.
 - Selecting a marker selects and focuses its list row; selecting a row pans to and focuses its marker.
 - Selecting a point opens its dedicated editor page.
+- The map workspace is read-only: selecting a marker opens its point information card, but does not change coordinates.
+- A point is positioned and repositioned only in its own editor through the interactive map picker.
 - A new, empty map opens around Sacca and Crocetta, Modena.
+- New map creation starts with a provisional point at Sacca/Crocetta; it can be repositioned before saving and is created with the map.
 - A map with points automatically fits its viewport to the complete point set.
 - Points must remain within the Province of Modena administrative boundary.
 
@@ -57,26 +60,15 @@ Constraints:
 
 ## Cartographic Infrastructure
 
-The map must use open-source software and have no external runtime provider.
+The CMS uses Leaflet with raster tiles from the public OpenStreetMap tile service.
 
-```text
-OSM data extract
-  -> internal update pipeline
-  -> local MBTiles archive
-  -> TileServer GL Docker service
-  -> same-origin Next rewrite at /tiles/*
-  -> MapLibre GL JS in the CMS workspace
-```
-
-- `MapLibre GL JS` is the client-only map renderer.
-- `TileServer GL` serves self-hosted vector tiles from a persistent local MBTiles volume.
-- `public/maps/modena-style.json` is the local MapLibre base style; it references only same-origin tile URLs and retains visible OSM/Geofabrik attribution.
-- The MBTiles coverage includes the Province of Modena and a small surrounding buffer.
-- TileServer is not directly public. A Next rewrite serves it through the application origin to preserve a restrictive CSP; Caddy applies the production cache policy after the application response.
+- `Leaflet` is the client-only renderer. All map instances are created through `features/cms/maps/utils/leaflet-map.ts`.
+- Tiles are requested from `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`; the Content Security Policy permits this origin.
+- The standard Leaflet attribution control visibly credits OpenStreetMap contributors.
 - The administrative border is stored as versioned boundary data sourced from OpenStreetMap. It supplies both client `maxBounds` and server-side point-in-polygon validation.
-- OSM/OpenMapTiles attribution remains visible in the workspace, as required by the respective data licences.
-- Data acquisition is allowed as an operational maintenance activity; the running CMS does not depend on an external tile, geocoding, or map API.
-- The V1 map does not use address search, browser geolocation, import/export, map layers, routes, lines, polygons, clustering, or a persisted manual viewport.
+- Address autocomplete uses the external Nominatim API through the authenticated `maps.searchAddress` tRPC procedure. It is rate-limited, requested server-side, and requires `NOMINATIM_USER_AGENT` to identify the deployment.
+- This use is limited to the authenticated CMS. Review the OpenStreetMap Tile Usage Policy before extending maps to public, high-traffic pages.
+- The V1 map does not use browser geolocation, import/export, map layers, routes, lines, polygons, clustering, or a persisted manual viewport.
 
 ## Backend Boundary
 
@@ -113,42 +105,14 @@ Route helpers belong in `lib/cms/crud-routes.ts`; sidebar configuration belongs 
 
 Each phase is completed, reviewed, and verified before starting the next. No later page is implemented early for convenience.
 
-### Phase 4: Map Workspace Page
+### Phase 6: Point Positioning
 
-Implement only `/cms/maps/[id]/edit` and its loading state.
+Extend only the completed point editor and read-only workspace.
 
-- Use a client-only MapLibre workspace within an RSC-prefetched CMS entrypoint.
-- Desktop layout: independently scrollable map pane on the left and mapped-point panel on the right.
-- Mobile layout: a deliberate pane switcher or vertical stack, never two cramped columns.
-- Render the self-hosted basemap, Province bounds, visible attribution, current map metadata, and existing markers.
-- Render mapped points in the right panel with title, description summary, order, empty state, and navigation to the point editor.
-- Fit the map to all existing markers; use the Sacca/Crocetta fallback viewport when empty.
-- Do not add click-to-create, marker drag, or item reordering yet.
-
-Complete when the workspace is usable with empty and populated maps, marker/list selection is bidirectional and keyboard accessible, and failures in tile rendering do not prevent the point list or map metadata from working.
-
-### Phase 5: Point Editor Pages
-
-Implement `/cms/maps/[mapId]/items/new` and `/cms/maps/[mapId]/items/[itemId]/edit`, with their loading states.
-
-- Reuse the lesson child-editor pattern: map parent context, title, optional TipTap description, latitude, longitude, save, cancel, and hard delete in edit mode.
-- Reject points outside the Province of Modena with a precise form-level error.
-- Return to the owning map workspace after create, update, or delete.
-- Keep coordinate text fields as the accessible, deterministic fallback for all geographic interaction.
-
-Complete when an editor can manage a point solely through the form, with consistent form states, audit entries, cache invalidation, and ownership protection.
-
-### Phase 6: Workspace Gestures
-
-Extend only the completed map workspace and point editor integration.
-
-- Clicking the map opens the new-point flow with coordinate fields prefilled.
-- Dragging a marker updates its coordinates through the established point-update mutation and handles rollback/error feedback.
-- Add non-drag controls and keyboard alternatives for all essential interactions.
-- Add point-list ordering using the existing dnd-kit conventions and a complete-set reorder procedure.
-- Preserve synchronization between selected list row and marker after all mutations.
-
-Complete when mouse, touch, and keyboard workflows can create, locate, move, select, and order points without bypassing server validation.
+- The workspace map remains read-only and opens point information when a marker is selected.
+- The point editor map supports click-to-position and marker dragging, then saves through the standard point form.
+- Keep coordinate fields as the keyboard-accessible fallback.
+- Point-list ordering is deferred until a separate interaction decision.
 
 ### Phase 7: Quality Gate
 

@@ -1,6 +1,59 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "leaflet/dist/leaflet.css";
+
+.cms-map-pin-icon {
+  background: transparent;
+  border: 0;
+}
+
+.cms-map-pin {
+  position: relative;
+  display: block;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 3px solid #ffffff;
+  border-radius: 50% 50% 50% 0;
+  background: var(--accent);
+  box-shadow: 0 3px 9px rgb(0 0 0 / 35%);
+  transform: rotate(-45deg);
+  cursor: pointer;
+}
+
+.cms-map-pin::after {
+  position: absolute;
+  right: 1px;
+  bottom: -7px;
+  left: 1px;
+  z-index: -1;
+  height: 9px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 26%);
+  content: "";
+  filter: blur(2px);
+}
+
+.cms-map-pin__dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #ffffff;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.cms-map-pin:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.cms-map-pin[data-selected="true"] {
+  scale: 1.14;
+}
 
 :root {
   color-scheme: light;

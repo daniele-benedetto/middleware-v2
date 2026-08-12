@@ -48,6 +48,7 @@ type UserDetailOutput = RouterOutputs["users"]["getById"];
 type ArticleDetailOutput = RouterOutputs["articles"]["getById"];
 type ArticlePreviewOutput = RouterOutputs["articles"]["getPreviewById"];
 type PageDetailOutput = RouterOutputs["pages"]["getById"];
+type MapDetailOutput = RouterOutputs["maps"]["getById"];
 type PagesListOutput = RouterOutputs["pages"]["list"];
 
 type CmsListPrefetcher<TInput, TOutput> = (caller: TrpcCaller, input: TInput) => Promise<TOutput>;
@@ -94,6 +95,11 @@ export async function prefetchUsersList(input: UsersListInput): Promise<UsersLis
 
 export async function prefetchMapsList(input: MapsListInput): Promise<MapsListOutput> {
   return prefetchCmsList(input, (caller, listInput) => caller.maps.list(listInput));
+}
+
+export async function prefetchMapById(id: string): Promise<MapDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.maps.getById({ id });
 }
 
 export async function prefetchMediaList(): Promise<MediaListOutput> {

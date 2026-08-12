@@ -7,7 +7,7 @@ export const provinceOfModenaBoundaryVersion = "2026-08-11";
 
 type Position = readonly [longitude: number, latitude: number];
 
-const provinceOfModenaPolygons: ReadonlyArray<ReadonlyArray<Position>> = [
+export const provinceOfModenaPolygons: ReadonlyArray<ReadonlyArray<Position>> = [
   [
     [10.4698307, 44.2263518],
     [10.4933383, 44.2166395],
@@ -125,6 +125,11 @@ const provinceOfModenaPolygons: ReadonlyArray<ReadonlyArray<Position>> = [
     [10.4808353, 44.1896201],
     [10.4806956, 44.1902397],
   ],
+];
+
+export const provinceOfModenaMaxBounds: [[number, number], [number, number]] = [
+  [10.4698307, 44.1149943],
+  [11.366675, 44.9629506],
 ];
 
 function isPointOnSegment(

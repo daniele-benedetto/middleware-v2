@@ -27,7 +27,7 @@ const contentSecurityPolicy = [
   "form-action 'self'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"} ${analyticsOrigins}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
   "font-src 'self' data:",
   "media-src 'self' blob:",
   `connect-src 'self' ${analyticsOrigins}`,
@@ -183,14 +183,6 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return legacyV1Redirects;
-  },
-  async rewrites() {
-    return [
-      {
-        source: "/tiles/:path*",
-        destination: "http://tileserver:8080/:path*",
-      },
-    ];
   },
 };
 

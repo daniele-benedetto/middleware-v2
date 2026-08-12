@@ -17,7 +17,9 @@ import {
   getStyledTitlePlainText,
   hasStyledTitleFormatting,
 } from "@/components/cms/primitives";
+import { CmsMapPreview } from "@/features/cms/maps/components/map-preview";
 import { useMapCreate, type CreateMapInput } from "@/features/cms/maps/hooks/use-map-crud";
+import { type MapCoordinates } from "@/features/cms/maps/utils/coordinates";
 import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -25,6 +27,7 @@ import { createMapInputSchema } from "@/lib/server/modules/maps/schema";
 import { trpc } from "@/lib/trpc/react";
 
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
+const initialMapCoordinates: MapCoordinates = { latitude: 44.6578, longitude: 10.9006 };
 
 export function CmsMapCreateScreen() {
   const router = useRouter();
@@ -33,6 +36,7 @@ export function CmsMapCreateScreen() {
   const mapText = text.forms.resources.maps;
   const createMutation = useMapCreate();
   const [titleStyled, setTitleStyled] = useState(() => createStyledTitleValue(""));
+  const [initialItemCoordinates, setInitialItemCoordinates] = useState(initialMapCoordinates);
   const form = useForm<CreateMapInput>({
     resolver: zodResolver(createMapInputSchema),
     defaultValues: { title: "", descriptionRich: emptyContentDoc },
@@ -43,6 +47,10 @@ export function CmsMapCreateScreen() {
       const map = await createMutation.mutateAsync({
         ...values,
         titleStyled: hasStyledTitleFormatting(titleStyled) ? titleStyled : null,
+        initialItem: {
+          title: values.title,
+          ...initialItemCoordinates,
+        },
       });
       await invalidateAfterCmsMutation(trpcUtils, "maps.create", { id: map.id });
       cmsToast.success(mapText.created);
@@ -79,46 +87,53 @@ export function CmsMapCreateScreen() {
       />
 
       <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-5 overflow-y-auto pb-6 lg:pr-6">
-          <CmsFormField
-            label={text.forms.fields.title}
-            htmlFor="map-title"
-            hint={mapText.titleStyledHint}
-            error={form.formState.errors.title?.message}
-            required
-          >
-            <CmsStyledTitleEditor
-              id="map-title"
-              value={titleStyled}
-              onChange={(nextTitleStyled) => {
-                setTitleStyled(nextTitleStyled);
-                form.setValue("title", getStyledTitlePlainText(nextTitleStyled), {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                });
-              }}
-              placeholder={text.forms.fields.title}
-              accentLabel={mapText.titleStyledAccentAction}
-              lineBreakLabel={mapText.titleStyledLineBreakAction}
-              ariaLabel={mapText.titleStyledEditorAriaLabel}
-            />
-            <input type="hidden" {...form.register("title")} />
-          </CmsFormField>
+        <div className="grid min-h-0 min-w-0 grid-rows-[minmax(0,1fr)_minmax(18rem,1fr)] gap-6 lg:pr-6">
+          <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-5 overflow-y-auto">
+            <CmsFormField
+              label={text.forms.fields.title}
+              htmlFor="map-title"
+              hint={mapText.titleStyledHint}
+              error={form.formState.errors.title?.message}
+              required
+            >
+              <CmsStyledTitleEditor
+                id="map-title"
+                value={titleStyled}
+                onChange={(nextTitleStyled) => {
+                  setTitleStyled(nextTitleStyled);
+                  form.setValue("title", getStyledTitlePlainText(nextTitleStyled), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }}
+                placeholder={text.forms.fields.title}
+                accentLabel={mapText.titleStyledAccentAction}
+                lineBreakLabel={mapText.titleStyledLineBreakAction}
+                ariaLabel={mapText.titleStyledEditorAriaLabel}
+              />
+              <input type="hidden" {...form.register("title")} />
+            </CmsFormField>
 
-          <CmsFormField label={text.forms.fields.description} htmlFor="map-description-rich">
-            <Controller
-              name="descriptionRich"
-              control={form.control}
-              render={({ field }) => (
-                <CmsRichTextEditor
-                  value={field.value}
-                  onChange={field.onChange}
-                  ariaLabel={mapText.descriptionEditorAriaLabel}
-                  fullHeight
-                />
-              )}
-            />
-          </CmsFormField>
+            <CmsFormField label={text.forms.fields.description} htmlFor="map-description-rich">
+              <Controller
+                name="descriptionRich"
+                control={form.control}
+                render={({ field }) => (
+                  <CmsRichTextEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                    ariaLabel={mapText.descriptionEditorAriaLabel}
+                    fullHeight
+                  />
+                )}
+              />
+            </CmsFormField>
+          </div>
+
+          <CmsMapPreview
+            coordinates={initialItemCoordinates}
+            onCoordinatesChange={setInitialItemCoordinates}
+          />
         </div>
 
         <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-6 overflow-y-auto pb-6 lg:border-l lg:border-foreground lg:pl-6">

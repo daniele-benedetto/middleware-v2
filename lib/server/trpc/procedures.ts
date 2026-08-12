@@ -9,6 +9,9 @@ export const publicReadProcedure = publicProcedure.use(
   rateLimitMiddleware(rateLimitPolicies.publicRead),
 );
 export const protectedProcedure = publicProcedure.use(requireSessionMiddleware);
+export const externalReadProcedure = protectedProcedure.use(
+  rateLimitMiddleware(rateLimitPolicies.externalRead),
+);
 export const writeProcedure = protectedProcedure.use(rateLimitMiddleware(rateLimitPolicies.write));
 export const sensitiveWriteProcedure = protectedProcedure.use(
   rateLimitMiddleware(rateLimitPolicies.sensitiveWrite),

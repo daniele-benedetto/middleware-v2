@@ -13,14 +13,22 @@ import {
   mapsListDtoSchema,
   mapsPolicy,
   mapsService,
+  mapAddressSuggestionDtoSchema,
   reorderMapItemsInputSchema,
+  mapsGeocodingService,
+  searchMapAddressInputSchema,
   updateMapInputSchema,
   updateMapItemInputSchema,
 } from "@/lib/server/modules/maps";
 import { router } from "@/lib/server/trpc/init";
 import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
-import { protectedProcedure, reorderProcedure, writeProcedure } from "@/lib/server/trpc/procedures";
+import {
+  externalReadProcedure,
+  protectedProcedure,
+  reorderProcedure,
+  writeProcedure,
+} from "@/lib/server/trpc/procedures";
 import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
 import { successOutputSchema } from "@/lib/server/trpc/schemas/result";
 import { parseOutput } from "@/lib/server/validation/output";
@@ -32,6 +40,15 @@ const mapsListInputSchema = paginationInputSchema.extend({
 });
 
 export const mapsRouter = router({
+  searchAddress: externalReadProcedure
+    .use(requireRoleMiddleware(mapsPolicy.allowedRoles))
+    .input(searchMapAddressInputSchema)
+    .query(async ({ input }) =>
+      parseOutput(
+        await mapsGeocodingService.searchAddress(input.query),
+        z.array(mapAddressSuggestionDtoSchema),
+      ),
+    ),
   list: protectedProcedure
     .use(requireRoleMiddleware(mapsPolicy.allowedRoles))
     .input(mapsListInputSchema)

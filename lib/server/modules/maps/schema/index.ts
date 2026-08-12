@@ -23,6 +23,13 @@ export const createMapInputSchema = z.object({
   title: z.string().trim().min(1),
   titleStyled: issueTitleStyledSchema.nullable().optional(),
   descriptionRich: z.unknown().optional(),
+  initialItem: z
+    .object({
+      title: z.string().trim().min(1),
+      descriptionRich: z.unknown().optional(),
+    })
+    .extend(mapItemLocationSchema.shape)
+    .optional(),
 });
 
 export const updateMapInputSchema = createMapInputSchema
@@ -78,9 +85,14 @@ export const listMapsQuerySchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
+export const searchMapAddressInputSchema = z.object({
+  query: z.string().trim().min(3).max(160),
+});
+
 export type CreateMapInput = z.infer<typeof createMapInputSchema>;
 export type UpdateMapInput = z.infer<typeof updateMapInputSchema>;
 export type CreateMapItemInput = z.infer<typeof createMapItemInputSchema>;
 export type UpdateMapItemInput = z.infer<typeof updateMapItemInputSchema>;
 export type ReorderMapItemsInput = z.infer<typeof reorderMapItemsInputSchema>;
 export type ListMapsQuery = z.infer<typeof listMapsQuerySchema>;
+export type SearchMapAddressInput = z.infer<typeof searchMapAddressInputSchema>;

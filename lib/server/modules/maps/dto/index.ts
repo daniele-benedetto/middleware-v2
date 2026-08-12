@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+
 export const mapItemDtoSchema = z.object({
   id: z.string().uuid(),
   mapId: z.string().uuid(),
@@ -15,7 +17,7 @@ export const mapItemDtoSchema = z.object({
 export const mapDtoSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
-  titleStyled: z.unknown().nullable(),
+  titleStyled: issueTitleStyledSchema.nullable(),
   descriptionRich: z.unknown().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),

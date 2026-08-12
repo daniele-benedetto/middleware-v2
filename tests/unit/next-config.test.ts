@@ -36,12 +36,9 @@ describe("Next.js security config", () => {
     expect(await getContentSecurityPolicy("development")).toContain("'unsafe-eval'");
   });
 
-  it("proxies self-hosted tile requests through the application origin", async () => {
-    const config = await loadConfig("production");
-
-    await expect(config.rewrites?.()).resolves.toContainEqual({
-      source: "/tiles/:path*",
-      destination: "http://tileserver:8080/:path*",
-    });
+  it("permits OpenStreetMap tile images in the CSP", async () => {
+    expect(await getContentSecurityPolicy("production")).toContain(
+      "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
+    );
   });
 });

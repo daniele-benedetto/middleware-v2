@@ -18,3 +18,4 @@ export type AuthorsListInitialData = RouterOutputs["authors"]["list"];
 export type AuditLogsListInitialData = RouterOutputs["auditLogs"]["list"];
 export type UsersListInitialData = RouterOutputs["users"]["list"];
 export type MapsListInitialData = RouterOutputs["maps"]["list"];
+export type MapDetailInitialData = RouterOutputs["maps"]["getById"];

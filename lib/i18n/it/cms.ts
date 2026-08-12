@@ -167,6 +167,8 @@ export const cmsIt = {
       description: "Descrizione",
       titleStyled: "Titolo decorato",
       publishedAt: "Data pubblicazione",
+      latitude: "Latitudine",
+      longitude: "Longitudine",
     },
     resources: {
       users: {
@@ -329,14 +331,41 @@ export const cmsIt = {
       },
       maps: {
         createTitle: "Nuova Mappa",
+        editTitle: "Gestione Mappa",
         created: "Mappa creata.",
+        updated: "Mappa aggiornata.",
+        createItemTitle: "Nuovo Punto",
+        editItemTitle: "Modifica Punto",
+        itemCreated: "Punto creato.",
+        itemUpdated: "Punto aggiornato.",
+        itemDeleted: "Punto eliminato.",
+        invalidItemTitle: "Punto non valido",
+        parentMapSection: "Mappa",
+        coordinatesSection: "Coordinate",
+        parentMapHint: "Il punto appartiene a questa mappa.",
+        coordinatesHint: "Inserisci coordinate comprese nella Provincia di Modena.",
+        newItem: "Nuovo punto",
+        confirmDeleteItem: "Eliminerai definitivamente questo punto dalla mappa.",
+        addressSearchPlaceholder: "Cerca via o indirizzo...",
+        addressSearchEmpty: "Nessun indirizzo trovato.",
+        addressSearchAttribution: "Ricerca indirizzi: OpenStreetMap / Nominatim",
         descriptionEditorAriaLabel: "Editor descrizione mappa",
         titleStyledHint:
           "Seleziona una parola o una porzione del titolo, poi clicca Accent o A capo.",
         titleStyledAccentAction: "Accent",
         titleStyledLineBreakAction: "A capo",
         titleStyledEditorAriaLabel: "Editor titolo mappa",
-        creationHint: "Dopo il salvataggio potrai aggiungere i punti nella mappa.",
+        creationHint:
+          "Il punto iniziale usa il titolo della mappa. Trascinalo o clicca la mappa per riposizionarlo prima del salvataggio.",
+        previewLabel: "Anteprima della mappa di Sacca e Crocetta, Modena",
+        previewUnavailable: "Impossibile caricare l'anteprima della mappa.",
+        previewAttribution: "OpenStreetMap contributors",
+        itemsSection: "Punti mappati",
+        itemsEmpty: "Non ci sono ancora punti in questa mappa.",
+        itemOrder: (order: number) => `Punto ${order}`,
+        workspaceAttribution: "OpenStreetMap contributors",
+        workspaceMapUnavailable:
+          "La cartografia non e disponibile. I dati della mappa e i punti restano consultabili.",
       },
       pages: {
         invalidTitle: "Pagina non valida",
@@ -485,6 +514,9 @@ export const cmsIt = {
     confirmDeleteIssueSingle: "Eliminerai definitivamente l'uscita selezionata.",
     confirmDeleteIssueBulk: (count: number) =>
       `Eliminerai definitivamente ${count} uscite selezionate.`,
+    confirmDeleteMapSingle: "Eliminerai definitivamente questa mappa e tutti i suoi punti.",
+    confirmDeleteMapBulk: (count: number) =>
+      `Eliminerai definitivamente ${count} ${count === 1 ? "mappa" : "mappe"} e tutti i relativi punti.`,
     confirmDeleteCategorySingle: "Eliminerai definitivamente la categoria selezionata.",
     confirmDeleteCategoryBulk: (count: number) =>
       `Eliminerai definitivamente ${count} categorie selezionate.`,
@@ -635,7 +667,9 @@ export const cmsIt = {
         items: "Punti",
         createdAt: "Creata",
         updatedAt: "Aggiornata",
+        actions: "Azioni",
       },
+      selectItem: (title: string) => `Seleziona ${title}`,
     },
     categories: {
       subtitle: "Gestisci le categorie editoriali degli articoli.",
