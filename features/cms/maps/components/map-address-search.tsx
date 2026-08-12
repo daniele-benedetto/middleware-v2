@@ -27,6 +27,8 @@ export function CmsMapAddressSearch({ onSelect }: MapAddressSearchProps) {
     { enabled: debouncedQuery.length >= 3, staleTime: 30_000 },
   );
   const results = addressSearch.data ?? [];
+  const shouldShowResultsList =
+    isOpen && debouncedQuery.length >= 3 && !(addressSearch.isFetching && results.length === 0);
 
   const selectAddress = (address: (typeof results)[number]) => {
     setQuery(address.label);
@@ -43,7 +45,7 @@ export function CmsMapAddressSearch({ onSelect }: MapAddressSearchProps) {
           role="combobox"
           aria-autocomplete="list"
           aria-controls={listId}
-          aria-expanded={isOpen && results.length > 0}
+          aria-expanded={shouldShowResultsList}
           aria-activedescendant={activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined}
           value={query}
           onChange={(event) => {
@@ -79,7 +81,7 @@ export function CmsMapAddressSearch({ onSelect }: MapAddressSearchProps) {
           />
         ) : null}
       </div>
-      {isOpen && debouncedQuery.length >= 3 ? (
+      {shouldShowResultsList ? (
         <div
           id={listId}
           role="listbox"
