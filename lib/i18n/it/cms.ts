@@ -22,6 +22,8 @@ export const cmsIt = {
     courses: "Contro-formazioni",
     lessons: "Incontri",
     maps: "Mappe",
+    mapItems: "Punti",
+    system: "Sistema",
     pages: "Pagine",
     publicNavigation: "Navigazione",
     media: "Media",

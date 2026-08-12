@@ -6,17 +6,43 @@ export type CmsNavItem = {
   adminOnly?: boolean;
 };
 
-export const cmsNavigation: CmsNavItem[] = [
-  { label: i18n.cms.navigation.issues, href: "/cms/issues" },
-  { label: i18n.cms.navigation.categories, href: "/cms/categories" },
-  { label: i18n.cms.navigation.authors, href: "/cms/authors" },
-  { label: i18n.cms.navigation.articles, href: "/cms/articles" },
-  { label: i18n.cms.navigation.courses, href: "/cms/contro-formazioni" },
-  { label: i18n.cms.navigation.lessons, href: "/cms/incontri" },
-  { label: i18n.cms.navigation.maps, href: "/cms/maps" },
-  { label: i18n.cms.navigation.pages, href: "/cms/pages" },
-  { label: i18n.cms.navigation.publicNavigation, href: "/cms/navigation" },
-  { label: i18n.cms.navigation.media, href: "/cms/media" },
-  { label: i18n.cms.navigation.auditLogs, href: "/cms/audit-logs", adminOnly: true },
-  { label: i18n.cms.navigation.users, href: "/cms/users", adminOnly: true },
+export type CmsNavSection = {
+  label: string;
+  items: CmsNavItem[];
+};
+
+export const cmsNavigation: CmsNavSection[] = [
+  {
+    label: i18n.cms.navigation.issues,
+    items: [
+      { label: i18n.cms.navigation.issues, href: "/cms/issues" },
+      { label: i18n.cms.navigation.articles, href: "/cms/articles" },
+      { label: i18n.cms.navigation.categories, href: "/cms/categories" },
+      { label: i18n.cms.navigation.authors, href: "/cms/authors" },
+    ],
+  },
+  {
+    label: i18n.cms.navigation.courses,
+    items: [
+      { label: i18n.cms.navigation.courses, href: "/cms/contro-formazioni" },
+      { label: i18n.cms.navigation.lessons, href: "/cms/incontri" },
+    ],
+  },
+  {
+    label: i18n.cms.navigation.maps,
+    items: [
+      { label: i18n.cms.navigation.maps, href: "/cms/maps" },
+      { label: i18n.cms.navigation.mapItems, href: "/cms/map-items" },
+    ],
+  },
+  {
+    label: i18n.cms.navigation.system,
+    items: [
+      { label: i18n.cms.navigation.pages, href: "/cms/pages" },
+      { label: i18n.cms.navigation.publicNavigation, href: "/cms/navigation" },
+      { label: i18n.cms.navigation.media, href: "/cms/media" },
+      { label: i18n.cms.navigation.auditLogs, href: "/cms/audit-logs", adminOnly: true },
+      { label: i18n.cms.navigation.users, href: "/cms/users", adminOnly: true },
+    ],
+  },
 ];

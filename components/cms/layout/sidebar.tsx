@@ -65,26 +65,30 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
 
   const navigationLinks = (onNavigate?: () => void) => (
     <nav className="flex flex-col gap-1">
-      {visibleNavigation.map((item) => {
-        const active = isActive(item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "relative block cursor-pointer rounded-[6px] border-l-4 py-3 pr-3 pl-4",
-              "font-ui text-[12px] font-extrabold uppercase tracking-[0.1em] transition-colors",
-              active
-                ? "border-accent bg-card-hover text-accent"
-                : "border-transparent text-foreground hover:border-foreground hover:bg-card-hover",
-            )}
-          >
-            {item.label}
-          </Link>
-        );
-      })}
+      {visibleNavigation.map((section) => (
+        <section key={section.label} aria-label={section.label} className="flex flex-col gap-1">
+          {section.items.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "relative block cursor-pointer rounded-[6px] border-l-4 py-3 pr-3 pl-4",
+                  "font-ui text-[12px] font-extrabold uppercase tracking-[0.1em] transition-colors",
+                  active
+                    ? "border-accent bg-card-hover text-accent"
+                    : "border-transparent text-foreground hover:border-foreground hover:bg-card-hover",
+                )}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </section>
+      ))}
     </nav>
   );
 
