@@ -29,7 +29,6 @@ import {
 import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
-import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { updateMapInputSchema } from "@/lib/server/modules/maps/schema";
 import { trpc } from "@/lib/trpc/react";
 
@@ -210,11 +209,6 @@ export function CmsMapWorkspaceScreen({ mapId, initialData }: CmsMapWorkspaceScr
                             <span className="mt-1 block font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
                               {mapText.itemOrder(item.sortOrder + 1)}
                             </span>
-                            {extractPlainText(item.descriptionRich) ? (
-                              <span className="mt-2 block line-clamp-2 font-editorial text-[14px] leading-[1.35] text-muted-foreground">
-                                {extractPlainText(item.descriptionRich)}
-                              </span>
-                            ) : null}
                           </button>
                           <Link
                             href={cmsCrudRoutes.maps.items.edit(mapId, item.id)}
