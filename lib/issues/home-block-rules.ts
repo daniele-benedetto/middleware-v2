@@ -4,10 +4,6 @@ export function isSingleArticleBlock(type: IssueHomeBlock["type"]) {
   return type === "opening" || type === "rupture" || type === "closing";
 }
 
-export function isEditorialSingleBlock(type: IssueHomeBlock["type"]) {
-  return type === "opening" || type === "rupture";
-}
-
 function supportsFeaturedPlacement(type: IssueHomeBlock["type"]) {
   return type === "body" || type === "rupture";
 }
@@ -23,9 +19,6 @@ export function normalizeHomeBlock(block: IssueHomeBlock): IssueHomeBlock {
 
   return {
     ...block,
-    title: isEditorialSingleBlock(block.type) ? null : block.title,
-    titleStyled: isEditorialSingleBlock(block.type) ? null : block.titleStyled,
-    description: isEditorialSingleBlock(block.type) ? null : block.description,
     articleIds,
     featuredArticleId,
     featuredPlacement: supportsFeaturedPlacement(block.type) ? block.featuredPlacement : "left",
@@ -50,8 +43,6 @@ export function createEmptyHomeBlock(
   return createHomeBlock({
     id,
     type,
-    title: null,
-    description: null,
     articleIds: [],
     featuredArticleId: null,
     featuredPlacement: "left",

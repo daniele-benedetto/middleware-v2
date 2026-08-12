@@ -1,6 +1,5 @@
 import { DossierArticleCard } from "@/components/public/compounds";
 import { publicContentClassName } from "@/components/public/primitives";
-import { BlockSectionIntro } from "@/components/public/sections/dossier/block-section-intro";
 import { getArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -63,8 +62,7 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
       style={priority ? ({ "--page-reveal-delay": "660ms" } as CSSProperties) : undefined}
     >
       <div className={publicContentClassName}>
-        {block.title ? null : <h2 className="sr-only">{i18n.public.home.dossier.articlesLabel}</h2>}
-        <BlockSectionIntro block={block} />
+        <h2 className="sr-only">{i18n.public.home.dossier.articlesLabel}</h2>
         <div
           className={`grid items-stretch md:border-l md:border-t md:border-foreground ${gridColumnsClass}`}
         >

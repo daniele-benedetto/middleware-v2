@@ -82,13 +82,6 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
                 {article.excerpt}
               </p>
             ) : null}
-            {block.description ? (
-              <p
-                className={`mt-5 max-w-[54ch] font-editorial text-[17px] leading-normal ${variantClasses.description}`}
-              >
-                {block.description}
-              </p>
-            ) : null}
             <div className="mt-7">
               <ArticleMeta article={article} tone={variantClasses.metaTone} />
             </div>

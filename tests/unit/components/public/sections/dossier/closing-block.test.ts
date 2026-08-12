@@ -22,13 +22,10 @@ const article = {
 };
 
 describe("ClosingBlock", () => {
-  it("renders no-copy closing blocks with an image-led closing layout", () => {
+  it("renders separate, variant-colored closing columns", () => {
     const block: NarrativeHomeBlock = {
       id: "closing",
       type: "closing",
-      title: null,
-      titleStyled: null,
-      description: null,
       articles: [article],
       featuredArticle: article,
       featuredPlacement: "left",
@@ -37,17 +34,17 @@ describe("ClosingBlock", () => {
     const html = renderToStaticMarkup(
       createElement(ClosingBlock, {
         block,
-        variant: "default",
+        variant: "red",
         articleNumbers: new Map([[article.id, 1]]),
       }),
     );
 
-    expect(html).toContain("md:grid-cols-[minmax(260px,0.46fr)_minmax(0,0.54fr)]");
-    expect(html).toContain("aspect-[4/3] overflow-hidden bg-foreground md:aspect-auto");
+    expect(html).toContain("grid gap-5 md:grid-cols-2 md:gap-8 lg:gap-10");
+    expect(html).toContain("bg-accent text-background");
     expect(html).toContain("url=%2Fimage.jpg");
     expect(html).toContain("closing-article-title-00000000-0000-4000-8000-000000000001");
     expect(html).not.toContain("md:min-h-[min(58vh,560px)]");
-    expect(html).not.toContain("border-t border-foreground py-10");
+    expect(html).not.toContain("md:border-r");
     expect(html).not.toContain("md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]");
     expect(html).not.toContain("Una traccia conclusiva del percorso.");
   });

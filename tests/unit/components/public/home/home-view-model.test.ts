@@ -53,7 +53,7 @@ describe("home view model", () => {
     expect(sortHomeArticles([newer, older])).toEqual([older, newer]);
   });
 
-  it("composes issue-level homeBlocks preserving editorial copy and featured article", () => {
+  it("composes issue-level homeBlocks preserving featured article", () => {
     const lead = article({ id: crypto.randomUUID(), title: "Lead" });
     const coreA = article({ id: crypto.randomUUID(), title: "Core A" });
     const coreB = article({ id: crypto.randomUUID(), title: "Core B" });
@@ -66,8 +66,6 @@ describe("home view model", () => {
             {
               id: "apertura",
               type: "opening",
-              title: "Apertura editoriale",
-              description: null,
               articleIds: [lead.id],
               featuredArticleId: lead.id,
               featuredPlacement: "left",
@@ -75,8 +73,6 @@ describe("home view model", () => {
             {
               id: "campo",
               type: "body",
-              title: "Campo di tensione",
-              description: "Testo deciso dentro l'uscita.",
               articleIds: [coreA.id, coreB.id],
               featuredArticleId: coreB.id,
               featuredPlacement: "right",
@@ -88,15 +84,12 @@ describe("home view model", () => {
       {
         id: "apertura",
         type: "opening",
-        title: null,
         articles: [{ title: "Lead" }],
         featuredArticle: { title: "Lead" },
       },
       {
         id: "campo",
         type: "body",
-        title: "Campo di tensione",
-        description: "Testo deciso dentro l'uscita.",
         articles: [{ title: "Core A" }, { title: "Core B" }],
         featuredArticle: { title: "Core B" },
         featuredPlacement: "right",
@@ -131,8 +124,6 @@ describe("home view model", () => {
             {
               id: "apertura",
               type: "opening",
-              title: null,
-              description: null,
               articleIds: [lead.id],
               featuredArticleId: lead.id,
               featuredPlacement: "left",
@@ -140,8 +131,6 @@ describe("home view model", () => {
             {
               id: "vuoto",
               type: "body",
-              title: "Vuoto",
-              description: null,
               articleIds: [],
               featuredArticleId: null,
               featuredPlacement: "left",

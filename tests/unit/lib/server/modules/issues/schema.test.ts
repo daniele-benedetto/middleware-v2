@@ -53,8 +53,6 @@ describe("issues schemas", () => {
         {
           id: "corpo",
           type: "body",
-          title: "Corpo",
-          description: null,
           articleIds: [],
           featuredArticleId: null,
         },
@@ -71,8 +69,6 @@ describe("issues schemas", () => {
         {
           id: "corpo",
           type: "body",
-          title: "Corpo",
-          description: null,
           articleIds: [],
           featuredArticleId: null,
           featuredPlacement: "right",
@@ -91,8 +87,6 @@ describe("issues schemas", () => {
           {
             id: "sequenza",
             type: "sequence",
-            title: "Sequenza",
-            description: null,
             articleIds: [],
             featuredArticleId: null,
           },
@@ -101,32 +95,31 @@ describe("issues schemas", () => {
     ).toBe(false);
   });
 
-  it("allows styled titles in home blocks", () => {
+  it("strips obsolete editorial copy from home blocks", () => {
     const parsed = createIssueInputSchema.parse({
       title: "Issue 01",
       homeBlocks: [
         {
           id: "corpo",
           type: "body",
-          title: "Titolo blocco",
+          title: "Titolo obsoleto",
           titleStyled: [
             { text: "Titolo ", tone: "default" },
             { text: "blocco", tone: "primary" },
           ],
-          description: null,
+          description: "Descrizione obsoleta",
           articleIds: [],
           featuredArticleId: null,
         },
       ],
     });
 
-    expect(parsed.homeBlocks?.[0]?.titleStyled).toEqual([
-      { text: "Titolo ", tone: "default" },
-      { text: "blocco", tone: "primary" },
-    ]);
+    expect(parsed.homeBlocks?.[0]).not.toHaveProperty("title");
+    expect(parsed.homeBlocks?.[0]).not.toHaveProperty("titleStyled");
+    expect(parsed.homeBlocks?.[0]).not.toHaveProperty("description");
   });
 
-  it("rejects opening blocks with copy or multiple articles", () => {
+  it("rejects opening blocks with multiple articles", () => {
     expect(
       createIssueInputSchema.safeParse({
         title: "Issue 01",
@@ -134,8 +127,6 @@ describe("issues schemas", () => {
           {
             id: "apertura",
             type: "opening",
-            title: "Apertura",
-            description: null,
             articleIds: [
               "00000000-0000-4000-8000-000000000001",
               "00000000-0000-4000-8000-000000000002",
@@ -147,23 +138,7 @@ describe("issues schemas", () => {
     ).toBe(false);
   });
 
-  it("rejects rupture copy and allows closing copy", () => {
-    expect(
-      createIssueInputSchema.safeParse({
-        title: "Issue 01",
-        homeBlocks: [
-          {
-            id: "rottura",
-            type: "rupture",
-            title: "Rottura",
-            description: null,
-            articleIds: ["00000000-0000-4000-8000-000000000001"],
-            featuredArticleId: "00000000-0000-4000-8000-000000000001",
-          },
-        ],
-      }).success,
-    ).toBe(false);
-
+  it("allows closing blocks", () => {
     expect(
       createIssueInputSchema.safeParse({
         title: "Issue 01",
@@ -171,8 +146,6 @@ describe("issues schemas", () => {
           {
             id: "chiusura",
             type: "closing",
-            title: "Chiusura",
-            description: "Copy",
             articleIds: ["00000000-0000-4000-8000-000000000001"],
             featuredArticleId: "00000000-0000-4000-8000-000000000001",
           },

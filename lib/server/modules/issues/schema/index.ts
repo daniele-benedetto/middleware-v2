@@ -14,9 +14,6 @@ export const issueHomeBlockSchema = z
   .object({
     id: z.string().trim().min(1),
     type: z.enum(["opening", "body", "rupture", "closing"]),
-    title: z.string().trim().nullable().optional(),
-    titleStyled: issueTitleStyledSchema.nullable().optional(),
-    description: z.string().trim().nullable().optional(),
     articleIds: z.array(z.string().uuid()),
     featuredArticleId: z.string().uuid().nullable().optional(),
     featuredPlacement: issueHomeBlockFeaturedPlacementSchema.default("left"),
@@ -28,15 +25,7 @@ export const issueHomeBlockSchema = z
       message: "opening, rupture and closing blocks can include at most one article",
       path: ["articleIds"],
     },
-  )
-  .refine((block) => block.type !== "opening" || (!block.title && !block.description), {
-    message: "opening blocks cannot include title or description",
-    path: ["title"],
-  })
-  .refine((block) => block.type !== "rupture" || (!block.title && !block.description), {
-    message: "rupture blocks cannot include title or description",
-    path: ["title"],
-  });
+  );
 
 export const issueHomeBlocksSchema = z.array(issueHomeBlockSchema).refine(
   (blocks) => {

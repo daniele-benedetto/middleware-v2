@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  isEditorialSingleBlock,
-  isSingleArticleBlock,
-  normalizeHomeBlock,
-} from "@/lib/issues/home-block-rules";
+import { isSingleArticleBlock, normalizeHomeBlock } from "@/lib/issues/home-block-rules";
 
 describe("home block rules", () => {
   it("identifies constrained single-article blocks", () => {
@@ -14,32 +10,23 @@ describe("home block rules", () => {
     expect(isSingleArticleBlock("body")).toBe(false);
   });
 
-  it("keeps closing copy while stripping opening and rupture copy", () => {
-    expect(isEditorialSingleBlock("opening")).toBe(true);
-    expect(isEditorialSingleBlock("rupture")).toBe(true);
-    expect(isEditorialSingleBlock("closing")).toBe(false);
-
+  it("keeps closing image placement", () => {
     expect(
       normalizeHomeBlock({
         id: "closing",
         type: "closing",
-        title: "Chiusura",
-        description: "Copy",
         articleIds: ["00000000-0000-4000-8000-000000000001"],
         featuredArticleId: null,
         featuredPlacement: "right",
       }),
-    ).toMatchObject({ title: "Chiusura", description: "Copy", featuredPlacement: "left" });
+    ).toMatchObject({ featuredPlacement: "right" });
   });
 
-  it("trims opening blocks to one article and removes copy", () => {
+  it("trims opening blocks to one article", () => {
     expect(
       normalizeHomeBlock({
         id: "opening",
         type: "opening",
-        title: "Apertura",
-        titleStyled: [{ text: "Apertura", tone: "primary" }],
-        description: "Copy",
         articleIds: [
           "00000000-0000-4000-8000-000000000001",
           "00000000-0000-4000-8000-000000000002",
@@ -50,31 +37,22 @@ describe("home block rules", () => {
     ).toEqual({
       id: "opening",
       type: "opening",
-      title: null,
-      titleStyled: null,
-      description: null,
       articleIds: ["00000000-0000-4000-8000-000000000001"],
       featuredArticleId: "00000000-0000-4000-8000-000000000001",
       featuredPlacement: "left",
     });
   });
 
-  it("keeps rupture image placement while stripping copy", () => {
+  it("keeps rupture image placement", () => {
     expect(
       normalizeHomeBlock({
         id: "rupture",
         type: "rupture",
-        title: "Rottura",
-        titleStyled: [{ text: "Rottura", tone: "primary" }],
-        description: "Copy",
         articleIds: ["00000000-0000-4000-8000-000000000001"],
         featuredArticleId: "00000000-0000-4000-8000-000000000001",
         featuredPlacement: "right",
       }),
     ).toMatchObject({
-      title: null,
-      titleStyled: null,
-      description: null,
       featuredPlacement: "right",
     });
   });

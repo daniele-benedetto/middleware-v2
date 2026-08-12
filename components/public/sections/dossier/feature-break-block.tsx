@@ -7,7 +7,6 @@ import {
   publicTypography,
 } from "@/components/public/primitives";
 import {
-  blockEyebrow,
   formatArticleNumber,
   getArticleNumber,
 } from "@/components/public/sections/dossier/dossier-format";
@@ -42,7 +41,6 @@ export function FeatureBreakBlock({
   }
 
   const variantClasses = getNarrativeVariantClasses(variant);
-  const eyebrow = blockEyebrow(block);
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `feature-article-title-${article.id}`;
   const showBorder = variant === "default";
@@ -93,11 +91,6 @@ export function FeatureBreakBlock({
               <span className={cn(publicTypography.articleNumberLg, variantClasses.titlePrimary)}>
                 {formatArticleNumber(getArticleNumber(articleNumbers, article))}
               </span>
-              {eyebrow ? (
-                <span className={cn(publicTypography.articleEyebrow, variantClasses.eyebrow)}>
-                  {eyebrow}
-                </span>
-              ) : null}
             </div>
             <h2
               id={titleId}
@@ -114,13 +107,6 @@ export function FeatureBreakBlock({
                 className={`mt-6 max-w-[54ch] font-editorial text-[19px] leading-[1.38] md:text-[22px] ${variantClasses.excerpt}`}
               >
                 {article.excerpt}
-              </p>
-            ) : null}
-            {block.description ? (
-              <p
-                className={`mt-5 max-w-[48ch] font-editorial text-[17px] leading-normal ${variantClasses.description}`}
-              >
-                {block.description}
               </p>
             ) : null}
             <div className="mt-7">

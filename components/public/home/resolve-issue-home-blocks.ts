@@ -6,11 +6,6 @@ import type {
 } from "@/components/public/home/home-view-model";
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
-function compactText(value: string | null | undefined) {
-  const text = value?.trim();
-  return text || null;
-}
-
 function toNarrativeBlock({
   block,
   articles,
@@ -32,9 +27,6 @@ function toNarrativeBlock({
   return {
     id: block.id,
     type: block.type,
-    title: compactText(block.title),
-    titleStyled: block.titleStyled ?? null,
-    description: compactText(block.description),
     articles,
     featuredArticle: preferredArticle,
     featuredPlacement: block.featuredPlacement,

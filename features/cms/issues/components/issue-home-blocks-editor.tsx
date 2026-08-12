@@ -25,27 +25,17 @@ import {
   CmsFormField,
   CmsMetaText,
   CmsSelect,
-  CmsStyledTitleEditor,
-  CmsTextarea,
-  createStyledTitleValue,
-  getStyledTitlePlainText,
-  hasStyledTitleFormatting,
 } from "@/components/cms/primitives";
 import { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sensors";
 import {
   createEmptyHomeBlock,
-  isEditorialSingleBlock,
   isSingleArticleBlock,
   normalizeHomeBlock,
   reorderItems,
 } from "@/lib/issues/home-block-rules";
 import { cn } from "@/lib/utils";
 
-import type {
-  IssueHomeBlock,
-  IssueHomeBlocks,
-  IssueTitleStyled,
-} from "@/lib/server/modules/issues/schema";
+import type { IssueHomeBlock, IssueHomeBlocks } from "@/lib/server/modules/issues/schema";
 
 type IssueHomeBlockArticle = {
   id: string;
@@ -59,11 +49,7 @@ type IssueHomeBlocksEditorText = {
   addBlock: string;
   articleCount: (count: number) => string;
   availableArticles: string;
-  blockDescription: string;
   blockTitle: string;
-  blockTitleAccentAction: string;
-  blockTitleLineBreakAction: string;
-  blockTitleEditorAriaLabel: string;
   blockDropHint: string;
   dropArticlesHint: string;
   duplicateBlock: string;
@@ -124,20 +110,6 @@ type DraggedArticleData = {
 type DroppedArticleData =
   | { type: "pool" }
   | { type: "block" | "blockArticle"; blockId: string; articleId?: string };
-
-function toNullableText(value: string) {
-  return value.trim() ? value : null;
-}
-
-function updateBlockTitle(block: IssueHomeBlock, titleStyled: IssueTitleStyled) {
-  const plainTitle = getStyledTitlePlainText(titleStyled);
-
-  return {
-    ...block,
-    title: toNullableText(plainTitle),
-    titleStyled: hasStyledTitleFormatting(titleStyled) ? titleStyled : null,
-  };
-}
 
 function getArticleCategoryLabel(article: IssueHomeBlockArticle) {
   return article.categoryName || article.categorySlug || null;
@@ -385,7 +357,6 @@ export function IssueHomeBlocksEditor({
                   value: article.id,
                   label: article.title,
                 }));
-                const showEditorialFields = !isEditorialSingleBlock(block.type);
                 const showFeaturedField = !isSingleArticleBlock(block.type);
                 const showFeaturedPlacementField =
                   block.type === "body" || block.type === "rupture";
@@ -397,7 +368,7 @@ export function IssueHomeBlocksEditor({
                         <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
                           <div>
                             <CmsMetaText variant="category">
-                              {index + 1}. {block.title || text.blockTitle}
+                              {index + 1}. {text.blockTitle}
                             </CmsMetaText>
                             <CmsBody size="sm" tone="muted">
                               {text.articleCount(block.articleIds.length)}
@@ -475,46 +446,6 @@ export function IssueHomeBlocksEditor({
                                 }
                               />
                             </CmsFormField>
-
-                            {showEditorialFields ? (
-                              <>
-                                <CmsFormField label={text.blockTitle} htmlFor={`${block.id}-title`}>
-                                  <CmsStyledTitleEditor
-                                    id={`${block.id}-title`}
-                                    value={createStyledTitleValue(
-                                      block.title ?? "",
-                                      block.titleStyled,
-                                    )}
-                                    disabled={disabled}
-                                    placeholder={text.blockTitle}
-                                    accentLabel={text.blockTitleAccentAction}
-                                    lineBreakLabel={text.blockTitleLineBreakAction}
-                                    ariaLabel={text.blockTitleEditorAriaLabel}
-                                    onChange={(nextTitleStyled) =>
-                                      updateBlock(index, updateBlockTitle(block, nextTitleStyled))
-                                    }
-                                  />
-                                </CmsFormField>
-
-                                <CmsFormField
-                                  label={text.blockDescription}
-                                  htmlFor={`${block.id}-description`}
-                                >
-                                  <CmsTextarea
-                                    id={`${block.id}-description`}
-                                    value={block.description ?? ""}
-                                    disabled={disabled}
-                                    className="min-h-28"
-                                    onChange={(event) =>
-                                      updateBlock(index, {
-                                        ...block,
-                                        description: toNullableText(event.target.value),
-                                      })
-                                    }
-                                  />
-                                </CmsFormField>
-                              </>
-                            ) : null}
 
                             {showFeaturedField ? (
                               <CmsFormField
