@@ -287,6 +287,7 @@ function IssueFormContent({
         excerpt: null,
         imageUrl: null,
         imageAlt: null,
+        imageSettings: undefined,
         hasAudio: false,
         readingTimeMinutes: 1,
         publishedAt: new Date().toISOString(),

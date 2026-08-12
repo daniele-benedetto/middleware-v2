@@ -1,5 +1,6 @@
 import "server-only";
 
+import { resolveArticleImageSettings } from "@/lib/articles/image-settings";
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
@@ -34,6 +35,7 @@ type PublicIssueArticleRecord = {
   excerpt: string | null;
   imageUrl: string | null;
   imageAlt: string | null;
+  imageSettings: unknown;
   audioUrl: string | null;
   contentRich: unknown;
   publishedAt: Date | null;
@@ -94,6 +96,7 @@ const toPublicIssueArticleSummaryDto = (
     excerpt: article.excerpt,
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
     imageAlt: article.imageAlt,
+    imageSettings: resolveArticleImageSettings(article.imageSettings),
     hasAudio: Boolean(article.audioUrl),
     readingTimeMinutes: calculateReadingTimeMinutes(article.contentRich),
     publishedAt: article.publishedAt.toISOString(),

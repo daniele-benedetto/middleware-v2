@@ -1,3 +1,4 @@
+import { resolveArticleImageSettings } from "@/lib/articles/image-settings";
 import { i18n } from "@/lib/i18n";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 
@@ -88,6 +89,7 @@ export type ArticleLivePreviewInput = {
   contentRich: unknown;
   imageUrl: string | null;
   imageAlt: string | null;
+  imageSettings?: unknown;
   audioUrl: string | null;
   audioChunks: unknown;
   statusLabel: string;
@@ -177,6 +179,7 @@ export function toArticleLivePreviewSnapshot(
       excerpt,
       imageUrl: input.imageUrl,
       imageAlt: input.imageAlt,
+      imageSettings: resolveArticleImageSettings(input.imageSettings),
       hasAudio: Boolean(input.audioUrl),
       publishedAt: now,
       issueId: input.issueId || PREVIEW_UUID,

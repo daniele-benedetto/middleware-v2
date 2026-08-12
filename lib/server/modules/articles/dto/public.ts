@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { articleImageSettingsSchema } from "@/lib/articles/image-settings";
 import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 
 const publicArticleBaseShape = {
@@ -10,6 +11,7 @@ const publicArticleBaseShape = {
   excerpt: z.string().nullable(),
   imageUrl: z.string().nullable(),
   imageAlt: z.string().nullable(),
+  imageSettings: articleImageSettingsSchema.optional(),
   hasAudio: z.boolean(),
   publishedAt: z.string(),
   issueId: z.string().uuid(),

@@ -1,12 +1,10 @@
-import Image from "next/image";
-
+import { ArticleCoverImage } from "@/components/public/article-cover-image";
 import { ArticleMeta } from "@/components/public/compounds/article-meta";
 import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
-import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
 import type { HomeIssueArticle } from "@/components/public/home/home-view-model";
@@ -40,14 +38,15 @@ export function DossierArticleCard({
   const summary = article.excerpt;
   const image =
     showImage && article.imageUrl ? (
-      <div className="mt-5 overflow-hidden grayscale md:border md:border-foreground">
-        <Image
+      <div className="mt-5 overflow-hidden md:border md:border-foreground">
+        <ArticleCoverImage
           src={article.imageUrl}
-          alt={editorialImageAlt(article.imageAlt)}
+          alt={article.imageAlt}
+          settings={article.imageSettings}
           width={1200}
           height={800}
           sizes="(min-width: 768px) 38vw, 100vw"
-          className={cn("h-auto w-full object-cover", publicInteraction.imageZoom)}
+          className={cn("h-auto w-full", publicInteraction.imageZoom)}
         />
       </div>
     ) : null;

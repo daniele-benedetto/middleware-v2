@@ -1,5 +1,6 @@
 import "server-only";
 
+import { resolveArticleImageSettings } from "@/lib/articles/image-settings";
 import { createCmsDomainErrorDetails } from "@/lib/cms/errors/domain-error-details";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
@@ -59,6 +60,7 @@ type IssuePreviewRecord = IssueRecord & {
     excerpt: string | null;
     imageUrl: string | null;
     imageAlt: string | null;
+    imageSettings: unknown;
     audioUrl: string | null;
     contentRich: unknown;
     publishedAt: Date | null;
@@ -144,6 +146,7 @@ const toPublicIssuePreviewDto = (issue: IssuePreviewRecord): PublicIssueDetailDt
       excerpt: article.excerpt,
       imageUrl: resolvePublicMediaUrl(article.imageUrl),
       imageAlt: article.imageAlt,
+      imageSettings: resolveArticleImageSettings(article.imageSettings),
       hasAudio: Boolean(article.audioUrl),
       readingTimeMinutes: calculateReadingTimeMinutes(article.contentRich),
       publishedAt: toPreviewPublishedAt(article.publishedAt, article.updatedAt),

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { resolveArticleImageSettings } from "@/lib/articles/image-settings";
 import { createCmsDomainErrorDetails } from "@/lib/cms/errors/domain-error-details";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
@@ -56,6 +57,7 @@ type ArticleDetailRecord = ArticleRecord & {
   contentRich: unknown;
   imageUrl: string | null;
   imageAlt: string | null;
+  imageSettings: unknown;
   audioUrl: string | null;
   audioChunks: unknown;
 };
@@ -172,6 +174,7 @@ const toArticleDetailDto = (article: ArticleDetailRecord): ArticleDetailDto => {
     contentRich: article.contentRich,
     imageUrl: article.imageUrl,
     imageAlt: article.imageAlt,
+    imageSettings: resolveArticleImageSettings(article.imageSettings),
     audioUrl: article.audioUrl,
     audioChunks: (article.audioChunks ?? null) as ArticleDetailDto["audioChunks"],
   };
@@ -194,6 +197,7 @@ const toPublicArticlePreviewDto = (article: ArticleDetailRecord): PublicArticleD
     excerpt: article.excerpt,
     imageUrl: resolvePublicMediaUrl(article.imageUrl),
     imageAlt: article.imageAlt,
+    imageSettings: resolveArticleImageSettings(article.imageSettings),
     hasAudio: Boolean(article.audioUrl),
     publishedAt: toPreviewPublishedAt(article),
     issueId: article.issueId,

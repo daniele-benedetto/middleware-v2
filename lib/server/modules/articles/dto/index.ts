@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { articleImageSettingsSchema } from "@/lib/articles/image-settings";
 import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 
 const articleSummaryDtoShape = {
@@ -30,6 +31,7 @@ export const articleDetailDtoSchema = z.object({
   excerpt: z.string().nullable(),
   imageUrl: z.string().nullable(),
   imageAlt: z.string().nullable(),
+  imageSettings: articleImageSettingsSchema.optional(),
 });
 
 export const articlesListDtoSchema = z.array(articleDtoSchema);

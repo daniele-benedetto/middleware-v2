@@ -201,6 +201,7 @@ export const ArticleScalarFieldEnum = {
   contentRich: 'contentRich',
   imageUrl: 'imageUrl',
   imageAlt: 'imageAlt',
+  imageSettings: 'imageSettings',
   audioUrl: 'audioUrl',
   audioChunks: 'audioChunks',
   createdAt: 'createdAt',

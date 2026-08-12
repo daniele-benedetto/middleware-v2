@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { articleImageSettingsSchema } from "@/lib/articles/image-settings";
 import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
@@ -17,6 +18,7 @@ const articleBaseInputSchema = z.object({
   contentRich: z.unknown(),
   imageUrl: mediaUrlSchema.optional(),
   imageAlt: z.string().trim().max(240).optional(),
+  imageSettings: articleImageSettingsSchema.optional(),
   audioUrl: mediaUrlSchema.optional(),
   audioChunks: z.unknown().optional(),
 });
@@ -29,6 +31,7 @@ export const updateArticleInputSchema = articleBaseInputSchema
     excerptRich: z.unknown().nullable().optional(),
     imageUrl: mediaUrlSchema.nullable().optional(),
     imageAlt: z.string().trim().max(240).nullable().optional(),
+    imageSettings: articleImageSettingsSchema.nullable().optional(),
     audioUrl: mediaUrlSchema.nullable().optional(),
     audioChunks: z.unknown().nullable().optional(),
     status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"] satisfies ArticleStatus[]).optional(),

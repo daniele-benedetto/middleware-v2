@@ -18,6 +18,7 @@ export type CreateArticlePersistInput = {
   contentRich: unknown;
   imageUrl?: string;
   imageAlt?: string;
+  imageSettings?: unknown;
   audioUrl?: string;
   audioChunks?: unknown;
 };
@@ -44,6 +45,7 @@ const ARTICLE_DETAIL_SELECT = {
   contentRich: true,
   imageUrl: true,
   imageAlt: true,
+  imageSettings: true,
   audioUrl: true,
   audioChunks: true,
   issue: {
@@ -151,6 +153,10 @@ export const articlesRepository = {
       contentRich: input.contentRich as Prisma.InputJsonValue,
       imageUrl: input.imageUrl,
       imageAlt: input.imageAlt,
+      imageSettings:
+        input.imageSettings === undefined
+          ? undefined
+          : (input.imageSettings as Prisma.InputJsonValue),
       audioUrl: input.audioUrl,
       audioChunks: input.audioChunks as Prisma.InputJsonValue | undefined,
     };
@@ -197,6 +203,12 @@ export const articlesRepository = {
         input.contentRich === undefined ? undefined : (input.contentRich as Prisma.InputJsonValue),
       imageUrl: input.imageUrl,
       imageAlt: input.imageAlt,
+      imageSettings:
+        input.imageSettings === undefined
+          ? undefined
+          : input.imageSettings === null
+            ? Prisma.JsonNull
+            : (input.imageSettings as Prisma.InputJsonValue),
       audioUrl: input.audioUrl,
       audioChunks:
         input.audioChunks === undefined

@@ -1,5 +1,4 @@
-import Image from "next/image";
-
+import { ArticleCoverImage } from "@/components/public/article-cover-image";
 import { ArticleMeta } from "@/components/public/compounds";
 import {
   publicContentClassName,
@@ -14,7 +13,6 @@ import { getNarrativeVariantClasses } from "@/components/public/sections/dossier
 import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
-import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
@@ -91,12 +89,13 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
             <div
               className={`relative min-h-76 overflow-hidden border sm:min-h-82 md:min-h-full lg:min-h-120 ${variantClasses.image}`}
             >
-              <Image
+              <ArticleCoverImage
                 src={article.imageUrl}
-                alt={editorialImageAlt(article.imageAlt)}
+                alt={article.imageAlt}
+                settings={article.imageSettings}
                 fill
                 sizes="(min-width: 768px) 45vw, 100vw"
-                className={cn("object-cover", publicInteraction.imageZoom)}
+                className={cn(publicInteraction.imageZoom)}
                 preload={priority}
               />
             </div>

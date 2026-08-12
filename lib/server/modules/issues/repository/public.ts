@@ -34,6 +34,7 @@ const PUBLIC_ISSUE_DETAIL_ARTICLE_SELECT = {
   excerpt: true,
   imageUrl: true,
   imageAlt: true,
+  imageSettings: true,
   audioUrl: true,
   contentRich: true,
   publishedAt: true,

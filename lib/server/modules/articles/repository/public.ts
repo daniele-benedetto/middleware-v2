@@ -22,6 +22,7 @@ const PUBLIC_ARTICLE_SUMMARY_SELECT = {
   excerpt: true,
   imageUrl: true,
   imageAlt: true,
+  imageSettings: true,
   audioUrl: true,
   publishedAt: true,
   issueId: true,

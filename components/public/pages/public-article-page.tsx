@@ -1,6 +1,6 @@
 import { PlayIcon } from "lucide-react";
-import Image from "next/image";
 
+import { ArticleCoverImage } from "@/components/public/article-cover-image";
 import { DossierArticleCard, PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { HomeSectionHeader } from "@/components/public/home/home-section-header";
 import { publicContentClassName } from "@/components/public/primitives";
@@ -8,7 +8,6 @@ import { PublicRichText } from "@/components/public/rich-text";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
-import { editorialImageAlt } from "@/lib/public/format/image";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 import { buildArticlePageJsonLd } from "@/lib/seo";
 
@@ -170,21 +169,24 @@ export function PublicArticlePage({
         />
 
         {article.imageUrl ? (
-          <figure
-            className="bg-foreground"
-            data-page-reveal="media"
-            style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
-          >
-            <Image
-              src={article.imageUrl}
-              alt={editorialImageAlt(article.imageAlt)}
-              width={1600}
-              height={900}
-              sizes="(min-width: 1600px) 1600px, 100vw"
-              preload
-              className="mx-auto aspect-video w-full max-w-400 object-cover grayscale"
-            />
-          </figure>
+          <div>
+            <figure
+              className="mx-auto max-w-3xl"
+              data-page-reveal="media"
+              style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
+            >
+              <ArticleCoverImage
+                src={article.imageUrl}
+                alt={article.imageAlt}
+                settings={article.imageSettings}
+                width={1600}
+                height={900}
+                sizes="(min-width: 768px) 768px, 100vw"
+                preload
+                className="h-auto w-full"
+              />
+            </figure>
+          </div>
         ) : null}
 
         <div

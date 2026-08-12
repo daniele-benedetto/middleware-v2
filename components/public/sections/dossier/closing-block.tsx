@@ -1,5 +1,4 @@
-import Image from "next/image";
-
+import { ArticleCoverImage } from "@/components/public/article-cover-image";
 import { ArticleMeta } from "@/components/public/compounds";
 import {
   publicContentClassName,
@@ -14,7 +13,6 @@ import { getNarrativeVariantClasses } from "@/components/public/sections/dossier
 import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
-import { editorialImageAlt } from "@/lib/public/format/image";
 import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
@@ -50,15 +48,16 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
       aria-label={article.title}
       className={cn(
         publicInteraction.cardBase,
-        "relative min-h-60 overflow-hidden grayscale sm:min-h-72 md:min-h-full",
+        "relative min-h-60 overflow-hidden sm:min-h-72 md:min-h-full",
       )}
     >
-      <Image
+      <ArticleCoverImage
         src={article.imageUrl}
-        alt={editorialImageAlt(article.imageAlt)}
+        alt={article.imageAlt}
+        settings={article.imageSettings}
         fill
         sizes="(min-width: 768px) 34vw, 100vw"
-        className={cn("object-cover", publicInteraction.imageZoom)}
+        className={cn(publicInteraction.imageZoom)}
       />
     </TrackedPublicLink>
   ) : null;

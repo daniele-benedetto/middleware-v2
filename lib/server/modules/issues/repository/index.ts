@@ -141,6 +141,7 @@ export const issuesRepository = {
             excerpt: true,
             imageUrl: true,
             imageAlt: true,
+            imageSettings: true,
             audioUrl: true,
             contentRich: true,
             publishedAt: true,

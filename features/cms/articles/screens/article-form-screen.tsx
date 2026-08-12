@@ -24,6 +24,7 @@ import {
   hasStyledTitleFormatting,
 } from "@/components/cms/primitives";
 import { CmsArticleFormLoading } from "@/features/cms/articles/components/article-form-loading";
+import { ArticleImageSettingsDialog } from "@/features/cms/articles/components/article-image-settings-dialog";
 import { ArticleMediaFieldPreview } from "@/features/cms/articles/components/article-media-field-preview";
 import {
   useArticleById,
@@ -43,6 +44,10 @@ import {
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
+import {
+  defaultArticleImageSettings,
+  resolveArticleImageSettings,
+} from "@/lib/articles/image-settings";
 import { createLivePreviewSessionId, toArticleLivePreviewSnapshot } from "@/lib/cms/preview/live";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
@@ -93,6 +98,13 @@ const articleFormStateSchema = z.object({
   contentRich: z.unknown(),
   imageUrl: z.string().trim().refine(isValidOptionalUrl),
   imageAlt: z.string().trim().max(240),
+  imageSettings: z.object({
+    grayscale: z.boolean(),
+    fit: z.enum(["cover", "contain"]),
+    positionX: z.number().min(0).max(100),
+    positionY: z.number().min(0).max(100),
+    zoom: z.number().min(100).max(150),
+  }),
   audioUrl: z.string().trim().refine(isValidOptionalUrl),
   audioChunksUrl: z.string().trim().refine(isValidOptionalUrl),
   status: z.enum(articleStatusOptions),
@@ -147,6 +159,7 @@ function getArticleFormDefaultValues(article?: ArticleDetail): ArticleFormValues
     contentRich: article?.contentRich ?? emptyContentDoc,
     imageUrl: article?.imageUrl ?? "",
     imageAlt: article?.imageAlt ?? "",
+    imageSettings: resolveArticleImageSettings(article?.imageSettings),
     audioUrl: article?.audioUrl ?? "",
     audioChunksUrl: extractAudioChunksUrl(article?.audioChunks),
     status: article?.status ?? "DRAFT",
@@ -169,6 +182,7 @@ function buildCreateArticlePayload(
     contentRich: values.contentRich,
     imageUrl: values.imageUrl || undefined,
     imageAlt: values.imageAlt || undefined,
+    imageSettings: values.imageSettings,
     audioUrl: values.audioUrl || undefined,
     audioChunks: values.audioChunksUrl || undefined,
   };
@@ -191,6 +205,7 @@ function buildUpdateArticlePayload(
     contentRich: values.contentRich,
     imageUrl: values.imageUrl ? values.imageUrl : null,
     imageAlt: values.imageAlt ? values.imageAlt : null,
+    imageSettings: values.imageSettings,
     audioUrl: values.audioUrl ? values.audioUrl : null,
     audioChunks: values.audioChunksUrl
       ? values.audioChunksUrl
@@ -403,6 +418,7 @@ function ArticleFormContent({
   const formValues = useWatch({ control });
   const manualSlug = useWatch({ control, name: "slug" }) ?? "";
   const imageUrl = useWatch({ control, name: "imageUrl" }) ?? "";
+  const imageSettings = useWatch({ control, name: "imageSettings" }) ?? defaultArticleImageSettings;
   const imageAlt = useWatch({ control, name: "imageAlt" }) ?? "";
   const audioUrl = useWatch({ control, name: "audioUrl" }) ?? "";
   const audioChunksUrl = useWatch({ control, name: "audioChunksUrl" }) ?? "";
@@ -554,6 +570,7 @@ function ArticleFormContent({
           contentRich: values.contentRich,
           imageUrl: values.imageUrl || null,
           imageAlt: values.imageAlt || null,
+          imageSettings: values.imageSettings,
           audioUrl: values.audioUrl || null,
           audioChunks: values.audioChunksUrl || null,
           statusLabel,
@@ -871,6 +888,19 @@ function ArticleFormContent({
                     >
                       {articleFormText.openImageLibrary}
                     </CmsActionButton>
+                    {imageUrl ? (
+                      <ArticleImageSettingsDialog
+                        imageUrl={imageUrl}
+                        value={imageSettings}
+                        disabled={isMutating}
+                        onChange={(value) =>
+                          setValue("imageSettings", value, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
+                        }
+                      />
+                    ) : null}
                     {imageUrl ? (
                       <CmsActionButton
                         variant="ghost"

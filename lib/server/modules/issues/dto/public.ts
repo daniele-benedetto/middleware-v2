@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { articleImageSettingsSchema } from "@/lib/articles/image-settings";
 import {
   issueHomeBlocksSchema,
   issueHomeVariantSchema,
@@ -14,6 +15,7 @@ export const publicIssueArticleSummaryDtoSchema = z.object({
   excerpt: z.string().nullable(),
   imageUrl: z.string().nullable(),
   imageAlt: z.string().nullable(),
+  imageSettings: articleImageSettingsSchema.optional(),
   hasAudio: z.boolean(),
   readingTimeMinutes: z.number().int().min(1),
   publishedAt: z.string(),
