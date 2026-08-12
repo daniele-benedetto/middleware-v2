@@ -668,11 +668,15 @@ export const cmsIt = {
       subtitle: "Gestisci le mappe editoriali e i relativi punti.",
       table: {
         title: "Titolo",
+        status: "Stato",
+        published: "Pubblicata",
         items: "Punti",
         createdAt: "Creata",
         updatedAt: "Aggiornata",
         actions: "Azioni",
       },
+      active: "Attiva",
+      inactive: "Non attiva",
       selectItem: (title: string) => `Seleziona ${title}`,
     },
     categories: {

@@ -37,7 +37,7 @@ import { parseOutput } from "@/lib/server/validation/output";
 const mapIdInputSchema = z.object({ id: z.string().uuid() });
 const mapItemIdInputSchema = z.object({ mapId: z.string().uuid(), itemId: z.string().uuid() });
 const mapsListInputSchema = paginationInputSchema.extend({
-  query: listMapsQuerySchema.default({ sortOrder: "desc" }),
+  query: listMapsQuerySchema.default({ sortBy: "createdAt", sortOrder: "desc" }),
 });
 
 export const mapsRouter = router({

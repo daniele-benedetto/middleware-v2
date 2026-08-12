@@ -37,6 +37,7 @@ const pageStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
 const roleValues = ["ADMIN", "EDITOR"] as const;
 const issuesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
 const coursesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
+const mapsSortByValues = ["createdAt", "publishedAt"] as const;
 const categoriesSortByValues = ["createdAt", "name", "slug"] as const;
 const authorsSortByValues = ["createdAt", "name", "slug"] as const;
 const articlesSortByValues = ["createdAt", "publishedAt"] as const;
@@ -381,14 +382,20 @@ export function parseUsersListSearchParams(input: CmsSearchParamsInput): UsersLi
 
 export function parseMapsListSearchParams(input: CmsSearchParamsInput): MapsListInput {
   const base = parseCmsListSearchParams(input, {
+    allowedSortBy: mapsSortByValues,
+    defaultSortBy: "createdAt",
     defaultSortOrder: "desc",
   });
+  const sortBy = parseEnumQueryParam(base.sortBy, mapsSortByValues) ?? "createdAt";
 
   return {
     page: base.page,
     pageSize: base.pageSize,
     query: compactObject({
+      isActive: parseBooleanQueryParam(readParam(input, "isActive")),
+      published: parseBooleanQueryParam(readParam(input, "published")),
       q: base.q,
+      sortBy,
       sortOrder: base.sortOrder,
     }),
   };

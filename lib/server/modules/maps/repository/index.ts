@@ -38,6 +38,8 @@ const MAP_ITEM_SELECT = {
 } as const satisfies Prisma.MapItemSelect;
 
 const toMapWhereInput = (query: ListMapsQuery): Prisma.MapWhereInput => ({
+  isActive: query.isActive,
+  publishedAt: query.published === undefined ? undefined : query.published ? { not: null } : null,
   title: query.q ? { contains: query.q, mode: "insensitive" } : undefined,
 });
 
@@ -45,7 +47,7 @@ export const mapsRepository = {
   async list(query: ListMapsQuery, pagination: PaginationParams) {
     return prisma.map.findMany({
       where: toMapWhereInput(query),
-      orderBy: { createdAt: query.sortOrder },
+      orderBy: { [query.sortBy]: query.sortOrder },
       skip: (pagination.page - 1) * pagination.pageSize,
       take: pagination.pageSize,
       select: MAP_SELECT,

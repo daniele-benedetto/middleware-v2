@@ -1,12 +1,15 @@
 import { parseMapsListSearchParams } from "@/lib/cms/query";
 
 describe("parseMapsListSearchParams", () => {
-  it("normalizes pagination, search, and sort direction for the maps table", () => {
+  it("normalizes pagination, filters, search, and sorting for the maps table", () => {
     expect(
       parseMapsListSearchParams({
         page: "2",
         pageSize: "10",
         q: "  Modena  ",
+        isActive: "true",
+        published: "false",
+        sortBy: "publishedAt",
         sortOrder: "asc",
       }),
     ).toEqual({
@@ -14,6 +17,9 @@ describe("parseMapsListSearchParams", () => {
       pageSize: 10,
       query: {
         q: "Modena",
+        isActive: "true",
+        published: "false",
+        sortBy: "publishedAt",
         sortOrder: "asc",
       },
     });
@@ -24,6 +30,7 @@ describe("parseMapsListSearchParams", () => {
       page: 1,
       pageSize: 20,
       query: {
+        sortBy: "createdAt",
         sortOrder: "desc",
       },
     });

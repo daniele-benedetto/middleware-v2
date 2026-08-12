@@ -1,9 +1,8 @@
 "use client";
 
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useState } from "react";
 
 import {
   CmsBulkActionBar,
@@ -17,6 +16,7 @@ import {
   CmsActionButton,
   CmsDataTableShell,
   CmsPageHeader,
+  CmsSelect,
   cmsTableClasses,
   cmsToast,
 } from "@/components/cms/primitives";
@@ -36,6 +36,7 @@ import {
   resolveQuickActions,
   type CmsQuickAction,
 } from "@/features/cms/shared/actions";
+import { CmsListFiltersSheet } from "@/features/cms/shared/components/cms-list-filters-sheet";
 import { CmsListSearchInput } from "@/features/cms/shared/components/cms-list-search-input";
 import {
   useCmsListUrlState,
@@ -65,6 +66,95 @@ function formatDate(value: string) {
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("it-IT");
 }
 
+type MapListToolbarFiltersState = {
+  isActiveValue: string;
+  publishedValue: string;
+  sortByValue: string;
+  sortOrderValue: string;
+};
+
+const defaultMapListToolbarFilters: MapListToolbarFiltersState = {
+  isActiveValue: "all",
+  publishedValue: "all",
+  sortByValue: "createdAt",
+  sortOrderValue: "desc",
+};
+
+function buildMapListToolbarFiltersState(input: MapsListInput): MapListToolbarFiltersState {
+  return {
+    isActiveValue: input.query?.isActive ?? defaultMapListToolbarFilters.isActiveValue,
+    publishedValue: input.query?.published ?? defaultMapListToolbarFilters.publishedValue,
+    sortByValue: input.query?.sortBy ?? defaultMapListToolbarFilters.sortByValue,
+    sortOrderValue: input.query?.sortOrder ?? defaultMapListToolbarFilters.sortOrderValue,
+  };
+}
+
+function countActiveMapListFilters(filters: MapListToolbarFiltersState) {
+  return [
+    filters.isActiveValue !== defaultMapListToolbarFilters.isActiveValue,
+    filters.publishedValue !== defaultMapListToolbarFilters.publishedValue,
+    filters.sortByValue !== defaultMapListToolbarFilters.sortByValue,
+    filters.sortOrderValue !== defaultMapListToolbarFilters.sortOrderValue,
+  ].filter(Boolean).length;
+}
+
+type MapListToolbarFieldsProps = {
+  filters: MapListToolbarFiltersState;
+  onIsActiveChange: (value: string) => void;
+  onPublishedChange: (value: string) => void;
+  onSortByChange: (value: string) => void;
+  onSortOrderChange: (value: string) => void;
+};
+
+function MapListToolbarFields({
+  filters,
+  onIsActiveChange,
+  onPublishedChange,
+  onSortByChange,
+  onSortOrderChange,
+}: MapListToolbarFieldsProps) {
+  const optionsText = i18n.cms.listOptions;
+
+  return (
+    <>
+      <CmsSelect
+        value={filters.isActiveValue}
+        onValueChange={onIsActiveChange}
+        options={[
+          { value: "all", label: optionsText.statusAllFeminine },
+          { value: "true", label: optionsText.activeOnlyFeminine },
+          { value: "false", label: optionsText.inactiveOnlyFeminine },
+        ]}
+      />
+      <CmsSelect
+        value={filters.publishedValue}
+        onValueChange={onPublishedChange}
+        options={[
+          { value: "all", label: optionsText.publicationAll },
+          { value: "true", label: optionsText.publicationOnly },
+          { value: "false", label: optionsText.publicationNot },
+        ]}
+      />
+      <CmsSelect
+        value={filters.sortByValue}
+        onValueChange={onSortByChange}
+        options={[
+          { value: "createdAt", label: optionsText.sortCreatedAt },
+          { value: "publishedAt", label: optionsText.sortPublishedAt },
+        ]}
+      />
+      <CmsSelect
+        value={filters.sortOrderValue}
+        onValueChange={onSortOrderChange}
+        options={[
+          { value: "desc", label: optionsText.desc },
+          { value: "asc", label: optionsText.asc },
+        ]}
+      />
+    </>
+  );
+}
+
 export function CmsMapsListScreen({ initialInput, initialData }: CmsMapsListScreenProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -73,22 +163,23 @@ export function CmsMapsListScreen({ initialInput, initialData }: CmsMapsListScre
   const listText = text.lists.maps;
   const quickText = text.quickActions;
   const input = parseMapsListSearchParams(searchParams);
+  const currentToolbarFilters = buildMapListToolbarFiltersState(input);
+  const [draftToolbarFilters, setDraftToolbarFilters] = useState(currentToolbarFilters);
   const listQuery = useMapsListQuery(input, { initialDataInput: initialInput, initialData });
   const deleteMutation = trpc.maps.delete.useMutation();
   const selection = useListSelection();
-  const { clearSelection } = selection;
   const { updateSearchParams } = useCmsListUrlState({
     baseParams: {
       page: input.page,
       pageSize: input.pageSize,
       q: input.query?.q,
+      sortBy: input.query?.sortBy,
       sortOrder: input.query?.sortOrder,
+      isActive: input.query?.isActive,
+      published: input.query?.published,
     },
+    clearSelection: selection.clearSelection,
   });
-
-  useEffect(() => {
-    clearSelection();
-  }, [clearSelection, input.page, input.pageSize, input.query?.q, input.query?.sortOrder]);
 
   if (listQuery.isPending) return <CmsLoadingState />;
 
@@ -106,13 +197,16 @@ export function CmsMapsListScreen({ initialInput, initialData }: CmsMapsListScre
   const isActionPending = deleteMutation.isPending;
   const mapIds = listQuery.items.map((map) => map.id);
   const allSelectedOnPage = mapIds.length > 0 && mapIds.every((id) => selection.isSelected(id));
-  const hasActiveFilters = Boolean(input.query?.q);
+  const hasActiveFilters = Boolean(
+    input.query?.q || input.query?.isActive !== undefined || input.query?.published !== undefined,
+  );
+  const activeFiltersCount = countActiveMapListFilters(currentToolbarFilters);
 
   const runSingleDelete = async (id: string) => {
     try {
       await deleteMutation.mutateAsync({ id });
       await invalidateAfterCmsMutation(trpcUtils, "maps.delete", { id });
-      clearSelection();
+      selection.clearSelection();
       cmsToast.success(text.common.actionCompleted);
     } catch (error) {
       const mapped = mapQuickActionError(error);
@@ -126,7 +220,7 @@ export function CmsMapsListScreen({ initialInput, initialData }: CmsMapsListScre
     const selectedIds = [...selection.selectedIds];
     const result = await executeBulk(selectedIds, (id) => deleteMutation.mutateAsync({ id }));
     await invalidateAfterCmsMutation(trpcUtils, "maps.delete", { ids: selectedIds });
-    clearSelection();
+    selection.clearSelection();
 
     if (result.failed === 0) {
       cmsToast.success(text.common.actionCompletedOnRecords(result.success));
@@ -173,7 +267,7 @@ export function CmsMapsListScreen({ initialInput, initialData }: CmsMapsListScre
             <div className={cmsMetaLabelClass}>
               {text.common.totalRecords(listQuery.pagination.total)}
             </div>
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
               <CmsListSearchInput
                 initialValue={input.query?.q ?? ""}
                 placeholder={text.listToolbar.searchPlaceholder}
@@ -184,6 +278,45 @@ export function CmsMapsListScreen({ initialInput, initialData }: CmsMapsListScre
                 actions={bulkActions.map((action) => ({ ...action, onExecute: runBulkDelete }))}
                 className="md:justify-self-end"
               />
+              <CmsListFiltersSheet
+                activeFiltersCount={activeFiltersCount}
+                className="md:w-36"
+                onOpenChange={(open) => {
+                  if (open) setDraftToolbarFilters(currentToolbarFilters);
+                }}
+                onApply={() => {
+                  updateSearchParams({
+                    isActive:
+                      draftToolbarFilters.isActiveValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.isActiveValue,
+                    published:
+                      draftToolbarFilters.publishedValue === "all"
+                        ? undefined
+                        : draftToolbarFilters.publishedValue,
+                    sortBy: draftToolbarFilters.sortByValue,
+                    sortOrder: draftToolbarFilters.sortOrderValue,
+                    page: 1,
+                  });
+                }}
+                onClear={() => setDraftToolbarFilters(defaultMapListToolbarFilters)}
+              >
+                <MapListToolbarFields
+                  filters={draftToolbarFilters}
+                  onIsActiveChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, isActiveValue: value }));
+                  }}
+                  onPublishedChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, publishedValue: value }));
+                  }}
+                  onSortByChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, sortByValue: value }));
+                  }}
+                  onSortOrderChange={(value) => {
+                    setDraftToolbarFilters((current) => ({ ...current, sortOrderValue: value }));
+                  }}
+                />
+              </CmsListFiltersSheet>
             </div>
           </div>
         }
@@ -210,6 +343,12 @@ export function CmsMapsListScreen({ initialInput, initialData }: CmsMapsListScre
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
                     {listText.table.title}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.status}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.published}
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
                     {listText.table.items}
@@ -240,13 +379,12 @@ export function CmsMapsListScreen({ initialInput, initialData }: CmsMapsListScre
                         />
                       </div>
                     </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellTitle}>
-                      <Link
-                        href={cmsCrudRoutes.maps.edit(map.id)}
-                        className="hover:text-accent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                      >
-                        {map.title}
-                      </Link>
+                    <TableCell className={cmsTableClasses.bodyCellTitle}>{map.title}</TableCell>
+                    <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      {map.isActive ? listText.active : listText.inactive}
+                    </TableCell>
+                    <TableCell className={cmsTableClasses.bodyCellMeta}>
+                      {formatDate(map.publishedAt ?? "")}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellNumeric}>
                       {map.itemsCount}

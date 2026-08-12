@@ -85,7 +85,16 @@ export const reorderMapItemsInputSchema = z.object({
 });
 
 export const listMapsQuerySchema = z.object({
+  isActive: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
+  published: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
   q: z.string().trim().min(1).optional(),
+  sortBy: z.enum(["createdAt", "publishedAt"]).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
