@@ -6,11 +6,17 @@ import { isWithinComuneOfModena } from "@/lib/server/modules/maps/boundary/moden
 import { mapsRepository } from "@/lib/server/modules/maps/repository";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
-import type { MapDetailDto, MapDto, MapItemDto } from "@/lib/server/modules/maps/dto";
+import type {
+  MapDetailDto,
+  MapDto,
+  MapItemDto,
+  MapItemListDto,
+} from "@/lib/server/modules/maps/dto";
 import type {
   CreateMapItemInput,
   CreateMapInput,
   ListMapsQuery,
+  ListMapItemsQuery,
   ReorderMapItemsInput,
   UpdateMapInput,
   UpdateMapItemInput,
@@ -38,6 +44,7 @@ type MapItemRecord = {
   createdAt: Date;
   updatedAt: Date;
 };
+type MapItemListRecord = MapItemRecord & { map: { title: string } };
 const toMapDto = (map: MapRecord): MapDto => ({
   id: map.id,
   title: map.title,
@@ -59,6 +66,10 @@ const toItemDto = (item: MapItemRecord): MapItemDto => ({
   sortOrder: item.sortOrder,
   createdAt: item.createdAt.toISOString(),
   updatedAt: item.updatedAt.toISOString(),
+});
+const toItemListDto = (item: MapItemListRecord): MapItemListDto => ({
+  ...toItemDto(item),
+  mapTitle: item.map.title,
 });
 const isNotFoundError = (error: unknown) =>
   error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025";
@@ -84,6 +95,13 @@ export const mapsService = {
       mapsRepository.count(query),
     ]);
     return { items: maps.map((map) => toMapDto(map as MapRecord)), total };
+  },
+  async listItems(query: ListMapItemsQuery, pagination: PaginationParams) {
+    const [items, total] = await Promise.all([
+      mapsRepository.listItems(query, pagination),
+      mapsRepository.countItems(query),
+    ]);
+    return { items: items.map((item) => toItemListDto(item as MapItemListRecord)), total };
   },
   async getById(id: string) {
     const map = await mapsRepository.getById(id);

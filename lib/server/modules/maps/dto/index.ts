@@ -14,6 +14,10 @@ export const mapItemDtoSchema = z.object({
   updatedAt: z.string(),
 });
 
+export const mapItemListDtoSchema = mapItemDtoSchema.extend({
+  mapTitle: z.string(),
+});
+
 export const mapDtoSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
@@ -29,7 +33,9 @@ export const mapDtoSchema = z.object({
 export const mapDetailDtoSchema = mapDtoSchema.extend({ items: z.array(mapItemDtoSchema) });
 export const mapsListDtoSchema = z.array(mapDtoSchema);
 export const mapItemsListDtoSchema = z.array(mapItemDtoSchema);
+export const mapItemsGlobalListDtoSchema = z.array(mapItemListDtoSchema);
 
 export type MapDto = z.infer<typeof mapDtoSchema>;
 export type MapItemDto = z.infer<typeof mapItemDtoSchema>;
+export type MapItemListDto = z.infer<typeof mapItemListDtoSchema>;
 export type MapDetailDto = z.infer<typeof mapDetailDtoSchema>;

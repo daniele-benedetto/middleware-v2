@@ -91,6 +91,13 @@ export const listMapsQuerySchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
+export const listMapItemsQuerySchema = z.object({
+  mapId: z.string().uuid().optional(),
+  q: z.string().trim().min(1).optional(),
+  sortBy: z.enum(["createdAt", "updatedAt", "title"]).default("updatedAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
 export const searchMapAddressInputSchema = z.object({
   query: z.string().trim().min(3).max(160),
 });
@@ -101,4 +108,5 @@ export type CreateMapItemInput = z.infer<typeof createMapItemInputSchema>;
 export type UpdateMapItemInput = z.infer<typeof updateMapItemInputSchema>;
 export type ReorderMapItemsInput = z.infer<typeof reorderMapItemsInputSchema>;
 export type ListMapsQuery = z.infer<typeof listMapsQuerySchema>;
+export type ListMapItemsQuery = z.infer<typeof listMapItemsQuerySchema>;
 export type SearchMapAddressInput = z.infer<typeof searchMapAddressInputSchema>;

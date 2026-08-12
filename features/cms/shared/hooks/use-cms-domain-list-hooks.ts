@@ -82,6 +82,7 @@ type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 type MapsListInput = RouterInputs["maps"]["list"];
+type MapItemsListInput = RouterInputs["maps"]["listItems"];
 
 type IssuesListOutput = RouterOutputs["issues"]["list"];
 type CoursesListOutput = RouterOutputs["courses"]["list"];
@@ -93,6 +94,7 @@ type PagesListOutput = RouterOutputs["pages"]["list"];
 type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
 type MapsListOutput = RouterOutputs["maps"]["list"];
+type MapItemsListOutput = RouterOutputs["maps"]["listItems"];
 
 function useCmsDomainListQuery<
   TInput extends { page?: number; pageSize?: number },
@@ -234,6 +236,18 @@ export function useMapsListQuery(
 ): CmsListQueryState<MapsListOutput["items"][number]> {
   return useCmsDomainListQuery(input, options, (initialData) =>
     trpc.maps.list.useQuery(input, {
+      ...cmsListQueryOptions,
+      initialData,
+    }),
+  );
+}
+
+export function useMapItemsListQuery(
+  input: MapItemsListInput,
+  options?: CmsListQueryOptions<MapItemsListInput, MapItemsListOutput>,
+): CmsListQueryState<MapItemsListOutput["items"][number]> {
+  return useCmsDomainListQuery(input, options, (initialData) =>
+    trpc.maps.listItems.useQuery(input, {
       ...cmsListQueryOptions,
       initialData,
     }),

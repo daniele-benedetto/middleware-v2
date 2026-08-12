@@ -126,7 +126,10 @@ export async function invalidatePagesAfterMutation(utils: TrpcUtils, input?: Mut
 }
 
 export async function invalidateMapsAfterMutation(utils: TrpcUtils, input?: MutationInput) {
-  await invalidateResource(utils.maps.list.invalidate, utils.maps.getById.invalidate, input);
+  await Promise.all([
+    invalidateResource(utils.maps.list.invalidate, utils.maps.getById.invalidate, input),
+    utils.maps.listItems.invalidate(),
+  ]);
 }
 
 export async function invalidateNavigationAfterMutation(utils: TrpcUtils) {

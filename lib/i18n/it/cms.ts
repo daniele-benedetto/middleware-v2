@@ -521,6 +521,9 @@ export const cmsIt = {
     confirmDeleteMapSingle: "Eliminerai definitivamente questa mappa e tutti i suoi punti.",
     confirmDeleteMapBulk: (count: number) =>
       `Eliminerai definitivamente ${count} ${count === 1 ? "mappa" : "mappe"} e tutti i relativi punti.`,
+    confirmDeleteMapItemSingle: "Eliminerai definitivamente questo punto dalla mappa.",
+    confirmDeleteMapItemBulk: (count: number) =>
+      `Eliminerai definitivamente ${count} punti dalle rispettive mappe.`,
     confirmDeleteCategorySingle: "Eliminerai definitivamente la categoria selezionata.",
     confirmDeleteCategoryBulk: (count: number) =>
       `Eliminerai definitivamente ${count} categorie selezionate.`,
@@ -677,6 +680,19 @@ export const cmsIt = {
       },
       active: "Attiva",
       inactive: "Non attiva",
+      selectItem: (title: string) => `Seleziona ${title}`,
+    },
+    mapItems: {
+      subtitle: "Gestisci tutti i punti associati alle mappe editoriali.",
+      table: {
+        title: "Punto",
+        map: "Mappa",
+        coordinates: "Coordinate",
+        order: "Ordine",
+        createdAt: "Creato",
+        updatedAt: "Aggiornato",
+        actions: "Azioni",
+      },
       selectItem: (title: string) => `Seleziona ${title}`,
     },
     categories: {

@@ -22,6 +22,7 @@ type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 type MapsListInput = RouterInputs["maps"]["list"];
+type MapItemsListInput = RouterInputs["maps"]["listItems"];
 type MediaListOutput = RouterOutputs["media"]["list"];
 type NavigationMenusOutput = RouterOutputs["navigation"]["listMenus"];
 type NavigationOptionsOutput = RouterOutputs["navigation"]["listOptions"];
@@ -35,6 +36,7 @@ type AuthorsListOutput = RouterOutputs["authors"]["list"];
 type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
 type MapsListOutput = RouterOutputs["maps"]["list"];
+type MapItemsListOutput = RouterOutputs["maps"]["listItems"];
 
 type IssueDetailOutput = RouterOutputs["issues"]["getById"];
 type IssuePreviewOutput = RouterOutputs["issues"]["getPreviewById"];
@@ -95,6 +97,10 @@ export async function prefetchUsersList(input: UsersListInput): Promise<UsersLis
 
 export async function prefetchMapsList(input: MapsListInput): Promise<MapsListOutput> {
   return prefetchCmsList(input, (caller, listInput) => caller.maps.list(listInput));
+}
+
+export async function prefetchMapItemsList(input: MapItemsListInput): Promise<MapItemsListOutput> {
+  return prefetchCmsList(input, (caller, listInput) => caller.maps.listItems(listInput));
 }
 
 export async function prefetchMapById(id: string): Promise<MapDetailOutput> {

@@ -7,6 +7,7 @@ import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
   CreateMapItemInput,
   CreateMapInput,
+  ListMapItemsQuery,
   ListMapsQuery,
   ReorderMapItemsInput,
   UpdateMapInput,
@@ -37,10 +38,25 @@ const MAP_ITEM_SELECT = {
   updatedAt: true,
 } as const satisfies Prisma.MapItemSelect;
 
+const MAP_ITEM_LIST_SELECT = {
+  ...MAP_ITEM_SELECT,
+  map: { select: { title: true } },
+} as const satisfies Prisma.MapItemSelect;
+
 const toMapWhereInput = (query: ListMapsQuery): Prisma.MapWhereInput => ({
   isActive: query.isActive,
   publishedAt: query.published === undefined ? undefined : query.published ? { not: null } : null,
   title: query.q ? { contains: query.q, mode: "insensitive" } : undefined,
+});
+
+const toMapItemsWhereInput = (query: ListMapItemsQuery): Prisma.MapItemWhereInput => ({
+  mapId: query.mapId,
+  OR: query.q
+    ? [
+        { title: { contains: query.q, mode: "insensitive" } },
+        { map: { title: { contains: query.q, mode: "insensitive" } } },
+      ]
+    : undefined,
 });
 
 export const mapsRepository = {
@@ -55,6 +71,18 @@ export const mapsRepository = {
   },
   async count(query: ListMapsQuery) {
     return prisma.map.count({ where: toMapWhereInput(query) });
+  },
+  async listItems(query: ListMapItemsQuery, pagination: PaginationParams) {
+    return prisma.mapItem.findMany({
+      where: toMapItemsWhereInput(query),
+      orderBy: { [query.sortBy]: query.sortOrder },
+      skip: (pagination.page - 1) * pagination.pageSize,
+      take: pagination.pageSize,
+      select: MAP_ITEM_LIST_SELECT,
+    });
+  },
+  async countItems(query: ListMapItemsQuery) {
+    return prisma.mapItem.count({ where: toMapItemsWhereInput(query) });
   },
   async getById(id: string) {
     return prisma.map.findUnique({

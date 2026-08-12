@@ -8,6 +8,7 @@ export {
   parseIssuesListSearchParams,
   parseLessonsListSearchParams,
   parseMapsListSearchParams,
+  parseMapItemsListSearchParams,
   parsePagesListSearchParams,
   parseUsersListSearchParams,
   serializeCmsSearchParams,
