@@ -1,8 +1,10 @@
 "use client";
 
 import * as L from "leaflet";
+import { X } from "lucide-react";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
+import { PublicRichText } from "@/components/public/rich-text";
 import { createModenaMap } from "@/features/cms/maps/utils/leaflet-map";
 import { modenaComunePolygons } from "@/lib/server/modules/maps/boundary/modena-comune";
 
@@ -14,6 +16,7 @@ type CmsMapWorkspaceCanvasProps = {
   attribution: string;
   unavailableText: string;
   onSelectItem: (itemId: string) => void;
+  onClearSelection: () => void;
 };
 
 function createPinIcon(selected: boolean) {
@@ -31,6 +34,7 @@ export function CmsMapWorkspaceCanvas({
   attribution,
   unavailableText,
   onSelectItem,
+  onClearSelection,
 }: CmsMapWorkspaceCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -38,6 +42,7 @@ export function CmsMapWorkspaceCanvas({
   const [isReady, setIsReady] = useState(false);
   const [hasError, setHasError] = useState(false);
   const notifyItemSelection = useEffectEvent(onSelectItem);
+  const selectedItem = items.find((item) => item.id === selectedItemId);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -105,6 +110,31 @@ export function CmsMapWorkspaceCanvas({
       aria-label={attribution}
     >
       <div ref={containerRef} className="absolute inset-0" />
+      {selectedItem ? (
+        <article className="absolute inset-3 z-10 flex min-h-0 flex-col border border-foreground bg-background p-5 shadow-[5px_5px_0_rgb(0_0_0_/_16%)] sm:inset-5 sm:p-7">
+          <div className="flex shrink-0 items-start justify-between gap-5 border-b border-foreground pb-4">
+            <h3 className="font-heading text-[clamp(24px,2.4vw,38px)] font-black leading-[1.05] tracking-[-0.03em] text-foreground">
+              {selectedItem.title}
+            </h3>
+            <button
+              type="button"
+              onClick={onClearSelection}
+              className="inline-flex size-9 shrink-0 items-center justify-center border border-foreground bg-card text-foreground transition-colors hover:bg-card-hover focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              aria-label="Chiudi dettaglio punto"
+            >
+              <X aria-hidden className="size-4" />
+            </button>
+          </div>
+          {selectedItem.descriptionRich ? (
+            <div className="cms-scroll min-h-0 flex-1 overflow-y-auto pt-5 pr-2">
+              <PublicRichText
+                value={selectedItem.descriptionRich}
+                className="space-y-4 [&_blockquote]:my-5 [&_figure]:my-5 [&_h2]:mt-6 [&_h3]:mt-5 [&_ol]:my-4 [&_ul]:my-4"
+              />
+            </div>
+          ) : null}
+        </article>
+      ) : null}
       {!isReady && !hasError ? <div className="absolute inset-0 animate-pulse bg-muted" /> : null}
       {hasError ? (
         <div className="pointer-events-none absolute inset-x-4 top-16 z-400 rounded-[6px] border border-accent bg-card px-3 py-2 text-center font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">

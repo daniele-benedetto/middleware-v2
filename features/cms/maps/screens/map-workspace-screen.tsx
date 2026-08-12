@@ -60,7 +60,7 @@ export function CmsMapWorkspaceScreen({ mapId, initialData }: CmsMapWorkspaceScr
 
   const selectItem = useCallback((itemId: string) => {
     setSelectedItemId(itemId);
-    requestAnimationFrame(() => itemRowRefs.current.get(itemId)?.focus());
+    requestAnimationFrame(() => itemRowRefs.current.get(itemId)?.focus({ preventScroll: true }));
   }, []);
 
   if (mapQuery.isPending) return <CmsLoadingState />;
@@ -148,12 +148,13 @@ export function CmsMapWorkspaceScreen({ mapId, initialData }: CmsMapWorkspaceScr
               items={map.items}
               selectedItemId={selectedItemId}
               onSelectItem={selectItem}
+              onClearSelection={() => setSelectedItemId(null)}
               attribution={mapText.workspaceAttribution}
               unavailableText={mapText.workspaceMapUnavailable}
             />
           </section>
 
-          <aside className="flex min-h-0 min-w-0 flex-col gap-6">
+          <aside className="flex min-h-0 min-w-0 flex-col gap-6 lg:sticky lg:top-0 lg:self-start">
             <section className="flex flex-wrap gap-x-6 gap-y-3">
               <CmsCheckbox label="Mappa attiva" checked={isActive} onChange={setIsActive} />
               <CmsCheckbox
