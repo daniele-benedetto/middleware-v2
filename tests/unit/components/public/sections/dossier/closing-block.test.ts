@@ -39,7 +39,7 @@ describe("ClosingBlock", () => {
       }),
     );
 
-    expect(html).toContain("grid gap-5 md:grid-cols-2 md:gap-8 lg:gap-10");
+    expect(html).toContain("grid md:grid-cols-2 md:gap-8 lg:gap-10");
     expect(html).toContain("bg-accent text-background");
     expect(html).toContain("url=%2Fimage.jpg");
     expect(html).toContain("closing-article-title-00000000-0000-4000-8000-000000000001");
