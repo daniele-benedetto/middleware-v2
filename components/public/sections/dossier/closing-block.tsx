@@ -1,10 +1,6 @@
 import { ArticleCoverImage } from "@/components/public/article-cover-image";
 import { ArticleMeta } from "@/components/public/compounds";
-import {
-  publicContentClassName,
-  publicInteraction,
-  publicTypography,
-} from "@/components/public/primitives";
+import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import {
   formatArticleNumber,
   getArticleNumber,
@@ -94,12 +90,7 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
       </h2>
 
       {article.excerpt ? (
-        <p
-          className={cn(
-            "mt-5 w-full font-editorial text-[18px] leading-[1.42] italic md:text-[21px]",
-            variantClasses.excerpt,
-          )}
-        >
+        <p className={cn("mt-5 w-full", publicTypography.dossierSummary, variantClasses.excerpt)}>
           {article.excerpt}
         </p>
       ) : null}
@@ -113,8 +104,8 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
     <section className="scroll-mt-20 py-10 md:py-12">
       <div
         className={cn(
-          publicContentClassName,
-          imageCard ? "group grid gap-5 md:grid-cols-2 md:gap-8 lg:gap-10" : "max-w-2xl",
+          "w-full md:mx-auto md:max-w-384 md:px-12",
+          imageCard ? "group grid md:grid-cols-2 md:gap-8 lg:gap-10" : "max-w-2xl",
         )}
       >
         {imageCard ? (imageOnRight ? articleCard : imageCard) : articleCard}

@@ -1,10 +1,6 @@
 import { ArticleCoverImage } from "@/components/public/article-cover-image";
 import { ArticleMeta } from "@/components/public/compounds";
-import {
-  publicContentClassName,
-  publicInteraction,
-  publicTypography,
-} from "@/components/public/primitives";
+import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import {
   formatArticleNumber,
   getArticleNumber,
@@ -64,7 +60,7 @@ export function FeatureBreakBlock({
 
   return (
     <section className="scroll-mt-20 py-10 md:py-12">
-      <div className={publicContentClassName}>
+      <div className="w-full md:mx-auto md:max-w-384 md:px-12">
         <TrackedPublicLink
           href={articleHref}
           analyticsEventName={publicAnalyticsEvents.contentCardClick}
@@ -103,7 +99,11 @@ export function FeatureBreakBlock({
             </h2>
             {article.excerpt ? (
               <p
-                className={`mt-6 max-w-[54ch] font-editorial text-[19px] leading-[1.38] md:text-[22px] ${variantClasses.excerpt}`}
+                className={cn(
+                  "mt-6 max-w-[54ch]",
+                  publicTypography.dossierSummary,
+                  variantClasses.excerpt,
+                )}
               >
                 {article.excerpt}
               </p>

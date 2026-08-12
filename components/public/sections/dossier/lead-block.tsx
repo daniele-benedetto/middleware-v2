@@ -38,7 +38,7 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
   const titleId = `lead-article-title-${article.id}`;
 
   return (
-    <section className={`scroll-mt-20 ${variantClasses.section}`}>
+    <section className={`scroll-mt-20 my-10 md:my-12 ${variantClasses.section}`}>
       <div className={`${publicContentClassName} py-10 md:py-12`}>
         <TrackedPublicLink
           href={articleHref}
@@ -75,7 +75,11 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
             </h2>
             {article.excerpt ? (
               <p
-                className={`mt-6 max-w-[58ch] font-editorial text-[clamp(19px,1.6vw,24px)] leading-[1.36] italic ${variantClasses.excerpt}`}
+                className={cn(
+                  "mt-6 max-w-[58ch]",
+                  publicTypography.dossierSummary,
+                  variantClasses.excerpt,
+                )}
               >
                 {article.excerpt}
               </p>

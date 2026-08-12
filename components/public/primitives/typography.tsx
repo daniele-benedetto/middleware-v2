@@ -29,6 +29,8 @@ export const publicTypography = {
   editorialSmall: "font-editorial text-[15px] leading-normal",
   editorialBody: "font-editorial text-[clamp(17px,1.4vw,21px)] leading-normal",
   editorialLead: "font-editorial text-[clamp(17px,1.6vw,21px)] leading-normal",
+  dossierSummary: "font-editorial text-[clamp(19px,1.6vw,24px)] leading-[1.36] italic",
+  dossierDescription: "font-editorial text-[clamp(18px,1.5vw,21px)] leading-[1.42]",
   articleNumberLg:
     "font-heading text-[40px] leading-[0.78] font-black tracking-[-0.04em] sm:text-[48px] md:text-[56px]",
   articleEyebrow:

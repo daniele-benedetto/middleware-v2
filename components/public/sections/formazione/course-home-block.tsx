@@ -1,9 +1,5 @@
 import { courseVariantClasses } from "@/components/public/course-variant";
-import {
-  publicContentClassName,
-  publicInteraction,
-  publicTypography,
-} from "@/components/public/primitives";
+import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import { DossierLessonCard } from "@/components/public/sections/formazione/dossier-lesson-card";
 import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
@@ -32,7 +28,7 @@ export function CourseHomeBlock({
 
   return (
     <section className="scroll-mt-20 py-10 md:py-12">
-      <div className={publicContentClassName}>
+      <div className="w-full md:mx-auto md:max-w-384 md:px-12">
         <TrackedPublicLink
           href={`/contro-formazione/${course.slug}`}
           analyticsEventName={publicAnalyticsEvents.contentCardClick}
@@ -55,7 +51,8 @@ export function CourseHomeBlock({
             {description ? (
               <p
                 className={cn(
-                  "mt-5 w-full font-editorial text-[18px] leading-[1.42] md:text-[21px]",
+                  "mt-5 w-full",
+                  publicTypography.dossierDescription,
                   variant.description,
                 )}
               >
@@ -65,20 +62,22 @@ export function CourseHomeBlock({
           </div>
         </TrackedPublicLink>
         {course.lessons.length > 0 ? (
-          <div
-            className={cn("grid md:border-l md:border-t md:border-foreground", lessonsGridClass)}
-          >
-            {course.lessons.map((lesson, index) => (
-              <DossierLessonCard
-                key={lesson.id}
-                courseSlug={course.slug}
-                lesson={lesson}
-                number={startNumber + index}
-                variant="constellationSecondary"
-                analyticsSource="issue_course"
-                analyticsParentSlug={course.slug}
-              />
-            ))}
+          <div className="px-4 sm:px-6 md:px-0">
+            <div
+              className={cn("grid md:border-l md:border-t md:border-foreground", lessonsGridClass)}
+            >
+              {course.lessons.map((lesson, index) => (
+                <DossierLessonCard
+                  key={lesson.id}
+                  courseSlug={course.slug}
+                  lesson={lesson}
+                  number={startNumber + index}
+                  variant="constellationSecondary"
+                  analyticsSource="issue_course"
+                  analyticsParentSlug={course.slug}
+                />
+              ))}
+            </div>
           </div>
         ) : null}
       </div>
