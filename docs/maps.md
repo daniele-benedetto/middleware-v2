@@ -21,8 +21,7 @@ Maps are managed in the CMS and can appear publicly only through a published Iss
 - Selecting a point opens its dedicated editor page.
 - The map workspace is read-only: selecting a marker opens its point information card, but does not change coordinates.
 - A point is positioned and repositioned only in its own editor through the interactive map picker.
-- A new, empty map opens around Sacca and Crocetta, Modena.
-- New map creation starts with a provisional point at Sacca/Crocetta; it can be repositioned before saving and is created with the map.
+- A new map is created without points.
 - A map with points automatically fits its viewport to the complete point set.
 - Points must remain within the Comune di Modena administrative boundary.
 

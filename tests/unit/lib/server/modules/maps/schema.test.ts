@@ -18,11 +18,6 @@ describe("maps schemas", () => {
           { text: "di Modena", breakAfter: true },
         ],
         descriptionRich: { type: "doc", content: [{ type: "paragraph" }] },
-        initialItem: {
-          title: "Mappa di Modena",
-          latitude: 44.6471,
-          longitude: 10.9252,
-        },
       }).success,
     ).toBe(true);
   });

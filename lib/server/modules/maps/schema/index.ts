@@ -25,13 +25,6 @@ export const createMapInputSchema = z.object({
   descriptionRich: z.unknown().optional(),
   isActive: z.boolean().default(true),
   publishedAt: z.coerce.date().nullable().optional(),
-  initialItem: z
-    .object({
-      title: z.string().trim().min(1),
-      descriptionRich: z.unknown().optional(),
-    })
-    .extend(mapItemLocationSchema.shape)
-    .optional(),
 });
 
 export const updateMapInputSchema = createMapInputSchema

@@ -79,20 +79,6 @@ export const mapsRepository = {
             : (input.descriptionRich as Prisma.InputJsonValue),
         isActive: input.isActive,
         publishedAt: input.publishedAt ?? null,
-        items: input.initialItem
-          ? {
-              create: {
-                title: input.initialItem.title,
-                descriptionRich:
-                  input.initialItem.descriptionRich === undefined
-                    ? undefined
-                    : (input.initialItem.descriptionRich as Prisma.InputJsonValue),
-                latitude: input.initialItem.latitude.toString(),
-                longitude: input.initialItem.longitude.toString(),
-                sortOrder: 0,
-              },
-            }
-          : undefined,
       },
     });
   },
