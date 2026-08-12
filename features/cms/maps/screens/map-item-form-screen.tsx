@@ -17,6 +17,7 @@ import {
   CmsTextInput,
   cmsToast,
 } from "@/components/cms/primitives";
+import { CmsMapAddressSearch } from "@/features/cms/maps/components/map-address-search";
 import { CmsMapItemFormLoading } from "@/features/cms/maps/components/map-item-form-loading";
 import { CmsMapPreview } from "@/features/cms/maps/components/map-preview";
 import {
@@ -26,13 +27,15 @@ import {
   useMapItemUpdate,
   type MapDetail,
 } from "@/features/cms/maps/hooks/use-map-crud";
+import {
+  normalizeMapCoordinates,
+  type MapCoordinates,
+} from "@/features/cms/maps/utils/coordinates";
 import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import { createMapItemInputSchema } from "@/lib/server/modules/maps/schema";
 import { trpc } from "@/lib/trpc/react";
-
-import type { MapCoordinates } from "@/features/cms/maps/utils/coordinates";
 
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
 const defaultItemCoordinates: MapCoordinates = { latitude: 44.6578, longitude: 10.9006 };
@@ -239,6 +242,19 @@ function MapItemFormContent({
               ariaLabel={mapText.descriptionEditorAriaLabel}
             />
           </CmsFormField>
+          <CmsMapAddressSearch
+            onSelect={(address) => {
+              const nextCoordinates = normalizeMapCoordinates(address.latitude, address.longitude);
+              form.setValue("latitude", nextCoordinates.latitude, {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+              form.setValue("longitude", nextCoordinates.longitude, {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+            }}
+          />
           <CmsMapPreview
             coordinates={coordinates}
             onCoordinatesChange={(nextCoordinates) => {

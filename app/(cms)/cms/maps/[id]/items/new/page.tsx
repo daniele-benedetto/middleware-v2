@@ -1,13 +1,15 @@
 import { CmsMapItemFormScreen } from "@/features/cms/maps/screens/map-item-form-screen";
 import {
+  normalizeMapCoordinates,
+  type MapCoordinates,
+} from "@/features/cms/maps/utils/coordinates";
+import {
   prefetchCmsDetailOrNotFound,
   resolveCmsRouteEntityIdOrNotFound,
 } from "@/lib/cms/route-handling";
 import { prefetchMapById } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
-
-import type { MapCoordinates } from "@/features/cms/maps/utils/coordinates";
 
 export const metadata = buildCmsMetadata({
   title: i18n.cms.forms.resources.maps.createItemTitle,
@@ -26,7 +28,7 @@ function parseInitialCoordinates(
   const longitude = Number(searchParams.longitude);
 
   return Number.isFinite(latitude) && Number.isFinite(longitude)
-    ? { latitude, longitude }
+    ? normalizeMapCoordinates(latitude, longitude)
     : undefined;
 }
 
