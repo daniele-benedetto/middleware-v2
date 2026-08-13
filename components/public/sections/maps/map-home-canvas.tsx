@@ -67,6 +67,11 @@ export function MapHomeCanvas({ map }: { map: PublicMapDetailDto }) {
           "click",
           () => {
             setSelectedItemId(item.id);
+            if (window.matchMedia("(max-width: 767px)").matches) {
+              requestAnimationFrame(() => {
+                container.parentElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+              });
+            }
           },
         );
       });
