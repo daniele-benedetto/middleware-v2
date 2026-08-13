@@ -32,7 +32,20 @@ export function MapHomeCanvas({ map }: { map: PublicMapDetailDto }) {
           [modenaComuneMaxBounds[1][1], modenaComuneMaxBounds[1][0]],
         ],
         maxBoundsViscosity: 1,
+        dragging: !L.Browser.touch,
       });
+      const handleTouchStart = (event: TouchEvent) => {
+        if (event.touches.length >= 2) leafletMap.dragging.enable();
+      };
+      const handleTouchEnd = () => leafletMap.dragging.disable();
+      if (L.Browser.touch) {
+        container.addEventListener("touchstart", handleTouchStart, {
+          capture: true,
+          passive: true,
+        });
+        container.addEventListener("touchend", handleTouchEnd, { passive: true });
+        container.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+      }
       const resizeObserver = new ResizeObserver(() => leafletMap.invalidateSize());
       resizeObserver.observe(container);
 
@@ -68,6 +81,9 @@ export function MapHomeCanvas({ map }: { map: PublicMapDetailDto }) {
 
       cleanup = () => {
         resizeObserver.disconnect();
+        container.removeEventListener("touchstart", handleTouchStart, { capture: true });
+        container.removeEventListener("touchend", handleTouchEnd);
+        container.removeEventListener("touchcancel", handleTouchEnd);
         leafletMap.remove();
       };
     });

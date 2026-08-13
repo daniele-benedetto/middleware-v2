@@ -25,6 +25,7 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
       article={featured}
       number={getArticleNumber(articleNumbers, featured)}
       variant="clusterFeatured"
+      className={featuredOnRight ? "max-md:pb-0" : "max-md:pt-0"}
     />
   ) : null;
   const secondaryCards = (
@@ -46,6 +47,8 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
             hasThreeSecondaryArticles && index === 2 ? "lg:col-span-2" : undefined,
             hasThreeSecondaryArticles ? undefined : "h-auto flex-[1_1_auto]",
             featuredOnRight && index === secondary.length - 1 ? "max-md:border-b!" : undefined,
+            featuredOnRight && index === 0 ? "max-md:pt-0" : undefined,
+            !featuredOnRight && index === secondary.length - 1 ? "max-md:pb-0" : undefined,
           )}
         />
       ))}

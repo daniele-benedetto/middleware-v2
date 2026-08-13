@@ -75,6 +75,7 @@ export function CourseHomeBlock({
                   variant="constellationSecondary"
                   analyticsSource="issue_course"
                   analyticsParentSlug={course.slug}
+                  className={index === course.lessons.length - 1 ? "max-md:pb-0" : undefined}
                 />
               ))}
             </div>

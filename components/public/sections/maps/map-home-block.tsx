@@ -22,7 +22,7 @@ export function MapHomeBlock({ block }: { block: MapHomeBlockData }) {
               </p>
             ) : null}
           </div>
-          <div className="relative z-0 mt-6 min-h-80 min-w-0 overflow-hidden bg-muted md:mt-0 md:min-h-full md:border-l md:border-foreground">
+          <div className="relative z-0 mt-6 h-[calc(100dvh-var(--public-header-height)-var(--public-header-height))] min-w-0 overflow-hidden bg-muted md:mt-0 md:h-auto md:min-h-full md:border-l md:border-foreground">
             <MapHomeCanvas map={block.map} />
           </div>
         </div>
