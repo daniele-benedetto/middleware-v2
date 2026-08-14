@@ -7,7 +7,7 @@ export const publicIt = {
   brand: {
     wordmark: "middleware",
     title: "Middleware",
-    titleTemplate: (title: string) => `Middleware | ${title}`,
+    titleTemplate: (title: string) => `${title} | Middleware`,
     description:
       "Middleware è un laboratorio di inchiesta a Modena. Ci occupiamo di territorio, conflitto sociale, trasformazioni urbane e contro-formazione.",
     keywords: [

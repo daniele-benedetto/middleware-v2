@@ -1,5 +1,6 @@
 export { seoConfig } from "@/lib/seo/config";
 export { buildHomeJsonLd } from "@/lib/seo/home-json-ld";
+export { buildLlmsTxt } from "@/lib/seo/llms";
 export {
   buildArticlePageJsonLd,
   buildArticlesArchiveJsonLd,

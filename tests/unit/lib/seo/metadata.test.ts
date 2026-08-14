@@ -4,11 +4,18 @@ import {
   buildArticleListenMetadata,
   buildArticleMetadata,
   buildPageMetadata,
+  buildRootMetadata,
   getCanonicalUrl,
   getGeneratedSocialImageUrl,
 } from "@/lib/seo";
 
 describe("seo metadata", () => {
+  it("places the page topic before the brand in title templates", () => {
+    const title = buildRootMetadata().title;
+
+    expect(title).toMatchObject({ template: "%s | Middleware" });
+  });
+
   it("builds page metadata with absolute canonical and image URLs", () => {
     const metadata = buildPageMetadata({
       title: "Archivio",
