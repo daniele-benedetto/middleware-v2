@@ -3,6 +3,7 @@ import { Fragment, type ReactNode } from "react";
 
 import { publicTypography } from "@/components/public/primitives";
 import { TrackedExternalLink } from "@/components/public/tracked-external-link";
+import { resolveArticleImageSettings } from "@/lib/articles/image-settings";
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import {
   isExternalRichTextLink,
@@ -65,7 +66,12 @@ function getImageAttrs(node: RichTextNode) {
     return null;
   }
 
-  const attrs = node.attrs as { src?: unknown; alt?: unknown; title?: unknown };
+  const attrs = node.attrs as {
+    src?: unknown;
+    alt?: unknown;
+    title?: unknown;
+    imageSettings?: unknown;
+  };
 
   if (typeof attrs.src !== "string" || !attrs.src) {
     return null;
@@ -75,6 +81,7 @@ function getImageAttrs(node: RichTextNode) {
     src: resolvePublicMediaUrl(attrs.src) ?? attrs.src,
     alt: typeof attrs.alt === "string" ? attrs.alt : "",
     title: typeof attrs.title === "string" ? attrs.title : undefined,
+    settings: resolveArticleImageSettings(attrs.imageSettings),
   };
 }
 
@@ -281,7 +288,7 @@ function renderBlockNode(node: RichTextNode, key: string, context: RenderContext
     }
 
     return (
-      <figure key={key}>
+      <figure key={key} className="aspect-video overflow-hidden">
         <Image
           src={image.src}
           alt={image.alt}
@@ -289,7 +296,12 @@ function renderBlockNode(node: RichTextNode, key: string, context: RenderContext
           width={1200}
           height={675}
           sizes="(min-width: 768px) 768px, 100vw"
-          className="aspect-video w-full object-cover grayscale"
+          className={cn("h-full w-full", image.settings.grayscale && "grayscale")}
+          style={{
+            objectFit: image.settings.fit,
+            objectPosition: `${image.settings.positionX}% ${image.settings.positionY}%`,
+            transform: `scale(${image.settings.zoom / 100})`,
+          }}
         />
       </figure>
     );

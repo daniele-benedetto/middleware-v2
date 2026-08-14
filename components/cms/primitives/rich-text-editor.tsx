@@ -16,10 +16,12 @@ import {
   MessageSquareQuote,
   Quote,
   Redo2,
+  Settings2,
   Strikethrough,
   Trash2,
   Undo2,
 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -31,7 +33,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { CmsMediaPickerDialog } from "@/features/cms/media/components/media-picker-dialog";
+import {
+  defaultArticleImageSettings,
+  resolveArticleImageSettings,
+  type ArticleImageSettings,
+} from "@/lib/articles/image-settings";
 import { i18n } from "@/lib/i18n";
 import { resolveCmsMediaPreviewUrl } from "@/lib/media/blob";
 import { cn } from "@/lib/utils";
@@ -68,6 +77,19 @@ type NoteReferenceAttrs = {
   number?: unknown;
 };
 
+type ImageSelection = {
+  pos: number;
+  src: string;
+  alt: string;
+  settings: ArticleImageSettings;
+};
+
+type ImageAttrs = {
+  src?: unknown;
+  alt?: unknown;
+  imageSettings?: unknown;
+};
+
 function createNoteId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return `note_${crypto.randomUUID()}`;
@@ -87,6 +109,21 @@ function getNoteAttrs(node: ProseMirrorNode): NoteSelection | null {
     pos: 0,
     id: attrs.id,
     contentRich: attrs.contentRich ?? emptyDoc,
+  };
+}
+
+function getImageSelection(node: ProseMirrorNode, pos: number): ImageSelection | null {
+  const attrs = node.attrs as ImageAttrs;
+
+  if (typeof attrs.src !== "string" || !attrs.src) {
+    return null;
+  }
+
+  return {
+    pos,
+    src: attrs.src,
+    alt: typeof attrs.alt === "string" ? attrs.alt : "",
+    settings: resolveArticleImageSettings(attrs.imageSettings),
   };
 }
 
@@ -126,6 +163,7 @@ const CmsImage = Node.create({
       src: { default: null },
       alt: { default: null },
       title: { default: null },
+      imageSettings: { default: defaultArticleImageSettings },
     };
   },
 
@@ -134,14 +172,15 @@ const CmsImage = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
+    const { imageSettings: _imageSettings, ...imageAttributes } = HTMLAttributes;
     const src =
-      typeof HTMLAttributes.src === "string"
-        ? resolveCmsMediaPreviewUrl(HTMLAttributes.src)
-        : HTMLAttributes.src;
+      typeof imageAttributes.src === "string"
+        ? resolveCmsMediaPreviewUrl(imageAttributes.src)
+        : imageAttributes.src;
 
     return [
       "img",
-      mergeAttributes(HTMLAttributes, {
+      mergeAttributes(imageAttributes, {
         src,
         style: "display:block;width:100%;max-width:100%;height:auto;",
       }),
@@ -269,6 +308,8 @@ export function CmsRichTextEditor({
   const text = i18n.cms.richText;
   const proseClasses = cn(proseBaseClasses, fullHeight ? "min-h-full" : "min-h-40");
   const [imagePickerOpen, setImagePickerOpen] = useState(false);
+  const [imageSettingsOpen, setImageSettingsOpen] = useState(false);
+  const [imageSelection, setImageSelection] = useState<ImageSelection | null>(null);
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [noteSelection, setNoteSelection] = useState<NoteSelection | null>(null);
   const [noteInsertPos, setNoteInsertPos] = useState<number | null>(null);
@@ -292,14 +333,24 @@ export function CmsRichTextEditor({
         "aria-label": ariaLabel ?? text.defaultAriaLabel,
       },
       handleClickOn: (_view, pos, node) => {
+        if (allowImages && !disabled && node.type.name === "image") {
+          const image = getImageSelection(node, pos);
+
+          if (!image) {
+            return false;
+          }
+
+          setImageSelection(image);
+          setImageSettingsOpen(true);
+          return true;
+        }
+
         if (!enableNotes || node.type.name !== "noteReference") {
           return false;
         }
 
         const attrs = getNoteAttrs(node);
-        if (!attrs) {
-          return false;
-        }
+        if (!attrs) return false;
 
         setNoteSelection({ ...attrs, pos });
         setNoteContent(attrs.contentRich);
@@ -365,9 +416,53 @@ export function CmsRichTextEditor({
               .focus()
               .insertContent({
                 type: "image",
-                attrs: { src: resolveCmsMediaPreviewUrl(url), alt: "" },
+                attrs: {
+                  src: resolveCmsMediaPreviewUrl(url),
+                  alt: "",
+                  imageSettings: defaultArticleImageSettings,
+                },
               })
               .run();
+          }}
+        />
+      ) : null}
+      {imageSelection ? (
+        <ImageSettingsDialog
+          key={imageSelection.pos}
+          open={imageSettingsOpen}
+          onOpenChange={(open) => {
+            setImageSettingsOpen(open);
+            if (!open) setImageSelection(null);
+          }}
+          image={imageSelection}
+          onSave={(next) => {
+            if (!editor) return;
+
+            const node = editor.state.doc.nodeAt(imageSelection.pos);
+            if (!node) return;
+
+            const tr = editor.state.tr.setNodeMarkup(imageSelection.pos, undefined, {
+              ...node.attrs,
+              alt: next.alt,
+              imageSettings: next.settings,
+            });
+            editor.view.dispatch(tr);
+            onChange?.(editor.getJSON());
+            setImageSettingsOpen(false);
+            setImageSelection(null);
+          }}
+          onDelete={() => {
+            if (!editor) return;
+
+            const node = editor.state.doc.nodeAt(imageSelection.pos);
+            if (!node) return;
+
+            editor.view.dispatch(
+              editor.state.tr.delete(imageSelection.pos, imageSelection.pos + node.nodeSize),
+            );
+            onChange?.(editor.getJSON());
+            setImageSettingsOpen(false);
+            setImageSelection(null);
           }}
         />
       ) : null}
@@ -617,6 +712,161 @@ function CmsRichTextToolbar({
 
 function ToolbarSeparator() {
   return <span className="mx-1 h-5 w-px bg-border" aria-hidden />;
+}
+
+const focusPoints = [
+  [0, 0],
+  [50, 0],
+  [100, 0],
+  [0, 50],
+  [50, 50],
+  [100, 50],
+  [0, 100],
+  [50, 100],
+  [100, 100],
+] as const;
+
+function ImageSettingsDialog({
+  open,
+  onOpenChange,
+  image,
+  onSave,
+  onDelete,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  image: ImageSelection;
+  onSave: (value: Pick<ImageSelection, "alt" | "settings">) => void;
+  onDelete: () => void;
+}) {
+  const text = i18n.cms.richText;
+  const [alt, setAlt] = useState(image.alt);
+  const [settings, setSettings] = useState(image.settings);
+
+  const update = (next: Partial<ArticleImageSettings>) => setSettings({ ...settings, ...next });
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-3xl overflow-y-auto p-5">
+        <DialogHeader>
+          <DialogTitle>{text.editImageTitle}</DialogTitle>
+          <DialogDescription>{text.editImageDescription}</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_15rem]">
+          <div className="relative aspect-video overflow-hidden border border-foreground bg-card-hover">
+            <Image
+              src={image.src}
+              alt=""
+              fill
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 40vw"
+              className={cn("h-full w-full", settings.grayscale && "grayscale")}
+              style={{
+                objectFit: settings.fit,
+                objectPosition: `${settings.positionX}% ${settings.positionY}%`,
+                transform: `scale(${settings.zoom / 100})`,
+              }}
+            />
+          </div>
+          <div className="space-y-5">
+            <label className="block space-y-2">
+              <span className="font-ui text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
+                {text.imageAltLabel}
+              </span>
+              <Input value={alt} onChange={(event) => setAlt(event.target.value)} maxLength={240} />
+            </label>
+            <label className="flex items-center justify-between gap-4 border-b border-foreground pb-4">
+              <span className="font-ui text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
+                {text.grayscale}
+              </span>
+              <Switch
+                checked={settings.grayscale}
+                onCheckedChange={(grayscale) => update({ grayscale })}
+              />
+            </label>
+            <fieldset className="space-y-2">
+              <legend className="font-ui text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
+                {text.fit}
+              </legend>
+              <div className="grid grid-cols-2 gap-2">
+                {(["cover", "contain"] as const).map((fit) => (
+                  <button
+                    key={fit}
+                    type="button"
+                    onClick={() => update({ fit })}
+                    className={cn(
+                      "border px-3 py-2 font-ui text-[11px] font-bold uppercase tracking-[0.08em]",
+                      settings.fit === fit
+                        ? "border-accent bg-accent text-background"
+                        : "border-foreground",
+                    )}
+                  >
+                    {fit === "cover" ? text.cover : text.contain}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset className="space-y-2">
+              <legend className="font-ui text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
+                {text.focalPoint}
+              </legend>
+              <div className="grid grid-cols-3 overflow-hidden border border-foreground">
+                {focusPoints.map(([positionX, positionY]) => (
+                  <button
+                    key={`${positionX}-${positionY}`}
+                    type="button"
+                    aria-label={`${text.focalPoint} ${positionX}%, ${positionY}%`}
+                    onClick={() => update({ positionX, positionY })}
+                    className={cn(
+                      "aspect-square border-r border-b border-foreground last:border-r-0",
+                      settings.positionX === positionX && settings.positionY === positionY
+                        ? "bg-accent"
+                        : "bg-card hover:bg-surface-hover",
+                    )}
+                  />
+                ))}
+              </div>
+            </fieldset>
+            <label className="block space-y-2">
+              <span className="flex justify-between font-ui text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
+                {text.zoom} <span>{settings.zoom}%</span>
+              </span>
+              <input
+                type="range"
+                min="100"
+                max="150"
+                value={settings.zoom}
+                onChange={(event) => update({ zoom: Number(event.target.value) })}
+                className="w-full accent-accent"
+              />
+            </label>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setSettings(defaultArticleImageSettings);
+              }}
+            >
+              {text.resetImageSettings}
+            </Button>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="destructive" onClick={onDelete} className="mr-auto">
+            <Trash2 className="size-3.5" />
+            {text.deleteImage}
+          </Button>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            {text.cancelImage}
+          </Button>
+          <Button type="button" onClick={() => onSave({ alt, settings })}>
+            <Settings2 className="size-3.5" />
+            {text.saveImage}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function NoteDialog({

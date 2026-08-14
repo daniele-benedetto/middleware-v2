@@ -72,6 +72,13 @@ describe("PublicRichText", () => {
                 src: "/api/public/media/blob?pathname=pages%2Fimage.jpg",
                 alt: "Alt text",
                 title: "Title text",
+                imageSettings: {
+                  grayscale: false,
+                  fit: "contain",
+                  positionX: 0,
+                  positionY: 100,
+                  zoom: 125,
+                },
               },
             },
           ],
@@ -95,6 +102,31 @@ describe("PublicRichText", () => {
     expect(html).toContain('alt="Alt text"');
     expect(html).toContain('width="1200"');
     expect(html).toContain('height="675"');
+    expect(html).toContain("object-fit:contain");
+    expect(html).toContain("object-position:0% 100%");
+    expect(html).toContain("transform:scale(1.25)");
+    expect(html).not.toContain("grayscale");
+  });
+
+  it("uses legacy image display defaults when settings are absent", () => {
+    const html = renderToStaticMarkup(
+      createElement(PublicRichText, {
+        value: {
+          type: "doc",
+          content: [
+            {
+              type: "image",
+              attrs: { src: "/api/public/media/blob?pathname=pages%2Fimage.jpg" },
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(html).toContain("grayscale");
+    expect(html).toContain("object-fit:cover");
+    expect(html).toContain("object-position:50% 50%");
+    expect(html).toContain("transform:scale(1)");
   });
 
   it("renders supported marks and safe links", () => {
