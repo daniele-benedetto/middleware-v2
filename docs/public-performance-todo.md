@@ -41,13 +41,13 @@ Scope: `app/(public)` and the public components/loaders it depends on. Prioritie
 - [x] Cache and share `getLegalConsentVersion` between cookie consent and analytics slots.
 - [ ] Verify header/footer/consent streaming behavior remains unchanged when cached data is unavailable.
 
-- [ ] Replace per-instance `TrackedPublicLink` client boundaries with server-rendered links carrying analytics `data-*` attributes.
-- [ ] Add one delegated client click listener at the public shell level.
-- [ ] Preserve modifier-click behavior and do not track cancelled/default-prevented navigations.
+- [x] Replace per-instance `TrackedPublicLink` client boundaries with server-rendered links carrying analytics `data-*` attributes.
+- [x] Add one delegated client click listener at the public shell level.
+- [x] Preserve modifier-click behavior and do not track cancelled/default-prevented navigations.
 - [ ] Compare client bundle and hydration cost on article, issue, and course archives.
 
-- [ ] Defer Leaflet map mount with `IntersectionObserver` and a viewport root margin.
-- [ ] Keep a fixed-size placeholder to prevent layout shift before map initialization.
+- [x] Defer Leaflet map mount with `IntersectionObserver` and a viewport root margin.
+- [x] Keep a fixed-size placeholder to prevent layout shift before map initialization.
 - [ ] Verify map initialization, markers, touch interaction, resize handling, and tile-error UI after deferred loading.
 
 ## Validation
@@ -56,7 +56,7 @@ Scope: `app/(public)` and the public components/loaders it depends on. Prioritie
 - [x] Run `pnpm test:run`.
 - [x] Add targeted unit tests for the course archive projection.
 - [x] Add targeted unit tests for transcript windowing.
-- [ ] Add targeted unit tests for cache boundaries.
+- [x] Add targeted unit tests for cache boundaries.
 - [x] Run `pnpm build` after cache-related work to validate Next.js 16 Cache Components constraints.
 - [ ] Capture production-like traces for cold and warm requests, including home, article, course archive, course detail, and both listen routes.
 - [ ] Track TTFB, database/service call count, Flight payload size, client JS, LCP, INP, and transcript DOM node count as acceptance metrics.

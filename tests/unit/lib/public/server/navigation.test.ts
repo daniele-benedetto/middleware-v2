@@ -1,10 +1,12 @@
 const navigationServiceMock = vi.hoisted(() => ({
   getPublicNavigation: vi.fn(),
 }));
+const cacheLifeMock = vi.hoisted(() => vi.fn());
+const cacheTagMock = vi.hoisted(() => vi.fn());
 
 vi.mock("next/cache", () => ({
-  cacheLife: vi.fn(),
-  cacheTag: vi.fn(),
+  cacheLife: cacheLifeMock,
+  cacheTag: cacheTagMock,
 }));
 
 vi.mock("@/lib/server/modules/navigation", () => ({
@@ -28,6 +30,9 @@ describe("getPublicNavigation", () => {
     navigationServiceMock.getPublicNavigation.mockResolvedValue(navigation);
 
     await expect(getPublicNavigation()).resolves.toBe(navigation);
+
+    expect(cacheLifeMock).toHaveBeenCalledWith("hours");
+    expect(cacheTagMock).toHaveBeenCalledWith("public-navigation");
   });
 
   it("returns empty navigation when public navigation cannot be loaded", async () => {

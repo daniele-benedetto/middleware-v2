@@ -9,12 +9,43 @@ import { modenaComuneMaxBounds } from "@/lib/server/modules/maps/boundary/modena
 import type { PublicMapDetailDto } from "@/lib/server/modules/maps/dto/public";
 
 export function MapHomeCanvas({ map }: { map: PublicMapDetailDto }) {
+  const viewportRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [shouldInitialize, setShouldInitialize] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const selectedItem = map.items.find((item) => item.id === selectedItemId);
 
   useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const IntersectionObserverConstructor = (
+      window as Window & { IntersectionObserver?: typeof IntersectionObserver }
+    ).IntersectionObserver;
+
+    if (!IntersectionObserverConstructor) {
+      const frameId = requestAnimationFrame(() => setShouldInitialize(true));
+      return () => cancelAnimationFrame(frameId);
+    }
+
+    const observer = new IntersectionObserverConstructor(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+
+        setShouldInitialize(true);
+        observer.disconnect();
+      },
+      { rootMargin: "400px 0px" },
+    );
+    observer.observe(viewport);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!shouldInitialize) return;
+
     const container = containerRef.current;
     if (!container) return;
 
@@ -97,11 +128,16 @@ export function MapHomeCanvas({ map }: { map: PublicMapDetailDto }) {
       cancelled = true;
       cleanup();
     };
-  }, [map]);
+  }, [map, shouldInitialize]);
 
   return (
-    <div className="absolute inset-0">
-      <div ref={containerRef} className="absolute inset-0" aria-label={map.title} />
+    <div ref={viewportRef} className="absolute inset-0">
+      <div
+        ref={containerRef}
+        className="absolute inset-0"
+        aria-busy={!shouldInitialize}
+        aria-label={map.title}
+      />
       {selectedItem ? (
         <article className="absolute inset-3 z-10 flex min-h-0 flex-col border border-foreground bg-background p-5 shadow-[5px_5px_0_rgb(0_0_0_/_16%)] sm:inset-5 sm:p-7">
           <div className="flex shrink-0 items-start justify-between gap-5 border-b border-foreground pb-4">

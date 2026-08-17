@@ -1,12 +1,9 @@
-"use client";
-
 import { PublicLink } from "@/components/public/public-link";
-import { trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 
 import type { PublicAnalyticsEventData, PublicAnalyticsEventName } from "@/lib/public/analytics";
-import type { ComponentProps, MouseEvent } from "react";
+import type { ComponentProps } from "react";
 
-type TrackedPublicLinkProps = ComponentProps<typeof PublicLink> & {
+type TrackedPublicLinkProps = Omit<ComponentProps<typeof PublicLink>, "onClick"> & {
   analyticsEventName: PublicAnalyticsEventName;
   analyticsEventData?: PublicAnalyticsEventData;
 };
@@ -14,13 +11,15 @@ type TrackedPublicLinkProps = ComponentProps<typeof PublicLink> & {
 export function TrackedPublicLink({
   analyticsEventName,
   analyticsEventData,
-  onClick,
   ...props
 }: TrackedPublicLinkProps) {
-  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    trackPublicAnalyticsEvent(analyticsEventName, analyticsEventData);
-    onClick?.(event);
-  };
-
-  return <PublicLink {...props} onClick={handleClick} />;
+  return (
+    <PublicLink
+      {...props}
+      data-public-analytics-event={analyticsEventName}
+      data-public-analytics-data={
+        analyticsEventData ? JSON.stringify(analyticsEventData) : undefined
+      }
+    />
+  );
 }

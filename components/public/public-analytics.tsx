@@ -2,8 +2,10 @@
 
 import { useEffect } from "react";
 
+import { trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 import { usePrivacyChoice } from "@/lib/public/privacy-consent";
 
+import type { PublicAnalyticsEventData, PublicAnalyticsEventName } from "@/lib/public/analytics";
 import type { PrivacyBannerMode } from "@/lib/public/privacy-consent";
 
 type PublicAnalyticsProps = {
@@ -33,6 +35,34 @@ export function PublicAnalytics({
   const shouldLoad = Boolean(
     scriptSrc && websiteId && (bannerMode !== "consent" || privacyChoice === "accepted"),
   );
+
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const link = target.closest<HTMLAnchorElement>("a[data-public-analytics-event]");
+      if (!link) return;
+
+      const eventName = link.dataset.publicAnalyticsEvent as PublicAnalyticsEventName | undefined;
+      if (!eventName) return;
+
+      try {
+        const eventData = link.dataset.publicAnalyticsData
+          ? (JSON.parse(link.dataset.publicAnalyticsData) as PublicAnalyticsEventData)
+          : undefined;
+        trackPublicAnalyticsEvent(eventName, eventData);
+      } catch {
+        trackPublicAnalyticsEvent(eventName);
+      }
+    };
+
+    document.addEventListener("click", handleDocumentClick);
+    return () => document.removeEventListener("click", handleDocumentClick);
+  }, []);
 
   useEffect(() => {
     if (!shouldLoad || !scriptSrc || !websiteId) return;
