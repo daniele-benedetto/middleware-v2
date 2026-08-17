@@ -15,28 +15,47 @@ import { getPublicNavigation } from "@/lib/public/server/navigation";
 
 import type { ReactNode } from "react";
 
-async function PublicHeaderSlot() {
-  const navigation = await getPublicNavigation();
+type PublicNavigationPromise = ReturnType<typeof getPublicNavigation>;
+type LegalConsentVersionPromise = ReturnType<typeof getLegalConsentVersion>;
+
+async function PublicHeaderSlot({
+  navigationPromise,
+}: {
+  navigationPromise: PublicNavigationPromise;
+}) {
+  const navigation = await navigationPromise;
 
   return <PublicHeader menuItems={navigation.main} />;
 }
 
-async function PublicFooterSlot() {
-  const navigation = await getPublicNavigation();
+async function PublicFooterSlot({
+  navigationPromise,
+}: {
+  navigationPromise: PublicNavigationPromise;
+}) {
+  const navigation = await navigationPromise;
 
   return (
     <PublicFooter sectionsLinks={navigation.footerSections} legalLinks={navigation.footerLegal} />
   );
 }
 
-async function CookieConsentSlot() {
-  const legalConsentVersion = await getLegalConsentVersion();
+async function CookieConsentSlot({
+  legalConsentVersionPromise,
+}: {
+  legalConsentVersionPromise: LegalConsentVersionPromise;
+}) {
+  const legalConsentVersion = await legalConsentVersionPromise;
 
   return legalConsentVersion ? <CookieConsentBanner consentVersion={legalConsentVersion} /> : null;
 }
 
-async function PublicAnalyticsSlot() {
-  const legalConsentVersion = await getLegalConsentVersion();
+async function PublicAnalyticsSlot({
+  legalConsentVersionPromise,
+}: {
+  legalConsentVersionPromise: LegalConsentVersionPromise;
+}) {
+  const legalConsentVersion = await legalConsentVersionPromise;
 
   return (
     <PublicAnalytics
@@ -53,7 +72,10 @@ async function PublicAnalyticsSlot() {
   );
 }
 
-export default async function PublicLayout({ children }: { children: ReactNode }) {
+export default function PublicLayout({ children }: { children: ReactNode }) {
+  const navigationPromise = getPublicNavigation();
+  const legalConsentVersionPromise = getLegalConsentVersion();
+
   return (
     <div
       data-public-shell
@@ -66,7 +88,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         {i18n.public.header.skipToContent}
       </a>
       <Suspense fallback={null}>
-        <PublicHeaderSlot />
+        <PublicHeaderSlot navigationPromise={navigationPromise} />
       </Suspense>
       <PublicScrollProgress />
       <div data-public-page-content>
@@ -74,16 +96,16 @@ export default async function PublicLayout({ children }: { children: ReactNode }
       </div>
       <div data-public-footer>
         <Suspense fallback={null}>
-          <PublicFooterSlot />
+          <PublicFooterSlot navigationPromise={navigationPromise} />
         </Suspense>
       </div>
       {publicFeatures.cookieConsentBanner ? (
         <Suspense fallback={null}>
-          <CookieConsentSlot />
+          <CookieConsentSlot legalConsentVersionPromise={legalConsentVersionPromise} />
         </Suspense>
       ) : null}
       <Suspense fallback={null}>
-        <PublicAnalyticsSlot />
+        <PublicAnalyticsSlot legalConsentVersionPromise={legalConsentVersionPromise} />
       </Suspense>
     </div>
   );

@@ -37,8 +37,8 @@ Scope: `app/(public)` and the public components/loaders it depends on. Prioritie
 
 ## P2 - Shared shell and client bundle
 
-- [ ] Cache and share `getPublicNavigation` between header and footer slots.
-- [ ] Cache and share `getLegalConsentVersion` between cookie consent and analytics slots.
+- [x] Cache and share `getPublicNavigation` between header and footer slots.
+- [x] Cache and share `getLegalConsentVersion` between cookie consent and analytics slots.
 - [ ] Verify header/footer/consent streaming behavior remains unchanged when cached data is unavailable.
 
 - [ ] Replace per-instance `TrackedPublicLink` client boundaries with server-rendered links carrying analytics `data-*` attributes.
