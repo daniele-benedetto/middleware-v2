@@ -3,7 +3,10 @@ import { Suspense } from "react";
 
 import { ArticleListenPage } from "@/components/public/listen/article-listen-page";
 import { i18n } from "@/lib/i18n";
-import { getPublicArticleListenPageData } from "@/lib/public/server/article-listen-page";
+import {
+  getPublicArticleListenChunks,
+  getPublicArticleListenMetadataData,
+} from "@/lib/public/server/article-listen-page";
 import { buildArticleListenMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
@@ -14,20 +17,22 @@ type PublicArticleListenRouteProps = {
 
 async function PublicArticleListenRouteContent({ params }: PublicArticleListenRouteProps) {
   const { slug } = await params;
-  const data = await getPublicArticleListenPageData(slug);
+  const dataPromise = getPublicArticleListenMetadataData(slug);
+  const chunksPromise = getPublicArticleListenChunks(slug);
+  const data = await dataPromise;
 
   if (!data) {
     notFound();
   }
 
-  return <ArticleListenPage data={data} />;
+  return <ArticleListenPage data={data} chunksPromise={chunksPromise} />;
 }
 
 export async function generateMetadata({
   params,
 }: PublicArticleListenRouteProps): Promise<Metadata> {
   const { slug } = await params;
-  const data = await getPublicArticleListenPageData(slug);
+  const data = await getPublicArticleListenMetadataData(slug);
   const text = i18n.public.listenPage;
 
   if (!data) {

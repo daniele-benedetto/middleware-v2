@@ -12,10 +12,9 @@ import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/p
 export const PUBLIC_ARTICLE_LISTEN_PAGE_REVALIDATE_SECONDS = 60 * 60;
 export const PUBLIC_ARTICLE_LISTEN_PAGE_CACHE_TAG = "public-article";
 
-export type PublicArticleListenPageData = {
+export type PublicArticleListenMetadataData = {
   article: PublicArticleDetailDto;
   articleNumber: number | null;
-  chunks: AudioChunk[];
 };
 
 async function readStreamAsText(stream: ReadableStream<Uint8Array>) {
@@ -67,9 +66,9 @@ async function loadAudioChunks(value: unknown) {
   return parseAudioChunks(value);
 }
 
-export async function getPublicArticleListenPageData(
+export async function getPublicArticleListenMetadataData(
   slug: string,
-): Promise<PublicArticleListenPageData | null> {
+): Promise<PublicArticleListenMetadataData | null> {
   "use cache";
   cacheLife("hours");
   cacheTag(PUBLIC_ARTICLE_LISTEN_PAGE_CACHE_TAG);
@@ -80,9 +79,19 @@ export async function getPublicArticleListenPageData(
     return null;
   }
 
-  return {
-    article,
-    articleNumber,
-    chunks: await loadAudioChunks(article.audioChunks),
-  };
+  return { article, articleNumber };
+}
+
+export async function getPublicArticleListenChunks(slug: string): Promise<AudioChunk[] | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_ARTICLE_LISTEN_PAGE_CACHE_TAG);
+
+  const data = await getPublicArticleListenMetadataData(slug);
+
+  if (!data) {
+    return null;
+  }
+
+  return loadAudioChunks(data.article.audioChunks);
 }

@@ -25,7 +25,11 @@ vi.mock("@/lib/server/modules/courses/service/public", () => ({
   publicCoursesService: publicCoursesServiceMock,
 }));
 
-import { getPublicLessonListenPageData } from "@/lib/public/server/lesson-listen-page";
+import {
+  getPublicLessonListenChunks,
+  getPublicLessonListenMetadataData,
+  getPublicLessonListenPageData,
+} from "@/lib/public/server/lesson-listen-page";
 import { mediaStorage } from "@/lib/server/storage/media-storage";
 
 const getMediaMock = vi.mocked(mediaStorage.get);
@@ -92,6 +96,17 @@ describe("getPublicLessonListenPageData", () => {
     await expect(getPublicLessonListenPageData("course-slug", "lesson-slug")).resolves.toBeNull();
   });
 
+  it("does not load transcript chunks for metadata", async () => {
+    publicLessonsServiceMock.getBySlug.mockResolvedValue(
+      createLesson({ audioChunks: "/api/cms/media/blob?pathname=chunks%2Flesson.json" }),
+    );
+
+    const result = await getPublicLessonListenMetadataData("course-slug", "lesson-slug");
+
+    expect(result?.lesson.id).toBe("lesson-1");
+    expect(getMediaMock).not.toHaveBeenCalled();
+  });
+
   it("loads and normalizes chunks from a versioned private media json reference", async () => {
     publicLessonsServiceMock.getBySlug.mockResolvedValue(
       createLesson({ audioChunks: "/api/cms/media/blob?pathname=chunks%2Flesson.json" }),
@@ -113,12 +128,11 @@ describe("getPublicLessonListenPageData", () => {
       etag: "etag-1",
     });
 
-    const result = await getPublicLessonListenPageData("course-slug", "lesson-slug");
+    const data = await getPublicLessonListenPageData("course-slug", "lesson-slug");
+    const chunks = await getPublicLessonListenChunks("course-slug", "lesson-slug");
 
     expect(getMediaMock).toHaveBeenCalledWith("chunks/lesson.json");
-    expect(result?.lessonNumber).toBe(2);
-    expect(result?.chunks).toEqual([
-      { id: "1", text: "Intro", start: 0, end: 4, confidence: null },
-    ]);
+    expect(data?.lessonNumber).toBe(2);
+    expect(chunks).toEqual([{ id: "1", text: "Intro", start: 0, end: 4, confidence: null }]);
   });
 });

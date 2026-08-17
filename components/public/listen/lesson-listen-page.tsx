@@ -1,14 +1,20 @@
+import { Suspense, type CSSProperties } from "react";
+
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { ListenEmptyState } from "@/components/public/listen/listen-empty-state";
 import { ListenPlayer } from "@/components/public/listen/listen-player";
 import { publicContentClassName } from "@/components/public/primitives";
 import { i18n } from "@/lib/i18n";
 
-import type { PublicLessonListenPageData } from "@/lib/public/server/lesson-listen-page";
-import type { CSSProperties } from "react";
+import type { AudioChunk } from "@/lib/audio/audio-chunks";
+import type {
+  PublicLessonListenMetadataData,
+  PublicLessonListenPageData,
+} from "@/lib/public/server/lesson-listen-page";
 
 type LessonListenPageProps = {
   data: PublicLessonListenPageData;
+  chunksPromise: Promise<AudioChunk[] | null>;
 };
 
 function formatLessonDate(value: string) {
@@ -19,8 +25,34 @@ function formatLessonNumber(value: number | null) {
   return value ? String(value).padStart(2, "0") : "MW";
 }
 
-export function LessonListenPage({ data }: LessonListenPageProps) {
-  const { lesson, lessonNumber, chunks } = data;
+async function LessonListenPlayer({
+  lesson,
+  chunksPromise,
+}: Pick<PublicLessonListenMetadataData, "lesson"> & {
+  chunksPromise: Promise<AudioChunk[] | null>;
+}) {
+  const chunks = await chunksPromise;
+
+  return (
+    <ListenPlayer
+      contentKind="lesson"
+      contentId={lesson.id}
+      contentSlug={lesson.slug}
+      contentTitle={lesson.title}
+      contentUpdatedAt={lesson.updatedAt}
+      audioUrl={lesson.audioUrl ?? ""}
+      chunks={chunks ?? []}
+      emptyState={<ListenEmptyState contentKind="lesson" />}
+    />
+  );
+}
+
+function ListenPlayerFallback() {
+  return <div className="h-full" role="status" aria-label="Caricamento trascrizione" />;
+}
+
+export function LessonListenPage({ data, chunksPromise }: LessonListenPageProps) {
+  const { lesson, lessonNumber } = data;
   const text = i18n.public.lessonPage;
   const metaItems = [
     { key: "course", label: lesson.courseTitle, href: `/contro-formazione/${lesson.courseSlug}` },
@@ -55,16 +87,9 @@ export function LessonListenPage({ data }: LessonListenPageProps) {
           style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
         >
           <div className={`${publicContentClassName} h-full min-h-0 py-3 sm:py-8 lg:py-10`}>
-            <ListenPlayer
-              contentKind="lesson"
-              contentId={lesson.id}
-              contentSlug={lesson.slug}
-              contentTitle={lesson.title}
-              contentUpdatedAt={lesson.updatedAt}
-              audioUrl={lesson.audioUrl ?? ""}
-              chunks={chunks}
-              emptyState={<ListenEmptyState contentKind="lesson" />}
-            />
+            <Suspense fallback={<ListenPlayerFallback />}>
+              <LessonListenPlayer lesson={lesson} chunksPromise={chunksPromise} />
+            </Suspense>
           </div>
         </section>
       </article>

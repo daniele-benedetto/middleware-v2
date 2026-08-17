@@ -14,10 +14,12 @@ import type { PublicLessonDetailDto } from "@/lib/server/modules/lessons/dto/pub
 export const PUBLIC_LESSON_LISTEN_PAGE_REVALIDATE_SECONDS = 60 * 60;
 export const PUBLIC_LESSON_LISTEN_PAGE_CACHE_TAG = "public-course";
 
-export type PublicLessonListenPageData = {
+export type PublicLessonListenMetadataData = {
   lesson: PublicLessonDetailDto;
+};
+
+export type PublicLessonListenPageData = PublicLessonListenMetadataData & {
   lessonNumber: number | null;
-  chunks: AudioChunk[];
 };
 
 async function readStreamAsText(stream: ReadableStream<Uint8Array>) {
@@ -105,10 +107,10 @@ async function getLessonNumber(courseSlug: string, lessonId: string) {
   }
 }
 
-export async function getPublicLessonListenPageData(
+export async function getPublicLessonListenMetadataData(
   courseSlug: string,
   lessonSlug: string,
-): Promise<PublicLessonListenPageData | null> {
+): Promise<PublicLessonListenMetadataData | null> {
   "use cache";
   cacheLife("hours");
   cacheTag(PUBLIC_LESSON_LISTEN_PAGE_CACHE_TAG);
@@ -119,9 +121,42 @@ export async function getPublicLessonListenPageData(
     return null;
   }
 
+  return { lesson };
+}
+
+export async function getPublicLessonListenChunks(
+  courseSlug: string,
+  lessonSlug: string,
+): Promise<AudioChunk[] | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_LESSON_LISTEN_PAGE_CACHE_TAG);
+
+  const data = await getPublicLessonListenMetadataData(courseSlug, lessonSlug);
+
+  if (!data) {
+    return null;
+  }
+
+  return loadAudioChunks(data.lesson.audioChunks);
+}
+
+export async function getPublicLessonListenPageData(
+  courseSlug: string,
+  lessonSlug: string,
+): Promise<PublicLessonListenPageData | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_LESSON_LISTEN_PAGE_CACHE_TAG);
+
+  const data = await getPublicLessonListenMetadataData(courseSlug, lessonSlug);
+
+  if (!data) {
+    return null;
+  }
+
   return {
-    lesson,
-    lessonNumber: await getLessonNumber(courseSlug, lesson.id),
-    chunks: await loadAudioChunks(lesson.audioChunks),
+    ...data,
+    lessonNumber: await getLessonNumber(courseSlug, data.lesson.id),
   };
 }

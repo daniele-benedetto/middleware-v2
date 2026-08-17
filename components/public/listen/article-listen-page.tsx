@@ -1,3 +1,5 @@
+import { Suspense, type CSSProperties } from "react";
+
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { ListenEmptyState } from "@/components/public/listen/listen-empty-state";
 import { ListenPlayer } from "@/components/public/listen/listen-player";
@@ -6,11 +8,12 @@ import { PublicLink as Link } from "@/components/public/public-link";
 import { i18n } from "@/lib/i18n";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 
-import type { PublicArticleListenPageData } from "@/lib/public/server/article-listen-page";
-import type { CSSProperties } from "react";
+import type { AudioChunk } from "@/lib/audio/audio-chunks";
+import type { PublicArticleListenMetadataData } from "@/lib/public/server/article-listen-page";
 
 type ArticleListenPageProps = {
-  data: PublicArticleListenPageData;
+  data: PublicArticleListenMetadataData;
+  chunksPromise: Promise<AudioChunk[] | null>;
 };
 
 function formatArticleDate(value: string) {
@@ -35,8 +38,34 @@ function getArticleTitleTypographyClassName(title: string) {
   return "font-heading text-[clamp(48px,9.5vw,138px)] leading-[0.86] font-black tracking-[-0.06em] [text-wrap:balance]";
 }
 
-export function ArticleListenPage({ data }: ArticleListenPageProps) {
-  const { article, articleNumber, chunks } = data;
+async function ArticleListenPlayer({
+  article,
+  chunksPromise,
+}: Pick<PublicArticleListenMetadataData, "article"> & {
+  chunksPromise: Promise<AudioChunk[] | null>;
+}) {
+  const chunks = await chunksPromise;
+
+  return (
+    <ListenPlayer
+      contentKind="article"
+      contentId={article.id}
+      contentSlug={article.slug}
+      contentTitle={article.title}
+      contentUpdatedAt={article.updatedAt}
+      audioUrl={article.audioUrl ?? ""}
+      chunks={chunks ?? []}
+      emptyState={<ListenEmptyState contentKind="article" />}
+    />
+  );
+}
+
+function ListenPlayerFallback() {
+  return <div className="h-full" role="status" aria-label="Caricamento trascrizione" />;
+}
+
+export function ArticleListenPage({ data, chunksPromise }: ArticleListenPageProps) {
+  const { article, articleNumber } = data;
   const text = i18n.public.listenPage;
   const cardText = i18n.public.home.articleCard;
   const metaItems = [
@@ -79,16 +108,9 @@ export function ArticleListenPage({ data }: ArticleListenPageProps) {
           style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
         >
           <div className={`${publicContentClassName} h-full min-h-0 py-3 sm:py-8 lg:py-10`}>
-            <ListenPlayer
-              contentKind="article"
-              contentId={article.id}
-              contentSlug={article.slug}
-              contentTitle={article.title}
-              contentUpdatedAt={article.updatedAt}
-              audioUrl={article.audioUrl ?? ""}
-              chunks={chunks}
-              emptyState={<ListenEmptyState contentKind="article" />}
-            />
+            <Suspense fallback={<ListenPlayerFallback />}>
+              <ArticleListenPlayer article={article} chunksPromise={chunksPromise} />
+            </Suspense>
           </div>
         </section>
       </article>

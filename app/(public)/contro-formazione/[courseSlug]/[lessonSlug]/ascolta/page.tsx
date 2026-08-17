@@ -3,7 +3,11 @@ import { Suspense } from "react";
 
 import { LessonListenPage } from "@/components/public/listen/lesson-listen-page";
 import { i18n } from "@/lib/i18n";
-import { getPublicLessonListenPageData } from "@/lib/public/server/lesson-listen-page";
+import {
+  getPublicLessonListenChunks,
+  getPublicLessonListenMetadataData,
+  getPublicLessonListenPageData,
+} from "@/lib/public/server/lesson-listen-page";
 import { buildArticleListenMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
@@ -14,20 +18,22 @@ type PublicLessonListenRouteProps = {
 
 async function PublicLessonListenRouteContent({ params }: PublicLessonListenRouteProps) {
   const { courseSlug, lessonSlug } = await params;
-  const data = await getPublicLessonListenPageData(courseSlug, lessonSlug);
+  const dataPromise = getPublicLessonListenPageData(courseSlug, lessonSlug);
+  const chunksPromise = getPublicLessonListenChunks(courseSlug, lessonSlug);
+  const data = await dataPromise;
 
   if (!data) {
     notFound();
   }
 
-  return <LessonListenPage data={data} />;
+  return <LessonListenPage data={data} chunksPromise={chunksPromise} />;
 }
 
 export async function generateMetadata({
   params,
 }: PublicLessonListenRouteProps): Promise<Metadata> {
   const { courseSlug, lessonSlug } = await params;
-  const data = await getPublicLessonListenPageData(courseSlug, lessonSlug);
+  const data = await getPublicLessonListenMetadataData(courseSlug, lessonSlug);
   const text = i18n.public.lessonPage.listen;
 
   if (!data) {

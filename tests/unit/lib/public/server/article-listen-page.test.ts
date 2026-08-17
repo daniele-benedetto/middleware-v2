@@ -26,7 +26,10 @@ vi.mock("@/lib/server/modules/issues/service/public", () => ({
   publicIssuesService: publicIssuesServiceMock,
 }));
 
-import { getPublicArticleListenPageData } from "@/lib/public/server/article-listen-page";
+import {
+  getPublicArticleListenChunks,
+  getPublicArticleListenMetadataData,
+} from "@/lib/public/server/article-listen-page";
 import { mediaStorage } from "@/lib/server/storage/media-storage";
 
 const getMediaMock = vi.mocked(mediaStorage.get);
@@ -97,7 +100,7 @@ function createIssue() {
   };
 }
 
-describe("getPublicArticleListenPageData", () => {
+describe("public article listen data", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     publicIssuesServiceMock.getBySlug.mockResolvedValue(createIssue());
@@ -106,7 +109,18 @@ describe("getPublicArticleListenPageData", () => {
   it("returns null for published articles without audio", async () => {
     publicArticlesServiceMock.getBySlug.mockResolvedValue(createArticle({ audioUrl: null }));
 
-    await expect(getPublicArticleListenPageData("article-slug")).resolves.toBeNull();
+    await expect(getPublicArticleListenMetadataData("article-slug")).resolves.toBeNull();
+  });
+
+  it("does not load transcript chunks for metadata", async () => {
+    publicArticlesServiceMock.getBySlug.mockResolvedValue(
+      createArticle({ audioChunks: "/api/cms/media/blob?pathname=chunks%2Farticle.json" }),
+    );
+
+    const result = await getPublicArticleListenMetadataData("article-slug");
+
+    expect(result?.article.id).toBe("article-1");
+    expect(getMediaMock).not.toHaveBeenCalled();
   });
 
   it("loads and normalizes chunks from the private media json reference", async () => {
@@ -126,13 +140,10 @@ describe("getPublicArticleListenPageData", () => {
       etag: "etag-1",
     });
 
-    const result = await getPublicArticleListenPageData("article-slug");
+    const result = await getPublicArticleListenChunks("article-slug");
 
     expect(getMediaMock).toHaveBeenCalledWith("chunks/article.json");
-    expect(result?.articleNumber).toBe(1);
-    expect(result?.chunks).toEqual([
-      { id: "1", text: "Intro", start: 0, end: 4, confidence: null },
-    ]);
+    expect(result).toEqual([{ id: "1", text: "Intro", start: 0, end: 4, confidence: null }]);
   });
 
   it("keeps the page available when chunks cannot be loaded", async () => {
@@ -141,9 +152,8 @@ describe("getPublicArticleListenPageData", () => {
     );
     getMediaMock.mockRejectedValue(new Error("missing"));
 
-    const result = await getPublicArticleListenPageData("article-slug");
+    const result = await getPublicArticleListenChunks("article-slug");
 
-    expect(result?.article.audioUrl).toBeTruthy();
-    expect(result?.chunks).toEqual([]);
+    expect(result).toEqual([]);
   });
 });

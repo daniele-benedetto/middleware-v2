@@ -22,9 +22,9 @@ Scope: `app/(public)` and the public components/loaders it depends on. Prioritie
 - [x] Remove the per-course `getBySlug` fan-out and introduce explicit pagination or a deliberate display limit.
 - [x] Verify the course index and course detail do not issue N+1 reads.
 
-- [ ] Parallelize independent listen-page work after resolving the article or lesson.
-- [ ] In lesson listen pages, load course numbering and transcript chunks concurrently.
-- [ ] Move large transcript resolution behind a nested `Suspense` boundary or an on-demand client request so the playback shell can render first.
+- [x] Parallelize independent listen-page work after resolving the article or lesson.
+- [x] In lesson listen pages, load course numbering and transcript chunks concurrently.
+- [x] Move large transcript resolution behind a nested `Suspense` boundary or an on-demand client request so the playback shell can render first.
 - [ ] Measure TTFB and Flight payload for a representative long article and lesson transcript before and after the change.
 
 ## P1 - Audio player scalability
