@@ -105,7 +105,7 @@ rsync_args=(
   --exclude '*.local.*'
   --exclude 'backups/'
   --exclude 'coverage/'
-  --exclude 'tiles-incoming/'
+  --exclude 'tiles-incoming'
   --exclude '.turbo/'
   --exclude '.vercel/'
 )
@@ -172,7 +172,7 @@ rsync -a --delete \
   --exclude '.next/' \
   --exclude 'coverage/' \
   --exclude 'node_modules/' \
-  --exclude 'tiles-incoming/' \
+  --exclude 'tiles-incoming' \
   app/ "$app_backup/"
 cp compose.production.yml "compose.production.yml.backup.${tag}.${stamp}"
 prune_deploy_files "app-backup" 1 "app.backup.*"
