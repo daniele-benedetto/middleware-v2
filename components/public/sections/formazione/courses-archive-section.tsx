@@ -12,11 +12,11 @@ import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { cn } from "@/lib/utils";
 
-import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
+import type { PublicCourseDto } from "@/lib/server/modules/courses/dto/public";
 
 type CoursesArchiveSectionProps = {
-  courses: PublicCourseDetailDto[];
-  allCourses: PublicCourseDetailDto[];
+  courses: PublicCourseDto[];
+  allCourses: PublicCourseDto[];
 };
 
 function getArchiveGridClassName(count: number) {

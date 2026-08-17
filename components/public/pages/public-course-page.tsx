@@ -6,11 +6,14 @@ import { CoursesArchiveSection } from "@/components/public/sections/formazione/c
 import { i18n } from "@/lib/i18n";
 import { buildCoursePageJsonLd } from "@/lib/seo";
 
-import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
+import type {
+  PublicCourseDetailDto,
+  PublicCourseDto,
+} from "@/lib/server/modules/courses/dto/public";
 
 type PublicCoursePageProps = {
   course: PublicCourseDetailDto;
-  publishedCourses: PublicCourseDetailDto[];
+  publishedCourses: PublicCourseDto[];
   description?: string;
 };
 

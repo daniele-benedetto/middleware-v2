@@ -11,7 +11,10 @@ import type {
   PublicArticleDetailDto,
   PublicArticleSummaryDto,
 } from "@/lib/server/modules/articles/dto/public";
-import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
+import type {
+  PublicCourseDetailDto,
+  PublicCourseDto,
+} from "@/lib/server/modules/courses/dto/public";
 import type { PublicLessonDetailDto } from "@/lib/server/modules/lessons/dto/public";
 
 type BreadcrumbItem = {
@@ -221,7 +224,7 @@ export function buildArticlesArchiveJsonLd(
   ]);
 }
 
-export function buildFormazioneCollectionPageJsonLd(courses: PublicCourseDetailDto[]) {
+export function buildFormazioneCollectionPageJsonLd(courses: PublicCourseDto[]) {
   const archiveUrl = getCanonicalUrl("/contro-formazione");
 
   return {
@@ -313,7 +316,7 @@ export function buildIssuesArchiveJsonLd(issues: PublicIssueListItem[]) {
   ]);
 }
 
-export function buildFormazioneArchiveJsonLd(courses: PublicCourseDetailDto[]) {
+export function buildFormazioneArchiveJsonLd(courses: PublicCourseDto[]) {
   return buildJsonLdGraph([
     buildWebsiteJsonLd(),
     buildOrganizationJsonLd(),

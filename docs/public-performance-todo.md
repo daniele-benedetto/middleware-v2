@@ -17,10 +17,10 @@ Scope: `app/(public)` and the public components/loaders it depends on. Prioritie
 
 ## P1 - Data access and streaming
 
-- [ ] Replace `getPublishedCourseDetails` in `lib/public/server/course-page.ts` with one archive-specific query/projection.
-- [ ] Return only fields required by course archive cards, including any required cover data and lesson count.
-- [ ] Remove the per-course `getBySlug` fan-out and introduce explicit pagination or a deliberate display limit.
-- [ ] Verify the course index and course detail do not issue N+1 reads.
+- [x] Replace `getPublishedCourseDetails` in `lib/public/server/course-page.ts` with one archive-specific query/projection.
+- [x] Return only fields required by course archive cards, including any required cover data and lesson count.
+- [x] Remove the per-course `getBySlug` fan-out and introduce explicit pagination or a deliberate display limit.
+- [x] Verify the course index and course detail do not issue N+1 reads.
 
 - [ ] Parallelize independent listen-page work after resolving the article or lesson.
 - [ ] In lesson listen pages, load course numbering and transcript chunks concurrently.
@@ -54,7 +54,8 @@ Scope: `app/(public)` and the public components/loaders it depends on. Prioritie
 
 - [x] Run `pnpm typecheck` and `pnpm lint` after each implementation group.
 - [x] Run `pnpm test:run`.
-- [ ] Add targeted unit tests for cache boundaries, archive projections, and transcript windowing.
+- [x] Add targeted unit tests for the course archive projection.
+- [ ] Add targeted unit tests for cache boundaries and transcript windowing.
 - [x] Run `pnpm build` after cache-related work to validate Next.js 16 Cache Components constraints.
 - [ ] Capture production-like traces for cold and warm requests, including home, article, course archive, course detail, and both listen routes.
 - [ ] Track TTFB, database/service call count, Flight payload size, client JS, LCP, INP, and transcript DOM node count as acceptance metrics.

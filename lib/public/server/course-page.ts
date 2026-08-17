@@ -10,18 +10,20 @@ import { publicLessonsService } from "@/lib/server/modules/lessons/service/publi
 import type {
   PublicCourseDetailDto,
   PublicCourseLessonSummaryDto,
+  PublicCourseDto,
 } from "@/lib/server/modules/courses/dto/public";
 import type { PublicLessonDetailDto } from "@/lib/server/modules/lessons/dto/public";
 
 export const PUBLIC_COURSE_PAGE_CACHE_TAG = "public-course";
+export const PUBLIC_COURSE_ARCHIVE_PAGE_SIZE = 100;
 
 export type PublicFormazioneIndexData = {
-  courses: PublicCourseDetailDto[];
+  courses: PublicCourseDto[];
 };
 
 export type PublicCoursePageData = {
   course: PublicCourseDetailDto | null;
-  publishedCourses: PublicCourseDetailDto[];
+  publishedCourses: PublicCourseDto[];
   description?: string;
 };
 
@@ -80,11 +82,11 @@ async function getLessonBySlug(courseSlug: string, lessonSlug: string) {
   }
 }
 
-async function getPublishedCourseDetails() {
-  const courses = await publicCoursesService.listPublishedItems({ page: 1, pageSize: 100 });
-  const detailed = await Promise.all(courses.map((course) => getCourseBySlug(course.slug)));
-
-  return detailed.filter((course): course is PublicCourseDetailDto => Boolean(course));
+async function getPublishedCourseArchive() {
+  return publicCoursesService.listPublishedItems({
+    page: 1,
+    pageSize: PUBLIC_COURSE_ARCHIVE_PAGE_SIZE,
+  });
 }
 
 export async function getPublicFormazioneIndexData(): Promise<PublicFormazioneIndexData> {
@@ -93,7 +95,7 @@ export async function getPublicFormazioneIndexData(): Promise<PublicFormazioneIn
   cacheTag(PUBLIC_COURSE_PAGE_CACHE_TAG);
 
   return {
-    courses: await getPublishedCourseDetails(),
+    courses: await getPublishedCourseArchive(),
   };
 }
 
@@ -104,7 +106,7 @@ export async function getPublicCoursePageData(slug: string): Promise<PublicCours
 
   const [course, publishedCourses] = await Promise.all([
     getCourseBySlug(slug),
-    getPublishedCourseDetails(),
+    getPublishedCourseArchive(),
   ]);
 
   return {

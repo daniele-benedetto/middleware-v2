@@ -5,10 +5,10 @@ import { getCourseArchiveViewModels } from "@/components/public/sections/formazi
 import { i18n } from "@/lib/i18n";
 import { buildFormazioneArchiveJsonLd } from "@/lib/seo";
 
-import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
+import type { PublicCourseDto } from "@/lib/server/modules/courses/dto/public";
 
 type PublicFormazioneIndexPageProps = {
-  courses: PublicCourseDetailDto[];
+  courses: PublicCourseDto[];
 };
 
 export function PublicFormazioneIndexPage({ courses }: PublicFormazioneIndexPageProps) {
