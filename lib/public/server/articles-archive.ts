@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cacheLife, cacheTag } from "next/cache";
+
 import { publicArticlesService } from "@/lib/server/modules/articles/service/public";
 
 import type { PublicArticleSummaryDto } from "@/lib/server/modules/articles/dto/public";
@@ -11,6 +13,10 @@ export type PublicArticlesArchiveData = {
 };
 
 export async function getPublicArticlesArchiveData(): Promise<PublicArticlesArchiveData> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_ARTICLES_ARCHIVE_CACHE_TAG);
+
   try {
     const articles = await publicArticlesService.listPublished();
     return { articles };

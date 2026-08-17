@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cacheLife, cacheTag } from "next/cache";
+
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicCoursesService } from "@/lib/server/modules/courses/service/public";
@@ -86,12 +88,20 @@ async function getPublishedCourseDetails() {
 }
 
 export async function getPublicFormazioneIndexData(): Promise<PublicFormazioneIndexData> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_COURSE_PAGE_CACHE_TAG);
+
   return {
     courses: await getPublishedCourseDetails(),
   };
 }
 
 export async function getPublicCoursePageData(slug: string): Promise<PublicCoursePageData> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_COURSE_PAGE_CACHE_TAG);
+
   const [course, publishedCourses] = await Promise.all([
     getCourseBySlug(slug),
     getPublishedCourseDetails(),
@@ -108,6 +118,10 @@ export async function getPublicLessonPageData(
   courseSlug: string,
   lessonSlug: string,
 ): Promise<PublicLessonPageData> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_COURSE_PAGE_CACHE_TAG);
+
   const [lesson, course] = await Promise.all([
     getLessonBySlug(courseSlug, lessonSlug),
     getCourseBySlug(courseSlug),

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cacheLife, cacheTag } from "next/cache";
+
 import { prisma } from "@/lib/prisma";
 import {
   PUBLIC_STATIC_PAGE_SLUGS,
@@ -148,6 +150,10 @@ async function resolveOrEmpty(
 }
 
 export async function getPublicSitemapData(): Promise<PublicSitemapData> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_SITEMAP_CACHE_TAG);
+
   const [homeLastModified, articles, issues, courses, lessons, staticPages] = await Promise.all([
     getHomeLastModified().catch((error) => {
       console.error("sitemap home lastModified failed", error);

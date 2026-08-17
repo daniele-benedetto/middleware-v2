@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cacheLife, cacheTag } from "next/cache";
+
 import { getPublicStaticPagePath, isPublicStaticPageSlug } from "@/lib/public/pages/static-pages";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
@@ -29,10 +31,12 @@ async function getPageBySlug(slug: PublicStaticPageSlug) {
   }
 }
 
-export async function getPublicStaticPageData(slug: string): Promise<PublicStaticPageData> {
-  if (!isPublicStaticPageSlug(slug)) {
-    return { page: null, canonicalPath: `/${slug}` };
-  }
+async function getCachedPublicStaticPageData(
+  slug: PublicStaticPageSlug,
+): Promise<PublicStaticPageData> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_PAGE_CACHE_TAG);
 
   const page = await getPageBySlug(slug);
 
@@ -41,4 +45,12 @@ export async function getPublicStaticPageData(slug: string): Promise<PublicStati
     description: page ? page.excerpt || extractPlainText(page.contentRich) || undefined : undefined,
     canonicalPath: getPublicStaticPagePath(slug),
   };
+}
+
+export async function getPublicStaticPageData(slug: string): Promise<PublicStaticPageData> {
+  if (!isPublicStaticPageSlug(slug)) {
+    return { page: null, canonicalPath: `/${slug}` };
+  }
+
+  return getCachedPublicStaticPageData(slug);
 }

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cacheLife, cacheTag } from "next/cache";
+
 import { parseAudioChunks, type AudioChunk } from "@/lib/audio/audio-chunks";
 import { extractCmsMediaPathname } from "@/lib/media/blob";
 import { ApiError } from "@/lib/server/http/api-error";
@@ -107,6 +109,10 @@ export async function getPublicLessonListenPageData(
   courseSlug: string,
   lessonSlug: string,
 ): Promise<PublicLessonListenPageData | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_LESSON_LISTEN_PAGE_CACHE_TAG);
+
   const lesson = await getLessonBySlug(courseSlug, lessonSlug);
 
   if (!lesson?.audioUrl) {

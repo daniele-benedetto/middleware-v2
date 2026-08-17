@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cacheLife, cacheTag } from "next/cache";
+
 import {
   getPublicIssueDescription,
   getPublicIssueLeadImage,
@@ -34,6 +36,10 @@ async function getIssueBySlug(slug: string) {
 }
 
 export async function getPublicIssuePageData(slug: string): Promise<PublicIssuePageData> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
+
   const [issue, publishedIssues] = await Promise.all([
     getIssueBySlug(slug),
     getPublicPublishedIssues("public.getPublicIssuePageData"),

@@ -4,16 +4,16 @@ Scope: `app/(public)` and the public components/loaders it depends on. Prioritie
 
 ## P0 - Cache and request deduplication
 
-- [ ] Add `'use cache'`, an explicit `cacheLife`, and the existing `cacheTag` values to stable public read loaders in `lib/public/server/*`.
-- [ ] Keep request-dependent values outside cached functions; cache granular resources by slug and independent archive/navigation loaders separately.
-- [ ] Cover home, articles, issues, courses, lessons, static pages, navigation, legal-consent version, sitemap, and listen-page metadata.
-- [ ] Verify CMS mutations invalidate every affected cache tag through `lib/public/server/revalidation.ts`.
+- [x] Add `'use cache'`, an explicit `cacheLife`, and the existing `cacheTag` values to stable public read loaders in `lib/public/server/*`.
+- [x] Keep request-dependent values outside cached functions; cache granular resources by slug and independent archive/navigation loaders separately.
+- [x] Cover home, articles, issues, courses, lessons, static pages, navigation, legal-consent version, sitemap, and listen-page metadata.
+- [x] Verify CMS mutations invalidate every affected cache tag through `lib/public/server/revalidation.ts`.
 - [ ] Confirm a repeated public request no longer executes database/service reads while its cache entry is valid.
 
-- [ ] Deduplicate loaders shared by `generateMetadata` and route rendering.
-- [ ] Use the cached public loaders as the primary deduplication mechanism.
-- [ ] Use `React.cache()` only for request-scoped loaders that must remain uncached.
-- [ ] Verify one request to each dynamic route performs its underlying resource lookup once.
+- [x] Deduplicate loaders shared by `generateMetadata` and route rendering.
+- [x] Use the cached public loaders as the primary deduplication mechanism.
+- [x] Use `React.cache()` only for request-scoped loaders that must remain uncached.
+- [x] Verify one request to each dynamic route performs its underlying resource lookup once.
 
 ## P1 - Data access and streaming
 
@@ -52,8 +52,9 @@ Scope: `app/(public)` and the public components/loaders it depends on. Prioritie
 
 ## Validation
 
-- [ ] Run `pnpm typecheck` and `pnpm lint` after each implementation group.
-- [ ] Run `pnpm test:run` and add targeted unit tests for cache boundaries, archive projections, and transcript windowing.
-- [ ] Run `pnpm build` after cache-related work to validate Next.js 16 Cache Components constraints.
+- [x] Run `pnpm typecheck` and `pnpm lint` after each implementation group.
+- [x] Run `pnpm test:run`.
+- [ ] Add targeted unit tests for cache boundaries, archive projections, and transcript windowing.
+- [x] Run `pnpm build` after cache-related work to validate Next.js 16 Cache Components constraints.
 - [ ] Capture production-like traces for cold and warm requests, including home, article, course archive, course detail, and both listen routes.
 - [ ] Track TTFB, database/service call count, Flight payload size, client JS, LCP, INP, and transcript DOM node count as acceptance metrics.

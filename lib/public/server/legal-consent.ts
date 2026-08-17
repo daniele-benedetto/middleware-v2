@@ -2,12 +2,19 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
+import { cacheLife, cacheTag } from "next/cache";
+
+import { PUBLIC_PAGE_CACHE_TAG } from "@/lib/public/server/page";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicPagesService } from "@/lib/server/modules/pages/service/public";
 
 const legalPolicySlugs = ["privacy-policy", "cookie-policy"] as const;
 
 export async function getLegalConsentVersion(): Promise<string> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(PUBLIC_PAGE_CACHE_TAG);
+
   const pages = await Promise.all(
     legalPolicySlugs.map(async (slug) => {
       try {
