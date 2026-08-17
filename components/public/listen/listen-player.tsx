@@ -4,8 +4,9 @@ import { BookmarkIcon, PauseIcon, PlayIcon, RotateCcwIcon, RotateCwIcon } from "
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
+  DEFAULT_VISIBLE_AUDIO_CHUNK_COUNT,
   formatAudioTime,
-  getActiveAudioChunk,
+  getCurrentAudioChunkIndex,
   getVisibleAudioChunks,
   type AudioChunk,
   type VisibleAudioChunk,
@@ -45,9 +46,12 @@ type ListenPlayerProps = {
 
 type SyncedTranscriptProps = {
   chunks: VisibleAudioChunk[];
+  totalChunks: number;
+  isExpanded: boolean;
   bookmarkedChunkIds: Set<string>;
   isScrubbing: boolean;
   onChunkSelect: (chunk: AudioChunk) => void;
+  onExpandedChange: () => void;
   emptyState: ReactNode;
 };
 
@@ -107,9 +111,12 @@ function isResumeCandidate(record: AudioProgressRecord) {
 
 function SyncedTranscript({
   chunks,
+  totalChunks,
+  isExpanded,
   bookmarkedChunkIds,
   isScrubbing,
   onChunkSelect,
+  onExpandedChange,
   emptyState,
 }: SyncedTranscriptProps) {
   const text = i18n.public.listenPage;
@@ -147,6 +154,15 @@ function SyncedTranscript({
     <section className="min-h-0 overflow-hidden" role="group" aria-label={text.syncedText}>
       <div ref={scrollContainerRef} className="h-full overflow-y-auto pr-1">
         <div className="space-y-2 py-2 sm:space-y-3 sm:py-5">
+          {totalChunks > DEFAULT_VISIBLE_AUDIO_CHUNK_COUNT ? (
+            <button
+              type="button"
+              onClick={onExpandedChange}
+              className="font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            >
+              {isExpanded ? "Riduci trascrizione" : "Mostra trascrizione completa"}
+            </button>
+          ) : null}
           {chunks.map((chunk) => {
             const isActive = chunk.position === "active";
             const isBookmarked = bookmarkedChunkIds.has(chunk.id);
@@ -387,6 +403,8 @@ export function ListenPlayer({
   const completedTrackedRef = useRef(false);
   const trackedMilestonesRef = useRef(new Set<number>());
   const lastSavedBucketRef = useRef(-1);
+  const playbackFrameRef = useRef<number | null>(null);
+  const pendingPlaybackTimeRef = useRef(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [scrubTime, setScrubTime] = useState<number | null>(null);
   const [isScrubbing, setIsScrubbing] = useState(false);
@@ -397,17 +415,19 @@ export function ListenPlayer({
   const [bookmarks, setBookmarks] = useState<AudioBookmarkRecord[]>([]);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [audioError, setAudioError] = useState(false);
+  const [isTranscriptExpanded, setIsTranscriptExpanded] = useState(false);
   const displayedTime = scrubTime ?? currentTime;
   const transcriptTime = isScrubbing ? currentTime : displayedTime;
-  const activeChunk =
-    getActiveAudioChunk(chunks, transcriptTime) ??
-    chunks.findLast((chunk) => transcriptTime >= chunk.end) ??
-    chunks[0] ??
-    null;
-  const activeChunkId = activeChunk?.id ?? null;
+  const activeChunkIndex = getCurrentAudioChunkIndex(chunks, transcriptTime);
+  const activeChunk = chunks[activeChunkIndex] ?? null;
   const visibleChunks = useMemo(
-    () => getVisibleAudioChunks(chunks, activeChunkId),
-    [chunks, activeChunkId],
+    () =>
+      getVisibleAudioChunks(
+        chunks,
+        activeChunkIndex,
+        isTranscriptExpanded ? chunks.length : DEFAULT_VISIBLE_AUDIO_CHUNK_COUNT,
+      ),
+    [activeChunkIndex, chunks, isTranscriptExpanded],
   );
   const resolvedDuration = duration > 0 ? duration : (chunks.at(-1)?.end ?? 0);
   const bookmarkedChunkIds = useMemo(
@@ -461,6 +481,14 @@ export function ListenPlayer({
     durationRef.current = resolvedDuration;
     hasInteractedRef.current = hasInteracted;
   }, [currentTime, hasInteracted, resolvedDuration]);
+
+  useEffect(() => {
+    return () => {
+      if (playbackFrameRef.current !== null) {
+        window.cancelAnimationFrame(playbackFrameRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -548,7 +576,10 @@ export function ListenPlayer({
 
   const syncDuration = (audio: HTMLAudioElement) => {
     const nextDuration = getFiniteDuration(audio);
-    if (nextDuration > 0) setDuration(nextDuration);
+    if (nextDuration > 0 && nextDuration !== durationRef.current) {
+      durationRef.current = nextDuration;
+      setDuration(nextDuration);
+    }
   };
 
   const getPlaybackTime = () => {
@@ -645,7 +676,13 @@ export function ListenPlayer({
     }
 
     currentTimeRef.current = audioTime;
-    setCurrentTime(audioTime);
+    pendingPlaybackTimeRef.current = audioTime;
+    if (playbackFrameRef.current === null) {
+      playbackFrameRef.current = window.requestAnimationFrame(() => {
+        playbackFrameRef.current = null;
+        setCurrentTime(pendingPlaybackTimeRef.current);
+      });
+    }
 
     const nextDuration = durationRef.current || getFiniteDuration(audio) || resolvedDuration;
     if (nextDuration <= 0) return;
@@ -799,9 +836,12 @@ export function ListenPlayer({
       <div className="min-h-0 bg-background sm:order-2">
         <SyncedTranscript
           chunks={visibleChunks}
+          totalChunks={chunks.length}
+          isExpanded={isTranscriptExpanded}
           bookmarkedChunkIds={bookmarkedChunkIds}
           isScrubbing={isScrubbing}
           onChunkSelect={(chunk) => handleSeekTo(chunk.start)}
+          onExpandedChange={() => setIsTranscriptExpanded((current) => !current)}
           emptyState={emptyState}
         />
       </div>

@@ -10,6 +10,8 @@ export type VisibleAudioChunk = AudioChunk & {
   position: "previous" | "active" | "next";
 };
 
+export const DEFAULT_VISIBLE_AUDIO_CHUNK_COUNT = 24;
+
 function resolveAudioChunkItems(value: unknown) {
   if (Array.isArray(value)) return value;
   if (!value || typeof value !== "object") return [];
@@ -55,20 +57,67 @@ export function parseAudioChunks(value: unknown): AudioChunk[] {
 }
 
 export function getActiveAudioChunk(chunks: AudioChunk[], currentTime: number) {
-  return chunks.find((chunk) => currentTime >= chunk.start && currentTime < chunk.end) ?? null;
+  const index = getActiveAudioChunkIndex(chunks, currentTime);
+  return index >= 0 ? (chunks[index] ?? null) : null;
+}
+
+export function getActiveAudioChunkIndex(chunks: AudioChunk[], currentTime: number) {
+  let low = 0;
+  let high = chunks.length - 1;
+
+  while (low <= high) {
+    const middle = Math.floor((low + high) / 2);
+    const chunk = chunks[middle];
+
+    if (!chunk) return -1;
+    if (currentTime < chunk.start) {
+      high = middle - 1;
+    } else if (currentTime >= chunk.end) {
+      low = middle + 1;
+    } else {
+      return middle;
+    }
+  }
+
+  return -1;
+}
+
+export function getCurrentAudioChunkIndex(chunks: AudioChunk[], currentTime: number) {
+  const activeIndex = getActiveAudioChunkIndex(chunks, currentTime);
+  if (activeIndex >= 0) return activeIndex;
+
+  let low = 0;
+  let high = chunks.length - 1;
+
+  while (low <= high) {
+    const middle = Math.floor((low + high) / 2);
+    const chunk = chunks[middle];
+
+    if (!chunk) return 0;
+    if (chunk.start <= currentTime) {
+      low = middle + 1;
+    } else {
+      high = middle - 1;
+    }
+  }
+
+  return Math.max(0, high);
 }
 
 export function getVisibleAudioChunks(
   chunks: AudioChunk[],
-  activeChunkId: string | null,
+  activeChunkIndex: number,
+  maximumCount = DEFAULT_VISIBLE_AUDIO_CHUNK_COUNT,
 ): VisibleAudioChunk[] {
   if (chunks.length === 0) return [];
 
-  const activeIndex = activeChunkId ? chunks.findIndex((chunk) => chunk.id === activeChunkId) : 0;
-  const boundedActiveIndex = activeIndex < 0 ? 0 : activeIndex;
-  const startIndex = Math.max(0, boundedActiveIndex - 1);
+  const boundedActiveIndex = Math.min(Math.max(activeChunkIndex, 0), chunks.length - 1);
+  const safeMaximumCount = Math.max(1, maximumCount);
+  const previousCount = Math.min(1, safeMaximumCount - 1);
+  const startIndex = Math.max(0, boundedActiveIndex - previousCount);
+  const endIndex = Math.min(chunks.length, startIndex + safeMaximumCount);
 
-  return chunks.slice(startIndex).map((chunk, index) => {
+  return chunks.slice(startIndex, endIndex).map((chunk, index) => {
     const absoluteIndex = startIndex + index;
 
     return {

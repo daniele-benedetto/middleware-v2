@@ -1,6 +1,8 @@
 import {
   formatAudioTime,
   getActiveAudioChunk,
+  getActiveAudioChunkIndex,
+  getCurrentAudioChunkIndex,
   getVisibleAudioChunks,
   parseAudioChunks,
 } from "@/lib/audio/audio-chunks";
@@ -48,7 +50,7 @@ describe("audio chunks", () => {
       { id: "d", text: "D", start: 15, end: 20 },
     ]);
 
-    expect(getVisibleAudioChunks(chunks, "c").map((chunk) => [chunk.id, chunk.position])).toEqual([
+    expect(getVisibleAudioChunks(chunks, 2).map((chunk) => [chunk.id, chunk.position])).toEqual([
       ["b", "previous"],
       ["c", "active"],
       ["d", "next"],
@@ -62,11 +64,26 @@ describe("audio chunks", () => {
       { id: "c", text: "C", start: 10, end: 15 },
     ]);
 
-    expect(getVisibleAudioChunks(chunks, "a").map((chunk) => [chunk.id, chunk.position])).toEqual([
+    expect(getVisibleAudioChunks(chunks, 0).map((chunk) => [chunk.id, chunk.position])).toEqual([
       ["a", "active"],
       ["b", "next"],
       ["c", "next"],
     ]);
+  });
+
+  it("uses binary search and keeps the rendered transcript window bounded", () => {
+    const chunks = Array.from({ length: 100 }, (_, index) => ({
+      id: String(index),
+      text: `Chunk ${index}`,
+      start: index * 5,
+      end: (index + 1) * 5,
+      confidence: null,
+    }));
+
+    expect(getActiveAudioChunkIndex(chunks, 250)).toBe(50);
+    expect(getCurrentAudioChunkIndex(chunks, 252.5)).toBe(50);
+    expect(getCurrentAudioChunkIndex(chunks, 503)).toBe(99);
+    expect(getVisibleAudioChunks(chunks, 50, 24)).toHaveLength(24);
   });
 
   it("formats audio time as minutes and seconds", () => {

@@ -29,10 +29,10 @@ Scope: `app/(public)` and the public components/loaders it depends on. Prioritie
 
 ## P1 - Audio player scalability
 
-- [ ] Replace the unbounded transcript rendered by `getVisibleAudioChunks` with a bounded window around the active chunk or a virtualized list.
-- [ ] Preserve accessible transcript navigation and provide an explicit way to reveal additional transcript content if needed.
-- [ ] Index chunks for active-chunk lookup instead of linear searches on each playback update.
-- [ ] Coalesce transcript visual state updates to animation frames or a lower display frequency while retaining audio timing in refs.
+- [x] Replace the unbounded transcript rendered by `getVisibleAudioChunks` with a bounded window around the active chunk or a virtualized list.
+- [x] Preserve accessible transcript navigation and provide an explicit way to reveal additional transcript content if needed.
+- [x] Index chunks for active-chunk lookup instead of linear searches on each playback update.
+- [x] Coalesce transcript visual state updates to animation frames or a lower display frequency while retaining audio timing in refs.
 - [ ] Test long transcripts for smooth playback, bounded DOM size, seeking, bookmarks, keyboard navigation, and reduced-motion behavior.
 
 ## P2 - Shared shell and client bundle
@@ -55,7 +55,8 @@ Scope: `app/(public)` and the public components/loaders it depends on. Prioritie
 - [x] Run `pnpm typecheck` and `pnpm lint` after each implementation group.
 - [x] Run `pnpm test:run`.
 - [x] Add targeted unit tests for the course archive projection.
-- [ ] Add targeted unit tests for cache boundaries and transcript windowing.
+- [x] Add targeted unit tests for transcript windowing.
+- [ ] Add targeted unit tests for cache boundaries.
 - [x] Run `pnpm build` after cache-related work to validate Next.js 16 Cache Components constraints.
 - [ ] Capture production-like traces for cold and warm requests, including home, article, course archive, course detail, and both listen routes.
 - [ ] Track TTFB, database/service call count, Flight payload size, client JS, LCP, INP, and transcript DOM node count as acceptance metrics.
