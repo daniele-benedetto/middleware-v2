@@ -191,8 +191,8 @@ build_keys = [
 def build_value(key: str) -> str:
     value = values[key]
     if key in {'DATABASE_URL', 'POSTGRES_URL', 'PRISMA_DATABASE_URL'}:
-        value = value.replace('@postgres:5432/', '@host.docker.internal:15432/')
-        value = value.replace('@postgres/', '@host.docker.internal:15432/')
+        value = value.replace('@postgres:5432/', '@127.0.0.1:15432/')
+        value = value.replace('@postgres/', '@127.0.0.1:15432/')
     return value
 
 build_env_path.write_text('\n'.join(f'export {key}={shlex.quote(build_value(key))}' for key in build_keys if key in values) + '\n')
@@ -207,21 +207,13 @@ if ! command -v socat >/dev/null 2>&1; then
   sudo -n apt-get install -y socat
 fi
 postgres_ip="$(docker inspect -f '{{with index .NetworkSettings.Networks "middleware_internal"}}{{.IPAddress}}{{end}}' middleware-postgres-1)"
-docker_bridge_gateway="$(docker network inspect bridge -f '{{(index .IPAM.Config 0).Gateway}}')"
 test -n "$postgres_ip"
-test -n "$docker_bridge_gateway"
-socat "TCP-LISTEN:15432,bind=${docker_bridge_gateway},fork,reuseaddr" "TCP:${postgres_ip}:5432" &
+socat "TCP-LISTEN:15432,bind=127.0.0.1,fork,reuseaddr" "TCP:${postgres_ip}:5432" &
 proxy_pid="$!"
 sleep 1
 
-if ! docker buildx inspect middleware-host-builder >/dev/null 2>&1; then
-  docker buildx create --name middleware-host-builder --driver docker-container --use >/dev/null
-else
-  docker buildx use middleware-host-builder
-fi
-docker buildx inspect --bootstrap >/dev/null
-docker buildx build --builder middleware-host-builder --load --add-host "host.docker.internal:${docker_bridge_gateway}" --target migrate -t "middleware-migrate:${tag}" app
-docker buildx build --builder middleware-host-builder --load --add-host "host.docker.internal:${docker_bridge_gateway}" --secret "id=build_env,src=${build_env}" --target runner -t "middleware-app:${tag}" app
+DOCKER_BUILDKIT=1 docker build --network host --target migrate -t "middleware-migrate:${tag}" app
+DOCKER_BUILDKIT=1 docker build --network host --secret "id=build_env,src=${build_env}" --target runner -t "middleware-app:${tag}" app
 
 docker run --rm --network middleware_internal --env-file "$migrate_env" "middleware-migrate:${tag}" pnpm prisma:migrate:deploy
 
