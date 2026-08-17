@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { PublicLessonPage } from "@/components/public/pages";
+import { PublicLessonPage } from "@/components/public/pages/public-lesson-page";
 import { i18n } from "@/lib/i18n";
 import { getPublicLessonPageData } from "@/lib/public/server/course-page";
 import { buildLessonMetadata, buildPageMetadata } from "@/lib/seo";

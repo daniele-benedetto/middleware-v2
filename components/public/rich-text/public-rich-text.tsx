@@ -3,8 +3,8 @@ import { Fragment, type ReactNode } from "react";
 
 import { publicTypography } from "@/components/public/primitives";
 import { TrackedExternalLink } from "@/components/public/tracked-external-link";
-import { resolveArticleImageSettings } from "@/lib/articles/image-settings";
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
+import { resolvePublicImageSettings } from "@/lib/public/image-settings";
 import {
   isExternalRichTextLink,
   isPublicRichTextMarkType,
@@ -81,7 +81,7 @@ function getImageAttrs(node: RichTextNode) {
     src: resolvePublicMediaUrl(attrs.src) ?? attrs.src,
     alt: typeof attrs.alt === "string" ? attrs.alt : "",
     title: typeof attrs.title === "string" ? attrs.title : undefined,
-    settings: resolveArticleImageSettings(attrs.imageSettings),
+    settings: resolvePublicImageSettings(attrs.imageSettings),
   };
 }
 

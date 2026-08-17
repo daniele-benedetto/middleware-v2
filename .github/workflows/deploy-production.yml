@@ -144,9 +144,13 @@ jobs:
           docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select migration_name, finished_at from \"_prisma_migrations\" order by finished_at;"'
           mkdir -p backups
           backup_file="backups/postgres-predeploy-${DEPLOY_COMMIT}-$(date -u +%Y%m%dT%H%M%SZ).dump"
-          docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-acl' > "$backup_file"
-          test -s "$backup_file"
-          ls -lh "$backup_file"
+           docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-acl' > "$backup_file"
+           test -s "$backup_file"
+           mapfile -t predeploy_backups < <(ls -1t backups/postgres-predeploy-*.dump 2>/dev/null || true)
+           for stale_backup in "${predeploy_backups[@]:7}"; do
+             rm -f -- "$stale_backup"
+           done
+           ls -lh "$backup_file"
           REMOTE
 
       - name: Pull images, migrate and restart app
@@ -194,8 +198,21 @@ jobs:
             "$DEPLOY_COMMIT" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$IMAGE_PREFIX" "$DEPLOY_COMMIT" > DEPLOY_SOURCE
           grep -F "commit=$DEPLOY_COMMIT" DEPLOY_SOURCE
 
-          docker image prune -f >/dev/null 2>&1 || true
-          REMOTE
+           prune_tagged_images() {
+             local repository="$1"
+             local keep="$2"
+             local active_reference="$3"
+             local references=()
+
+             mapfile -t references < <(docker image ls --format '{{.Repository}}:{{.Tag}}' --filter "reference=${repository}:*")
+             for reference in "${references[@]:keep}"; do
+               [ "$reference" = "$active_reference" ] || docker image rm "$reference" >/dev/null 2>&1 || true
+             done
+           }
+
+           prune_tagged_images "$IMAGE_PREFIX/app" 2 "$IMAGE_PREFIX/app:$DEPLOY_COMMIT"
+           prune_tagged_images "$IMAGE_PREFIX/migrate" 1 ""
+           REMOTE
 
       - name: Smoke test
         run: |

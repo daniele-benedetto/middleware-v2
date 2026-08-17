@@ -1,4 +1,4 @@
-import { PublicHomePage } from "@/components/public/pages";
+import { PublicHomePage } from "@/components/public/pages/public-home-page";
 import { getPublicHomeData } from "@/lib/public/server/home";
 import { buildPageMetadata } from "@/lib/seo";
 

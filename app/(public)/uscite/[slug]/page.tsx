@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { PublicIssuePage as PublicIssuePageView } from "@/components/public/pages";
+import { PublicIssuePage as PublicIssuePageView } from "@/components/public/pages/public-issue-page";
 import { i18n } from "@/lib/i18n";
 import { getPublicIssuePageData } from "@/lib/public/server/issue-page";
 import { buildPageMetadata } from "@/lib/seo";

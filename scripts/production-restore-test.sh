@@ -66,3 +66,8 @@ trap - EXIT
 } >> "$manifest"
 
 printf 'restore_manifest=%s\n' "$manifest"
+
+mapfile -t restore_manifests < <(ls -1t "${manifest_dir}"/restore-test-*.txt 2>/dev/null || true)
+for stale_manifest in "${restore_manifests[@]:24}"; do
+  rm -f -- "$stale_manifest"
+done

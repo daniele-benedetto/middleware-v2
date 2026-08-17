@@ -1,4 +1,4 @@
-import { PublicFormazioneIndexPage } from "@/components/public/pages";
+import { PublicFormazioneIndexPage } from "@/components/public/pages/public-formazione-index-page";
 import { i18n } from "@/lib/i18n";
 import { getPublicFormazioneIndexData } from "@/lib/public/server/course-page";
 import { buildPageMetadata } from "@/lib/seo";

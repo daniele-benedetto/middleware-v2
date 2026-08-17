@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { PublicStaticPage } from "@/components/public/pages";
+import { PublicStaticPage } from "@/components/public/pages/public-static-page";
 import { i18n } from "@/lib/i18n";
 import { getPublicStaticPageData } from "@/lib/public/server/page";
 import { buildPageMetadata } from "@/lib/seo";

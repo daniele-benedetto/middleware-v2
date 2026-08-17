@@ -1,14 +1,22 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 
-import { PublicFullscreenMenu } from "@/components/public/header/public-fullscreen-menu";
 import { PublicMenuButton } from "@/components/public/header/public-menu-button";
 import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 
 import type { PublicMenuItem } from "@/components/public/header/public-fullscreen-menu";
+
+const PublicFullscreenMenu = dynamic(
+  () =>
+    import("@/components/public/header/public-fullscreen-menu").then(
+      (module) => module.PublicFullscreenMenu,
+    ),
+  { ssr: false },
+);
 
 type PublicMenuControllerProps = {
   menuItems: PublicMenuItem[];

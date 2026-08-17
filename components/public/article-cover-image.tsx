@@ -1,7 +1,7 @@
 import Image from "next/image";
 
-import { resolveArticleImageSettings } from "@/lib/articles/image-settings";
 import { editorialImageAlt } from "@/lib/public/format/image";
+import { resolvePublicImageSettings } from "@/lib/public/image-settings";
 import { cn } from "@/lib/utils";
 
 type ArticleCoverImageProps = {
@@ -29,7 +29,7 @@ export function ArticleCoverImage({
   className,
   forceCover = false,
 }: ArticleCoverImageProps) {
-  const imageSettings = resolveArticleImageSettings(settings);
+  const imageSettings = resolvePublicImageSettings(settings);
 
   return (
     <Image

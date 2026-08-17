@@ -1,4 +1,4 @@
-import { CmsSystemActionLink, CmsSystemScreen } from "@/components/cms/common";
+import { CmsSystemActionLink, CmsSystemScreen } from "@/components/cms/common/system-screen";
 import { i18n } from "@/lib/i18n";
 
 export default function NotFound() {

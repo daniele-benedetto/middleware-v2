@@ -326,15 +326,15 @@ Regole dello script manuale:
 - Default `--dry-run`: esegue check locali, healthcheck VPS e `rsync --dry-run`, ma non modifica production.
 - `--execute` e obbligatorio per deploy reale.
 - `--allow-dirty` e obbligatorio se il worktree locale contiene modifiche non committate; in quel caso `DEPLOY_SOURCE` deve registrare `dirty=true`.
-- Prima del deploy reale crea dump DB app verificato con `test -s`, backup `/opt/middleware/app` e backup `compose.production.yml`.
-- Usa `rsync` verso `/opt/middleware/app` escludendo `.env*`, `.git`, `node_modules`, `.next`, backup, coverage e file locali.
+- Prima del deploy reale crea dump DB app verificato con `test -s`, backup `/opt/middleware/app` e backup `compose.production.yml`; conserva un `app.backup.*`, 7 dump predeploy e un backup compose, registrando ogni cleanup in un manifest.
+- Usa `rsync` verso `/opt/middleware/app` escludendo `.env*`, `.git`, `node_modules`, `.next`, backup, coverage, `tiles-incoming` e file locali.
 - Usa BuildKit secret mount per i valori necessari al build Next, evitando `ARG` con segreti reali nei metadata immagine.
-- Costruisce immagini `middleware-app:manual-<sha>[-dirty]-<timestamp>` e `middleware-migrate:<same-tag>`.
+- Costruisce immagini `middleware-app:manual-<sha>[-dirty]-<timestamp>` e `middleware-migrate:<same-tag>`; conserva le due app manuali piu recenti e una migrate manuale.
 - Esegue migrazioni con `docker run --rm --network middleware_internal --env-file <file-temporaneo> ...`, non con `docker compose run migrate`.
 - Verifica che gli ID container di Postgres e Redis non cambino.
 - Aggiorna solo l'image `app` nel compose e ricrea solo `app` con `up -d --no-build --no-deps app`.
 - Esegue `/opt/middleware/bin/healthcheck.sh` e controlla che i segreti correnti non compaiano in `docker events` recenti o metadata delle immagini prodotte.
-- Rimuove file temporanei e fa prune della build cache a fine deploy.
+- Rimuove file temporanei e fa prune della build cache sia nel cleanup di errore sia prima dell'healthcheck post-deploy, cosi il gate disco non puo bloccare la cleanup.
 
 Rollback manuale app-only:
 
@@ -375,7 +375,7 @@ Regole operative del deploy:
 - Nei blocchi SSH via heredoc usare `docker compose exec --interactive=false -T ...`; senza `--interactive=false`, `exec` puo consumare lo stdin del heredoc e saltare i comandi successivi. Eccezione: se il comando legge intenzionalmente un file tramite `<`, usare `exec -T` per mantenere stdin aperto.
 - Per Prisma CLI, costruire una `DATABASE_URL` con user/password/db URL-encoded e passarla esplicitamente a `migrate`; il build Next e il runtime app restano sulla `DATABASE_URL` raw usata dall'adapter `pg`.
 - Non usare `source .env.production`: alcuni valori possono contenere spazi o caratteri non shell-safe. Per il build usare il parser riga-per-riga gia documentato sotto.
-- Durante il build remoto, se il build usa la rete `middleware_public`, collegare temporaneamente `middleware-postgres-1` a `middleware_public` con alias `postgres` e scollegarlo sempre a fine build. Se `next build` logga `EAI_AGAIN postgres`, fermarsi e non deployare l'immagine.
+- Il build remoto usa `docker build --network host` e un relay Postgres temporaneo legato a `127.0.0.1:15432`; non ricreare builder `docker-container` persistenti. Se `next build` non raggiunge Postgres, fermarsi e non deployare l'immagine.
 
 Backup DB pre-deploy:
 
@@ -457,7 +457,10 @@ Retention operativa:
 
 - I dump DB validi devono essere non vuoti (`test -s`).
 - I dump da `0` byte non sono backup validi: spostarli in `backups/quarantine/` e registrare l'azione in un manifest.
-- Le directory `app.backup.*` sono backup deploy temporanei. Tenere almeno le 6 piu recenti salvo esigenze specifiche di rollback.
+- Le directory `app.backup.*` sono backup deploy temporanei. Tenere solo la piu recente; il deploy manuale esclude `tiles-incoming`, `.next`, coverage e `node_modules`, quindi il backup contiene solo il sorgente ripristinabile.
+- I dump `postgres-predeploy-*` sono backup deploy temporanei: tenere i 7 piu recenti.
+- I backup `compose.production.yml.backup.*` sono temporanei: tenere solo il piu recente.
+- Le immagini manuali `middleware-app` mantengono la release corrente e un rollback; `middleware-migrate` mantiene solo la piu recente.
 - Prima di rimuovere backup o directory storiche, creare un manifest `backups/cleanup-manifest-<timestamp>.txt` con policy, elementi mantenuti, elementi rimossi/quarantinati e spazio disco prima/dopo.
 - Non cancellare dump DB applicativi o analytics validi senza una decisione esplicita di retention.
 
@@ -471,36 +474,7 @@ Backup automatici locali zero-cost:
 - Manifest: `/opt/middleware/backups/automated/manifests`.
 - Ogni coppia e scritta prima come `.partial`, validata con `pg_restore --list` e rinominata atomicamente.
 - Il job usa `flock`, controlla spazio libero e non esegue prune se il backup fallisce.
-- Retention attuale: 70 generazioni per DB, 8 weekly per DB, 90 manifest.
-
-Divergenza aperta (rilevata 2026-08-10, non ancora risolta):
-
-- `middleware-backup.service` e `middleware-healthcheck.service` sono in stato `failed`.
-- Causa: il drop-in `/etc/systemd/system/middleware-backup.service.d/offsite.conf`
-  dichiara `EnvironmentFile=/opt/middleware/secrets/backup-offsite.env`, file non
-  piu presente. systemd non avvia affatto l'unit
-  (`Failed to load environment files`).
-- Il drop-in e residuo della rimozione dell'offsite backup (commit `79bb64c`):
-  `bin/backup-databases.sh` e `bin/healthcheck-timer.sh` sulla VPS non
-  referenziano piu `offsite`, solo il drop-in non e stato riconciliato.
-- Ultimo backup automatico riuscito: `2026-08-10T05:24:04Z`. Le esecuzioni
-  successive sono fallite, quindi non c'e heartbeat esterno.
-- `bin/healthcheck.sh` fallisce su `test "$failed_units" = "0"`, quindi blocca
-  anche il gate di `scripts/production-deploy-manual.sh`.
-- Mitigazione applicata il `2026-08-10T15:41Z` senza `sudo`: ricreato
-  `/opt/middleware/secrets/backup-offsite.env` come placeholder vuoto e commentato
-  (mode `600`, utente `deploy`), cosi systemd riesce a caricare l'EnvironmentFile.
-  `bin/backup-databases.sh` non referenzia piu alcuna variabile offsite, quindi il
-  file resta intenzionalmente vuoto e non riabilita l'offsite backup.
-- Backup verificato eseguendo `./bin/backup-databases.sh` come `deploy` (stesso
-  utente dell'unit): manifest `backup-20260810T154241Z.txt`, dump app e analytics
-  con sha256, exit 0.
-- Residuo da chiudere, richiede `sudo`: rimuovere il drop-in orfano
-  `middleware-backup.service.d/offsite.conf`, poi `daemon-reload` ed eliminare il
-  placeholder. Finche le due unit restano in stato `failed`, `bin/healthcheck.sh`
-  esce 1 e blocca il gate di `scripts/production-deploy-manual.sh`: serve
-  `systemctl reset-failed` oppure attendere il firing del timer, che a quel punto
-  va a buon fine da solo.
+- Retention attuale: 70 generazioni per DB, 8 weekly per DB, 90 manifest backup e 24 manifest restore-test.
 
 Restore test locale non distruttivo:
 

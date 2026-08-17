@@ -1,4 +1,4 @@
-import { PublicIssuesArchivePage } from "@/components/public/pages";
+import { PublicIssuesArchivePage } from "@/components/public/pages/public-issues-archive-page";
 import { i18n } from "@/lib/i18n";
 import { getPublicIssuesArchiveData } from "@/lib/public/server/issues-archive";
 import { buildPageMetadata } from "@/lib/seo";

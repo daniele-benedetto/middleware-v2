@@ -105,6 +105,7 @@ rsync_args=(
   --exclude '*.local.*'
   --exclude 'backups/'
   --exclude 'coverage/'
+  --exclude 'tiles-incoming/'
   --exclude '.turbo/'
   --exclude '.vercel/'
 )
@@ -125,12 +126,59 @@ docker buildx version >/dev/null
 
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p backups
+docker builder prune -af >/dev/null 2>&1 || true
+
+prune_deploy_files() {
+  local label="$1"
+  local keep="$2"
+  local pattern="$3"
+  local manifest="backups/cleanup-manifest-${stamp}-${label}.txt"
+  local files=()
+
+  mapfile -t files < <(ls -1dt $pattern 2>/dev/null || true)
+  if [ "${#files[@]}" -le "$keep" ]; then
+    return 0
+  fi
+
+  {
+    printf 'policy=retain %s newest %s\n' "$keep" "$label"
+    printf 'created_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    printf 'disk_before=\n'
+    df -h /
+    printf 'retained=\n'
+    printf '%s\n' "${files[@]:0:keep}"
+    printf 'removed=\n'
+    printf '%s\n' "${files[@]:keep}"
+    printf 'sizes_before=\n'
+    du -sh "${files[@]}"
+  } > "$manifest"
+  rm -rf -- "${files[@]:keep}"
+  {
+    printf 'disk_after=\n'
+    df -h /
+  } >> "$manifest"
+}
+
+available_kb="$(df --output=avail / | tail -n 1 | tr -d ' ')"
+test "$available_kb" -ge 12582912
+
 backup_file="backups/postgres-predeploy-${tag}-${stamp}.dump"
 docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-acl' > "$backup_file"
 test -s "$backup_file"
 
-cp -a app "app.backup.${tag}.${stamp}"
+app_backup="app.backup.${tag}.${stamp}"
+mkdir -p "$app_backup"
+rsync -a --delete \
+  --exclude '.next/' \
+  --exclude 'coverage/' \
+  --exclude 'node_modules/' \
+  --exclude 'tiles-incoming/' \
+  app/ "$app_backup/"
 cp compose.production.yml "compose.production.yml.backup.${tag}.${stamp}"
+prune_deploy_files "app-backup" 1 "app.backup.*"
+prune_deploy_files "predeploy-dump" 7 "backups/postgres-predeploy-*.dump"
+prune_deploy_files "compose-backup" 1 "compose.production.yml.backup.*"
+
 docker compose --env-file .env.production -f compose.production.yml config --quiet
 printf 'pre_sync_backup=ok backup=%s\n' "$backup_file"
 REMOTE_PRE_SYNC
@@ -158,6 +206,7 @@ inspect_file="$(mktemp)"
 secret_file="$(mktemp)"
 proxy_pid=""
 cleanup() {
+  docker builder prune -af >/dev/null 2>&1 || true
   rm -f "$build_env" "$migrate_env" "$events_file" "$inspect_file" "$secret_file"
   if [ -n "$proxy_pid" ]; then
     kill "$proxy_pid" >/dev/null 2>&1 || true
@@ -261,6 +310,44 @@ if any(secret in inspect for secret in secrets):
     raise SystemExit('current secret found in image metadata')
 PY
 
-docker builder prune -af >/dev/null 2>&1 || true
+prune_manual_images() {
+  local repository="$1"
+  local keep="$2"
+  local active_reference="$3"
+  local manifest="backups/image-cleanup-manifest-$(date -u +%Y%m%dT%H%M%SZ)-${repository}.txt"
+  local references=()
+
+  mapfile -t references < <(
+    docker image ls --format '{{.Repository}}:{{.Tag}}' --filter "reference=${repository}:manual-*"
+  )
+  if [ "${#references[@]}" -le "$keep" ]; then
+    return 0
+  fi
+
+  {
+    printf 'policy=retain %s newest %s manual images\n' "$keep" "$repository"
+    printf 'created_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    printf 'retained=\n'
+    printf '%s\n' "${references[@]:0:keep}"
+    printf 'removed=\n'
+  } > "$manifest"
+
+  for reference in "${references[@]:keep}"; do
+    if [ "$reference" = "$active_reference" ]; then
+      printf 'skipped_active=%s\n' "$reference" >> "$manifest"
+      continue
+    fi
+
+    if docker image rm "$reference" >> "$manifest" 2>&1; then
+      printf 'removed_image=%s\n' "$reference" >> "$manifest"
+    else
+      printf 'retained_shared_or_in_use=%s\n' "$reference" >> "$manifest"
+    fi
+  done
+}
+
+prune_manual_images "middleware-app" 2 "middleware-app:${tag}"
+prune_manual_images "middleware-migrate" 1 ""
+
 printf 'manual_deploy=ok\n'
 REMOTE

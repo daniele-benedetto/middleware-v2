@@ -4,7 +4,7 @@ import {
   CmsSystemActionButton,
   CmsSystemActionLink,
   CmsSystemScreen,
-} from "@/components/cms/common";
+} from "@/components/cms/common/system-screen";
 import { i18n } from "@/lib/i18n";
 
 type ErrorPageProps = {

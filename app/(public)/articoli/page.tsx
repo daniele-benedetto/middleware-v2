@@ -1,4 +1,4 @@
-import { PublicArticlesArchivePage } from "@/components/public/pages";
+import { PublicArticlesArchivePage } from "@/components/public/pages/public-articles-archive-page";
 import { i18n } from "@/lib/i18n";
 import { getPublicArticlesArchiveData } from "@/lib/public/server/articles-archive";
 import { buildPageMetadata } from "@/lib/seo";
