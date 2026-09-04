@@ -30,6 +30,13 @@ enum LessonStatus {
   ARCHIVED
 }
 
+enum QuestionnaireStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
 enum AuditLogOutcome {
   SUCCESS
   FAILURE
@@ -288,6 +295,42 @@ model Page {
 
   @@index([status, publishedAt])
   @@map("pages")
+}
+
+model Questionnaire {
+  id              String              @id @default(uuid())
+  title           String
+  slug            String              @unique
+  descriptionRich Json?
+  definition      Json
+  status          QuestionnaireStatus @default(DRAFT)
+  publishedAt     DateTime?
+  closedAt        DateTime?
+  firstResponseAt DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  responses QuestionnaireResponse[]
+
+  @@index([status, publishedAt])
+  @@index([closedAt])
+  @@map("questionnaires")
+}
+
+model QuestionnaireResponse {
+  id                 String   @id @default(uuid())
+  questionnaireId    String
+  schemaVersion      Int
+  definitionSnapshot Json
+  anonymousTokenHash String
+  answers            Json
+  submittedAt        DateTime @default(now())
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+
+  @@unique([questionnaireId, anonymousTokenHash])
+  @@index([questionnaireId, submittedAt])
+  @@map("questionnaire_responses")
 }
 
 model NavigationMenu {

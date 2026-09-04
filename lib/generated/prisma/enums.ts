@@ -44,6 +44,16 @@ export const LessonStatus = {
 export type LessonStatus = (typeof LessonStatus)[keyof typeof LessonStatus]
 
 
+export const QuestionnaireStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  CLOSED: 'CLOSED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type QuestionnaireStatus = (typeof QuestionnaireStatus)[keyof typeof QuestionnaireStatus]
+
+
 export const AuditLogOutcome = {
   SUCCESS: 'SUCCESS',
   FAILURE: 'FAILURE'

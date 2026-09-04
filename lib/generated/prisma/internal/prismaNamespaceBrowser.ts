@@ -64,6 +64,8 @@ export const ModelName = {
   Map: 'Map',
   MapItem: 'MapItem',
   Page: 'Page',
+  Questionnaire: 'Questionnaire',
+  QuestionnaireResponse: 'QuestionnaireResponse',
   NavigationMenu: 'NavigationMenu',
   AuditLog: 'AuditLog'
 } as const
@@ -295,6 +297,36 @@ export const PageScalarFieldEnum = {
 } as const
 
 export type PageScalarFieldEnum = (typeof PageScalarFieldEnum)[keyof typeof PageScalarFieldEnum]
+
+
+export const QuestionnaireScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  slug: 'slug',
+  descriptionRich: 'descriptionRich',
+  definition: 'definition',
+  status: 'status',
+  publishedAt: 'publishedAt',
+  closedAt: 'closedAt',
+  firstResponseAt: 'firstResponseAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type QuestionnaireScalarFieldEnum = (typeof QuestionnaireScalarFieldEnum)[keyof typeof QuestionnaireScalarFieldEnum]
+
+
+export const QuestionnaireResponseScalarFieldEnum = {
+  id: 'id',
+  questionnaireId: 'questionnaireId',
+  schemaVersion: 'schemaVersion',
+  definitionSnapshot: 'definitionSnapshot',
+  anonymousTokenHash: 'anonymousTokenHash',
+  answers: 'answers',
+  submittedAt: 'submittedAt'
+} as const
+
+export type QuestionnaireResponseScalarFieldEnum = (typeof QuestionnaireResponseScalarFieldEnum)[keyof typeof QuestionnaireResponseScalarFieldEnum]
 
 
 export const NavigationMenuScalarFieldEnum = {

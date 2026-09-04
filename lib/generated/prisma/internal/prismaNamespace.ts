@@ -397,6 +397,8 @@ export const ModelName = {
   Map: 'Map',
   MapItem: 'MapItem',
   Page: 'Page',
+  Questionnaire: 'Questionnaire',
+  QuestionnaireResponse: 'QuestionnaireResponse',
   NavigationMenu: 'NavigationMenu',
   AuditLog: 'AuditLog'
 } as const
@@ -414,7 +416,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "article" | "course" | "lesson" | "map" | "mapItem" | "page" | "navigationMenu" | "auditLog"
+    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "article" | "course" | "lesson" | "map" | "mapItem" | "page" | "questionnaire" | "questionnaireResponse" | "navigationMenu" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1380,6 +1382,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Questionnaire: {
+      payload: Prisma.$QuestionnairePayload<ExtArgs>
+      fields: Prisma.QuestionnaireFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.QuestionnaireFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnairePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.QuestionnaireFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnairePayload>
+        }
+        findFirst: {
+          args: Prisma.QuestionnaireFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnairePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.QuestionnaireFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnairePayload>
+        }
+        findMany: {
+          args: Prisma.QuestionnaireFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnairePayload>[]
+        }
+        create: {
+          args: Prisma.QuestionnaireCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnairePayload>
+        }
+        createMany: {
+          args: Prisma.QuestionnaireCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.QuestionnaireCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnairePayload>[]
+        }
+        delete: {
+          args: Prisma.QuestionnaireDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnairePayload>
+        }
+        update: {
+          args: Prisma.QuestionnaireUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnairePayload>
+        }
+        deleteMany: {
+          args: Prisma.QuestionnaireDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.QuestionnaireUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.QuestionnaireUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnairePayload>[]
+        }
+        upsert: {
+          args: Prisma.QuestionnaireUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnairePayload>
+        }
+        aggregate: {
+          args: Prisma.QuestionnaireAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateQuestionnaire>
+        }
+        groupBy: {
+          args: Prisma.QuestionnaireGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.QuestionnaireGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.QuestionnaireCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.QuestionnaireCountAggregateOutputType> | number
+        }
+      }
+    }
+    QuestionnaireResponse: {
+      payload: Prisma.$QuestionnaireResponsePayload<ExtArgs>
+      fields: Prisma.QuestionnaireResponseFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.QuestionnaireResponseFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnaireResponsePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.QuestionnaireResponseFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnaireResponsePayload>
+        }
+        findFirst: {
+          args: Prisma.QuestionnaireResponseFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnaireResponsePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.QuestionnaireResponseFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnaireResponsePayload>
+        }
+        findMany: {
+          args: Prisma.QuestionnaireResponseFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnaireResponsePayload>[]
+        }
+        create: {
+          args: Prisma.QuestionnaireResponseCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnaireResponsePayload>
+        }
+        createMany: {
+          args: Prisma.QuestionnaireResponseCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.QuestionnaireResponseCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnaireResponsePayload>[]
+        }
+        delete: {
+          args: Prisma.QuestionnaireResponseDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnaireResponsePayload>
+        }
+        update: {
+          args: Prisma.QuestionnaireResponseUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnaireResponsePayload>
+        }
+        deleteMany: {
+          args: Prisma.QuestionnaireResponseDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.QuestionnaireResponseUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.QuestionnaireResponseUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnaireResponsePayload>[]
+        }
+        upsert: {
+          args: Prisma.QuestionnaireResponseUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$QuestionnaireResponsePayload>
+        }
+        aggregate: {
+          args: Prisma.QuestionnaireResponseAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateQuestionnaireResponse>
+        }
+        groupBy: {
+          args: Prisma.QuestionnaireResponseGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.QuestionnaireResponseGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.QuestionnaireResponseCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.QuestionnaireResponseCountAggregateOutputType> | number
+        }
+      }
+    }
     NavigationMenu: {
       payload: Prisma.$NavigationMenuPayload<ExtArgs>
       fields: Prisma.NavigationMenuFieldRefs
@@ -1780,6 +1930,36 @@ export const PageScalarFieldEnum = {
 export type PageScalarFieldEnum = (typeof PageScalarFieldEnum)[keyof typeof PageScalarFieldEnum]
 
 
+export const QuestionnaireScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  slug: 'slug',
+  descriptionRich: 'descriptionRich',
+  definition: 'definition',
+  status: 'status',
+  publishedAt: 'publishedAt',
+  closedAt: 'closedAt',
+  firstResponseAt: 'firstResponseAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type QuestionnaireScalarFieldEnum = (typeof QuestionnaireScalarFieldEnum)[keyof typeof QuestionnaireScalarFieldEnum]
+
+
+export const QuestionnaireResponseScalarFieldEnum = {
+  id: 'id',
+  questionnaireId: 'questionnaireId',
+  schemaVersion: 'schemaVersion',
+  definitionSnapshot: 'definitionSnapshot',
+  anonymousTokenHash: 'anonymousTokenHash',
+  answers: 'answers',
+  submittedAt: 'submittedAt'
+} as const
+
+export type QuestionnaireResponseScalarFieldEnum = (typeof QuestionnaireResponseScalarFieldEnum)[keyof typeof QuestionnaireResponseScalarFieldEnum]
+
+
 export const NavigationMenuScalarFieldEnum = {
   id: 'id',
   key: 'key',
@@ -2003,6 +2183,20 @@ export type ListEnumPageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 
 
 /**
+ * Reference to a field of type 'QuestionnaireStatus'
+ */
+export type EnumQuestionnaireStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QuestionnaireStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'QuestionnaireStatus[]'
+ */
+export type ListEnumQuestionnaireStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QuestionnaireStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'AuditLogOutcome'
  */
 export type EnumAuditLogOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuditLogOutcome'>
@@ -2152,6 +2346,8 @@ export type GlobalOmitConfig = {
   map?: Prisma.MapOmit
   mapItem?: Prisma.MapItemOmit
   page?: Prisma.PageOmit
+  questionnaire?: Prisma.QuestionnaireOmit
+  questionnaireResponse?: Prisma.QuestionnaireResponseOmit
   navigationMenu?: Prisma.NavigationMenuOmit
   auditLog?: Prisma.AuditLogOmit
 }

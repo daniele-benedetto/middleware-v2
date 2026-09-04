@@ -107,6 +107,16 @@ export type MapItem = Prisma.MapItemModel
  */
 export type Page = Prisma.PageModel
 /**
+ * Model Questionnaire
+ * 
+ */
+export type Questionnaire = Prisma.QuestionnaireModel
+/**
+ * Model QuestionnaireResponse
+ * 
+ */
+export type QuestionnaireResponse = Prisma.QuestionnaireResponseModel
+/**
  * Model NavigationMenu
  * 
  */
