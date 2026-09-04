@@ -13,6 +13,7 @@ import { mediaRouter } from "@/lib/server/trpc/routers/media";
 import { navigationRouter } from "@/lib/server/trpc/routers/navigation";
 import { pagesRouter } from "@/lib/server/trpc/routers/pages";
 import { publicRouter } from "@/lib/server/trpc/routers/public";
+import { questionnairesRouter } from "@/lib/server/trpc/routers/questionnaires";
 import { usersRouter } from "@/lib/server/trpc/routers/users";
 
 export const appRouter = router({
@@ -26,6 +27,7 @@ export const appRouter = router({
   lessons: lessonsRouter,
   maps: mapsRouter,
   pages: pagesRouter,
+  questionnaires: questionnairesRouter,
   media: mediaRouter,
   navigation: navigationRouter,
   public: publicRouter,

@@ -3,6 +3,9 @@ import "server-only";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
+import type { PaginationParams } from "@/lib/server/http/pagination";
+import type { ListQuestionnairesQuery } from "@/lib/server/modules/questionnaires/schema";
+
 export type QuestionnaireSubmissionRecord = {
   id: string;
   status: "DRAFT" | "PUBLISHED" | "CLOSED" | "ARCHIVED";
@@ -119,5 +122,135 @@ export const questionnaireResponsesRepository = {
       orderBy: { submittedAt: "asc" },
       select: QUESTIONNAIRE_RESPONSE_SELECT,
     });
+  },
+  async listForCms(questionnaireId: string, pagination: PaginationParams) {
+    return prisma.questionnaireResponse.findMany({
+      where: { questionnaireId },
+      orderBy: { submittedAt: "desc" },
+      skip: (pagination.page - 1) * pagination.pageSize,
+      take: pagination.pageSize,
+      select: { id: true, questionnaireId: true, schemaVersion: true, submittedAt: true },
+    });
+  },
+  async countForCms(questionnaireId: string) {
+    return prisma.questionnaireResponse.count({ where: { questionnaireId } });
+  },
+  async getByIdForCms(id: string) {
+    return prisma.questionnaireResponse.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        questionnaireId: true,
+        schemaVersion: true,
+        definitionSnapshot: true,
+        answers: true,
+        submittedAt: true,
+      },
+    });
+  },
+};
+
+const cmsQuestionnaireSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  status: true,
+  publishedAt: true,
+  closedAt: true,
+  firstResponseAt: true,
+  createdAt: true,
+  updatedAt: true,
+  _count: { select: { responses: true } },
+} as const satisfies Prisma.QuestionnaireSelect;
+const cmsQuestionnaireDetailSelect = {
+  ...cmsQuestionnaireSelect,
+  descriptionRich: true,
+  definition: true,
+} as const satisfies Prisma.QuestionnaireSelect;
+function whereForCms(query: ListQuestionnairesQuery): Prisma.QuestionnaireWhereInput {
+  return {
+    status: query.status,
+    OR: query.q
+      ? [
+          { title: { contains: query.q, mode: "insensitive" } },
+          { slug: { contains: query.q, mode: "insensitive" } },
+        ]
+      : undefined,
+  };
+}
+
+export const cmsQuestionnairesRepository = {
+  list(query: ListQuestionnairesQuery, pagination: PaginationParams) {
+    return prisma.questionnaire.findMany({
+      where: whereForCms(query),
+      orderBy: { [query.sortBy]: query.sortOrder },
+      skip: (pagination.page - 1) * pagination.pageSize,
+      take: pagination.pageSize,
+      select: cmsQuestionnaireSelect,
+    });
+  },
+  count(query: ListQuestionnairesQuery) {
+    return prisma.questionnaire.count({ where: whereForCms(query) });
+  },
+  getById(id: string) {
+    return prisma.questionnaire.findUnique({ where: { id }, select: cmsQuestionnaireDetailSelect });
+  },
+  create(input: {
+    title: string;
+    slug: string;
+    descriptionRich?: unknown | null;
+    definition: unknown;
+  }) {
+    return prisma.questionnaire.create({
+      data: {
+        title: input.title,
+        slug: input.slug,
+        definition: input.definition as Prisma.InputJsonValue,
+        descriptionRich:
+          input.descriptionRich === null
+            ? Prisma.JsonNull
+            : (input.descriptionRich as Prisma.InputJsonValue | undefined),
+      },
+      select: cmsQuestionnaireDetailSelect,
+    });
+  },
+  update(
+    id: string,
+    input: {
+      title?: string;
+      slug?: string;
+      descriptionRich?: unknown | null;
+      definition?: unknown;
+    },
+  ) {
+    return prisma.questionnaire.update({
+      where: { id },
+      data: {
+        ...input,
+        definition:
+          input.definition === undefined ? undefined : (input.definition as Prisma.InputJsonValue),
+        descriptionRich:
+          input.descriptionRich === null
+            ? Prisma.JsonNull
+            : (input.descriptionRich as Prisma.InputJsonValue | undefined),
+      },
+      select: cmsQuestionnaireDetailSelect,
+    });
+  },
+  transition(id: string, status: "PUBLISHED" | "CLOSED" | "ARCHIVED") {
+    const now = new Date();
+    return prisma.questionnaire.update({
+      where: { id },
+      data:
+        status === "PUBLISHED"
+          ? { status, publishedAt: now, closedAt: null }
+          : status === "CLOSED"
+            ? { status, closedAt: now }
+            : { status, publishedAt: null },
+      select: cmsQuestionnaireDetailSelect,
+    });
+  },
+  delete(id: string) {
+    return prisma.questionnaire.delete({ where: { id } });
   },
 };

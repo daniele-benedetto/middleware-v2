@@ -123,7 +123,7 @@ describe("questionnaire schemas", () => {
     ).toBe(false);
   });
 
-  it("applies draft as the default questionnaire status", () => {
+  it("trims questionnaire creation fields", () => {
     const parsed = createQuestionnaireInputSchema.parse({
       title: "  Ricerca  ",
       slug: "ricerca",
@@ -131,6 +131,5 @@ describe("questionnaire schemas", () => {
     });
 
     expect(parsed.title).toBe("Ricerca");
-    expect(parsed.status).toBe("DRAFT");
   });
 });

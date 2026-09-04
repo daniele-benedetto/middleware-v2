@@ -4,7 +4,7 @@ import { questionnaireDefinitionSchema } from "@/lib/server/modules/questionnair
 
 import type { QuestionnaireStatus } from "@/lib/generated/prisma/enums";
 
-const questionnaireStatusSchema = z.enum([
+export const questionnaireStatusSchema = z.enum([
   "DRAFT",
   "PUBLISHED",
   "CLOSED",
@@ -18,22 +18,22 @@ const questionnaireBaseInputSchema = z.object({
   definition: questionnaireDefinitionSchema,
 });
 
-export const createQuestionnaireInputSchema = questionnaireBaseInputSchema.extend({
-  status: questionnaireStatusSchema.default("DRAFT"),
-  publishedAt: z.coerce.date().nullable().optional(),
-  closedAt: z.coerce.date().nullable().optional(),
-});
+export const createQuestionnaireInputSchema = questionnaireBaseInputSchema;
 
 export const updateQuestionnaireInputSchema = questionnaireBaseInputSchema
   .partial()
-  .extend({
-    status: questionnaireStatusSchema.optional(),
-    publishedAt: z.coerce.date().nullable().optional(),
-    closedAt: z.coerce.date().nullable().optional(),
-  })
   .refine((input) => Object.keys(input).length > 0, {
     message: "At least one field is required",
   });
+
+export const listQuestionnairesQuerySchema = z.object({
+  status: questionnaireStatusSchema.optional(),
+  q: z.string().trim().min(1).optional(),
+  sortBy: z
+    .enum(["createdAt", "updatedAt", "publishedAt", "closedAt", "title"])
+    .default("updatedAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
 
 export {
   createQuestionnaireAnswersSchema,
@@ -52,3 +52,4 @@ export type {
 } from "@/lib/server/modules/questionnaires/schema/definition";
 export type CreateQuestionnaireInput = z.infer<typeof createQuestionnaireInputSchema>;
 export type UpdateQuestionnaireInput = z.infer<typeof updateQuestionnaireInputSchema>;
+export type ListQuestionnairesQuery = z.infer<typeof listQuestionnairesQuerySchema>;
