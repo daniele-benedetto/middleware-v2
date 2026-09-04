@@ -38,6 +38,11 @@ export const cmsCrudRoutes = {
     create: "/cms/pages/new",
     edit: (id: string) => `/cms/pages/${id}/edit`,
   },
+  questionnaires: {
+    create: "/cms/questionari/new",
+    edit: (id: string) => `/cms/questionari/${id}/edit`,
+    responses: (id: string) => `/cms/questionari/${id}/risposte`,
+  },
   users: {
     create: "/cms/users/new",
     edit: (id: string) => `/cms/users/${id}/edit`,

@@ -10,6 +10,7 @@ export {
   parseMapsListSearchParams,
   parseMapItemsListSearchParams,
   parsePagesListSearchParams,
+  parseQuestionnairesListSearchParams,
   parseUsersListSearchParams,
   serializeCmsSearchParams,
 } from "@/lib/cms/query/list-params";

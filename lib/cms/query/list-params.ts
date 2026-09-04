@@ -38,6 +38,14 @@ const roleValues = ["ADMIN", "EDITOR"] as const;
 const issuesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
 const coursesSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
 const mapsSortByValues = ["createdAt", "publishedAt"] as const;
+const questionnaireStatusValues = ["DRAFT", "PUBLISHED", "CLOSED", "ARCHIVED"] as const;
+const questionnairesSortByValues = [
+  "createdAt",
+  "updatedAt",
+  "publishedAt",
+  "closedAt",
+  "title",
+] as const;
 const mapItemsSortByValues = ["createdAt", "updatedAt", "title"] as const;
 const categoriesSortByValues = ["createdAt", "name", "slug"] as const;
 const authorsSortByValues = ["createdAt", "name", "slug"] as const;
@@ -398,6 +406,29 @@ export function parseMapsListSearchParams(input: CmsSearchParamsInput): MapsList
       published: parseBooleanQueryParam(readParam(input, "published")),
       q: base.q,
       sortBy,
+      sortOrder: base.sortOrder,
+    }),
+  };
+}
+
+export function parseQuestionnairesListSearchParams(
+  input: CmsSearchParamsInput,
+): RouterInputs["questionnaires"]["list"] {
+  const base = parseCmsListSearchParams(input, {
+    allowedSortBy: questionnairesSortByValues,
+    defaultSortBy: "updatedAt",
+    defaultSortOrder: "desc",
+  });
+  return {
+    page: base.page,
+    pageSize: base.pageSize,
+    query: compactObject({
+      status: parseEnumQueryParam(
+        cleanString(readParam(input, "status")),
+        questionnaireStatusValues,
+      ),
+      q: base.q,
+      sortBy: parseEnumQueryParam(base.sortBy, questionnairesSortByValues) ?? "updatedAt",
       sortOrder: base.sortOrder,
     }),
   };

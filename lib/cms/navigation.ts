@@ -29,6 +29,10 @@ export const cmsNavigation: CmsNavSection[] = [
     ],
   },
   {
+    label: i18n.cms.navigation.questionnaires,
+    items: [{ label: i18n.cms.navigation.questionnaires, href: "/cms/questionari" }],
+  },
+  {
     label: i18n.cms.navigation.maps,
     items: [
       { label: i18n.cms.navigation.maps, href: "/cms/maps" },

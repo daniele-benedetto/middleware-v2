@@ -42,7 +42,15 @@ const definition = {
   steps: [
     {
       id: "00000000-0000-4000-8000-000000000003",
-      fields: [{ id: fieldId, type: "text" as const, label: "Domanda" }],
+      fields: [
+        {
+          id: fieldId,
+          type: "text" as const,
+          label: "Domanda",
+          required: true,
+          publicResults: false,
+        },
+      ],
     },
   ],
 };
