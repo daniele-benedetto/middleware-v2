@@ -7,6 +7,7 @@ import { publicCoursesRouter } from "@/lib/server/trpc/routers/public/courses";
 import { publicIssuesRouter } from "@/lib/server/trpc/routers/public/issues";
 import { publicLessonsRouter } from "@/lib/server/trpc/routers/public/lessons";
 import { publicPagesRouter } from "@/lib/server/trpc/routers/public/pages";
+import { publicQuestionnairesRouter } from "@/lib/server/trpc/routers/public/questionnaires";
 
 export const publicRouter = router({
   issues: publicIssuesRouter,
@@ -15,4 +16,5 @@ export const publicRouter = router({
   lessons: publicLessonsRouter,
   categories: publicCategoriesRouter,
   pages: publicPagesRouter,
+  questionnaires: publicQuestionnairesRouter,
 });

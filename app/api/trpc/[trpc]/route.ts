@@ -13,6 +13,9 @@ const handler = (request: Request) => {
     req: request,
     router: appRouter,
     createContext: () => createTrpcContext({ request }),
+    responseMeta({ ctx }) {
+      return { headers: ctx?.responseHeaders };
+    },
     onError({ error, path, type }) {
       logServerEvent({
         event: "TRPC_REQUEST_ERROR",

@@ -30,6 +30,7 @@ return { current, ttl }
 
 export const rateLimitPolicies = {
   publicRead: { name: "public-read", limit: 120, windowMs: 60_000 },
+  questionnaireSubmit: { name: "questionnaire-submit", limit: 10, windowMs: 60_000 },
   mediaUpload: { name: "media-upload", limit: 20, windowMs: 60_000 },
   write: { name: "write", limit: 60, windowMs: 60_000 },
   sensitiveWrite: { name: "sensitive-write", limit: 20, windowMs: 60_000 },
