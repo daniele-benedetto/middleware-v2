@@ -35,3 +35,7 @@ export const questionnaireResponseDetailDtoSchema = questionnaireResponseDtoSche
   answers: z.record(z.string(), z.unknown()),
 });
 export const questionnaireResponsesListDtoSchema = z.array(questionnaireResponseDtoSchema);
+export const questionnaireResponsesCsvDtoSchema = z.object({
+  filename: z.string().min(1),
+  content: z.string(),
+});

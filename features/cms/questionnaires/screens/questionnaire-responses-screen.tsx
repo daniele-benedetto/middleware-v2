@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Pencil, X } from "lucide-react";
+import { Download, Eye, Pencil, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -14,6 +14,7 @@ import {
   CmsActionButton,
   CmsDataTableShell,
   CmsPageHeader,
+  cmsToast,
   cmsTableClasses,
 } from "@/components/cms/primitives";
 import {
@@ -183,6 +184,25 @@ export function CmsQuestionnaireResponsesScreen({
     { questionnaireId: questionnaire.id, page, pageSize },
     { initialData: page === 1 && pageSize === 20 ? initialData : undefined },
   );
+  const exportQuery = trpc.questionnaires.exportResponsesCsv.useQuery(
+    { id: questionnaire.id },
+    { enabled: false },
+  );
+  const exportResponses = async () => {
+    const result = await exportQuery.refetch();
+    if (!result.data) {
+      const error = result.error ? mapTrpcErrorToCmsUiMessage(result.error) : null;
+      throw new Error(error?.description ?? text.exportFailed);
+    }
+    const url = URL.createObjectURL(
+      new Blob(["\ufeff", result.data.content], { type: "text/csv;charset=utf-8" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = result.data.filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
   if (query.isPending) return <CmsLoadingState />;
   if (query.isError) {
     const error = mapTrpcErrorToCmsUiMessage(query.error);
@@ -199,13 +219,28 @@ export function CmsQuestionnaireResponsesScreen({
       <CmsPageHeader
         title={text.title}
         actions={
-          <CmsActionButton
-            variant="outline"
-            onClick={() => router.push(cmsCrudRoutes.questionnaires.edit(questionnaire.id))}
-          >
-            <Pencil aria-hidden />
-            {text.backToQuestionnaire}
-          </CmsActionButton>
+          <div className="flex gap-2">
+            <CmsActionButton
+              variant="outline"
+              isLoading={exportQuery.isFetching}
+              onClick={() => {
+                void exportResponses().catch((error: unknown) => {
+                  const description = error instanceof Error ? error.message : text.exportFailed;
+                  cmsToast.error(description);
+                });
+              }}
+            >
+              <Download aria-hidden />
+              {text.exportCsv}
+            </CmsActionButton>
+            <CmsActionButton
+              variant="outline"
+              onClick={() => router.push(cmsCrudRoutes.questionnaires.edit(questionnaire.id))}
+            >
+              <Pencil aria-hidden />
+              {text.backToQuestionnaire}
+            </CmsActionButton>
+          </div>
         }
       />
       <CmsDataTableShell

@@ -2,6 +2,7 @@ import "server-only";
 
 import { Prisma } from "@/lib/generated/prisma/client";
 import { ApiError } from "@/lib/server/http/api-error";
+import { createQuestionnaireResponsesCsv } from "@/lib/server/modules/questionnaires/csv";
 import {
   cmsQuestionnairesRepository,
   questionnaireResponsesRepository,
@@ -160,6 +161,23 @@ export const cmsQuestionnairesService = {
       definitionSnapshot: questionnaireDefinitionSchema.parse(item.definitionSnapshot),
       answers: item.answers,
       submittedAt: item.submittedAt.toISOString(),
+    };
+  },
+  async exportResponsesCsv(questionnaireId: string) {
+    const questionnaire = await cmsQuestionnairesRepository.getById(questionnaireId);
+    if (!questionnaire) throw new ApiError(404, "NOT_FOUND", "Questionnaire not found");
+    const responses = await questionnaireResponsesRepository.listByQuestionnaireId(questionnaireId);
+    return {
+      filename: `questionnaire-${slug(questionnaire.slug)}-responses.csv`,
+      content: createQuestionnaireResponsesCsv(
+        responses.map((response) => ({
+          id: response.id,
+          schemaVersion: response.schemaVersion,
+          definitionSnapshot: response.definitionSnapshot,
+          answers: response.answers as Record<string, unknown>,
+          submittedAt: response.submittedAt,
+        })),
+      ),
     };
   },
 };

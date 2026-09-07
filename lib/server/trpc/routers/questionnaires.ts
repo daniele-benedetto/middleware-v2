@@ -5,6 +5,7 @@ import {
   questionnaireDetailDtoSchema,
   questionnaireDtoSchema,
   questionnaireResponseDetailDtoSchema,
+  questionnaireResponsesCsvDtoSchema,
   questionnaireResponsesListDtoSchema,
   questionnairesListDtoSchema,
 } from "@/lib/server/modules/questionnaires/dto";
@@ -155,5 +156,20 @@ export const questionnairesRouter = router({
       cmsQuestionnairesService
         .getResponseById(input.id, input.questionnaireId)
         .then((x) => parseOutput(x, questionnaireResponseDetailDtoSchema)),
+    ),
+  exportResponsesCsv: protectedProcedure
+    .use(role)
+    .input(id)
+    .use(
+      auditMiddleware<{ id: string }>((input) => ({
+        action: "export",
+        resource: "questionnaires",
+        resourceId: input.id,
+      })),
+    )
+    .query(({ input }) =>
+      cmsQuestionnairesService
+        .exportResponsesCsv(input.id)
+        .then((x) => parseOutput(x, questionnaireResponsesCsvDtoSchema)),
     ),
 });

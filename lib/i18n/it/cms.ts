@@ -821,6 +821,8 @@ export const cmsIt = {
           actions: "Azioni",
         },
         details: "Dettaglio",
+        exportCsv: "Esporta CSV",
+        exportFailed: "Impossibile esportare le risposte.",
         detailTitle: "Risposta",
         detailDescription: (submittedAt: string) => `Inviata il ${submittedAt}.`,
         answerMissing: "Nessuna risposta",
