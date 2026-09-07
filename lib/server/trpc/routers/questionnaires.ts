@@ -126,6 +126,22 @@ export const questionnairesRouter = router({
         questionnaireDtoSchema,
       ),
     ),
+  restore: writeProcedure
+    .use(role)
+    .input(id)
+    .use(
+      auditMiddleware<{ id: string }>((input) => ({
+        action: "restore",
+        resource: "questionnaires",
+        resourceId: input.id,
+      })),
+    )
+    .mutation(async ({ input }) =>
+      parseOutput(
+        await cmsQuestionnairesService.transition(input.id, "restore"),
+        questionnaireDtoSchema,
+      ),
+    ),
   delete: sensitiveWriteProcedure
     .use(role)
     .input(id)

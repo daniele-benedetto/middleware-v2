@@ -23,6 +23,8 @@ export const questionnaireCopySchema = z.object({
   closedMessage: copyTextSchema,
   resultsTitle: copyTextSchema,
   resultsEmptyMessage: copyTextSchema,
+  completionCtaLabel: copyTextSchema.optional(),
+  completionCtaHref: copyTextSchema.optional(),
 });
 
 const fieldBaseSchema = z.object({

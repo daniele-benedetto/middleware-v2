@@ -11,14 +11,14 @@ export function CmsQuestionnaireFormLoading() {
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <CmsFormLoadingHeader />
       <div className="grid min-h-0 flex-1 gap-6 overflow-hidden lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:pr-1">
-        <aside className="cms-scroll space-y-3 overflow-y-auto pb-6 lg:border-r lg:border-foreground lg:pr-5">
+        <aside className="flex min-h-0 flex-col gap-3 pb-6 lg:border-r lg:border-foreground lg:pr-5">
           <div className="space-y-1">
             <Skeleton className="h-11 w-full rounded-[6px] border-l-4 border-border bg-card-hover" />
             <Skeleton className="h-11 w-full rounded-[6px] border-l-4 border-border bg-card-hover" />
           </div>
-          <div className="space-y-3 border-t border-foreground pt-4">
+          <div className="flex min-h-0 flex-1 flex-col space-y-3 border-t border-foreground pt-4">
             <Skeleton className="h-3 w-24 rounded-[6px] bg-card-hover" />
-            <div className="space-y-1">
+            <div className="cms-scroll min-h-0 flex-1 space-y-1 overflow-y-auto">
               {Array.from({ length: 4 }).map((_, index) => (
                 <Skeleton
                   key={index}
@@ -27,9 +27,6 @@ export function CmsQuestionnaireFormLoading() {
               ))}
             </div>
             <Skeleton className="h-9 w-full rounded-[6px] border border-border bg-card-hover" />
-          </div>
-          <div className="border-t border-foreground pt-4">
-            <Skeleton className="h-8 w-full rounded-[6px] bg-card-hover" />
           </div>
         </aside>
         <div className="cms-scroll min-w-0 space-y-6 overflow-y-auto pb-6">

@@ -13,6 +13,7 @@ import { i18n } from "@/lib/i18n";
 import { publicAnalytics, publicFeatures, publicPrivacy } from "@/lib/public/config";
 import { getLegalConsentVersion } from "@/lib/public/server/legal-consent";
 import { getPublicNavigation } from "@/lib/public/server/navigation";
+import { TrpcProvider } from "@/lib/trpc/provider";
 
 import type { ReactNode } from "react";
 
@@ -60,36 +61,38 @@ async function PublicAnalyticsSlot() {
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <div
-      data-public-shell
-      className="flex min-h-svh flex-1 flex-col bg-background font-heading text-foreground"
-    >
-      <a
-        href="#main-content"
-        className="sr-only z-200 bg-foreground px-4 py-3 font-heading text-sm font-bold text-background uppercase focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:outline-3 focus:outline-offset-2 focus:outline-accent"
+    <TrpcProvider>
+      <div
+        data-public-shell
+        className="flex min-h-svh flex-1 flex-col bg-background font-heading text-foreground"
       >
-        {i18n.public.header.skipToContent}
-      </a>
-      <Suspense fallback={null}>
-        <PublicHeaderSlot />
-      </Suspense>
-      <PublicScrollProgress />
-      <div data-public-page-content>
-        <PublicPageTransition>{children}</PublicPageTransition>
-      </div>
-      <div data-public-footer>
+        <a
+          href="#main-content"
+          className="sr-only z-200 bg-foreground px-4 py-3 font-heading text-sm font-bold text-background uppercase focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:outline-3 focus:outline-offset-2 focus:outline-accent"
+        >
+          {i18n.public.header.skipToContent}
+        </a>
         <Suspense fallback={null}>
-          <PublicFooterSlot />
+          <PublicHeaderSlot />
+        </Suspense>
+        <PublicScrollProgress />
+        <div data-public-page-content>
+          <PublicPageTransition>{children}</PublicPageTransition>
+        </div>
+        <div data-public-footer>
+          <Suspense fallback={null}>
+            <PublicFooterSlot />
+          </Suspense>
+        </div>
+        {publicFeatures.cookieConsentBanner ? (
+          <Suspense fallback={null}>
+            <CookieConsentSlot />
+          </Suspense>
+        ) : null}
+        <Suspense fallback={null}>
+          <PublicAnalyticsSlot />
         </Suspense>
       </div>
-      {publicFeatures.cookieConsentBanner ? (
-        <Suspense fallback={null}>
-          <CookieConsentSlot />
-        </Suspense>
-      ) : null}
-      <Suspense fallback={null}>
-        <PublicAnalyticsSlot />
-      </Suspense>
-    </div>
+    </TrpcProvider>
   );
 }

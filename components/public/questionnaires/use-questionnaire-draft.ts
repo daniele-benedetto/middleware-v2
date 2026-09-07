@@ -50,10 +50,13 @@ export function useQuestionnaireDraft(questionnaireId: string, version: number) 
   const key = `${questionnaireId}:v${version}`;
   const hydrated = useRef(false);
   const [restoredAnswers, setRestoredAnswers] = useState<Record<string, unknown> | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
 
   useEffect(() => {
     if (!window.indexedDB) {
       hydrated.current = true;
+      void Promise.resolve().then(() => setIsHydrated(true));
       return;
     }
     void readDraft(key)
@@ -63,16 +66,22 @@ export function useQuestionnaireDraft(questionnaireId: string, version: number) 
       .catch(() => undefined)
       .finally(() => {
         hydrated.current = true;
+        setIsHydrated(true);
       });
   }, [key, version]);
 
   const persist = (answers: Record<string, unknown>) => {
     if (!hydrated.current || !window.indexedDB) return;
-    void writeDraft(key, { version, answers }).catch(() => undefined);
+    setStatus("saving");
+    void writeDraft(key, { version, answers })
+      .then(() => setStatus("saved"))
+      .catch(() => setStatus("idle"));
   };
   const clear = () => {
+    setRestoredAnswers(null);
+    setStatus("idle");
     if (window.indexedDB) void deleteDraft(key).catch(() => undefined);
   };
 
-  return { restoredAnswers, persist, clear };
+  return { restoredAnswers, isHydrated, status, persist, clear };
 }

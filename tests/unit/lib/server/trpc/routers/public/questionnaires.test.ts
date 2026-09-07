@@ -13,6 +13,7 @@ vi.mock("@/lib/server/modules/questionnaires/service", () => ({
   questionnaireResponsesService: questionnaireResponsesServiceMock,
 }));
 
+import { ApiError } from "@/lib/server/http/api-error";
 import { publicQuestionnairesRouter } from "@/lib/server/trpc/routers/public/questionnaires";
 
 const questionnaireId = "00000000-0000-4000-8000-000000000001";
@@ -70,6 +71,20 @@ describe("public questionnaires router", () => {
       id: "00000000-0000-4000-8000-000000000003",
       questionnaireId,
       submittedAt: "2026-09-04T10:00:00.000Z",
+    });
+  });
+
+  it("preserves a duplicate-response conflict for the public client", async () => {
+    questionnaireResponsesServiceMock.submit.mockRejectedValue(
+      new ApiError(409, "CONFLICT", "A response has already been submitted"),
+    );
+    const caller = publicQuestionnairesRouter.createCaller(
+      context("/api/trpc/public.questionnaires.submit"),
+    );
+
+    await expect(caller.submit({ questionnaireId, answers: {} })).rejects.toMatchObject({
+      code: "CONFLICT",
+      message: "A response has already been submitted",
     });
   });
 

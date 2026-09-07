@@ -115,19 +115,26 @@ export const cmsQuestionnairesService = {
       map(error);
     }
   },
-  async transition(id: string, action: "publish" | "close" | "archive") {
+  async transition(id: string, action: "publish" | "close" | "archive" | "restore") {
     const current = await cmsQuestionnairesRepository.getById(id);
     if (!current) throw new ApiError(404, "NOT_FOUND", "Questionnaire not found");
     const allowed =
       (action === "publish" && current.status === "DRAFT") ||
       (action === "close" && current.status === "PUBLISHED") ||
-      (action === "archive" && current.status !== "ARCHIVED");
+      (action === "archive" && current.status !== "ARCHIVED") ||
+      (action === "restore" && current.status === "ARCHIVED");
     if (!allowed) throw new ApiError(409, "CONFLICT", "Invalid questionnaire status transition");
     try {
       return detail(
         await cmsQuestionnairesRepository.transition(
           id,
-          action === "publish" ? "PUBLISHED" : action === "close" ? "CLOSED" : "ARCHIVED",
+          action === "publish"
+            ? "PUBLISHED"
+            : action === "close"
+              ? "CLOSED"
+              : action === "archive"
+                ? "ARCHIVED"
+                : "DRAFT",
         ),
       );
     } catch (error) {

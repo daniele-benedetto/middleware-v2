@@ -248,7 +248,7 @@ export const cmsQuestionnairesRepository = {
       select: cmsQuestionnaireDetailSelect,
     });
   },
-  transition(id: string, status: "PUBLISHED" | "CLOSED" | "ARCHIVED") {
+  transition(id: string, status: "DRAFT" | "PUBLISHED" | "CLOSED" | "ARCHIVED") {
     const now = new Date();
     return prisma.questionnaire.update({
       where: { id },
@@ -257,7 +257,9 @@ export const cmsQuestionnairesRepository = {
           ? { status, publishedAt: now, closedAt: null }
           : status === "CLOSED"
             ? { status, closedAt: now }
-            : { status, publishedAt: null },
+            : status === "ARCHIVED"
+              ? { status, publishedAt: null }
+              : { status, publishedAt: null, closedAt: null },
       select: cmsQuestionnaireDetailSelect,
     });
   },

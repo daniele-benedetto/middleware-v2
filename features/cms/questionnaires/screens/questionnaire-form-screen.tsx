@@ -8,23 +8,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  Check,
-  CircleAlert,
-  ClipboardList,
-  GripVertical,
-  Plus,
-  Save,
-  Trash2,
-  X,
-} from "lucide-react";
+import { ClipboardList, GripVertical, Plus, Save, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type ChangeEvent, type HTMLAttributes, type ReactNode } from "react";
 
 import { CmsErrorState } from "@/components/cms/common";
 import {
   CmsActionButton,
-  CmsBadge,
   CmsCheckbox,
   CmsFormField,
   CmsMetaText,
@@ -103,6 +93,8 @@ const emptyCopy: QuestionnaireCopy = {
   closedMessage: "Questo questionario non accetta piu risposte.",
   resultsTitle: "Risultati",
   resultsEmptyMessage: "Non ci sono ancora risultati da mostrare.",
+  completionCtaLabel: "Torna alla rivista",
+  completionCtaHref: "/",
 };
 
 function newField(type: FieldType): QuestionnaireField {
@@ -126,20 +118,6 @@ function emptyDefinition(): QuestionnaireDefinition {
     copy: emptyCopy,
     steps: [{ id: crypto.randomUUID(), title: "Step 1", fields: [] }],
   };
-}
-
-function getStepProblemCount(step: QuestionnaireDefinition["steps"][number]) {
-  let count = step.fields.length === 0 ? 1 : 0;
-  for (const field of step.fields) {
-    if (!field.label.trim()) count += 1;
-    if (
-      (field.type === "singleChoice" || field.type === "multipleChoice") &&
-      (field.options.length === 0 || field.options.some((option) => !option.label.trim()))
-    ) {
-      count += 1;
-    }
-  }
-  return count;
 }
 
 function toDateTimeLocalValue(value: string | undefined) {
@@ -169,6 +147,7 @@ export function CmsQuestionnaireFormScreen({ mode, questionnaireId, initialData 
   const publish = trpc.questionnaires.publish.useMutation();
   const close = trpc.questionnaires.close.useMutation();
   const archive = trpc.questionnaires.archive.useMutation();
+  const restore = trpc.questionnaires.restore.useMutation();
   const { cancel, success } = useCmsFormNavigation("/cms/questionari");
   const text = i18n.cms.forms.resources.questionnaires;
   const utils = trpc.useUtils();
@@ -196,22 +175,28 @@ export function CmsQuestionnaireFormScreen({ mode, questionnaireId, initialData 
         update.isPending ||
         publish.isPending ||
         close.isPending ||
-        archive.isPending
+        archive.isPending ||
+        restore.isPending
       }
       onCancel={cancel}
-      onStatusChange={async (action) => {
+      onStatusChange={async (status) => {
         if (!questionnaireId) return;
         try {
-          if (action === "publish") await publish.mutateAsync({ id: questionnaireId });
-          if (action === "close") await close.mutateAsync({ id: questionnaireId });
-          if (action === "archive") await archive.mutateAsync({ id: questionnaireId });
+          const currentStatus = query.data?.status;
+          if (!currentStatus || status === currentStatus) return;
+
+          if (status === "DRAFT") await restore.mutateAsync({ id: questionnaireId });
+          if (status === "PUBLISHED") await publish.mutateAsync({ id: questionnaireId });
+          if (status === "CLOSED") await close.mutateAsync({ id: questionnaireId });
+          if (status === "ARCHIVED") await archive.mutateAsync({ id: questionnaireId });
           await invalidateQuestionnairesAfterMutation(utils, { id: questionnaireId });
           const messages = {
-            publish: text.published,
-            close: text.closed,
-            archive: text.archived,
+            DRAFT: text.updated,
+            PUBLISHED: text.published,
+            CLOSED: text.closed,
+            ARCHIVED: text.archived,
           };
-          cmsToast.success(messages[action]);
+          cmsToast.success(messages[status]);
         } catch (error) {
           const mapped = mapCrudDomainError(error, "questionnaires");
           cmsToast.error(mapped.description, mapped.title);
@@ -265,7 +250,7 @@ function QuestionnaireFormContent({
   questionnaire?: QuestionnaireDetail;
   busy: boolean;
   onCancel: () => void;
-  onStatusChange: (action: "publish" | "close" | "archive") => Promise<void>;
+  onStatusChange: (status: QuestionnaireDetail["status"]) => Promise<void>;
   onSave: (data: {
     title: string;
     titleStyled: IssueTitleStyled | null;
@@ -408,10 +393,6 @@ function QuestionnaireFormContent({
   };
   const activeStepIndex = definition.steps.findIndex((step) => step.id === activeSection);
   const activeStep = activeStepIndex >= 0 ? definition.steps[activeStepIndex] : null;
-  const problemCount =
-    definition.steps.length === 0
-      ? 1
-      : definition.steps.reduce((total, step) => total + getStepProblemCount(step), 0);
   const addStep = () => {
     const step = {
       id: crypto.randomUUID(),
@@ -440,7 +421,7 @@ function QuestionnaireFormContent({
         title={mode === "create" ? text.createTitle : text.editTitle}
         actions={
           <div className="flex flex-wrap gap-2">
-            {mode === "edit" && questionnaireId ? (
+            {mode === "edit" && questionnaireId && questionnaire?.responseCount ? (
               <CmsActionButton
                 type="button"
                 variant="outline"
@@ -462,8 +443,8 @@ function QuestionnaireFormContent({
           </div>
         }
       />
-      <div className="cms-scroll grid min-h-0 flex-1 gap-6 overflow-y-auto pb-6 lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:pr-1">
-        <aside className="space-y-3 lg:border-r lg:border-foreground lg:pr-5">
+      <div className="grid min-h-0 flex-1 gap-6 overflow-hidden lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:pr-1">
+        <aside className="flex min-h-0 flex-col gap-3 lg:border-r lg:border-foreground lg:pr-5">
           <nav aria-label="Sezioni del questionario" className="space-y-1">
             <EditorNavButton
               active={activeSection === "overview"}
@@ -476,76 +457,77 @@ function QuestionnaireFormContent({
               onClick={() => setActiveSection("copy")}
             />
           </nav>
-          <div className="border-t border-foreground pt-4">
+          <div className="flex min-h-0 flex-1 flex-col border-t border-foreground pt-4">
             <div className="mb-2 flex items-center justify-between gap-2">
               <CmsMetaText variant="category">{text.steps}</CmsMetaText>
-              <span className="font-technical text-xs text-muted-foreground">
-                {definition.steps.length}
-              </span>
             </div>
-            {locked ? <p className="mb-3 text-xs text-muted-foreground">{text.locked}</p> : null}
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleStepDragEnd}
-            >
-              <SortableContext
-                items={definition.steps.map((step) => step.id)}
-                strategy={verticalListSortingStrategy}
+            <div className="cms-scroll min-h-0 flex-1 overflow-y-auto">
+              <DndContext
+                id="cms-questionnaire-steps-dnd"
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleStepDragEnd}
               >
-                <div className="space-y-1">
-                  {definition.steps.map((step, stepIndex) => {
-                    return (
-                      <SortableStepCard key={step.id} id={step.id} disabled={locked}>
-                        {(dragHandleProps) => (
-                          <div
-                            className={cn(
-                              "relative flex min-w-0 items-center gap-2 rounded-[6px] border-l-4 py-3 pr-3 pl-4",
-                              "font-ui text-[12px] font-extrabold uppercase tracking-[0.1em] transition-colors",
-                              activeSection === step.id
-                                ? "border-accent bg-card-hover text-accent"
-                                : "border-transparent text-foreground hover:border-foreground hover:bg-card-hover",
-                            )}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => setActiveSection(step.id)}
-                              className="min-w-0 flex-1 truncate text-left focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
+                <SortableContext
+                  items={definition.steps.map((step) => step.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-1">
+                    {definition.steps.map((step, stepIndex) => {
+                      return (
+                        <SortableStepCard key={step.id} id={step.id} disabled={locked}>
+                          {(dragHandleProps) => (
+                            <div
+                              className={cn(
+                                "relative flex min-w-0 items-center gap-2 rounded-[6px] border-l-4 py-3 pr-3 pl-4",
+                                "font-ui text-[12px] font-extrabold uppercase tracking-[0.1em] transition-colors",
+                                activeSection === step.id
+                                  ? "border-accent bg-card-hover text-accent"
+                                  : "border-transparent text-foreground hover:border-foreground hover:bg-card-hover",
+                              )}
                             >
-                              {step.title || "Step senza titolo"}
-                            </button>
-                            <button
-                              type="button"
-                              disabled={locked}
-                              aria-label={`Riordina ${step.title || `step ${stepIndex + 1}`}`}
-                              className="flex size-4 shrink-0 items-center justify-center text-current/60 hover:text-current focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:text-border [&>svg]:size-3.5"
-                              {...dragHandleProps}
-                            >
-                              <GripVertical aria-hidden />
-                            </button>
-                            <button
-                              type="button"
-                              disabled={locked || definition.steps.length === 1}
-                              onClick={() => {
-                                updateDefinition((current) => ({
-                                  ...current,
-                                  steps: current.steps.filter((_, index) => index !== stepIndex),
-                                }));
-                                if (activeSection === step.id) setActiveSection("overview");
-                              }}
-                              aria-label={`Elimina ${step.title || `step ${stepIndex + 1}`}`}
-                              className="flex size-4 shrink-0 items-center justify-center text-current/60 hover:text-accent focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:text-border [&>svg]:size-3.5"
-                            >
-                              <Trash2 aria-hidden />
-                            </button>
-                          </div>
-                        )}
-                      </SortableStepCard>
-                    );
-                  })}
-                </div>
-              </SortableContext>
-            </DndContext>
+                              <button
+                                type="button"
+                                onClick={() => setActiveSection(step.id)}
+                                className="min-w-0 flex-1 cursor-pointer truncate text-left focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
+                              >
+                                {step.title || "Step senza titolo"}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={locked}
+                                aria-label={`Riordina ${step.title || `step ${stepIndex + 1}`}`}
+                                title="Trascina per riordinare"
+                                className="flex size-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-[4px] text-current/60 transition-colors hover:bg-surface-hover hover:text-current active:cursor-grabbing focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-border [&>svg]:size-4"
+                                {...dragHandleProps}
+                              >
+                                <GripVertical aria-hidden />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={locked || definition.steps.length === 1}
+                                onClick={() => {
+                                  updateDefinition((current) => ({
+                                    ...current,
+                                    steps: current.steps.filter((_, index) => index !== stepIndex),
+                                  }));
+                                  if (activeSection === step.id) setActiveSection("overview");
+                                }}
+                                aria-label={`Elimina ${step.title || `step ${stepIndex + 1}`}`}
+                                title="Elimina step"
+                                className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-[4px] text-current/60 transition-colors hover:bg-surface-hover hover:text-accent focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-border [&>svg]:size-4"
+                              >
+                                <Trash2 aria-hidden />
+                              </button>
+                            </div>
+                          )}
+                        </SortableStepCard>
+                      );
+                    })}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
             <CmsActionButton
               type="button"
               size="xs"
@@ -558,22 +540,8 @@ function QuestionnaireFormContent({
               {text.addStep}
             </CmsActionButton>
           </div>
-          <div className="border-t border-foreground pt-4">
-            <div className="flex items-start gap-2 text-xs text-muted-foreground">
-              {problemCount ? (
-                <CircleAlert className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
-              ) : (
-                <Check className="mt-0.5 size-4 shrink-0 text-(--ui-success)" aria-hidden />
-              )}
-              <p>
-                {problemCount
-                  ? `${problemCount} elementi da completare prima della pubblicazione.`
-                  : "Struttura pronta per la revisione."}
-              </p>
-            </div>
-          </div>
         </aside>
-        <div className="min-w-0 space-y-6">
+        <div className="cms-scroll min-h-0 min-w-0 space-y-6 overflow-y-auto pb-6">
           {activeSection === "overview" ? (
             <section className="space-y-6" aria-labelledby="questionnaire-overview-title">
               <div className="border-b border-foreground pb-4">
@@ -682,12 +650,6 @@ function QuestionnaireFormContent({
                   />
                 </CmsFormField>
               ))}
-              {questionnaireId && questionnaire?.firstResponseAt ? (
-                <p className="text-xs text-muted-foreground">
-                  {text.firstResponseAt}:{" "}
-                  {new Date(questionnaire.firstResponseAt).toLocaleString("it-IT")}
-                </p>
-              ) : null}
             </section>
           ) : null}
           {activeStep ? (
@@ -748,54 +710,38 @@ function QuestionnaireStatusPanel({
   status: QuestionnaireDetail["status"];
   busy: boolean;
   text: typeof i18n.cms.forms.resources.questionnaires;
-  onChange: (action: "publish" | "close" | "archive") => Promise<void>;
+  onChange: (status: QuestionnaireDetail["status"]) => Promise<void>;
 }) {
-  const statuses = {
-    DRAFT: {
-      label: text.statusDraft,
-      variant: "status-draft" as const,
-      action: "publish" as const,
-    },
-    PUBLISHED: {
-      label: text.statusPublished,
-      variant: "status-published" as const,
-      action: "close" as const,
-    },
-    CLOSED: {
-      label: text.statusClosed,
-      variant: "category-outline-ink" as const,
-      action: "archive" as const,
-    },
-    ARCHIVED: { label: text.statusArchived, variant: "status-archived" as const, action: null },
+  const statusOptions = {
+    DRAFT: [
+      { value: "DRAFT", label: text.statusDraft },
+      { value: "PUBLISHED", label: text.statusPublished },
+      { value: "ARCHIVED", label: text.statusArchived },
+    ],
+    PUBLISHED: [
+      { value: "PUBLISHED", label: text.statusPublished },
+      { value: "CLOSED", label: text.statusClosed },
+      { value: "ARCHIVED", label: text.statusArchived },
+    ],
+    CLOSED: [
+      { value: "CLOSED", label: text.statusClosed },
+      { value: "ARCHIVED", label: text.statusArchived },
+    ],
+    ARCHIVED: [
+      { value: "ARCHIVED", label: text.statusArchived },
+      { value: "DRAFT", label: text.statusDraft },
+    ],
   };
-  const current = statuses[status];
-  const actionLabel =
-    current.action === "publish"
-      ? text.publish
-      : current.action === "close"
-        ? text.close
-        : text.archive;
 
   return (
-    <section className="flex flex-wrap items-center justify-between gap-4 border border-foreground bg-card p-4">
-      <div>
-        <CmsMetaText variant="category">{text.status}</CmsMetaText>
-        <div className="mt-2">
-          <CmsBadge variant={current.variant}>{current.label}</CmsBadge>
-        </div>
-      </div>
-      {current.action ? (
-        <CmsActionButton
-          type="button"
-          variant={current.action === "archive" ? "outline" : "primary"}
-          size="xs"
-          isLoading={busy}
-          onClick={() => void onChange(current.action!)}
-        >
-          {actionLabel}
-        </CmsActionButton>
-      ) : null}
-    </section>
+    <CmsFormField label={text.status} htmlFor="questionnaire-status">
+      <CmsSelect
+        value={status}
+        disabled={busy}
+        onValueChange={(value) => void onChange(value as QuestionnaireDetail["status"])}
+        options={statusOptions[status]}
+      />
+    </CmsFormField>
   );
 }
 
@@ -907,10 +853,11 @@ function StepCanvas({
           />
         </CmsFormField>
       </div>
-      <div className="flex items-center justify-between border-t border-foreground pt-4">
-        <CmsMetaText variant="category">Domande ({step.fields.length})</CmsMetaText>
+      <div className="border-t border-foreground pt-4">
+        <CmsMetaText variant="category">Domande</CmsMetaText>
       </div>
       <DndContext
+        id={`cms-questionnaire-step-${step.id}-fields-dnd`}
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleFieldDragEnd}
@@ -1076,7 +1023,7 @@ function FieldEditor({
           type="button"
           onClick={onToggle}
           aria-expanded={expanded}
-          className="min-w-0 flex-1 truncate text-left focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
+          className="min-w-0 flex-1 cursor-pointer truncate text-left focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
         >
           {field.label || "Domanda senza titolo"}
         </button>
@@ -1084,7 +1031,8 @@ function FieldEditor({
           type="button"
           disabled={disabled}
           aria-label="Riordina domanda"
-          className="flex size-4 shrink-0 items-center justify-center text-current/60 hover:text-current focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:text-border [&>svg]:size-3.5"
+          title="Trascina per riordinare"
+          className="flex size-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-[4px] text-current/60 transition-colors hover:bg-surface-hover hover:text-current active:cursor-grabbing focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-border [&>svg]:size-4"
           {...dragHandleProps}
         >
           <GripVertical aria-hidden />
@@ -1094,7 +1042,8 @@ function FieldEditor({
           disabled={disabled}
           onClick={onRemove}
           aria-label={`Elimina ${field.label || "domanda"}`}
-          className="flex size-4 shrink-0 items-center justify-center text-current/60 hover:text-accent focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:text-border [&>svg]:size-3.5"
+          title="Elimina domanda"
+          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-[4px] text-current/60 transition-colors hover:bg-surface-hover hover:text-accent focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-border [&>svg]:size-4"
         >
           <Trash2 aria-hidden />
         </button>

@@ -586,6 +586,8 @@ export const cmsIt = {
           closedMessage: "Messaggio chiusura",
           resultsTitle: "Titolo risultati",
           resultsEmptyMessage: "Messaggio risultati vuoti",
+          completionCtaLabel: "Etichetta CTA finale",
+          completionCtaHref: "URL CTA finale",
         },
       },
     },

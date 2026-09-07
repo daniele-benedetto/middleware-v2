@@ -26,7 +26,13 @@ const t = initTRPC.context<TrpcContext>().create({
 
 const mapApiErrorMiddleware = t.middleware(async ({ next }) => {
   try {
-    return await next();
+    const result = await next();
+
+    if (!result.ok) {
+      throw toTrpcError(result.error.cause ?? result.error);
+    }
+
+    return result;
   } catch (error) {
     throw toTrpcError(error);
   }

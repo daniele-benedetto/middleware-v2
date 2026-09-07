@@ -244,7 +244,18 @@ export function createQuestionnaireResponsesService(
           async (questionnaire, transaction) => {
             assertPublished(questionnaire);
             const definition = parseDefinition(questionnaire.definition);
-            const answers = createQuestionnaireAnswersSchema(definition).parse(input.answers);
+            const answersResult = createQuestionnaireAnswersSchema(definition).safeParse(
+              input.answers,
+            );
+            if (!answersResult.success) {
+              throw new ApiError(
+                422,
+                "VALIDATION_ERROR",
+                "Questionnaire answers are invalid",
+                answersResult.error.flatten(),
+              );
+            }
+            const answers = answersResult.data;
             const response = await transaction.createResponse({
               questionnaireId: questionnaire.id,
               schemaVersion: definition.version,
