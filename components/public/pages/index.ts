@@ -5,5 +5,6 @@ export { PublicFormazioneIndexPage } from "@/components/public/pages/public-form
 export { PublicHomePage } from "@/components/public/pages/public-home-page";
 export { PublicLessonPage } from "@/components/public/pages/public-lesson-page";
 export { PublicIssuePage } from "@/components/public/pages/public-issue-page";
+export { PublicQuestionnairePage } from "@/components/public/pages/public-questionnaire-page";
 export { PublicIssuesArchivePage } from "@/components/public/pages/public-issues-archive-page";
 export { PublicStaticPage } from "@/components/public/pages/public-static-page";

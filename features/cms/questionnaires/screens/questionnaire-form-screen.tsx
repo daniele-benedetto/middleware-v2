@@ -8,7 +8,16 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ClipboardList, GripVertical, Plus, Save, X } from "lucide-react";
+import {
+  Check,
+  CircleAlert,
+  ClipboardList,
+  GripVertical,
+  Plus,
+  Save,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type ChangeEvent, type HTMLAttributes, type ReactNode } from "react";
 
@@ -75,6 +84,7 @@ const fieldTypes = [
   "information",
 ] as const;
 type FieldType = (typeof fieldTypes)[number];
+type QuestionnaireEditorSection = "overview" | "copy" | string;
 
 const emptyCopy: QuestionnaireCopy = {
   progressLabel: "Avanzamento",
@@ -114,6 +124,20 @@ function emptyDefinition(): QuestionnaireDefinition {
     copy: emptyCopy,
     steps: [{ id: crypto.randomUUID(), title: "Step 1", fields: [] }],
   };
+}
+
+function getStepProblemCount(step: QuestionnaireDefinition["steps"][number]) {
+  let count = step.fields.length === 0 ? 1 : 0;
+  for (const field of step.fields) {
+    if (!field.label.trim()) count += 1;
+    if (
+      (field.type === "singleChoice" || field.type === "multipleChoice") &&
+      (field.options.length === 0 || field.options.some((option) => !option.label.trim()))
+    ) {
+      count += 1;
+    }
+  }
+  return count;
 }
 
 type Props = {
@@ -218,6 +242,8 @@ function QuestionnaireFormContent({
   const [definition, setDefinition] = useState<QuestionnaireDefinition>(
     questionnaire?.definition ?? emptyDefinition,
   );
+  const [activeSection, setActiveSection] = useState<QuestionnaireEditorSection>("overview");
+  const [expandedFieldId, setExpandedFieldId] = useState<string | null>(null);
   const locked = Boolean(questionnaire?.firstResponseAt);
   const sensors = useSortableSensors();
   const updateDefinition = (
@@ -268,13 +294,6 @@ function QuestionnaireFormContent({
           : step,
       ),
     }));
-  const move = <T,>(items: T[], index: number, direction: -1 | 1) => {
-    const target = index + direction;
-    if (target < 0 || target >= items.length) return items;
-    const copy = [...items];
-    [copy[index], copy[target]] = [copy[target], copy[index]];
-    return copy;
-  };
   const handleStepDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -344,6 +363,21 @@ function QuestionnaireFormContent({
       };
     });
   };
+  const activeStepIndex = definition.steps.findIndex((step) => step.id === activeSection);
+  const activeStep = activeStepIndex >= 0 ? definition.steps[activeStepIndex] : null;
+  const problemCount =
+    definition.steps.length === 0
+      ? 1
+      : definition.steps.reduce((total, step) => total + getStepProblemCount(step), 0);
+  const addStep = () => {
+    const step = {
+      id: crypto.randomUUID(),
+      title: `Step ${definition.steps.length + 1}`,
+      fields: [],
+    };
+    updateDefinition((current) => ({ ...current, steps: [...current.steps, step] }));
+    setActiveSection(step.id);
+  };
 
   return (
     <form
@@ -362,7 +396,7 @@ function QuestionnaireFormContent({
       <CmsPageHeader
         title={mode === "create" ? text.createTitle : text.editTitle}
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {mode === "edit" && questionnaireId ? (
               <CmsActionButton
                 type="button"
@@ -385,106 +419,28 @@ function QuestionnaireFormContent({
           </div>
         }
       />
-      <div className="cms-scroll grid min-h-0 flex-1 gap-6 overflow-y-auto pb-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:pr-1">
-        <div className="space-y-6">
-          <CmsFormField
-            label={text.title}
-            htmlFor="questionnaire-title"
-            hint={text.titleStyledHint}
-            required
-          >
-            <CmsStyledTitleEditor
-              id="questionnaire-title"
-              value={titleStyled}
-              onChange={setTitleStyled}
-              placeholder={text.title}
-              accentLabel={text.titleStyledAccentAction}
-              lineBreakLabel={text.titleStyledLineBreakAction}
-              ariaLabel={text.titleStyledEditorAriaLabel}
+      <div className="cms-scroll grid min-h-0 flex-1 gap-6 overflow-y-auto pb-6 lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:pr-1">
+        <aside className="space-y-3 lg:border-r lg:border-foreground lg:pr-5">
+          <nav aria-label="Sezioni del questionario" className="space-y-1">
+            <EditorNavButton
+              active={activeSection === "overview"}
+              label="Panoramica"
+              onClick={() => setActiveSection("overview")}
             />
-          </CmsFormField>
-          <input type="hidden" name="title" value={title} />
-          <CmsFormField
-            label={i18n.cms.forms.fields.slug}
-            htmlFor="questionnaire-slug"
-            hint={slugHint}
-          >
-            <div className="flex items-center gap-2">
-              {isSlugEditing ? (
-                <CmsTextInput
-                  id="questionnaire-slug"
-                  className="flex-1"
-                  value={manualSlug}
-                  autoFocus
-                  onBlur={() => setIsSlugEditing(false)}
-                  onChange={(event) => {
-                    setManualSlug(event.target.value);
-                    setHasManualSlugOverride(true);
-                  }}
-                />
-              ) : (
-                <button
-                  type="button"
-                  onClick={openSlugEditor}
-                  className={cn(
-                    "flex h-10 flex-1 items-center rounded-[6px] border border-foreground bg-card px-3 text-left",
-                    "font-ui text-[12px] font-bold uppercase tracking-[0.08em] transition-colors hover:bg-surface-hover",
-                    resolvedSlug ? "text-foreground" : "text-border",
-                  )}
-                >
-                  {slugPreview}
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={regenerateSlugFromTitle}
-                className={cn(
-                  "inline-flex h-10 shrink-0 items-center rounded-[6px] border border-foreground bg-card px-3",
-                  "font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-surface-hover",
-                )}
-              >
-                {i18n.cms.forms.regenerateSlug}
-              </button>
-            </div>
-          </CmsFormField>
-          <CmsFormField label={text.description} htmlFor="questionnaire-description">
-            <CmsRichTextEditor
-              value={descriptionRich}
-              onChange={setDescriptionRich}
-              ariaLabel={text.description}
+            <EditorNavButton
+              active={activeSection === "copy"}
+              label="Testi e privacy"
+              onClick={() => setActiveSection("copy")}
             />
-          </CmsFormField>
-          <section className="space-y-4 border-t border-foreground pt-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          </nav>
+          <div className="border-t border-foreground pt-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
               <CmsMetaText variant="category">{text.steps}</CmsMetaText>
-              <CmsActionButton
-                type="button"
-                size="xs"
-                variant="outline"
-                disabled={locked}
-                onClick={() =>
-                  updateDefinition((current) => ({
-                    ...current,
-                    steps: [
-                      ...current.steps,
-                      {
-                        id: crypto.randomUUID(),
-                        title: `Step ${current.steps.length + 1}`,
-                        fields: [],
-                      },
-                    ],
-                  }))
-                }
-              >
-                <Plus aria-hidden />
-                {text.addStep}
-              </CmsActionButton>
+              <span className="font-technical text-xs text-muted-foreground">
+                {definition.steps.length}
+              </span>
             </div>
-            {locked ? (
-              <p className="rounded border border-foreground bg-surface p-3 text-sm">
-                {text.locked}
-              </p>
-            ) : null}
+            {locked ? <p className="mb-3 text-xs text-muted-foreground">{text.locked}</p> : null}
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -494,175 +450,406 @@ function QuestionnaireFormContent({
                 items={definition.steps.map((step) => step.id)}
                 strategy={verticalListSortingStrategy}
               >
-                {definition.steps.map((step, stepIndex) => (
-                  <SortableStepCard key={step.id} id={step.id} disabled={locked}>
-                    {(dragHandleProps) => (
-                      <section className="space-y-4 border border-foreground bg-card p-4">
-                        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <CmsMetaText variant="category">{`${stepIndex + 1}. ${text.steps}`}</CmsMetaText>
-                            <CmsTextInput
-                              value={step.title ?? ""}
-                              disabled={locked}
-                              onChange={(event) =>
-                                updateDefinition((current) => ({
-                                  ...current,
-                                  steps: current.steps.map((item, index) =>
-                                    index === stepIndex
-                                      ? { ...item, title: event.target.value }
-                                      : item,
-                                  ),
-                                }))
-                              }
-                            />
-                          </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            <CmsActionButton
+                <div className="space-y-1">
+                  {definition.steps.map((step, stepIndex) => {
+                    return (
+                      <SortableStepCard key={step.id} id={step.id} disabled={locked}>
+                        {(dragHandleProps) => (
+                          <div
+                            className={cn(
+                              "relative flex min-w-0 items-center gap-2 rounded-[6px] border-l-4 py-3 pr-3 pl-4",
+                              "font-ui text-[12px] font-extrabold uppercase tracking-[0.1em] transition-colors",
+                              activeSection === step.id
+                                ? "border-accent bg-card-hover text-accent"
+                                : "border-transparent text-foreground hover:border-foreground hover:bg-card-hover",
+                            )}
+                          >
+                            <button
                               type="button"
-                              size="xs"
-                              variant="ghost"
+                              onClick={() => setActiveSection(step.id)}
+                              className="min-w-0 flex-1 truncate text-left focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
+                            >
+                              {step.title || "Step senza titolo"}
+                            </button>
+                            <button
+                              type="button"
                               disabled={locked}
-                              aria-label={text.moveUp}
+                              aria-label={`Riordina ${step.title || `step ${stepIndex + 1}`}`}
+                              className="flex size-4 shrink-0 items-center justify-center text-current/60 hover:text-current focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:text-border [&>svg]:size-3.5"
                               {...dragHandleProps}
                             >
                               <GripVertical aria-hidden />
-                            </CmsActionButton>
-                            <Button
-                              label={text.moveUp}
-                              disabled={locked || stepIndex === 0}
-                              onClick={() =>
-                                updateDefinition((current) => ({
-                                  ...current,
-                                  steps: move(current.steps, stepIndex, -1),
-                                }))
-                              }
-                            />
-                            <Button
-                              label={text.moveDown}
-                              disabled={locked || stepIndex === definition.steps.length - 1}
-                              onClick={() =>
-                                updateDefinition((current) => ({
-                                  ...current,
-                                  steps: move(current.steps, stepIndex, 1),
-                                }))
-                              }
-                            />
-                            <Button
-                              label={text.remove}
-                              disabled={locked}
-                              onClick={() =>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={locked || definition.steps.length === 1}
+                              onClick={() => {
                                 updateDefinition((current) => ({
                                   ...current,
                                   steps: current.steps.filter((_, index) => index !== stepIndex),
-                                }))
-                              }
-                            />
-                          </div>
-                        </div>
-                        <SortableContext
-                          items={step.fields.map((field) => `field:${step.id}:${field.id}`)}
-                          strategy={verticalListSortingStrategy}
-                        >
-                          {step.fields.map((field, fieldIndex) => (
-                            <SortableFieldCard
-                              key={field.id}
-                              id={`field:${step.id}:${field.id}`}
-                              disabled={locked}
+                                }));
+                                if (activeSection === step.id) setActiveSection("overview");
+                              }}
+                              aria-label={`Elimina ${step.title || `step ${stepIndex + 1}`}`}
+                              className="flex size-4 shrink-0 items-center justify-center text-current/60 hover:text-accent focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:text-border [&>svg]:size-3.5"
                             >
-                              {(dragHandleProps) => (
-                                <FieldEditor
-                                  field={field}
-                                  disabled={locked}
-                                  text={text}
-                                  dragHandleProps={dragHandleProps}
-                                  onChange={(next) =>
-                                    updateField(stepIndex, fieldIndex, () => next)
-                                  }
-                                  onMove={(direction) =>
-                                    updateDefinition((current) => ({
-                                      ...current,
-                                      steps: current.steps.map((item, index) =>
-                                        index === stepIndex
-                                          ? {
-                                              ...item,
-                                              fields: move(item.fields, fieldIndex, direction),
-                                            }
-                                          : item,
-                                      ),
-                                    }))
-                                  }
-                                  onRemove={() =>
-                                    updateDefinition((current) => ({
-                                      ...current,
-                                      steps: current.steps.map((item, index) =>
-                                        index === stepIndex
-                                          ? {
-                                              ...item,
-                                              fields: item.fields.filter(
-                                                (_, fieldIdx) => fieldIdx !== fieldIndex,
-                                              ),
-                                            }
-                                          : item,
-                                      ),
-                                    }))
-                                  }
-                                />
-                              )}
-                            </SortableFieldCard>
-                          ))}
-                        </SortableContext>
-                        <CmsFormField label={text.fieldType} htmlFor={`${step.id}-field-type`}>
-                          <CmsSelect
-                            value=""
-                            disabled={locked}
-                            placeholder={text.addField}
-                            options={fieldTypes.map((type) => ({
-                              value: type,
-                              label: text.fieldTypes[type],
-                            }))}
-                            onValueChange={(type) => {
-                              updateDefinition((current) => ({
-                                ...current,
-                                steps: current.steps.map((item, index) =>
-                                  index === stepIndex
-                                    ? {
-                                        ...item,
-                                        fields: [...item.fields, newField(type as FieldType)],
-                                      }
-                                    : item,
-                                ),
-                              }));
-                            }}
-                          />
-                        </CmsFormField>
-                      </section>
-                    )}
-                  </SortableStepCard>
-                ))}
+                              <Trash2 aria-hidden />
+                            </button>
+                          </div>
+                        )}
+                      </SortableStepCard>
+                    );
+                  })}
+                </div>
               </SortableContext>
             </DndContext>
-          </section>
-        </div>
-        <aside className="space-y-4 lg:border-l lg:border-foreground lg:pl-6">
-          <h2 className="font-ui text-sm font-bold uppercase tracking-[.08em]">{text.copy}</h2>
-          {(Object.keys(emptyCopy) as (keyof QuestionnaireCopy)[]).map((key) => (
-            <CmsFormField key={key} label={text.copyFields[key]} htmlFor={`copy-${key}`}>
-              <CmsTextarea
-                id={`copy-${key}`}
-                value={definition.copy[key] ?? ""}
-                onChange={(event) => updateCopy(key, event.target.value)}
-              />
-            </CmsFormField>
-          ))}
-          {questionnaireId && questionnaire?.firstResponseAt ? (
-            <p className="text-xs text-muted-foreground">
-              {text.firstResponseAt}:{" "}
-              {new Date(questionnaire.firstResponseAt).toLocaleString("it-IT")}
-            </p>
-          ) : null}
+            <CmsActionButton
+              type="button"
+              size="xs"
+              variant="outline"
+              className="mt-3 w-full"
+              disabled={locked}
+              onClick={addStep}
+            >
+              <Plus aria-hidden />
+              {text.addStep}
+            </CmsActionButton>
+          </div>
+          <div className="border-t border-foreground pt-4">
+            <div className="flex items-start gap-2 text-xs text-muted-foreground">
+              {problemCount ? (
+                <CircleAlert className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
+              ) : (
+                <Check className="mt-0.5 size-4 shrink-0 text-(--ui-success)" aria-hidden />
+              )}
+              <p>
+                {problemCount
+                  ? `${problemCount} elementi da completare prima della pubblicazione.`
+                  : "Struttura pronta per la revisione."}
+              </p>
+            </div>
+          </div>
         </aside>
+        <div className="min-w-0 space-y-6">
+          {activeSection === "overview" ? (
+            <section className="space-y-6" aria-labelledby="questionnaire-overview-title">
+              <div className="border-b border-foreground pb-4">
+                <CmsMetaText variant="category">Panoramica</CmsMetaText>
+                <h2
+                  id="questionnaire-overview-title"
+                  className="mt-1 font-ui text-2xl font-black uppercase tracking-tight"
+                >
+                  Impostazioni del questionario
+                </h2>
+              </div>
+              <CmsFormField
+                label={text.title}
+                htmlFor="questionnaire-title"
+                hint={text.titleStyledHint}
+                required
+              >
+                <CmsStyledTitleEditor
+                  id="questionnaire-title"
+                  value={titleStyled}
+                  onChange={setTitleStyled}
+                  placeholder={text.title}
+                  accentLabel={text.titleStyledAccentAction}
+                  lineBreakLabel={text.titleStyledLineBreakAction}
+                  ariaLabel={text.titleStyledEditorAriaLabel}
+                />
+              </CmsFormField>
+              <input type="hidden" name="title" value={title} />
+              <CmsFormField
+                label={i18n.cms.forms.fields.slug}
+                htmlFor="questionnaire-slug"
+                hint={slugHint}
+              >
+                <div className="flex items-center gap-2">
+                  {isSlugEditing ? (
+                    <CmsTextInput
+                      id="questionnaire-slug"
+                      className="flex-1"
+                      value={manualSlug}
+                      autoFocus
+                      onBlur={() => setIsSlugEditing(false)}
+                      onChange={(event) => {
+                        setManualSlug(event.target.value);
+                        setHasManualSlugOverride(true);
+                      }}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={openSlugEditor}
+                      className={cn(
+                        "flex h-10 flex-1 items-center rounded-[6px] border border-foreground bg-card px-3 text-left",
+                        "font-ui text-[12px] font-bold uppercase tracking-[0.08em] transition-colors hover:bg-surface-hover",
+                        resolvedSlug ? "text-foreground" : "text-border",
+                      )}
+                    >
+                      {slugPreview}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={regenerateSlugFromTitle}
+                    className={cn(
+                      "inline-flex h-10 shrink-0 items-center rounded-[6px] border border-foreground bg-card px-3",
+                      "font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-surface-hover",
+                    )}
+                  >
+                    {i18n.cms.forms.regenerateSlug}
+                  </button>
+                </div>
+              </CmsFormField>
+              <CmsFormField label={text.description} htmlFor="questionnaire-description">
+                <CmsRichTextEditor
+                  value={descriptionRich}
+                  onChange={setDescriptionRich}
+                  ariaLabel={text.description}
+                />
+              </CmsFormField>
+            </section>
+          ) : null}
+          {activeSection === "copy" ? (
+            <section className="space-y-4" aria-labelledby="questionnaire-copy-title">
+              <div className="border-b border-foreground pb-4">
+                <CmsMetaText variant="category">{text.copy}</CmsMetaText>
+                <h2
+                  id="questionnaire-copy-title"
+                  className="mt-1 font-ui text-2xl font-black uppercase tracking-tight"
+                >
+                  Testi e privacy
+                </h2>
+              </div>
+              {(Object.keys(emptyCopy) as (keyof QuestionnaireCopy)[]).map((key) => (
+                <CmsFormField key={key} label={text.copyFields[key]} htmlFor={`copy-${key}`}>
+                  <CmsTextarea
+                    id={`copy-${key}`}
+                    value={definition.copy[key] ?? ""}
+                    onChange={(event) => updateCopy(key, event.target.value)}
+                  />
+                </CmsFormField>
+              ))}
+              {questionnaireId && questionnaire?.firstResponseAt ? (
+                <p className="text-xs text-muted-foreground">
+                  {text.firstResponseAt}:{" "}
+                  {new Date(questionnaire.firstResponseAt).toLocaleString("it-IT")}
+                </p>
+              ) : null}
+            </section>
+          ) : null}
+          {activeStep ? (
+            <StepCanvas
+              step={activeStep}
+              stepIndex={activeStepIndex}
+              totalSteps={definition.steps.length}
+              locked={locked}
+              sensors={sensors}
+              expandedFieldId={expandedFieldId}
+              setExpandedFieldId={setExpandedFieldId}
+              text={text}
+              onStepChange={(transform) =>
+                updateDefinition((current) => ({
+                  ...current,
+                  steps: current.steps.map((item, index) =>
+                    index === activeStepIndex ? transform(item) : item,
+                  ),
+                }))
+              }
+              onFieldChange={(fieldIndex, next) =>
+                updateField(activeStepIndex, fieldIndex, () => next)
+              }
+              onRemoveField={(fieldIndex) =>
+                updateDefinition((current) => ({
+                  ...current,
+                  steps: current.steps.map((item, index) =>
+                    index === activeStepIndex
+                      ? { ...item, fields: item.fields.filter((_, index) => index !== fieldIndex) }
+                      : item,
+                  ),
+                }))
+              }
+              onAddField={(type) => {
+                const field = newField(type);
+                updateDefinition((current) => ({
+                  ...current,
+                  steps: current.steps.map((item, index) =>
+                    index === activeStepIndex ? { ...item, fields: [...item.fields, field] } : item,
+                  ),
+                }));
+                setExpandedFieldId(field.id);
+              }}
+            />
+          ) : null}
+        </div>
       </div>
     </form>
+  );
+}
+
+function EditorNavButton({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "relative block w-full cursor-pointer rounded-[6px] border-l-4 py-3 pr-3 pl-4 text-left",
+        "font-ui text-[12px] font-extrabold uppercase tracking-[0.1em] transition-colors",
+        "focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px]",
+        active
+          ? "border-accent bg-card-hover text-accent"
+          : "border-transparent text-foreground hover:border-foreground hover:bg-card-hover",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function StepCanvas({
+  step,
+  stepIndex,
+  totalSteps,
+  locked,
+  sensors,
+  expandedFieldId,
+  setExpandedFieldId,
+  text,
+  onStepChange,
+  onFieldChange,
+  onRemoveField,
+  onAddField,
+}: {
+  step: QuestionnaireDefinition["steps"][number];
+  stepIndex: number;
+  totalSteps: number;
+  locked: boolean;
+  sensors: ReturnType<typeof useSortableSensors>;
+  expandedFieldId: string | null;
+  setExpandedFieldId: (id: string | null) => void;
+  text: typeof i18n.cms.forms.resources.questionnaires;
+  onStepChange: (
+    transform: (
+      step: QuestionnaireDefinition["steps"][number],
+    ) => QuestionnaireDefinition["steps"][number],
+  ) => void;
+  onFieldChange: (fieldIndex: number, field: QuestionnaireField) => void;
+  onRemoveField: (fieldIndex: number) => void;
+  onAddField: (type: FieldType) => void;
+}) {
+  const handleFieldDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = step.fields.findIndex((field) => `field:${step.id}:${field.id}` === active.id);
+    const newIndex = step.fields.findIndex((field) => `field:${step.id}:${field.id}` === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    onStepChange((current) => ({
+      ...current,
+      fields: arrayMove(current.fields, oldIndex, newIndex),
+    }));
+  };
+
+  return (
+    <section className="space-y-5" aria-labelledby="questionnaire-step-title">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-foreground pb-4">
+        <div>
+          <CmsMetaText variant="category">{`Step ${stepIndex + 1} di ${totalSteps}`}</CmsMetaText>
+          <h2
+            id="questionnaire-step-title"
+            className="mt-1 font-ui text-2xl font-black uppercase tracking-tight"
+          >
+            {step.title || "Step senza titolo"}
+          </h2>
+        </div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <CmsFormField label="Titolo dello step" htmlFor={`${step.id}-title`}>
+          <CmsTextInput
+            id={`${step.id}-title`}
+            value={step.title ?? ""}
+            disabled={locked}
+            onChange={(event) =>
+              onStepChange((current) => ({ ...current, title: event.target.value }))
+            }
+          />
+        </CmsFormField>
+        <CmsFormField label="Descrizione dello step" htmlFor={`${step.id}-description`}>
+          <CmsTextInput
+            id={`${step.id}-description`}
+            value={step.description ?? ""}
+            disabled={locked}
+            onChange={(event) =>
+              onStepChange((current) => ({
+                ...current,
+                description: event.target.value || undefined,
+              }))
+            }
+          />
+        </CmsFormField>
+      </div>
+      <div className="flex items-center justify-between border-t border-foreground pt-4">
+        <CmsMetaText variant="category">Domande ({step.fields.length})</CmsMetaText>
+      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleFieldDragEnd}
+      >
+        <SortableContext
+          items={step.fields.map((field) => `field:${step.id}:${field.id}`)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-2">
+            {step.fields.map((field, fieldIndex) => (
+              <SortableFieldCard
+                key={field.id}
+                id={`field:${step.id}:${field.id}`}
+                disabled={locked}
+              >
+                {(dragHandleProps) => (
+                  <FieldEditor
+                    field={field}
+                    disabled={locked}
+                    expanded={expandedFieldId === field.id}
+                    text={text}
+                    dragHandleProps={dragHandleProps}
+                    onToggle={() =>
+                      setExpandedFieldId(expandedFieldId === field.id ? null : field.id)
+                    }
+                    onChange={(next) => {
+                      onFieldChange(fieldIndex, next);
+                      if (next.id !== field.id) setExpandedFieldId(next.id);
+                    }}
+                    onRemove={() => {
+                      onRemoveField(fieldIndex);
+                      if (expandedFieldId === field.id) setExpandedFieldId(null);
+                    }}
+                  />
+                )}
+              </SortableFieldCard>
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+      <CmsFormField label={text.fieldType} htmlFor={`${step.id}-field-type`}>
+        <CmsSelect
+          value=""
+          disabled={locked}
+          placeholder={text.addField}
+          options={fieldTypes.map((type) => ({ value: type, label: text.fieldTypes[type] }))}
+          onValueChange={(type) => onAddField(type as FieldType)}
+        />
+      </CmsFormField>
+    </section>
   );
 }
 
@@ -744,118 +931,153 @@ function SortableFieldCard({
 function FieldEditor({
   field,
   disabled,
+  expanded,
   text,
   onChange,
-  onMove,
   onRemove,
+  onToggle,
   dragHandleProps,
 }: {
   field: QuestionnaireField;
   disabled: boolean;
+  expanded: boolean;
   text: typeof i18n.cms.forms.resources.questionnaires;
   onChange: (field: QuestionnaireField) => void;
-  onMove: (direction: -1 | 1) => void;
   onRemove: () => void;
+  onToggle: () => void;
   dragHandleProps: HTMLAttributes<HTMLButtonElement>;
 }) {
   const change = (key: string, value: unknown) =>
     onChange({ ...field, [key]: value } as QuestionnaireField);
   const hasOptions = field.type === "singleChoice" || field.type === "multipleChoice";
   return (
-    <article className="space-y-4 border border-border bg-card p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
-        <div className="min-w-48 flex-1">
-          <CmsFormField label={text.fieldLabel} htmlFor={`${field.id}-label`}>
+    <article>
+      <div
+        className={cn(
+          "relative flex min-w-0 items-center gap-2 rounded-[6px] border-l-4 py-3 pr-3 pl-4",
+          "font-ui text-[12px] font-extrabold uppercase tracking-[0.1em] transition-colors",
+          expanded
+            ? "border-accent bg-card-hover text-accent"
+            : "border-transparent text-foreground hover:border-foreground hover:bg-card-hover",
+        )}
+      >
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={expanded}
+          className="min-w-0 flex-1 truncate text-left focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
+        >
+          {field.label || "Domanda senza titolo"}
+        </button>
+        <button
+          type="button"
+          disabled={disabled}
+          aria-label="Riordina domanda"
+          className="flex size-4 shrink-0 items-center justify-center text-current/60 hover:text-current focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:text-border [&>svg]:size-3.5"
+          {...dragHandleProps}
+        >
+          <GripVertical aria-hidden />
+        </button>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={onRemove}
+          aria-label={`Elimina ${field.label || "domanda"}`}
+          className="flex size-4 shrink-0 items-center justify-center text-current/60 hover:text-accent focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:text-border [&>svg]:size-3.5"
+        >
+          <Trash2 aria-hidden />
+        </button>
+      </div>
+      {expanded ? (
+        <div className="mt-2 space-y-4 border border-foreground bg-card p-4">
+          <div className="grid gap-4 border-b border-border pb-3 md:grid-cols-[minmax(0,1fr)_12rem]">
+            <div>
+              <CmsFormField label={text.fieldLabel} htmlFor={`${field.id}-label`}>
+                <CmsTextInput
+                  id={`${field.id}-label`}
+                  value={field.label}
+                  disabled={disabled}
+                  onChange={(event) => change("label", event.target.value)}
+                />
+              </CmsFormField>
+            </div>
+            <div>
+              <CmsFormField label={text.fieldType} htmlFor={`${field.id}-type`}>
+                <CmsSelect
+                  value={field.type}
+                  disabled={disabled}
+                  options={fieldTypes.map((type) => ({
+                    value: type,
+                    label: text.fieldTypes[type],
+                  }))}
+                  onValueChange={(type) => onChange(newField(type as FieldType))}
+                />
+              </CmsFormField>
+            </div>
+          </div>
+          <CmsFormField label={text.fieldDescription} htmlFor={`${field.id}-description`}>
             <CmsTextInput
-              id={`${field.id}-label`}
-              value={field.label}
+              id={`${field.id}-description`}
+              value={field.description ?? ""}
               disabled={disabled}
-              onChange={(event) => change("label", event.target.value)}
+              onChange={(event) => change("description", event.target.value || undefined)}
             />
           </CmsFormField>
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <CmsActionButton
-            type="button"
-            size="xs"
-            variant="ghost"
-            disabled={disabled}
-            aria-label={text.moveUp}
-            {...dragHandleProps}
-          >
-            <GripVertical aria-hidden />
-          </CmsActionButton>
-          <div className="w-40">
-            <CmsSelect
-              value={field.type}
+          <div className="flex flex-wrap gap-4">
+            <CmsCheckbox
+              label={text.required}
+              checked={field.required}
               disabled={disabled}
-              options={fieldTypes.map((type) => ({ value: type, label: text.fieldTypes[type] }))}
-              onValueChange={(type) => onChange(newField(type as FieldType))}
+              onChange={(value) => change("required", value)}
+            />
+            <CmsCheckbox
+              label={text.publicResults}
+              checked={field.publicResults}
+              disabled={disabled}
+              onChange={(value) => change("publicResults", value)}
             />
           </div>
-          <Button label={text.moveUp} disabled={disabled} onClick={() => onMove(-1)} />
-          <Button label={text.moveDown} disabled={disabled} onClick={() => onMove(1)} />
-          <Button label={text.remove} disabled={disabled} onClick={onRemove} />
-        </div>
-      </div>
-      <CmsFormField label={text.fieldDescription} htmlFor={`${field.id}-description`}>
-        <CmsTextInput
-          id={`${field.id}-description`}
-          value={field.description ?? ""}
-          disabled={disabled}
-          onChange={(event) => change("description", event.target.value || undefined)}
-        />
-      </CmsFormField>
-      <div className="flex flex-wrap gap-4">
-        <CmsCheckbox
-          label={text.required}
-          checked={field.required}
-          disabled={disabled}
-          onChange={(value) => change("required", value)}
-        />
-        <CmsCheckbox
-          label={text.publicResults}
-          checked={field.publicResults}
-          disabled={disabled}
-          onChange={(value) => change("publicResults", value)}
-        />
-      </div>
-      <FieldTypeSettings field={field} disabled={disabled} text={text} onChange={onChange} />
-      {hasOptions ? (
-        <div className="space-y-2">
-          {field.options.map((option, index) => (
-            <div className="flex gap-2" key={option.id}>
-              <CmsTextInput
-                value={option.label}
+          <FieldTypeSettings field={field} disabled={disabled} text={text} onChange={onChange} />
+          {hasOptions ? (
+            <div className="space-y-2">
+              {field.options.map((option, index) => (
+                <div className="flex gap-2" key={option.id}>
+                  <CmsTextInput
+                    value={option.label}
+                    disabled={disabled}
+                    onChange={(event) =>
+                      onChange({
+                        ...field,
+                        options: field.options.map((item, idx) =>
+                          idx === index ? { ...item, label: event.target.value } : item,
+                        ),
+                      })
+                    }
+                  />
+                  <Button
+                    label={text.remove}
+                    disabled={disabled}
+                    onClick={() =>
+                      onChange({
+                        ...field,
+                        options: field.options.filter((_, idx) => idx !== index),
+                      })
+                    }
+                  />
+                </div>
+              ))}
+              <Button
+                label={text.addOption}
                 disabled={disabled}
-                onChange={(event) =>
+                onClick={() =>
                   onChange({
                     ...field,
-                    options: field.options.map((item, idx) =>
-                      idx === index ? { ...item, label: event.target.value } : item,
-                    ),
+                    options: [...field.options, { id: crypto.randomUUID(), label: "Opzione" }],
                   })
                 }
               />
-              <Button
-                label={text.remove}
-                disabled={disabled}
-                onClick={() =>
-                  onChange({ ...field, options: field.options.filter((_, idx) => idx !== index) })
-                }
-              />
             </div>
-          ))}
-          <Button
-            label={text.addOption}
-            disabled={disabled}
-            onClick={() =>
-              onChange({
-                ...field,
-                options: [...field.options, { id: crypto.randomUUID(), label: "Opzione" }],
-              })
-            }
-          />
+          ) : null}
         </div>
       ) : null}
     </article>
