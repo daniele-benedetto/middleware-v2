@@ -135,9 +135,9 @@ export const questionnaireResponsesRepository = {
   async countForCms(questionnaireId: string) {
     return prisma.questionnaireResponse.count({ where: { questionnaireId } });
   },
-  async getByIdForCms(id: string) {
-    return prisma.questionnaireResponse.findUnique({
-      where: { id },
+  async getByIdForCms(id: string, questionnaireId?: string) {
+    return prisma.questionnaireResponse.findFirst({
+      where: { id, questionnaireId },
       select: {
         id: true,
         questionnaireId: true,

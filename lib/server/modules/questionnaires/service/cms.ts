@@ -150,8 +150,8 @@ export const cmsQuestionnairesService = {
       total,
     };
   },
-  async getResponseById(id: string) {
-    const item = await questionnaireResponsesRepository.getByIdForCms(id);
+  async getResponseById(id: string, questionnaireId?: string) {
+    const item = await questionnaireResponsesRepository.getByIdForCms(id, questionnaireId);
     if (!item) throw new ApiError(404, "NOT_FOUND", "Questionnaire response not found");
     return {
       id: item.id,

@@ -150,10 +150,10 @@ export const questionnairesRouter = router({
     }),
   getResponseById: protectedProcedure
     .use(role)
-    .input(id)
+    .input(id.extend({ questionnaireId: z.string().uuid() }))
     .query(({ input }) =>
       cmsQuestionnairesService
-        .getResponseById(input.id)
+        .getResponseById(input.id, input.questionnaireId)
         .then((x) => parseOutput(x, questionnaireResponseDetailDtoSchema)),
     ),
 });

@@ -8,7 +8,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus, Save, X } from "lucide-react";
+import { ClipboardList, GripVertical, Plus, Save, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useMemo, useState, type ChangeEvent, type HTMLAttributes, type ReactNode } from "react";
 
 import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
@@ -40,6 +41,7 @@ import {
   validateFormInput,
 } from "@/features/cms/shared/forms";
 import { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sensors";
+import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import {
@@ -205,6 +207,7 @@ function QuestionnaireFormContent({
     definition: QuestionnaireDefinition;
   }) => Promise<void>;
 }) {
+  const router = useRouter();
   const text = i18n.cms.forms.resources.questionnaires;
   const [titleStyled, setTitleStyled] = useState<IssueTitleStyled>(() =>
     createStyledTitleValue(questionnaire?.title ?? "", questionnaire?.titleStyled),
@@ -360,6 +363,17 @@ function QuestionnaireFormContent({
         title={mode === "create" ? text.createTitle : text.editTitle}
         actions={
           <div className="flex gap-2">
+            {mode === "edit" && questionnaireId ? (
+              <CmsActionButton
+                type="button"
+                variant="outline"
+                onClick={() => router.push(cmsCrudRoutes.questionnaires.responses(questionnaireId))}
+                disabled={busy}
+              >
+                <ClipboardList aria-hidden />
+                {text.viewResponses}
+              </CmsActionButton>
+            ) : null}
             <CmsActionButton variant="outline" onClick={onCancel} disabled={busy}>
               <X aria-hidden />
               {i18n.cms.common.cancel}
