@@ -4,11 +4,9 @@ import { ensureQuestionnaireResponder } from "@/lib/server/http/questionnaire-re
 import {
   publicQuestionnaireDtoSchema,
   publicQuestionnaireResponderDtoSchema,
-  publicQuestionnaireResultsDtoSchema,
   publicQuestionnaireSubmitDtoSchema,
 } from "@/lib/server/modules/questionnaires/dto/public";
 import {
-  publicQuestionnaireIdInputSchema,
   publicQuestionnaireSlugInputSchema,
   publicQuestionnaireSubmitInputSchema,
 } from "@/lib/server/modules/questionnaires/schema/public";
@@ -46,14 +44,6 @@ export const publicQuestionnairesRouter = router({
           answers: input.answers,
         }),
         publicQuestionnaireSubmitDtoSchema,
-      );
-    }),
-  getResults: publicReadProcedure
-    .input(publicQuestionnaireIdInputSchema)
-    .query(async ({ input }) => {
-      return parseOutput(
-        await questionnaireResponsesService.getPublicResults(input.questionnaireId),
-        publicQuestionnaireResultsDtoSchema,
       );
     }),
 });

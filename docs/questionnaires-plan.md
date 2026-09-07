@@ -3,7 +3,7 @@
 ## Decisioni confermate
 
 - V1: step lineari; un invio per browser tramite token anonimo in cookie; resume stesso browser via IndexedDB.
-- Stati: `DRAFT`, `PUBLISHED`, `CLOSED`, `ARCHIVED`. Risultati pubblici solo a questionario `CLOSED` e solo aggregati autorizzati.
+- Stati: `DRAFT`, `PUBLISHED`, `CLOSED`, `ARCHIVED`. Utenti pubblici non vedono risultati; risposte, export e futuri aggregati sono esclusivi `ADMIN`.
 - Dopo `firstResponseAt` sono modificabili solo titolo, slug, descrizione e `definition.copy`; definition strutturale bloccata lato service e UI.
 - Tutti i testi pubblici vivono in `definition.copy`; tutti i testi CMS vivono in i18n.
 - Risposte individuali sono visibili soltanto nel CMS autorizzato; delete questionario e hard delete cascade con audit senza answers.
@@ -16,7 +16,7 @@
 - `Questionnaire.titleStyled` è persistito con migrazione additiva. Non sono ancora implementati pagina pubblica, IndexedDB/resume, blocco home e dashboard.
 - Le risposte CMS sono implementate: route RSC, lista paginata, dettaglio in dialog e interpretazione dei valori dal `definitionSnapshot`. Il dettaglio tRPC richiede anche `questionnaireId`, impedendo l'accesso a una risposta da un altro percorso questionario.
 - L'export CSV è implementato via tRPC protetto e auditato, con colonne derivate dagli snapshot, quoting CSV e protezione da formule spreadsheet.
-- Il renderer pubblico è implementato in `/questionari/[slug]`: step lineari, tutti i field type, submit pubblico, stati completato/chiuso, resume IndexedDB e risultati aggregati per i campi autorizzati.
+- Il renderer pubblico è implementato in `/questionari/[slug]`: step lineari, tutti i field type, submit pubblico, stati completato/chiuso e resume IndexedDB. Non espone risultati.
 
 ## Prossima attivita: Integrazione home pubblica
 

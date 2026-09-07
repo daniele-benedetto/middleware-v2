@@ -4,12 +4,7 @@ import { Download, Eye, Pencil, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import {
-  CmsEmptyState,
-  CmsErrorState,
-  CmsLoadingState,
-  CmsPaginationFooter,
-} from "@/components/cms/common";
+import { CmsEmptyState, CmsErrorState, CmsPaginationFooter } from "@/components/cms/common";
 import {
   CmsActionButton,
   CmsDataTableShell,
@@ -24,6 +19,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -32,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CmsQuestionnaireResponsesLoading } from "@/features/cms/questionnaires/components/questionnaire-list-loading";
 import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { cmsMetaLabelClass } from "@/lib/cms/ui/variants";
@@ -116,7 +113,7 @@ function ResponseDetailDialog({
           </div>
           <div className="cms-scroll min-h-0 flex-1 overflow-y-auto px-6 py-5">
             {query.isPending ? (
-              <CmsLoadingState />
+              <ResponseAnswersLoading />
             ) : error ? (
               <CmsErrorState title={error.title} description={error.description} />
             ) : query.data ? (
@@ -126,6 +123,29 @@ function ResponseDetailDialog({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function ResponseAnswersLoading() {
+  return (
+    <div className="space-y-6" aria-busy="true" aria-label="Caricamento risposta">
+      {Array.from({ length: 3 }).map((_, sectionIndex) => (
+        <section
+          className="space-y-3 border-t-2 border-foreground pt-5 first:border-t-0 first:pt-0"
+          key={sectionIndex}
+        >
+          <Skeleton className="h-3 w-28 rounded-[6px] bg-card-hover" />
+          <div className="space-y-3">
+            {Array.from({ length: sectionIndex === 0 ? 3 : 2 }).map((_, rowIndex) => (
+              <div className="border-b border-border pb-3" key={rowIndex}>
+                <Skeleton className="h-3 w-36 rounded-[6px] bg-card-hover" />
+                <Skeleton className="mt-2 h-5 w-2/3 rounded-[6px] bg-card-hover" />
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }
 
@@ -203,7 +223,7 @@ export function CmsQuestionnaireResponsesScreen({
     link.click();
     URL.revokeObjectURL(url);
   };
-  if (query.isPending) return <CmsLoadingState />;
+  if (query.isPending) return <CmsQuestionnaireResponsesLoading />;
   if (query.isError) {
     const error = mapTrpcErrorToCmsUiMessage(query.error);
     return (

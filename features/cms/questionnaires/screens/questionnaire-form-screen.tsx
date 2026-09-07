@@ -21,9 +21,10 @@ import {
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type ChangeEvent, type HTMLAttributes, type ReactNode } from "react";
 
-import { CmsErrorState, CmsLoadingState } from "@/components/cms/common";
+import { CmsErrorState } from "@/components/cms/common";
 import {
   CmsActionButton,
+  CmsBadge,
   CmsCheckbox,
   CmsFormField,
   CmsMetaText,
@@ -38,6 +39,7 @@ import {
   getStyledTitlePlainText,
   hasStyledTitleFormatting,
 } from "@/components/cms/primitives";
+import { CmsQuestionnaireFormLoading } from "@/features/cms/questionnaires/components/questionnaire-form-loading";
 import {
   useQuestionnaireById,
   useQuestionnaireCreate,
@@ -51,7 +53,7 @@ import {
 } from "@/features/cms/shared/forms";
 import { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sensors";
 import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
-import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
+import { invalidateAfterCmsMutation, invalidateQuestionnairesAfterMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
 import {
   createQuestionnaireInputSchema,
@@ -140,6 +142,18 @@ function getStepProblemCount(step: QuestionnaireDefinition["steps"][number]) {
   return count;
 }
 
+function toDateTimeLocalValue(value: string | undefined) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const timezoneOffset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
+}
+
+function toIsoDateTimeValue(value: string) {
+  return value ? new Date(value).toISOString() : undefined;
+}
+
 type Props = {
   mode: "create" | "edit";
   questionnaireId?: string;
@@ -152,6 +166,9 @@ export function CmsQuestionnaireFormScreen({ mode, questionnaireId, initialData 
   });
   const create = useQuestionnaireCreate();
   const update = useQuestionnaireUpdate();
+  const publish = trpc.questionnaires.publish.useMutation();
+  const close = trpc.questionnaires.close.useMutation();
+  const archive = trpc.questionnaires.archive.useMutation();
   const { cancel, success } = useCmsFormNavigation("/cms/questionari");
   const text = i18n.cms.forms.resources.questionnaires;
   const utils = trpc.useUtils();
@@ -163,7 +180,7 @@ export function CmsQuestionnaireFormScreen({ mode, questionnaireId, initialData 
         description={i18n.cms.forms.invalidEditIdDescription}
       />
     );
-  if (mode === "edit" && query.isPending) return <CmsLoadingState />;
+  if (mode === "edit" && query.isPending) return <CmsQuestionnaireFormLoading />;
   if (mode === "edit" && query.isError) {
     const error = mapCrudDomainError(query.error, "questionnaires");
     return <CmsErrorState title={error.title} description={error.description} />;
@@ -174,8 +191,32 @@ export function CmsQuestionnaireFormScreen({ mode, questionnaireId, initialData 
       mode={mode}
       questionnaireId={questionnaireId}
       questionnaire={query.data}
-      busy={create.isPending || update.isPending}
+      busy={
+        create.isPending ||
+        update.isPending ||
+        publish.isPending ||
+        close.isPending ||
+        archive.isPending
+      }
       onCancel={cancel}
+      onStatusChange={async (action) => {
+        if (!questionnaireId) return;
+        try {
+          if (action === "publish") await publish.mutateAsync({ id: questionnaireId });
+          if (action === "close") await close.mutateAsync({ id: questionnaireId });
+          if (action === "archive") await archive.mutateAsync({ id: questionnaireId });
+          await invalidateQuestionnairesAfterMutation(utils, { id: questionnaireId });
+          const messages = {
+            publish: text.published,
+            close: text.closed,
+            archive: text.archived,
+          };
+          cmsToast.success(messages[action]);
+        } catch (error) {
+          const mapped = mapCrudDomainError(error, "questionnaires");
+          cmsToast.error(mapped.description, mapped.title);
+        }
+      }}
       onSave={async (data) => {
         try {
           if (mode === "create") {
@@ -216,6 +257,7 @@ function QuestionnaireFormContent({
   questionnaire,
   busy,
   onCancel,
+  onStatusChange,
   onSave,
 }: {
   mode: "create" | "edit";
@@ -223,6 +265,7 @@ function QuestionnaireFormContent({
   questionnaire?: QuestionnaireDetail;
   busy: boolean;
   onCancel: () => void;
+  onStatusChange: (action: "publish" | "close" | "archive") => Promise<void>;
   onSave: (data: {
     title: string;
     titleStyled: IssueTitleStyled | null;
@@ -542,6 +585,14 @@ function QuestionnaireFormContent({
                   Impostazioni del questionario
                 </h2>
               </div>
+              {mode === "edit" && questionnaire ? (
+                <QuestionnaireStatusPanel
+                  status={questionnaire.status}
+                  busy={busy}
+                  text={text}
+                  onChange={onStatusChange}
+                />
+              ) : null}
               <CmsFormField
                 label={text.title}
                 htmlFor="questionnaire-title"
@@ -685,6 +736,66 @@ function QuestionnaireFormContent({
         </div>
       </div>
     </form>
+  );
+}
+
+function QuestionnaireStatusPanel({
+  status,
+  busy,
+  text,
+  onChange,
+}: {
+  status: QuestionnaireDetail["status"];
+  busy: boolean;
+  text: typeof i18n.cms.forms.resources.questionnaires;
+  onChange: (action: "publish" | "close" | "archive") => Promise<void>;
+}) {
+  const statuses = {
+    DRAFT: {
+      label: text.statusDraft,
+      variant: "status-draft" as const,
+      action: "publish" as const,
+    },
+    PUBLISHED: {
+      label: text.statusPublished,
+      variant: "status-published" as const,
+      action: "close" as const,
+    },
+    CLOSED: {
+      label: text.statusClosed,
+      variant: "category-outline-ink" as const,
+      action: "archive" as const,
+    },
+    ARCHIVED: { label: text.statusArchived, variant: "status-archived" as const, action: null },
+  };
+  const current = statuses[status];
+  const actionLabel =
+    current.action === "publish"
+      ? text.publish
+      : current.action === "close"
+        ? text.close
+        : text.archive;
+
+  return (
+    <section className="flex flex-wrap items-center justify-between gap-4 border border-foreground bg-card p-4">
+      <div>
+        <CmsMetaText variant="category">{text.status}</CmsMetaText>
+        <div className="mt-2">
+          <CmsBadge variant={current.variant}>{current.label}</CmsBadge>
+        </div>
+      </div>
+      {current.action ? (
+        <CmsActionButton
+          type="button"
+          variant={current.action === "archive" ? "outline" : "primary"}
+          size="xs"
+          isLoading={busy}
+          onClick={() => void onChange(current.action!)}
+        >
+          {actionLabel}
+        </CmsActionButton>
+      ) : null}
+    </section>
   );
 }
 
@@ -1103,6 +1214,8 @@ function FieldTypeSettings({
   };
   const textInput = (key: string) => (event: ChangeEvent<HTMLInputElement>) =>
     update(key, event.target.value || undefined);
+  const dateTimeInput = (key: string) => (event: ChangeEvent<HTMLInputElement>) =>
+    update(key, toIsoDateTimeValue(event.target.value));
   const Field = QuestionnaireConfigField;
   const NumberInput = QuestionnaireConfigNumberInput;
 
@@ -1187,19 +1300,19 @@ function FieldTypeSettings({
                 <Field label={text.minimum}>
                   <CmsTextInput
                     id={`${field.id}-minimum`}
-                    tone="mono"
-                    value={field.min ?? ""}
+                    type="datetime-local"
+                    value={toDateTimeLocalValue(field.min)}
                     disabled={disabled}
-                    onChange={textInput("min")}
+                    onChange={dateTimeInput("min")}
                   />
                 </Field>
                 <Field label={text.maximum}>
                   <CmsTextInput
                     id={`${field.id}-maximum`}
-                    tone="mono"
-                    value={field.max ?? ""}
+                    type="datetime-local"
+                    value={toDateTimeLocalValue(field.max)}
                     disabled={disabled}
-                    onChange={textInput("max")}
+                    onChange={dateTimeInput("max")}
                   />
                 </Field>
               </div>

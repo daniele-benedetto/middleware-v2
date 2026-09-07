@@ -1,4 +1,4 @@
-import { CmsListLoadingState } from "@/components/cms/common";
+import { CmsQuestionnairesListLoading } from "@/features/cms/questionnaires/components/questionnaire-list-loading";
 export default function CmsQuestionnairesLoading() {
-  return <CmsListLoadingState columns={6} filterColumns={3} />;
+  return <CmsQuestionnairesListLoading />;
 }

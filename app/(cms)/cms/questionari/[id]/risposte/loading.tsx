@@ -1,5 +1,5 @@
-import { CmsQuestionnaireFormLoading } from "@/features/cms/questionnaires/components/questionnaire-form-loading";
+import { CmsQuestionnaireResponsesLoading } from "@/features/cms/questionnaires/components/questionnaire-list-loading";
 
-export default function CmsQuestionnaireResponsesLoading() {
-  return <CmsQuestionnaireFormLoading />;
+export default function CmsQuestionnaireResponsesRouteLoading() {
+  return <CmsQuestionnaireResponsesLoading />;
 }

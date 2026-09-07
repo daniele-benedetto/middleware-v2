@@ -9,7 +9,6 @@ import {
   CmsConfirmDialog,
   CmsEmptyState,
   CmsErrorState,
-  CmsLoadingState,
   CmsPaginationFooter,
 } from "@/components/cms/common";
 import {
@@ -29,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CmsQuestionnairesListLoading } from "@/features/cms/questionnaires/components/questionnaire-list-loading";
 import {
   executeBulk,
   mapBulkQuickActionError,
@@ -142,7 +142,7 @@ export function CmsQuestionnairesListScreen({ initialInput, initialData }: Props
     },
     clearSelection: selection.clearSelection,
   });
-  if (listQuery.isPending) return <CmsLoadingState />;
+  if (listQuery.isPending) return <CmsQuestionnairesListLoading />;
   if (listQuery.isError) {
     const error = mapTrpcErrorToCmsUiMessage(listQuery.error);
     return (

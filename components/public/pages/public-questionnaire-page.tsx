@@ -151,10 +151,6 @@ export function PublicQuestionnairePage({
   const [message, setMessage] = useState<string | null>(null);
   const submit = trpc.public.questionnaires.submit.useMutation();
   const draft = useQuestionnaireDraft(questionnaire.id, definition.version);
-  const results = trpc.public.questionnaires.getResults.useQuery(
-    { questionnaireId: questionnaire.id },
-    { enabled: questionnaire.isClosed },
-  );
   const step = definition.steps[stepIndex];
   const isLastStep = stepIndex === definition.steps.length - 1;
   useEffect(() => {
@@ -206,51 +202,6 @@ export function PublicQuestionnairePage({
       <main id="main-content" className="mx-auto w-full max-w-3xl px-5 py-16">
         <h1 className="font-display text-4xl font-black">{definition.copy.closedTitle}</h1>
         <p className="mt-4 font-editorial text-xl">{definition.copy.closedMessage}</p>
-        <section className="mt-12 space-y-5 border-t-2 border-foreground pt-6">
-          <h2 className="font-display text-3xl font-black">{definition.copy.resultsTitle}</h2>
-          {results.isPending || results.data?.length === 0 ? (
-            <p className="font-editorial text-lg">{definition.copy.resultsEmptyMessage}</p>
-          ) : null}
-          {results.data?.map((result) => {
-            const field = definition.steps
-              .flatMap((step) => step.fields)
-              .find((item) => item.id === result.fieldId);
-            if (!field) return null;
-            return (
-              <article className="border-t border-foreground pt-4" key={result.fieldId}>
-                <h3 className="font-ui text-sm font-bold uppercase tracking-[.06em]">
-                  {field.label}
-                </h3>
-                {result.kind === "choice" &&
-                (field.type === "singleChoice" || field.type === "multipleChoice") ? (
-                  <ul className="mt-3 space-y-1 font-editorial text-lg">
-                    {result.options.map((option) => (
-                      <li key={option.optionId}>
-                        {field.options.find((item) => item.id === option.optionId)?.label}:{" "}
-                        {option.count}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                {result.kind === "boolean" && field.type === "boolean" ? (
-                  <p className="mt-3 font-editorial text-lg">
-                    {field.trueLabel}: {result.trueCount} · {field.falseLabel}: {result.falseCount}
-                  </p>
-                ) : null}
-                {result.kind === "number" ? (
-                  <p className="mt-3 font-editorial text-lg">
-                    {result.minimum ?? "-"} · {result.maximum ?? "-"} · {result.average ?? "-"}
-                  </p>
-                ) : null}
-                {result.kind === "date" ? (
-                  <p className="mt-3 font-editorial text-lg">
-                    {result.minimum ?? "-"} · {result.maximum ?? "-"}
-                  </p>
-                ) : null}
-              </article>
-            );
-          })}
-        </section>
       </main>
     );
   if (message === definition.copy.successMessage)

@@ -35,6 +35,7 @@ const listInput = paginationInputSchema.extend({
 });
 const responseListInput = paginationInputSchema.extend({ questionnaireId: z.string().uuid() });
 const role = requireRoleMiddleware(questionnairesPolicy.allowedRoles);
+const resultsRole = requireRoleMiddleware(questionnairesPolicy.resultsRoles);
 export const questionnairesRouter = router({
   list: protectedProcedure
     .use(role)
@@ -140,7 +141,7 @@ export const questionnairesRouter = router({
       return parseOutput({ success: true }, successOutputSchema);
     }),
   listResponses: protectedProcedure
-    .use(role)
+    .use(resultsRole)
     .input(responseListInput)
     .query(async ({ input }) => {
       const result = await cmsQuestionnairesService.listResponses(input.questionnaireId, input);
@@ -150,7 +151,7 @@ export const questionnairesRouter = router({
       };
     }),
   getResponseById: protectedProcedure
-    .use(role)
+    .use(resultsRole)
     .input(id.extend({ questionnaireId: z.string().uuid() }))
     .query(({ input }) =>
       cmsQuestionnairesService
@@ -158,7 +159,7 @@ export const questionnairesRouter = router({
         .then((x) => parseOutput(x, questionnaireResponseDetailDtoSchema)),
     ),
   exportResponsesCsv: protectedProcedure
-    .use(role)
+    .use(resultsRole)
     .input(id)
     .use(
       auditMiddleware<{ id: string }>((input) => ({

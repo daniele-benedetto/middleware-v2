@@ -73,29 +73,6 @@ describe("public questionnaires router", () => {
     });
   });
 
-  it("strips private values from public aggregate DTOs", async () => {
-    questionnaireResponsesServiceMock.getPublicResults.mockResolvedValue([
-      {
-        kind: "boolean",
-        fieldId,
-        responseCount: 1,
-        trueCount: 1,
-        falseCount: 0,
-        answers: ["private value"],
-      },
-    ]);
-    const caller = publicQuestionnairesRouter.createCaller(
-      context("/api/trpc/public.questionnaires.getResults"),
-    );
-
-    const result = await caller.getResults({ questionnaireId });
-
-    expect(result).toEqual([
-      { kind: "boolean", fieldId, responseCount: 1, trueCount: 1, falseCount: 0 },
-    ]);
-    expect(JSON.stringify(result)).not.toContain("private value");
-  });
-
   it("rejects cross-origin public mutations", async () => {
     const ctx = {
       ...context(),
