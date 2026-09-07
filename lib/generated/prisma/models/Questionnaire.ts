@@ -51,6 +51,7 @@ export type QuestionnaireMaxAggregateOutputType = {
 export type QuestionnaireCountAggregateOutputType = {
   id: number
   title: number
+  titleStyled: number
   slug: number
   descriptionRich: number
   definition: number
@@ -91,6 +92,7 @@ export type QuestionnaireMaxAggregateInputType = {
 export type QuestionnaireCountAggregateInputType = {
   id?: true
   title?: true
+  titleStyled?: true
   slug?: true
   descriptionRich?: true
   definition?: true
@@ -178,6 +180,7 @@ export type QuestionnaireGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 export type QuestionnaireGroupByOutputType = {
   id: string
   title: string
+  titleStyled: runtime.JsonValue | null
   slug: string
   descriptionRich: runtime.JsonValue | null
   definition: runtime.JsonValue
@@ -213,6 +216,7 @@ export type QuestionnaireWhereInput = {
   NOT?: Prisma.QuestionnaireWhereInput | Prisma.QuestionnaireWhereInput[]
   id?: Prisma.StringFilter<"Questionnaire"> | string
   title?: Prisma.StringFilter<"Questionnaire"> | string
+  titleStyled?: Prisma.JsonNullableFilter<"Questionnaire">
   slug?: Prisma.StringFilter<"Questionnaire"> | string
   descriptionRich?: Prisma.JsonNullableFilter<"Questionnaire">
   definition?: Prisma.JsonFilter<"Questionnaire">
@@ -228,6 +232,7 @@ export type QuestionnaireWhereInput = {
 export type QuestionnaireOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
   slug?: Prisma.SortOrder
   descriptionRich?: Prisma.SortOrderInput | Prisma.SortOrder
   definition?: Prisma.SortOrder
@@ -247,6 +252,7 @@ export type QuestionnaireWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.QuestionnaireWhereInput[]
   NOT?: Prisma.QuestionnaireWhereInput | Prisma.QuestionnaireWhereInput[]
   title?: Prisma.StringFilter<"Questionnaire"> | string
+  titleStyled?: Prisma.JsonNullableFilter<"Questionnaire">
   descriptionRich?: Prisma.JsonNullableFilter<"Questionnaire">
   definition?: Prisma.JsonFilter<"Questionnaire">
   status?: Prisma.EnumQuestionnaireStatusFilter<"Questionnaire"> | $Enums.QuestionnaireStatus
@@ -261,6 +267,7 @@ export type QuestionnaireWhereUniqueInput = Prisma.AtLeast<{
 export type QuestionnaireOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
   slug?: Prisma.SortOrder
   descriptionRich?: Prisma.SortOrderInput | Prisma.SortOrder
   definition?: Prisma.SortOrder
@@ -281,6 +288,7 @@ export type QuestionnaireScalarWhereWithAggregatesInput = {
   NOT?: Prisma.QuestionnaireScalarWhereWithAggregatesInput | Prisma.QuestionnaireScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Questionnaire"> | string
   title?: Prisma.StringWithAggregatesFilter<"Questionnaire"> | string
+  titleStyled?: Prisma.JsonNullableWithAggregatesFilter<"Questionnaire">
   slug?: Prisma.StringWithAggregatesFilter<"Questionnaire"> | string
   descriptionRich?: Prisma.JsonNullableWithAggregatesFilter<"Questionnaire">
   definition?: Prisma.JsonWithAggregatesFilter<"Questionnaire">
@@ -295,6 +303,7 @@ export type QuestionnaireScalarWhereWithAggregatesInput = {
 export type QuestionnaireCreateInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -310,6 +319,7 @@ export type QuestionnaireCreateInput = {
 export type QuestionnaireUncheckedCreateInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -325,6 +335,7 @@ export type QuestionnaireUncheckedCreateInput = {
 export type QuestionnaireUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -340,6 +351,7 @@ export type QuestionnaireUpdateInput = {
 export type QuestionnaireUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -355,6 +367,7 @@ export type QuestionnaireUncheckedUpdateInput = {
 export type QuestionnaireCreateManyInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -369,6 +382,7 @@ export type QuestionnaireCreateManyInput = {
 export type QuestionnaireUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -383,6 +397,7 @@ export type QuestionnaireUpdateManyMutationInput = {
 export type QuestionnaireUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -397,6 +412,7 @@ export type QuestionnaireUncheckedUpdateManyInput = {
 export type QuestionnaireCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  titleStyled?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   descriptionRich?: Prisma.SortOrder
   definition?: Prisma.SortOrder
@@ -458,6 +474,7 @@ export type QuestionnaireUpdateOneRequiredWithoutResponsesNestedInput = {
 export type QuestionnaireCreateWithoutResponsesInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -472,6 +489,7 @@ export type QuestionnaireCreateWithoutResponsesInput = {
 export type QuestionnaireUncheckedCreateWithoutResponsesInput = {
   id?: string
   title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug: string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -502,6 +520,7 @@ export type QuestionnaireUpdateToOneWithWhereWithoutResponsesInput = {
 export type QuestionnaireUpdateWithoutResponsesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -516,6 +535,7 @@ export type QuestionnaireUpdateWithoutResponsesInput = {
 export type QuestionnaireUncheckedUpdateWithoutResponsesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -561,6 +581,7 @@ export type QuestionnaireCountOutputTypeCountResponsesArgs<ExtArgs extends runti
 export type QuestionnaireSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   descriptionRich?: boolean
   definition?: boolean
@@ -577,6 +598,7 @@ export type QuestionnaireSelect<ExtArgs extends runtime.Types.Extensions.Interna
 export type QuestionnaireSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   descriptionRich?: boolean
   definition?: boolean
@@ -591,6 +613,7 @@ export type QuestionnaireSelectCreateManyAndReturn<ExtArgs extends runtime.Types
 export type QuestionnaireSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   descriptionRich?: boolean
   definition?: boolean
@@ -605,6 +628,7 @@ export type QuestionnaireSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
 export type QuestionnaireSelectScalar = {
   id?: boolean
   title?: boolean
+  titleStyled?: boolean
   slug?: boolean
   descriptionRich?: boolean
   definition?: boolean
@@ -616,7 +640,7 @@ export type QuestionnaireSelectScalar = {
   updatedAt?: boolean
 }
 
-export type QuestionnaireOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "descriptionRich" | "definition" | "status" | "publishedAt" | "closedAt" | "firstResponseAt" | "createdAt" | "updatedAt", ExtArgs["result"]["questionnaire"]>
+export type QuestionnaireOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleStyled" | "slug" | "descriptionRich" | "definition" | "status" | "publishedAt" | "closedAt" | "firstResponseAt" | "createdAt" | "updatedAt", ExtArgs["result"]["questionnaire"]>
 export type QuestionnaireInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   responses?: boolean | Prisma.Questionnaire$responsesArgs<ExtArgs>
   _count?: boolean | Prisma.QuestionnaireCountOutputTypeDefaultArgs<ExtArgs>
@@ -632,6 +656,7 @@ export type $QuestionnairePayload<ExtArgs extends runtime.Types.Extensions.Inter
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     title: string
+    titleStyled: runtime.JsonValue | null
     slug: string
     descriptionRich: runtime.JsonValue | null
     definition: runtime.JsonValue
@@ -1067,6 +1092,7 @@ export interface Prisma__QuestionnaireClient<T, Null = never, ExtArgs extends ru
 export interface QuestionnaireFieldRefs {
   readonly id: Prisma.FieldRef<"Questionnaire", 'String'>
   readonly title: Prisma.FieldRef<"Questionnaire", 'String'>
+  readonly titleStyled: Prisma.FieldRef<"Questionnaire", 'Json'>
   readonly slug: Prisma.FieldRef<"Questionnaire", 'String'>
   readonly descriptionRich: Prisma.FieldRef<"Questionnaire", 'Json'>
   readonly definition: Prisma.FieldRef<"Questionnaire", 'Json'>

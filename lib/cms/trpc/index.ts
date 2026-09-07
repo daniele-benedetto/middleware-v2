@@ -12,6 +12,7 @@ export {
   invalidateMapsAfterMutation,
   invalidateNavigationAfterMutation,
   invalidatePagesAfterMutation,
+  invalidateQuestionnairesAfterMutation,
   invalidateUsersAfterMutation,
   type CmsMutationName,
 } from "@/lib/cms/trpc/invalidation";

@@ -302,6 +302,7 @@ export type PageScalarFieldEnum = (typeof PageScalarFieldEnum)[keyof typeof Page
 export const QuestionnaireScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  titleStyled: 'titleStyled',
   slug: 'slug',
   descriptionRich: 'descriptionRich',
   definition: 'definition',

@@ -275,6 +275,9 @@ export function CmsQuestionnairesListScreen({ initialInput, initialData }: Props
                     {listText.table.title}
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
+                    {listText.table.slug}
+                  </TableHead>
+                  <TableHead className={cmsTableClasses.headerCell}>
                     {listText.table.status}
                   </TableHead>
                   <TableHead className={cmsTableClasses.headerCell}>
@@ -303,10 +306,8 @@ export function CmsQuestionnairesListScreen({ initialInput, initialData }: Props
                         />
                       </div>
                     </TableCell>
-                    <TableCell className={cmsTableClasses.bodyCellTitle}>
-                      {item.title}
-                      <span className="block text-xs opacity-60">{item.slug}</span>
-                    </TableCell>
+                    <TableCell className={cmsTableClasses.bodyCellTitle}>{item.title}</TableCell>
+                    <TableCell className={cmsTableClasses.bodyCellMeta}>{item.slug}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>{item.status}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellNumeric}>
                       {item.responseCount}

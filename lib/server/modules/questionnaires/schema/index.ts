@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 import { questionnaireDefinitionSchema } from "@/lib/server/modules/questionnaires/schema/definition";
 
 import type { QuestionnaireStatus } from "@/lib/generated/prisma/enums";
@@ -13,6 +14,7 @@ export const questionnaireStatusSchema = z.enum([
 
 const questionnaireBaseInputSchema = z.object({
   title: z.string().trim().min(1),
+  titleStyled: issueTitleStyledSchema.nullable().optional(),
   slug: z.string().trim().min(1),
   descriptionRich: z.unknown().nullable().optional(),
   definition: questionnaireDefinitionSchema,

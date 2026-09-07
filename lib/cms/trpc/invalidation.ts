@@ -79,6 +79,9 @@ export type CmsMutationName =
   | "maps.updateItem"
   | "maps.deleteItem"
   | "maps.reorderItems"
+  | "questionnaires.create"
+  | "questionnaires.update"
+  | "questionnaires.delete"
   | "navigation.update";
 
 export async function invalidateIssuesAfterMutation(utils: TrpcUtils, input?: MutationInput) {
@@ -132,6 +135,17 @@ export async function invalidateMapsAfterMutation(utils: TrpcUtils, input?: Muta
   ]);
 }
 
+export async function invalidateQuestionnairesAfterMutation(
+  utils: TrpcUtils,
+  input?: MutationInput,
+) {
+  await invalidateResource(
+    utils.questionnaires.list.invalidate,
+    utils.questionnaires.getById.invalidate,
+    input,
+  );
+}
+
 export async function invalidateNavigationAfterMutation(utils: TrpcUtils) {
   await Promise.all([
     utils.navigation.listMenus.invalidate(),
@@ -183,6 +197,11 @@ export async function invalidateAfterCmsMutation(
 
   if (mutation.startsWith("maps.")) {
     await invalidateMapsAfterMutation(utils, input);
+    return;
+  }
+
+  if (mutation.startsWith("questionnaires.")) {
+    await invalidateQuestionnairesAfterMutation(utils, input);
     return;
   }
 

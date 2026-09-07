@@ -53,6 +53,7 @@ type ArticleDetailOutput = RouterOutputs["articles"]["getById"];
 type ArticlePreviewOutput = RouterOutputs["articles"]["getPreviewById"];
 type PageDetailOutput = RouterOutputs["pages"]["getById"];
 type MapDetailOutput = RouterOutputs["maps"]["getById"];
+type QuestionnaireDetailOutput = RouterOutputs["questionnaires"]["getById"];
 type PagesListOutput = RouterOutputs["pages"]["list"];
 
 type CmsListPrefetcher<TInput, TOutput> = (caller: TrpcCaller, input: TInput) => Promise<TOutput>;
@@ -176,6 +177,11 @@ export async function prefetchLessonFormCourseOptions(): Promise<CoursesListOutp
 export async function prefetchIssueById(id: string): Promise<IssueDetailOutput> {
   const caller = await getTrpcCaller();
   return caller.issues.getById({ id });
+}
+
+export async function prefetchQuestionnaireById(id: string): Promise<QuestionnaireDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.questionnaires.getById({ id });
 }
 
 export async function prefetchIssuePreviewById(id: string): Promise<IssuePreviewOutput> {

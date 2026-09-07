@@ -300,6 +300,7 @@ model Page {
 model Questionnaire {
   id              String              @id @default(uuid())
   title           String
+  titleStyled     Json?
   slug            String              @unique
   descriptionRich Json?
   definition      Json

@@ -20,6 +20,7 @@ import type {
 type CmsQuestionnaireRecord = {
   id: string;
   title: string;
+  titleStyled?: unknown;
   slug: string;
   status: QuestionnaireStatus;
   publishedAt: Date | null;
@@ -41,6 +42,10 @@ function dto(record: CmsQuestionnaireRecord) {
   return {
     id: record.id,
     title: record.title,
+    titleStyled:
+      (record.titleStyled as
+        | import("@/lib/server/modules/issues/schema").IssueTitleStyled
+        | null) ?? null,
     slug: record.slug,
     status: record.status,
     publishedAt: record.publishedAt?.toISOString() ?? null,
