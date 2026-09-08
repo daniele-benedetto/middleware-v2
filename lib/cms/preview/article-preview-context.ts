@@ -20,7 +20,11 @@ function resolveNarrativeBlocks(issue: IssuePreview): NarrativeBlock[] {
   const blocks: NarrativeBlock[] = [];
 
   for (const rawBlock of issue.homeBlocks ?? []) {
-    if (rawBlock.type === "course" || rawBlock.type === "map") {
+    if (
+      rawBlock.type === "course" ||
+      rawBlock.type === "map" ||
+      rawBlock.type === "questionnaireAnalysis"
+    ) {
       continue;
     }
 

@@ -4,6 +4,7 @@ import { extractPlainText } from "@/lib/rich-text/plain-text";
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
 import type { PublicMapDetailDto } from "@/lib/server/modules/maps/dto/public";
+import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
 
 export type HomeIssueArticle = PublicCurrentIssueDetail["articles"][number];
 
@@ -22,8 +23,17 @@ export type CourseHomeBlock = {
 };
 
 export type MapHomeBlock = { id: string; type: "map"; map: PublicMapDetailDto };
+export type QuestionnaireAnalysisHomeBlock = {
+  id: string;
+  type: "questionnaireAnalysis";
+  questionnaireAnalysis: PublicQuestionnaireAnalysisDto;
+};
 
-export type ResolvedHomeBlock = NarrativeHomeBlock | CourseHomeBlock | MapHomeBlock;
+export type ResolvedHomeBlock =
+  | NarrativeHomeBlock
+  | CourseHomeBlock
+  | MapHomeBlock
+  | QuestionnaireAnalysisHomeBlock;
 
 export function sortHomeArticles(articles: HomeIssueArticle[]) {
   return [...articles].sort((a, b) => {

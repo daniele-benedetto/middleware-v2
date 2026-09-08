@@ -280,6 +280,12 @@ function IssueFormContent({
     query: { sortOrder: "desc" },
   });
   const maps = mapsQuery.data?.items ?? [];
+  const questionnairesQuery = trpc.questionnaires.list.useQuery({
+    page: 1,
+    pageSize: 100,
+    query: { status: "CLOSED", sortBy: "closedAt", sortOrder: "desc" },
+  });
+  const questionnaires = questionnairesQuery.data?.items ?? [];
   const isBusy = isMutating;
   const homeVariantOptions = issueHomeVariantOptions.map((option) => ({
     value: option.value,
@@ -569,6 +575,7 @@ function IssueFormContent({
               articles={articles}
               courses={courses}
               maps={maps}
+              questionnaires={questionnaires}
               disabled={isBusy}
               text={issueFormText.homeBlocksEditor}
               onChange={setHomeBlocks}

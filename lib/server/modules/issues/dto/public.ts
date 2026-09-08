@@ -8,6 +8,7 @@ import {
   issueTitleStyledSchema,
 } from "@/lib/server/modules/issues/schema";
 import { publicMapDetailDtoSchema } from "@/lib/server/modules/maps/dto/public";
+import { publicQuestionnaireAnalysisDtoSchema } from "@/lib/server/modules/questionnaires/dto/public";
 
 export const publicIssueArticleSummaryDtoSchema = z.object({
   id: z.string().uuid(),
@@ -42,6 +43,7 @@ export const publicIssueDetailDtoSchema = publicIssueDtoSchema.extend({
   articles: z.array(publicIssueArticleSummaryDtoSchema),
   courses: z.array(publicCourseDetailDtoSchema),
   maps: z.array(publicMapDetailDtoSchema),
+  questionnaireAnalyses: z.array(publicQuestionnaireAnalysisDtoSchema).optional(),
 });
 
 export const publicIssuesListDtoSchema = z.array(publicIssueDtoSchema);

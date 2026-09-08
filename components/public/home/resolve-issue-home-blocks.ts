@@ -41,6 +41,9 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): ResolvedHomeB
   const articlesById = new Map(issue.articles.map((article) => [article.id, article]));
   const coursesById = new Map(issue.courses.map((course) => [course.id, course]));
   const mapsById = new Map(issue.maps.map((map) => [map.id, map]));
+  const questionnaireAnalysesById = new Map(
+    (issue.questionnaireAnalyses ?? []).map((analysis) => [analysis.id, analysis]),
+  );
   const manualArticleIds = new Set<string>();
   const blocks: ResolvedHomeBlock[] = [];
 
@@ -60,6 +63,18 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): ResolvedHomeB
 
       if (map && map.items.length > 0) {
         blocks.push({ id: rawBlock.id, type: "map", map });
+      }
+
+      continue;
+    }
+
+    if (rawBlock.type === "questionnaireAnalysis") {
+      const questionnaireAnalysis = rawBlock.questionnaireId
+        ? questionnaireAnalysesById.get(rawBlock.questionnaireId)
+        : null;
+
+      if (questionnaireAnalysis) {
+        blocks.push({ id: rawBlock.id, type: "questionnaireAnalysis", questionnaireAnalysis });
       }
 
       continue;

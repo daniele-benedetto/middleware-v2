@@ -16,6 +16,7 @@ import type {
 } from "@/lib/server/modules/issues/schema";
 import type { PublicLessonDetailDto } from "@/lib/server/modules/lessons/dto/public";
 import type { PublicMapDetailDto } from "@/lib/server/modules/maps/dto/public";
+import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
 
 type LivePreviewResource = "article" | "issue" | "course" | "lesson";
 
@@ -108,6 +109,7 @@ export type IssueLivePreviewInput = {
   articles: PublicIssueArticleSummaryDto[];
   courses?: PublicCourseDetailDto[];
   maps?: PublicMapDetailDto[];
+  questionnaireAnalyses?: PublicQuestionnaireAnalysisDto[];
   publishedIssues?: PublicIssueListItem[];
   statusLabel: string;
   publicAvailable: boolean;
@@ -223,6 +225,7 @@ export function toIssueLivePreviewSnapshot(input: IssueLivePreviewInput): IssueL
     articles: input.articles,
     courses: input.courses ?? [],
     maps: input.maps ?? [],
+    questionnaireAnalyses: input.questionnaireAnalyses ?? [],
   };
 
   return {

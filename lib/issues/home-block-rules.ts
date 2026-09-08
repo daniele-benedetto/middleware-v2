@@ -3,10 +3,11 @@ import type {
   IssueHomeBlock,
   IssueHomeCourseBlock,
   IssueHomeMapBlock,
+  IssueHomeQuestionnaireAnalysisBlock,
 } from "@/lib/server/modules/issues/schema";
 
 export function isArticleHomeBlock(block: IssueHomeBlock): block is IssueHomeArticleBlock {
-  return block.type !== "course" && block.type !== "map";
+  return block.type !== "course" && block.type !== "map" && block.type !== "questionnaireAnalysis";
 }
 
 export function isSingleArticleBlock(type: IssueHomeArticleBlock["type"]) {
@@ -66,6 +67,12 @@ export function createEmptyCourseHomeBlock(
 
 export function createEmptyMapHomeBlock(id = `map-${Date.now().toString(36)}`): IssueHomeMapBlock {
   return { id, type: "map", mapId: null };
+}
+
+export function createEmptyQuestionnaireAnalysisHomeBlock(
+  id = `questionnaire-analysis-${Date.now().toString(36)}`,
+): IssueHomeQuestionnaireAnalysisBlock {
+  return { id, type: "questionnaireAnalysis", questionnaireId: null };
 }
 
 export function reorderItems<T>(items: T[], from: number, to: number) {

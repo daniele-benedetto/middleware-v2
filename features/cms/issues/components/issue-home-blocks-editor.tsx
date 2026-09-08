@@ -30,6 +30,7 @@ import { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sen
 import {
   createEmptyCourseHomeBlock,
   createEmptyMapHomeBlock,
+  createEmptyQuestionnaireAnalysisHomeBlock,
   createEmptyHomeBlock,
   isArticleHomeBlock,
   isSingleArticleBlock,
@@ -54,6 +55,7 @@ type IssueHomeBlockArticle = {
 
 type IssueHomeBlockCourse = { id: string; title: string };
 type IssueHomeBlockMap = { id: string; title: string };
+type IssueHomeBlockQuestionnaire = { id: string; title: string; responseCount: number };
 
 type IssueHomeBlocksEditorText = {
   addBlock: string;
@@ -88,6 +90,9 @@ type IssueHomeBlocksEditorText = {
   map: string;
   mapPlaceholder: string;
   typeMap: string;
+  typeQuestionnaireAnalysis: string;
+  questionnaireAnalysis: string;
+  questionnaireAnalysisPlaceholder: string;
 };
 
 type IssueHomeBlocksEditorProps = {
@@ -95,6 +100,7 @@ type IssueHomeBlocksEditorProps = {
   articles: IssueHomeBlockArticle[];
   courses: IssueHomeBlockCourse[];
   maps: IssueHomeBlockMap[];
+  questionnaires: IssueHomeBlockQuestionnaire[];
   disabled?: boolean;
   text: IssueHomeBlocksEditorText;
   onChange: (value: IssueHomeBlocks) => void;
@@ -107,6 +113,7 @@ const blockTypeOptions = [
   { value: "closing", labelKey: "typeClosing" },
   { value: "course", labelKey: "typeCourse" },
   { value: "map", labelKey: "typeMap" },
+  { value: "questionnaireAnalysis", labelKey: "typeQuestionnaireAnalysis" },
 ] as const;
 
 const featuredPlacementOptions = [
@@ -140,6 +147,7 @@ export function IssueHomeBlocksEditor({
   articles,
   courses,
   maps,
+  questionnaires,
   disabled,
   text,
   onChange,
@@ -197,7 +205,11 @@ export function IssueHomeBlocksEditor({
           articleIds: [],
           featuredArticleId: null,
         })
-      : createEmptyCourseHomeBlock();
+      : block.type === "map"
+        ? createEmptyMapHomeBlock()
+        : block.type === "questionnaireAnalysis"
+          ? createEmptyQuestionnaireAnalysisHomeBlock()
+          : createEmptyCourseHomeBlock();
     onChange([...value.slice(0, index + 1), clone, ...value.slice(index + 1)]);
   };
 
@@ -408,7 +420,11 @@ export function IssueHomeBlocksEditor({
                             <CmsBody size="sm" tone="muted">
                               {isArticleBlock
                                 ? text.articleCount(block.articleIds.length)
-                                : text.course}
+                                : block.type === "map"
+                                  ? text.map
+                                  : block.type === "questionnaireAnalysis"
+                                    ? text.questionnaireAnalysis
+                                    : text.course}
                             </CmsBody>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
@@ -479,10 +495,14 @@ export function IssueHomeBlocksEditor({
                                       ? createEmptyCourseHomeBlock(`${block.id}-course`)
                                       : nextType === "map"
                                         ? createEmptyMapHomeBlock(`${block.id}-map`)
-                                        : createEmptyHomeBlock(
-                                            nextType as IssueHomeArticleBlock["type"],
-                                            block.id,
-                                          ),
+                                        : nextType === "questionnaireAnalysis"
+                                          ? createEmptyQuestionnaireAnalysisHomeBlock(
+                                              `${block.id}-questionnaire-analysis`,
+                                            )
+                                          : createEmptyHomeBlock(
+                                              nextType as IssueHomeArticleBlock["type"],
+                                              block.id,
+                                            ),
                                   )
                                 }
                               />
@@ -513,6 +533,28 @@ export function IssueHomeBlocksEditor({
                                   options={maps.map((map) => ({ value: map.id, label: map.title }))}
                                   onValueChange={(mapId) =>
                                     updateBlock(index, { ...block, mapId: mapId || null })
+                                  }
+                                />
+                              </CmsFormField>
+                            ) : null}
+                            {block.type === "questionnaireAnalysis" ? (
+                              <CmsFormField
+                                label={text.questionnaireAnalysis}
+                                htmlFor={`${block.id}-questionnaire-analysis`}
+                              >
+                                <CmsSelect
+                                  value={block.questionnaireId ?? ""}
+                                  placeholder={text.questionnaireAnalysisPlaceholder}
+                                  disabled={disabled || questionnaires.length === 0}
+                                  options={questionnaires.map((questionnaire) => ({
+                                    value: questionnaire.id,
+                                    label: `${questionnaire.title} (${questionnaire.responseCount})`,
+                                  }))}
+                                  onValueChange={(questionnaireId) =>
+                                    updateBlock(index, {
+                                      ...block,
+                                      questionnaireId: questionnaireId || null,
+                                    })
                                   }
                                 />
                               </CmsFormField>

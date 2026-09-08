@@ -1,6 +1,7 @@
 import "server-only";
 
 import { Prisma } from "@/lib/generated/prisma/client";
+import { revalidatePublicQuestionnaireAnalysisContent } from "@/lib/public/server/revalidation";
 import { ApiError } from "@/lib/server/http/api-error";
 import { createQuestionnaireResponsesCsv } from "@/lib/server/modules/questionnaires/csv";
 import {
@@ -125,7 +126,7 @@ export const cmsQuestionnairesService = {
       (action === "restore" && current.status === "ARCHIVED");
     if (!allowed) throw new ApiError(409, "CONFLICT", "Invalid questionnaire status transition");
     try {
-      return detail(
+      const result = detail(
         await cmsQuestionnairesRepository.transition(
           id,
           action === "publish"
@@ -137,6 +138,8 @@ export const cmsQuestionnairesService = {
                 : "DRAFT",
         ),
       );
+      revalidatePublicQuestionnaireAnalysisContent();
+      return result;
     } catch (error) {
       map(error);
     }

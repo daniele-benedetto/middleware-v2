@@ -75,6 +75,16 @@ const fieldTypes = [
   "consent",
   "information",
 ] as const;
+const publicAnalysisFieldTypes = new Set<FieldType>([
+  "boolean",
+  "date",
+  "datetime",
+  "decimal",
+  "integer",
+  "multipleChoice",
+  "scale",
+  "singleChoice",
+]);
 type FieldType = (typeof fieldTypes)[number];
 type QuestionnaireEditorSection = "overview" | "copy" | string;
 
@@ -1090,12 +1100,14 @@ function FieldEditor({
               disabled={disabled}
               onChange={(value) => change("required", value)}
             />
-            <CmsCheckbox
-              label={text.publicResults}
-              checked={field.publicResults}
-              disabled={disabled}
-              onChange={(value) => change("publicResults", value)}
-            />
+            {publicAnalysisFieldTypes.has(field.type) ? (
+              <CmsCheckbox
+                label={text.publicResults}
+                checked={field.publicResults}
+                disabled={disabled}
+                onChange={(value) => change("publicResults", value)}
+              />
+            ) : null}
           </div>
           <FieldTypeSettings field={field} disabled={disabled} text={text} onChange={onChange} />
           {hasOptions ? (

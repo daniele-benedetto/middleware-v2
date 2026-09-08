@@ -156,6 +156,7 @@ const toPublicIssuePreviewDto = (issue: IssuePreviewRecord): PublicIssueDetailDt
     })),
     courses: [],
     maps: [],
+    questionnaireAnalyses: [],
   };
 };
 

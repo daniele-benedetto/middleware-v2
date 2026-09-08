@@ -8,6 +8,7 @@ import { publicCoursesService } from "@/lib/server/modules/courses/service/publi
 import { publicIssuesRepository } from "@/lib/server/modules/issues/repository/public";
 import { issueHomeBlocksSchema, issueHomeVariantSchema } from "@/lib/server/modules/issues/schema";
 import { publicMapsService } from "@/lib/server/modules/maps/service/public";
+import { publicQuestionnairesService } from "@/lib/server/modules/questionnaires/service/public";
 
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
@@ -75,6 +76,16 @@ const getMapIds = (blocks: IssueHomeBlocks | null) => [
   ),
 ];
 
+const getQuestionnaireAnalysisIds = (blocks: IssueHomeBlocks | null) => [
+  ...new Set(
+    (blocks ?? []).flatMap((block) =>
+      block.type === "questionnaireAnalysis" && block.questionnaireId
+        ? [block.questionnaireId]
+        : [],
+    ),
+  ),
+];
+
 type PublicIssueDetailRecord = PublicIssueRecord & {
   articles?: PublicIssueArticleRecord[];
 };
@@ -128,6 +139,7 @@ const toPublicIssueDetailDto = (issue: PublicIssueDetailRecord): PublicIssueDeta
     articles: (issue.articles ?? []).map(toPublicIssueArticleSummaryDto),
     courses: [],
     maps: [],
+    questionnaireAnalyses: [],
   };
 };
 
@@ -155,11 +167,14 @@ export const publicIssuesService = {
     }
 
     const dto = toPublicIssueDetailDto(issue);
-    const [courses, maps] = await Promise.all([
+    const [courses, maps, questionnaireAnalyses] = await Promise.all([
       publicCoursesService.getByIds(getCourseIds(dto.homeBlocks)),
       publicMapsService.getByIds(getMapIds(dto.homeBlocks)),
+      publicQuestionnairesService.getClosedAnalysesByIds(
+        getQuestionnaireAnalysisIds(dto.homeBlocks),
+      ),
     ]);
-    return { ...dto, courses, maps };
+    return { ...dto, courses, maps, questionnaireAnalyses };
   },
   async getBySlug(slug: string) {
     const issue = await publicIssuesRepository.getBySlug(slug);
@@ -169,10 +184,13 @@ export const publicIssuesService = {
     }
 
     const dto = toPublicIssueDetailDto(issue);
-    const [courses, maps] = await Promise.all([
+    const [courses, maps, questionnaireAnalyses] = await Promise.all([
       publicCoursesService.getByIds(getCourseIds(dto.homeBlocks)),
       publicMapsService.getByIds(getMapIds(dto.homeBlocks)),
+      publicQuestionnairesService.getClosedAnalysesByIds(
+        getQuestionnaireAnalysisIds(dto.homeBlocks),
+      ),
     ]);
-    return { ...dto, courses, maps };
+    return { ...dto, courses, maps, questionnaireAnalyses };
   },
 };

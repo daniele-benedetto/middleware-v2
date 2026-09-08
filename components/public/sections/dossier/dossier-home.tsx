@@ -10,6 +10,7 @@ import { LeadBlock } from "@/components/public/sections/dossier/lead-block";
 import { UnpaginatedArticleRow } from "@/components/public/sections/dossier/unpaginated-article-row";
 import { CourseHomeBlock } from "@/components/public/sections/formazione/course-home-block";
 import { MapHomeBlock } from "@/components/public/sections/maps/map-home-block";
+import { QuestionnaireAnalysisHomeBlock } from "@/components/public/sections/questionnaires/questionnaire-analysis-home-block";
 import { getIssueBlockNumberingArticles } from "@/lib/public/issue-numbering";
 
 import type {
@@ -80,6 +81,8 @@ function renderBlock(
       );
     case "map":
       return <MapHomeBlock key={block.id} block={block} />;
+    case "questionnaireAnalysis":
+      return <QuestionnaireAnalysisHomeBlock key={block.id} block={block} />;
   }
 }
 
@@ -96,7 +99,8 @@ export function DossierHome({ issue }: DossierHomeProps) {
   }
 
   const articleBlocks = blocks.filter(
-    (block): block is NarrativeHomeBlock => block.type !== "course" && block.type !== "map",
+    (block): block is NarrativeHomeBlock =>
+      block.type !== "course" && block.type !== "map" && block.type !== "questionnaireAnalysis",
   );
   const unpaginatedArticles = getUnpaginatedArticles(issue, articleBlocks);
   const closingBlocks = articleBlocks.filter((block) => block.type === "closing");
@@ -117,7 +121,7 @@ export function DossierHome({ issue }: DossierHomeProps) {
     if (block.type === "course") {
       courseStartNumbers.set(block.id, nextNumber);
       nextNumber += block.course.lessons.length;
-    } else if (block.type !== "map") {
+    } else if (block.type !== "map" && block.type !== "questionnaireAnalysis") {
       addArticles(getIssueBlockNumberingArticles(block));
     }
   }

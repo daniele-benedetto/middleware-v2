@@ -39,16 +39,25 @@ export const issueHomeMapBlockSchema = z.object({
   mapId: z.string().uuid().nullable(),
 });
 
+export const issueHomeQuestionnaireAnalysisBlockSchema = z.object({
+  id: z.string().trim().min(1),
+  type: z.literal("questionnaireAnalysis"),
+  questionnaireId: z.string().uuid().nullable(),
+});
+
 export const issueHomeBlockSchema = z.discriminatedUnion("type", [
   issueHomeArticleBlockSchema,
   issueHomeCourseBlockSchema,
   issueHomeMapBlockSchema,
+  issueHomeQuestionnaireAnalysisBlockSchema,
 ]);
 
 export const issueHomeBlocksSchema = z.array(issueHomeBlockSchema).refine(
   (blocks) => {
     const articleIds = blocks.flatMap((block) =>
-      block.type === "course" || block.type === "map" ? [] : block.articleIds,
+      block.type === "course" || block.type === "map" || block.type === "questionnaireAnalysis"
+        ? []
+        : block.articleIds,
     );
     return new Set(articleIds).size === articleIds.length;
   },
@@ -107,6 +116,9 @@ export type IssueHomeBlock = z.infer<typeof issueHomeBlockSchema>;
 export type IssueHomeArticleBlock = z.infer<typeof issueHomeArticleBlockSchema>;
 export type IssueHomeCourseBlock = z.infer<typeof issueHomeCourseBlockSchema>;
 export type IssueHomeMapBlock = z.infer<typeof issueHomeMapBlockSchema>;
+export type IssueHomeQuestionnaireAnalysisBlock = z.infer<
+  typeof issueHomeQuestionnaireAnalysisBlockSchema
+>;
 export type IssueHomeBlocks = z.infer<typeof issueHomeBlocksSchema>;
 export type IssueHomeVariant = z.infer<typeof issueHomeVariantSchema>;
 export type IssueTitleStyled = z.infer<typeof issueTitleStyledSchema>;

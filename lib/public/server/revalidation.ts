@@ -50,6 +50,11 @@ export function revalidatePublicMapContent() {
   revalidatePublicTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
 }
 
+export function revalidatePublicQuestionnaireAnalysisContent() {
+  revalidatePublicTag(PUBLIC_HOME_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
+}
+
 export function revalidatePublicPageContent() {
   revalidatePublicTag(PUBLIC_PAGE_CACHE_TAG);
   revalidatePublicTag(PUBLIC_MEDIA_CACHE_TAG);
