@@ -154,6 +154,7 @@ const cmsQuestionnaireSelect = {
   id: true,
   title: true,
   titleStyled: true,
+  homeVariant: true,
   slug: true,
   status: true,
   publishedAt: true,
@@ -199,6 +200,7 @@ export const cmsQuestionnairesRepository = {
   create(input: {
     title: string;
     titleStyled?: unknown | null;
+    homeVariant?: string;
     slug: string;
     descriptionRich?: unknown | null;
     definition: unknown;
@@ -210,6 +212,7 @@ export const cmsQuestionnairesRepository = {
           input.titleStyled === null
             ? Prisma.JsonNull
             : (input.titleStyled as Prisma.InputJsonValue | undefined),
+        homeVariant: input.homeVariant,
         slug: input.slug,
         definition: input.definition as Prisma.InputJsonValue,
         descriptionRich:
@@ -225,6 +228,7 @@ export const cmsQuestionnairesRepository = {
     input: {
       title?: string;
       titleStyled?: unknown | null;
+      homeVariant?: string;
       slug?: string;
       descriptionRich?: unknown | null;
       definition?: unknown;
@@ -238,6 +242,7 @@ export const cmsQuestionnairesRepository = {
           input.titleStyled === null
             ? Prisma.JsonNull
             : (input.titleStyled as Prisma.InputJsonValue | undefined),
+        homeVariant: input.homeVariant,
         definition:
           input.definition === undefined ? undefined : (input.definition as Prisma.InputJsonValue),
         descriptionRich:

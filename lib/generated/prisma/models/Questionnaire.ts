@@ -28,6 +28,7 @@ export type QuestionnaireMinAggregateOutputType = {
   id: string | null
   title: string | null
   slug: string | null
+  homeVariant: string | null
   status: $Enums.QuestionnaireStatus | null
   publishedAt: Date | null
   closedAt: Date | null
@@ -40,6 +41,7 @@ export type QuestionnaireMaxAggregateOutputType = {
   id: string | null
   title: string | null
   slug: string | null
+  homeVariant: string | null
   status: $Enums.QuestionnaireStatus | null
   publishedAt: Date | null
   closedAt: Date | null
@@ -55,6 +57,7 @@ export type QuestionnaireCountAggregateOutputType = {
   slug: number
   descriptionRich: number
   definition: number
+  homeVariant: number
   status: number
   publishedAt: number
   closedAt: number
@@ -69,6 +72,7 @@ export type QuestionnaireMinAggregateInputType = {
   id?: true
   title?: true
   slug?: true
+  homeVariant?: true
   status?: true
   publishedAt?: true
   closedAt?: true
@@ -81,6 +85,7 @@ export type QuestionnaireMaxAggregateInputType = {
   id?: true
   title?: true
   slug?: true
+  homeVariant?: true
   status?: true
   publishedAt?: true
   closedAt?: true
@@ -96,6 +101,7 @@ export type QuestionnaireCountAggregateInputType = {
   slug?: true
   descriptionRich?: true
   definition?: true
+  homeVariant?: true
   status?: true
   publishedAt?: true
   closedAt?: true
@@ -184,6 +190,7 @@ export type QuestionnaireGroupByOutputType = {
   slug: string
   descriptionRich: runtime.JsonValue | null
   definition: runtime.JsonValue
+  homeVariant: string
   status: $Enums.QuestionnaireStatus
   publishedAt: Date | null
   closedAt: Date | null
@@ -220,6 +227,7 @@ export type QuestionnaireWhereInput = {
   slug?: Prisma.StringFilter<"Questionnaire"> | string
   descriptionRich?: Prisma.JsonNullableFilter<"Questionnaire">
   definition?: Prisma.JsonFilter<"Questionnaire">
+  homeVariant?: Prisma.StringFilter<"Questionnaire"> | string
   status?: Prisma.EnumQuestionnaireStatusFilter<"Questionnaire"> | $Enums.QuestionnaireStatus
   publishedAt?: Prisma.DateTimeNullableFilter<"Questionnaire"> | Date | string | null
   closedAt?: Prisma.DateTimeNullableFilter<"Questionnaire"> | Date | string | null
@@ -236,6 +244,7 @@ export type QuestionnaireOrderByWithRelationInput = {
   slug?: Prisma.SortOrder
   descriptionRich?: Prisma.SortOrderInput | Prisma.SortOrder
   definition?: Prisma.SortOrder
+  homeVariant?: Prisma.SortOrder
   status?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   closedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -255,6 +264,7 @@ export type QuestionnaireWhereUniqueInput = Prisma.AtLeast<{
   titleStyled?: Prisma.JsonNullableFilter<"Questionnaire">
   descriptionRich?: Prisma.JsonNullableFilter<"Questionnaire">
   definition?: Prisma.JsonFilter<"Questionnaire">
+  homeVariant?: Prisma.StringFilter<"Questionnaire"> | string
   status?: Prisma.EnumQuestionnaireStatusFilter<"Questionnaire"> | $Enums.QuestionnaireStatus
   publishedAt?: Prisma.DateTimeNullableFilter<"Questionnaire"> | Date | string | null
   closedAt?: Prisma.DateTimeNullableFilter<"Questionnaire"> | Date | string | null
@@ -271,6 +281,7 @@ export type QuestionnaireOrderByWithAggregationInput = {
   slug?: Prisma.SortOrder
   descriptionRich?: Prisma.SortOrderInput | Prisma.SortOrder
   definition?: Prisma.SortOrder
+  homeVariant?: Prisma.SortOrder
   status?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   closedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -292,6 +303,7 @@ export type QuestionnaireScalarWhereWithAggregatesInput = {
   slug?: Prisma.StringWithAggregatesFilter<"Questionnaire"> | string
   descriptionRich?: Prisma.JsonNullableWithAggregatesFilter<"Questionnaire">
   definition?: Prisma.JsonWithAggregatesFilter<"Questionnaire">
+  homeVariant?: Prisma.StringWithAggregatesFilter<"Questionnaire"> | string
   status?: Prisma.EnumQuestionnaireStatusWithAggregatesFilter<"Questionnaire"> | $Enums.QuestionnaireStatus
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Questionnaire"> | Date | string | null
   closedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Questionnaire"> | Date | string | null
@@ -307,6 +319,7 @@ export type QuestionnaireCreateInput = {
   slug: string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
   status?: $Enums.QuestionnaireStatus
   publishedAt?: Date | string | null
   closedAt?: Date | string | null
@@ -323,6 +336,7 @@ export type QuestionnaireUncheckedCreateInput = {
   slug: string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
   status?: $Enums.QuestionnaireStatus
   publishedAt?: Date | string | null
   closedAt?: Date | string | null
@@ -339,6 +353,7 @@ export type QuestionnaireUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumQuestionnaireStatusFieldUpdateOperationsInput | $Enums.QuestionnaireStatus
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -355,6 +370,7 @@ export type QuestionnaireUncheckedUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumQuestionnaireStatusFieldUpdateOperationsInput | $Enums.QuestionnaireStatus
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -371,6 +387,7 @@ export type QuestionnaireCreateManyInput = {
   slug: string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
   status?: $Enums.QuestionnaireStatus
   publishedAt?: Date | string | null
   closedAt?: Date | string | null
@@ -386,6 +403,7 @@ export type QuestionnaireUpdateManyMutationInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumQuestionnaireStatusFieldUpdateOperationsInput | $Enums.QuestionnaireStatus
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -401,6 +419,7 @@ export type QuestionnaireUncheckedUpdateManyInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumQuestionnaireStatusFieldUpdateOperationsInput | $Enums.QuestionnaireStatus
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -416,6 +435,7 @@ export type QuestionnaireCountOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   descriptionRich?: Prisma.SortOrder
   definition?: Prisma.SortOrder
+  homeVariant?: Prisma.SortOrder
   status?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
@@ -428,6 +448,7 @@ export type QuestionnaireMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   slug?: Prisma.SortOrder
+  homeVariant?: Prisma.SortOrder
   status?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
@@ -440,6 +461,7 @@ export type QuestionnaireMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   slug?: Prisma.SortOrder
+  homeVariant?: Prisma.SortOrder
   status?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
@@ -478,6 +500,7 @@ export type QuestionnaireCreateWithoutResponsesInput = {
   slug: string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
   status?: $Enums.QuestionnaireStatus
   publishedAt?: Date | string | null
   closedAt?: Date | string | null
@@ -493,6 +516,7 @@ export type QuestionnaireUncheckedCreateWithoutResponsesInput = {
   slug: string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
   status?: $Enums.QuestionnaireStatus
   publishedAt?: Date | string | null
   closedAt?: Date | string | null
@@ -524,6 +548,7 @@ export type QuestionnaireUpdateWithoutResponsesInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumQuestionnaireStatusFieldUpdateOperationsInput | $Enums.QuestionnaireStatus
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -539,6 +564,7 @@ export type QuestionnaireUncheckedUpdateWithoutResponsesInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   definition?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumQuestionnaireStatusFieldUpdateOperationsInput | $Enums.QuestionnaireStatus
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -585,6 +611,7 @@ export type QuestionnaireSelect<ExtArgs extends runtime.Types.Extensions.Interna
   slug?: boolean
   descriptionRich?: boolean
   definition?: boolean
+  homeVariant?: boolean
   status?: boolean
   publishedAt?: boolean
   closedAt?: boolean
@@ -602,6 +629,7 @@ export type QuestionnaireSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   slug?: boolean
   descriptionRich?: boolean
   definition?: boolean
+  homeVariant?: boolean
   status?: boolean
   publishedAt?: boolean
   closedAt?: boolean
@@ -617,6 +645,7 @@ export type QuestionnaireSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   slug?: boolean
   descriptionRich?: boolean
   definition?: boolean
+  homeVariant?: boolean
   status?: boolean
   publishedAt?: boolean
   closedAt?: boolean
@@ -632,6 +661,7 @@ export type QuestionnaireSelectScalar = {
   slug?: boolean
   descriptionRich?: boolean
   definition?: boolean
+  homeVariant?: boolean
   status?: boolean
   publishedAt?: boolean
   closedAt?: boolean
@@ -640,7 +670,7 @@ export type QuestionnaireSelectScalar = {
   updatedAt?: boolean
 }
 
-export type QuestionnaireOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleStyled" | "slug" | "descriptionRich" | "definition" | "status" | "publishedAt" | "closedAt" | "firstResponseAt" | "createdAt" | "updatedAt", ExtArgs["result"]["questionnaire"]>
+export type QuestionnaireOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleStyled" | "slug" | "descriptionRich" | "definition" | "homeVariant" | "status" | "publishedAt" | "closedAt" | "firstResponseAt" | "createdAt" | "updatedAt", ExtArgs["result"]["questionnaire"]>
 export type QuestionnaireInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   responses?: boolean | Prisma.Questionnaire$responsesArgs<ExtArgs>
   _count?: boolean | Prisma.QuestionnaireCountOutputTypeDefaultArgs<ExtArgs>
@@ -660,6 +690,7 @@ export type $QuestionnairePayload<ExtArgs extends runtime.Types.Extensions.Inter
     slug: string
     descriptionRich: runtime.JsonValue | null
     definition: runtime.JsonValue
+    homeVariant: string
     status: $Enums.QuestionnaireStatus
     publishedAt: Date | null
     closedAt: Date | null
@@ -1096,6 +1127,7 @@ export interface QuestionnaireFieldRefs {
   readonly slug: Prisma.FieldRef<"Questionnaire", 'String'>
   readonly descriptionRich: Prisma.FieldRef<"Questionnaire", 'Json'>
   readonly definition: Prisma.FieldRef<"Questionnaire", 'Json'>
+  readonly homeVariant: Prisma.FieldRef<"Questionnaire", 'String'>
   readonly status: Prisma.FieldRef<"Questionnaire", 'QuestionnaireStatus'>
   readonly publishedAt: Prisma.FieldRef<"Questionnaire", 'DateTime'>
   readonly closedAt: Prisma.FieldRef<"Questionnaire", 'DateTime'>

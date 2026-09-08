@@ -3,6 +3,7 @@ import { z } from "zod";
 import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 import {
   questionnaireDefinitionSchema,
+  questionnaireHomeVariantSchema,
   questionnaireStatusSchema,
 } from "@/lib/server/modules/questionnaires/schema";
 
@@ -10,6 +11,7 @@ export const questionnaireDtoSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
   titleStyled: issueTitleStyledSchema.nullable(),
+  homeVariant: questionnaireHomeVariantSchema,
   slug: z.string(),
   status: questionnaireStatusSchema,
   publishedAt: z.string().nullable(),

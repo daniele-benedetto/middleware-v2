@@ -7,6 +7,9 @@ const ids = {
   optionTwo: "00000000-0000-4000-8000-000000000004",
   text: "00000000-0000-4000-8000-000000000005",
   scale: "00000000-0000-4000-8000-000000000006",
+  decimal: "00000000-0000-4000-8000-000000000008",
+  date: "00000000-0000-4000-8000-000000000009",
+  boolean: "00000000-0000-4000-8000-000000000010",
 };
 
 function record() {
@@ -100,13 +103,125 @@ describe("toPublicQuestionnaireAnalysis", () => {
         minimum: 1,
         maximum: 3,
         average: 2,
+        discrete: true,
         distribution: [
-          { value: 1, count: 1 },
-          { value: 2, count: 0 },
-          { value: 3, count: 1 },
+          { minimum: 1, maximum: 1, count: 1 },
+          { minimum: 2, maximum: 2, count: 0 },
+          { minimum: 3, maximum: 3, count: 1 },
         ],
       },
     ]);
     expect(JSON.stringify(analysis)).not.toContain("Dato sensibile");
+  });
+
+  it("creates safe histogram and temporal aggregates", () => {
+    const source = record();
+    const analysis = toPublicQuestionnaireAnalysis({
+      ...source,
+      definition: {
+        ...source.definition,
+        steps: [
+          {
+            id: "00000000-0000-4000-8000-000000000007",
+            fields: [
+              {
+                id: ids.decimal,
+                type: "decimal",
+                label: "Valore pubblico",
+                publicResults: true,
+              },
+              {
+                id: ids.date,
+                type: "date",
+                label: "Data pubblica",
+                publicResults: true,
+              },
+              {
+                id: ids.boolean,
+                type: "boolean",
+                label: "Risposta pubblica",
+                publicResults: true,
+                trueLabel: "Si",
+                falseLabel: "No",
+              },
+            ],
+          },
+        ],
+      },
+      responses: [
+        {
+          answers: {
+            [ids.decimal]: 1.1,
+            [ids.date]: "2026-01-01",
+            [ids.boolean]: true,
+          },
+        },
+        {
+          answers: {
+            [ids.decimal]: 1.2,
+            [ids.date]: "2026-01-03",
+            [ids.boolean]: false,
+          },
+        },
+        {
+          answers: {
+            [ids.decimal]: 1.3,
+            [ids.date]: "2026-01-05",
+            [ids.boolean]: true,
+          },
+        },
+        {
+          answers: {
+            [ids.decimal]: 1.4,
+            [ids.date]: "2026-01-07",
+            [ids.boolean]: true,
+          },
+        },
+      ],
+    });
+
+    expect(analysis?.fields).toEqual([
+      {
+        id: ids.decimal,
+        label: "Valore pubblico",
+        description: null,
+        kind: "number",
+        responseCount: 4,
+        minimum: 1.1,
+        maximum: 1.4,
+        average: 1.25,
+        discrete: false,
+        distribution: [
+          { minimum: 1.1, maximum: 1.25, count: 2 },
+          { minimum: 1.25, maximum: 1.4, count: 2 },
+        ],
+      },
+      {
+        id: ids.date,
+        label: "Data pubblica",
+        description: null,
+        kind: "date",
+        responseCount: 4,
+        minimum: "2026-01-01",
+        maximum: "2026-01-07",
+        distribution: [
+          { date: "2026-01-01", count: 1 },
+          { date: "2026-01-03", count: 1 },
+          { date: "2026-01-05", count: 1 },
+          { date: "2026-01-07", count: 1 },
+        ],
+      },
+      {
+        id: ids.boolean,
+        label: "Risposta pubblica",
+        description: null,
+        kind: "boolean",
+        responseCount: 4,
+        trueLabel: "Si",
+        falseLabel: "No",
+        trueCount: 3,
+        falseCount: 1,
+      },
+    ]);
   });
 });

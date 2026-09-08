@@ -1937,6 +1937,7 @@ export const QuestionnaireScalarFieldEnum = {
   slug: 'slug',
   descriptionRich: 'descriptionRich',
   definition: 'definition',
+  homeVariant: 'homeVariant',
   status: 'status',
   publishedAt: 'publishedAt',
   closedAt: 'closedAt',

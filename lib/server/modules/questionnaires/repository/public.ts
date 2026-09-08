@@ -15,6 +15,8 @@ const PUBLIC_QUESTIONNAIRE_SELECT = {
 const PUBLIC_QUESTIONNAIRE_ANALYSIS_SELECT = {
   id: true,
   title: true,
+  titleStyled: true,
+  homeVariant: true,
   descriptionRich: true,
   closedAt: true,
   definition: true,

@@ -304,6 +304,7 @@ model Questionnaire {
   slug            String              @unique
   descriptionRich Json?
   definition      Json
+  homeVariant     String              @default("black")
   status          QuestionnaireStatus @default(DRAFT)
   publishedAt     DateTime?
   closedAt        DateTime?

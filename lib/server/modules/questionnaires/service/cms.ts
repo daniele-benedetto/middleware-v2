@@ -8,7 +8,10 @@ import {
   cmsQuestionnairesRepository,
   questionnaireResponsesRepository,
 } from "@/lib/server/modules/questionnaires/repository";
-import { questionnaireDefinitionSchema } from "@/lib/server/modules/questionnaires/schema";
+import {
+  questionnaireDefinitionSchema,
+  questionnaireHomeVariantSchema,
+} from "@/lib/server/modules/questionnaires/schema";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
 import type { QuestionnaireStatus } from "@/lib/generated/prisma/enums";
@@ -23,6 +26,7 @@ type CmsQuestionnaireRecord = {
   id: string;
   title: string;
   titleStyled?: unknown;
+  homeVariant?: string;
   slug: string;
   status: QuestionnaireStatus;
   publishedAt: Date | null;
@@ -48,6 +52,7 @@ function dto(record: CmsQuestionnaireRecord) {
       (record.titleStyled as
         | import("@/lib/server/modules/issues/schema").IssueTitleStyled
         | null) ?? null,
+    homeVariant: questionnaireHomeVariantSchema.parse(record.homeVariant ?? "black"),
     slug: record.slug,
     status: record.status,
     publishedAt: record.publishedAt?.toISOString() ?? null,

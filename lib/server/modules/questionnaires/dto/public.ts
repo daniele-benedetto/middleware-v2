@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { questionnaireDefinitionSchema } from "@/lib/server/modules/questionnaires/schema";
+import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+import {
+  questionnaireDefinitionSchema,
+  questionnaireHomeVariantSchema,
+} from "@/lib/server/modules/questionnaires/schema";
 
 export const publicQuestionnaireDtoSchema = z.object({
   id: z.string().uuid(),
@@ -90,17 +94,27 @@ const publicAnalysisNumberFieldSchema = publicAnalysisFieldBaseSchema.extend({
   minimum: z.number().nullable(),
   maximum: z.number().nullable(),
   average: z.number().nullable(),
-  distribution: z.array(z.object({ value: z.number(), count: z.number().int().nonnegative() })),
+  distribution: z.array(
+    z.object({
+      minimum: z.number(),
+      maximum: z.number(),
+      count: z.number().int().nonnegative(),
+    }),
+  ),
+  discrete: z.boolean(),
 });
 const publicAnalysisDateFieldSchema = publicAnalysisFieldBaseSchema.extend({
   kind: z.literal("date"),
   minimum: z.string().nullable(),
   maximum: z.string().nullable(),
+  distribution: z.array(z.object({ date: z.string(), count: z.number().int().nonnegative() })),
 });
 
 export const publicQuestionnaireAnalysisDtoSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
+  titleStyled: issueTitleStyledSchema.nullable(),
+  homeVariant: questionnaireHomeVariantSchema,
   descriptionRich: z.unknown().nullable(),
   closedAt: z.string().datetime({ offset: true }),
   responseCount: z.number().int().nonnegative(),

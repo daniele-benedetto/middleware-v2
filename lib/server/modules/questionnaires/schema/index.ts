@@ -11,6 +11,7 @@ export const questionnaireStatusSchema = z.enum([
   "CLOSED",
   "ARCHIVED",
 ] satisfies QuestionnaireStatus[]);
+export const questionnaireHomeVariantSchema = z.enum(["default", "red", "black"]);
 
 const questionnaireBaseInputSchema = z.object({
   title: z.string().trim().min(1),
@@ -18,6 +19,7 @@ const questionnaireBaseInputSchema = z.object({
   slug: z.string().trim().min(1),
   descriptionRich: z.unknown().nullable().optional(),
   definition: questionnaireDefinitionSchema,
+  homeVariant: questionnaireHomeVariantSchema.optional(),
 });
 
 export const createQuestionnaireInputSchema = questionnaireBaseInputSchema;
@@ -55,3 +57,4 @@ export type {
 export type CreateQuestionnaireInput = z.infer<typeof createQuestionnaireInputSchema>;
 export type UpdateQuestionnaireInput = z.infer<typeof updateQuestionnaireInputSchema>;
 export type ListQuestionnairesQuery = z.infer<typeof listQuestionnairesQuerySchema>;
+export type QuestionnaireHomeVariant = z.infer<typeof questionnaireHomeVariantSchema>;

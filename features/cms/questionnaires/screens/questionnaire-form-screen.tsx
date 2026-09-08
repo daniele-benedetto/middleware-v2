@@ -47,6 +47,7 @@ import { invalidateAfterCmsMutation, invalidateQuestionnairesAfterMutation } fro
 import { i18n } from "@/lib/i18n";
 import {
   createQuestionnaireInputSchema,
+  type QuestionnaireHomeVariant,
   updateQuestionnaireInputSchema,
   type QuestionnaireCopy,
   type QuestionnaireDefinition,
@@ -85,6 +86,11 @@ const publicAnalysisFieldTypes = new Set<FieldType>([
   "scale",
   "singleChoice",
 ]);
+const questionnaireHomeVariantOptions = [
+  { value: "black", labelKey: "homeVariantBlack" },
+  { value: "red", labelKey: "homeVariantRed" },
+  { value: "default", labelKey: "homeVariantDefault" },
+] as const;
 type FieldType = (typeof fieldTypes)[number];
 type QuestionnaireEditorSection = "overview" | "copy" | string;
 
@@ -267,6 +273,7 @@ function QuestionnaireFormContent({
     slug: string;
     descriptionRich: unknown | null;
     definition: QuestionnaireDefinition;
+    homeVariant: QuestionnaireHomeVariant;
   }) => Promise<void>;
 }) {
   const router = useRouter();
@@ -276,6 +283,9 @@ function QuestionnaireFormContent({
   );
   const [descriptionRich, setDescriptionRich] = useState<unknown>(
     questionnaire?.descriptionRich ?? null,
+  );
+  const [homeVariant, setHomeVariant] = useState<QuestionnaireHomeVariant>(
+    questionnaire?.homeVariant ?? "black",
   );
   const [definition, setDefinition] = useState<QuestionnaireDefinition>(
     questionnaire?.definition ?? emptyDefinition,
@@ -303,6 +313,10 @@ function QuestionnaireFormContent({
   const slugHint = hasManualSlugOverride
     ? text.slugManualHint
     : i18n.cms.forms.generatedFromTitleHint;
+  const homeVariantOptions = questionnaireHomeVariantOptions.map((option) => ({
+    value: option.value,
+    label: text[option.labelKey],
+  }));
   const openSlugEditor = () => {
     setManualSlug(resolvedSlug);
     setIsSlugEditing(true);
@@ -424,6 +438,7 @@ function QuestionnaireFormContent({
           slug: resolvedSlug,
           descriptionRich,
           definition,
+          homeVariant,
         });
       }}
     >
@@ -636,6 +651,16 @@ function QuestionnaireFormContent({
                   value={descriptionRich}
                   onChange={setDescriptionRich}
                   ariaLabel={text.description}
+                />
+              </CmsFormField>
+              <CmsFormField label={text.homeVariantLabel} htmlFor="questionnaire-home-variant">
+                <CmsSelect
+                  value={homeVariant}
+                  disabled={busy}
+                  options={homeVariantOptions}
+                  onValueChange={(nextVariant) =>
+                    setHomeVariant(nextVariant as QuestionnaireHomeVariant)
+                  }
                 />
               </CmsFormField>
             </section>
