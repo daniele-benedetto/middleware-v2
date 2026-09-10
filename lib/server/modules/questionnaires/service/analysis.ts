@@ -117,7 +117,11 @@ function aggregateField(field: QuestionnaireField, records: AnalysisRecord["resp
   const values = records
     .map((record) => getAnswers(record.answers)[field.id])
     .filter((value) => value !== undefined);
-  const base = { id: field.id, label: field.label, description: field.description ?? null };
+  const base = {
+    id: field.id,
+    label: field.label,
+    description: field.description ?? null,
+  };
 
   if (field.type === "boolean") {
     const answers = values.filter((value): value is boolean => typeof value === "boolean");

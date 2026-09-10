@@ -1,36 +1,18 @@
-"use client";
-
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
-
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { publicTypography } from "@/components/public/primitives";
 import { cn } from "@/lib/utils";
 
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
 
 type AnalysisField = PublicQuestionnaireAnalysisDto["fields"][number];
 
-const accentChartConfig = {
-  count: { label: "Risposte", color: "var(--chart-2)" },
-} as const;
-
-const booleanChartConfig = {
-  positive: { label: "Risposta affermativa", color: "var(--chart-1)" },
-  negative: { label: "Risposta negativa", color: "var(--surface-card)" },
-} as const;
-
-const axisTick = {
-  fill: "var(--muted-text)",
-  fontFamily: "var(--font-archivo)",
-  fontSize: 10,
-  fontWeight: 700,
-};
-
-const chartFrameClassName = "h-72 w-full aspect-auto";
-
 function formatNumber(value: number | null) {
   return value === null
     ? "—"
-    : new Intl.NumberFormat("it-IT", { maximumFractionDigits: 1 }).format(value);
+    : new Intl.NumberFormat("it-IT", { maximumFractionDigits: 2 }).format(value);
+}
+
+function formatPercentage(value: number) {
+  return `${new Intl.NumberFormat("it-IT", { maximumFractionDigits: 1 }).format(value)}%`;
 }
 
 function formatDate(value: string | null) {
@@ -39,6 +21,12 @@ function formatDate(value: string | null) {
         new Date(`${value.slice(0, 10)}T00:00:00.000Z`),
       )
     : "—";
+}
+
+function EmptyChart() {
+  return (
+    <p className="font-editorial text-[17px] text-muted">Nessun dato aggregato disponibile.</p>
+  );
 }
 
 function Metric({
@@ -51,11 +39,11 @@ function Metric({
   accent?: boolean;
 }) {
   return (
-    <div className="border-r border-b border-foreground p-3">
-      <p className="font-ui text-[9px] font-bold tracking-[0.08em] text-muted uppercase">{label}</p>
+    <div className="border-r border-b border-foreground px-4 py-4 last:border-r-0">
+      <p className={cn(publicTypography.smallKicker, "text-muted")}>{label}</p>
       <p
         className={cn(
-          "mt-2 font-heading text-[clamp(18px,2vw,26px)] leading-none font-black tracking-[-0.03em]",
+          "mt-2 font-heading text-[clamp(20px,2.5vw,30px)] leading-none font-black tracking-[-0.04em] tabular-nums",
           accent && "text-accent",
         )}
       >
@@ -65,192 +53,117 @@ function Metric({
   );
 }
 
+function PercentageBar({
+  label,
+  percentage,
+  subdued = false,
+}: {
+  label: string;
+  percentage: number;
+  subdued?: boolean;
+}) {
+  const value = Math.min(100, Math.max(0, percentage));
+  return (
+    <li className="grid min-h-12 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 py-3 sm:grid-cols-[minmax(10rem,14rem)_minmax(0,1fr)_auto]">
+      <span className="min-w-0 font-ui text-[11px] leading-[1.3] font-bold tracking-[0.03em] uppercase">
+        {label}
+      </span>
+      <div
+        aria-label={`${label}: ${formatPercentage(value)}`}
+        aria-valuemax={100}
+        aria-valuemin={0}
+        aria-valuenow={value}
+        className="col-span-2 h-2 overflow-hidden bg-foreground/10 sm:col-span-1"
+        role="progressbar"
+      >
+        <div
+          className={cn("h-full bg-accent", subdued && "bg-foreground/70")}
+          style={{ width: `${value}%` }}
+        />
+      </div>
+      <span className="col-start-2 row-start-1 text-right font-ui text-[11px] font-bold tabular-nums sm:col-start-3">
+        {formatPercentage(value)}
+      </span>
+    </li>
+  );
+}
+
 function ChoiceChart({ field }: { field: Extract<AnalysisField, { kind: "choice" }> }) {
-  const data = [...field.options]
-    .sort((left, right) => right.count - left.count)
-    .map((option) => ({
-      ...option,
-      detail: `${formatNumber(option.percentage)}% · ${option.count}`,
-    }));
+  if (field.responseCount === 0) return <EmptyChart />;
 
   return (
-    <ChartContainer config={accentChartConfig} className={chartFrameClassName}>
-      <BarChart
-        accessibilityLayer
-        data={data}
-        layout="vertical"
-        margin={{ top: 2, right: 64, bottom: 2 }}
-      >
-        <XAxis type="number" hide domain={[0, 100]} />
-        <YAxis
-          dataKey="label"
-          type="category"
-          width={132}
-          axisLine={false}
-          tickLine={false}
-          tick={axisTick}
-        />
-        <ChartTooltip
-          cursor={{ fill: "var(--surface-hover)" }}
-          content={
-            <ChartTooltipContent className="rounded-none border-foreground bg-background font-ui shadow-none" />
-          }
-        />
-        <Bar
-          dataKey="percentage"
-          fill="var(--color-count)"
-          isAnimationActive={false}
-          maxBarSize={22}
-        >
-          <LabelList
-            dataKey="detail"
-            position="right"
-            className="fill-foreground font-ui text-[10px] font-bold"
+    <div>
+      <ol className="divide-y divide-foreground/15">
+        {field.options.map((option, index) => (
+          <PercentageBar
+            key={option.label}
+            label={option.label}
+            percentage={option.percentage}
+            subdued={index > 0}
           />
-        </Bar>
-      </BarChart>
-    </ChartContainer>
+        ))}
+      </ol>
+    </div>
   );
 }
 
 function BooleanChart({ field }: { field: Extract<AnalysisField, { kind: "boolean" }> }) {
   const total = field.trueCount + field.falseCount;
-  const data = [{ positive: field.trueCount, negative: field.falseCount }];
+  if (total === 0) return <EmptyChart />;
 
   return (
-    <div className="space-y-4">
-      <ChartContainer config={booleanChartConfig} className={chartFrameClassName}>
-        <BarChart
-          accessibilityLayer
-          data={data}
-          layout="vertical"
-          margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-        >
-          <XAxis type="number" hide domain={[0, total || 1]} />
-          <YAxis type="category" hide />
-          <ChartTooltip
-            cursor={false}
-            content={
-              <ChartTooltipContent className="rounded-none border-foreground bg-background font-ui shadow-none" />
-            }
-          />
-          <Bar
-            dataKey="positive"
-            stackId="answers"
-            fill="var(--color-positive)"
-            isAnimationActive={false}
-            barSize={40}
-          />
-          <Bar
-            dataKey="negative"
-            stackId="answers"
-            fill="var(--color-negative)"
-            isAnimationActive={false}
-            stroke="var(--ink)"
-            barSize={40}
-          />
-        </BarChart>
-      </ChartContainer>
-      <div className="grid grid-cols-2 gap-4 font-ui text-[10px] font-bold tracking-[0.06em] uppercase">
-        <span>
-          {field.trueLabel}: <strong className="text-accent">{field.trueCount}</strong>
-        </span>
-        <span className="text-right">
-          {field.falseLabel}: {field.falseCount}
-        </span>
-      </div>
-    </div>
+    <ol className="divide-y divide-foreground/15">
+      <PercentageBar label={field.trueLabel} percentage={(field.trueCount / total) * 100} />
+      <PercentageBar
+        label={field.falseLabel}
+        percentage={(field.falseCount / total) * 100}
+        subdued
+      />
+    </ol>
   );
 }
 
-function NumericChart({ field }: { field: Extract<AnalysisField, { kind: "number" }> }) {
-  if (field.distribution.length === 0) {
-    return <p className="font-editorial text-[16px] text-muted">Nessuna risposta disponibile.</p>;
-  }
+function DistributionChart({ field }: { field: Extract<AnalysisField, { kind: "number" }> }) {
+  if (field.distribution.length === 0 || field.responseCount === 0) return <EmptyChart />;
 
-  const data = field.distribution.map((bucket) => ({
-    ...bucket,
-    label:
-      field.discrete || bucket.minimum === bucket.maximum
-        ? formatNumber(bucket.minimum)
-        : `${formatNumber(bucket.minimum)}–${formatNumber(bucket.maximum)}`,
-  }));
+  const total = field.responseCount;
 
   return (
-    <div>
-      <ChartContainer config={accentChartConfig} className={chartFrameClassName}>
-        <BarChart accessibilityLayer data={data} margin={{ top: 18, right: 4, bottom: 2, left: 0 }}>
-          <CartesianGrid vertical={false} stroke="var(--line-section)" />
-          <XAxis
-            dataKey="label"
-            axisLine={{ stroke: "var(--ink)" }}
-            tickLine={false}
-            tickMargin={10}
-            tick={axisTick}
-            interval={0}
+    <ol className="divide-y divide-foreground/15">
+      {field.distribution.map((bucket) => {
+        const label =
+          field.discrete || bucket.minimum === bucket.maximum
+            ? formatNumber(bucket.minimum)
+            : `${formatNumber(bucket.minimum)}–${formatNumber(bucket.maximum)}`;
+        return (
+          <PercentageBar
+            key={`${bucket.minimum}-${bucket.maximum}`}
+            label={label}
+            percentage={(bucket.count / total) * 100}
           />
-          <YAxis hide allowDecimals={false} />
-          <ChartTooltip
-            cursor={{ fill: "var(--surface-hover)" }}
-            content={
-              <ChartTooltipContent className="rounded-none border-foreground bg-background font-ui shadow-none" />
-            }
-          />
-          <Bar dataKey="count" fill="var(--color-count)" isAnimationActive={false} maxBarSize={52}>
-            <LabelList
-              dataKey="count"
-              position="top"
-              className="fill-foreground font-ui text-[10px] font-bold"
-            />
-          </Bar>
-        </BarChart>
-      </ChartContainer>
-      <div className="mt-7 grid grid-cols-3 border-l border-t border-foreground">
-        <Metric label="Min." value={formatNumber(field.minimum)} />
-        <Metric label="Media" value={formatNumber(field.average)} accent />
-        <Metric label="Max." value={formatNumber(field.maximum)} />
-      </div>
-    </div>
+        );
+      })}
+    </ol>
   );
 }
 
 function DateChart({ field }: { field: Extract<AnalysisField, { kind: "date" }> }) {
-  if (field.distribution.length === 0) {
-    return <p className="font-editorial text-[16px] text-muted">Nessuna risposta disponibile.</p>;
-  }
+  if (field.distribution.length === 0 || field.responseCount === 0) return <EmptyChart />;
 
-  const data = field.distribution.map((bucket) => ({ ...bucket, label: formatDate(bucket.date) }));
+  const total = field.responseCount;
 
   return (
     <div>
-      <ChartContainer config={accentChartConfig} className={chartFrameClassName}>
-        <BarChart accessibilityLayer data={data} margin={{ top: 18, right: 4, bottom: 2, left: 0 }}>
-          <CartesianGrid vertical={false} stroke="var(--line-section)" />
-          <XAxis
-            dataKey="label"
-            axisLine={{ stroke: "var(--ink)" }}
-            tickLine={false}
-            tickMargin={10}
-            tick={axisTick}
-            minTickGap={28}
+      <ol className="divide-y divide-foreground/15">
+        {field.distribution.map((bucket) => (
+          <PercentageBar
+            key={bucket.date}
+            label={formatDate(bucket.date)}
+            percentage={(bucket.count / total) * 100}
           />
-          <YAxis hide allowDecimals={false} />
-          <ChartTooltip
-            cursor={{ fill: "var(--surface-hover)" }}
-            content={
-              <ChartTooltipContent className="rounded-none border-foreground bg-background font-ui shadow-none" />
-            }
-          />
-          <Bar dataKey="count" fill="var(--color-count)" isAnimationActive={false} maxBarSize={52}>
-            <LabelList
-              dataKey="count"
-              position="top"
-              className="fill-foreground font-ui text-[10px] font-bold"
-            />
-          </Bar>
-        </BarChart>
-      </ChartContainer>
-      <div className="mt-7 grid grid-cols-2 border-l border-t border-foreground">
+        ))}
+      </ol>
+      <div className="mt-8 grid grid-cols-2 border-l border-t border-foreground">
         <Metric label="Prima data" value={formatDate(field.minimum)} />
         <Metric label="Ultima data" value={formatDate(field.maximum)} accent />
       </div>
@@ -261,6 +174,6 @@ function DateChart({ field }: { field: Extract<AnalysisField, { kind: "date" }> 
 export function QuestionnaireFieldChart({ field }: { field: AnalysisField }) {
   if (field.kind === "choice") return <ChoiceChart field={field} />;
   if (field.kind === "boolean") return <BooleanChart field={field} />;
-  if (field.kind === "number") return <NumericChart field={field} />;
+  if (field.kind === "number") return <DistributionChart field={field} />;
   return <DateChart field={field} />;
 }

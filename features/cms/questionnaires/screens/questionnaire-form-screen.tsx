@@ -120,7 +120,9 @@ function newField(type: FieldType): QuestionnaireField {
     required: false,
     publicResults: false,
   };
-  if (type === "singleChoice" || type === "multipleChoice")
+  if (type === "singleChoice")
+    return { ...base, type, options: [{ id: crypto.randomUUID(), label: "Opzione" }] };
+  if (type === "multipleChoice")
     return { ...base, type, options: [{ id: crypto.randomUUID(), label: "Opzione" }] };
   if (type === "boolean") return { ...base, type, trueLabel: "Si", falseLabel: "No" };
   if (type === "scale") return { ...base, type, min: 1, max: 5 };
