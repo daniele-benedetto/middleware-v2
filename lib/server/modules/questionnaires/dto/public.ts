@@ -19,6 +19,10 @@ export const publicQuestionnaireResponderDtoSchema = z.object({
   initialized: z.literal(true),
 });
 
+export const publicQuestionnaireResponderStatusDtoSchema = z.object({
+  hasResponded: z.boolean(),
+});
+
 export const publicQuestionnaireSubmitDtoSchema = z.object({
   id: z.string().uuid(),
   questionnaireId: z.string().uuid(),

@@ -81,6 +81,7 @@ export type QuestionnaireResponseServiceRepositories = {
       transaction: QuestionnaireSubmissionTransaction,
     ) => Promise<T>,
   ) => Promise<T | null>;
+  hasResponse?: (questionnaireId: string, anonymousTokenHash: string) => Promise<boolean>;
   listByQuestionnaireId: (questionnaireId: string) => Promise<QuestionnaireResponseRecord[]>;
 };
 
@@ -219,6 +220,7 @@ export function createQuestionnaireResponsesService(
     getById: questionnairesRepository.getById,
     getForAggregation: questionnairesRepository.getForAggregation,
     withQuestionnaireForSubmission: questionnairesRepository.withQuestionnaireForSubmission,
+    hasResponse: questionnaireResponsesRepository.hasResponse,
     listByQuestionnaireId: questionnaireResponsesRepository.listByQuestionnaireId,
   },
 ) {
@@ -286,6 +288,9 @@ export function createQuestionnaireResponsesService(
 
         throw error;
       }
+    },
+    async hasResponded(questionnaireId: string, anonymousTokenHash: string) {
+      return repositories.hasResponse?.(questionnaireId, anonymousTokenHash) ?? false;
     },
     async getPublicResults(questionnaireId: string) {
       const questionnaire = await repositories.getForAggregation(questionnaireId);

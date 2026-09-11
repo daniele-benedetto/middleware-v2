@@ -116,6 +116,16 @@ export const questionnairesRepository = {
 };
 
 export const questionnaireResponsesRepository = {
+  async hasResponse(questionnaireId: string, anonymousTokenHash: string) {
+    const response = await prisma.questionnaireResponse.findUnique({
+      where: {
+        questionnaireId_anonymousTokenHash: { questionnaireId, anonymousTokenHash },
+      },
+      select: { id: true },
+    });
+
+    return Boolean(response);
+  },
   async listByQuestionnaireId(questionnaireId: string) {
     return prisma.questionnaireResponse.findMany({
       where: { questionnaireId },

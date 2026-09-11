@@ -482,6 +482,9 @@ function QuestionnaireFinishScreen({
       className="flex flex-1 items-center bg-background py-14 focus:outline-none sm:py-20"
     >
       <section className="mx-auto w-full max-w-3xl px-4 sm:px-6">
+        <div className="mb-6">
+          <PublicBrand eager />
+        </div>
         <div className="border-t-[3px] border-accent bg-card p-6 sm:p-10">
           <div
             className="flex size-13 items-center justify-center bg-foreground text-background"
@@ -523,6 +526,10 @@ export function PublicQuestionnairePage({
   const errorSummaryRef = useRef<HTMLDivElement>(null);
   const submit = trpc.public.questionnaires.submit.useMutation();
   const draft = useQuestionnaireDraft(questionnaire.id, definition.version);
+  const responderStatus = trpc.public.questionnaires.status.useQuery(
+    { questionnaireId: questionnaire.id },
+    { enabled: !questionnaire.isClosed, staleTime: Number.POSITIVE_INFINITY },
+  );
   const step = definition.steps[stepIndex];
   const isLastStep = stepIndex === definition.steps.length - 1;
   const estimatedMinutes = getEstimatedMinutes(definition);
@@ -641,7 +648,7 @@ export function PublicQuestionnairePage({
   if (questionnaire.isClosed || phase === "closed") {
     return (
       <PublicSystemScreen
-        code="—"
+        code="404"
         title={definition.copy.closedTitle}
         description={definition.copy.closedMessage}
         actions={
@@ -668,6 +675,18 @@ export function PublicQuestionnairePage({
   }
 
   if (phase === "already-submitted") {
+    return (
+      <QuestionnaireFinishScreen
+        title={definition.copy.alreadySubmittedTitle}
+        message={definition.copy.alreadySubmittedMessage}
+        actionLabel={completionLabel}
+        actionHref={completionHref}
+        alreadySubmitted
+      />
+    );
+  }
+
+  if (responderStatus.data?.hasResponded) {
     return (
       <QuestionnaireFinishScreen
         title={definition.copy.alreadySubmittedTitle}

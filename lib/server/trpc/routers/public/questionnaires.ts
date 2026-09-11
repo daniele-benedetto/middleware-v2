@@ -4,10 +4,12 @@ import { ensureQuestionnaireResponder } from "@/lib/server/http/questionnaire-re
 import {
   publicQuestionnaireDtoSchema,
   publicQuestionnaireResponderDtoSchema,
+  publicQuestionnaireResponderStatusDtoSchema,
   publicQuestionnaireSubmitDtoSchema,
 } from "@/lib/server/modules/questionnaires/dto/public";
 import {
   publicQuestionnaireSlugInputSchema,
+  publicQuestionnaireIdInputSchema,
   publicQuestionnaireSubmitInputSchema,
 } from "@/lib/server/modules/questionnaires/schema/public";
 import { questionnaireResponsesService } from "@/lib/server/modules/questionnaires/service";
@@ -33,6 +35,20 @@ export const publicQuestionnairesRouter = router({
     ensureQuestionnaireResponder(ctx.request, ctx.responseHeaders);
     return parseOutput({ initialized: true }, publicQuestionnaireResponderDtoSchema);
   }),
+  status: publicReadProcedure
+    .input(publicQuestionnaireIdInputSchema)
+    .query(async ({ ctx, input }) => {
+      const responder = ensureQuestionnaireResponder(ctx.request, ctx.responseHeaders);
+      return parseOutput(
+        {
+          hasResponded: await questionnaireResponsesService.hasResponded(
+            input.questionnaireId,
+            responder.tokenHash,
+          ),
+        },
+        publicQuestionnaireResponderStatusDtoSchema,
+      );
+    }),
   submit: publicQuestionnaireSubmitProcedure
     .input(publicQuestionnaireSubmitInputSchema)
     .mutation(async ({ ctx, input }) => {
