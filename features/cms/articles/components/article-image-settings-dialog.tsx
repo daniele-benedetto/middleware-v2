@@ -17,6 +17,7 @@ import {
   defaultArticleImageSettings,
   type ArticleImageSettings,
 } from "@/lib/articles/image-settings";
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 type ArticleImageSettingsDialogProps = {
@@ -44,6 +45,7 @@ export function ArticleImageSettingsDialog({
   disabled,
   onChange,
 }: ArticleImageSettingsDialogProps) {
+  const text = i18n.cms.forms.resources.articles.imageSettings;
   const update = (next: Partial<ArticleImageSettings>) => onChange({ ...value, ...next });
 
   return (
@@ -52,7 +54,7 @@ export function ArticleImageSettingsDialog({
         render={
           <CmsActionButton variant="outline" size="xs" disabled={disabled}>
             <Settings2 aria-hidden />
-            Visualizzazione
+            {text.trigger}
           </CmsActionButton>
         }
       />
@@ -61,10 +63,8 @@ export function ArticleImageSettingsDialog({
         showCloseButton
       >
         <DialogHeader>
-          <DialogTitle>Visualizzazione copertina</DialogTitle>
-          <DialogDescription>
-            Le impostazioni vengono applicate in tutte le card e nella pagina dell&apos;articolo.
-          </DialogDescription>
+          <DialogTitle>{text.title}</DialogTitle>
+          <DialogDescription>{text.description}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_15rem]">
@@ -87,9 +87,9 @@ export function ArticleImageSettingsDialog({
           <div className="space-y-5">
             <label className="flex items-center justify-between gap-4 border-b border-foreground pb-4">
               <span>
-                <CmsMetaText variant="category">Bianco e nero</CmsMetaText>
+                <CmsMetaText variant="category">{text.grayscaleLabel}</CmsMetaText>
                 <span className="mt-1 block font-editorial text-sm text-body-text">
-                  Filtro monocromatico
+                  {text.grayscaleHint}
                 </span>
               </span>
               <Switch
@@ -100,7 +100,7 @@ export function ArticleImageSettingsDialog({
 
             <fieldset className="space-y-2">
               <legend className="font-ui text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
-                Adattamento
+                {text.fitLabel}
               </legend>
               <div className="grid grid-cols-2 gap-2">
                 {(["cover", "contain"] as const).map((fit) => (
@@ -115,7 +115,7 @@ export function ArticleImageSettingsDialog({
                         : "border-foreground",
                     )}
                   >
-                    {fit === "cover" ? "Riempi" : "Contieni"}
+                    {fit === "cover" ? text.fitCover : text.fitContain}
                   </button>
                 ))}
               </div>
@@ -123,14 +123,14 @@ export function ArticleImageSettingsDialog({
 
             <fieldset className="space-y-2">
               <legend className="font-ui text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
-                Punto focale
+                {text.focalPointLabel}
               </legend>
               <div className="grid grid-cols-3 overflow-hidden border border-foreground">
                 {focusPoints.map(([positionX, positionY]) => (
                   <button
                     key={`${positionX}-${positionY}`}
                     type="button"
-                    aria-label={`Punto focale ${positionX}%, ${positionY}%`}
+                    aria-label={text.focalPointAriaLabel(positionX, positionY)}
                     onClick={() => update({ positionX, positionY })}
                     className={cn(
                       "aspect-square border-r border-b border-foreground last:border-r-0",
@@ -145,7 +145,7 @@ export function ArticleImageSettingsDialog({
 
             <label className="block space-y-2">
               <span className="flex justify-between font-ui text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground">
-                Ingrandimento <span>{value.zoom}%</span>
+                {text.zoomLabel} <span>{value.zoom}%</span>
               </span>
               <input
                 type="range"
@@ -161,7 +161,7 @@ export function ArticleImageSettingsDialog({
               size="xs"
               onClick={() => onChange(defaultArticleImageSettings)}
             >
-              Ripristina predefiniti
+              {text.reset}
             </CmsActionButton>
           </div>
         </div>

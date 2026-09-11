@@ -75,7 +75,7 @@ export function CmsMapAddressSearch({ onSelect }: MapAddressSearchProps) {
         />
         {addressSearch.isFetching ? (
           <LoaderCircle
-            aria-label="Ricerca in corso"
+            aria-label={mapText.addressSearchLoading}
             className="animate-spin text-muted-foreground"
             size={16}
           />
@@ -109,7 +109,7 @@ export function CmsMapAddressSearch({ onSelect }: MapAddressSearchProps) {
           ) : null}
           {addressSearch.isError ? (
             <p className="px-3 py-3 font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-              Ricerca indirizzi non disponibile.
+              {mapText.addressSearchUnavailable}
             </p>
           ) : null}
         </div>

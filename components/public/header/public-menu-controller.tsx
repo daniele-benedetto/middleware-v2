@@ -24,24 +24,20 @@ type PublicMenuControllerProps = {
 
 type MenuState = "closed" | "opening" | "open" | "closing-content" | "closing-shell";
 
+const menuOpenDuration = 520;
 const menuShellCloseDuration = 360;
-const menuItemOpenStagger = 165;
 const menuItemCloseStagger = 64;
-const menuLinkOpenDelay = 110;
-const menuLinkOpenDuration = 380;
-const menuQuoteOpenDuration = 420;
 const menuLinkCloseDuration = 220;
-const menuQuoteOpenGap = 80;
 
-function getMenuOpenAnimationDuration(itemCount: number) {
-  return (
-    menuLinkOpenDelay +
-    Math.max(0, itemCount - 1) * menuItemOpenStagger +
-    menuLinkOpenDuration +
-    menuQuoteOpenGap +
-    menuQuoteOpenDuration +
-    60
-  );
+function getMotionDuration(duration: number) {
+  if (
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    return 0;
+  }
+
+  return duration;
 }
 
 function getMenuContentCloseDuration(itemCount: number) {
@@ -69,7 +65,6 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
   const menuCloseButtonRef = useRef<HTMLButtonElement>(null);
   const animationTimerRefs = useRef<number[]>([]);
   const text = i18n.public.header;
-  const menuOpenAnimationDuration = getMenuOpenAnimationDuration(menuItems.length);
   const menuContentCloseDuration = getMenuContentCloseDuration(menuItems.length);
   const menuVisible = menuState !== "closed";
   const menuClosing = menuState === "closing-content" || menuState === "closing-shell";
@@ -87,6 +82,11 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
   };
 
   const setAnimationTimer = (callback: () => void, delay: number) => {
+    if (delay === 0) {
+      callback();
+      return;
+    }
+
     const timerId = window.setTimeout(() => {
       animationTimerRefs.current = animationTimerRefs.current.filter((id) => id !== timerId);
       callback();
@@ -97,7 +97,7 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
   const openMenu = () => {
     clearAnimationTimer();
     setMenuState("opening");
-    setAnimationTimer(() => setMenuState("open"), menuOpenAnimationDuration);
+    setAnimationTimer(() => setMenuState("open"), getMotionDuration(menuOpenDuration));
   };
 
   const closeMenu = (onClosed?: () => void) => {
@@ -108,11 +108,13 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
 
     clearAnimationTimer();
     setMenuState("closing-content");
-    setAnimationTimer(() => setMenuState("closing-shell"), menuContentCloseDuration);
+    const contentCloseDuration = getMotionDuration(menuContentCloseDuration);
+    const shellCloseDuration = getMotionDuration(menuShellCloseDuration);
+    setAnimationTimer(() => setMenuState("closing-shell"), contentCloseDuration);
     setAnimationTimer(() => {
       setMenuState("closed");
       if (onClosed) window.requestAnimationFrame(onClosed);
-    }, menuContentCloseDuration + menuShellCloseDuration);
+    }, contentCloseDuration + shellCloseDuration);
   };
 
   const navigateAfterMenuClose = (href: string) => {
@@ -122,7 +124,9 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
       target_type: href.startsWith("http") ? "external" : "internal",
       external: href.startsWith("http"),
     });
-    closeMenu(() => router.push(href));
+    clearAnimationTimer();
+    setMenuState("closed");
+    window.requestAnimationFrame(() => router.push(href));
   };
 
   const toggleMenu = () => {

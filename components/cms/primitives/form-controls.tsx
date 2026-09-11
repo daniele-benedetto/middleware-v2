@@ -47,7 +47,7 @@ const cmsFormLabelVariants = cva(labelBase, {
 const inputBaseReset =
   "w-full rounded-[6px] bg-card shadow-none outline-none transition-none appearance-none " +
   "placeholder:text-border " +
-  "focus-visible:outline-none focus-visible:ring-0 focus-visible:border focus-visible:border-accent " +
+  "focus-visible:outline-none focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent focus-visible:px-2.75 focus-visible:py-2.25 " +
   "aria-invalid:ring-0 aria-invalid:border-accent";
 
 const cmsTextInputVariants = cva(`${inputBaseReset} h-auto leading-[1.2]`, {
@@ -88,7 +88,7 @@ const cmsSelectTriggerVariants = cva(
   "w-full rounded-[6px] bg-card shadow-none outline-none transition-none " +
     "h-auto data-[size=default]:h-auto leading-[1.2] font-ui text-[12px] font-bold uppercase tracking-[var(--tracking-meta)] text-foreground " +
     "data-placeholder:text-border " +
-    "focus-visible:outline-none focus-visible:ring-0 focus-visible:border focus-visible:border-accent " +
+    "focus-visible:outline-none focus-visible:ring-0 focus-visible:border-2 focus-visible:border-accent focus-visible:px-2.75 focus-visible:py-2.25 " +
     "justify-between gap-3 " +
     "[&>svg]:size-3! [&>svg]:text-foreground!",
   {
@@ -504,7 +504,7 @@ export function CmsCheckbox({
       : accent
         ? "border-foreground bg-card data-checked:border-accent! data-checked:bg-accent! [&[data-checked]_[data-slot=checkbox-indicator]]:text-background"
         : "border-foreground bg-card data-checked:bg-foreground! [&[data-checked]_[data-slot=checkbox-indicator]]:text-(--bg-main)",
-    "focus-visible:ring-0 focus-visible:border-accent",
+    "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent",
   );
 
   return (
@@ -567,7 +567,7 @@ export function CmsRadio({
             disabled
               ? "border! border-border! bg-card-hover!"
               : "border! border-border! bg-card! data-checked:border-2! data-checked:border-accent! data-checked:bg-card!",
-            "focus-visible:ring-0",
+            "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent",
             "[&_[data-slot=radio-group-indicator]>span]:size-2! [&_[data-slot=radio-group-indicator]>span]:bg-accent!",
           )}
         />
@@ -613,7 +613,7 @@ export function CmsToggle({
     trackBase,
     trackState,
     disabled && "opacity-50 cursor-not-allowed",
-    "focus-visible:ring-0 focus-visible:border-accent!",
+    "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent",
     `[&_[data-slot=switch-thumb]]:size-4.5! [&_[data-slot=switch-thumb]]:rounded-full! ${[
       ...thumbColor.split(" "),
       ...thumbTransform.split(" "),

@@ -1,21 +1,22 @@
-import { CmsSystemActionLink, CmsSystemScreen } from "@/components/cms/common/system-screen";
+import { PublicSystemActionLink, PublicSystemScreen } from "@/components/public";
 import { i18n } from "@/lib/i18n";
 
 export default function NotFound() {
-  const text = i18n.cms.system;
+  const text = i18n.public.system;
 
   return (
-    <CmsSystemScreen
-      code={text.notFoundCode}
-      title={text.notFoundTitle}
-      description={text.notFoundDescription}
-      actions={
-        <>
-          <CmsSystemActionLink href="/" tone="accent">
+    <main className="flex min-h-svh flex-col bg-background font-heading text-foreground">
+      <PublicSystemScreen
+        code={text.notFoundCode}
+        kicker={text.notFoundKicker}
+        title={text.notFoundTitle}
+        description={text.notFoundDescription}
+        actions={
+          <PublicSystemActionLink href="/" tone="accent">
             {text.goHome}
-          </CmsSystemActionLink>
-        </>
-      }
-    />
+          </PublicSystemActionLink>
+        }
+      />
+    </main>
   );
 }

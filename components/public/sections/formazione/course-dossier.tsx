@@ -1,5 +1,6 @@
 import { publicContentClassName } from "@/components/public/primitives";
 import { DossierLessonCard } from "@/components/public/sections/formazione/dossier-lesson-card";
+import { i18n } from "@/lib/i18n";
 
 import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
 import type { CSSProperties } from "react";
@@ -17,7 +18,7 @@ export function CourseDossier({ course }: CourseDossierProps) {
     <div data-page-reveal="body" style={{ "--page-reveal-delay": "660ms" } as CSSProperties}>
       <section className="scroll-mt-20 py-10 lg:py-12">
         <div className={publicContentClassName}>
-          <h2 className="sr-only">Incontri</h2>
+          <h2 className="sr-only">{i18n.public.coursePage.lessonsHeading}</h2>
           <div className="grid md:grid-cols-2 md:border-l md:border-t md:border-foreground xl:grid-cols-3">
             {course.lessons.map((lesson, index) => (
               <DossierLessonCard

@@ -1,3 +1,4 @@
+import { i18n } from "@/lib/i18n";
 import { questionnaireDefinitionSchema } from "@/lib/server/modules/questionnaires/schema";
 
 type CsvResponse = {
@@ -40,7 +41,7 @@ function getColumns(responses: CsvResponse[]) {
             : undefined;
         columns.set(field.id, {
           id: field.id,
-          label: `${step.title ?? "Step"} · ${field.label}`,
+          label: `${step.title ?? i18n.cms.forms.resources.questionnaires.stepFallback(1)} · ${field.label}`,
           options,
         });
       }
@@ -53,9 +54,9 @@ function getColumns(responses: CsvResponse[]) {
 export function createQuestionnaireResponsesCsv(responses: CsvResponse[]) {
   const columns = getColumns(responses);
   const header = [
-    "Response ID",
-    "Submitted at",
-    "Schema version",
+    i18n.cms.forms.resources.questionnaires.csv.responseId,
+    i18n.cms.forms.resources.questionnaires.csv.submittedAt,
+    i18n.cms.forms.resources.questionnaires.csv.schemaVersion,
     ...columns.map((column) => column.label),
   ];
   const rows = responses.map((response) => [

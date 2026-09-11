@@ -1,5 +1,6 @@
 import { getIssuePlainDescription } from "@/components/public/home/home-view-model";
 import { getCoursePlainDescription } from "@/components/public/sections/formazione/course-archive-view-model";
+import { i18n } from "@/lib/i18n";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { seoConfig } from "@/lib/seo/config";
 import { getCanonicalUrl, getOpenGraphImageUrl } from "@/lib/seo/metadata";
@@ -172,7 +173,7 @@ export function buildArchiveCollectionPageJsonLd(issues: PublicIssueListItem[]) 
   return {
     "@type": "CollectionPage",
     "@id": `${archiveUrl}#archive`,
-    name: "Archivio",
+    name: i18n.public.issuesArchive.metadata.title,
     url: archiveUrl,
     isPartOf: { "@id": `${getRootUrl()}#website` },
     mainEntity: {
@@ -230,7 +231,7 @@ export function buildFormazioneCollectionPageJsonLd(courses: PublicCourseDto[]) 
   return {
     "@type": "CollectionPage",
     "@id": `${archiveUrl}#contro-formazione`,
-    name: "Contro-formazione",
+    name: i18n.public.formazione.metadata.title,
     url: archiveUrl,
     isPartOf: { "@id": `${getRootUrl()}#website` },
     mainEntity: {
@@ -297,7 +298,7 @@ export function buildIssuePageJsonLd(issue: PublicCurrentIssueDetail) {
     buildOrganizationJsonLd(),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
-      { name: "Archivio", path: "/uscite" },
+      { name: i18n.public.issuesArchive.metadata.title, path: "/uscite" },
       { name: issue.title, path: `/uscite/${issue.slug}` },
     ]),
     buildIssueCollectionPageJsonLd(issue, `/uscite/${issue.slug}`),
@@ -310,7 +311,7 @@ export function buildIssuesArchiveJsonLd(issues: PublicIssueListItem[]) {
     buildOrganizationJsonLd(),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
-      { name: "Archivio", path: "/uscite" },
+      { name: i18n.public.issuesArchive.metadata.title, path: "/uscite" },
     ]),
     buildArchiveCollectionPageJsonLd(issues),
   ]);
@@ -322,7 +323,7 @@ export function buildFormazioneArchiveJsonLd(courses: PublicCourseDto[]) {
     buildOrganizationJsonLd(),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
-      { name: "Contro-formazione", path: "/contro-formazione" },
+      { name: i18n.public.formazione.metadata.title, path: "/contro-formazione" },
     ]),
     buildFormazioneCollectionPageJsonLd(courses),
   ]);
@@ -334,7 +335,7 @@ export function buildCoursePageJsonLd(course: PublicCourseDetailDto) {
     buildOrganizationJsonLd(),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
-      { name: "Contro-formazione", path: "/contro-formazione" },
+      { name: i18n.public.formazione.metadata.title, path: "/contro-formazione" },
       { name: course.title, path: `/contro-formazione/${course.slug}` },
     ]),
     buildCourseCollectionPageJsonLd(course),
@@ -358,7 +359,7 @@ export function buildLessonJsonLd(lesson: PublicLessonDetailDto, description?: s
     mainEntityOfPage: lessonUrl,
     inLanguage: seoConfig.language,
     isAccessibleForFree: true,
-    learningResourceType: "Lezione",
+    learningResourceType: i18n.public.schema.learningResourceType,
     timeRequired: `PT${lesson.readingTimeMinutes}M`,
     wordCount: countWords(lesson.contentRich),
     position: lesson.sortOrder,
@@ -379,7 +380,7 @@ export function buildLessonPageJsonLd(lesson: PublicLessonDetailDto, description
     buildOrganizationJsonLd(),
     buildBreadcrumbJsonLd([
       { name: seoConfig.siteName, path: "/" },
-      { name: "Contro-formazione", path: "/contro-formazione" },
+      { name: i18n.public.formazione.metadata.title, path: "/contro-formazione" },
       { name: lesson.courseTitle, path: coursePath },
       { name: lesson.title, path: `${coursePath}/${lesson.slug}` },
     ]),

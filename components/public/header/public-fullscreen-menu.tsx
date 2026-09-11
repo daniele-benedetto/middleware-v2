@@ -1,3 +1,5 @@
+import { usePathname } from "next/navigation";
+
 import { publicHeaderBarClassName } from "@/components/public/header/constants";
 import { PublicBrand } from "@/components/public/header/public-brand";
 import { PublicMenuButton } from "@/components/public/header/public-menu-button";
@@ -46,9 +48,18 @@ export function PublicFullscreenMenu({
   onClose,
   onNavigate,
 }: PublicFullscreenMenuProps) {
+  const pathname = usePathname();
   const text = i18n.public.menu;
   const titleId = `${id}-title`;
   const menuClosing = state === "closing-content" || state === "closing-shell";
+
+  const isCurrentPage = (item: PublicMenuItem) => {
+    if (item.external) {
+      return false;
+    }
+
+    return item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+  };
 
   return (
     <div
@@ -115,7 +126,12 @@ export function PublicFullscreenMenu({
                 event.preventDefault();
                 onNavigate(item.href);
               }}
-              className="public-menu-link relative flex items-baseline gap-4 py-3 transition-colors duration-(--motion-fast) sm:gap-5.5 sm:py-3.5 md:hover:text-accent"
+              className={cn(
+                "public-menu-link relative flex items-baseline gap-4 py-3 transition-colors duration-(--motion-fast) sm:gap-5.5 sm:py-3.5 md:hover:text-accent",
+                isCurrentPage(item) && "text-accent",
+              )}
+              aria-current={isCurrentPage(item) ? "page" : undefined}
+              tabIndex={state === "opening" ? -1 : undefined}
               style={
                 {
                   "--menu-item-index": index,

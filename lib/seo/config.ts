@@ -62,6 +62,6 @@ export const seoConfig = {
   language: "it-IT",
   twitterHandle: "@middleware",
   siteUrl,
-  areaServed: "Modena",
+  areaServed: i18n.public.brand.areaServed,
   socialProfiles: normalizeSocialProfiles(process.env.NEXT_PUBLIC_SOCIAL_PROFILES),
 } as const;

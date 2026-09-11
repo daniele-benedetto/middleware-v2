@@ -54,7 +54,10 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
           style={priority ? ({ "--page-reveal-delay": "660ms" } as CSSProperties) : undefined}
           className={cn(
             publicInteraction.cardBase,
-            "grid gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] md:gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:gap-12",
+            "grid gap-8 md:gap-10 lg:gap-12",
+            article.imageUrl
+              ? "md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)] lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)]"
+              : "max-w-4xl",
           )}
         >
           <div>

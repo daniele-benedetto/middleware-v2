@@ -123,7 +123,7 @@ function MapItemsListToolbarFields({
         value={filters.mapIdValue}
         onValueChange={onMapChange}
         options={[
-          { value: "all", label: "Mappa: tutte" },
+          { value: "all", label: optionsText.mapsAll },
           ...maps.map((map) => ({ value: map.id, label: map.title })),
         ]}
       />
@@ -133,7 +133,7 @@ function MapItemsListToolbarFields({
         options={[
           { value: "updatedAt", label: optionsText.sortUpdatedAt },
           { value: "createdAt", label: optionsText.sortCreatedAt },
-          { value: "title", label: "Ordina per: punto" },
+          { value: "title", label: optionsText.sortMapItem },
         ]}
       />
       <CmsSelect

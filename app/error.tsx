@@ -1,10 +1,10 @@
 "use client";
 
 import {
-  CmsSystemActionButton,
-  CmsSystemActionLink,
-  CmsSystemScreen,
-} from "@/components/cms/common/system-screen";
+  PublicSystemActionButton,
+  PublicSystemActionLink,
+  PublicSystemScreen,
+} from "@/components/public";
 import { i18n } from "@/lib/i18n";
 
 type ErrorPageProps = {
@@ -13,23 +13,26 @@ type ErrorPageProps = {
 };
 
 export default function ErrorPage({ reset }: ErrorPageProps) {
-  const text = i18n.cms.system;
+  const text = i18n.public.system;
 
   return (
-    <CmsSystemScreen
-      code={text.errorCode}
-      title={text.errorTitle}
-      description={text.errorDescription}
-      actions={
-        <>
-          <CmsSystemActionButton onClick={reset} tone="accent">
-            {text.retry}
-          </CmsSystemActionButton>
-          <CmsSystemActionLink href="/" tone="foreground">
-            {text.goHome}
-          </CmsSystemActionLink>
-        </>
-      }
-    />
+    <main className="flex min-h-svh flex-col bg-background font-heading text-foreground">
+      <PublicSystemScreen
+        code={text.errorCode}
+        kicker={text.errorKicker}
+        title={text.errorTitle}
+        description={text.errorDescription}
+        actions={
+          <>
+            <PublicSystemActionButton onClick={reset} tone="accent">
+              {text.retry}
+            </PublicSystemActionButton>
+            <PublicSystemActionLink href="/" tone="foreground">
+              {text.goHome}
+            </PublicSystemActionLink>
+          </>
+        }
+      />
+    </main>
   );
 }

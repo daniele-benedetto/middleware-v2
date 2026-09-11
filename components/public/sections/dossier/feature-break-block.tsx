@@ -75,7 +75,8 @@ export function FeatureBreakBlock({
           style={priority ? ({ "--page-reveal-delay": "660ms" } as CSSProperties) : undefined}
           className={cn(
             publicInteraction.cardBase,
-            "grid md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
+            "grid",
+            article.imageUrl && "md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
             variantClasses.section,
             cardBorderClass,
           )}

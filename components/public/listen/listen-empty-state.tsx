@@ -3,7 +3,8 @@ type ListenEmptyStateProps = {
 };
 
 export function ListenEmptyState({ contentKind = "article" }: ListenEmptyStateProps) {
-  const label = contentKind === "lesson" ? "questo incontro" : "questo articolo";
+  const text = i18n.public.listenPage;
+  const label = contentKind === "lesson" ? text.lessonContentLabel : text.articleContentLabel;
 
   return (
     <div
@@ -12,8 +13,9 @@ export function ListenEmptyState({ contentKind = "article" }: ListenEmptyStatePr
       aria-live="polite"
     >
       <p className="font-editorial text-[clamp(17px,2vw,22px)] leading-tight tracking-[-0.015em] text-body-text italic">
-        Il testo sincronizzato non è disponibile per {label}.
+        {text.transcriptUnavailable(label)}
       </p>
     </div>
   );
 }
+import { i18n } from "@/lib/i18n";

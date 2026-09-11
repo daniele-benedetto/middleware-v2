@@ -61,7 +61,9 @@ async function ArticleListenPlayer({
 }
 
 function ListenPlayerFallback() {
-  return <div className="h-full" role="status" aria-label="Caricamento trascrizione" />;
+  return (
+    <div className="h-full" role="status" aria-label={i18n.public.listenPage.transcriptLoading} />
+  );
 }
 
 export function ArticleListenPage({ data, chunksPromise }: ArticleListenPageProps) {
@@ -82,7 +84,7 @@ export function ArticleListenPage({ data, chunksPromise }: ArticleListenPageProp
       tabIndex={-1}
       className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
-      <article className="grid h-[calc(100svh-var(--public-header-height))] grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
+      <article className="grid min-h-[calc(100svh-var(--public-header-height))] grid-rows-[auto_minmax(34rem,1fr)]">
         <PublicPageHero
           as="header"
           title={article.title}

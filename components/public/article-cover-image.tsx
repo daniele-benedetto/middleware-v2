@@ -4,6 +4,8 @@ import { editorialImageAlt } from "@/lib/public/format/image";
 import { resolvePublicImageSettings } from "@/lib/public/image-settings";
 import { cn } from "@/lib/utils";
 
+import type { CSSProperties } from "react";
+
 type ArticleCoverImageProps = {
   src: string;
   alt: string | null;
@@ -39,11 +41,13 @@ export function ArticleCoverImage({
       sizes={sizes}
       preload={preload}
       className={cn(imageSettings.grayscale && "grayscale", className)}
-      style={{
-        objectFit: forceCover ? "cover" : imageSettings.fit,
-        objectPosition: `${imageSettings.positionX}% ${imageSettings.positionY}%`,
-        transform: imageSettings.zoom === 100 ? undefined : `scale(${imageSettings.zoom / 100})`,
-      }}
+      style={
+        {
+          objectFit: forceCover ? "cover" : imageSettings.fit,
+          objectPosition: `${imageSettings.positionX}% ${imageSettings.positionY}%`,
+          "--editorial-image-zoom": imageSettings.zoom / 100,
+        } as CSSProperties
+      }
     />
   );
 }

@@ -7,7 +7,8 @@ export default function PublicLoading() {
       aria-live="polite"
       aria-busy="true"
     >
-      <span className="sr-only">Caricamento contenuti in corso.</span>
+      <span className="sr-only">{i18n.public.loading.content}</span>
     </main>
   );
 }
+import { i18n } from "@/lib/i18n";

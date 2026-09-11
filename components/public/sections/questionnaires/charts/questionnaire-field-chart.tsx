@@ -1,4 +1,5 @@
 import { publicTypography } from "@/components/public/primitives";
+import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
@@ -25,7 +26,9 @@ function formatDate(value: string | null) {
 
 function EmptyChart() {
   return (
-    <p className="font-editorial text-[17px] text-muted">Nessun dato aggregato disponibile.</p>
+    <p className="font-editorial text-[17px] text-muted">
+      {i18n.public.questionnaireAnalysis.emptyChart}
+    </p>
   );
 }
 
@@ -69,7 +72,10 @@ function PercentageBar({
         {label}
       </span>
       <div
-        aria-label={`${label}: ${formatPercentage(value)}`}
+        aria-label={i18n.public.questionnaireAnalysis.percentageAriaLabel(
+          label,
+          formatPercentage(value),
+        )}
         aria-valuemax={100}
         aria-valuemin={0}
         aria-valuenow={value}
@@ -164,8 +170,15 @@ function DateChart({ field }: { field: Extract<AnalysisField, { kind: "date" }> 
         ))}
       </ol>
       <div className="mt-8 grid grid-cols-2 border-l border-t border-foreground">
-        <Metric label="Prima data" value={formatDate(field.minimum)} />
-        <Metric label="Ultima data" value={formatDate(field.maximum)} accent />
+        <Metric
+          label={i18n.public.questionnaireAnalysis.firstDate}
+          value={formatDate(field.minimum)}
+        />
+        <Metric
+          label={i18n.public.questionnaireAnalysis.lastDate}
+          value={formatDate(field.maximum)}
+          accent
+        />
       </div>
     </div>
   );

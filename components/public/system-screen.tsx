@@ -1,4 +1,5 @@
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
+import { PublicLink as Link } from "@/components/public/public-link";
 import { cn } from "@/lib/utils";
 
 import type { CSSProperties, ReactNode } from "react";
@@ -10,6 +11,44 @@ type PublicSystemScreenProps = {
   kicker?: string;
   actions?: ReactNode;
 };
+
+type PublicSystemActionLinkProps = {
+  href: string;
+  children: ReactNode;
+  tone?: "accent" | "foreground";
+};
+
+export function PublicSystemActionLink({
+  href,
+  children,
+  tone = "accent",
+}: PublicSystemActionLinkProps) {
+  return (
+    <Link href={href} className={systemActionClass(tone)}>
+      <span aria-hidden>→</span>
+      <span className="border-b border-dashed border-current hover:border-solid">{children}</span>
+    </Link>
+  );
+}
+
+type PublicSystemActionButtonProps = {
+  onClick: () => void;
+  children: ReactNode;
+  tone?: "accent" | "foreground";
+};
+
+export function PublicSystemActionButton({
+  onClick,
+  children,
+  tone = "accent",
+}: PublicSystemActionButtonProps) {
+  return (
+    <button type="button" onClick={onClick} className={systemActionClass(tone)}>
+      <span aria-hidden>→</span>
+      <span className="border-b border-dashed border-current hover:border-solid">{children}</span>
+    </button>
+  );
+}
 
 export function PublicSystemScreen({
   code,
@@ -70,5 +109,12 @@ export function PublicSystemScreen({
         </div>
       </div>
     </section>
+  );
+}
+
+function systemActionClass(tone: "accent" | "foreground") {
+  return cn(
+    "inline-flex items-center gap-2 font-heading text-[12px] font-bold tracking-[0.08em] uppercase transition-colors",
+    tone === "accent" ? "text-accent hover:text-foreground" : "text-foreground hover:text-accent",
   );
 }

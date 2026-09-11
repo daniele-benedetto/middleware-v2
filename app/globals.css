@@ -82,6 +82,7 @@
   --dark-muted: rgba(247, 240, 231, 0.58);
   --footer-muted: rgba(247, 240, 231, 0.52);
   --surface-card: #ffffff;
+  --surface: #ffffff;
   --surface-hover: rgba(193, 56, 20, 0.1);
   --placeholder-line-a: rgba(0, 0, 0, 0.1);
   --placeholder-line-b: rgba(0, 0, 0, 0.16);
@@ -305,6 +306,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-surface: var(--surface);
   --radius-sm: var(--radius-control);
   --radius-md: var(--radius-control);
   --radius-lg: var(--radius);

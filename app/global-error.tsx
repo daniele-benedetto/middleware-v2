@@ -3,10 +3,10 @@
 import { Archivo, Spectral } from "next/font/google";
 
 import {
-  CmsSystemActionButton,
-  CmsSystemActionLink,
-  CmsSystemScreen,
-} from "@/components/cms/common/system-screen";
+  PublicSystemActionButton,
+  PublicSystemActionLink,
+  PublicSystemScreen,
+} from "@/components/public";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,7 @@ type GlobalErrorProps = {
 };
 
 export default function GlobalError({ reset }: GlobalErrorProps) {
-  const text = i18n.cms.system;
+  const text = i18n.public.system;
 
   return (
     <html
@@ -39,18 +39,19 @@ export default function GlobalError({ reset }: GlobalErrorProps) {
       className={cn("h-full antialiased font-sans", archivo.variable, spectral.variable)}
     >
       <body className="min-h-svh bg-background text-foreground">
-        <CmsSystemScreen
+        <PublicSystemScreen
           code={text.errorCode}
+          kicker={text.errorKicker}
           title={text.errorTitle}
           description={text.errorDescription}
           actions={
             <>
-              <CmsSystemActionButton onClick={reset} tone="accent">
+              <PublicSystemActionButton onClick={reset} tone="accent">
                 {text.retry}
-              </CmsSystemActionButton>
-              <CmsSystemActionLink href="/" tone="foreground">
+              </PublicSystemActionButton>
+              <PublicSystemActionLink href="/" tone="foreground">
                 {text.goHome}
-              </CmsSystemActionLink>
+              </PublicSystemActionLink>
             </>
           }
         />

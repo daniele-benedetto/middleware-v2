@@ -98,7 +98,7 @@ function assertPublished(questionnaire: QuestionnaireSubmissionRecord) {
   if (questionnaire.status === "PUBLISHED") return;
 
   if (questionnaire.status === "CLOSED") {
-    throw new ApiError(409, "CONFLICT", "Questionnaire is closed");
+    throw new ApiError(409, "CONFLICT", "Questionnaire is closed", { reason: "CLOSED" });
   }
 
   throw new ApiError(404, "NOT_FOUND", "Questionnaire is not available");
@@ -279,7 +279,9 @@ export function createQuestionnaireResponsesService(
         };
       } catch (error) {
         if (isUniqueResponseError(error)) {
-          throw new ApiError(409, "CONFLICT", "A response has already been submitted");
+          throw new ApiError(409, "CONFLICT", "A response has already been submitted", {
+            reason: "ALREADY_SUBMITTED",
+          });
         }
 
         throw error;

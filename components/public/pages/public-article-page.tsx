@@ -116,7 +116,7 @@ function RelatedArticlesSection({ article, relatedArticles }: RelatedArticlesSec
     <section className="scroll-mt-20 bg-background py-12 lg:py-14">
       <div className={publicContentClassName}>
         <HomeSectionHeader
-          title="Articoli correlati"
+          title={text.relatedArticlesTitle}
           action={{ label: text.viewIssue, href: `/uscite/${article.issueSlug}` }}
         />
 

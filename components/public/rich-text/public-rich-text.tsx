@@ -3,6 +3,7 @@ import { Fragment, type ReactNode } from "react";
 
 import { publicTypography } from "@/components/public/primitives";
 import { TrackedExternalLink } from "@/components/public/tracked-external-link";
+import { i18n } from "@/lib/i18n";
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import { resolvePublicImageSettings } from "@/lib/public/image-settings";
 import {
@@ -183,7 +184,7 @@ function renderInlineNode(node: RichTextNode, key: string, context: RenderContex
       <sup key={key} id={getNoteReferenceId(number)} className="scroll-mt-24 align-super">
         <a
           href={`#${getNoteId(number)}`}
-          aria-label={`Vai alla nota ${number}`}
+          aria-label={i18n.public.richText.noteReferenceAriaLabel(number)}
           className="font-heading text-[0.62em] font-black text-accent no-underline hover:text-foreground"
         >
           [{number}]
@@ -330,7 +331,7 @@ function renderNotes(entries: NoteEntry[], context: RenderContext): ReactNode {
         id="article-notes-title"
         className="font-heading text-[13px] font-black tracking-[0.12em] text-foreground uppercase"
       >
-        Note
+        {i18n.public.richText.notesTitle}
       </h2>
       <ol className="mt-5 space-y-4 font-editorial text-[15px] leading-normal text-body-text">
         {entries.map((entry) => (
@@ -341,7 +342,7 @@ function renderNotes(entries: NoteEntry[], context: RenderContext): ReactNode {
           >
             <a
               href={`#${getNoteReferenceId(entry.number)}`}
-              aria-label={`Torna al riferimento della nota ${entry.number}`}
+              aria-label={i18n.public.richText.noteBackAriaLabel(entry.number)}
               className="mr-2 font-heading text-[12px] font-black text-accent no-underline hover:text-foreground"
             >
               {entry.number}.

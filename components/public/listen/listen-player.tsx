@@ -160,7 +160,7 @@ function SyncedTranscript({
               onClick={onExpandedChange}
               className="font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              {isExpanded ? "Riduci trascrizione" : "Mostra trascrizione completa"}
+              {isExpanded ? text.hideTranscript : text.showTranscript}
             </button>
           ) : null}
           {chunks.map((chunk) => {
@@ -237,7 +237,7 @@ function ListenControls({
   return (
     <section
       className="mx-auto grid w-full max-w-3xl gap-2.5 sm:gap-3"
-      aria-label="Controlli audio"
+      aria-label={text.controlsAriaLabel}
     >
       <p role="status" className="sr-only">
         {isPlaying ? text.playingStatus : text.pausedStatus}
@@ -331,7 +331,7 @@ function ListenControls({
               ? "bg-accent text-background"
               : "bg-background hover:bg-accent/15",
           )}
-          aria-label={activeChunkIsBookmarked ? "Rimuovi segnalibro" : "Aggiungi segnalibro"}
+          aria-label={activeChunkIsBookmarked ? text.removeBookmark : text.addBookmark}
         >
           <BookmarkIcon
             className={cn("size-4", activeChunkIsBookmarked ? "fill-current" : undefined)}
@@ -365,7 +365,7 @@ function ListenControls({
           type="button"
           onClick={onPlaybackRateCycle}
           className="inline-flex size-10 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[10px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-12 lg:size-13"
-          aria-label={`Velocità ${formatPlaybackRate(playbackRate)}`}
+          aria-label={text.speed(formatPlaybackRate(playbackRate))}
         >
           {formatPlaybackRate(playbackRate)}
         </button>

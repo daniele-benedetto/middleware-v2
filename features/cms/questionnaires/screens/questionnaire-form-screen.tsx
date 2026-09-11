@@ -94,39 +94,45 @@ const questionnaireHomeVariantOptions = [
 type FieldType = (typeof fieldTypes)[number];
 type QuestionnaireEditorSection = "overview" | "copy" | string;
 
-const emptyCopy: QuestionnaireCopy = {
-  progressLabel: "Avanzamento",
-  backLabel: "Indietro",
-  nextLabel: "Avanti",
-  submitLabel: "Invia",
-  requiredFieldsMessage: "Compila i campi obbligatori.",
-  resumeMessage: "Riprendi dove avevi interrotto.",
-  successTitle: "Grazie",
-  successMessage: "La risposta e stata registrata.",
-  alreadySubmittedTitle: "Risposta gia inviata",
-  alreadySubmittedMessage: "Hai gia completato questo questionario.",
-  closedTitle: "Questionario chiuso",
-  closedMessage: "Questo questionario non accetta piu risposte.",
-  resultsTitle: "Risultati",
-  resultsEmptyMessage: "Non ci sono ancora risultati da mostrare.",
-  completionCtaLabel: "Torna alla rivista",
-  completionCtaHref: "/",
-};
+const emptyCopy: QuestionnaireCopy = { ...i18n.cms.forms.resources.questionnaires.defaultCopy };
 
 function newField(type: FieldType): QuestionnaireField {
   const base = {
     id: crypto.randomUUID(),
-    label: "Nuova domanda",
+    label: i18n.cms.forms.resources.questionnaires.newFieldLabel,
     required: false,
     publicResults: false,
   };
   if (type === "singleChoice")
-    return { ...base, type, options: [{ id: crypto.randomUUID(), label: "Opzione" }] };
+    return {
+      ...base,
+      type,
+      options: [
+        { id: crypto.randomUUID(), label: i18n.cms.forms.resources.questionnaires.newOptionLabel },
+      ],
+    };
   if (type === "multipleChoice")
-    return { ...base, type, options: [{ id: crypto.randomUUID(), label: "Opzione" }] };
-  if (type === "boolean") return { ...base, type, trueLabel: "Si", falseLabel: "No" };
+    return {
+      ...base,
+      type,
+      options: [
+        { id: crypto.randomUUID(), label: i18n.cms.forms.resources.questionnaires.newOptionLabel },
+      ],
+    };
+  if (type === "boolean")
+    return {
+      ...base,
+      type,
+      trueLabel: i18n.cms.forms.resources.questionnaires.booleanTrueLabel,
+      falseLabel: i18n.cms.forms.resources.questionnaires.booleanFalseLabel,
+    };
   if (type === "scale") return { ...base, type, min: 1, max: 5 };
-  if (type === "consent") return { ...base, type, consentText: "Acconsento" };
+  if (type === "consent")
+    return {
+      ...base,
+      type,
+      consentText: i18n.cms.forms.resources.questionnaires.consentDefaultLabel,
+    };
   return { ...base, type } as QuestionnaireField;
 }
 
@@ -134,7 +140,13 @@ function emptyDefinition(): QuestionnaireDefinition {
   return {
     version: 1,
     copy: emptyCopy,
-    steps: [{ id: crypto.randomUUID(), title: "Step 1", fields: [] }],
+    steps: [
+      {
+        id: crypto.randomUUID(),
+        title: i18n.cms.forms.resources.questionnaires.defaultStepTitle,
+        fields: [],
+      },
+    ],
   };
 }
 
@@ -422,7 +434,7 @@ function QuestionnaireFormContent({
   const addStep = () => {
     const step = {
       id: crypto.randomUUID(),
-      title: `Step ${definition.steps.length + 1}`,
+      title: i18n.cms.forms.resources.questionnaires.stepTitleFallback(definition.steps.length + 1),
       fields: [],
     };
     updateDefinition((current) => ({ ...current, steps: [...current.steps, step] }));
@@ -472,15 +484,15 @@ function QuestionnaireFormContent({
       />
       <div className="grid min-h-0 flex-1 gap-6 overflow-hidden lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:pr-1">
         <aside className="flex min-h-0 flex-col gap-3 lg:border-r lg:border-foreground lg:pr-5">
-          <nav aria-label="Sezioni del questionario" className="space-y-1">
+          <nav aria-label={text.sectionsAriaLabel} className="space-y-1">
             <EditorNavButton
               active={activeSection === "overview"}
-              label="Panoramica"
+              label={text.overview}
               onClick={() => setActiveSection("overview")}
             />
             <EditorNavButton
               active={activeSection === "copy"}
-              label="Testi e privacy"
+              label={text.copyAndPrivacy}
               onClick={() => setActiveSection("copy")}
             />
           </nav>
@@ -518,13 +530,18 @@ function QuestionnaireFormContent({
                                 onClick={() => setActiveSection(step.id)}
                                 className="min-w-0 flex-1 cursor-pointer truncate text-left focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
                               >
-                                {step.title || "Step senza titolo"}
+                                {step.title || text.untitledStep}
                               </button>
                               <button
                                 type="button"
                                 disabled={locked}
-                                aria-label={`Riordina ${step.title || `step ${stepIndex + 1}`}`}
-                                title="Trascina per riordinare"
+                                aria-label={text.reorderStep(
+                                  step.title ||
+                                    i18n.cms.forms.resources.questionnaires.stepFallback(
+                                      stepIndex + 1,
+                                    ),
+                                )}
+                                title={text.dragToReorder}
                                 className="flex size-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-[4px] text-current/60 transition-colors hover:bg-surface-hover hover:text-current active:cursor-grabbing focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-border [&>svg]:size-4"
                                 {...dragHandleProps}
                               >
@@ -540,8 +557,13 @@ function QuestionnaireFormContent({
                                   }));
                                   if (activeSection === step.id) setActiveSection("overview");
                                 }}
-                                aria-label={`Elimina ${step.title || `step ${stepIndex + 1}`}`}
-                                title="Elimina step"
+                                aria-label={text.deleteStepAriaLabel(
+                                  step.title ||
+                                    i18n.cms.forms.resources.questionnaires.stepFallback(
+                                      stepIndex + 1,
+                                    ),
+                                )}
+                                title={text.deleteStep}
                                 className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-[4px] text-current/60 transition-colors hover:bg-surface-hover hover:text-accent focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-border [&>svg]:size-4"
                               >
                                 <Trash2 aria-hidden />
@@ -572,12 +594,12 @@ function QuestionnaireFormContent({
           {activeSection === "overview" ? (
             <section className="space-y-6" aria-labelledby="questionnaire-overview-title">
               <div className="border-b border-foreground pb-4">
-                <CmsMetaText variant="category">Panoramica</CmsMetaText>
+                <CmsMetaText variant="category">{text.overview}</CmsMetaText>
                 <h2
                   id="questionnaire-overview-title"
                   className="mt-1 font-ui text-2xl font-black uppercase tracking-tight"
                 >
-                  Impostazioni del questionario
+                  {text.settingsTitle}
                 </h2>
               </div>
               {mode === "edit" && questionnaire ? (
@@ -856,17 +878,19 @@ function StepCanvas({
     <section className="space-y-5" aria-labelledby="questionnaire-step-title">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-foreground pb-4">
         <div>
-          <CmsMetaText variant="category">{`Step ${stepIndex + 1} di ${totalSteps}`}</CmsMetaText>
+          <CmsMetaText variant="category">
+            {i18n.cms.forms.resources.questionnaires.stepProgressLabel(stepIndex + 1, totalSteps)}
+          </CmsMetaText>
           <h2
             id="questionnaire-step-title"
             className="mt-1 font-ui text-2xl font-black uppercase tracking-tight"
           >
-            {step.title || "Step senza titolo"}
+            {step.title || text.untitledStep}
           </h2>
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        <CmsFormField label="Titolo dello step" htmlFor={`${step.id}-title`}>
+        <CmsFormField label={text.stepTitle} htmlFor={`${step.id}-title`}>
           <CmsTextInput
             id={`${step.id}-title`}
             value={step.title ?? ""}
@@ -876,7 +900,7 @@ function StepCanvas({
             }
           />
         </CmsFormField>
-        <CmsFormField label="Descrizione dello step" htmlFor={`${step.id}-description`}>
+        <CmsFormField label={text.stepDescription} htmlFor={`${step.id}-description`}>
           <CmsTextInput
             id={`${step.id}-description`}
             value={step.description ?? ""}
@@ -891,7 +915,7 @@ function StepCanvas({
         </CmsFormField>
       </div>
       <div className="border-t border-foreground pt-4">
-        <CmsMetaText variant="category">Domande</CmsMetaText>
+        <CmsMetaText variant="category">{text.questions}</CmsMetaText>
       </div>
       <DndContext
         id={`cms-questionnaire-step-${step.id}-fields-dnd`}
@@ -1062,13 +1086,13 @@ function FieldEditor({
           aria-expanded={expanded}
           className="min-w-0 flex-1 cursor-pointer truncate text-left focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
         >
-          {field.label || "Domanda senza titolo"}
+          {field.label || text.untitledQuestion}
         </button>
         <button
           type="button"
           disabled={disabled}
-          aria-label="Riordina domanda"
-          title="Trascina per riordinare"
+          aria-label={text.reorderQuestion}
+          title={text.dragToReorder}
           className="flex size-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-[4px] text-current/60 transition-colors hover:bg-surface-hover hover:text-current active:cursor-grabbing focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-border [&>svg]:size-4"
           {...dragHandleProps}
         >
@@ -1078,8 +1102,8 @@ function FieldEditor({
           type="button"
           disabled={disabled}
           onClick={onRemove}
-          aria-label={`Elimina ${field.label || "domanda"}`}
-          title="Elimina domanda"
+          aria-label={text.deleteQuestionAriaLabel(field.label || text.untitledQuestion)}
+          title={text.deleteQuestion}
           className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-[4px] text-current/60 transition-colors hover:bg-surface-hover hover:text-accent focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-border [&>svg]:size-4"
         >
           <Trash2 aria-hidden />
@@ -1171,7 +1195,13 @@ function FieldEditor({
                 onClick={() =>
                   onChange({
                     ...field,
-                    options: [...field.options, { id: crypto.randomUUID(), label: "Opzione" }],
+                    options: [
+                      ...field.options,
+                      {
+                        id: crypto.randomUUID(),
+                        label: i18n.cms.forms.resources.questionnaires.newOptionLabel,
+                      },
+                    ],
                   })
                 }
               />

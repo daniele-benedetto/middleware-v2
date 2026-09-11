@@ -57,7 +57,7 @@ export const cmsTableClasses = {
   bodyRow: cn(
     "border-b border-foreground last:border-b-0",
     "odd:bg-card even:bg-card-hover",
-    "data-[state=selected]:bg-card-hover",
+    "data-[state=selected]:bg-card-hover hover:bg-accent hover:text-background [&:hover>td]:text-background! [&:hover>td_svg]:text-background!",
   ),
   bodyRowArchived: cn("border-b border-foreground last:border-b-0 bg-card-hover"),
 

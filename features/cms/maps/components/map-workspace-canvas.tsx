@@ -6,6 +6,7 @@ import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import { PublicRichText } from "@/components/public/rich-text";
 import { createModenaMap } from "@/features/cms/maps/utils/leaflet-map";
+import { i18n } from "@/lib/i18n";
 import { modenaComunePolygons } from "@/lib/server/modules/maps/boundary/modena-comune";
 
 import type { MapItemDto } from "@/lib/server/modules/maps/dto";
@@ -120,7 +121,7 @@ export function CmsMapWorkspaceCanvas({
               type="button"
               onClick={onClearSelection}
               className="inline-flex size-9 shrink-0 items-center justify-center border border-foreground bg-card text-foreground transition-colors hover:bg-card-hover focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              aria-label="Chiudi dettaglio punto"
+              aria-label={i18n.cms.forms.resources.maps.closeItemDetail}
             >
               <X aria-hidden className="size-4" />
             </button>

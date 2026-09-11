@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { PublicRichText } from "@/components/public/rich-text";
+import { i18n } from "@/lib/i18n";
 import { modenaComuneMaxBounds } from "@/lib/server/modules/maps/boundary/modena-comune";
 
 import type { PublicMapDetailDto } from "@/lib/server/modules/maps/dto/public";
@@ -81,7 +82,7 @@ export function MapHomeCanvas({ map }: { map: PublicMapDetailDto }) {
       resizeObserver.observe(container);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors",
+        attribution: i18n.public.maps.attribution,
         maxZoom: 19,
       })
         .on("tileerror", () => setHasError(true))
@@ -148,7 +149,7 @@ export function MapHomeCanvas({ map }: { map: PublicMapDetailDto }) {
               type="button"
               onClick={() => setSelectedItemId(null)}
               className="inline-flex size-9 shrink-0 items-center justify-center border border-foreground bg-card text-foreground transition-colors hover:bg-card-hover focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              aria-label="Chiudi dettaglio punto"
+              aria-label={i18n.public.maps.closeItemDetail}
             >
               <X aria-hidden className="size-4" />
             </button>
@@ -165,7 +166,7 @@ export function MapHomeCanvas({ map }: { map: PublicMapDetailDto }) {
       ) : null}
       {hasError ? (
         <p className="absolute inset-x-4 top-4 rounded-[6px] border border-accent bg-background px-3 py-2 text-center font-ui text-[10px] font-bold tracking-[0.08em] text-muted-foreground uppercase">
-          Mappa non disponibile
+          {i18n.public.maps.unavailable}
         </p>
       ) : null}
     </div>

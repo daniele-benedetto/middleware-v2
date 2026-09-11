@@ -2,6 +2,7 @@
 
 import * as L from "leaflet";
 
+import { i18n } from "@/lib/i18n";
 import { modenaComuneMaxBounds } from "@/lib/server/modules/maps/boundary/modena-comune";
 
 const modenaCenter: [number, number] = [44.6458885, 10.9255707];
@@ -36,8 +37,7 @@ export function createModenaMap({
   });
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution: i18n.cms.forms.resources.maps.workspaceAttributionHtml,
     maxZoom: 19,
   })
     .on("tileerror", onTileError ?? (() => undefined))

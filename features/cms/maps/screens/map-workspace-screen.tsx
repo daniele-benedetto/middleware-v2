@@ -156,9 +156,9 @@ export function CmsMapWorkspaceScreen({ mapId, initialData }: CmsMapWorkspaceScr
 
           <aside className="flex min-h-0 min-w-0 flex-col gap-6 lg:sticky lg:top-0 lg:self-start">
             <section className="flex flex-wrap gap-x-6 gap-y-3">
-              <CmsCheckbox label="Mappa attiva" checked={isActive} onChange={setIsActive} />
+              <CmsCheckbox label={mapText.activeLabel} checked={isActive} onChange={setIsActive} />
               <CmsCheckbox
-                label="Mappa pubblicata"
+                label={mapText.publishedLabel}
                 checked={Boolean(publishedAt)}
                 onChange={(checked) => setPublishedAt(checked ? new Date() : null)}
               />

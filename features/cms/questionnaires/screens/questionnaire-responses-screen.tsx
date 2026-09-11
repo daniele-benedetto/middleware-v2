@@ -128,7 +128,11 @@ function ResponseDetailDialog({
 
 function ResponseAnswersLoading() {
   return (
-    <div className="space-y-6" aria-busy="true" aria-label="Caricamento risposta">
+    <div
+      className="space-y-6"
+      aria-busy="true"
+      aria-label={i18n.cms.forms.resources.questionnaires.responseLoading}
+    >
       {Array.from({ length: 3 }).map((_, sectionIndex) => (
         <section
           className="space-y-3 border-t-2 border-foreground pt-5 first:border-t-0 first:pt-0"
@@ -164,7 +168,7 @@ function ResponseAnswers({
           key={step.id}
         >
           <div className="font-ui text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground">
-            {step.title || `Step ${stepIndex + 1}`}
+            {step.title || i18n.cms.forms.resources.questionnaires.stepFallback(stepIndex + 1)}
           </div>
           {step.description ? (
             <p className="font-editorial text-[15px] text-body-text">{step.description}</p>

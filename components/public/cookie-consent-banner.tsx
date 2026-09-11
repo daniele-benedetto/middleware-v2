@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { PublicLink } from "@/components/public/public-link";
@@ -21,6 +21,7 @@ export function CookieConsentBanner({ consentVersion }: CookieConsentBannerProps
   const decided =
     consentState === "accepted" || consentState === "rejected" || consentState === "acknowledged";
   const ready = consentState !== "pending";
+  const dialogRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (!ready || decided) {
@@ -32,6 +33,30 @@ export function CookieConsentBanner({ consentVersion }: CookieConsentBannerProps
 
     return () => {
       document.body.style.overflow = previousOverflow;
+    };
+  }, [decided, ready]);
+
+  useEffect(() => {
+    if (!ready || decided) {
+      return;
+    }
+
+    const previousActiveElement = document.activeElement as HTMLElement | null;
+    const inertElements = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        "[data-public-header], [data-public-page-content], [data-public-footer]",
+      ),
+    );
+    inertElements.forEach((element) => {
+      element.inert = true;
+    });
+    dialogRef.current?.focus();
+
+    return () => {
+      inertElements.forEach((element) => {
+        element.inert = false;
+      });
+      previousActiveElement?.focus();
     };
   }, [decided, ready]);
 
@@ -48,7 +73,11 @@ export function CookieConsentBanner({ consentVersion }: CookieConsentBannerProps
             aria-hidden="true"
           />
           <section
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
             aria-labelledby="cookie-consent-title"
+            tabIndex={-1}
             className="starting:translate-y-full starting:opacity-0 fixed inset-x-0 bottom-0 z-110 translate-y-0 border-t-2 border-foreground bg-background text-foreground opacity-100 shadow-[0_-16px_40px_rgba(0,0,0,0.14)] transition-[opacity,transform] duration-(--motion-slow) ease-(--easing-standard)"
           >
             <div className={cn(publicContentClassName, "grid gap-5 py-5 sm:py-6")}>

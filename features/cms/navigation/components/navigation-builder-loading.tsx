@@ -1,5 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { CmsFormLoadingHeader } from "@/features/cms/shared/components/form-loading-primitives";
+import { i18n } from "@/lib/i18n";
 
 export function CmsNavigationBuilderLoading() {
   return (
@@ -9,7 +10,7 @@ export function CmsNavigationBuilderLoading() {
       aria-live="polite"
       aria-busy="true"
     >
-      <span className="sr-only">Caricamento builder navigazione in corso.</span>
+      <span className="sr-only">{i18n.cms.navigationBuilder.loading}</span>
       <CmsFormLoadingHeader />
 
       <div className="grid min-h-0 flex-1 gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_360px]">

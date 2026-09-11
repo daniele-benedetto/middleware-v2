@@ -43,14 +43,14 @@ type CmsNavigationBuilderScreenProps = {
 
 const menuOrder: NavigationMenuKey[] = ["main", "footer_sections", "footer_legal"];
 const itemTypeOptions = [
-  { value: "home", label: "Home" },
-  { value: "archive", label: "Archivio uscite" },
-  { value: "formazione", label: "Contro-formazione" },
-  { value: "page", label: "Pagina statica" },
-  { value: "article", label: "Articolo" },
-  { value: "issue", label: "Uscita" },
-  { value: "course", label: "Contro-formazione" },
-  { value: "custom", label: "Link custom" },
+  { value: "home", label: i18n.cms.navigationBuilder.itemTypes.home },
+  { value: "archive", label: i18n.cms.navigationBuilder.itemTypes.archive },
+  { value: "formazione", label: i18n.cms.navigationBuilder.itemTypes.formazione },
+  { value: "page", label: i18n.cms.navigationBuilder.itemTypes.page },
+  { value: "article", label: i18n.cms.navigationBuilder.itemTypes.article },
+  { value: "issue", label: i18n.cms.navigationBuilder.itemTypes.issue },
+  { value: "course", label: i18n.cms.navigationBuilder.itemTypes.course },
+  { value: "custom", label: i18n.cms.navigationBuilder.itemTypes.custom },
 ] as const;
 
 function createItemId() {
@@ -62,14 +62,15 @@ function createItemId() {
 }
 
 function getDefaultLabel(type: NavigationItem["type"]) {
-  if (type === "home") return "Numero corrente";
-  if (type === "archive") return "Archivio";
-  if (type === "formazione") return "Contro-formazione";
-  if (type === "page") return "Pagina";
-  if (type === "article") return "Articolo";
-  if (type === "issue") return "Uscita";
-  if (type === "course") return "Contro-formazione";
-  return "Nuovo link";
+  const labels = i18n.cms.navigationBuilder.defaultLabels;
+  if (type === "home") return labels.home;
+  if (type === "archive") return labels.archive;
+  if (type === "formazione") return labels.formazione;
+  if (type === "page") return labels.page;
+  if (type === "article") return labels.article;
+  if (type === "issue") return labels.issue;
+  if (type === "course") return labels.course;
+  return labels.custom;
 }
 
 function createEmptyItem(type: NavigationItem["type"], options: ResourceOptions): NavigationItem {
@@ -128,18 +129,19 @@ function resolveItemHref(item: NavigationItem, options: ResourceOptions) {
 }
 
 function validateItems(items: NavigationItem[], options: ResourceOptions) {
+  const text = i18n.cms.navigationBuilder.validation;
   return items.flatMap((item, index) => {
     const errors: string[] = [];
 
-    if (!item.label.trim()) errors.push(`Voce ${index + 1}: label obbligatoria.`);
+    if (!item.label.trim()) errors.push(text.missingLabel(index + 1));
     if (item.type === "custom" && !isSafeCustomHref(item.href)) {
-      errors.push(`Voce ${index + 1}: URL custom non valido.`);
+      errors.push(text.invalidCustomUrl(index + 1));
     }
     if (
       ["page", "article", "issue", "course"].includes(item.type) &&
       !resolveItemHref(item, options)
     ) {
-      errors.push(`Voce ${index + 1}: seleziona una risorsa pubblicata.`);
+      errors.push(text.missingPublishedResource(index + 1));
     }
 
     return errors;

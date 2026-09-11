@@ -8,6 +8,7 @@ import { courseVariantClasses } from "@/components/public/course-variant";
 import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import { QuestionnaireFieldChart } from "@/components/public/sections/questionnaires/charts/questionnaire-field-chart";
 import { StyledTitle } from "@/components/public/styled-title";
+import { i18n } from "@/lib/i18n";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { cn } from "@/lib/utils";
 
@@ -131,7 +132,7 @@ function MobileQuestionMenu({
         type="button"
         aria-controls={menuId}
         aria-expanded={visible}
-        aria-label="Seleziona una domanda"
+        aria-label={i18n.public.questionnaireAnalysis.selectQuestionAriaLabel}
         onClick={openMenu}
         className={cn(
           publicInteraction.cardSurface,
@@ -148,7 +149,7 @@ function MobileQuestionMenu({
       {visible
         ? createPortal(
             <div
-              aria-label="Selezione del questionario"
+              aria-label={i18n.public.questionnaireAnalysis.selectionDialogAriaLabel}
               aria-modal="true"
               className={cn(
                 "fixed inset-0 z-120 flex flex-col border-l border-foreground bg-background text-foreground transition-transform ease-out",
@@ -163,14 +164,14 @@ function MobileQuestionMenu({
                   type="button"
                   ref={closeButtonRef}
                   onClick={closeMenu}
-                  aria-label="Chiudi domande"
+                  aria-label={i18n.public.questionnaireAnalysis.closeQuestionsAriaLabel}
                   className="flex size-9 cursor-pointer items-center justify-center focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
                 >
                   <X size={26} strokeWidth={2.5} aria-hidden="true" />
                 </button>
               </header>
               <nav
-                aria-label="Elenco del questionario"
+                aria-label={i18n.public.questionnaireAnalysis.questionsListAriaLabel}
                 className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]"
               >
                 {fields.map((field, index) => (
@@ -233,7 +234,7 @@ function QuestionList({
   return (
     <aside className="hidden min-h-0 flex-col bg-background md:absolute md:inset-y-0 md:left-0 md:flex md:w-1/2 md:border-r md:border-foreground">
       <nav
-        aria-label="Domande del questionario"
+        aria-label={i18n.public.questionnaireAnalysis.questionsNavAriaLabel}
         ref={listRef}
         className="flex min-h-0 flex-1 overflow-x-auto md:flex-col md:overflow-y-auto"
       >
@@ -271,7 +272,7 @@ function QuestionList({
 function QuestionCanvas({ field }: { field: AnalysisField }) {
   return (
     <section
-      aria-label={`Risultati: ${field.label}`}
+      aria-label={i18n.public.questionnaireAnalysis.resultsAriaLabel(field.label)}
       className="min-w-0 p-4 sm:p-6 md:col-start-2 md:p-8 lg:p-10"
     >
       <div className="py-2">

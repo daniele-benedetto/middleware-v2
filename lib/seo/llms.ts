@@ -1,28 +1,30 @@
+import { i18n } from "@/lib/i18n";
 import { seoConfig } from "@/lib/seo/config";
 import { getCanonicalUrl } from "@/lib/seo/metadata";
 
 export function buildLlmsTxt(): string {
+  const text = i18n.public.seo.llms;
   return `# ${seoConfig.siteName}
 
 > ${seoConfig.defaultDescription}
 
-## Pagine principali
+${text.mainPagesHeading}
 
-- [Homepage](${getCanonicalUrl("/")}): il numero corrente e l'archivio editoriale.
-- [Articoli](${getCanonicalUrl("/articoli")}): tutti gli articoli pubblicati.
-- [Archivio](${getCanonicalUrl("/uscite")}): i numeri pubblicati del magazine.
-- [Contro-formazione](${getCanonicalUrl("/contro-formazione")}): percorsi e incontri di formazione collettiva.
-- [Chi siamo](${getCanonicalUrl("/chi-siamo")}): identita e progetto editoriale.
+${text.homepageDescription.replace(":", `(${getCanonicalUrl("/")}):`)}
+${text.articlesDescription.replace(":", `(${getCanonicalUrl("/articoli")}):`)}
+${text.archiveDescription.replace(":", `(${getCanonicalUrl("/uscite")}):`)}
+${text.formazioneDescription.replace(":", `(${getCanonicalUrl("/contro-formazione")}):`)}
+${text.aboutDescription.replace(":", `(${getCanonicalUrl("/chi-siamo")}):`)}
 
-## Contenuti
+${text.contentHeading}
 
-- Gli articoli sono disponibili in pagine canoniche sotto /articoli/:slug.
-- Le uscite del magazine sono disponibili sotto /uscite/:slug.
-- I percorsi di contro-formazione sono disponibili sotto /contro-formazione/:courseSlug.
-- Gli incontri sono disponibili sotto /contro-formazione/:courseSlug/:lessonSlug.
+${text.articlesDetails}
+${text.issuesDetails}
+${text.coursesDetails}
+${text.lessonsDetails}
 
-## Feed
+${text.feedHeading}
 
-- [RSS](${getCanonicalUrl("/feed.xml")})
+${text.rssLabel}(${getCanonicalUrl("/feed.xml")})
 `;
 }
