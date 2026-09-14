@@ -190,6 +190,7 @@ export function toArticleLivePreviewSnapshot(
       issueId: input.issueId || PREVIEW_UUID,
       issueSlug: input.issueSlug || "anteprima-uscita",
       issueTitle: input.issueTitle || i18n.cms.forms.resources.articles.previewIssueTitle,
+      isIssuePublic: input.publicAvailable,
       categoryId: input.categoryId || PREVIEW_UUID,
       categorySlug: input.categorySlug || "anteprima",
       categoryName: input.categoryName || i18n.cms.forms.resources.articles.previewCategoryName,
@@ -226,6 +227,7 @@ export function toIssueLivePreviewSnapshot(input: IssueLivePreviewInput): IssueL
     courses: input.courses ?? [],
     maps: input.maps ?? [],
     questionnaireAnalyses: input.questionnaireAnalyses ?? [],
+    previewIssues: [],
   };
 
   return {

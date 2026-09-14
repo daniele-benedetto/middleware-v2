@@ -86,4 +86,22 @@ export const publicIssuesRepository = {
       select: PUBLIC_ISSUE_DETAIL_SELECT,
     });
   },
+  async getPreviewById(id: string) {
+    return prisma.issue.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        titleStyled: true,
+        slug: true,
+        homeVariant: true,
+        homeBlocks: true,
+        articles: {
+          where: PUBLISHED_ARTICLE_WHERE,
+          orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }],
+          select: PUBLIC_ISSUE_DETAIL_ARTICLE_SELECT,
+        },
+      },
+    });
+  },
 };

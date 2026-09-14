@@ -103,6 +103,30 @@ describe("issues schemas", () => {
     expect(parsed.homeBlocks).toEqual([{ id: "mappa", type: "map", mapId }]);
   });
 
+  it("allows preview blocks without article fields", () => {
+    const previewIssueId = "00000000-0000-4000-8000-000000000001";
+    const parsed = createIssueInputSchema.parse({
+      title: "Issue 01",
+      homeBlocks: [{ id: "anteprima", type: "preview", previewIssueId }],
+    });
+
+    expect(parsed.homeBlocks).toEqual([{ id: "anteprima", type: "preview", previewIssueId }]);
+  });
+
+  it("rejects more than one preview block", () => {
+    const issueId = "00000000-0000-4000-8000-000000000001";
+
+    expect(
+      createIssueInputSchema.safeParse({
+        title: "Issue 01",
+        homeBlocks: [
+          { id: "anteprima-uno", type: "preview", previewIssueId: issueId },
+          { id: "anteprima-due", type: "preview", previewIssueId: issueId },
+        ],
+      }).success,
+    ).toBe(false);
+  });
+
   it("rejects sequence home blocks", () => {
     expect(
       createIssueInputSchema.safeParse({

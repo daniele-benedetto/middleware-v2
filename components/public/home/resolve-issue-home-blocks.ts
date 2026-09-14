@@ -44,6 +44,9 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): ResolvedHomeB
   const questionnaireAnalysesById = new Map(
     (issue.questionnaireAnalyses ?? []).map((analysis) => [analysis.id, analysis]),
   );
+  const previewIssuesById = new Map(
+    (issue.previewIssues ?? []).map((preview) => [preview.id, preview]),
+  );
   const manualArticleIds = new Set<string>();
   const blocks: ResolvedHomeBlock[] = [];
 
@@ -75,6 +78,18 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): ResolvedHomeB
 
       if (questionnaireAnalysis) {
         blocks.push({ id: rawBlock.id, type: "questionnaireAnalysis", questionnaireAnalysis });
+      }
+
+      continue;
+    }
+
+    if (rawBlock.type === "preview") {
+      const previewIssue = rawBlock.previewIssueId
+        ? previewIssuesById.get(rawBlock.previewIssueId)
+        : null;
+
+      if (previewIssue) {
+        blocks.push({ id: rawBlock.id, type: "preview", previewIssue });
       }
 
       continue;

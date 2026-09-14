@@ -27,6 +27,7 @@ export type AggregateMap = {
 export type MapMinAggregateOutputType = {
   id: string | null
   title: string | null
+  homeVariant: string | null
   isActive: boolean | null
   publishedAt: Date | null
   createdAt: Date | null
@@ -36,6 +37,7 @@ export type MapMinAggregateOutputType = {
 export type MapMaxAggregateOutputType = {
   id: string | null
   title: string | null
+  homeVariant: string | null
   isActive: boolean | null
   publishedAt: Date | null
   createdAt: Date | null
@@ -47,6 +49,7 @@ export type MapCountAggregateOutputType = {
   title: number
   titleStyled: number
   descriptionRich: number
+  homeVariant: number
   isActive: number
   publishedAt: number
   createdAt: number
@@ -58,6 +61,7 @@ export type MapCountAggregateOutputType = {
 export type MapMinAggregateInputType = {
   id?: true
   title?: true
+  homeVariant?: true
   isActive?: true
   publishedAt?: true
   createdAt?: true
@@ -67,6 +71,7 @@ export type MapMinAggregateInputType = {
 export type MapMaxAggregateInputType = {
   id?: true
   title?: true
+  homeVariant?: true
   isActive?: true
   publishedAt?: true
   createdAt?: true
@@ -78,6 +83,7 @@ export type MapCountAggregateInputType = {
   title?: true
   titleStyled?: true
   descriptionRich?: true
+  homeVariant?: true
   isActive?: true
   publishedAt?: true
   createdAt?: true
@@ -162,6 +168,7 @@ export type MapGroupByOutputType = {
   title: string
   titleStyled: runtime.JsonValue | null
   descriptionRich: runtime.JsonValue | null
+  homeVariant: string
   isActive: boolean
   publishedAt: Date | null
   createdAt: Date
@@ -194,6 +201,7 @@ export type MapWhereInput = {
   title?: Prisma.StringFilter<"Map"> | string
   titleStyled?: Prisma.JsonNullableFilter<"Map">
   descriptionRich?: Prisma.JsonNullableFilter<"Map">
+  homeVariant?: Prisma.StringFilter<"Map"> | string
   isActive?: Prisma.BoolFilter<"Map"> | boolean
   publishedAt?: Prisma.DateTimeNullableFilter<"Map"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Map"> | Date | string
@@ -206,6 +214,7 @@ export type MapOrderByWithRelationInput = {
   title?: Prisma.SortOrder
   titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
   descriptionRich?: Prisma.SortOrderInput | Prisma.SortOrder
+  homeVariant?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -221,6 +230,7 @@ export type MapWhereUniqueInput = Prisma.AtLeast<{
   title?: Prisma.StringFilter<"Map"> | string
   titleStyled?: Prisma.JsonNullableFilter<"Map">
   descriptionRich?: Prisma.JsonNullableFilter<"Map">
+  homeVariant?: Prisma.StringFilter<"Map"> | string
   isActive?: Prisma.BoolFilter<"Map"> | boolean
   publishedAt?: Prisma.DateTimeNullableFilter<"Map"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Map"> | Date | string
@@ -233,6 +243,7 @@ export type MapOrderByWithAggregationInput = {
   title?: Prisma.SortOrder
   titleStyled?: Prisma.SortOrderInput | Prisma.SortOrder
   descriptionRich?: Prisma.SortOrderInput | Prisma.SortOrder
+  homeVariant?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -250,6 +261,7 @@ export type MapScalarWhereWithAggregatesInput = {
   title?: Prisma.StringWithAggregatesFilter<"Map"> | string
   titleStyled?: Prisma.JsonNullableWithAggregatesFilter<"Map">
   descriptionRich?: Prisma.JsonNullableWithAggregatesFilter<"Map">
+  homeVariant?: Prisma.StringWithAggregatesFilter<"Map"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"Map"> | boolean
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Map"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Map"> | Date | string
@@ -261,6 +273,7 @@ export type MapCreateInput = {
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
   isActive?: boolean
   publishedAt?: Date | string | null
   createdAt?: Date | string
@@ -273,6 +286,7 @@ export type MapUncheckedCreateInput = {
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
   isActive?: boolean
   publishedAt?: Date | string | null
   createdAt?: Date | string
@@ -285,6 +299,7 @@ export type MapUpdateInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -297,6 +312,7 @@ export type MapUncheckedUpdateInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -309,6 +325,7 @@ export type MapCreateManyInput = {
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
   isActive?: boolean
   publishedAt?: Date | string | null
   createdAt?: Date | string
@@ -320,6 +337,7 @@ export type MapUpdateManyMutationInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -331,6 +349,7 @@ export type MapUncheckedUpdateManyInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -342,6 +361,7 @@ export type MapCountOrderByAggregateInput = {
   title?: Prisma.SortOrder
   titleStyled?: Prisma.SortOrder
   descriptionRich?: Prisma.SortOrder
+  homeVariant?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -351,6 +371,7 @@ export type MapCountOrderByAggregateInput = {
 export type MapMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  homeVariant?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -360,6 +381,7 @@ export type MapMaxOrderByAggregateInput = {
 export type MapMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  homeVariant?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -390,6 +412,7 @@ export type MapCreateWithoutItemsInput = {
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
   isActive?: boolean
   publishedAt?: Date | string | null
   createdAt?: Date | string
@@ -401,6 +424,7 @@ export type MapUncheckedCreateWithoutItemsInput = {
   title: string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
   isActive?: boolean
   publishedAt?: Date | string | null
   createdAt?: Date | string
@@ -428,6 +452,7 @@ export type MapUpdateWithoutItemsInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -439,6 +464,7 @@ export type MapUncheckedUpdateWithoutItemsInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   descriptionRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -481,6 +507,7 @@ export type MapSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   title?: boolean
   titleStyled?: boolean
   descriptionRich?: boolean
+  homeVariant?: boolean
   isActive?: boolean
   publishedAt?: boolean
   createdAt?: boolean
@@ -494,6 +521,7 @@ export type MapSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   title?: boolean
   titleStyled?: boolean
   descriptionRich?: boolean
+  homeVariant?: boolean
   isActive?: boolean
   publishedAt?: boolean
   createdAt?: boolean
@@ -505,6 +533,7 @@ export type MapSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   title?: boolean
   titleStyled?: boolean
   descriptionRich?: boolean
+  homeVariant?: boolean
   isActive?: boolean
   publishedAt?: boolean
   createdAt?: boolean
@@ -516,13 +545,14 @@ export type MapSelectScalar = {
   title?: boolean
   titleStyled?: boolean
   descriptionRich?: boolean
+  homeVariant?: boolean
   isActive?: boolean
   publishedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MapOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleStyled" | "descriptionRich" | "isActive" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["map"]>
+export type MapOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleStyled" | "descriptionRich" | "homeVariant" | "isActive" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["map"]>
 export type MapInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | Prisma.Map$itemsArgs<ExtArgs>
   _count?: boolean | Prisma.MapCountOutputTypeDefaultArgs<ExtArgs>
@@ -540,6 +570,7 @@ export type $MapPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     title: string
     titleStyled: runtime.JsonValue | null
     descriptionRich: runtime.JsonValue | null
+    homeVariant: string
     isActive: boolean
     publishedAt: Date | null
     createdAt: Date
@@ -972,6 +1003,7 @@ export interface MapFieldRefs {
   readonly title: Prisma.FieldRef<"Map", 'String'>
   readonly titleStyled: Prisma.FieldRef<"Map", 'Json'>
   readonly descriptionRich: Prisma.FieldRef<"Map", 'Json'>
+  readonly homeVariant: Prisma.FieldRef<"Map", 'String'>
   readonly isActive: Prisma.FieldRef<"Map", 'Boolean'>
   readonly publishedAt: Prisma.FieldRef<"Map", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Map", 'DateTime'>

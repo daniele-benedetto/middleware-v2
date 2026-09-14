@@ -27,7 +27,14 @@ describe("maps schemas", () => {
     const parsed = createMapInputSchema.parse({ title: "Mappa" });
 
     expect(parsed.isActive).toBe(true);
+    expect(parsed.homeVariant).toBe("black");
     expect(parsed.publishedAt).toBeUndefined();
+  });
+
+  it("accepts the shared visual variants", () => {
+    expect(createMapInputSchema.parse({ title: "Mappa", homeVariant: "red" }).homeVariant).toBe(
+      "red",
+    );
   });
 
   it("accepts Modena coordinates and rejects global coordinate ranges", () => {

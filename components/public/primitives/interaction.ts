@@ -1,6 +1,8 @@
 export const publicInteraction = {
   cardBase:
     "group cursor-pointer transition-[background,box-shadow] duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent md:hover:shadow-[inset_4px_0_0_currentColor]",
+  cardBaseNoRail:
+    "group cursor-pointer transition-[background,box-shadow] duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent",
   cardSurface:
     "group cursor-pointer transition-[background,box-shadow] duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent md:hover:bg-surface-hover md:hover:shadow-(--interactive-rail-shadow)",
   imageZoom:

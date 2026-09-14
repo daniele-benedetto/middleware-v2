@@ -15,6 +15,7 @@ import type {
   PublicIssueArticleSummaryDto,
   PublicIssueDetailDto,
   PublicIssueDto,
+  PublicIssuePreviewDto,
 } from "@/lib/server/modules/issues/dto/public";
 import type { IssueHomeBlocks, IssueTitleStyled } from "@/lib/server/modules/issues/schema";
 
@@ -86,6 +87,14 @@ const getQuestionnaireAnalysisIds = (blocks: IssueHomeBlocks | null) => [
   ),
 ];
 
+const getPreviewIssueIds = (blocks: IssueHomeBlocks | null) => [
+  ...new Set(
+    (blocks ?? []).flatMap((block) =>
+      block.type === "preview" && block.previewIssueId ? [block.previewIssueId] : [],
+    ),
+  ),
+];
+
 type PublicIssueDetailRecord = PublicIssueRecord & {
   articles?: PublicIssueArticleRecord[];
 };
@@ -140,10 +149,64 @@ const toPublicIssueDetailDto = (issue: PublicIssueDetailRecord): PublicIssueDeta
     courses: [],
     maps: [],
     questionnaireAnalyses: [],
+    previewIssues: [],
   };
 };
 
+function getPreviewArticleId(blocks: IssueHomeBlocks | null, articleIds: Set<string>) {
+  const articleBlocks = (blocks ?? []).filter(
+    (block) =>
+      block.type !== "course" &&
+      block.type !== "map" &&
+      block.type !== "questionnaireAnalysis" &&
+      block.type !== "preview",
+  );
+  const opening = articleBlocks.find((block) => block.type === "opening");
+  const orderedArticleIds = [
+    ...(opening?.articleIds ?? []),
+    ...articleBlocks
+      .filter((block) => block.type !== "opening")
+      .flatMap((block) => block.articleIds),
+  ];
+
+  return orderedArticleIds.find((articleId) => articleIds.has(articleId)) ?? null;
+}
+
+async function getPreviewIssueById(id: string): Promise<PublicIssuePreviewDto | null> {
+  const issue = await publicIssuesRepository.getPreviewById(id);
+
+  if (!issue) {
+    return null;
+  }
+
+  const articleId = getPreviewArticleId(
+    normalizeIssueHomeBlocks(issue.homeBlocks),
+    new Set(issue.articles.map((article) => article.id)),
+  );
+  const article = issue.articles.find((item) => item.id === articleId);
+
+  if (!article) {
+    return null;
+  }
+
+  return {
+    id: issue.id,
+    title: issue.title,
+    titleStyled: (issue.titleStyled as IssueTitleStyled | null) ?? null,
+    slug: issue.slug,
+    homeVariant: issueHomeVariantSchema.parse(issue.homeVariant ?? "black"),
+    article: toPublicIssueArticleSummaryDto(article),
+  };
+}
+
+async function getPreviewIssues(blocks: IssueHomeBlocks | null): Promise<PublicIssuePreviewDto[]> {
+  const previews = await Promise.all(getPreviewIssueIds(blocks).map(getPreviewIssueById));
+
+  return previews.filter((preview): preview is PublicIssuePreviewDto => Boolean(preview));
+}
+
 export const publicIssuesService = {
+  getPreviewIssueById,
   async listPublishedItems(pagination: PaginationParams) {
     const issues = await publicIssuesRepository.listPublished(pagination);
     return issues.map(toPublicIssueDto);
@@ -167,14 +230,15 @@ export const publicIssuesService = {
     }
 
     const dto = toPublicIssueDetailDto(issue);
-    const [courses, maps, questionnaireAnalyses] = await Promise.all([
+    const [courses, maps, questionnaireAnalyses, previewIssues] = await Promise.all([
       publicCoursesService.getByIds(getCourseIds(dto.homeBlocks)),
       publicMapsService.getByIds(getMapIds(dto.homeBlocks)),
       publicQuestionnairesService.getClosedAnalysesByIds(
         getQuestionnaireAnalysisIds(dto.homeBlocks),
       ),
+      getPreviewIssues(dto.homeBlocks),
     ]);
-    return { ...dto, courses, maps, questionnaireAnalyses };
+    return { ...dto, courses, maps, questionnaireAnalyses, previewIssues };
   },
   async getBySlug(slug: string) {
     const issue = await publicIssuesRepository.getBySlug(slug);
@@ -184,13 +248,14 @@ export const publicIssuesService = {
     }
 
     const dto = toPublicIssueDetailDto(issue);
-    const [courses, maps, questionnaireAnalyses] = await Promise.all([
+    const [courses, maps, questionnaireAnalyses, previewIssues] = await Promise.all([
       publicCoursesService.getByIds(getCourseIds(dto.homeBlocks)),
       publicMapsService.getByIds(getMapIds(dto.homeBlocks)),
       publicQuestionnairesService.getClosedAnalysesByIds(
         getQuestionnaireAnalysisIds(dto.homeBlocks),
       ),
+      getPreviewIssues(dto.homeBlocks),
     ]);
-    return { ...dto, courses, maps, questionnaireAnalyses };
+    return { ...dto, courses, maps, questionnaireAnalyses, previewIssues };
   },
 };

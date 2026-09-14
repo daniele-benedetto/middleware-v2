@@ -8,6 +8,7 @@ const PUBLIC_MAP_SELECT = {
   title: true,
   titleStyled: true,
   descriptionRich: true,
+  homeVariant: true,
   items: {
     select: {
       id: true,

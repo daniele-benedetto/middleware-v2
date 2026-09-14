@@ -30,6 +30,7 @@ import { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sen
 import {
   createEmptyCourseHomeBlock,
   createEmptyMapHomeBlock,
+  createEmptyPreviewHomeBlock,
   createEmptyQuestionnaireAnalysisHomeBlock,
   createEmptyHomeBlock,
   isArticleHomeBlock,
@@ -56,6 +57,7 @@ type IssueHomeBlockArticle = {
 type IssueHomeBlockCourse = { id: string; title: string };
 type IssueHomeBlockMap = { id: string; title: string };
 type IssueHomeBlockQuestionnaire = { id: string; title: string; responseCount: number };
+type IssueHomeBlockPreviewIssue = { id: string; title: string };
 
 type IssueHomeBlocksEditorText = {
   addBlock: string;
@@ -93,6 +95,9 @@ type IssueHomeBlocksEditorText = {
   typeQuestionnaireAnalysis: string;
   questionnaireAnalysis: string;
   questionnaireAnalysisPlaceholder: string;
+  typePreview: string;
+  previewIssue: string;
+  previewIssuePlaceholder: string;
 };
 
 type IssueHomeBlocksEditorProps = {
@@ -101,6 +106,7 @@ type IssueHomeBlocksEditorProps = {
   courses: IssueHomeBlockCourse[];
   maps: IssueHomeBlockMap[];
   questionnaires: IssueHomeBlockQuestionnaire[];
+  previewIssues: IssueHomeBlockPreviewIssue[];
   disabled?: boolean;
   text: IssueHomeBlocksEditorText;
   onChange: (value: IssueHomeBlocks) => void;
@@ -114,6 +120,7 @@ const blockTypeOptions = [
   { value: "course", labelKey: "typeCourse" },
   { value: "map", labelKey: "typeMap" },
   { value: "questionnaireAnalysis", labelKey: "typeQuestionnaireAnalysis" },
+  { value: "preview", labelKey: "typePreview" },
 ] as const;
 
 const featuredPlacementOptions = [
@@ -148,6 +155,7 @@ export function IssueHomeBlocksEditor({
   courses,
   maps,
   questionnaires,
+  previewIssues,
   disabled,
   text,
   onChange,
@@ -209,7 +217,9 @@ export function IssueHomeBlocksEditor({
         ? createEmptyMapHomeBlock()
         : block.type === "questionnaireAnalysis"
           ? createEmptyQuestionnaireAnalysisHomeBlock()
-          : createEmptyCourseHomeBlock();
+          : block.type === "preview"
+            ? createEmptyPreviewHomeBlock()
+            : createEmptyCourseHomeBlock();
     onChange([...value.slice(0, index + 1), clone, ...value.slice(index + 1)]);
   };
 
@@ -424,7 +434,9 @@ export function IssueHomeBlocksEditor({
                                   ? text.map
                                   : block.type === "questionnaireAnalysis"
                                     ? text.questionnaireAnalysis
-                                    : text.course}
+                                    : block.type === "preview"
+                                      ? text.previewIssue
+                                      : text.course}
                             </CmsBody>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
@@ -499,10 +511,12 @@ export function IssueHomeBlocksEditor({
                                           ? createEmptyQuestionnaireAnalysisHomeBlock(
                                               `${block.id}-questionnaire-analysis`,
                                             )
-                                          : createEmptyHomeBlock(
-                                              nextType as IssueHomeArticleBlock["type"],
-                                              block.id,
-                                            ),
+                                          : nextType === "preview"
+                                            ? createEmptyPreviewHomeBlock(`${block.id}-preview`)
+                                            : createEmptyHomeBlock(
+                                                nextType as IssueHomeArticleBlock["type"],
+                                                block.id,
+                                              ),
                                   )
                                 }
                               />
@@ -554,6 +568,28 @@ export function IssueHomeBlocksEditor({
                                     updateBlock(index, {
                                       ...block,
                                       questionnaireId: questionnaireId || null,
+                                    })
+                                  }
+                                />
+                              </CmsFormField>
+                            ) : null}
+                            {block.type === "preview" ? (
+                              <CmsFormField
+                                label={text.previewIssue}
+                                htmlFor={`${block.id}-preview-issue`}
+                              >
+                                <CmsSelect
+                                  value={block.previewIssueId ?? ""}
+                                  placeholder={text.previewIssuePlaceholder}
+                                  disabled={disabled || previewIssues.length === 0}
+                                  options={previewIssues.map((issue) => ({
+                                    value: issue.id,
+                                    label: issue.title,
+                                  }))}
+                                  onValueChange={(previewIssueId) =>
+                                    updateBlock(index, {
+                                      ...block,
+                                      previewIssueId: previewIssueId || null,
                                     })
                                   }
                                 />

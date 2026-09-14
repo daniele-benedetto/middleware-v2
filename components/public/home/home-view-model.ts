@@ -3,6 +3,7 @@ import { extractPlainText } from "@/lib/rich-text/plain-text";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
+import type { PublicIssuePreviewDto } from "@/lib/server/modules/issues/dto/public";
 import type { PublicMapDetailDto } from "@/lib/server/modules/maps/dto/public";
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
 
@@ -29,11 +30,18 @@ export type QuestionnaireAnalysisHomeBlock = {
   questionnaireAnalysis: PublicQuestionnaireAnalysisDto;
 };
 
+export type PreviewHomeBlock = {
+  id: string;
+  type: "preview";
+  previewIssue: PublicIssuePreviewDto;
+};
+
 export type ResolvedHomeBlock =
   | NarrativeHomeBlock
   | CourseHomeBlock
   | MapHomeBlock
-  | QuestionnaireAnalysisHomeBlock;
+  | QuestionnaireAnalysisHomeBlock
+  | PreviewHomeBlock;
 
 export function sortHomeArticles(articles: HomeIssueArticle[]) {
   return [...articles].sort((a, b) => {

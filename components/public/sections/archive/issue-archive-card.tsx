@@ -83,7 +83,7 @@ export function IssueArchiveCard({ issue, countLabel, variant, className }: Issu
         position: issue.issueNumber,
       }}
       className={cn(
-        publicInteraction.cardBase,
+        publicInteraction.cardBaseNoRail,
         "relative isolate block overflow-hidden py-7 max-lg:border-b max-lg:last:border-b-0 md:py-10 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:py-14",
         variantClasses.surface,
         variantClasses.border,

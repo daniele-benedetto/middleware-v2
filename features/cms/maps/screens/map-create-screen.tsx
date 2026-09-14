@@ -11,6 +11,7 @@ import {
   CmsFormField,
   CmsPageHeader,
   CmsRichTextEditor,
+  CmsSelect,
   CmsStyledTitleEditor,
   cmsToast,
   createStyledTitleValue,
@@ -25,6 +26,11 @@ import { createMapInputSchema } from "@/lib/server/modules/maps/schema";
 import { trpc } from "@/lib/trpc/react";
 
 const emptyContentDoc = { type: "doc", content: [{ type: "paragraph" }] };
+const homeVariantOptions = [
+  { value: "black", labelKey: "homeVariantBlack" },
+  { value: "red", labelKey: "homeVariantRed" },
+  { value: "default", labelKey: "homeVariantDefault" },
+] as const;
 
 export function CmsMapCreateScreen() {
   const router = useRouter();
@@ -35,7 +41,7 @@ export function CmsMapCreateScreen() {
   const [titleStyled, setTitleStyled] = useState(() => createStyledTitleValue(""));
   const form = useForm<CreateMapInput>({
     resolver: zodResolver(createMapInputSchema),
-    defaultValues: { title: "", descriptionRich: emptyContentDoc },
+    defaultValues: { title: "", descriptionRich: emptyContentDoc, homeVariant: "black" },
   });
 
   const onSubmit = form.handleSubmit(async (values) => {
@@ -118,6 +124,23 @@ export function CmsMapCreateScreen() {
                 onChange={field.onChange}
                 ariaLabel={mapText.descriptionEditorAriaLabel}
                 fullHeight
+              />
+            )}
+          />
+        </CmsFormField>
+
+        <CmsFormField label={mapText.homeVariantLabel} htmlFor="map-home-variant">
+          <Controller
+            name="homeVariant"
+            control={form.control}
+            render={({ field }) => (
+              <CmsSelect
+                value={field.value}
+                options={homeVariantOptions.map((option) => ({
+                  value: option.value,
+                  label: mapText[option.labelKey],
+                }))}
+                onValueChange={field.onChange}
               />
             )}
           />

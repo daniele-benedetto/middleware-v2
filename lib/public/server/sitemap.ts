@@ -52,7 +52,6 @@ async function getArticleEntries(): Promise<SitemapEntry[]> {
     where: {
       status: "PUBLISHED",
       publishedAt: { not: null },
-      issue: PUBLISHED_ISSUE_FILTER,
     },
     orderBy: { publishedAt: "desc" },
     select: { slug: true, publishedAt: true, updatedAt: true },

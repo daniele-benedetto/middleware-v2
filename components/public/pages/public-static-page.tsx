@@ -60,7 +60,7 @@ export function PublicStaticPage({ page }: PublicStaticPageProps) {
           containerClassName="pt-7 sm:pt-9 lg:pt-14"
         />
         <div
-          className="bg-surface py-12 sm:py-16 lg:py-20"
+          className="py-12 sm:py-16 lg:py-20"
           data-page-reveal="body"
           style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
         >

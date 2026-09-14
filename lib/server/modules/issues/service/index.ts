@@ -8,6 +8,7 @@ import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { issuesRepository } from "@/lib/server/modules/issues/repository";
 import { issueHomeBlocksSchema, issueHomeVariantSchema } from "@/lib/server/modules/issues/schema";
+import { publicIssuesService } from "@/lib/server/modules/issues/service/public";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
 import type { ArticleStatus } from "@/lib/generated/prisma/enums";
@@ -157,6 +158,7 @@ const toPublicIssuePreviewDto = (issue: IssuePreviewRecord): PublicIssueDetailDt
     courses: [],
     maps: [],
     questionnaireAnalyses: [],
+    previewIssues: [],
   };
 };
 
@@ -203,7 +205,20 @@ export const issuesService = {
       throw new ApiError(404, "NOT_FOUND", "Issue not found");
     }
 
-    return toPublicIssuePreviewDto(issue as IssuePreviewRecord);
+    const dto = toPublicIssuePreviewDto(issue as IssuePreviewRecord);
+    const previewIds = (dto.homeBlocks ?? []).flatMap((block) =>
+      block.type === "preview" && block.previewIssueId ? [block.previewIssueId] : [],
+    );
+    const previewIssues = await Promise.all(
+      previewIds.map(publicIssuesService.getPreviewIssueById),
+    );
+
+    return {
+      ...dto,
+      previewIssues: previewIssues.filter(
+        (preview): preview is NonNullable<(typeof previewIssues)[number]> => Boolean(preview),
+      ),
+    };
   },
   async create(input: CreateIssueInput) {
     const baseSlug = ensureSlug(input.slug ?? input.title);

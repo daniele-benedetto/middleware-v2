@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+import { issueHomeVariantSchema, issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 import { isWithinComuneOfModena } from "@/lib/server/modules/maps/boundary/modena-comune";
 
 const coordinateSchema = z.coerce
@@ -11,6 +11,7 @@ const coordinateSchema = z.coerce
   });
 const latitudeSchema = coordinateSchema.min(-90).max(90);
 const longitudeSchema = coordinateSchema.min(-180).max(180);
+export const mapHomeVariantSchema = issueHomeVariantSchema;
 
 const mapItemLocationSchema = z
   .object({ latitude: latitudeSchema, longitude: longitudeSchema })
@@ -23,6 +24,7 @@ export const createMapInputSchema = z.object({
   title: z.string().trim().min(1),
   titleStyled: issueTitleStyledSchema.nullable().optional(),
   descriptionRich: z.unknown().optional(),
+  homeVariant: mapHomeVariantSchema.default("black"),
   isActive: z.boolean().default(true),
   publishedAt: z.coerce.date().nullable().optional(),
 });
@@ -32,6 +34,7 @@ export const updateMapInputSchema = createMapInputSchema
   .extend({
     titleStyled: issueTitleStyledSchema.nullable().optional(),
     descriptionRich: z.unknown().nullable().optional(),
+    homeVariant: mapHomeVariantSchema.optional(),
     isActive: z.boolean().optional(),
     publishedAt: z.coerce.date().nullable().optional(),
   })
@@ -104,6 +107,7 @@ export const searchMapAddressInputSchema = z.object({
 
 export type CreateMapInput = z.infer<typeof createMapInputSchema>;
 export type UpdateMapInput = z.infer<typeof updateMapInputSchema>;
+export type MapHomeVariant = z.infer<typeof mapHomeVariantSchema>;
 export type CreateMapItemInput = z.infer<typeof createMapItemInputSchema>;
 export type UpdateMapItemInput = z.infer<typeof updateMapItemInputSchema>;
 export type ReorderMapItemsInput = z.infer<typeof reorderMapItemsInputSchema>;

@@ -7,6 +7,7 @@ import {
 } from "@/components/public/sections/dossier/dossier-view-model";
 import { FeatureBreakBlock } from "@/components/public/sections/dossier/feature-break-block";
 import { LeadBlock } from "@/components/public/sections/dossier/lead-block";
+import { PreviewHomeBlock } from "@/components/public/sections/dossier/preview-home-block";
 import { UnpaginatedArticleRow } from "@/components/public/sections/dossier/unpaginated-article-row";
 import { CourseHomeBlock } from "@/components/public/sections/formazione/course-home-block";
 import { MapHomeBlock } from "@/components/public/sections/maps/map-home-block";
@@ -29,7 +30,6 @@ function renderBlock(
   block: ResolvedHomeBlock,
   variant: IssueHomeVariant,
   articleNumbers: Map<string, number>,
-  courseStartNumbers: Map<string, number>,
   options: { priority?: boolean } = {},
 ) {
   switch (block.type) {
@@ -72,17 +72,13 @@ function renderBlock(
         />
       );
     case "course":
-      return (
-        <CourseHomeBlock
-          key={block.id}
-          block={block}
-          startNumber={courseStartNumbers.get(block.id) ?? 1}
-        />
-      );
+      return <CourseHomeBlock key={block.id} block={block} startNumber={1} />;
     case "map":
       return <MapHomeBlock key={block.id} block={block} />;
     case "questionnaireAnalysis":
       return <QuestionnaireAnalysisHomeBlock key={block.id} block={block} />;
+    case "preview":
+      return <PreviewHomeBlock key={block.id} block={block} priority={options.priority} />;
   }
 }
 
@@ -100,12 +96,17 @@ export function DossierHome({ issue }: DossierHomeProps) {
 
   const articleBlocks = blocks.filter(
     (block): block is NarrativeHomeBlock =>
-      block.type !== "course" && block.type !== "map" && block.type !== "questionnaireAnalysis",
+      block.type !== "course" &&
+      block.type !== "map" &&
+      block.type !== "questionnaireAnalysis" &&
+      block.type !== "preview",
   );
   const unpaginatedArticles = getUnpaginatedArticles(issue, articleBlocks);
   const closingBlocks = articleBlocks.filter((block) => block.type === "closing");
+  const firstClosingIndex = blocks.findIndex((block) => block.type === "closing");
+  const leadingBlocks = firstClosingIndex === -1 ? blocks : blocks.slice(0, firstClosingIndex);
+  const trailingBlocks = firstClosingIndex === -1 ? [] : blocks.slice(firstClosingIndex);
   const articleNumbers = new Map<string, number>();
-  const courseStartNumbers = new Map<string, number>();
   let nextNumber = 1;
 
   const addArticles = (articles: NarrativeHomeBlock["articles"]) => {
@@ -117,11 +118,13 @@ export function DossierHome({ issue }: DossierHomeProps) {
     }
   };
 
-  for (const block of blocks.filter((block) => block.type !== "closing")) {
-    if (block.type === "course") {
-      courseStartNumbers.set(block.id, nextNumber);
-      nextNumber += block.course.lessons.length;
-    } else if (block.type !== "map" && block.type !== "questionnaireAnalysis") {
+  for (const block of leadingBlocks) {
+    if (
+      block.type !== "map" &&
+      block.type !== "course" &&
+      block.type !== "questionnaireAnalysis" &&
+      block.type !== "preview"
+    ) {
       addArticles(getIssueBlockNumberingArticles(block));
     }
   }
@@ -132,17 +135,13 @@ export function DossierHome({ issue }: DossierHomeProps) {
 
   return (
     <div className="bg-background">
-      {blocks
-        .filter((block) => block.type !== "closing")
-        .map((block, index) =>
-          renderBlock(block, variant, articleNumbers, courseStartNumbers, {
-            priority: index === 0,
-          }),
-        )}
-      <UnpaginatedArticleRow articles={unpaginatedArticles} startNumber={unpaginatedStartNumber} />
-      {closingBlocks.map((block) =>
-        renderBlock(block, variant, articleNumbers, courseStartNumbers),
+      {leadingBlocks.map((block, index) =>
+        renderBlock(block, variant, articleNumbers, {
+          priority: index === 0,
+        }),
       )}
+      <UnpaginatedArticleRow articles={unpaginatedArticles} startNumber={unpaginatedStartNumber} />
+      {trailingBlocks.map((block) => renderBlock(block, variant, articleNumbers))}
     </div>
   );
 }

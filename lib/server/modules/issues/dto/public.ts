@@ -44,6 +44,18 @@ export const publicIssueDetailDtoSchema = publicIssueDtoSchema.extend({
   courses: z.array(publicCourseDetailDtoSchema),
   maps: z.array(publicMapDetailDtoSchema),
   questionnaireAnalyses: z.array(publicQuestionnaireAnalysisDtoSchema).optional(),
+  previewIssues: z
+    .array(
+      z.object({
+        id: z.string().uuid(),
+        title: z.string(),
+        titleStyled: issueTitleStyledSchema.nullable(),
+        slug: z.string(),
+        homeVariant: issueHomeVariantSchema,
+        article: publicIssueArticleSummaryDtoSchema,
+      }),
+    )
+    .optional(),
 });
 
 export const publicIssuesListDtoSchema = z.array(publicIssueDtoSchema);
@@ -51,3 +63,4 @@ export const publicIssuesListDtoSchema = z.array(publicIssueDtoSchema);
 export type PublicIssueDto = z.infer<typeof publicIssueDtoSchema>;
 export type PublicIssueDetailDto = z.infer<typeof publicIssueDetailDtoSchema>;
 export type PublicIssueArticleSummaryDto = z.infer<typeof publicIssueArticleSummaryDtoSchema>;
+export type PublicIssuePreviewDto = NonNullable<PublicIssueDetailDto["previewIssues"]>[number];

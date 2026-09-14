@@ -72,7 +72,11 @@ function ArticleMetaRail({ article }: ArticleOnlyProps) {
   const text = i18n.public.articlePage;
   const cardText = i18n.public.home.articleCard;
   const metaItems = [
-    { key: "issue", label: article.issueTitle, href: `/uscite/${article.issueSlug}` },
+    {
+      key: "issue",
+      label: article.issueTitle,
+      href: article.isIssuePublic !== false ? `/uscite/${article.issueSlug}` : undefined,
+    },
     { key: "category", label: article.categoryName },
     article.authorName ? { key: "author", label: article.authorName } : null,
     { key: "reading-time", label: cardText.readingTimeLabel(article.readingTimeMinutes) },
@@ -108,7 +112,7 @@ function ArticleMetaRail({ article }: ArticleOnlyProps) {
 }
 
 function RelatedArticlesSection({ article, relatedArticles }: RelatedArticlesSectionProps) {
-  if (relatedArticles.length === 0) return null;
+  if (article.isIssuePublic === false || relatedArticles.length === 0) return null;
 
   const text = i18n.public.articlePage;
 
@@ -190,7 +194,7 @@ export function PublicArticlePage({
         ) : null}
 
         <div
-          className="bg-surface py-12 sm:py-16 lg:py-20"
+          className="py-12 sm:py-16 lg:py-20"
           data-page-reveal="body"
           style={{ "--page-reveal-delay": article.imageUrl ? "760ms" : "620ms" } as CSSProperties}
         >

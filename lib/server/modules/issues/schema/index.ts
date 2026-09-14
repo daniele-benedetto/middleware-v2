@@ -45,26 +45,41 @@ export const issueHomeQuestionnaireAnalysisBlockSchema = z.object({
   questionnaireId: z.string().uuid().nullable(),
 });
 
+export const issueHomePreviewBlockSchema = z.object({
+  id: z.string().trim().min(1),
+  type: z.literal("preview"),
+  previewIssueId: z.string().uuid().nullable(),
+});
+
 export const issueHomeBlockSchema = z.discriminatedUnion("type", [
   issueHomeArticleBlockSchema,
   issueHomeCourseBlockSchema,
   issueHomeMapBlockSchema,
   issueHomeQuestionnaireAnalysisBlockSchema,
+  issueHomePreviewBlockSchema,
 ]);
 
-export const issueHomeBlocksSchema = z.array(issueHomeBlockSchema).refine(
-  (blocks) => {
-    const articleIds = blocks.flatMap((block) =>
-      block.type === "course" || block.type === "map" || block.type === "questionnaireAnalysis"
-        ? []
-        : block.articleIds,
-    );
-    return new Set(articleIds).size === articleIds.length;
-  },
-  {
-    message: "articles can be assigned to one home block only",
-  },
-);
+export const issueHomeBlocksSchema = z
+  .array(issueHomeBlockSchema)
+  .refine(
+    (blocks) => {
+      const articleIds = blocks.flatMap((block) =>
+        block.type === "course" ||
+        block.type === "map" ||
+        block.type === "questionnaireAnalysis" ||
+        block.type === "preview"
+          ? []
+          : block.articleIds,
+      );
+      return new Set(articleIds).size === articleIds.length;
+    },
+    {
+      message: "articles can be assigned to one home block only",
+    },
+  )
+  .refine((blocks) => blocks.filter((block) => block.type === "preview").length <= 1, {
+    message: "an issue can include one preview block only",
+  });
 
 export const createIssueInputSchema = z.object({
   title: z.string().trim().min(1),
@@ -119,6 +134,7 @@ export type IssueHomeMapBlock = z.infer<typeof issueHomeMapBlockSchema>;
 export type IssueHomeQuestionnaireAnalysisBlock = z.infer<
   typeof issueHomeQuestionnaireAnalysisBlockSchema
 >;
+export type IssueHomePreviewBlock = z.infer<typeof issueHomePreviewBlockSchema>;
 export type IssueHomeBlocks = z.infer<typeof issueHomeBlocksSchema>;
 export type IssueHomeVariant = z.infer<typeof issueHomeVariantSchema>;
 export type IssueTitleStyled = z.infer<typeof issueTitleStyledSchema>;

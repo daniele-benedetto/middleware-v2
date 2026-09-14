@@ -223,6 +223,7 @@ Rule:
 - Diagnostics must be non-invasive. Use a collapsed panel for warnings such as empty blocks and unused articles; do not place persistent warning copy above the editor workflow.
 - Keep single-article rules visible through UI behavior: `opening`, `rupture`, and `closing` accept one article; `opening` and `rupture` hide title, description, and featured controls.
 - Advanced JSON can exist only as a collapsed, read-only debug aid. It must not become the primary editing interface.
+- `preview` selects an issue from the CMS list. The public card automatically uses that issue's opening article, or its first assigned published article when no opening is configured. The CMS label is not rendered on the public site.
 
 ### Issue home browser QA
 

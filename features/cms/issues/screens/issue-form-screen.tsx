@@ -286,6 +286,14 @@ function IssueFormContent({
     query: { status: "CLOSED", sortBy: "closedAt", sortOrder: "desc" },
   });
   const questionnaires = questionnairesQuery.data?.items ?? [];
+  const previewIssuesQuery = trpc.issues.list.useQuery({
+    page: 1,
+    pageSize: 100,
+    query: { sortBy: "createdAt", sortOrder: "desc" },
+  });
+  const previewIssues = (previewIssuesQuery.data?.items ?? []).filter(
+    (candidate) => candidate.id !== issueId,
+  );
   const isBusy = isMutating;
   const homeVariantOptions = issueHomeVariantOptions.map((option) => ({
     value: option.value,
@@ -576,6 +584,7 @@ function IssueFormContent({
               courses={courses}
               maps={maps}
               questionnaires={questionnaires}
+              previewIssues={previewIssues}
               disabled={isBusy}
               text={issueFormText.homeBlocksEditor}
               onChange={setHomeBlocks}

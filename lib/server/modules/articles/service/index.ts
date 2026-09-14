@@ -203,6 +203,7 @@ const toPublicArticlePreviewDto = (article: ArticleDetailRecord): PublicArticleD
     issueId: article.issueId,
     issueSlug: article.issue.slug,
     issueTitle: article.issue.title,
+    isIssuePublic: true,
     categoryId: article.categoryId,
     categorySlug: article.category.slug,
     categoryName: article.category.name,

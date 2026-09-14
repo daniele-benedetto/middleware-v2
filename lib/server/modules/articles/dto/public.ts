@@ -17,6 +17,7 @@ const publicArticleBaseShape = {
   issueId: z.string().uuid(),
   issueSlug: z.string(),
   issueTitle: z.string(),
+  isIssuePublic: z.boolean().optional(),
   categoryId: z.string().uuid(),
   categorySlug: z.string(),
   categoryName: z.string(),

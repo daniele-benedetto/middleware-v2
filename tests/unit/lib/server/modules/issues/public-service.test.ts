@@ -3,10 +3,14 @@ const publicIssuesRepositoryMock = vi.hoisted(() => ({
   countPublished: vi.fn(),
   getCurrent: vi.fn(),
   getBySlug: vi.fn(),
+  getPreviewById: vi.fn(),
 }));
 
 const publicCoursesServiceMock = vi.hoisted(() => ({ getByIds: vi.fn().mockResolvedValue([]) }));
 const publicMapsServiceMock = vi.hoisted(() => ({ getByIds: vi.fn().mockResolvedValue([]) }));
+const publicQuestionnairesServiceMock = vi.hoisted(() => ({
+  getClosedAnalysesByIds: vi.fn().mockResolvedValue([]),
+}));
 
 vi.mock("@/lib/server/modules/issues/repository/public", () => ({
   publicIssuesRepository: publicIssuesRepositoryMock,
@@ -18,6 +22,10 @@ vi.mock("@/lib/server/modules/courses/service/public", () => ({
 
 vi.mock("@/lib/server/modules/maps/service/public", () => ({
   publicMapsService: publicMapsServiceMock,
+}));
+
+vi.mock("@/lib/server/modules/questionnaires/service/public", () => ({
+  publicQuestionnairesService: publicQuestionnairesServiceMock,
 }));
 
 import { publicIssuesService } from "@/lib/server/modules/issues/service/public";
@@ -90,5 +98,38 @@ describe("publicIssuesService", () => {
 
     expect(result.articles[0]?.excerpt).toBe("Excerpt");
     expect(result.articles[0]?.imageAlt).toBe("Descrizione editoriale immagine");
+  });
+
+  it("resolves a preview from the target opening article", async () => {
+    const previewIssueId = crypto.randomUUID();
+    const previewArticle = createArticleRecord();
+    publicIssuesRepositoryMock.getCurrent.mockResolvedValue(
+      createIssueRecord({
+        homeBlocks: [{ id: "preview", type: "preview", previewIssueId }],
+        articles: [],
+      }),
+    );
+    publicIssuesRepositoryMock.getPreviewById.mockResolvedValue({
+      id: previewIssueId,
+      title: "Issue futura",
+      titleStyled: null,
+      slug: "issue-futura",
+      homeBlocks: [
+        {
+          id: "opening",
+          type: "opening",
+          articleIds: [previewArticle.id],
+          featuredArticleId: previewArticle.id,
+          featuredPlacement: "left",
+        },
+      ],
+      articles: [previewArticle],
+    });
+
+    const result = await publicIssuesService.getCurrent();
+
+    expect(result.previewIssues).toMatchObject([
+      { id: previewIssueId, article: { id: previewArticle.id } },
+    ]);
   });
 });

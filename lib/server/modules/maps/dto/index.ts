@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
+import { mapHomeVariantSchema } from "@/lib/server/modules/maps/schema";
 
 export const mapItemDtoSchema = z.object({
   id: z.string().uuid(),
@@ -23,6 +24,7 @@ export const mapDtoSchema = z.object({
   title: z.string(),
   titleStyled: issueTitleStyledSchema.nullable(),
   descriptionRich: z.unknown().nullable(),
+  homeVariant: mapHomeVariantSchema,
   isActive: z.boolean(),
   publishedAt: z.string().nullable(),
   createdAt: z.string(),

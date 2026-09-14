@@ -27,6 +27,7 @@ type MapRecord = {
   title: string;
   titleStyled: unknown;
   descriptionRich: unknown;
+  homeVariant: string;
   isActive: boolean;
   publishedAt: Date | null;
   createdAt: Date;
@@ -50,6 +51,7 @@ const toMapDto = (map: MapRecord): MapDto => ({
   title: map.title,
   titleStyled: (map.titleStyled as MapDto["titleStyled"]) ?? null,
   descriptionRich: map.descriptionRich ?? null,
+  homeVariant: map.homeVariant as MapDto["homeVariant"],
   isActive: map.isActive,
   publishedAt: map.publishedAt?.toISOString() ?? null,
   createdAt: map.createdAt.toISOString(),

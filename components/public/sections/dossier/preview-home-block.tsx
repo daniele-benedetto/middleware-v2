@@ -1,53 +1,36 @@
 import { ArticleCoverImage } from "@/components/public/article-cover-image";
 import { ArticleMeta } from "@/components/public/compounds";
-import {
-  publicContentClassName,
-  publicInteraction,
-  publicTypography,
-} from "@/components/public/primitives";
-import {
-  formatArticleNumber,
-  getArticleNumber,
-} from "@/components/public/sections/dossier/dossier-format";
+import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import { getNarrativeVariantClasses } from "@/components/public/sections/dossier/dossier-variant";
 import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { cn } from "@/lib/utils";
 
-import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";
-import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
+import type { PreviewHomeBlock as PreviewHomeBlockModel } from "@/components/public/home/home-view-model";
 import type { CSSProperties } from "react";
 
-type LeadBlockProps = {
-  block: NarrativeHomeBlock;
-  variant: IssueHomeVariant;
-  articleNumbers: Map<string, number>;
+type PreviewHomeBlockProps = {
+  block: PreviewHomeBlockModel;
   priority?: boolean;
 };
 
-export function LeadBlock({ block, variant, articleNumbers, priority = false }: LeadBlockProps) {
-  const article = block.featuredArticle ?? block.articles[0];
-
-  if (!article) {
-    return null;
-  }
-
-  const variantClasses = getNarrativeVariantClasses(variant);
-  const articleHref = `/articoli/${article.slug}`;
-  const titleId = `lead-article-title-${article.id}`;
+export function PreviewHomeBlock({ block, priority = false }: PreviewHomeBlockProps) {
+  const { article, homeVariant } = block.previewIssue;
+  const titleId = `preview-article-title-${article.id}`;
+  const variantClasses = getNarrativeVariantClasses(homeVariant);
 
   return (
     <section className={`scroll-mt-20 my-10 md:my-12 ${variantClasses.section}`}>
-      <div className={`${publicContentClassName} py-10 md:py-12`}>
+      <div className="mx-auto w-full max-w-384 px-4 py-10 sm:px-6 md:py-12 lg:px-12">
         <TrackedPublicLink
-          href={articleHref}
+          href={`/articoli/${article.slug}`}
           analyticsEventName={publicAnalyticsEvents.contentCardClick}
           analyticsEventData={{
             content_type: "article",
             slug: article.slug,
-            source: "dossier_lead",
-            position: `article_${getArticleNumber(articleNumbers, article)}`,
+            source: "dossier_preview",
+            position: "preview",
           }}
           aria-labelledby={titleId}
           data-page-reveal={priority ? "body" : undefined}
@@ -60,15 +43,10 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
               : "max-w-4xl",
           )}
         >
-          <div>
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <span className={cn(publicTypography.articleNumberLg, variantClasses.titlePrimary)}>
-                {formatArticleNumber(getArticleNumber(articleNumbers, article))}
-              </span>
-            </div>
+          <article>
             <h2
               id={titleId}
-              className={cn(publicTypography.leadArticleTitle, "max-w-[13ch] text-balance")}
+              className={cn("max-w-[13ch] text-balance", publicTypography.leadArticleTitle)}
             >
               <StyledTitle
                 title={article.title}
@@ -90,8 +68,7 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
             <div className="mt-7">
               <ArticleMeta article={article} tone={variantClasses.metaTone} />
             </div>
-          </div>
-
+          </article>
           {article.imageUrl ? (
             <div
               className={`relative min-h-76 overflow-hidden border sm:min-h-82 md:min-h-full lg:min-h-120 ${variantClasses.image}`}
@@ -101,7 +78,7 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
                 alt={article.imageAlt}
                 settings={article.imageSettings}
                 fill
-                sizes="(min-width: 768px) 45vw, 100vw"
+                sizes="(min-width: 768px) 48vw, 100vw"
                 className={cn(publicInteraction.imageZoom)}
                 preload={priority}
               />

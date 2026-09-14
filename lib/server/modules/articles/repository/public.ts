@@ -11,7 +11,6 @@ const PUBLIC_ISSUE_WHERE = {
 const PUBLIC_ARTICLE_WHERE = {
   status: "PUBLISHED",
   publishedAt: { not: null },
-  issue: PUBLIC_ISSUE_WHERE,
 } as const satisfies Prisma.ArticleWhereInput;
 
 const PUBLIC_ARTICLE_SUMMARY_SELECT = {
@@ -29,7 +28,7 @@ const PUBLIC_ARTICLE_SUMMARY_SELECT = {
   categoryId: true,
   authorId: true,
   issue: {
-    select: { slug: true, title: true },
+    select: { slug: true, title: true, isActive: true, publishedAt: true },
   },
   category: {
     select: { slug: true, name: true },
@@ -52,9 +51,7 @@ export const publicArticlesRepository = {
     return prisma.article.findFirst({
       where: {
         slug,
-        status: "PUBLISHED",
-        publishedAt: { not: null },
-        issue: PUBLIC_ISSUE_WHERE,
+        ...PUBLIC_ARTICLE_WHERE,
       },
       select: PUBLIC_ARTICLE_DETAIL_SELECT,
     });

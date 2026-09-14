@@ -26,7 +26,7 @@ type PublicArticleSummaryRecord = {
   issueId: string;
   categoryId: string;
   authorId: string | null;
-  issue?: { slug: string; title: string } | null;
+  issue?: { slug: string; title: string; isActive: boolean; publishedAt: Date | null } | null;
   category?: { slug: string; name: string } | null;
   author?: { name: string } | null;
 };
@@ -71,6 +71,7 @@ const toPublicArticleSummaryDto = (
     issueId: article.issueId,
     issueSlug: article.issue.slug,
     issueTitle: article.issue.title,
+    isIssuePublic: article.issue.isActive && Boolean(article.issue.publishedAt),
     categoryId: article.categoryId,
     categorySlug: article.category.slug,
     categoryName: article.category.name,

@@ -43,7 +43,7 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
       }}
       aria-label={article.title}
       className={cn(
-        publicInteraction.cardBase,
+        publicInteraction.cardBaseNoRail,
         "relative min-h-60 overflow-hidden sm:min-h-72 md:min-h-full",
       )}
     >
@@ -70,7 +70,7 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
       }}
       aria-labelledby={titleId}
       className={cn(
-        publicInteraction.cardBase,
+        publicInteraction.cardBaseNoRail,
         variantClasses.section,
         "flex min-w-0 flex-col px-6 pt-6 pb-6 md:px-8 md:pt-7 md:pb-8",
       )}

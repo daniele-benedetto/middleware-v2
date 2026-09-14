@@ -1889,6 +1889,7 @@ export const MapScalarFieldEnum = {
   title: 'title',
   titleStyled: 'titleStyled',
   descriptionRich: 'descriptionRich',
+  homeVariant: 'homeVariant',
   isActive: 'isActive',
   publishedAt: 'publishedAt',
   createdAt: 'createdAt',

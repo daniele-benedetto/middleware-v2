@@ -39,6 +39,7 @@ const issue = (
     articles,
     courses: [],
     maps: [],
+    previewIssues: [],
   }) as PublicCurrentIssueDetail;
 
 describe("home view model", () => {
@@ -130,6 +131,33 @@ describe("home view model", () => {
 
     expect(resolveIssueHomeBlocks(input)).toMatchObject([
       { id: "course", type: "course", course: { id: courseId } },
+    ]);
+  });
+
+  it("composes a preview block without assigning its article to the host issue", () => {
+    const previewIssueId = crypto.randomUUID();
+    const previewArticle = article({ id: crypto.randomUUID(), title: "Opening preview" });
+    const input = issue([], [{ id: "preview", type: "preview", previewIssueId }]);
+    input.previewIssues = [
+      {
+        id: previewIssueId,
+        title: "Numero successivo",
+        titleStyled: null,
+        slug: "numero-successivo",
+        homeVariant: "black",
+        article: previewArticle,
+      },
+    ];
+
+    expect(resolveIssueHomeBlocks(input)).toMatchObject([
+      {
+        id: "preview",
+        type: "preview",
+        previewIssue: {
+          id: previewIssueId,
+          article: { id: previewArticle.id, title: "Opening preview" },
+        },
+      },
     ]);
   });
 

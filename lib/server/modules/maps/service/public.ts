@@ -4,6 +4,7 @@ import { publicMapsRepository } from "@/lib/server/modules/maps/repository/publi
 
 import type { IssueTitleStyled } from "@/lib/server/modules/issues/schema";
 import type { PublicMapDetailDto } from "@/lib/server/modules/maps/dto/public";
+import type { MapHomeVariant } from "@/lib/server/modules/maps/schema";
 
 export const publicMapsService = {
   async getByIds(ids: string[]): Promise<PublicMapDetailDto[]> {
@@ -14,6 +15,7 @@ export const publicMapsService = {
       title: map.title,
       titleStyled: (map.titleStyled as IssueTitleStyled | null) ?? null,
       descriptionRich: map.descriptionRich ?? null,
+      homeVariant: map.homeVariant as MapHomeVariant,
       items: map.items.map((item) => ({
         id: item.id,
         title: item.title,

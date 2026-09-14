@@ -185,7 +185,7 @@ export function PublicLessonPage({
         ) : null}
 
         <div
-          className="bg-surface py-12 sm:py-16 lg:py-20"
+          className="py-12 sm:py-16 lg:py-20"
           data-page-reveal="body"
           style={{ "--page-reveal-delay": lesson.imageUrl ? "760ms" : "620ms" } as CSSProperties}
         >

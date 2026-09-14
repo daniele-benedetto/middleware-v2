@@ -38,7 +38,11 @@ export function CourseHomeBlock({
             source: "issue_course",
             position: "course",
           }}
-          className={cn(publicInteraction.cardBase, variant.surface, "block p-6 md:p-8 lg:p-10")}
+          className={cn(
+            publicInteraction.cardBaseNoRail,
+            variant.surface,
+            "block p-6 md:p-8 lg:p-10",
+          )}
         >
           <div>
             <h2 className={cn(publicTypography.featureArticleTitle, variant.title, "max-w-[16ch]")}>

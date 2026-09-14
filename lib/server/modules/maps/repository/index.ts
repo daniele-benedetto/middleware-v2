@@ -19,6 +19,7 @@ const MAP_SELECT = {
   title: true,
   titleStyled: true,
   descriptionRich: true,
+  homeVariant: true,
   isActive: true,
   publishedAt: true,
   createdAt: true,
@@ -105,6 +106,7 @@ export const mapsRepository = {
           input.descriptionRich === undefined
             ? undefined
             : (input.descriptionRich as Prisma.InputJsonValue),
+        homeVariant: input.homeVariant,
         isActive: input.isActive,
         publishedAt: input.publishedAt ?? null,
       },
@@ -127,6 +129,7 @@ export const mapsRepository = {
             : input.descriptionRich === null
               ? Prisma.JsonNull
               : (input.descriptionRich as Prisma.InputJsonValue),
+        homeVariant: input.homeVariant,
         isActive: input.isActive,
         publishedAt: input.publishedAt,
       },

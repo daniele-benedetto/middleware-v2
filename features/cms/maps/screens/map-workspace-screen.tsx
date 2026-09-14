@@ -12,6 +12,7 @@ import {
   CmsFormField,
   CmsPageHeader,
   CmsRichTextEditor,
+  CmsSelect,
   CmsStyledTitleEditor,
   cmsToast,
   createStyledTitleValue,
@@ -31,6 +32,14 @@ import { invalidateAfterCmsMutation, mapTrpcErrorToCmsUiMessage } from "@/lib/cm
 import { i18n } from "@/lib/i18n";
 import { updateMapInputSchema } from "@/lib/server/modules/maps/schema";
 import { trpc } from "@/lib/trpc/react";
+
+import type { MapHomeVariant } from "@/lib/server/modules/maps/schema";
+
+const homeVariantOptions = [
+  { value: "black", labelKey: "homeVariantBlack" },
+  { value: "red", labelKey: "homeVariantRed" },
+  { value: "default", labelKey: "homeVariantDefault" },
+] as const;
 
 type CmsMapWorkspaceScreenProps = {
   mapId: string;
@@ -54,6 +63,9 @@ export function CmsMapWorkspaceScreen({ mapId, initialData }: CmsMapWorkspaceScr
     initialData?.descriptionRich ?? { type: "doc", content: [{ type: "paragraph" }] },
   );
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
+  const [homeVariant, setHomeVariant] = useState<MapHomeVariant>(
+    initialData?.homeVariant ?? "black",
+  );
   const [publishedAt, setPublishedAt] = useState<Date | null>(
     initialData?.publishedAt ? new Date(initialData.publishedAt) : null,
   );
@@ -74,6 +86,7 @@ export function CmsMapWorkspaceScreen({ mapId, initialData }: CmsMapWorkspaceScr
       title: getStyledTitlePlainText(titleStyled),
       titleStyled: hasStyledTitleFormatting(titleStyled) ? titleStyled : null,
       descriptionRich,
+      homeVariant,
       isActive,
       publishedAt,
     };
@@ -163,6 +176,16 @@ export function CmsMapWorkspaceScreen({ mapId, initialData }: CmsMapWorkspaceScr
                 onChange={(checked) => setPublishedAt(checked ? new Date() : null)}
               />
             </section>
+            <CmsFormField label={mapText.homeVariantLabel} htmlFor="map-home-variant">
+              <CmsSelect
+                value={homeVariant}
+                options={homeVariantOptions.map((option) => ({
+                  value: option.value,
+                  label: mapText[option.labelKey],
+                }))}
+                onValueChange={(nextVariant) => setHomeVariant(nextVariant as MapHomeVariant)}
+              />
+            </CmsFormField>
             <section className="flex min-h-0 min-w-0 flex-col rounded-[6px] border border-foreground bg-card p-4 lg:max-h-[clamp(480px,68dvh,760px)]">
               <section
                 className="flex min-h-0 flex-1 flex-col space-y-3"

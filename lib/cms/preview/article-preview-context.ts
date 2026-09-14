@@ -23,7 +23,8 @@ function resolveNarrativeBlocks(issue: IssuePreview): NarrativeBlock[] {
     if (
       rawBlock.type === "course" ||
       rawBlock.type === "map" ||
-      rawBlock.type === "questionnaireAnalysis"
+      rawBlock.type === "questionnaireAnalysis" ||
+      rawBlock.type === "preview"
     ) {
       continue;
     }
