@@ -122,7 +122,7 @@ function getContextualArticles(
 }
 
 async function getIssueArticleContext(article: PublicArticleDetailDto | null) {
-  if (!article) {
+  if (!article || article.isIssuePublic === false) {
     return {
       articleNumber: null,
       relatedArticles: [],
