@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-14T00:00:00.000Z",
+  "title": "Design System: Middleware V2",
+  "extensions": {
+    "colorMeta": {
+      "archive-paper": {
+        "role": "neutral",
+        "displayName": "Archive Paper",
+        "canonical": "#f7f0e7",
+        "tonalRamp": [
+          "oklch(15% 0.01 70)",
+          "oklch(27% 0.01 70)",
+          "oklch(39% 0.01 70)",
+          "oklch(51% 0.01 70)",
+          "oklch(63% 0.01 70)",
+          "oklch(75% 0.01 70)",
+          "oklch(87% 0.01 70)",
+          "#f7f0e7"
+        ]
+      },
+      "paper-white": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(39% 0 0)",
+          "oklch(51% 0 0)",
+          "oklch(63% 0 0)",
+          "oklch(75% 0 0)",
+          "oklch(87% 0 0)",
+          "#ffffff"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Printing Ink",
+        "canonical": "#000000",
+        "tonalRamp": [
+          "#000000",
+          "oklch(27% 0 0)",
+          "oklch(39% 0 0)",
+          "oklch(51% 0 0)",
+          "oklch(63% 0 0)",
+          "oklch(75% 0 0)",
+          "oklch(87% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "vermilion-proof": {
+        "role": "primary",
+        "displayName": "Vermilion Proof",
+        "canonical": "#c13814",
+        "tonalRamp": [
+          "oklch(15% 0.12 35)",
+          "oklch(27% 0.15 35)",
+          "oklch(39% 0.17 35)",
+          "#c13814",
+          "oklch(63% 0.17 35)",
+          "oklch(75% 0.14 35)",
+          "oklch(87% 0.09 35)",
+          "oklch(95% 0.03 35)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Archivo Display", "purpose": "Hero and issue-level hierarchy." },
+      "headline": { "displayName": "Archivo Headline", "purpose": "Page and article headings." },
+      "body": {
+        "displayName": "Spectral Editorial",
+        "purpose": "Long-form articles and excerpts."
+      },
+      "label": {
+        "displayName": "Archivo Label",
+        "purpose": "Tracked metadata, control labels, and status text."
+      }
+    },
+    "shadows": [
+      {
+        "name": "interactive-rail",
+        "value": "inset 4px 0 0 #c13814",
+        "purpose": "Hovered or selected dossier and CMS rows."
+      },
+      {
+        "name": "map-pin",
+        "value": "0 3px 9px rgb(0 0 0 / 35%)",
+        "purpose": "Practical elevation for a map marker only."
+      }
+    ],
+    "motion": [
+      { "name": "fast", "value": "120ms", "purpose": "Card and control feedback." },
+      { "name": "base", "value": "180ms", "purpose": "Standard UI state transition." },
+      {
+        "name": "slow",
+        "value": "260ms cubic-bezier(0.2, 0, 0, 1)",
+        "purpose": "Image and header color transitions."
+      }
+    ],
+    "breakpoints": [{ "name": "md", "value": "48rem" }]
+  },
+  "components": [
+    {
+      "name": "CMS Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Default action for CMS forms and operational flows.",
+      "html": "<button class=\"ds-btn-primary\">SALVA MODIFICHE</button>",
+      "css": ".ds-btn-primary { border: 0; border-radius: 8px; background: #000; color: #f7f0e7; padding: 12px 20px; font-family: Archivo, sans-serif; font-size: 14.5px; font-weight: 700; cursor: pointer; transition: filter 180ms cubic-bezier(.2,0,0,1); } .ds-btn-primary:hover { filter: brightness(.9); } .ds-btn-primary:focus-visible { outline: 3px solid #c13814; outline-offset: 2px; } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:disabled { background: rgba(0,0,0,.06); color: rgba(0,0,0,.22); cursor: default; }"
+    },
+    {
+      "name": "CMS Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary CMS action with a visible structural boundary.",
+      "html": "<button class=\"ds-btn-outline\">ANNULLA</button>",
+      "css": ".ds-btn-outline { border: 1px solid #000; border-radius: 8px; background: transparent; color: #000; padding: 10px 20px; font-family: Archivo, sans-serif; font-size: 14.5px; font-weight: 700; cursor: pointer; transition: background 180ms cubic-bezier(.2,0,0,1); } .ds-btn-outline:hover { background: rgba(0,0,0,.06); } .ds-btn-outline:focus-visible { outline: 3px solid #c13814; outline-offset: 2px; } .ds-btn-outline:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "CMS Surface",
+      "kind": "card",
+      "refersTo": "surface-card",
+      "description": "Dense operational panel for forms, lists, and editorial management.",
+      "html": "<section class=\"ds-surface\"><strong>ARTICOLO</strong><p>Struttura chiara, senza profondita decorativa.</p></section>",
+      "css": ".ds-surface { border: 1px solid #000; border-radius: 8px; background: #fff; color: #000; padding: 20px; font-family: Archivo, sans-serif; } .ds-surface strong { font-size: 12px; letter-spacing: .1em; } .ds-surface p { margin: 12px 0 0; font-size: 14px; line-height: 1.5; }"
+    },
+    {
+      "name": "Dossier Article Card",
+      "kind": "card",
+      "refersTo": "dossier-card",
+      "description": "Linked public article unit within an issue-led dossier grid.",
+      "html": "<article class=\"ds-dossier-card\"><span>01</span><h3>Un titolo editoriale che guida la lettura</h3><p>Una breve introduzione al contenuto dell'articolo.</p></article>",
+      "css": ".ds-dossier-card { border-bottom: 1px solid #000; background: #f7f0e7; color: #000; padding: 20px 0; font-family: Archivo, sans-serif; transition: background 120ms, box-shadow 120ms; cursor: pointer; } .ds-dossier-card:hover { background: rgba(193,56,20,.1); box-shadow: inset 4px 0 0 #c13814; } .ds-dossier-card:focus-visible { outline: 3px solid #c13814; outline-offset: 2px; } .ds-dossier-card span { color: #c13814; font-size: 40px; font-weight: 900; letter-spacing: -.04em; line-height: .78; } .ds-dossier-card h3 { margin: 20px 0 0; font-size: 25px; font-weight: 900; letter-spacing: -.032em; line-height: 1.05; } .ds-dossier-card p { margin: 16px 0 0; font-family: Spectral, serif; font-size: 17px; line-height: 1.6; }"
+    },
+    {
+      "name": "Public Menu Control",
+      "kind": "nav",
+      "refersTo": "button-outline",
+      "description": "Text-forward public navigation trigger paired with a drawn menu icon.",
+      "html": "<button class=\"ds-menu\">MENU <span aria-hidden=\"true\">=</span></button>",
+      "css": ".ds-menu { border: 0; border-bottom: 1px solid #000; background: transparent; color: #000; padding: 6px 0; font-family: Archivo, sans-serif; font-size: 17px; font-weight: 600; letter-spacing: .1em; cursor: pointer; } .ds-menu:hover { border-bottom-color: #c13814; color: #c13814; } .ds-menu:focus-visible { outline: 3px solid #c13814; outline-offset: 2px; } .ds-menu span { display: inline-block; margin-left: 8px; font-size: 18px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Printed Dossier",
+    "overview": "Middleware V2 treats an Italian digital publication as an authored object: Archive Paper grounds the page, black rules establish the reading structure, and dense Archivo headlines give every issue a clear editorial voice. Spectral carries long-form reading with a quieter, literary cadence. The public experience makes the dossier and its content primary; the CMS preserves the same exacting grammar for operational work.\n\nThe system is flat by default and precise rather than polite. Borders, paper-to-white shifts, and a restrained Vermilion Proof mark do the work usually delegated to glossy surfaces. Responsive layouts retain the grid's logic while releasing multi-column structures into clear stacked reading order.",
+    "keyCharacteristics": [
+      "Material paper ground, firm black structure, and rare rust-red proof marks.",
+      "Typography-led hierarchy with sans-serif display contrast and serif reading text.",
+      "Compact, deliberate controls with visible, high-contrast keyboard focus.",
+      "Editorial public surfaces and operational CMS surfaces drawn from one token system."
+    ],
+    "rules": [
+      {
+        "name": "The One Proof Rule",
+        "body": "Vermilion Proof marks attention, state, or consequence. It must not become a broad fill or a decorative field.",
+        "section": "colors"
+      },
+      {
+        "name": "The Type Does the Sorting Rule",
+        "body": "Establish hierarchy through family, weight, scale, and spacing before introducing color or ornamental treatment.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Do not add soft floating shadows, glass effects, or blur to manufacture hierarchy. A rule, tonal shift, or stateful inset rail is the native depth language.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do preserve Archive Paper as the broad public ground and let Paper White indicate a contained operational surface.",
+      "Do use black rules to make grids, reading order, and interaction boundaries visible.",
+      "Do reserve Vermilion Proof for attention, focus, selection, destructive intent, and editorial numbering.",
+      "Do pair Archivo hierarchy with Spectral editorial reading text.",
+      "Do keep public dossier cards square and use the 6px and 8px radii only for controls and CMS panels."
+    ],
+    "donts": [
+      "Don't add glossy dashboard chrome: gradients, glass blur, decorative shadows, or pill-heavy controls do not belong here.",
+      "Don't turn every content unit into a rounded card; preserve the dossier's rule-led grid.",
+      "Don't use the accent as a broad background color or a substitute for typographic hierarchy.",
+      "Don't replace visible focus outlines with subtle color-only hover treatment."
+    ]
+  }
+}
