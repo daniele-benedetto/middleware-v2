@@ -17,6 +17,10 @@ const repositoryMock = vi.hoisted(() => ({
 
 vi.mock("@/lib/server/modules/questionnaires/repository", () => repositoryMock);
 
+vi.mock("@/lib/public/server/revalidation", () => ({
+  revalidatePublicQuestionnaireAnalysisContent: vi.fn(),
+}));
+
 import { cmsQuestionnairesService } from "@/lib/server/modules/questionnaires/service/cms";
 
 const id = "00000000-0000-4000-8000-000000000001";

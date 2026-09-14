@@ -14,6 +14,12 @@ vi.mock("@/lib/server/modules/issues/repository", () => ({
   issuesRepository: issuesRepositoryMock,
 }));
 
+vi.mock("@/lib/server/modules/issues/service/public", () => ({
+  publicIssuesService: {
+    getPreviewIssueById: vi.fn(),
+  },
+}));
+
 import { issuesService } from "@/lib/server/modules/issues/service";
 import { createPrismaKnownRequestError } from "@/tests/helpers/create-prisma-known-request-error";
 
