@@ -19,6 +19,7 @@ type DossierArticleCardProps = {
   analyticsSource?: string;
   analyticsPosition?: string;
   analyticsParentSlug?: string;
+  id?: string;
 };
 
 export function DossierArticleCard({
@@ -31,6 +32,7 @@ export function DossierArticleCard({
   analyticsSource = "dossier",
   analyticsPosition,
   analyticsParentSlug,
+  id,
 }: DossierArticleCardProps) {
   const articleHref = `/articoli/${article.slug}`;
   const titleId = `article-card-title-${article.id}`;
@@ -63,9 +65,10 @@ export function DossierArticleCard({
         parent_slug: analyticsParentSlug ?? null,
       }}
       aria-labelledby={titleId}
+      id={id}
       className={cn(
         publicInteraction.cardSurface,
-        "flex h-full overflow-hidden border-foreground bg-background",
+        "flex h-full scroll-mt-20 overflow-hidden border-foreground bg-background",
         "flex-col border-b px-0 py-5 last:border-b-0 md:border-r md:border-b md:px-7 md:py-7 md:last:border-b",
         className,
       )}

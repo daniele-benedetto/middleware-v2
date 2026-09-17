@@ -65,6 +65,16 @@ export const publicIt = {
     dossier: {
       articlesLabel: "Materiali del numero",
       audioCountLabel,
+      tableOfContentsLabel: "Indice del numero",
+      openingLabel: "Apertura",
+      bodyLabel: "Materiali",
+      ruptureLabel: "Interruzione",
+      closingLabel: "Chiusura",
+      courseLabel: "Contro-formazione",
+      mapLabel: "Mappa",
+      questionnaireAnalysisLabel: "Analisi",
+      previewLabel: "Anteprima",
+      unpaginatedArticlesLabel: "Altri materiali",
     },
     sectionGrid: {
       showAll: (count: number) => `Vedi tutti (${count})`,

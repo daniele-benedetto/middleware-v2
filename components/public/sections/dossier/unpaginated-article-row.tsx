@@ -31,6 +31,7 @@ export function UnpaginatedArticleRow({
             <DossierArticleCard
               key={article.id}
               article={article}
+              id={`issue-article-${article.id}`}
               number={startNumber + index}
               variant="constellationSecondary"
             />

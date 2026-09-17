@@ -1,3 +1,4 @@
+import { IssueTableOfContents } from "@/components/public/home/issue-table-of-contents";
 import { resolveIssueHomeBlocks } from "@/components/public/home/resolve-issue-home-blocks";
 import { BodyBlock } from "@/components/public/sections/dossier/body-block";
 import { ClosingBlock } from "@/components/public/sections/dossier/closing-block";
@@ -15,9 +16,11 @@ import { QuestionnaireAnalysisHomeBlock } from "@/components/public/sections/que
 import { getIssueBlockNumberingArticles } from "@/lib/public/issue-numbering";
 
 import type {
+  HomeIssueArticle,
   NarrativeHomeBlock,
   ResolvedHomeBlock,
 } from "@/components/public/home/home-view-model";
+import type { IssueTableOfContentsItem } from "@/components/public/home/issue-table-of-contents";
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 import type { CSSProperties } from "react";
@@ -25,6 +28,56 @@ import type { CSSProperties } from "react";
 type DossierHomeProps = {
   issue: PublicCurrentIssueDetail;
 };
+
+function getBlockAnchorId(block: ResolvedHomeBlock) {
+  return `issue-block-${block.id}`;
+}
+
+function getArticleIndexItem(
+  article: HomeIssueArticle,
+  articleNumbers: Map<string, number>,
+): IssueTableOfContentsItem {
+  return {
+    id: `issue-article-${article.id}`,
+    label: article.title,
+    number: articleNumbers.get(article.id),
+  };
+}
+
+function getBlockIndexItems(
+  block: ResolvedHomeBlock,
+  articleNumbers: Map<string, number>,
+): IssueTableOfContentsItem[] {
+  switch (block.type) {
+    case "opening":
+    case "body":
+    case "rupture":
+    case "closing":
+      return getIssueBlockNumberingArticles(block).map((article) =>
+        getArticleIndexItem(article, articleNumbers),
+      );
+    case "course":
+      return [{ id: getBlockAnchorId(block), label: block.course.title, icon: "course" }];
+    case "map":
+      return [{ id: getBlockAnchorId(block), label: block.map.title, icon: "map" }];
+    case "questionnaireAnalysis":
+      return [
+        {
+          id: getBlockAnchorId(block),
+          label: block.questionnaireAnalysis.title,
+          icon: "questionnaireAnalysis",
+        },
+      ];
+    case "preview":
+      return [
+        {
+          id: getBlockAnchorId(block),
+          label: block.previewIssue.article.title,
+          icon: "preview",
+        },
+      ];
+  }
+}
 
 function renderBlock(
   block: ResolvedHomeBlock,
@@ -87,10 +140,23 @@ export function DossierHome({ issue }: DossierHomeProps) {
   const variant = issue.homeVariant;
 
   if (blocks.length === 0) {
+    const articles = sortUnpaginatedArticles(issue.articles);
+    const articleNumbers = new Map(articles.map((article, index) => [article.id, index + 1]));
+
     return (
-      <div data-page-reveal="body" style={{ "--page-reveal-delay": "660ms" } as CSSProperties}>
-        <UnpaginatedArticleRow articles={issue.articles} />
-      </div>
+      <>
+        <IssueTableOfContents
+          items={articles.map((article) => getArticleIndexItem(article, articleNumbers))}
+        />
+        <div
+          id="issue-unpaginated-articles"
+          className="scroll-mt-20"
+          data-page-reveal="body"
+          style={{ "--page-reveal-delay": "660ms" } as CSSProperties}
+        >
+          <UnpaginatedArticleRow articles={issue.articles} />
+        </div>
+      </>
     );
   }
 
@@ -132,16 +198,39 @@ export function DossierHome({ issue }: DossierHomeProps) {
   const unpaginatedStartNumber = nextNumber;
   addArticles(sortUnpaginatedArticles(unpaginatedArticles));
   closingBlocks.forEach((block) => addArticles(block.articles));
+  const tableOfContentsItems = [
+    ...leadingBlocks.flatMap((block) => getBlockIndexItems(block, articleNumbers)),
+    ...(unpaginatedArticles.length > 0
+      ? sortUnpaginatedArticles(unpaginatedArticles).map((article) =>
+          getArticleIndexItem(article, articleNumbers),
+        )
+      : []),
+    ...trailingBlocks.flatMap((block) => getBlockIndexItems(block, articleNumbers)),
+  ];
 
   return (
     <div className="bg-background">
-      {leadingBlocks.map((block, index) =>
-        renderBlock(block, variant, articleNumbers, {
-          priority: index === 0,
-        }),
-      )}
-      <UnpaginatedArticleRow articles={unpaginatedArticles} startNumber={unpaginatedStartNumber} />
-      {trailingBlocks.map((block) => renderBlock(block, variant, articleNumbers))}
+      <IssueTableOfContents items={tableOfContentsItems} />
+      {leadingBlocks.map((block, index) => (
+        <div id={getBlockAnchorId(block)} className="scroll-mt-20" key={block.id}>
+          {renderBlock(block, variant, articleNumbers, {
+            priority: index === 0,
+          })}
+        </div>
+      ))}
+      {unpaginatedArticles.length > 0 ? (
+        <div id="issue-unpaginated-articles" className="scroll-mt-20">
+          <UnpaginatedArticleRow
+            articles={unpaginatedArticles}
+            startNumber={unpaginatedStartNumber}
+          />
+        </div>
+      ) : null}
+      {trailingBlocks.map((block) => (
+        <div id={getBlockAnchorId(block)} className="scroll-mt-20" key={block.id}>
+          {renderBlock(block, variant, articleNumbers)}
+        </div>
+      ))}
     </div>
   );
 }

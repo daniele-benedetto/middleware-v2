@@ -62,9 +62,10 @@ async function PublicAnalyticsSlot() {
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <TrpcProvider>
+      <div aria-hidden="true" className="fixed inset-x-0 bottom-0 z-0 h-svh bg-foreground" />
       <div
         data-public-shell
-        className="flex min-h-svh flex-1 flex-col bg-background font-heading text-foreground"
+        className="relative z-10 flex min-h-svh flex-1 flex-col bg-background font-heading text-foreground"
       >
         <a
           href="#main-content"

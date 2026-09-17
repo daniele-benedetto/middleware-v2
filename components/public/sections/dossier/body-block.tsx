@@ -23,6 +23,7 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
   const featuredCard = featured ? (
     <DossierArticleCard
       article={featured}
+      id={`issue-article-${featured.id}`}
       number={getArticleNumber(articleNumbers, featured)}
       variant="clusterFeatured"
       className={featuredOnRight ? "max-md:pb-0" : "max-md:pt-0"}
@@ -41,6 +42,7 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
         <DossierArticleCard
           key={article.id}
           article={article}
+          id={`issue-article-${article.id}`}
           number={getArticleNumber(articleNumbers, article)}
           variant="constellationSecondary"
           className={cn(

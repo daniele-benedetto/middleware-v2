@@ -32,7 +32,7 @@ export function PublicPageHero({
   meta,
   eyebrow,
   as = "section",
-  containerClassName = "py-7 sm:py-9 lg:py-14",
+  containerClassName = "py-7 sm:py-9 lg:py-12",
   titlePrimaryClassName,
   titleTypographyClassName = publicTypography.homeHeroTitle,
   surfaceClassName = "bg-background",

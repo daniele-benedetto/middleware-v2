@@ -82,5 +82,7 @@ describe("DossierHome", () => {
     const html = renderToStaticMarkup(createElement(DossierHome, { issue }));
 
     expect(html.indexOf("Preview article")).toBeLessThan(html.indexOf("Closing host"));
+    expect(html).toContain('href="#issue-article-00000000-0000-4000-8000-000000000001"');
+    expect(html).toContain('id="issue-article-00000000-0000-4000-8000-000000000001"');
   });
 });
