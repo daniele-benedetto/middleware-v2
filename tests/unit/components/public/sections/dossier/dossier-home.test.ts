@@ -79,7 +79,24 @@ describe("DossierHome", () => {
       ],
     } satisfies PublicCurrentIssueDetail;
 
-    const html = renderToStaticMarkup(createElement(DossierHome, { issue }));
+    const html = renderToStaticMarkup(
+      createElement(DossierHome, {
+        issue,
+        publishedIssues: [
+          {
+            id: "00000000-0000-4000-8000-000000000004",
+            title: "Issue target",
+            titleStyled: null,
+            slug: "issue-target",
+            description: null,
+            homeBlocks: null,
+            homeVariant: "black",
+            publishedAt: "2026-02-01T00:00:00.000Z",
+            articlesCount: 1,
+          },
+        ],
+      }),
+    );
 
     expect(html.indexOf("Preview article")).toBeLessThan(html.indexOf("Closing host"));
     expect(html).toContain('href="#issue-article-00000000-0000-4000-8000-000000000001"');

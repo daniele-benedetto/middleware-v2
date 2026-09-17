@@ -14,9 +14,9 @@ export function MapHomeBlock({ block }: { block: MapHomeBlockData }) {
     <section className="scroll-mt-20 py-10 md:py-12">
       <div className="w-full md:mx-auto md:max-w-384 md:px-12">
         <div
-          className={`grid overflow-hidden ${variant.surface} md:border md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] ${variant.border}`}
+          className={`grid overflow-hidden ${variant.surface} md:border md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] ${variant.border}`}
         >
-          <div className="min-w-0 px-4 sm:px-6 md:p-8">
+          <div className="min-w-0 p-5 pb-0 sm:p-6 md:p-8 lg:p-9">
             <h2 className={`${publicTypography.featureArticleTitle} max-w-[14ch] ${variant.title}`}>
               <StyledTitle
                 title={block.map.title}

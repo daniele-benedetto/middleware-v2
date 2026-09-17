@@ -13,6 +13,7 @@ import { UnpaginatedArticleRow } from "@/components/public/sections/dossier/unpa
 import { CourseHomeBlock } from "@/components/public/sections/formazione/course-home-block";
 import { MapHomeBlock } from "@/components/public/sections/maps/map-home-block";
 import { QuestionnaireAnalysisHomeBlock } from "@/components/public/sections/questionnaires/questionnaire-analysis-home-block";
+import { buildIssueNumberMap, formatIssueNumber } from "@/lib/public/format/issue";
 import { getIssueBlockNumberingArticles } from "@/lib/public/issue-numbering";
 
 import type {
@@ -21,12 +22,13 @@ import type {
   ResolvedHomeBlock,
 } from "@/components/public/home/home-view-model";
 import type { IssueTableOfContentsItem } from "@/components/public/home/issue-table-of-contents";
-import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
+import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 import type { CSSProperties } from "react";
 
 type DossierHomeProps = {
   issue: PublicCurrentIssueDetail;
+  publishedIssues: PublicIssueListItem[];
 };
 
 function getBlockAnchorId(block: ResolvedHomeBlock) {
@@ -83,7 +85,7 @@ function renderBlock(
   block: ResolvedHomeBlock,
   variant: IssueHomeVariant,
   articleNumbers: Map<string, number>,
-  options: { priority?: boolean } = {},
+  options: { priority?: boolean; previewIssueNumber?: string } = {},
 ) {
   switch (block.type) {
     case "opening":
@@ -131,13 +133,22 @@ function renderBlock(
     case "questionnaireAnalysis":
       return <QuestionnaireAnalysisHomeBlock key={block.id} block={block} />;
     case "preview":
-      return <PreviewHomeBlock key={block.id} block={block} priority={options.priority} />;
+      return (
+        <PreviewHomeBlock
+          key={block.id}
+          block={block}
+          issueNumber={options.previewIssueNumber}
+          priority={options.priority}
+        />
+      );
   }
 }
 
-export function DossierHome({ issue }: DossierHomeProps) {
+export function DossierHome({ issue, publishedIssues }: DossierHomeProps) {
   const blocks = resolveIssueHomeBlocks(issue);
   const variant = issue.homeVariant;
+  const issueNumbers = buildIssueNumberMap(publishedIssues);
+  const nextIssueNumber = formatIssueNumber(publishedIssues.length);
 
   if (blocks.length === 0) {
     const articles = sortUnpaginatedArticles(issue.articles);
@@ -215,6 +226,10 @@ export function DossierHome({ issue }: DossierHomeProps) {
         <div id={getBlockAnchorId(block)} className="scroll-mt-20" key={block.id}>
           {renderBlock(block, variant, articleNumbers, {
             priority: index === 0,
+            previewIssueNumber:
+              block.type === "preview"
+                ? (issueNumbers.get(block.previewIssue.id) ?? nextIssueNumber)
+                : undefined,
           })}
         </div>
       ))}
@@ -228,7 +243,12 @@ export function DossierHome({ issue }: DossierHomeProps) {
       ) : null}
       {trailingBlocks.map((block) => (
         <div id={getBlockAnchorId(block)} className="scroll-mt-20" key={block.id}>
-          {renderBlock(block, variant, articleNumbers)}
+          {renderBlock(block, variant, articleNumbers, {
+            previewIssueNumber:
+              block.type === "preview"
+                ? (issueNumbers.get(block.previewIssue.id) ?? nextIssueNumber)
+                : undefined,
+          })}
         </div>
       ))}
     </div>

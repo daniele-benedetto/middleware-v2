@@ -6,7 +6,7 @@ import { PreviewHomeBlock } from "@/components/public/sections/dossier/preview-h
 import type { PreviewHomeBlock as PreviewHomeBlockModel } from "@/components/public/home/home-view-model";
 
 describe("PreviewHomeBlock", () => {
-  it("uses the lead composition with a distinct dynamic issue signature", () => {
+  it("uses the target issue variant without exposing its title", () => {
     const block: PreviewHomeBlockModel = {
       id: "preview",
       type: "preview",
@@ -34,13 +34,18 @@ describe("PreviewHomeBlock", () => {
       },
     };
 
-    const html = renderToStaticMarkup(createElement(PreviewHomeBlock, { block }));
+    const html = renderToStaticMarkup(
+      createElement(PreviewHomeBlock, { block, issueNumber: "N. 02" }),
+    );
 
     expect(html).not.toContain("Numero in arrivo");
     expect(html).toContain("Apertura in anteprima");
+    expect(html).toContain("N. 02");
     expect(html).toContain("bg-accent text-background");
-    expect(html).toContain("md:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)]");
+    expect(html).toContain("relative isolate block overflow-hidden py-10 md:py-12");
+    expect(html).toContain("absolute -top-10 right-5 -z-10");
     expect(html).toContain("/articoli/articolo-in-arrivo");
     expect(html).not.toContain("Nel prossimo numero");
+    expect(html).toContain("Editoriale");
   });
 });

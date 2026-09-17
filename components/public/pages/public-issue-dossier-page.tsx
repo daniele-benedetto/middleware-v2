@@ -52,7 +52,7 @@ export function PublicIssueDossierPage({
               description={getIssuePlainDescription(issue)}
               issueNumber={getIssueOrderLabel(publishedIssues, issue, formatIssueNumber)}
             />
-            <DossierHome issue={issue} />
+            <DossierHome issue={issue} publishedIssues={publishedIssues} />
           </>
         ) : (
           <PublicSystemScreen

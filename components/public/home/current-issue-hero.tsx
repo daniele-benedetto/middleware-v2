@@ -35,6 +35,7 @@ export function CurrentIssueHero({ issue, description, issueNumber }: CurrentIss
       backgroundCode={issueNumber}
       description={description}
       meta={<IssueMetaRail issue={issue} />}
+      mobileActionSlotId="issue-table-of-contents-action"
     />
   );
 }

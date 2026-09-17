@@ -19,7 +19,7 @@ type IssueArchiveCardProps = {
   className?: string;
 };
 
-const archiveCoverVariantClasses: Record<
+export const archiveCoverVariantClasses: Record<
   IssueHomeVariant,
   {
     surface: string;

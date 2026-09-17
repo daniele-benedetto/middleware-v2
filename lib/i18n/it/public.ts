@@ -66,6 +66,8 @@ export const publicIt = {
       articlesLabel: "Materiali del numero",
       audioCountLabel,
       tableOfContentsLabel: "Indice del numero",
+      tableOfContentsOpen: "Apri indice del numero",
+      tableOfContentsClose: "Chiudi indice del numero",
       openingLabel: "Apertura",
       bodyLabel: "Materiali",
       ruptureLabel: "Interruzione",
@@ -73,7 +75,6 @@ export const publicIt = {
       courseLabel: "Contro-formazione",
       mapLabel: "Mappa",
       questionnaireAnalysisLabel: "Analisi",
-      previewLabel: "Anteprima",
       unpaginatedArticlesLabel: "Altri materiali",
     },
     sectionGrid: {
