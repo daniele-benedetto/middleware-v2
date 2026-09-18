@@ -250,6 +250,7 @@ export function IssueTableOfContentsMenu({
     const target = new URL(href, window.location.href);
     const current = new URL(window.location.href);
 
+    setSearchValue("");
     closeMenu(() => {
       if (target.origin !== current.origin) {
         window.location.assign(target.href);
