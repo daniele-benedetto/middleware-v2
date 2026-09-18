@@ -31,10 +31,12 @@ function menuTransitionDuration() {
 function MobileQuestionMenu({
   fields,
   activeIndex,
+  title,
   onSelect,
 }: {
   fields: AnalysisField[];
   activeIndex: number;
+  title: string;
   onSelect: (index: number) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -159,7 +161,10 @@ function MobileQuestionMenu({
               role="dialog"
               style={{ transitionDuration: `${menuTransitionDuration()}ms` }}
             >
-              <header className="flex min-h-16 items-center justify-end border-b-2 border-foreground px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-4 sm:px-6">
+              <header className="flex min-h-16 items-center justify-between gap-4 border-b-2 border-foreground px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-4 sm:px-6">
+                <h2 className="line-clamp-2 min-w-0 font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">
+                  {title}
+                </h2>
                 <button
                   type="button"
                   ref={closeButtonRef}
@@ -178,7 +183,7 @@ function MobileQuestionMenu({
                   <button
                     className={cn(
                       publicInteraction.cardSurface,
-                      "relative min-h-16 w-full border-b border-b-foreground border-l-4 border-l-transparent px-4 py-5 text-left last:border-b-0 focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px] sm:px-6",
+                      "relative min-h-16 w-full border-b border-b-foreground border-l border-l-transparent px-4 py-5 text-left last:border-b-0 focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px] sm:px-6",
                       index === activeIndex
                         ? "border-l-accent bg-surface-hover text-foreground"
                         : "bg-background text-foreground",
@@ -325,6 +330,7 @@ export function QuestionnaireAnalysisHomeBlock({
             <MobileQuestionMenu
               fields={analysis.fields}
               activeIndex={activeIndex}
+              title={analysis.title}
               onSelect={setActiveIndex}
             />
             <QuestionList

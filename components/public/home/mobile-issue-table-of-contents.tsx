@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartBar, GraduationCap, Map, Newspaper, ScrollText, X } from "lucide-react";
+import { ChartBar, GraduationCap, List, Map, Newspaper, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
@@ -128,9 +128,10 @@ export function MobileIssueTableOfContents({ items }: { items: IssueTableOfConte
       aria-expanded={visible}
       aria-label={i18n.public.home.dossier.tableOfContentsOpen}
       onClick={openMenu}
-      className="flex size-11 items-center justify-center text-foreground transition-colors duration-(--motion-fast) hover:text-accent focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
+      className="inline-flex min-h-11 items-center gap-2 px-2 font-ui text-[11px] font-bold tracking-[0.1em] text-foreground uppercase transition-colors duration-(--motion-fast) hover:text-accent focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
     >
-      <ScrollText size={24} strokeWidth={2.25} aria-hidden="true" />
+      <List size={18} strokeWidth={2.5} aria-hidden="true" />
+      <span>{i18n.public.home.dossier.tableOfContentsMenuTitle}</span>
     </button>
   );
 
@@ -150,7 +151,10 @@ export function MobileIssueTableOfContents({ items }: { items: IssueTableOfConte
               )}
               style={{ transitionDuration: `${getMotionDuration()}ms` }}
             >
-              <header className="flex min-h-16 items-center justify-end border-b-2 border-foreground px-4 sm:px-6">
+              <header className="flex min-h-16 items-center justify-between gap-4 border-b-2 border-foreground px-4 sm:px-6">
+                <h2 className="font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">
+                  {i18n.public.home.dossier.tableOfContentsMenuTitle}
+                </h2>
                 <button
                   ref={closeButtonRef}
                   type="button"

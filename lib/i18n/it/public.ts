@@ -66,6 +66,7 @@ export const publicIt = {
       articlesLabel: "Materiali del numero",
       audioCountLabel,
       tableOfContentsLabel: "Indice del numero",
+      tableOfContentsMenuTitle: "Indice",
       tableOfContentsOpen: "Apri indice del numero",
       tableOfContentsClose: "Chiudi indice del numero",
       openingLabel: "Apertura",
