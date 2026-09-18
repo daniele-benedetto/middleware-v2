@@ -14,6 +14,13 @@ export type IssueTableOfContentsItem = {
   icon?: "course" | "map" | "questionnaireAnalysis" | "preview";
 };
 
+export type IssueTableOfContentsIssue = {
+  id: string;
+  issueNumber: string;
+  slug: string;
+  title: string;
+};
+
 const blockIcons = {
   course: GraduationCap,
   map: Map,
@@ -21,7 +28,17 @@ const blockIcons = {
   preview: Newspaper,
 } as const;
 
-export function IssueTableOfContents({ items }: { items: IssueTableOfContentsItem[] }) {
+export function IssueTableOfContents({
+  items,
+  issueNumber,
+  issueTitle,
+  issues,
+}: {
+  items: IssueTableOfContentsItem[];
+  issueNumber: string;
+  issueTitle: string;
+  issues: IssueTableOfContentsIssue[];
+}) {
   if (items.length === 0) {
     return null;
   }
@@ -69,7 +86,12 @@ export function IssueTableOfContents({ items }: { items: IssueTableOfContentsIte
           </nav>
         </div>
       </section>
-      <IssueTableOfContentsMenu items={items} />
+      <IssueTableOfContentsMenu
+        items={items}
+        issueNumber={issueNumber}
+        issueTitle={issueTitle}
+        issues={issues}
+      />
     </>
   );
 }

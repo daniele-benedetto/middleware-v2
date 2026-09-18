@@ -21,7 +21,10 @@ import type {
   NarrativeHomeBlock,
   ResolvedHomeBlock,
 } from "@/components/public/home/home-view-model";
-import type { IssueTableOfContentsItem } from "@/components/public/home/issue-table-of-contents";
+import type {
+  IssueTableOfContentsIssue,
+  IssueTableOfContentsItem,
+} from "@/components/public/home/issue-table-of-contents";
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 import type { CSSProperties } from "react";
@@ -149,6 +152,15 @@ export function DossierHome({ issue, publishedIssues }: DossierHomeProps) {
   const variant = issue.homeVariant;
   const issueNumbers = buildIssueNumberMap(publishedIssues);
   const nextIssueNumber = formatIssueNumber(publishedIssues.length);
+  const currentIssueNumber = issueNumbers.get(issue.id) ?? nextIssueNumber;
+  const issueOptions: IssueTableOfContentsIssue[] = publishedIssues
+    .toSorted((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+    .map((publishedIssue) => ({
+      id: publishedIssue.id,
+      issueNumber: issueNumbers.get(publishedIssue.id) ?? nextIssueNumber,
+      slug: publishedIssue.slug,
+      title: publishedIssue.title,
+    }));
 
   if (blocks.length === 0) {
     const articles = sortUnpaginatedArticles(issue.articles);
@@ -158,6 +170,9 @@ export function DossierHome({ issue, publishedIssues }: DossierHomeProps) {
       <>
         <IssueTableOfContents
           items={articles.map((article) => getArticleIndexItem(article, articleNumbers))}
+          issueNumber={currentIssueNumber}
+          issueTitle={issue.title}
+          issues={issueOptions}
         />
         <div
           id="issue-unpaginated-articles"
@@ -221,7 +236,12 @@ export function DossierHome({ issue, publishedIssues }: DossierHomeProps) {
 
   return (
     <div className="bg-background">
-      <IssueTableOfContents items={tableOfContentsItems} />
+      <IssueTableOfContents
+        items={tableOfContentsItems}
+        issueNumber={currentIssueNumber}
+        issueTitle={issue.title}
+        issues={issueOptions}
+      />
       {leadingBlocks.map((block, index) => (
         <div
           id={getBlockAnchorId(block)}

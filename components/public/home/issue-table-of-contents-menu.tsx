@@ -10,7 +10,10 @@ import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 import { cn } from "@/lib/utils";
 
-import type { IssueTableOfContentsItem } from "@/components/public/home/issue-table-of-contents";
+import type {
+  IssueTableOfContentsIssue,
+  IssueTableOfContentsItem,
+} from "@/components/public/home/issue-table-of-contents";
 import type { MouseEvent as ReactMouseEvent } from "react";
 
 const blockIcons = {
@@ -26,13 +29,26 @@ function getMotionDuration() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 200;
 }
 
-export function IssueTableOfContentsMenu({ items }: { items: IssueTableOfContentsItem[] }) {
+export function IssueTableOfContentsMenu({
+  items,
+  issueNumber,
+  issueTitle,
+  issues,
+}: {
+  items: IssueTableOfContentsItem[];
+  issueNumber: string;
+  issueTitle: string;
+  issues: IssueTableOfContentsIssue[];
+}) {
+  const [activeMenu, setActiveMenu] = useState<"issues" | "tableOfContents" | null>(null);
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const [desktopTabMounted, setDesktopTabMounted] = useState(false);
   const [desktopTabVisible, setDesktopTabVisible] = useState(false);
   const [mobileTabDocked, setMobileTabDocked] = useState(false);
-  const menuId = useId();
+  const issuesMenuId = useId();
+  const tableOfContentsMenuId = useId();
+  const menuId = activeMenu === "issues" ? issuesMenuId : tableOfContentsMenuId;
   const mobileTabSentinelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -166,13 +182,19 @@ export function IssueTableOfContentsMenu({ items }: { items: IssueTableOfContent
     setDesktopTabVisible(false);
   }
 
-  function openMenu(event: ReactMouseEvent<HTMLButtonElement>) {
+  function openMenu(event: ReactMouseEvent<HTMLButtonElement>, menu: "issues" | "tableOfContents") {
     if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
     triggerRef.current = event.currentTarget;
-    trackPublicAnalyticsEvent(publicAnalyticsEvents.issueTableOfContentsOpen, {
-      item_count: items.length,
-      source: window.matchMedia("(min-width: 768px)").matches ? "desktop_sticky" : "mobile_sticky",
-    });
+    const source = window.matchMedia("(min-width: 768px)").matches
+      ? "desktop_sticky"
+      : "mobile_sticky";
+    trackPublicAnalyticsEvent(
+      menu === "issues"
+        ? publicAnalyticsEvents.issueSwitcherOpen
+        : publicAnalyticsEvents.issueTableOfContentsOpen,
+      { item_count: menu === "issues" ? issues.length : items.length, source },
+    );
+    setActiveMenu(menu);
     setVisible(true);
     window.requestAnimationFrame(() => setOpen(true));
   }
@@ -182,6 +204,7 @@ export function IssueTableOfContentsMenu({ items }: { items: IssueTableOfContent
     setOpen(false);
     closeTimerRef.current = window.setTimeout(() => {
       setVisible(false);
+      setActiveMenu(null);
       onClosed?.();
       window.requestAnimationFrame(() => triggerRef.current?.focus());
     }, getMotionDuration());
@@ -196,14 +219,14 @@ export function IssueTableOfContentsMenu({ items }: { items: IssueTableOfContent
     });
   }
 
-  function renderTrigger(tabIndex?: number) {
+  function renderTableOfContentsTrigger(tabIndex?: number) {
     return (
       <button
         type="button"
         aria-controls={menuId}
         aria-expanded={visible}
         aria-label={i18n.public.home.dossier.tableOfContentsOpen}
-        onClick={openMenu}
+        onClick={(event) => openMenu(event, "tableOfContents")}
         tabIndex={tabIndex}
         className="inline-flex min-h-10 cursor-pointer items-center gap-2 px-2 font-ui text-[11px] font-bold tracking-[0.1em] text-foreground uppercase decoration-1 underline-offset-4 transition-colors duration-(--motion-fast) hover:text-accent hover:underline focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
       >
@@ -212,6 +235,26 @@ export function IssueTableOfContentsMenu({ items }: { items: IssueTableOfContent
       </button>
     );
   }
+
+  function renderIssuesTrigger(tabIndex?: number) {
+    return (
+      <button
+        type="button"
+        aria-controls={issuesMenuId}
+        aria-expanded={visible && activeMenu === "issues"}
+        aria-label={i18n.public.home.dossier.issueSwitcherOpen}
+        onClick={(event) => openMenu(event, "issues")}
+        tabIndex={tabIndex}
+        className="inline-flex min-h-10 min-w-0 max-w-[calc(100%-5.5rem)] cursor-pointer items-center gap-1 px-2 font-ui text-[11px] font-bold tracking-[0.1em] text-foreground uppercase decoration-1 underline-offset-4 transition-colors duration-(--motion-fast) hover:text-accent hover:underline focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
+      >
+        <span className="shrink-0 tabular-nums">{issueNumber}</span>
+        <span aria-hidden="true">-</span>
+        <span className="truncate">{issueTitle}</span>
+      </button>
+    );
+  }
+
+  const isIssuesMenu = activeMenu === "issues";
 
   return (
     <>
@@ -222,8 +265,9 @@ export function IssueTableOfContentsMenu({ items }: { items: IssueTableOfContent
           mobileTabDocked && "border-t-transparent",
         )}
       >
-        <div className={`${publicContentClassName} flex h-10 items-center justify-end`}>
-          {renderTrigger()}
+        <div className={`${publicContentClassName} flex h-10 items-center justify-between`}>
+          {renderIssuesTrigger()}
+          {renderTableOfContentsTrigger()}
         </div>
       </div>
       {desktopTabMounted ? (
@@ -240,8 +284,9 @@ export function IssueTableOfContentsMenu({ items }: { items: IssueTableOfContent
             }
           }}
         >
-          <div className={`${publicContentClassName} flex h-full items-center justify-end`}>
-            {renderTrigger(desktopTabVisible ? undefined : -1)}
+          <div className={`${publicContentClassName} flex h-full items-center justify-between`}>
+            {renderIssuesTrigger(desktopTabVisible ? undefined : -1)}
+            {renderTableOfContentsTrigger(desktopTabVisible ? undefined : -1)}
           </div>
         </div>
       ) : null}
@@ -258,23 +303,36 @@ export function IssueTableOfContentsMenu({ items }: { items: IssueTableOfContent
                 id={menuId}
                 role="dialog"
                 aria-modal="true"
-                aria-label={i18n.public.home.dossier.tableOfContentsLabel}
+                aria-label={
+                  isIssuesMenu
+                    ? i18n.public.home.dossier.issueSwitcherTitle
+                    : i18n.public.home.dossier.tableOfContentsLabel
+                }
                 className={cn(
-                  "absolute inset-y-0 right-0 flex w-full flex-col border-l border-foreground bg-background text-foreground transition-transform ease-out md:w-[min(32rem,42vw)]",
-                  open ? "translate-x-0" : "translate-x-full",
+                  "absolute inset-y-0 flex w-full flex-col bg-background text-foreground transition-transform ease-out md:w-[min(32rem,42vw)]",
+                  isIssuesMenu
+                    ? "left-0 border-r border-foreground"
+                    : "right-0 border-l border-foreground",
+                  open ? "translate-x-0" : isIssuesMenu ? "-translate-x-full" : "translate-x-full",
                 )}
                 style={{ transitionDuration: `${getMotionDuration()}ms` }}
                 onClick={(event) => event.stopPropagation()}
               >
                 <header className="flex min-h-16 items-center justify-between gap-4 border-b-2 border-foreground px-4 sm:px-6 md:px-8">
                   <h2 className="font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">
-                    {i18n.public.home.dossier.tableOfContentsMenuTitle}
+                    {isIssuesMenu
+                      ? i18n.public.home.dossier.issueSwitcherTitle
+                      : i18n.public.home.dossier.tableOfContentsMenuTitle}
                   </h2>
                   <button
                     ref={closeButtonRef}
                     type="button"
                     onClick={() => closeMenu()}
-                    aria-label={i18n.public.home.dossier.tableOfContentsClose}
+                    aria-label={
+                      isIssuesMenu
+                        ? i18n.public.home.dossier.issueSwitcherClose
+                        : i18n.public.home.dossier.tableOfContentsClose
+                    }
                     className="flex size-11 cursor-pointer items-center justify-center focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
                   >
                     <X size={24} strokeWidth={2.5} aria-hidden="true" />
@@ -282,38 +340,72 @@ export function IssueTableOfContentsMenu({ items }: { items: IssueTableOfContent
                 </header>
                 <nav
                   className="flex-1 overflow-y-auto"
-                  aria-label={i18n.public.home.dossier.tableOfContentsLabel}
+                  aria-label={
+                    isIssuesMenu
+                      ? i18n.public.home.dossier.issueSwitcherTitle
+                      : i18n.public.home.dossier.tableOfContentsLabel
+                  }
                 >
                   <ol>
-                    {items.map((item) => {
-                      const Icon = item.icon ? blockIcons[item.icon] : null;
+                    {isIssuesMenu
+                      ? issues.map((issue) => {
+                          const current = issue.issueNumber === issueNumber;
 
-                      return (
-                        <li key={item.id} className="border-b border-foreground last:border-b-0">
-                          <button
-                            type="button"
-                            onClick={() => navigateTo(item.id)}
-                            className="flex min-h-18 w-full cursor-pointer items-center gap-4 px-4 py-4 text-left transition-colors duration-(--motion-fast) hover:bg-surface-hover focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px] sm:px-6 md:px-8"
-                          >
-                            {item.number ? (
-                              <span className="shrink-0 font-heading text-[15px] leading-none font-black tracking-[-0.02em] text-accent tabular-nums">
-                                {formatArticleNumber(item.number)}
-                              </span>
-                            ) : Icon ? (
-                              <span
-                                className="flex size-5 shrink-0 items-center justify-center text-accent"
-                                aria-hidden="true"
+                          return (
+                            <li
+                              key={issue.id}
+                              className="border-b border-foreground last:border-b-0"
+                            >
+                              <a
+                                href={`/uscite/${issue.slug}`}
+                                aria-current={current ? "page" : undefined}
+                                className={cn(
+                                  "flex min-h-18 w-full cursor-pointer items-center gap-4 px-4 py-4 text-left transition-colors duration-(--motion-fast) hover:bg-surface-hover focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px] sm:px-6 md:px-8",
+                                  current && "bg-surface-hover",
+                                )}
                               >
-                                <Icon size={18} strokeWidth={2.5} />
-                              </span>
-                            ) : null}
-                            <span className="font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">
-                              {item.label}
-                            </span>
-                          </button>
-                        </li>
-                      );
-                    })}
+                                <span className="shrink-0 font-heading text-[15px] leading-none font-black tracking-[-0.02em] text-accent tabular-nums">
+                                  {issue.issueNumber}
+                                </span>
+                                <span className="font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">
+                                  {issue.title}
+                                </span>
+                              </a>
+                            </li>
+                          );
+                        })
+                      : items.map((item) => {
+                          const Icon = item.icon ? blockIcons[item.icon] : null;
+
+                          return (
+                            <li
+                              key={item.id}
+                              className="border-b border-foreground last:border-b-0"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => navigateTo(item.id)}
+                                className="flex min-h-18 w-full cursor-pointer items-center gap-4 px-4 py-4 text-left transition-colors duration-(--motion-fast) hover:bg-surface-hover focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px] sm:px-6 md:px-8"
+                              >
+                                {item.number ? (
+                                  <span className="shrink-0 font-heading text-[15px] leading-none font-black tracking-[-0.02em] text-accent tabular-nums">
+                                    {formatArticleNumber(item.number)}
+                                  </span>
+                                ) : Icon ? (
+                                  <span
+                                    className="flex size-5 shrink-0 items-center justify-center text-accent"
+                                    aria-hidden="true"
+                                  >
+                                    <Icon size={18} strokeWidth={2.5} />
+                                  </span>
+                                ) : null}
+                                <span className="font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">
+                                  {item.label}
+                                </span>
+                              </button>
+                            </li>
+                          );
+                        })}
                   </ol>
                 </nav>
               </div>
