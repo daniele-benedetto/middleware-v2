@@ -11,7 +11,7 @@ export function MapHomeBlock({ block }: { block: MapHomeBlockData }) {
   const variant = courseVariantClasses[block.map.homeVariant];
 
   return (
-    <section className="scroll-mt-20 py-10 md:py-12">
+    <section className="scroll-mt-28 py-10 md:py-12">
       <div className="w-full md:mx-auto md:max-w-384 md:px-12">
         <div
           className={`grid overflow-hidden ${variant.surface} md:border md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] ${variant.border}`}

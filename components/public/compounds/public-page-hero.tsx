@@ -22,7 +22,6 @@ type PublicPageHeroProps = {
   titleClassName?: string;
   descriptionClassName?: string;
   backgroundCodeClassName?: string;
-  mobileActionSlotId?: string;
 };
 
 export function PublicPageHero({
@@ -40,7 +39,6 @@ export function PublicPageHero({
   titleClassName = "text-foreground",
   descriptionClassName = "text-body-text",
   backgroundCodeClassName,
-  mobileActionSlotId,
 }: PublicPageHeroProps) {
   const hasBrandBackground = backgroundCode === "MW";
 
@@ -134,34 +132,19 @@ export function PublicPageHero({
           </div>
         ) : null}
       </div>
-      {mobileActionSlotId ? (
-        <div id={mobileActionSlotId} className="absolute right-4 -bottom-8 z-20 md:hidden" />
-      ) : null}
     </div>
   );
 
   if (as === "header") {
     return (
-      <header
-        className={cn(
-          "relative isolate w-full",
-          mobileActionSlotId ? "overflow-visible" : "overflow-hidden",
-          surfaceClassName,
-        )}
-      >
+      <header className={cn("relative isolate w-full", "overflow-hidden", surfaceClassName)}>
         {content}
       </header>
     );
   }
 
   return (
-    <section
-      className={cn(
-        "relative isolate w-full",
-        mobileActionSlotId ? "overflow-visible" : "overflow-hidden",
-        surfaceClassName,
-      )}
-    >
+    <section className={cn("relative isolate w-full", "overflow-hidden", surfaceClassName)}>
       {content}
     </section>
   );

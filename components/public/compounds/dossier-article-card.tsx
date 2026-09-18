@@ -68,7 +68,7 @@ export function DossierArticleCard({
       id={id}
       className={cn(
         publicInteraction.cardSurface,
-        "flex h-full scroll-mt-20 overflow-hidden border-foreground bg-background",
+        "flex h-full scroll-mt-28 overflow-hidden border-foreground bg-background",
         "flex-col border-b px-0 py-5 last:border-b-0 md:border-r md:border-b md:px-7 md:py-7 md:last:border-b",
         className,
       )}

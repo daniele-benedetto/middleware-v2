@@ -40,7 +40,7 @@ export function LeadBlock({ block, variant, articleNumbers, priority = false }: 
   return (
     <section
       id={`issue-article-${article.id}`}
-      className={`scroll-mt-20 my-10 md:my-12 ${variantClasses.section}`}
+      className={`scroll-mt-28 my-10 md:my-12 ${variantClasses.section}`}
     >
       <div className={`${publicContentClassName} py-10 md:py-12`}>
         <TrackedPublicLink

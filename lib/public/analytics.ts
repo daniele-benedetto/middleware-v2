@@ -12,6 +12,7 @@ export const publicAnalyticsEvents = {
   articleAudioPlay: "article_audio_play",
   mediaDownloadClick: "media_download_click",
   issueArchiveOpen: "issue_archive_open",
+  issueTableOfContentsOpen: "issue_table_of_contents_open",
 } as const;
 
 export type PublicAnalyticsEventName =

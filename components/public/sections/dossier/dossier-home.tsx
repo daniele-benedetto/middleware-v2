@@ -161,7 +161,7 @@ export function DossierHome({ issue, publishedIssues }: DossierHomeProps) {
         />
         <div
           id="issue-unpaginated-articles"
-          className="scroll-mt-20"
+          className="scroll-mt-28 max-md:-mt-5"
           data-page-reveal="body"
           style={{ "--page-reveal-delay": "660ms" } as CSSProperties}
         >
@@ -223,7 +223,11 @@ export function DossierHome({ issue, publishedIssues }: DossierHomeProps) {
     <div className="bg-background">
       <IssueTableOfContents items={tableOfContentsItems} />
       {leadingBlocks.map((block, index) => (
-        <div id={getBlockAnchorId(block)} className="scroll-mt-20" key={block.id}>
+        <div
+          id={getBlockAnchorId(block)}
+          className={index === 0 ? "scroll-mt-28 max-md:-mt-5" : "scroll-mt-28"}
+          key={block.id}
+        >
           {renderBlock(block, variant, articleNumbers, {
             priority: index === 0,
             previewIssueNumber:
@@ -234,7 +238,7 @@ export function DossierHome({ issue, publishedIssues }: DossierHomeProps) {
         </div>
       ))}
       {unpaginatedArticles.length > 0 ? (
-        <div id="issue-unpaginated-articles" className="scroll-mt-20">
+        <div id="issue-unpaginated-articles" className="scroll-mt-28">
           <UnpaginatedArticleRow
             articles={unpaginatedArticles}
             startNumber={unpaginatedStartNumber}
@@ -242,7 +246,7 @@ export function DossierHome({ issue, publishedIssues }: DossierHomeProps) {
         </div>
       ) : null}
       {trailingBlocks.map((block) => (
-        <div id={getBlockAnchorId(block)} className="scroll-mt-20" key={block.id}>
+        <div id={getBlockAnchorId(block)} className="scroll-mt-28" key={block.id}>
           {renderBlock(block, variant, articleNumbers, {
             previewIssueNumber:
               block.type === "preview"

@@ -1,6 +1,6 @@
 import { ChartBar, GraduationCap, Map, Newspaper } from "lucide-react";
 
-import { MobileIssueTableOfContents } from "@/components/public/home/mobile-issue-table-of-contents";
+import { IssueTableOfContentsMenu } from "@/components/public/home/issue-table-of-contents-menu";
 import { publicContentClassName } from "@/components/public/primitives";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { i18n } from "@/lib/i18n";
@@ -28,7 +28,6 @@ export function IssueTableOfContents({ items }: { items: IssueTableOfContentsIte
 
   return (
     <>
-      <MobileIssueTableOfContents items={items} />
       <section id="indice" className="hidden scroll-mt-20 md:block">
         <div className={publicContentClassName}>
           <nav aria-label={i18n.public.home.dossier.tableOfContentsLabel}>
@@ -70,6 +69,7 @@ export function IssueTableOfContents({ items }: { items: IssueTableOfContentsIte
           </nav>
         </div>
       </section>
+      <IssueTableOfContentsMenu items={items} />
     </>
   );
 }

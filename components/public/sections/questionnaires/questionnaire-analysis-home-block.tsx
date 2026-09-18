@@ -301,7 +301,7 @@ export function QuestionnaireAnalysisHomeBlock({
   if (!activeField) return null;
 
   return (
-    <section className="scroll-mt-20 py-10 md:py-12">
+    <section className="scroll-mt-28 py-10 md:py-12">
       <div className="w-full md:mx-auto md:max-w-384 md:px-12">
         <div className="overflow-hidden border-y border-foreground md:border">
           <header

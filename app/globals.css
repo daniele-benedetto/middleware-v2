@@ -254,6 +254,38 @@
   }
 }
 
+@keyframes issue-table-of-contents-tab-in {
+  from {
+    transform: translateY(-100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+.issue-table-of-contents-desktop-tab[data-visible="true"] {
+  animation: issue-table-of-contents-tab-in var(--motion-slow) var(--easing-standard) both;
+}
+
+.issue-table-of-contents-desktop-tab {
+  transform: translateY(-100%);
+}
+
+@keyframes issue-table-of-contents-tab-out {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+.issue-table-of-contents-desktop-tab[data-visible="false"] {
+  animation: issue-table-of-contents-tab-out var(--motion-base) var(--easing-standard) both;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
