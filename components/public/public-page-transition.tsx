@@ -96,7 +96,11 @@ export function PublicPageTransition({ children }: PublicPageTransitionProps) {
 
       const target = document.getElementById(decodeURIComponent(hash));
       if (target) {
-        target.scrollIntoView({ block: "start", behavior: "auto" });
+        const scrollMarginTop = Number.parseFloat(window.getComputedStyle(target).scrollMarginTop);
+        window.scrollTo({
+          top: Math.max(0, window.scrollY + target.getBoundingClientRect().top - scrollMarginTop),
+          behavior: "instant",
+        });
         return;
       }
 
