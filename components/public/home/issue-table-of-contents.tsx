@@ -33,19 +33,20 @@ export function IssueTableOfContents({
   issueNumber,
   issueTitle,
   issues,
+  showMenu = true,
 }: {
   items: IssueTableOfContentsItem[];
   issueNumber: string;
   issueTitle: string;
   issues: IssueTableOfContentsIssue[];
+  showMenu?: boolean;
 }) {
-  if (items.length === 0) {
-    return null;
-  }
-
   return (
     <>
-      <section id="indice" className="hidden scroll-mt-20 md:block">
+      <section
+        id="indice"
+        className="hidden scroll-mt-[var(--public-issue-chrome-height)] md:block"
+      >
         <div className={publicContentClassName}>
           <nav aria-label={i18n.public.home.dossier.tableOfContentsLabel}>
             <ol className="grid md:grid-cols-2 md:gap-x-12 lg:grid-cols-3">
@@ -86,12 +87,14 @@ export function IssueTableOfContents({
           </nav>
         </div>
       </section>
-      <IssueTableOfContentsMenu
-        items={items}
-        issueNumber={issueNumber}
-        issueTitle={issueTitle}
-        issues={issues}
-      />
+      {showMenu ? (
+        <IssueTableOfContentsMenu
+          items={items}
+          issueNumber={issueNumber}
+          issueTitle={issueTitle}
+          issues={issues}
+        />
+      ) : null}
     </>
   );
 }

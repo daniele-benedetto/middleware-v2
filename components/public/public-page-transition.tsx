@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, ViewTransition, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, ViewTransition, type ReactNode } from "react";
 
 type PublicPageTransitionProps = {
   children: ReactNode;
@@ -84,7 +85,42 @@ function handlePageUpdate() {
 // route's loading.tsx fallback immediately, instead of freezing on the old page
 // until data is ready. That gives click -> fade out -> loading -> fade in.
 export function PublicPageTransition({ children }: PublicPageTransitionProps) {
+  const pathname = usePathname();
+  const hashScrollFrameRef = useRef<number | null>(null);
+
   useEffect(() => clearCursorTransitioning, []);
+
+  useEffect(() => {
+    const scrollToHash = (attempt = 0) => {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return;
+
+      const target = document.getElementById(decodeURIComponent(hash));
+      if (target) {
+        target.scrollIntoView({ block: "start", behavior: "auto" });
+        return;
+      }
+
+      if (attempt < 60) {
+        hashScrollFrameRef.current = window.requestAnimationFrame(() => scrollToHash(attempt + 1));
+      }
+    };
+
+    const handleHashChange = () => scrollToHash();
+
+    // PPR can commit the route before the fragment target is in the DOM.
+    // Retrying after the commit preserves normal hash-link behavior.
+    hashScrollFrameRef.current = window.requestAnimationFrame(() => scrollToHash());
+    window.addEventListener("hashchange", handleHashChange);
+
+    return () => {
+      if (hashScrollFrameRef.current) {
+        window.cancelAnimationFrame(hashScrollFrameRef.current);
+        hashScrollFrameRef.current = null;
+      }
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, [pathname]);
 
   return (
     <ViewTransition update="page-transition" default="none" onUpdate={handlePageUpdate}>

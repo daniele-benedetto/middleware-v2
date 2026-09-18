@@ -46,14 +46,17 @@ export function PublicIssueDossierPage({
       {jsonLd}
       <div className="flex flex-col">
         {issue ? (
-          <>
-            <CurrentIssueHero
-              issue={issue}
-              description={getIssuePlainDescription(issue)}
-              issueNumber={getIssueOrderLabel(publishedIssues, issue, formatIssueNumber)}
-            />
-            <DossierHome issue={issue} publishedIssues={publishedIssues} />
-          </>
+          <DossierHome
+            hero={
+              <CurrentIssueHero
+                issue={issue}
+                description={getIssuePlainDescription(issue)}
+                issueNumber={getIssueOrderLabel(publishedIssues, issue, formatIssueNumber)}
+              />
+            }
+            issue={issue}
+            publishedIssues={publishedIssues}
+          />
         ) : (
           <PublicSystemScreen
             code={empty.code}

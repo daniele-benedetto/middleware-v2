@@ -1,7 +1,9 @@
 import { IssueTableOfContents } from "@/components/public/home/issue-table-of-contents";
+import { IssueTableOfContentsMenu } from "@/components/public/home/issue-table-of-contents-menu";
 import { resolveIssueHomeBlocks } from "@/components/public/home/resolve-issue-home-blocks";
 import { BodyBlock } from "@/components/public/sections/dossier/body-block";
 import { ClosingBlock } from "@/components/public/sections/dossier/closing-block";
+import { DossierContentReveal } from "@/components/public/sections/dossier/dossier-content-reveal";
 import {
   getUnpaginatedArticles,
   sortUnpaginatedArticles,
@@ -27,9 +29,10 @@ import type {
 } from "@/components/public/home/issue-table-of-contents";
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
-import type { CSSProperties } from "react";
+import type { ReactNode } from "react";
 
 type DossierHomeProps = {
+  hero?: ReactNode;
   issue: PublicCurrentIssueDetail;
   publishedIssues: PublicIssueListItem[];
 };
@@ -147,7 +150,7 @@ function renderBlock(
   }
 }
 
-export function DossierHome({ issue, publishedIssues }: DossierHomeProps) {
+export function DossierHome({ hero, issue, publishedIssues }: DossierHomeProps) {
   const blocks = resolveIssueHomeBlocks(issue);
   const variant = issue.homeVariant;
   const issueNumbers = buildIssueNumberMap(publishedIssues);
@@ -168,20 +171,30 @@ export function DossierHome({ issue, publishedIssues }: DossierHomeProps) {
 
     return (
       <>
-        <IssueTableOfContents
+        <IssueTableOfContentsMenu
           items={articles.map((article) => getArticleIndexItem(article, articleNumbers))}
           issueNumber={currentIssueNumber}
           issueTitle={issue.title}
           issues={issueOptions}
         />
-        <div
-          id="issue-unpaginated-articles"
-          className="scroll-mt-28 max-md:-mt-5"
-          data-page-reveal="body"
-          style={{ "--page-reveal-delay": "660ms" } as CSSProperties}
-        >
-          <UnpaginatedArticleRow articles={issue.articles} />
-        </div>
+        {hero}
+        <DossierContentReveal>
+          <div>
+            <IssueTableOfContents
+              items={articles.map((article) => getArticleIndexItem(article, articleNumbers))}
+              issueNumber={currentIssueNumber}
+              issueTitle={issue.title}
+              issues={issueOptions}
+              showMenu={false}
+            />
+            <div
+              id="issue-unpaginated-articles"
+              className="scroll-mt-[var(--public-issue-chrome-height)]"
+            >
+              <UnpaginatedArticleRow articles={issue.articles} />
+            </div>
+          </div>
+        </DossierContentReveal>
       </>
     );
   }
@@ -236,45 +249,64 @@ export function DossierHome({ issue, publishedIssues }: DossierHomeProps) {
 
   return (
     <div className="bg-background">
-      <IssueTableOfContents
+      <IssueTableOfContentsMenu
         items={tableOfContentsItems}
         issueNumber={currentIssueNumber}
         issueTitle={issue.title}
         issues={issueOptions}
       />
-      {leadingBlocks.map((block, index) => (
-        <div
-          id={getBlockAnchorId(block)}
-          className={index === 0 ? "scroll-mt-28 max-md:-mt-5" : "scroll-mt-28"}
-          key={block.id}
-        >
-          {renderBlock(block, variant, articleNumbers, {
-            priority: index === 0,
-            previewIssueNumber:
-              block.type === "preview"
-                ? (issueNumbers.get(block.previewIssue.id) ?? nextIssueNumber)
-                : undefined,
-          })}
-        </div>
-      ))}
-      {unpaginatedArticles.length > 0 ? (
-        <div id="issue-unpaginated-articles" className="scroll-mt-28">
-          <UnpaginatedArticleRow
-            articles={unpaginatedArticles}
-            startNumber={unpaginatedStartNumber}
+      {hero}
+      <DossierContentReveal>
+        <div>
+          <IssueTableOfContents
+            items={tableOfContentsItems}
+            issueNumber={currentIssueNumber}
+            issueTitle={issue.title}
+            issues={issueOptions}
+            showMenu={false}
           />
+          {leadingBlocks.map((block, index) => (
+            <div
+              id={getBlockAnchorId(block)}
+              className="scroll-mt-[var(--public-issue-chrome-height)]"
+              key={block.id}
+            >
+              {renderBlock(block, variant, articleNumbers, {
+                priority: index === 0,
+                previewIssueNumber:
+                  block.type === "preview"
+                    ? (issueNumbers.get(block.previewIssue.id) ?? nextIssueNumber)
+                    : undefined,
+              })}
+            </div>
+          ))}
+          {unpaginatedArticles.length > 0 ? (
+            <div
+              id="issue-unpaginated-articles"
+              className="scroll-mt-[var(--public-issue-chrome-height)]"
+            >
+              <UnpaginatedArticleRow
+                articles={unpaginatedArticles}
+                startNumber={unpaginatedStartNumber}
+              />
+            </div>
+          ) : null}
+          {trailingBlocks.map((block) => (
+            <div
+              id={getBlockAnchorId(block)}
+              className="scroll-mt-[var(--public-issue-chrome-height)]"
+              key={block.id}
+            >
+              {renderBlock(block, variant, articleNumbers, {
+                previewIssueNumber:
+                  block.type === "preview"
+                    ? (issueNumbers.get(block.previewIssue.id) ?? nextIssueNumber)
+                    : undefined,
+              })}
+            </div>
+          ))}
         </div>
-      ) : null}
-      {trailingBlocks.map((block) => (
-        <div id={getBlockAnchorId(block)} className="scroll-mt-28" key={block.id}>
-          {renderBlock(block, variant, articleNumbers, {
-            previewIssueNumber:
-              block.type === "preview"
-                ? (issueNumbers.get(block.previewIssue.id) ?? nextIssueNumber)
-                : undefined,
-          })}
-        </div>
-      ))}
+      </DossierContentReveal>
     </div>
   );
 }

@@ -5,6 +5,10 @@ import { DossierHome } from "@/components/public/sections/dossier/dossier-home";
 
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 const openingArticle = {
   id: "00000000-0000-4000-8000-000000000001",
   slug: "opening",

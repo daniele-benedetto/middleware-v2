@@ -66,6 +66,7 @@ export const ModelName = {
   Page: 'Page',
   Questionnaire: 'Questionnaire',
   QuestionnaireResponse: 'QuestionnaireResponse',
+  GlobalSearchDocument: 'GlobalSearchDocument',
   NavigationMenu: 'NavigationMenu',
   AuditLog: 'AuditLog'
 } as const
@@ -330,6 +331,21 @@ export const QuestionnaireResponseScalarFieldEnum = {
 } as const
 
 export type QuestionnaireResponseScalarFieldEnum = (typeof QuestionnaireResponseScalarFieldEnum)[keyof typeof QuestionnaireResponseScalarFieldEnum]
+
+
+export const GlobalSearchDocumentScalarFieldEnum = {
+  id: 'id',
+  sourceType: 'sourceType',
+  sourceId: 'sourceId',
+  title: 'title',
+  body: 'body',
+  href: 'href',
+  publishedAt: 'publishedAt',
+  sourceFingerprint: 'sourceFingerprint',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GlobalSearchDocumentScalarFieldEnum = (typeof GlobalSearchDocumentScalarFieldEnum)[keyof typeof GlobalSearchDocumentScalarFieldEnum]
 
 
 export const NavigationMenuScalarFieldEnum = {

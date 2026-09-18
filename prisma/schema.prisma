@@ -336,6 +336,21 @@ model QuestionnaireResponse {
   @@map("questionnaire_responses")
 }
 
+model GlobalSearchDocument {
+  id                String    @id
+  sourceType        String
+  sourceId          String
+  title             String
+  body              String    @default("")
+  href              String
+  publishedAt       DateTime?
+  sourceFingerprint String
+  updatedAt         DateTime  @updatedAt
+
+  @@index([sourceType, sourceId])
+  @@map("global_search_documents")
+}
+
 model NavigationMenu {
   id        String   @id @default(uuid())
   key       String   @unique

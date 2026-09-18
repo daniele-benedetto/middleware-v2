@@ -14,6 +14,7 @@ export const publicAnalyticsEvents = {
   issueArchiveOpen: "issue_archive_open",
   issueTableOfContentsOpen: "issue_table_of_contents_open",
   issueSwitcherOpen: "issue_switcher_open",
+  searchOpen: "search_open",
 } as const;
 
 export type PublicAnalyticsEventName =

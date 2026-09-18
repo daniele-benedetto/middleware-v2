@@ -399,6 +399,7 @@ export const ModelName = {
   Page: 'Page',
   Questionnaire: 'Questionnaire',
   QuestionnaireResponse: 'QuestionnaireResponse',
+  GlobalSearchDocument: 'GlobalSearchDocument',
   NavigationMenu: 'NavigationMenu',
   AuditLog: 'AuditLog'
 } as const
@@ -416,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "article" | "course" | "lesson" | "map" | "mapItem" | "page" | "questionnaire" | "questionnaireResponse" | "navigationMenu" | "auditLog"
+    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "article" | "course" | "lesson" | "map" | "mapItem" | "page" | "questionnaire" | "questionnaireResponse" | "globalSearchDocument" | "navigationMenu" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1530,6 +1531,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    GlobalSearchDocument: {
+      payload: Prisma.$GlobalSearchDocumentPayload<ExtArgs>
+      fields: Prisma.GlobalSearchDocumentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GlobalSearchDocumentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSearchDocumentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GlobalSearchDocumentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSearchDocumentPayload>
+        }
+        findFirst: {
+          args: Prisma.GlobalSearchDocumentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSearchDocumentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GlobalSearchDocumentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSearchDocumentPayload>
+        }
+        findMany: {
+          args: Prisma.GlobalSearchDocumentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSearchDocumentPayload>[]
+        }
+        create: {
+          args: Prisma.GlobalSearchDocumentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSearchDocumentPayload>
+        }
+        createMany: {
+          args: Prisma.GlobalSearchDocumentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GlobalSearchDocumentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSearchDocumentPayload>[]
+        }
+        delete: {
+          args: Prisma.GlobalSearchDocumentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSearchDocumentPayload>
+        }
+        update: {
+          args: Prisma.GlobalSearchDocumentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSearchDocumentPayload>
+        }
+        deleteMany: {
+          args: Prisma.GlobalSearchDocumentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GlobalSearchDocumentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GlobalSearchDocumentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSearchDocumentPayload>[]
+        }
+        upsert: {
+          args: Prisma.GlobalSearchDocumentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSearchDocumentPayload>
+        }
+        aggregate: {
+          args: Prisma.GlobalSearchDocumentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGlobalSearchDocument>
+        }
+        groupBy: {
+          args: Prisma.GlobalSearchDocumentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GlobalSearchDocumentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GlobalSearchDocumentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GlobalSearchDocumentCountAggregateOutputType> | number
+        }
+      }
+    }
     NavigationMenu: {
       payload: Prisma.$NavigationMenuPayload<ExtArgs>
       fields: Prisma.NavigationMenuFieldRefs
@@ -1963,6 +2038,21 @@ export const QuestionnaireResponseScalarFieldEnum = {
 export type QuestionnaireResponseScalarFieldEnum = (typeof QuestionnaireResponseScalarFieldEnum)[keyof typeof QuestionnaireResponseScalarFieldEnum]
 
 
+export const GlobalSearchDocumentScalarFieldEnum = {
+  id: 'id',
+  sourceType: 'sourceType',
+  sourceId: 'sourceId',
+  title: 'title',
+  body: 'body',
+  href: 'href',
+  publishedAt: 'publishedAt',
+  sourceFingerprint: 'sourceFingerprint',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GlobalSearchDocumentScalarFieldEnum = (typeof GlobalSearchDocumentScalarFieldEnum)[keyof typeof GlobalSearchDocumentScalarFieldEnum]
+
+
 export const NavigationMenuScalarFieldEnum = {
   id: 'id',
   key: 'key',
@@ -2351,6 +2441,7 @@ export type GlobalOmitConfig = {
   page?: Prisma.PageOmit
   questionnaire?: Prisma.QuestionnaireOmit
   questionnaireResponse?: Prisma.QuestionnaireResponseOmit
+  globalSearchDocument?: Prisma.GlobalSearchDocumentOmit
   navigationMenu?: Prisma.NavigationMenuOmit
   auditLog?: Prisma.AuditLogOmit
 }

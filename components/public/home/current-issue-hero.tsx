@@ -35,7 +35,6 @@ export function CurrentIssueHero({ issue, description, issueNumber }: CurrentIss
       backgroundCode={issueNumber}
       description={description}
       meta={<IssueMetaRail issue={issue} />}
-      containerClassName="py-7 pb-2 sm:py-9 sm:pb-4 md:py-9 lg:py-12"
     />
   );
 }
