@@ -61,7 +61,7 @@ export function FeatureBreakBlock({
   return (
     <section
       id={`issue-article-${article.id}`}
-      className="scroll-mt-[var(--public-issue-chrome-height)] py-10 md:py-12"
+      className="scroll-mt-[var(--public-issue-anchor-offset)] py-10 md:py-12"
     >
       <div className="w-full md:mx-auto md:max-w-384 md:px-12">
         <TrackedPublicLink

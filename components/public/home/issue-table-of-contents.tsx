@@ -45,7 +45,7 @@ export function IssueTableOfContents({
     <>
       <section
         id="indice"
-        className="hidden scroll-mt-[var(--public-issue-chrome-height)] md:block"
+        className="hidden scroll-mt-[var(--public-issue-anchor-offset)] md:block"
       >
         <div className={publicContentClassName}>
           <nav aria-label={i18n.public.home.dossier.tableOfContentsLabel}>

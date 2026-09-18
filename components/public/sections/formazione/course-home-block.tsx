@@ -27,7 +27,7 @@ export function CourseHomeBlock({
         : "md:grid-cols-2";
 
   return (
-    <section className="scroll-mt-[var(--public-issue-chrome-height)] py-10 md:py-12">
+    <section className="scroll-mt-[var(--public-issue-anchor-offset)] py-10 md:py-12">
       <div className="w-full md:mx-auto md:max-w-384 md:px-12">
         <TrackedPublicLink
           href={`/contro-formazione/${course.slug}`}

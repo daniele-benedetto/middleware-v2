@@ -62,7 +62,7 @@ export function BodyBlock({ block, articleNumbers, priority = false }: BodyBlock
 
   return (
     <section
-      className="scroll-mt-[var(--public-issue-chrome-height)] py-10 md:py-12"
+      className="scroll-mt-[var(--public-issue-anchor-offset)] py-10 md:py-12"
       data-page-reveal={priority ? "body" : undefined}
       style={priority ? ({ "--page-reveal-delay": "660ms" } as CSSProperties) : undefined}
     >

@@ -146,6 +146,7 @@
   --public-header-height: 74px;
   --public-issue-nav-height: 40px;
   --public-issue-chrome-height: calc(var(--public-header-height) + var(--public-issue-nav-height));
+  --public-issue-anchor-offset: calc(var(--public-issue-chrome-height) + var(--space-4));
 
   --ui-background: var(--bg-main);
   --ui-foreground: var(--ink);

@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, ViewTransition, type ReactNode } from "react";
 
 type PublicPageTransitionProps = {
@@ -14,6 +13,7 @@ type NavigateEventLike = Event & {
 
 type NavigationLike = {
   addEventListener: (type: "navigate", listener: (event: NavigateEventLike) => void) => void;
+  removeEventListener: (type: "navigate", listener: (event: NavigateEventLike) => void) => void;
 };
 
 type PendingNavigation = { type: string; hasHash: boolean };
@@ -85,7 +85,6 @@ function handlePageUpdate() {
 // route's loading.tsx fallback immediately, instead of freezing on the old page
 // until data is ready. That gives click -> fade out -> loading -> fade in.
 export function PublicPageTransition({ children }: PublicPageTransitionProps) {
-  const pathname = usePathname();
   const hashScrollFrameRef = useRef<number | null>(null);
 
   useEffect(() => clearCursorTransitioning, []);
@@ -107,11 +106,23 @@ export function PublicPageTransition({ children }: PublicPageTransitionProps) {
     };
 
     const handleHashChange = () => scrollToHash();
+    const handleNavigation = () => {
+      if (hashScrollFrameRef.current) {
+        window.cancelAnimationFrame(hashScrollFrameRef.current);
+      }
+      hashScrollFrameRef.current = window.requestAnimationFrame(() => scrollToHash());
+    };
+    const navigation = (window as unknown as { navigation?: NavigationLike }).navigation;
 
     // PPR can commit the route before the fragment target is in the DOM.
     // Retrying after the commit preserves normal hash-link behavior.
-    hashScrollFrameRef.current = window.requestAnimationFrame(() => scrollToHash());
+    handleNavigation();
     window.addEventListener("hashchange", handleHashChange);
+    if (navigation) {
+      navigation.addEventListener("navigate", handleNavigation);
+    } else {
+      window.addEventListener("popstate", handleNavigation);
+    }
 
     return () => {
       if (hashScrollFrameRef.current) {
@@ -119,8 +130,13 @@ export function PublicPageTransition({ children }: PublicPageTransitionProps) {
         hashScrollFrameRef.current = null;
       }
       window.removeEventListener("hashchange", handleHashChange);
+      if (navigation) {
+        navigation.removeEventListener("navigate", handleNavigation);
+      } else {
+        window.removeEventListener("popstate", handleNavigation);
+      }
     };
-  }, [pathname]);
+  }, []);
 
   return (
     <ViewTransition update="page-transition" default="none" onUpdate={handlePageUpdate}>

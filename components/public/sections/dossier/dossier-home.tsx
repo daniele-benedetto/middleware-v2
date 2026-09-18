@@ -189,7 +189,7 @@ export function DossierHome({ hero, issue, publishedIssues }: DossierHomeProps) 
             />
             <div
               id="issue-unpaginated-articles"
-              className="scroll-mt-[var(--public-issue-chrome-height)]"
+              className="scroll-mt-[var(--public-issue-anchor-offset)]"
             >
               <UnpaginatedArticleRow articles={issue.articles} />
             </div>
@@ -268,7 +268,7 @@ export function DossierHome({ hero, issue, publishedIssues }: DossierHomeProps) 
           {leadingBlocks.map((block, index) => (
             <div
               id={getBlockAnchorId(block)}
-              className="scroll-mt-[var(--public-issue-chrome-height)]"
+              className="scroll-mt-[var(--public-issue-anchor-offset)]"
               key={block.id}
             >
               {renderBlock(block, variant, articleNumbers, {
@@ -283,7 +283,7 @@ export function DossierHome({ hero, issue, publishedIssues }: DossierHomeProps) 
           {unpaginatedArticles.length > 0 ? (
             <div
               id="issue-unpaginated-articles"
-              className="scroll-mt-[var(--public-issue-chrome-height)]"
+              className="scroll-mt-[var(--public-issue-anchor-offset)]"
             >
               <UnpaginatedArticleRow
                 articles={unpaginatedArticles}
@@ -294,7 +294,7 @@ export function DossierHome({ hero, issue, publishedIssues }: DossierHomeProps) 
           {trailingBlocks.map((block) => (
             <div
               id={getBlockAnchorId(block)}
-              className="scroll-mt-[var(--public-issue-chrome-height)]"
+              className="scroll-mt-[var(--public-issue-anchor-offset)]"
               key={block.id}
             >
               {renderBlock(block, variant, articleNumbers, {

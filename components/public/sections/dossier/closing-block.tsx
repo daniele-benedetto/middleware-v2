@@ -103,7 +103,7 @@ export function ClosingBlock({ block, variant, articleNumbers }: ClosingBlockPro
   return (
     <section
       id={`issue-article-${article.id}`}
-      className="scroll-mt-[var(--public-issue-chrome-height)] py-10 md:py-12"
+      className="scroll-mt-[var(--public-issue-anchor-offset)] py-10 md:py-12"
     >
       <div
         className={cn(
