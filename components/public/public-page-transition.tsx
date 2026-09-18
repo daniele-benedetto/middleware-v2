@@ -96,10 +96,22 @@ export function PublicPageTransition({ children }: PublicPageTransitionProps) {
 
       const target = document.getElementById(decodeURIComponent(hash));
       if (target) {
-        const scrollMarginTop = Number.parseFloat(window.getComputedStyle(target).scrollMarginTop);
+        const headerHeight =
+          document.querySelector<HTMLElement>("[data-public-header]")?.offsetHeight ?? 0;
+        const issueNavigationHeight =
+          document.querySelector<HTMLElement>("[data-public-issue-navigation]")?.offsetHeight ?? 0;
         window.scrollTo({
-          top: Math.max(0, window.scrollY + target.getBoundingClientRect().top - scrollMarginTop),
-          behavior: "instant",
+          top: Math.max(
+            0,
+            window.scrollY +
+              target.getBoundingClientRect().top -
+              headerHeight -
+              issueNavigationHeight -
+              16,
+          ),
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            ? "auto"
+            : "smooth",
         });
         return;
       }
