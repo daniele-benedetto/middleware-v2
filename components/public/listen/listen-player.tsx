@@ -4,12 +4,9 @@ import { BookmarkIcon, PauseIcon, PlayIcon, RotateCcwIcon, RotateCwIcon } from "
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
-  DEFAULT_VISIBLE_AUDIO_CHUNK_COUNT,
   formatAudioTime,
   getCurrentAudioChunkIndex,
-  getVisibleAudioChunks,
   type AudioChunk,
-  type VisibleAudioChunk,
 } from "@/lib/audio/audio-chunks";
 import {
   deleteAudioBookmark,
@@ -45,13 +42,12 @@ type ListenPlayerProps = {
 };
 
 type SyncedTranscriptProps = {
-  chunks: VisibleAudioChunk[];
-  totalChunks: number;
-  isExpanded: boolean;
+  chunk: AudioChunk | null;
+  nextChunk: AudioChunk | null;
   bookmarkedChunkIds: Set<string>;
+  currentTime: number;
+  isPlaying: boolean;
   isScrubbing: boolean;
-  onChunkSelect: (chunk: AudioChunk) => void;
-  onExpandedChange: () => void;
   emptyState: ReactNode;
 };
 
@@ -68,6 +64,7 @@ type ListenControlsProps = {
   onSeekBy: (seconds: number) => void;
   onPlaybackToggle: () => void;
   onPlaybackRateCycle: () => void;
+  onRetry: () => void;
   onScrubStart: (seconds: number) => void;
   onScrubUpdate: (seconds: number) => void;
   onScrubCommit: () => void;
@@ -110,104 +107,87 @@ function isResumeCandidate(record: AudioProgressRecord) {
 }
 
 function SyncedTranscript({
-  chunks,
-  totalChunks,
-  isExpanded,
+  chunk,
+  nextChunk,
   bookmarkedChunkIds,
+  currentTime,
+  isPlaying,
   isScrubbing,
-  onChunkSelect,
-  onExpandedChange,
   emptyState,
 }: SyncedTranscriptProps) {
   const text = i18n.public.listenPage;
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const chunkRefs = useRef(new Map<string, HTMLButtonElement>());
-  const activeChunk = chunks.find((chunk) => chunk.position === "active");
-  const firstRenderedChunkId = chunks[0]?.id ?? null;
+  const readingRef = useRef<HTMLDivElement>(null);
+  const playbackTimeRef = useRef(currentTime);
 
   useEffect(() => {
-    if (isScrubbing) return;
-    if (!activeChunk) return;
+    playbackTimeRef.current = currentTime;
+  }, [currentTime]);
 
-    const frameId = window.requestAnimationFrame(() => {
-      const container = scrollContainerRef.current;
-      const element = chunkRefs.current.get(activeChunk.id);
-      if (!container || !element) return;
+  useEffect(() => {
+    const reading = readingRef.current;
+    if (!reading || !chunk) return;
 
-      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const targetTop = firstRenderedChunkId === activeChunk.id ? 0 : element.offsetTop - 10;
+    const syncScroll = () => {
+      const maxScrollTop = Math.max(0, reading.scrollHeight - reading.clientHeight);
+      const duration = Math.max(chunk.end - chunk.start, 0.001);
+      const progress = Math.min(1, Math.max(0, (playbackTimeRef.current - chunk.start) / duration));
+      reading.scrollTop = maxScrollTop * progress;
+    };
 
-      container.scrollTo({
-        top: Math.max(0, targetTop),
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-      });
-    });
+    if (!isPlaying || isScrubbing) {
+      const frameId = window.requestAnimationFrame(syncScroll);
+      return () => window.cancelAnimationFrame(frameId);
+    }
 
+    let frameId = 0;
+    const followPlayback = () => {
+      syncScroll();
+      frameId = window.requestAnimationFrame(followPlayback);
+    };
+
+    frameId = window.requestAnimationFrame(followPlayback);
     return () => window.cancelAnimationFrame(frameId);
-  }, [activeChunk, firstRenderedChunkId, isScrubbing]);
+  }, [chunk, isPlaying, isScrubbing]);
 
-  if (chunks.length === 0) {
+  if (!chunk) {
     return <div className="min-h-0 overflow-hidden">{emptyState}</div>;
   }
 
+  const isBookmarked = bookmarkedChunkIds.has(chunk.id);
+
   return (
-    <section className="min-h-0 overflow-hidden" role="group" aria-label={text.syncedText}>
-      <div ref={scrollContainerRef} className="h-full overflow-y-auto pr-1">
-        <div className="space-y-2 py-2 sm:space-y-3 sm:py-5">
-          {totalChunks > DEFAULT_VISIBLE_AUDIO_CHUNK_COUNT ? (
-            <button
-              type="button"
-              onClick={onExpandedChange}
-              className="font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+    <section
+      className="flex min-h-0 flex-col overflow-hidden"
+      role="group"
+      aria-label={text.syncedText}
+    >
+      <div ref={readingRef} className="relative min-h-0 flex-1 overflow-hidden py-2 sm:py-5">
+        <div className="relative z-10">
+          <div className="flex items-start gap-2 bg-background/45 py-1 pr-1 font-editorial text-foreground opacity-100 motion-safe:animate-[listen-chunk-in_320ms_var(--easing-standard)] sm:py-1.5">
+            <span className="block min-w-0 flex-1 text-[clamp(17px,5.2vw,22px)] leading-[1.28] font-medium tracking-[-0.018em] sm:text-[clamp(20px,2.45vw,28px)] sm:leading-[1.3] sm:tracking-[-0.022em]">
+              {chunk.text}
+            </span>
+            {isBookmarked ? (
+              <BookmarkIcon
+                className="mt-1 size-3.5 shrink-0 fill-accent text-accent sm:size-4"
+                aria-hidden
+              />
+            ) : null}
+          </div>
+          {nextChunk ? (
+            <div
+              key={nextChunk.id}
+              aria-hidden
+              className="mt-5 font-editorial text-[clamp(16px,4.8vw,21px)] leading-[1.28] tracking-[-0.012em] text-muted/45 motion-safe:animate-[listen-chunk-in_360ms_var(--easing-standard)] sm:text-[clamp(19px,2.2vw,26px)] sm:leading-[1.3]"
             >
-              {isExpanded ? text.hideTranscript : text.showTranscript}
-            </button>
+              {nextChunk.text}
+            </div>
           ) : null}
-          {chunks.map((chunk) => {
-            const isActive = chunk.position === "active";
-            const isBookmarked = bookmarkedChunkIds.has(chunk.id);
-
-            return (
-              <button
-                key={chunk.id}
-                ref={(element) => {
-                  if (element) {
-                    chunkRefs.current.set(chunk.id, element);
-                    return;
-                  }
-
-                  chunkRefs.current.delete(chunk.id);
-                }}
-                type="button"
-                onClick={() => onChunkSelect(chunk)}
-                aria-current={isActive ? "true" : undefined}
-                className={cn(
-                  "group flex w-full cursor-pointer items-start gap-2 text-left font-editorial transition-[opacity,transform,color,background-color] duration-(--motion-slow) ease-(--easing-standard) focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-accent",
-                  isActive
-                    ? "bg-background/45 py-1 pr-1 text-foreground opacity-100 motion-safe:animate-[listen-chunk-in_320ms_var(--easing-standard)] sm:py-1.5"
-                    : "text-muted opacity-45 hover:text-body-text hover:opacity-80 sm:translate-x-1.5",
-                )}
-              >
-                <span
-                  className={cn(
-                    "block min-w-0 flex-1",
-                    isActive
-                      ? "text-[clamp(17px,5.2vw,22px)] leading-[1.28] font-medium tracking-[-0.018em] sm:text-[clamp(20px,2.45vw,28px)] sm:leading-[1.3] sm:tracking-[-0.022em]"
-                      : "pl-3 text-[clamp(12px,3.6vw,15px)] leading-[1.28] italic sm:pl-4 sm:text-[clamp(14px,1.2vw,17px)] sm:leading-[1.32]",
-                  )}
-                >
-                  {chunk.text}
-                </span>
-                {isBookmarked ? (
-                  <BookmarkIcon
-                    className="mt-1 size-3.5 shrink-0 fill-accent text-accent sm:size-4"
-                    aria-hidden
-                  />
-                ) : null}
-              </button>
-            );
-          })}
         </div>
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-20 bg-gradient-to-t from-background via-background/85 to-transparent"
+          aria-hidden
+        />
       </div>
     </section>
   );
@@ -226,6 +206,7 @@ function ListenControls({
   onSeekBy,
   onPlaybackToggle,
   onPlaybackRateCycle,
+  onRetry,
   onScrubStart,
   onScrubUpdate,
   onScrubCommit,
@@ -236,7 +217,7 @@ function ListenControls({
 
   return (
     <section
-      className="mx-auto grid w-full max-w-3xl gap-2.5 sm:gap-3"
+      className="mx-auto grid w-full max-w-3xl gap-3 sm:gap-4"
       aria-label={text.controlsAriaLabel}
     >
       <p role="status" className="sr-only">
@@ -305,7 +286,7 @@ function ListenControls({
               onScrubUpdate(parseTime(event.currentTarget.value, displayedTime));
               onScrubCommit();
             }}
-            className="absolute top-1/2 right-0 left-0 z-20 h-5 w-full -translate-y-1/2 cursor-pointer opacity-70 accent-accent disabled:cursor-not-allowed disabled:opacity-30"
+            className="absolute top-1/2 right-0 left-0 z-20 h-11 w-full -translate-y-1/2 cursor-pointer opacity-70 accent-accent disabled:cursor-not-allowed disabled:opacity-30"
             aria-label={text.progressAriaLabel}
             aria-valuetext={text.progressValueText(
               formatAudioTime(displayedTime),
@@ -326,7 +307,7 @@ function ListenControls({
           disabled={!activeChunk}
           aria-pressed={activeChunkIsBookmarked}
           className={cn(
-            "inline-flex size-10 cursor-pointer items-center justify-center border-2 border-foreground font-heading text-[10px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-12 lg:size-13",
+            "inline-flex size-11 cursor-pointer items-center justify-center border-2 border-foreground font-heading text-[10px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-12 lg:size-13",
             activeChunkIsBookmarked
               ? "bg-accent text-background"
               : "bg-background hover:bg-accent/15",
@@ -340,7 +321,7 @@ function ListenControls({
         <button
           type="button"
           onClick={() => onSeekBy(-15)}
-          className="inline-flex size-10 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[10px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-12 lg:size-13"
+          className="inline-flex size-11 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[10px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-12 lg:size-13"
           aria-label={text.seekBackward}
         >
           <RotateCcwIcon className="size-5" />
@@ -356,7 +337,7 @@ function ListenControls({
         <button
           type="button"
           onClick={() => onSeekBy(15)}
-          className="inline-flex size-10 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[10px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-12 lg:size-13"
+          className="inline-flex size-11 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[10px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-12 lg:size-13"
           aria-label={text.seekForward}
         >
           <RotateCwIcon className="size-5" />
@@ -364,7 +345,7 @@ function ListenControls({
         <button
           type="button"
           onClick={onPlaybackRateCycle}
-          className="inline-flex size-10 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[10px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-12 lg:size-13"
+          className="inline-flex size-11 cursor-pointer items-center justify-center border-2 border-foreground bg-background font-heading text-[10px] font-black tracking-[0.08em] uppercase transition-colors duration-(--motion-fast) hover:bg-accent/15 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent sm:size-12 lg:size-13"
           aria-label={text.speed(formatPlaybackRate(playbackRate))}
         >
           {formatPlaybackRate(playbackRate)}
@@ -372,9 +353,21 @@ function ListenControls({
       </div>
 
       {audioError ? (
-        <p role="alert" className="font-heading text-[12px] font-bold text-accent uppercase">
-          {text.playbackError}
-        </p>
+        <div
+          role="alert"
+          className="flex items-center justify-between gap-3 border-2 border-accent p-3"
+        >
+          <p className="font-heading text-[12px] font-bold text-accent uppercase">
+            {text.playbackError}
+          </p>
+          <button
+            type="button"
+            onClick={onRetry}
+            className="shrink-0 border-2 border-accent px-3 py-2 font-heading text-[11px] font-black tracking-[0.08em] text-accent uppercase transition-colors hover:bg-accent hover:text-background focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            {text.retryPlayback}
+          </button>
+        </div>
       ) : null}
     </section>
   );
@@ -411,24 +404,13 @@ export function ListenPlayer({
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
-  const [, setSavedProgress] = useState<AudioProgressRecord | null>(null);
   const [bookmarks, setBookmarks] = useState<AudioBookmarkRecord[]>([]);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [audioError, setAudioError] = useState(false);
-  const [isTranscriptExpanded, setIsTranscriptExpanded] = useState(false);
   const displayedTime = scrubTime ?? currentTime;
-  const transcriptTime = isScrubbing ? currentTime : displayedTime;
-  const activeChunkIndex = getCurrentAudioChunkIndex(chunks, transcriptTime);
+  const activeChunkIndex = getCurrentAudioChunkIndex(chunks, currentTime);
   const activeChunk = chunks[activeChunkIndex] ?? null;
-  const visibleChunks = useMemo(
-    () =>
-      getVisibleAudioChunks(
-        chunks,
-        activeChunkIndex,
-        isTranscriptExpanded ? chunks.length : DEFAULT_VISIBLE_AUDIO_CHUNK_COUNT,
-      ),
-    [activeChunkIndex, chunks, isTranscriptExpanded],
-  );
+  const nextChunk = chunks[activeChunkIndex + 1] ?? null;
   const resolvedDuration = duration > 0 ? duration : (chunks.at(-1)?.end ?? 0);
   const bookmarkedChunkIds = useMemo(
     () => new Set(bookmarks.map((bookmark) => bookmark.chunkId)),
@@ -471,7 +453,6 @@ export function ListenPlayer({
 
       startedAtRef.current = record.startedAt;
       await saveAudioProgress(record);
-      setSavedProgress(isResumeCandidate(record) ? record : null);
     },
     [contentId, contentKey, contentKind, contentSlug, contentTitle, contentUpdatedAt, audioUrl],
   );
@@ -503,12 +484,10 @@ export function ListenPlayer({
         record.contentUpdatedAt !== contentUpdatedAt ||
         !isResumeCandidate(record)
       ) {
-        setSavedProgress(null);
         startedAtRef.current = null;
         return;
       }
 
-      setSavedProgress(record);
       startedAtRef.current = record.startedAt;
       lastSavedBucketRef.current = Math.floor(record.currentTime / saveIntervalSeconds);
       pendingSeekTargetRef.current = record.currentTime;
@@ -722,12 +701,20 @@ export function ListenPlayer({
   };
 
   const seekBy = (seconds: number) => commitPlaybackTime(getPlaybackTime() + seconds);
-  const handleSeekTo = (seconds: number) => commitPlaybackTime(seconds);
 
   const cyclePlaybackRate = () => {
     const currentIndex = playbackRates.findIndex((rate) => rate === playbackRate);
     const nextRate = playbackRates[(currentIndex + 1) % playbackRates.length] ?? 1;
     setPlaybackRate(nextRate);
+  };
+
+  const retryPlayback = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    setAudioError(false);
+    audio.load();
+    void audio.play().catch(() => setAudioError(true));
   };
 
   const toggleActiveChunkBookmark = () => {
@@ -775,7 +762,7 @@ export function ListenPlayer({
   };
 
   return (
-    <section className="mx-auto grid h-full min-h-0 w-full max-w-5xl grid-rows-[minmax(0,1fr)_auto] gap-3 sm:grid-rows-[auto_minmax(0,1fr)] sm:gap-4">
+    <section className="mx-auto grid h-full min-h-0 w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)] gap-3 sm:gap-6">
       <audio
         ref={audioRef}
         src={audioUrl}
@@ -833,20 +820,19 @@ export function ListenPlayer({
         }}
       />
 
-      <div className="min-h-0 bg-background sm:order-2">
+      <div className="order-2 flex min-h-0 bg-background">
         <SyncedTranscript
-          chunks={visibleChunks}
-          totalChunks={chunks.length}
-          isExpanded={isTranscriptExpanded}
+          chunk={activeChunk}
+          nextChunk={nextChunk}
           bookmarkedChunkIds={bookmarkedChunkIds}
+          currentTime={currentTime}
+          isPlaying={isPlaying}
           isScrubbing={isScrubbing}
-          onChunkSelect={(chunk) => handleSeekTo(chunk.start)}
-          onExpandedChange={() => setIsTranscriptExpanded((current) => !current)}
           emptyState={emptyState}
         />
       </div>
 
-      <div className="relative z-20 -mx-(--article-padding-x) border-t-2 border-foreground bg-background px-(--article-padding-x) pt-3 pb-2 shadow-[0_-16px_28px_rgba(247,240,231,0.95)] sm:order-1 sm:mx-0 sm:border-t-0 sm:px-0 sm:pt-0 sm:pb-0 sm:shadow-none">
+      <div className="order-1 relative z-20 -mx-(--article-padding-x) bg-background px-(--article-padding-x) pt-1 pb-4 sm:mx-0 sm:px-0 sm:pt-0 sm:pb-0">
         <ListenControls
           bookmarks={bookmarks}
           displayedTime={displayedTime}
@@ -860,6 +846,7 @@ export function ListenPlayer({
           onSeekBy={seekBy}
           onPlaybackToggle={togglePlayback}
           onPlaybackRateCycle={cyclePlaybackRate}
+          onRetry={retryPlayback}
           onScrubStart={beginScrubbing}
           onScrubUpdate={updateScrubbing}
           onScrubCommit={commitScrubbing}

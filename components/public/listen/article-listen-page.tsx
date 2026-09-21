@@ -28,14 +28,14 @@ function getArticleTitleTypographyClassName(title: string) {
   const wordCount = title.trim().split(/\s+/).filter(Boolean).length;
 
   if (wordCount >= 14) {
-    return "font-heading text-[clamp(38px,6vw,88px)] leading-[0.96] font-black tracking-[-0.052em] [text-wrap:balance]";
+    return "font-heading text-[clamp(28px,7.5vw,52px)] leading-[0.96] font-black tracking-[-0.052em] [text-wrap:balance] sm:text-[clamp(34px,5vw,76px)]";
   }
 
   if (wordCount >= 9) {
-    return "font-heading text-[clamp(42px,7vw,108px)] leading-[0.94] font-black tracking-[-0.056em] [text-wrap:balance]";
+    return "font-heading text-[clamp(30px,8vw,58px)] leading-[0.94] font-black tracking-[-0.056em] [text-wrap:balance] sm:text-[clamp(38px,5.8vw,88px)]";
   }
 
-  return "font-heading text-[clamp(48px,9.5vw,138px)] leading-[0.86] font-black tracking-[-0.06em] [text-wrap:balance]";
+  return "font-heading text-[clamp(34px,9vw,64px)] leading-[0.88] font-black tracking-[-0.06em] [text-wrap:balance] sm:text-[clamp(42px,7.5vw,104px)]";
 }
 
 async function ArticleListenPlayer({
@@ -84,12 +84,13 @@ export function ArticleListenPage({ data, chunksPromise }: ArticleListenPageProp
       tabIndex={-1}
       className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
-      <article className="grid min-h-[calc(100svh-var(--public-header-height))] grid-rows-[auto_minmax(34rem,1fr)]">
+      <article className="grid h-[calc(100svh-var(--public-header-height)-96px)] min-h-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
         <PublicPageHero
           as="header"
           title={article.title}
           titleStyled={article.titleStyled}
           titleTypographyClassName={getArticleTitleTypographyClassName(article.title)}
+          containerClassName="pt-4 pb-3 sm:py-9 lg:py-12"
           backgroundCode={formatArticleNumber(articleNumber)}
           meta={
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -109,7 +110,7 @@ export function ArticleListenPage({ data, chunksPromise }: ArticleListenPageProp
           data-page-reveal="body"
           style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
         >
-          <div className={`${publicContentClassName} h-full min-h-0 py-3 sm:py-8 lg:py-10`}>
+          <div className={`${publicContentClassName} h-full min-h-0 py-2 sm:py-8 lg:py-10`}>
             <Suspense fallback={<ListenPlayerFallback />}>
               <ArticleListenPlayer article={article} chunksPromise={chunksPromise} />
             </Suspense>

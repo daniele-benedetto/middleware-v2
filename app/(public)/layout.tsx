@@ -77,10 +77,10 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           <PublicHeaderSlot />
         </Suspense>
         <PublicScrollProgress />
-        <div data-public-page-content>
+        <div data-public-page-content className="flex min-h-0 flex-1 flex-col">
           <PublicPageTransition>{children}</PublicPageTransition>
         </div>
-        <div data-public-footer>
+        <div data-public-footer className="shrink-0">
           <Suspense fallback={null}>
             <PublicFooterSlot />
           </Suspense>
