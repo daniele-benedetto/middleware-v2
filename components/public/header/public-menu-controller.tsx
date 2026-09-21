@@ -1,22 +1,14 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 
+import { PublicFullscreenMenu } from "@/components/public/header/public-fullscreen-menu";
 import { PublicMenuButton } from "@/components/public/header/public-menu-button";
 import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 
 import type { PublicMenuItem } from "@/components/public/header/public-fullscreen-menu";
-
-const PublicFullscreenMenu = dynamic(
-  () =>
-    import("@/components/public/header/public-fullscreen-menu").then(
-      (module) => module.PublicFullscreenMenu,
-    ),
-  { ssr: false },
-);
 
 type PublicMenuControllerProps = {
   menuItems: PublicMenuItem[];
@@ -26,11 +18,6 @@ type MenuState = "closed" | "opening" | "open" | "closing-content" | "closing-sh
 
 const menuOpenDuration = 520;
 const menuShellCloseDuration = 360;
-const menuItemOpenStagger = 165;
-const menuLinkOpenDelay = 110;
-const menuLinkOpenDuration = 380;
-const menuQuoteOpenDuration = 420;
-const menuQuoteOpenGap = 80;
 const menuItemCloseStagger = 64;
 const menuLinkCloseDuration = 220;
 
@@ -43,17 +30,6 @@ function getMotionDuration(duration: number) {
   }
 
   return duration;
-}
-
-function getMenuOpenAnimationDuration(itemCount: number) {
-  return (
-    menuLinkOpenDelay +
-    Math.max(0, itemCount - 1) * menuItemOpenStagger +
-    menuLinkOpenDuration +
-    menuQuoteOpenGap +
-    menuQuoteOpenDuration +
-    60
-  );
 }
 
 function getMenuContentCloseDuration(itemCount: number) {
@@ -76,12 +52,12 @@ function isElementVisible(element: HTMLElement) {
 export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
   const router = useRouter();
   const [menuState, setMenuState] = useState<MenuState>("closed");
+  const [menuMotion, setMenuMotion] = useState<"idle" | "entering">("idle");
   const menuId = useId();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuCloseButtonRef = useRef<HTMLButtonElement>(null);
   const animationTimerRefs = useRef<number[]>([]);
   const text = i18n.public.header;
-  const menuOpenAnimationDuration = getMenuOpenAnimationDuration(menuItems.length);
   const menuContentCloseDuration = getMenuContentCloseDuration(menuItems.length);
   const menuVisible = menuState !== "closed";
   const menuClosing = menuState === "closing-content" || menuState === "closing-shell";
@@ -113,11 +89,9 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
 
   const openMenu = () => {
     clearAnimationTimer();
+    setMenuMotion("entering");
     setMenuState("opening");
-    setAnimationTimer(
-      () => setMenuState("open"),
-      getMotionDuration(Math.max(menuOpenDuration, menuOpenAnimationDuration)),
-    );
+    setAnimationTimer(() => setMenuState("open"), getMotionDuration(menuOpenDuration));
   };
 
   const closeMenu = (onClosed?: () => void) => {
@@ -127,6 +101,7 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
     }
 
     clearAnimationTimer();
+    setMenuMotion("idle");
     setMenuState("closing-content");
     const contentCloseDuration = getMotionDuration(menuContentCloseDuration);
     const shellCloseDuration = getMotionDuration(menuShellCloseDuration);
@@ -173,7 +148,7 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
     inertElements.forEach((element) => {
       element.inert = true;
     });
-    menuCloseButtonRef.current?.focus();
+    menuCloseButtonRef.current?.focus({ preventScroll: true });
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -237,6 +212,7 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
         <PublicFullscreenMenu
           id={menuId}
           state={menuState}
+          motion={menuMotion}
           items={menuItems}
           closeButtonRef={menuCloseButtonRef}
           onClose={() => closeMenu()}

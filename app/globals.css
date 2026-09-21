@@ -554,6 +554,7 @@ body {
 
 .public-menu-overlay[data-menu-state="opening"] {
   animation: public-menu-overlay-in 520ms var(--easing-standard) both;
+  will-change: clip-path;
 }
 
 .public-menu-overlay[data-menu-state="closing-shell"] {
@@ -589,26 +590,16 @@ body {
   background: var(--accent);
 }
 
-.public-menu-overlay[data-menu-state="opening"] .public-menu-link-part {
+.public-menu-overlay[data-menu-motion="entering"] .public-menu-link-part {
   animation: public-menu-link-in 380ms var(--easing-standard) both;
   animation-delay: calc(110ms + var(--menu-item-index) * 165ms);
+  will-change: clip-path, opacity, transform;
 }
 
-.public-menu-overlay[data-menu-state="opening"] .public-menu-link::after {
+.public-menu-overlay[data-menu-motion="entering"] .public-menu-link::after {
   animation: public-menu-separator-in 300ms var(--easing-standard) both;
   animation-delay: calc(210ms + var(--menu-item-index) * 165ms);
-}
-
-.public-menu-overlay[data-menu-state="open"] .public-menu-link-part,
-.public-menu-overlay[data-menu-state="open"] .public-menu-quote {
-  opacity: 1;
-  clip-path: none;
-  transform: none;
-}
-
-.public-menu-overlay[data-menu-state="open"] .public-menu-link::after {
-  opacity: 1;
-  transform: scaleX(1);
+  will-change: opacity, transform;
 }
 
 .public-menu-overlay[data-menu-state="closing-content"] .public-menu-link-part {
@@ -621,9 +612,10 @@ body {
   animation-delay: calc(100ms + var(--menu-item-reverse-index) * 64ms);
 }
 
-.public-menu-overlay[data-menu-state="opening"] .public-menu-quote {
+.public-menu-overlay[data-menu-motion="entering"] .public-menu-quote {
   animation: public-menu-link-in 420ms var(--easing-standard) both;
   animation-delay: var(--menu-quote-delay);
+  will-change: clip-path, opacity, transform;
 }
 
 .public-menu-overlay[data-menu-state="closing-content"] .public-menu-quote {

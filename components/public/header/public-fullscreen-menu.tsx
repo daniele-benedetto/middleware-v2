@@ -25,6 +25,7 @@ export type PublicMenuItem = {
 type PublicFullscreenMenuProps = {
   id: string;
   state: "opening" | "open" | "closing-content" | "closing-shell";
+  motion: "idle" | "entering";
   items: PublicMenuItem[];
   closeButtonRef: RefObject<HTMLButtonElement | null>;
   onClose: () => void;
@@ -43,6 +44,7 @@ function getQuoteDelay(itemCount: number) {
 export function PublicFullscreenMenu({
   id,
   state,
+  motion,
   items,
   closeButtonRef,
   onClose,
@@ -68,6 +70,7 @@ export function PublicFullscreenMenu({
       aria-modal="true"
       aria-labelledby={titleId}
       data-menu-state={state}
+      data-menu-motion={motion}
       style={{ "--menu-quote-delay": `${getQuoteDelay(items.length)}ms` } as CSSProperties}
       className="public-menu-overlay fixed inset-0 z-100 flex flex-col overflow-y-auto bg-foreground text-background"
     >
