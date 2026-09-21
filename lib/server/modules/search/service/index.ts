@@ -93,9 +93,20 @@ function isMissingPopularityTableError(error: unknown) {
   if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
   if (error.code === "P2021") return true;
 
-  return error.code === "P2010" && error.meta && typeof error.meta === "object"
-    ? Object.values(error.meta).some((value) => value === "42P01")
-    : false;
+  return error.code === "P2010" && containsMissingTableMarker(error.meta);
+}
+
+function containsMissingTableMarker(value: unknown): boolean {
+  if (typeof value === "string") {
+    return (
+      value === "42P01" ||
+      value === "TableDoesNotExist" ||
+      value.includes("relation does not exist")
+    );
+  }
+  if (!value || typeof value !== "object") return false;
+
+  return Object.values(value).some(containsMissingTableMarker);
 }
 
 async function ensureGlobalSearchProjection() {
