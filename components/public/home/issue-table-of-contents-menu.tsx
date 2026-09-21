@@ -350,9 +350,10 @@ export function IssueTableOfContentsMenu({
         ? createPortal(
             <div
               className={cn(
-                "fixed inset-0 z-120 touch-none overscroll-contain bg-foreground/80 transition-colors duration-(--motion-fast)",
-                open ? "bg-foreground/80" : "bg-foreground/0",
+                "fixed inset-0 z-120 touch-none overscroll-contain bg-foreground/60 transition-opacity md:bg-foreground/80",
+                open ? "opacity-100" : "opacity-0",
               )}
+              style={{ transitionDuration: `${getMotionDuration()}ms` }}
               onPointerDown={(event) => {
                 if (event.target === event.currentTarget) closeMenu();
               }}
