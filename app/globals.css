@@ -251,6 +251,27 @@
   }
 }
 
+[data-public-scroll-progress-bar] {
+  transform: scaleX(var(--scroll-progress));
+}
+
+@supports (animation-timeline: scroll()) {
+  @keyframes public-scroll-progress {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  [data-public-scroll-progress-bar] {
+    animation: public-scroll-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
