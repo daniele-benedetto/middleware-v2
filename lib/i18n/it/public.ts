@@ -75,12 +75,14 @@ export const publicIt = {
       searchTitle: "Cerca",
       searchOpen: "Apri ricerca",
       searchClose: "Chiudi ricerca",
+      searchClear: "Cancella ricerca",
       searchPlaceholder: "Cerca nel progetto",
-      searchHint: "Inserisci almeno due caratteri",
       searchLoading: "Ricerca in corso",
       searchError: "La ricerca non è disponibile in questo momento",
       searchEmpty: (query: string) => `Nessun risultato per “${query}”`,
       searchResultsLabel: (count: number) => `${count} risultati`,
+      searchPopularLabel: "Piu letti",
+      searchLatestLabel: "Ultimi pubblicati",
       searchTypeLabel: (type: "article" | "course" | "lesson" | "map" | "page" | "questionnaire") =>
         ({
           article: "Articolo",

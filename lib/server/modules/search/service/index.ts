@@ -57,14 +57,7 @@ function toResult(
 
 export const publicSearchService = {
   async search(query: string, limit: number) {
-    const [documents, sourceFingerprint, projectionFingerprint] = await Promise.all([
-      searchRepository.count(),
-      searchRepository.getSourceFingerprint(),
-      searchRepository.getProjectionFingerprint(),
-    ]);
-
-    if (documents === 0 || sourceFingerprint !== projectionFingerprint)
-      await rebuildGlobalSearchProjection(sourceFingerprint);
+    await ensureGlobalSearchProjection();
 
     const records = await searchRepository.search(query, limit);
     return {
@@ -72,7 +65,31 @@ export const publicSearchService = {
       items: records.map(toResult),
     };
   },
+  async suggestions(limit: number) {
+    await ensureGlobalSearchProjection();
+
+    const popularRecords = await searchRepository.listSuggestedArticles(limit);
+    const records =
+      popularRecords.length > 0 ? popularRecords : await searchRepository.listLatestArticles(limit);
+
+    return {
+      source: popularRecords.length > 0 ? "popular" : "latest",
+      items: records.map(toResult),
+    };
+  },
 };
+
+async function ensureGlobalSearchProjection() {
+  const [documents, sourceFingerprint, projectionFingerprint] = await Promise.all([
+    searchRepository.count(),
+    searchRepository.getSourceFingerprint(),
+    searchRepository.getProjectionFingerprint(),
+  ]);
+
+  if (documents === 0 || sourceFingerprint !== projectionFingerprint) {
+    await rebuildGlobalSearchProjection(sourceFingerprint);
+  }
+}
 
 /** Rebuilds the complete public projection from canonical CMS records. */
 export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) {

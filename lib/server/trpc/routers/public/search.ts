@@ -1,7 +1,13 @@
 import "server-only";
 
-import { publicSearchResponseDtoSchema } from "@/lib/server/modules/search/dto";
-import { publicSearchInputSchema } from "@/lib/server/modules/search/schema";
+import {
+  publicSearchResponseDtoSchema,
+  publicSearchSuggestionsDtoSchema,
+} from "@/lib/server/modules/search/dto";
+import {
+  publicSearchInputSchema,
+  publicSearchSuggestionsInputSchema,
+} from "@/lib/server/modules/search/schema";
 import { publicSearchService } from "@/lib/server/modules/search/service";
 import { router } from "@/lib/server/trpc/init";
 import { publicReadProcedure } from "@/lib/server/trpc/procedures";
@@ -14,4 +20,12 @@ export const publicSearchRouter = router({
       publicSearchResponseDtoSchema,
     );
   }),
+  suggestions: publicReadProcedure
+    .input(publicSearchSuggestionsInputSchema)
+    .query(async ({ input }) => {
+      return parseOutput(
+        await publicSearchService.suggestions(input.limit),
+        publicSearchSuggestionsDtoSchema,
+      );
+    }),
 });

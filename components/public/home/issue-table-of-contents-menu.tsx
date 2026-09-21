@@ -372,7 +372,7 @@ export function IssueTableOfContentsMenu({
                 className={cn(
                   "absolute flex touch-pan-y overflow-hidden overscroll-contain bg-background text-foreground transition-transform ease-out",
                   isSearchMenu
-                    ? "inset-x-0 top-0 max-h-[min(32rem,80dvh)] flex-col border-b-2 border-foreground"
+                    ? "inset-0 flex-col border-b-2 border-foreground"
                     : "inset-y-0 w-full flex-col md:w-[min(32rem,42vw)]",
                   isIssuesMenu && "left-0 border-r border-foreground",
                   activeMenu === "tableOfContents" && "right-0 border-l border-foreground",
@@ -420,20 +420,32 @@ export function IssueTableOfContentsMenu({
                   </button>
                 </header>
                 {isSearchMenu ? (
-                  <div className="px-4 py-5 sm:px-6 md:px-8">
+                  <div className="flex min-h-0 flex-1 flex-col px-4 py-5 sm:px-6 md:px-8">
                     <label htmlFor={`${searchMenuId}-input`} className="sr-only">
                       {i18n.public.home.dossier.searchTitle}
                     </label>
-                    <input
-                      ref={searchInputRef}
-                      id={`${searchMenuId}-input`}
-                      type="search"
-                      value={searchValue}
-                      onChange={(event) => setSearchValue(event.target.value)}
-                      placeholder={i18n.public.home.dossier.searchPlaceholder}
-                      className="h-14 w-full appearance-none border-b-2 border-foreground bg-transparent px-0 font-heading text-[clamp(24px,4vw,42px)] leading-none font-bold tracking-[-0.035em] text-foreground outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none focus-visible:border-accent"
-                    />
-                    <div className="mt-5 max-h-[calc(min(32rem,80dvh)-11.5rem)] overflow-y-auto pr-1">
+                    <div className="relative">
+                      <input
+                        ref={searchInputRef}
+                        id={`${searchMenuId}-input`}
+                        type="search"
+                        value={searchValue}
+                        onChange={(event) => setSearchValue(event.target.value)}
+                        placeholder={i18n.public.home.dossier.searchPlaceholder}
+                        className="h-14 w-full appearance-none border-b-2 border-foreground bg-transparent py-0 pr-12 pl-0 font-heading text-[clamp(24px,4vw,42px)] leading-none font-bold tracking-[-0.035em] text-foreground outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none focus-visible:border-accent"
+                      />
+                      {searchValue ? (
+                        <button
+                          type="button"
+                          onClick={() => setSearchValue("")}
+                          aria-label={i18n.public.home.dossier.searchClear}
+                          className="absolute top-1/2 right-0 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center text-muted transition-colors duration-(--motion-fast) hover:text-foreground focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
+                        >
+                          <X size={22} strokeWidth={2.5} aria-hidden="true" />
+                        </button>
+                      ) : null}
+                    </div>
+                    <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1">
                       <PublicSearchMenuResults
                         query={searchValue}
                         onNavigate={navigateSearchResult}

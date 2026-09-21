@@ -392,6 +392,7 @@ export const ModelName = {
   Issue: 'Issue',
   Category: 'Category',
   Article: 'Article',
+  ArticlePopularity: 'ArticlePopularity',
   Course: 'Course',
   Lesson: 'Lesson',
   Map: 'Map',
@@ -417,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "article" | "course" | "lesson" | "map" | "mapItem" | "page" | "questionnaire" | "questionnaireResponse" | "globalSearchDocument" | "navigationMenu" | "auditLog"
+    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "article" | "articlePopularity" | "course" | "lesson" | "map" | "mapItem" | "page" | "questionnaire" | "questionnaireResponse" | "globalSearchDocument" | "navigationMenu" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1010,6 +1011,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ArticleCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ArticleCountAggregateOutputType> | number
+        }
+      }
+    }
+    ArticlePopularity: {
+      payload: Prisma.$ArticlePopularityPayload<ExtArgs>
+      fields: Prisma.ArticlePopularityFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ArticlePopularityFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArticlePopularityPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ArticlePopularityFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArticlePopularityPayload>
+        }
+        findFirst: {
+          args: Prisma.ArticlePopularityFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArticlePopularityPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ArticlePopularityFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArticlePopularityPayload>
+        }
+        findMany: {
+          args: Prisma.ArticlePopularityFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArticlePopularityPayload>[]
+        }
+        create: {
+          args: Prisma.ArticlePopularityCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArticlePopularityPayload>
+        }
+        createMany: {
+          args: Prisma.ArticlePopularityCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ArticlePopularityCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArticlePopularityPayload>[]
+        }
+        delete: {
+          args: Prisma.ArticlePopularityDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArticlePopularityPayload>
+        }
+        update: {
+          args: Prisma.ArticlePopularityUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArticlePopularityPayload>
+        }
+        deleteMany: {
+          args: Prisma.ArticlePopularityDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ArticlePopularityUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ArticlePopularityUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArticlePopularityPayload>[]
+        }
+        upsert: {
+          args: Prisma.ArticlePopularityUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArticlePopularityPayload>
+        }
+        aggregate: {
+          args: Prisma.ArticlePopularityAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateArticlePopularity>
+        }
+        groupBy: {
+          args: Prisma.ArticlePopularityGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ArticlePopularityGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ArticlePopularityCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ArticlePopularityCountAggregateOutputType> | number
         }
       }
     }
@@ -1919,6 +1994,17 @@ export const ArticleScalarFieldEnum = {
 export type ArticleScalarFieldEnum = (typeof ArticleScalarFieldEnum)[keyof typeof ArticleScalarFieldEnum]
 
 
+export const ArticlePopularityScalarFieldEnum = {
+  articleId: 'articleId',
+  pageviews: 'pageviews',
+  windowStart: 'windowStart',
+  windowEnd: 'windowEnd',
+  syncedAt: 'syncedAt'
+} as const
+
+export type ArticlePopularityScalarFieldEnum = (typeof ArticlePopularityScalarFieldEnum)[keyof typeof ArticlePopularityScalarFieldEnum]
+
+
 export const CourseScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -2434,6 +2520,7 @@ export type GlobalOmitConfig = {
   issue?: Prisma.IssueOmit
   category?: Prisma.CategoryOmit
   article?: Prisma.ArticleOmit
+  articlePopularity?: Prisma.ArticlePopularityOmit
   course?: Prisma.CourseOmit
   lesson?: Prisma.LessonOmit
   map?: Prisma.MapOmit

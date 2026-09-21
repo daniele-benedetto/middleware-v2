@@ -211,6 +211,47 @@ Invarianti:
 - Le credenziali Umami e DB analytics non vanno stampate in chat/log.
 - Backup e restore del DB analytics sono separati dai backup applicativi.
 
+### Classifica Articoli Piu Letti
+
+La classifica pubblica e salvata nel DB applicativo come cache dei dati Umami; Umami
+resta la fonte di verita e il suo DB non viene mai interrogato dal job.
+
+- Il job legge l'API HTTPS `metrics/expanded` di Umami, raggruppata per pathname,
+  sulle pageview degli ultimi 90 giorni.
+- La API key e dedicata e revocabile. Risiede esclusivamente in
+  `/opt/middleware/secrets/popular-articles.env`, con permessi `0600` e proprietario
+  `deploy`.
+- Il file segreto contiene solo `DATABASE_URL`, `UMAMI_API_KEY` e `UMAMI_WEBSITE_ID`.
+  Non stampare il contenuto e non usare `.env.production` come file env del job.
+- Il job deve usare l'immagine indicata da `jobs_image` in `DEPLOY_SOURCE`, collegata
+  alle reti Docker `middleware_internal` e `middleware_public`; non deve ricevere
+  credenziali, volume o rete di `umami-postgres`.
+- La classifica resta valida fino a 48 ore. Se assente o scaduta, il sito mostra gli
+  ultimi 10 articoli pubblicati.
+
+Installazione o aggiornamento, dopo aver letto le unita systemd esistenti:
+
+```bash
+sudo install -o root -g root -m 0644 app/ops/systemd/middleware-popular-articles.service /etc/systemd/system/middleware-popular-articles.service
+sudo install -o root -g root -m 0644 app/ops/systemd/middleware-popular-articles.timer /etc/systemd/system/middleware-popular-articles.timer
+install -o deploy -g deploy -m 0750 app/scripts/production-sync-popular-articles.sh /opt/middleware/bin/sync-popular-articles.sh
+sudo systemctl daemon-reload
+sudo systemctl start middleware-popular-articles.service
+sudo systemctl enable --now middleware-popular-articles.timer
+```
+
+Controllo read-only:
+
+```bash
+systemctl list-timers --all middleware-popular-articles.timer --no-pager
+sudo journalctl -u middleware-popular-articles.service -n 80 --no-pager
+```
+
+Se il job fallisce, non svuotare manualmente `article_popularities`: il sito passa al
+fallback quando l'ultima sincronizzazione supera le 48 ore. Per sospendere il job,
+usare `sudo systemctl disable --now middleware-popular-articles.timer` senza
+eliminare i dati esistenti.
+
 Prima di modificare config analytics:
 
 ```bash

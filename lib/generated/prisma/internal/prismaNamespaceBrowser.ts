@@ -59,6 +59,7 @@ export const ModelName = {
   Issue: 'Issue',
   Category: 'Category',
   Article: 'Article',
+  ArticlePopularity: 'ArticlePopularity',
   Course: 'Course',
   Lesson: 'Lesson',
   Map: 'Map',
@@ -212,6 +213,17 @@ export const ArticleScalarFieldEnum = {
 } as const
 
 export type ArticleScalarFieldEnum = (typeof ArticleScalarFieldEnum)[keyof typeof ArticleScalarFieldEnum]
+
+
+export const ArticlePopularityScalarFieldEnum = {
+  articleId: 'articleId',
+  pageviews: 'pageviews',
+  windowStart: 'windowStart',
+  windowEnd: 'windowEnd',
+  syncedAt: 'syncedAt'
+} as const
+
+export type ArticlePopularityScalarFieldEnum = (typeof ArticlePopularityScalarFieldEnum)[keyof typeof ArticlePopularityScalarFieldEnum]
 
 
 export const CourseScalarFieldEnum = {

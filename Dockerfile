@@ -81,6 +81,17 @@ COPY prisma.config.ts ./
 # with no egress, so it must not try to download the engine at deploy time.
 RUN pnpm exec prisma -v
 
+FROM deps AS jobs
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY scripts/sync-popular-articles.mjs ./scripts/sync-popular-articles.mjs
+
+USER node
+
+CMD ["node", "scripts/sync-popular-articles.mjs"]
+
 FROM base AS runner
 WORKDIR /app
 

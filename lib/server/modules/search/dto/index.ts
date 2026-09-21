@@ -16,4 +16,9 @@ export const publicSearchResponseDtoSchema = z.object({
   items: publicSearchResultsDtoSchema,
 });
 
+export const publicSearchSuggestionsDtoSchema = z.object({
+  source: z.enum(["popular", "latest"]),
+  items: publicSearchResultsDtoSchema,
+});
+
 export type PublicSearchResultDto = z.infer<typeof publicSearchResultDtoSchema>;

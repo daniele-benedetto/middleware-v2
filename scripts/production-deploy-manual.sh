@@ -84,7 +84,8 @@ ssh_opts=(-i "$SSH_KEY" -o BatchMode=yes)
 printf 'mode=%s\n' "$MODE"
 printf 'commit=%s\n' "$short_sha"
 printf 'dirty=%s\n' "$dirty"
-printf 'image=middleware-app:%s\n' "$image_tag"
+  printf 'image=middleware-app:%s\n' "$image_tag"
+  printf 'jobs_image=middleware-jobs:%s\n' "$image_tag"
 
 if [ "$SKIP_LOCAL_CHECKS" != "true" ]; then
   pnpm typecheck
@@ -263,6 +264,7 @@ sleep 1
 
 DOCKER_BUILDKIT=1 docker build --network host --target migrate -t "middleware-migrate:${tag}" app
 DOCKER_BUILDKIT=1 docker build --network host --secret "id=build_env,src=${build_env}" --target runner -t "middleware-app:${tag}" app
+DOCKER_BUILDKIT=1 docker build --network host --target jobs -t "middleware-jobs:${tag}" app
 
 docker run --rm --network middleware_internal --env-file "$migrate_env" "middleware-migrate:${tag}" pnpm prisma:migrate:deploy
 
@@ -290,12 +292,12 @@ PY
 docker compose --env-file .env.production -f compose.production.yml config --quiet
 docker compose --env-file .env.production -f compose.production.yml up -d --no-build --no-deps app
 
-printf 'branch=main\ncommit=%s\ndirty=%s\nsynced_at=%s\nmethod=manual-vps-rsync\nimage=middleware-app:%s\n' "$commit" "$dirty" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$tag" > DEPLOY_SOURCE
+printf 'branch=main\ncommit=%s\ndirty=%s\nsynced_at=%s\nmethod=manual-vps-rsync\nimage=middleware-app:%s\njobs_image=middleware-jobs:%s\n' "$commit" "$dirty" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$tag" "$tag" > DEPLOY_SOURCE
 
 /opt/middleware/bin/healthcheck.sh
 
 docker events --since 10m --until 0s > "$events_file" || true
-docker image inspect "middleware-app:${tag}" "middleware-migrate:${tag}" > "$inspect_file"
+docker image inspect "middleware-app:${tag}" "middleware-migrate:${tag}" "middleware-jobs:${tag}" > "$inspect_file"
 
 python3 - <<'PY' "$secret_file" "$events_file" "$inspect_file"
 from pathlib import Path
@@ -348,6 +350,7 @@ prune_manual_images() {
 
 prune_manual_images "middleware-app" 2 "middleware-app:${tag}"
 prune_manual_images "middleware-migrate" 1 ""
+prune_manual_images "middleware-jobs" 2 ""
 
 printf 'manual_deploy=ok\n'
 REMOTE

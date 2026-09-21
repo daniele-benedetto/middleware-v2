@@ -83,4 +83,42 @@ export const searchRepository = {
       LIMIT ${limit}
     `);
   },
+  async listSuggestedArticles(limit: number): Promise<SearchRecord[]> {
+    return prisma.$queryRaw<SearchRecord[]>(Prisma.sql`
+      SELECT
+        document."id",
+        document."sourceType",
+        document."title",
+        document."href",
+        NULL::text AS "snippet",
+        document."publishedAt",
+        COUNT(*) OVER()::int AS "total"
+      FROM "global_search_documents" AS document
+      INNER JOIN "article_popularities" AS popularity
+        ON popularity."articleId" = document."sourceId"
+      WHERE document."sourceType" = 'article'
+        AND popularity."syncedAt" >= NOW() - INTERVAL '2 days'
+      ORDER BY
+        popularity."pageviews" DESC,
+        document."publishedAt" DESC NULLS LAST,
+        document."title" ASC
+      LIMIT ${limit}
+    `);
+  },
+  async listLatestArticles(limit: number): Promise<SearchRecord[]> {
+    return prisma.$queryRaw<SearchRecord[]>(Prisma.sql`
+      SELECT
+        document."id",
+        document."sourceType",
+        document."title",
+        document."href",
+        NULL::text AS "snippet",
+        document."publishedAt",
+        COUNT(*) OVER()::int AS "total"
+      FROM "global_search_documents" AS document
+      WHERE document."sourceType" = 'article'
+      ORDER BY document."publishedAt" DESC NULLS LAST, document."title" ASC
+      LIMIT ${limit}
+    `);
+  },
 };

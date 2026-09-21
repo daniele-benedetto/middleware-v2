@@ -1,8 +1,12 @@
 export {
   publicSearchResponseDtoSchema,
   publicSearchResultsDtoSchema,
+  publicSearchSuggestionsDtoSchema,
 } from "@/lib/server/modules/search/dto";
-export { publicSearchInputSchema } from "@/lib/server/modules/search/schema";
+export {
+  publicSearchInputSchema,
+  publicSearchSuggestionsInputSchema,
+} from "@/lib/server/modules/search/schema";
 export {
   publicSearchService,
   rebuildGlobalSearchProjection,

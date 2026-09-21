@@ -1,6 +1,5 @@
 "use client";
 
-import { keepPreviousData } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { i18n } from "@/lib/i18n";
@@ -21,52 +20,81 @@ export function PublicSearchMenuResults({
     return () => window.clearTimeout(timeoutId);
   }, [normalizedQuery]);
 
+  const hasSearchQuery = normalizedQuery.length >= 2;
   const enabled = debouncedQuery.length >= 2;
-  const isDebouncing = normalizedQuery.length >= 2 && normalizedQuery !== debouncedQuery;
+  const isDebouncing = hasSearchQuery && normalizedQuery !== debouncedQuery;
   const searchResults = trpc.public.search.search.useQuery(
-    { q: debouncedQuery, limit: 12 },
-    { enabled, placeholderData: keepPreviousData, staleTime: 30_000 },
+    { q: debouncedQuery, limit: 10 },
+    { enabled, staleTime: 30_000 },
   );
+  const suggestions = trpc.public.search.suggestions.useQuery(
+    { limit: 10 },
+    { enabled: !hasSearchQuery, staleTime: 30_000 },
+  );
+  const activeQuery = hasSearchQuery ? searchResults : suggestions;
 
-  if (normalizedQuery.length < 2) {
+  if (!hasSearchQuery && suggestions.isPending) {
     return (
-      <p className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase">
-        {i18n.public.home.dossier.searchHint}
-      </p>
-    );
-  }
-
-  if ((isDebouncing || searchResults.isPending) && !searchResults.data) {
-    return (
-      <p className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase">
+      <p
+        role="status"
+        className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase"
+      >
         {i18n.public.home.dossier.searchLoading}
       </p>
     );
   }
 
-  if (searchResults.isError && !searchResults.data) {
+  if (hasSearchQuery && (isDebouncing || searchResults.isPending)) {
     return (
-      <p className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-accent uppercase">
+      <p
+        role="status"
+        className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase"
+      >
+        {i18n.public.home.dossier.searchLoading}
+      </p>
+    );
+  }
+
+  if (activeQuery.isError && !activeQuery.data) {
+    return (
+      <p
+        role="alert"
+        className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-accent uppercase"
+      >
         {i18n.public.home.dossier.searchError}
       </p>
     );
   }
 
-  if (searchResults.data?.total === 0) {
+  if (hasSearchQuery && searchResults.data?.total === 0) {
     return (
-      <p className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase">
+      <p
+        role="status"
+        className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase"
+      >
         {i18n.public.home.dossier.searchEmpty(debouncedQuery)}
       </p>
     );
   }
 
+  const results = hasSearchQuery ? searchResults.data?.items : suggestions.data?.items;
+  const label = hasSearchQuery
+    ? i18n.public.home.dossier.searchResultsLabel(searchResults.data?.total ?? 0)
+    : suggestions.data?.source === "popular"
+      ? i18n.public.home.dossier.searchPopularLabel
+      : i18n.public.home.dossier.searchLatestLabel;
+
   return (
     <>
-      <p className="mb-3 font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase">
-        {i18n.public.home.dossier.searchResultsLabel(searchResults.data?.total ?? 0)}
+      <p
+        role="status"
+        aria-live="polite"
+        className="mb-3 font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase"
+      >
+        {label}
       </p>
       <ol className="border-t border-foreground">
-        {searchResults.data?.items.map((result) => (
+        {results?.map((result) => (
           <li key={result.id} className="border-b border-foreground">
             <a
               href={result.href}

@@ -277,6 +277,7 @@ export type ArticleWhereInput = {
   issue?: Prisma.XOR<Prisma.IssueScalarRelationFilter, Prisma.IssueWhereInput>
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   author?: Prisma.XOR<Prisma.AuthorNullableScalarRelationFilter, Prisma.AuthorWhereInput> | null
+  popularity?: Prisma.XOR<Prisma.ArticlePopularityNullableScalarRelationFilter, Prisma.ArticlePopularityWhereInput> | null
 }
 
 export type ArticleOrderByWithRelationInput = {
@@ -302,6 +303,7 @@ export type ArticleOrderByWithRelationInput = {
   issue?: Prisma.IssueOrderByWithRelationInput
   category?: Prisma.CategoryOrderByWithRelationInput
   author?: Prisma.AuthorOrderByWithRelationInput
+  popularity?: Prisma.ArticlePopularityOrderByWithRelationInput
 }
 
 export type ArticleWhereUniqueInput = Prisma.AtLeast<{
@@ -331,6 +333,7 @@ export type ArticleWhereUniqueInput = Prisma.AtLeast<{
   issue?: Prisma.XOR<Prisma.IssueScalarRelationFilter, Prisma.IssueWhereInput>
   category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   author?: Prisma.XOR<Prisma.AuthorNullableScalarRelationFilter, Prisma.AuthorWhereInput> | null
+  popularity?: Prisma.XOR<Prisma.ArticlePopularityNullableScalarRelationFilter, Prisma.ArticlePopularityWhereInput> | null
 }, "id" | "issueId_slug" | "slug">
 
 export type ArticleOrderByWithAggregationInput = {
@@ -403,6 +406,7 @@ export type ArticleCreateInput = {
   issue: Prisma.IssueCreateNestedOneWithoutArticlesInput
   category: Prisma.CategoryCreateNestedOneWithoutArticlesInput
   author?: Prisma.AuthorCreateNestedOneWithoutArticlesInput
+  popularity?: Prisma.ArticlePopularityCreateNestedOneWithoutArticleInput
 }
 
 export type ArticleUncheckedCreateInput = {
@@ -425,6 +429,7 @@ export type ArticleUncheckedCreateInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  popularity?: Prisma.ArticlePopularityUncheckedCreateNestedOneWithoutArticleInput
 }
 
 export type ArticleUpdateInput = {
@@ -447,6 +452,7 @@ export type ArticleUpdateInput = {
   issue?: Prisma.IssueUpdateOneRequiredWithoutArticlesNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutArticlesNestedInput
   author?: Prisma.AuthorUpdateOneWithoutArticlesNestedInput
+  popularity?: Prisma.ArticlePopularityUpdateOneWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateInput = {
@@ -469,6 +475,7 @@ export type ArticleUncheckedUpdateInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  popularity?: Prisma.ArticlePopularityUncheckedUpdateOneWithoutArticleNestedInput
 }
 
 export type ArticleCreateManyInput = {
@@ -605,6 +612,11 @@ export type ArticleMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type ArticleScalarRelationFilter = {
+  is?: Prisma.ArticleWhereInput
+  isNot?: Prisma.ArticleWhereInput
+}
+
 export type ArticleCreateNestedManyWithoutAuthorInput = {
   create?: Prisma.XOR<Prisma.ArticleCreateWithoutAuthorInput, Prisma.ArticleUncheckedCreateWithoutAuthorInput> | Prisma.ArticleCreateWithoutAuthorInput[] | Prisma.ArticleUncheckedCreateWithoutAuthorInput[]
   connectOrCreate?: Prisma.ArticleCreateOrConnectWithoutAuthorInput | Prisma.ArticleCreateOrConnectWithoutAuthorInput[]
@@ -735,6 +747,20 @@ export type EnumArticleStatusFieldUpdateOperationsInput = {
   set?: $Enums.ArticleStatus
 }
 
+export type ArticleCreateNestedOneWithoutPopularityInput = {
+  create?: Prisma.XOR<Prisma.ArticleCreateWithoutPopularityInput, Prisma.ArticleUncheckedCreateWithoutPopularityInput>
+  connectOrCreate?: Prisma.ArticleCreateOrConnectWithoutPopularityInput
+  connect?: Prisma.ArticleWhereUniqueInput
+}
+
+export type ArticleUpdateOneRequiredWithoutPopularityNestedInput = {
+  create?: Prisma.XOR<Prisma.ArticleCreateWithoutPopularityInput, Prisma.ArticleUncheckedCreateWithoutPopularityInput>
+  connectOrCreate?: Prisma.ArticleCreateOrConnectWithoutPopularityInput
+  upsert?: Prisma.ArticleUpsertWithoutPopularityInput
+  connect?: Prisma.ArticleWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ArticleUpdateToOneWithWhereWithoutPopularityInput, Prisma.ArticleUpdateWithoutPopularityInput>, Prisma.ArticleUncheckedUpdateWithoutPopularityInput>
+}
+
 export type ArticleCreateWithoutAuthorInput = {
   id?: string
   status?: $Enums.ArticleStatus
@@ -754,6 +780,7 @@ export type ArticleCreateWithoutAuthorInput = {
   updatedAt?: Date | string
   issue: Prisma.IssueCreateNestedOneWithoutArticlesInput
   category: Prisma.CategoryCreateNestedOneWithoutArticlesInput
+  popularity?: Prisma.ArticlePopularityCreateNestedOneWithoutArticleInput
 }
 
 export type ArticleUncheckedCreateWithoutAuthorInput = {
@@ -775,6 +802,7 @@ export type ArticleUncheckedCreateWithoutAuthorInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  popularity?: Prisma.ArticlePopularityUncheckedCreateNestedOneWithoutArticleInput
 }
 
 export type ArticleCreateOrConnectWithoutAuthorInput = {
@@ -847,6 +875,7 @@ export type ArticleCreateWithoutIssueInput = {
   updatedAt?: Date | string
   category: Prisma.CategoryCreateNestedOneWithoutArticlesInput
   author?: Prisma.AuthorCreateNestedOneWithoutArticlesInput
+  popularity?: Prisma.ArticlePopularityCreateNestedOneWithoutArticleInput
 }
 
 export type ArticleUncheckedCreateWithoutIssueInput = {
@@ -868,6 +897,7 @@ export type ArticleUncheckedCreateWithoutIssueInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  popularity?: Prisma.ArticlePopularityUncheckedCreateNestedOneWithoutArticleInput
 }
 
 export type ArticleCreateOrConnectWithoutIssueInput = {
@@ -915,6 +945,7 @@ export type ArticleCreateWithoutCategoryInput = {
   updatedAt?: Date | string
   issue: Prisma.IssueCreateNestedOneWithoutArticlesInput
   author?: Prisma.AuthorCreateNestedOneWithoutArticlesInput
+  popularity?: Prisma.ArticlePopularityCreateNestedOneWithoutArticleInput
 }
 
 export type ArticleUncheckedCreateWithoutCategoryInput = {
@@ -936,6 +967,7 @@ export type ArticleUncheckedCreateWithoutCategoryInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  popularity?: Prisma.ArticlePopularityUncheckedCreateNestedOneWithoutArticleInput
 }
 
 export type ArticleCreateOrConnectWithoutCategoryInput = {
@@ -962,6 +994,110 @@ export type ArticleUpdateWithWhereUniqueWithoutCategoryInput = {
 export type ArticleUpdateManyWithWhereWithoutCategoryInput = {
   where: Prisma.ArticleScalarWhereInput
   data: Prisma.XOR<Prisma.ArticleUpdateManyMutationInput, Prisma.ArticleUncheckedUpdateManyWithoutCategoryInput>
+}
+
+export type ArticleCreateWithoutPopularityInput = {
+  id?: string
+  status?: $Enums.ArticleStatus
+  publishedAt?: Date | string | null
+  title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  slug: string
+  excerpt?: string | null
+  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  imageUrl?: string | null
+  imageAlt?: string | null
+  imageSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  audioUrl?: string | null
+  audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  issue: Prisma.IssueCreateNestedOneWithoutArticlesInput
+  category: Prisma.CategoryCreateNestedOneWithoutArticlesInput
+  author?: Prisma.AuthorCreateNestedOneWithoutArticlesInput
+}
+
+export type ArticleUncheckedCreateWithoutPopularityInput = {
+  id?: string
+  issueId: string
+  categoryId: string
+  authorId?: string | null
+  status?: $Enums.ArticleStatus
+  publishedAt?: Date | string | null
+  title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  slug: string
+  excerpt?: string | null
+  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  contentRich: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  imageUrl?: string | null
+  imageAlt?: string | null
+  imageSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  audioUrl?: string | null
+  audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ArticleCreateOrConnectWithoutPopularityInput = {
+  where: Prisma.ArticleWhereUniqueInput
+  create: Prisma.XOR<Prisma.ArticleCreateWithoutPopularityInput, Prisma.ArticleUncheckedCreateWithoutPopularityInput>
+}
+
+export type ArticleUpsertWithoutPopularityInput = {
+  update: Prisma.XOR<Prisma.ArticleUpdateWithoutPopularityInput, Prisma.ArticleUncheckedUpdateWithoutPopularityInput>
+  create: Prisma.XOR<Prisma.ArticleCreateWithoutPopularityInput, Prisma.ArticleUncheckedCreateWithoutPopularityInput>
+  where?: Prisma.ArticleWhereInput
+}
+
+export type ArticleUpdateToOneWithWhereWithoutPopularityInput = {
+  where?: Prisma.ArticleWhereInput
+  data: Prisma.XOR<Prisma.ArticleUpdateWithoutPopularityInput, Prisma.ArticleUncheckedUpdateWithoutPopularityInput>
+}
+
+export type ArticleUpdateWithoutPopularityInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  issue?: Prisma.IssueUpdateOneRequiredWithoutArticlesNestedInput
+  category?: Prisma.CategoryUpdateOneRequiredWithoutArticlesNestedInput
+  author?: Prisma.AuthorUpdateOneWithoutArticlesNestedInput
+}
+
+export type ArticleUncheckedUpdateWithoutPopularityInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  issueId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  authorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumArticleStatusFieldUpdateOperationsInput | $Enums.ArticleStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  excerpt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excerptRich?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  contentRich?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ArticleCreateManyAuthorInput = {
@@ -1004,6 +1140,7 @@ export type ArticleUpdateWithoutAuthorInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   issue?: Prisma.IssueUpdateOneRequiredWithoutArticlesNestedInput
   category?: Prisma.CategoryUpdateOneRequiredWithoutArticlesNestedInput
+  popularity?: Prisma.ArticlePopularityUpdateOneWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateWithoutAuthorInput = {
@@ -1025,6 +1162,7 @@ export type ArticleUncheckedUpdateWithoutAuthorInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  popularity?: Prisma.ArticlePopularityUncheckedUpdateOneWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateManyWithoutAuthorInput = {
@@ -1088,6 +1226,7 @@ export type ArticleUpdateWithoutIssueInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   category?: Prisma.CategoryUpdateOneRequiredWithoutArticlesNestedInput
   author?: Prisma.AuthorUpdateOneWithoutArticlesNestedInput
+  popularity?: Prisma.ArticlePopularityUpdateOneWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateWithoutIssueInput = {
@@ -1109,6 +1248,7 @@ export type ArticleUncheckedUpdateWithoutIssueInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  popularity?: Prisma.ArticlePopularityUncheckedUpdateOneWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateManyWithoutIssueInput = {
@@ -1172,6 +1312,7 @@ export type ArticleUpdateWithoutCategoryInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   issue?: Prisma.IssueUpdateOneRequiredWithoutArticlesNestedInput
   author?: Prisma.AuthorUpdateOneWithoutArticlesNestedInput
+  popularity?: Prisma.ArticlePopularityUpdateOneWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateWithoutCategoryInput = {
@@ -1193,6 +1334,7 @@ export type ArticleUncheckedUpdateWithoutCategoryInput = {
   audioChunks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  popularity?: Prisma.ArticlePopularityUncheckedUpdateOneWithoutArticleNestedInput
 }
 
 export type ArticleUncheckedUpdateManyWithoutCategoryInput = {
@@ -1241,6 +1383,7 @@ export type ArticleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   issue?: boolean | Prisma.IssueDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   author?: boolean | Prisma.Article$authorArgs<ExtArgs>
+  popularity?: boolean | Prisma.Article$popularityArgs<ExtArgs>
 }, ExtArgs["result"]["article"]>
 
 export type ArticleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1320,6 +1463,7 @@ export type ArticleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   issue?: boolean | Prisma.IssueDefaultArgs<ExtArgs>
   category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   author?: boolean | Prisma.Article$authorArgs<ExtArgs>
+  popularity?: boolean | Prisma.Article$popularityArgs<ExtArgs>
 }
 export type ArticleIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   issue?: boolean | Prisma.IssueDefaultArgs<ExtArgs>
@@ -1338,6 +1482,7 @@ export type $ArticlePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     issue: Prisma.$IssuePayload<ExtArgs>
     category: Prisma.$CategoryPayload<ExtArgs>
     author: Prisma.$AuthorPayload<ExtArgs> | null
+    popularity: Prisma.$ArticlePopularityPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1756,6 +1901,7 @@ export interface Prisma__ArticleClient<T, Null = never, ExtArgs extends runtime.
   issue<T extends Prisma.IssueDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.IssueDefaultArgs<ExtArgs>>): Prisma.Prisma__IssueClient<runtime.Types.Result.GetResult<Prisma.$IssuePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   category<T extends Prisma.CategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__CategoryClient<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   author<T extends Prisma.Article$authorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Article$authorArgs<ExtArgs>>): Prisma.Prisma__AuthorClient<runtime.Types.Result.GetResult<Prisma.$AuthorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  popularity<T extends Prisma.Article$popularityArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Article$popularityArgs<ExtArgs>>): Prisma.Prisma__ArticlePopularityClient<runtime.Types.Result.GetResult<Prisma.$ArticlePopularityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2221,6 +2367,25 @@ export type Article$authorArgs<ExtArgs extends runtime.Types.Extensions.Internal
    */
   include?: Prisma.AuthorInclude<ExtArgs> | null
   where?: Prisma.AuthorWhereInput
+}
+
+/**
+ * Article.popularity
+ */
+export type Article$popularityArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ArticlePopularity
+   */
+  select?: Prisma.ArticlePopularitySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ArticlePopularity
+   */
+  omit?: Prisma.ArticlePopularityOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ArticlePopularityInclude<ExtArgs> | null
+  where?: Prisma.ArticlePopularityWhereInput
 }
 
 /**
