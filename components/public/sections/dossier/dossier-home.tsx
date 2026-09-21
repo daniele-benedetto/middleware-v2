@@ -49,6 +49,7 @@ function getArticleIndexItem(
     id: `issue-article-${article.id}`,
     label: article.title,
     number: articleNumbers.get(article.id),
+    type: "article",
   };
 }
 
@@ -65,15 +66,18 @@ function getBlockIndexItems(
         getArticleIndexItem(article, articleNumbers),
       );
     case "course":
-      return [{ id: getBlockAnchorId(block), label: block.course.title, icon: "course" }];
+      return [
+        { id: getBlockAnchorId(block), label: block.course.title, icon: "course", type: "course" },
+      ];
     case "map":
-      return [{ id: getBlockAnchorId(block), label: block.map.title, icon: "map" }];
+      return [{ id: getBlockAnchorId(block), label: block.map.title, icon: "map", type: "map" }];
     case "questionnaireAnalysis":
       return [
         {
           id: getBlockAnchorId(block),
           label: block.questionnaireAnalysis.title,
           icon: "questionnaireAnalysis",
+          type: "questionnaire",
         },
       ];
     case "preview":
@@ -82,6 +86,7 @@ function getBlockIndexItems(
           id: getBlockAnchorId(block),
           label: block.previewIssue.article.title,
           icon: "preview",
+          type: "article",
         },
       ];
   }
@@ -163,6 +168,7 @@ export function DossierHome({ hero, issue, publishedIssues }: DossierHomeProps) 
       issueNumber: issueNumbers.get(publishedIssue.id) ?? nextIssueNumber,
       slug: publishedIssue.slug,
       title: publishedIssue.title,
+      publishedAt: publishedIssue.publishedAt,
     }));
 
   if (blocks.length === 0) {

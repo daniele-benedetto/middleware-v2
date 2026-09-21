@@ -64,7 +64,7 @@ RUN --mount=type=secret,id=build_env,required=false sh -lc '\
     export REDIS_URL="redis://localhost:6379/0"; \
     export BETTER_AUTH_URL="http://localhost:3000"; \
   fi; \
-  pnpm prisma:generate && pnpm build \
+   pnpm build \
 '
 
 FROM deps AS migrate
@@ -87,6 +87,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY scripts/sync-popular-articles.mjs ./scripts/sync-popular-articles.mjs
+COPY scripts/lib ./scripts/lib
 
 USER node
 

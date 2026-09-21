@@ -11,6 +11,7 @@ export type IssueTableOfContentsItem = {
   id: string;
   label: string;
   number?: number;
+  type: "article" | "course" | "map" | "questionnaire";
   icon?: "course" | "map" | "questionnaireAnalysis" | "preview";
 };
 
@@ -19,6 +20,7 @@ export type IssueTableOfContentsIssue = {
   issueNumber: string;
   slug: string;
   title: string;
+  publishedAt: string;
 };
 
 const blockIcons = {
@@ -76,8 +78,13 @@ export function IssueTableOfContents({
                           <Icon size={18} strokeWidth={2.5} />
                         </span>
                       ) : null}
-                      <span className="min-w-0 flex-[1_1_12.5rem] font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em] text-foreground">
-                        {item.label}
+                      <span className="min-w-0 flex-[1_1_12.5rem]">
+                        <span className="block font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-accent uppercase">
+                          {i18n.public.home.dossier.searchTypeLabel(item.type)}
+                        </span>
+                        <span className="block font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em] text-foreground">
+                          {item.label}
+                        </span>
                       </span>
                     </a>
                   </li>

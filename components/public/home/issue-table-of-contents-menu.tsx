@@ -10,6 +10,7 @@ import { publicContentClassName } from "@/components/public/primitives";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
+import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 import { cn } from "@/lib/utils";
 
 import type {
@@ -112,12 +113,26 @@ export function IssueTableOfContentsMenu({
     if (!visible) return;
 
     const previousOverflow = document.body.style.overflow;
+    const previousPosition = document.body.style.position;
+    const previousTop = document.body.style.top;
+    const previousWidth = document.body.style.width;
+    const previousOverscrollBehavior = document.body.style.overscrollBehavior;
+    const previousDocumentOverflow = document.documentElement.style.overflow;
+    const previousDocumentOverscrollBehavior = document.documentElement.style.overscrollBehavior;
+    const scrollY = window.scrollY;
     const inertElements = Array.from(
       document.querySelectorAll<HTMLElement>(
         "[data-public-header], [data-public-page-content], [data-public-footer]",
       ),
     );
+    // iOS can scroll the document behind a fixed overlay when browser chrome changes height.
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    document.body.style.overscrollBehavior = "none";
+    document.documentElement.style.overflow = "hidden";
+    document.documentElement.style.overscrollBehavior = "none";
     inertElements.forEach((element) => {
       element.inert = true;
     });
@@ -156,10 +171,17 @@ export function IssueTableOfContentsMenu({
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.style.position = previousPosition;
+      document.body.style.top = previousTop;
+      document.body.style.width = previousWidth;
+      document.body.style.overscrollBehavior = previousOverscrollBehavior;
+      document.documentElement.style.overflow = previousDocumentOverflow;
+      document.documentElement.style.overscrollBehavior = previousDocumentOverscrollBehavior;
       inertElements.forEach((element) => {
         element.inert = false;
       });
       window.removeEventListener("keydown", handleKeyDown);
+      window.scrollTo({ top: scrollY, behavior: "instant" });
     };
   }, [activeMenu, menuId, visible]);
 
@@ -225,6 +247,7 @@ export function IssueTableOfContentsMenu({
 
     clearOpenFrame();
     clearSearchFocusTimer();
+    if (activeMenu === "search") setSearchValue("");
     closeCallbackRef.current = onClosed;
     const duration = getMotionDuration();
 
@@ -482,8 +505,13 @@ export function IssueTableOfContentsMenu({
                                   <span className="shrink-0 font-heading text-[15px] leading-none font-black tracking-[-0.02em] text-accent tabular-nums">
                                     {issue.issueNumber}
                                   </span>
-                                  <span className="font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">
-                                    {issue.title}
+                                  <span>
+                                    <span className="block font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-accent uppercase">
+                                      {formatIssueMonthYearLong(issue.publishedAt)}
+                                    </span>
+                                    <span className="block font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">
+                                      {issue.title}
+                                    </span>
                                   </span>
                                 </a>
                               </li>
@@ -514,8 +542,13 @@ export function IssueTableOfContentsMenu({
                                       <Icon size={18} strokeWidth={2.5} />
                                     </span>
                                   ) : null}
-                                  <span className="font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">
-                                    {item.label}
+                                  <span>
+                                    <span className="block font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-accent uppercase">
+                                      {i18n.public.home.dossier.searchTypeLabel(item.type)}
+                                    </span>
+                                    <span className="block font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">
+                                      {item.label}
+                                    </span>
                                   </span>
                                 </button>
                               </li>

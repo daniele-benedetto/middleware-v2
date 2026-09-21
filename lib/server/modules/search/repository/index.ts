@@ -96,7 +96,11 @@ export const searchRepository = {
       FROM "global_search_documents" AS document
       INNER JOIN "article_popularities" AS popularity
         ON popularity."articleId" = document."sourceId"
+      INNER JOIN "articles" AS article
+        ON article."id" = popularity."articleId"
       WHERE document."sourceType" = 'article'
+        AND article."status" = 'PUBLISHED'
+        AND article."publishedAt" IS NOT NULL
         AND popularity."syncedAt" >= NOW() - INTERVAL '2 days'
       ORDER BY
         popularity."pageviews" DESC,
@@ -116,7 +120,11 @@ export const searchRepository = {
         document."publishedAt",
         COUNT(*) OVER()::int AS "total"
       FROM "global_search_documents" AS document
+      INNER JOIN "articles" AS article
+        ON article."id" = document."sourceId"
       WHERE document."sourceType" = 'article'
+        AND article."status" = 'PUBLISHED'
+        AND article."publishedAt" IS NOT NULL
       ORDER BY document."publishedAt" DESC NULLS LAST, document."title" ASC
       LIMIT ${limit}
     `);

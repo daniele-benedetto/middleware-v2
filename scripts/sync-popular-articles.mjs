@@ -1,79 +1,50 @@
 import pg from "pg";
 
+import { fetchMetrics, getWindow } from "./lib/popular-articles-sync.mjs";
+
 const { Pool } = pg;
-const DAY_MS = 24 * 60 * 60 * 1000;
-const WINDOW_DAYS = 90;
-const PAGE_SIZE = 500;
 
 const databaseUrl = process.env.DATABASE_URL;
 const umamiApiKey = process.env.UMAMI_API_KEY;
+const umamiUsername = process.env.UMAMI_USERNAME;
+const umamiPassword = process.env.UMAMI_PASSWORD;
 const umamiWebsiteId = process.env.UMAMI_WEBSITE_ID;
 const umamiBaseUrl = process.env.UMAMI_BASE_URL ?? "https://stats.middleware.media";
 
-if (!databaseUrl || !umamiApiKey || !umamiWebsiteId) {
-  throw new Error("DATABASE_URL, UMAMI_API_KEY, and UMAMI_WEBSITE_ID are required");
+if (!databaseUrl || !umamiWebsiteId || (!umamiApiKey && (!umamiUsername || !umamiPassword))) {
+  throw new Error(
+    "DATABASE_URL, UMAMI_WEBSITE_ID, and either UMAMI_API_KEY or UMAMI_USERNAME/UMAMI_PASSWORD are required",
+  );
 }
 
-function getWindow(now = new Date()) {
-  const endAt = now.getTime();
-  return {
-    startAt: endAt - WINDOW_DAYS * DAY_MS,
-    endAt,
-  };
-}
+async function getAuthorizationHeader() {
+  if (umamiApiKey) return `Bearer ${umamiApiKey}`;
 
-function articleSlugFromPath(pathname) {
-  const match = /^\/articoli\/([^/?#]+)\/?$/.exec(pathname);
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-function parseMetricRows(value) {
-  if (!Array.isArray(value)) throw new Error("Umami metrics response must be an array");
-
-  return value.flatMap((row) => {
-    if (!row || typeof row !== "object") return [];
-    const { name, pageviews } = row;
-    if (typeof name !== "string" || !Number.isInteger(pageviews) || pageviews < 0) return [];
-
-    const slug = articleSlugFromPath(name);
-    return slug ? [{ slug, pageviews }] : [];
+  const response = await fetch(new URL("/api/auth/login", umamiBaseUrl), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: umamiUsername, password: umamiPassword }),
+    signal: AbortSignal.timeout(30_000),
   });
-}
+  if (!response.ok) throw new Error(`Umami login failed with status ${response.status}`);
 
-async function fetchMetrics(window) {
-  const records = [];
-  let offset = 0;
-
-  while (true) {
-    const url = new URL(`/api/websites/${umamiWebsiteId}/metrics/expanded`, umamiBaseUrl);
-    url.search = new URLSearchParams({
-      type: "path",
-      eventType: "1",
-      startAt: String(window.startAt),
-      endAt: String(window.endAt),
-      limit: String(PAGE_SIZE),
-      offset: String(offset),
-    }).toString();
-
-    const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${umamiApiKey}` },
-      signal: AbortSignal.timeout(30_000),
-    });
-    if (!response.ok)
-      throw new Error(`Umami metrics request failed with status ${response.status}`);
-
-    const responseBody = await response.json();
-    const pageLength = Array.isArray(responseBody) ? responseBody.length : 0;
-    const rows = parseMetricRows(responseBody);
-    records.push(...rows);
-    if (pageLength < PAGE_SIZE) return records;
-    offset += PAGE_SIZE;
+  const body = await response.json();
+  if (!body || typeof body !== "object" || typeof body.token !== "string") {
+    throw new Error("Umami login response did not include a token");
   }
+
+  return `Bearer ${body.token}`;
 }
 
 async function sync() {
   const window = getWindow();
-  const metrics = await fetchMetrics(window);
+  const authorization = await getAuthorizationHeader();
+  const metrics = await fetchMetrics({
+    authorization,
+    baseUrl: umamiBaseUrl,
+    websiteId: umamiWebsiteId,
+    window,
+  });
   const pageviewsBySlug = new Map();
   for (const metric of metrics) {
     pageviewsBySlug.set(metric.slug, (pageviewsBySlug.get(metric.slug) ?? 0) + metric.pageviews);
@@ -85,8 +56,10 @@ async function sync() {
       `SELECT article."id", article."slug"
        FROM "articles" AS article
        INNER JOIN "global_search_documents" AS document
-         ON document."sourceId" = article."id" AND document."sourceType" = 'article'
-       WHERE article."slug" = ANY($1::text[])`,
+          ON document."sourceId" = article."id" AND document."sourceType" = 'article'
+       WHERE article."status" = 'PUBLISHED'
+         AND article."publishedAt" IS NOT NULL
+         AND article."slug" = ANY($1::text[])`,
       [[...pageviewsBySlug.keys()]],
     );
     const syncedAt = new Date();

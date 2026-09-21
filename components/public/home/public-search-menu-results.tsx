@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertCircle, SearchX } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { i18n } from "@/lib/i18n";
@@ -25,77 +26,77 @@ export function PublicSearchMenuResults({
   const isDebouncing = hasSearchQuery && normalizedQuery !== debouncedQuery;
   const searchResults = trpc.public.search.search.useQuery(
     { q: debouncedQuery, limit: 10 },
-    { enabled, staleTime: 30_000 },
+    {
+      enabled,
+      placeholderData: (previousData) => previousData,
+      staleTime: 30_000,
+    },
   );
-  const suggestions = trpc.public.search.suggestions.useQuery(
-    { limit: 10 },
-    { enabled: !hasSearchQuery, staleTime: 30_000 },
-  );
-  const activeQuery = hasSearchQuery ? searchResults : suggestions;
+  const suggestions = trpc.public.search.suggestions.useQuery({ limit: 10 }, { staleTime: 30_000 });
 
-  if (!hasSearchQuery && suggestions.isPending) {
+  const showSearchResults = hasSearchQuery && (searchResults.data?.items.length ?? 0) > 0;
+  const hasSearchError = hasSearchQuery && searchResults.isError && !searchResults.data;
+  const hasEmptySearch =
+    hasSearchQuery &&
+    !isDebouncing &&
+    !searchResults.isPlaceholderData &&
+    searchResults.data?.total === 0;
+  const results =
+    hasSearchError || hasEmptySearch
+      ? undefined
+      : showSearchResults
+        ? searchResults.data?.items
+        : suggestions.data?.items;
+  const isLoadingSearch = hasSearchQuery && (isDebouncing || searchResults.isPending);
+  const showEmptyState =
+    hasSearchError ||
+    hasEmptySearch ||
+    (!normalizedQuery && !suggestions.isPending && !results?.length);
+
+  if (showEmptyState) {
+    const isError = hasSearchError || (!hasSearchQuery && suggestions.isError);
+    const EmptyIcon = isError ? AlertCircle : SearchX;
+    const title = isError
+      ? i18n.public.home.dossier.searchErrorTitle
+      : i18n.public.home.dossier.searchEmptyTitle;
+    const message = isError
+      ? i18n.public.home.dossier.searchErrorMessage
+      : hasSearchQuery
+        ? i18n.public.home.dossier.searchEmptyMessage(debouncedQuery)
+        : i18n.public.home.dossier.searchNoContentMessage;
+
     return (
-      <p
-        role="status"
-        className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase"
-      >
-        {i18n.public.home.dossier.searchLoading}
-      </p>
+      <div className="flex min-h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+        <EmptyIcon
+          className={isError ? "size-16 text-accent" : "size-14 text-muted"}
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
+        <div className="max-w-sm">
+          <p
+            role={isError ? "alert" : "status"}
+            className={`font-heading text-[clamp(28px,4vw,44px)] leading-[1] font-bold tracking-[-0.04em] ${isError ? "text-accent" : "text-foreground"}`}
+          >
+            {title}
+          </p>
+          <p className="mx-auto mt-4 max-w-[34ch] font-editorial text-(length:--text-md) leading-[1.4] text-body-text">
+            {message}
+          </p>
+        </div>
+      </div>
     );
   }
-
-  if (hasSearchQuery && (isDebouncing || searchResults.isPending)) {
-    return (
-      <p
-        role="status"
-        className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase"
-      >
-        {i18n.public.home.dossier.searchLoading}
-      </p>
-    );
-  }
-
-  if (activeQuery.isError && !activeQuery.data) {
-    return (
-      <p
-        role="alert"
-        className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-accent uppercase"
-      >
-        {i18n.public.home.dossier.searchError}
-      </p>
-    );
-  }
-
-  if (hasSearchQuery && searchResults.data?.total === 0) {
-    return (
-      <p
-        role="status"
-        className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase"
-      >
-        {i18n.public.home.dossier.searchEmpty(debouncedQuery)}
-      </p>
-    );
-  }
-
-  const results = hasSearchQuery ? searchResults.data?.items : suggestions.data?.items;
-  const label = hasSearchQuery
-    ? i18n.public.home.dossier.searchResultsLabel(searchResults.data?.total ?? 0)
-    : suggestions.data?.source === "popular"
-      ? i18n.public.home.dossier.searchPopularLabel
-      : i18n.public.home.dossier.searchLatestLabel;
 
   return (
     <>
-      <p
-        role="status"
-        aria-live="polite"
-        className="mb-3 font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-muted uppercase"
-      >
-        {label}
+      <p role="status" aria-live="polite" className="sr-only">
+        {showSearchResults
+          ? i18n.public.home.dossier.searchResultsLabel(searchResults.data?.total ?? 0)
+          : ""}
       </p>
-      <ol className="border-t border-foreground">
+      <ol aria-busy={isLoadingSearch}>
         {results?.map((result) => (
-          <li key={result.id} className="border-b border-foreground">
+          <li key={result.id} className="border-b border-foreground last:border-b-0">
             <a
               href={result.href}
               onClick={(event) => {

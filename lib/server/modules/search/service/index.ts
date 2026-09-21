@@ -1,5 +1,6 @@
 import "server-only";
 
+import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { issueHomeBlocksSchema } from "@/lib/server/modules/issues/schema";
@@ -68,7 +69,7 @@ export const publicSearchService = {
   async suggestions(limit: number) {
     await ensureGlobalSearchProjection();
 
-    const popularRecords = await searchRepository.listSuggestedArticles(limit);
+    const popularRecords = await getPopularRecords(limit);
     const records =
       popularRecords.length > 0 ? popularRecords : await searchRepository.listLatestArticles(limit);
 
@@ -78,6 +79,24 @@ export const publicSearchService = {
     };
   },
 };
+
+async function getPopularRecords(limit: number) {
+  try {
+    return await searchRepository.listSuggestedArticles(limit);
+  } catch (error) {
+    if (isMissingPopularityTableError(error)) return [];
+    throw error;
+  }
+}
+
+function isMissingPopularityTableError(error: unknown) {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
+  if (error.code === "P2021") return true;
+
+  return error.code === "P2010" && error.meta && typeof error.meta === "object"
+    ? Object.values(error.meta).some((value) => value === "42P01")
+    : false;
+}
 
 async function ensureGlobalSearchProjection() {
   const [documents, sourceFingerprint, projectionFingerprint] = await Promise.all([

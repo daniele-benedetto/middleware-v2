@@ -218,11 +218,15 @@ resta la fonte di verita e il suo DB non viene mai interrogato dal job.
 
 - Il job legge l'API HTTPS `metrics/expanded` di Umami, raggruppata per pathname,
   sulle pageview degli ultimi 90 giorni.
-- La API key e dedicata e revocabile. Risiede esclusivamente in
+- Umami `3.2.0` non supporta API key. Il job ottiene un token temporaneo a ogni
+  esecuzione tramite username/password; quando Umami sara aggiornato a `3.4.0` o
+  superiore, puo usare una API key revocabile.
+- Le credenziali risiedono esclusivamente in
   `/opt/middleware/secrets/popular-articles.env`, con permessi `0600` e proprietario
   `deploy`.
-- Il file segreto contiene solo `DATABASE_URL`, `UMAMI_API_KEY` e `UMAMI_WEBSITE_ID`.
-  Non stampare il contenuto e non usare `.env.production` come file env del job.
+- Il file segreto contiene `DATABASE_URL`, `UMAMI_WEBSITE_ID` e, in alternativa,
+  `UMAMI_API_KEY` oppure `UMAMI_USERNAME` e `UMAMI_PASSWORD`. Non stampare il
+  contenuto e non usare `.env.production` come file env del job.
 - Il job deve usare l'immagine indicata da `jobs_image` in `DEPLOY_SOURCE`, collegata
   alle reti Docker `middleware_internal` e `middleware_public`; non deve ricevere
   credenziali, volume o rete di `umami-postgres`.
@@ -246,6 +250,11 @@ Controllo read-only:
 systemctl list-timers --all middleware-popular-articles.timer --no-pager
 sudo journalctl -u middleware-popular-articles.service -n 80 --no-pager
 ```
+
+Stato operativo atteso: il timer e `active` e `enabled`. Verificare sempre il
+primo avvio con `sudo systemctl start middleware-popular-articles.service` prima
+di abilitare o riabilitare il timer. Un run riuscito scrive solo il conteggio di
+metriche e articoli sincronizzati; non stampa credenziali, token o payload Umami.
 
 Se il job fallisce, non svuotare manualmente `article_popularities`: il sito passa al
 fallback quando l'ultima sincronizzazione supera le 48 ore. Per sospendere il job,

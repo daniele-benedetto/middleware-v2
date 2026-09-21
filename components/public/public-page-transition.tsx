@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, ViewTransition, type ReactNode } from "react";
+import { useEffect, ViewTransition, type ReactNode } from "react";
 
 type PublicPageTransitionProps = {
   children: ReactNode;
@@ -85,17 +85,61 @@ function handlePageUpdate() {
 // route's loading.tsx fallback immediately, instead of freezing on the old page
 // until data is ready. That gives click -> fade out -> loading -> fade in.
 export function PublicPageTransition({ children }: PublicPageTransitionProps) {
-  const hashScrollFrameRef = useRef<number | null>(null);
-
   useEffect(() => clearCursorTransitioning, []);
 
   useEffect(() => {
-    const scrollToHash = (attempt = 0) => {
-      const hash = window.location.hash.slice(1);
-      if (!hash) return;
+    let hashScrollFrame: number | null = null;
+    let hashScrollRetryTimer: number | null = null;
+    let hashScrollTimeout: number | null = null;
+    let hashScrollObserver: MutationObserver | null = null;
+    let handledLocation: string | null = null;
 
-      const target = document.getElementById(decodeURIComponent(hash));
-      if (target) {
+    const clearHashScrollWait = () => {
+      if (hashScrollFrame !== null) {
+        window.cancelAnimationFrame(hashScrollFrame);
+        hashScrollFrame = null;
+      }
+      if (hashScrollRetryTimer !== null) {
+        window.clearTimeout(hashScrollRetryTimer);
+        hashScrollRetryTimer = null;
+      }
+      if (hashScrollTimeout !== null) {
+        window.clearTimeout(hashScrollTimeout);
+        hashScrollTimeout = null;
+      }
+      hashScrollObserver?.disconnect();
+      hashScrollObserver = null;
+    };
+
+    const getHashTarget = () => {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return null;
+
+      try {
+        return document.getElementById(decodeURIComponent(hash));
+      } catch {
+        return null;
+      }
+    };
+
+    const getLocationKey = () =>
+      `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    const scrollToHash = () => {
+      hashScrollFrame = null;
+      const hash = window.location.hash;
+      const locationKey = getLocationKey();
+      if (!hash) {
+        clearHashScrollWait();
+        handledLocation = null;
+        return;
+      }
+
+      const target = getHashTarget();
+      if (target?.getClientRects().length) {
+        clearHashScrollWait();
+        if (handledLocation === locationKey) return;
+        handledLocation = locationKey;
         const headerHeight =
           document.querySelector<HTMLElement>("[data-public-header]")?.offsetHeight ?? 0;
         const issueNavigationHeight =
@@ -116,17 +160,31 @@ export function PublicPageTransition({ children }: PublicPageTransitionProps) {
         return;
       }
 
-      if (attempt < 60) {
-        hashScrollFrameRef.current = window.requestAnimationFrame(() => scrollToHash(attempt + 1));
+      if (hashScrollRetryTimer === null) {
+        hashScrollRetryTimer = window.setTimeout(() => {
+          hashScrollRetryTimer = null;
+          scheduleHashScroll();
+        }, 100);
       }
     };
 
-    const handleHashChange = () => scrollToHash();
+    const scheduleHashScroll = () => {
+      if (hashScrollFrame !== null) return;
+      hashScrollFrame = window.requestAnimationFrame(scrollToHash);
+    };
+
+    const startHashScrollWait = () => {
+      clearHashScrollWait();
+      handledLocation = null;
+      hashScrollObserver = new MutationObserver(scheduleHashScroll);
+      hashScrollObserver.observe(document.body, { childList: true, subtree: true });
+      hashScrollTimeout = window.setTimeout(clearHashScrollWait, 10_000);
+      scheduleHashScroll();
+    };
+
+    const handleHashChange = () => startHashScrollWait();
     const handleNavigation = () => {
-      if (hashScrollFrameRef.current) {
-        window.cancelAnimationFrame(hashScrollFrameRef.current);
-      }
-      hashScrollFrameRef.current = window.requestAnimationFrame(() => scrollToHash());
+      startHashScrollWait();
     };
     const navigation = (window as unknown as { navigation?: NavigationLike }).navigation;
 
@@ -141,10 +199,7 @@ export function PublicPageTransition({ children }: PublicPageTransitionProps) {
     }
 
     return () => {
-      if (hashScrollFrameRef.current) {
-        window.cancelAnimationFrame(hashScrollFrameRef.current);
-        hashScrollFrameRef.current = null;
-      }
+      clearHashScrollWait();
       window.removeEventListener("hashchange", handleHashChange);
       if (navigation) {
         navigation.removeEventListener("navigate", handleNavigation);
