@@ -82,6 +82,7 @@ export function PublicFullscreenMenu({
         <div className={publicHeaderBarClassName}>
           <PublicBrand
             tone="dark"
+            eager
             onClick={(event) => {
               event.preventDefault();
               onNavigate("/");

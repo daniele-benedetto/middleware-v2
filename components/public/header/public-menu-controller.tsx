@@ -16,7 +16,7 @@ type PublicMenuControllerProps = {
 
 type MenuState = "closed" | "opening" | "open" | "closing-content" | "closing-shell";
 
-const menuOpenDuration = 520;
+const menuOpenDuration = 620;
 const menuShellCloseDuration = 360;
 const menuItemCloseStagger = 64;
 const menuLinkCloseDuration = 220;

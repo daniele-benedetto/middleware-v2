@@ -553,7 +553,7 @@ body {
 }
 
 .public-menu-overlay[data-menu-state="opening"] {
-  animation: public-menu-overlay-in 520ms var(--easing-standard) both;
+  animation: public-menu-overlay-in 620ms var(--easing-standard) both;
   will-change: clip-path;
 }
 
