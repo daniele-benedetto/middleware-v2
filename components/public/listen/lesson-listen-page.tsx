@@ -72,14 +72,15 @@ export function LessonListenPage({ data, chunksPromise }: LessonListenPageProps)
       tabIndex={-1}
       className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
-      <article className="grid min-h-[calc(100svh-var(--public-header-height))] grid-rows-[auto_minmax(34rem,1fr)]">
+      <article className="grid min-h-[calc(100svh-var(--public-header-height))] grid-rows-[auto_minmax(0,1fr)]">
         <PublicPageHero
           as="header"
           title={lesson.title}
           titleStyled={lesson.titleStyled}
           backgroundCode={formatLessonNumber(lessonNumber)}
           backgroundCodeClassName="top-3 right-4 text-[clamp(86px,18vw,210px)] sm:top-4 lg:top-4"
-          containerClassName="pt-5 pb-4 sm:pt-6 sm:pb-5 lg:pt-7 lg:pb-5"
+          containerClassName="pt-4 pb-3 sm:pt-6 sm:pb-5 lg:pt-7 lg:pb-5"
+          titleTypographyClassName="font-heading text-[clamp(34px,9vw,64px)] leading-[0.9] font-black tracking-[-0.06em] [text-wrap:balance] sm:text-[clamp(42px,7.5vw,104px)]"
           meta={<PublicMetaRail items={metaItems} />}
         />
 
@@ -88,7 +89,7 @@ export function LessonListenPage({ data, chunksPromise }: LessonListenPageProps)
           data-page-reveal="body"
           style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
         >
-          <div className={`${publicContentClassName} h-full min-h-0 py-3 sm:py-8 lg:py-10`}>
+          <div className={`${publicContentClassName} h-full min-h-0 py-2 sm:py-8 lg:py-10`}>
             <Suspense fallback={<ListenPlayerFallback />}>
               <LessonListenPlayer lesson={lesson} chunksPromise={chunksPromise} />
             </Suspense>
