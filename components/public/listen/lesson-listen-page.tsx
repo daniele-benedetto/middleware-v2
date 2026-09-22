@@ -49,7 +49,14 @@ async function LessonListenPlayer({
 
 function ListenPlayerFallback() {
   return (
-    <div className="h-full" role="status" aria-label={i18n.public.listenPage.transcriptLoading} />
+    <div
+      className="grid h-full min-h-48 content-start gap-3 py-5"
+      role="status"
+      aria-label={i18n.public.listenPage.transcriptLoading}
+    >
+      <span className="block h-7 w-11/12 animate-pulse bg-foreground/10" />
+      <span className="block h-6 w-2/3 animate-pulse bg-foreground/6" />
+    </div>
   );
 }
 
@@ -85,7 +92,7 @@ export function LessonListenPage({ data, chunksPromise }: LessonListenPageProps)
         />
 
         <section
-          className="min-h-0 overflow-hidden bg-background"
+          className="min-h-[18rem] overflow-hidden bg-background"
           data-page-reveal="body"
           style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
         >

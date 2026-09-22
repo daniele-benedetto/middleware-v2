@@ -156,4 +156,36 @@ describe("public article listen data", () => {
 
     expect(result).toEqual([]);
   });
+
+  it("does not fetch transcript JSON from arbitrary external URLs", async () => {
+    publicArticlesServiceMock.getBySlug.mockResolvedValue(
+      createArticle({ audioChunks: "https://example.com/transcript.json" }),
+    );
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+
+    await expect(getPublicArticleListenChunks("article-slug")).resolves.toEqual([]);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockRestore();
+  });
+
+  it("rejects transcript JSON larger than the server limit", async () => {
+    publicArticlesServiceMock.getBySlug.mockResolvedValue(
+      createArticle({ audioChunks: "/api/cms/media/blob?pathname=chunks%2Flarge.json" }),
+    );
+    getMediaMock.mockResolvedValue({
+      stream: createJsonStream([]),
+      contentType: "application/json",
+      url: "/api/public/media/blob?pathname=chunks%2Flarge.json",
+      downloadUrl: "/api/cms/media/blob?pathname=chunks%2Flarge.json&download=1",
+      pathname: "chunks/large.json",
+      size: 5 * 1024 * 1024 + 1,
+      contentRange: null,
+      responseSize: 5 * 1024 * 1024 + 1,
+      uploadedAt: new Date("2026-01-01T00:00:00.000Z"),
+      etag: "etag-large",
+    });
+
+    await expect(getPublicArticleListenChunks("article-slug")).resolves.toEqual([]);
+  });
 });

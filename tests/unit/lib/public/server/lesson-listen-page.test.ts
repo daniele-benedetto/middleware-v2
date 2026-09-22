@@ -135,4 +135,16 @@ describe("getPublicLessonListenPageData", () => {
     expect(data?.lessonNumber).toBe(2);
     expect(chunks).toEqual([{ id: "1", text: "Intro", start: 0, end: 4, confidence: null }]);
   });
+
+  it("does not fetch transcript JSON from arbitrary external URLs", async () => {
+    publicLessonsServiceMock.getBySlug.mockResolvedValue(
+      createLesson({ audioChunks: "https://example.com/transcript.json" }),
+    );
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+
+    await expect(getPublicLessonListenChunks("course-slug", "lesson-slug")).resolves.toEqual([]);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockRestore();
+  });
 });

@@ -62,7 +62,14 @@ async function ArticleListenPlayer({
 
 function ListenPlayerFallback() {
   return (
-    <div className="h-full" role="status" aria-label={i18n.public.listenPage.transcriptLoading} />
+    <div
+      className="grid h-full min-h-48 content-start gap-3 py-5"
+      role="status"
+      aria-label={i18n.public.listenPage.transcriptLoading}
+    >
+      <span className="block h-7 w-11/12 animate-pulse bg-foreground/10" />
+      <span className="block h-6 w-2/3 animate-pulse bg-foreground/6" />
+    </div>
   );
 }
 
@@ -84,7 +91,7 @@ export function ArticleListenPage({ data, chunksPromise }: ArticleListenPageProp
       tabIndex={-1}
       className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
-      <article className="grid h-[calc(100svh-var(--public-header-height)-96px)] min-h-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
+      <article className="grid min-h-[calc(100svh-var(--public-header-height))] grid-rows-[auto_minmax(18rem,1fr)]">
         <PublicPageHero
           as="header"
           title={article.title}
@@ -106,7 +113,7 @@ export function ArticleListenPage({ data, chunksPromise }: ArticleListenPageProp
         />
 
         <section
-          className="min-h-0 overflow-hidden bg-background"
+          className="min-h-[18rem] overflow-hidden bg-background"
           data-page-reveal="body"
           style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
         >

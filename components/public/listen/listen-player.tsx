@@ -118,6 +118,7 @@ function SyncedTranscript({
   const text = i18n.public.listenPage;
   const readingRef = useRef<HTMLDivElement>(null);
   const playbackTimeRef = useRef(currentTime);
+  const maxScrollTopRef = useRef(0);
 
   useEffect(() => {
     playbackTimeRef.current = currentTime;
@@ -127,21 +128,32 @@ function SyncedTranscript({
     const reading = readingRef.current;
     if (!reading || !chunk) return;
 
-    const syncScroll = () => {
-      const maxScrollTop = Math.max(0, reading.scrollHeight - reading.clientHeight);
+    maxScrollTopRef.current = Math.max(0, reading.scrollHeight - reading.clientHeight);
+    reading.scrollTop = 0;
+  }, [chunk]);
+
+  useEffect(() => {
+    const reading = readingRef.current;
+    if (!reading || !chunk) return;
+
+    const getTargetScrollTop = () => {
       const duration = Math.max(chunk.end - chunk.start, 0.001);
       const progress = Math.min(1, Math.max(0, (playbackTimeRef.current - chunk.start) / duration));
-      reading.scrollTop = maxScrollTop * progress;
+      return maxScrollTopRef.current * progress;
     };
 
     if (!isPlaying || isScrubbing) {
-      const frameId = window.requestAnimationFrame(syncScroll);
+      const frameId = window.requestAnimationFrame(() => {
+        reading.scrollTop = getTargetScrollTop();
+      });
       return () => window.cancelAnimationFrame(frameId);
     }
 
     let frameId = 0;
     const followPlayback = () => {
-      syncScroll();
+      const targetScrollTop = getTargetScrollTop();
+      const distance = targetScrollTop - reading.scrollTop;
+      reading.scrollTop += distance * 0.18;
       frameId = window.requestAnimationFrame(followPlayback);
     };
 
@@ -163,7 +175,7 @@ function SyncedTranscript({
     >
       <div ref={readingRef} className="relative min-h-0 flex-1 overflow-hidden py-2 sm:py-5">
         <div className="relative z-10">
-          <div className="flex items-start gap-2 bg-background/45 py-1 pr-1 font-editorial text-foreground opacity-100 motion-safe:animate-[listen-chunk-in_320ms_var(--easing-standard)] sm:py-1.5">
+          <div className="flex items-start gap-2 py-1 pr-1 font-editorial text-foreground sm:py-1.5">
             <span className="block min-w-0 flex-1 text-[clamp(17px,5.2vw,22px)] leading-[1.28] font-medium tracking-[-0.018em] sm:text-[clamp(20px,2.45vw,28px)] sm:leading-[1.3] sm:tracking-[-0.022em]">
               {chunk.text}
             </span>
@@ -178,16 +190,18 @@ function SyncedTranscript({
             <div
               key={nextChunk.id}
               aria-hidden
-              className="mt-5 font-editorial text-[clamp(16px,4.8vw,21px)] leading-[1.28] tracking-[-0.012em] text-muted/45 motion-safe:animate-[listen-chunk-in_360ms_var(--easing-standard)] sm:text-[clamp(19px,2.2vw,26px)] sm:leading-[1.3]"
+              className="mt-5 flex items-start gap-2 font-editorial text-[clamp(16px,4.8vw,21px)] leading-[1.28] tracking-[-0.012em] text-muted/45 motion-safe:animate-[listen-next-in_300ms_var(--easing-standard)] sm:text-[clamp(19px,2.2vw,26px)] sm:leading-[1.3]"
             >
-              {nextChunk.text}
+              <span className="min-w-0 flex-1">{nextChunk.text}</span>
+              {bookmarkedChunkIds.has(nextChunk.id) ? (
+                <BookmarkIcon
+                  className="mt-1 size-3.5 shrink-0 fill-accent text-accent sm:size-4"
+                  aria-hidden
+                />
+              ) : null}
             </div>
           ) : null}
         </div>
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-20 bg-gradient-to-t from-background via-background/85 to-transparent"
-          aria-hidden
-        />
       </div>
     </section>
   );

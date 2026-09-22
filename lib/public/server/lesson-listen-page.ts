@@ -2,12 +2,11 @@ import "server-only";
 
 import { cacheLife, cacheTag } from "next/cache";
 
-import { parseAudioChunks, type AudioChunk } from "@/lib/audio/audio-chunks";
-import { extractCmsMediaPathname } from "@/lib/media/blob";
+import { type AudioChunk } from "@/lib/audio/audio-chunks";
+import { loadPublicAudioChunks } from "@/lib/public/server/audio-chunk-source";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicCoursesService } from "@/lib/server/modules/courses/service/public";
 import { publicLessonsService } from "@/lib/server/modules/lessons/service/public";
-import { mediaStorage } from "@/lib/server/storage/media-storage";
 
 import type { PublicLessonDetailDto } from "@/lib/server/modules/lessons/dto/public";
 
@@ -22,53 +21,8 @@ export type PublicLessonListenPageData = PublicLessonListenMetadataData & {
   lessonNumber: number | null;
 };
 
-async function readStreamAsText(stream: ReadableStream<Uint8Array>) {
-  const response = new Response(stream);
-  return response.text();
-}
-
-async function loadJsonFromBlobUrl(value: string) {
-  const pathname = extractCmsMediaPathname(value);
-
-  if (!pathname) {
-    return null;
-  }
-
-  const result = await mediaStorage.get(pathname);
-
-  if (result.contentType !== "application/json") {
-    return null;
-  }
-
-  return JSON.parse(await readStreamAsText(result.stream));
-}
-
-async function loadJsonFromUrl(value: string) {
-  try {
-    const blobJson = await loadJsonFromBlobUrl(value);
-    if (blobJson) return blobJson;
-
-    const response = await fetch(value, {
-      next: { revalidate: PUBLIC_LESSON_LISTEN_PAGE_REVALIDATE_SECONDS },
-    });
-
-    if (!response.ok) return null;
-
-    const contentType = response.headers.get("content-type") ?? "";
-    if (!contentType.includes("application/json")) return null;
-
-    return response.json();
-  } catch {
-    return null;
-  }
-}
-
 async function loadAudioChunks(value: unknown) {
-  if (typeof value === "string" && value.trim()) {
-    return parseAudioChunks(await loadJsonFromUrl(value));
-  }
-
-  return parseAudioChunks(value);
+  return loadPublicAudioChunks(value);
 }
 
 async function getLessonBySlug(courseSlug: string, lessonSlug: string) {
