@@ -5,6 +5,8 @@ import { PublicMenuIcon } from "@/components/public/header/public-menu-icon";
 import { publicTypography } from "@/components/public/primitives";
 import { cn } from "@/lib/utils";
 
+import type { MouseEventHandler } from "react";
+
 type PublicMenuButtonProps = {
   label: string;
   ariaLabel: string;
@@ -13,7 +15,7 @@ type PublicMenuButtonProps = {
   expanded?: boolean;
   controls?: string;
   disabled?: boolean;
-  onClick: () => void;
+  onClick: MouseEventHandler<HTMLButtonElement>;
   className?: string;
 };
 

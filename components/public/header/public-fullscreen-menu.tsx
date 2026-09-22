@@ -13,7 +13,7 @@ import {
 } from "@/lib/public/analytics";
 import { cn } from "@/lib/utils";
 
-import type { CSSProperties, MouseEvent, RefObject } from "react";
+import type { CSSProperties, MouseEvent, MouseEventHandler, RefObject } from "react";
 
 export type PublicMenuItem = {
   id: string;
@@ -28,7 +28,7 @@ type PublicFullscreenMenuProps = {
   motion: "idle" | "entering";
   items: PublicMenuItem[];
   closeButtonRef: RefObject<HTMLButtonElement | null>;
-  onClose: () => void;
+  onClose: MouseEventHandler<HTMLButtonElement>;
   onNavigate: (href: string) => void;
 };
 

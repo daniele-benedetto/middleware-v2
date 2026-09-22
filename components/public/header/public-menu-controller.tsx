@@ -9,6 +9,7 @@ import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 
 import type { PublicMenuItem } from "@/components/public/header/public-fullscreen-menu";
+import type { MouseEvent } from "react";
 
 type PublicMenuControllerProps = {
   menuItems: PublicMenuItem[];
@@ -57,6 +58,7 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuCloseButtonRef = useRef<HTMLButtonElement>(null);
   const animationTimerRefs = useRef<number[]>([]);
+  const restoreFocusRef = useRef(false);
   const text = i18n.public.header;
   const menuContentCloseDuration = getMenuContentCloseDuration(menuItems.length);
   const menuVisible = menuState !== "closed";
@@ -87,20 +89,22 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
     animationTimerRefs.current.push(timerId);
   };
 
-  const openMenu = () => {
+  const openMenu = (restoreFocus: boolean) => {
     clearAnimationTimer();
+    restoreFocusRef.current = restoreFocus;
     setMenuMotion("entering");
     setMenuState("opening");
     setAnimationTimer(() => setMenuState("open"), getMotionDuration(menuOpenDuration));
   };
 
-  const closeMenu = (onClosed?: () => void) => {
+  const closeMenu = (restoreFocus = true, onClosed?: () => void) => {
     if (!menuVisible) {
       onClosed?.();
       return;
     }
 
     clearAnimationTimer();
+    restoreFocusRef.current = restoreFocus;
     setMenuMotion("idle");
     setMenuState("closing-content");
     const contentCloseDuration = getMotionDuration(menuContentCloseDuration);
@@ -120,21 +124,26 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
       external: href.startsWith("http"),
     });
     clearAnimationTimer();
+    restoreFocusRef.current = false;
     setMenuState("closed");
     window.requestAnimationFrame(() => router.push(href));
   };
 
-  const toggleMenu = () => {
+  const toggleMenu = (event: MouseEvent<HTMLButtonElement>) => {
     if (menuClosing) return;
     if (menuVisible) {
-      closeMenu();
+      const restoreFocus = event.detail === 0;
+      if (!restoreFocus) event.currentTarget.blur();
+      closeMenu(restoreFocus);
       return;
     }
     trackPublicAnalyticsEvent(publicAnalyticsEvents.menuOpen, { item_count: menuItems.length });
-    openMenu();
+    const restoreFocus = event.detail === 0;
+    if (!restoreFocus) event.currentTarget.blur();
+    openMenu(restoreFocus);
   };
 
-  const closeMenuFromEffect = useEffectEvent(() => closeMenu());
+  const closeMenuFromEffect = useEffectEvent(() => closeMenu(true));
 
   useEffect(() => {
     if (!menuVisible) return;
@@ -148,7 +157,9 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
     inertElements.forEach((element) => {
       element.inert = true;
     });
-    menuCloseButtonRef.current?.focus({ preventScroll: true });
+    if (restoreFocusRef.current) {
+      menuCloseButtonRef.current?.focus({ preventScroll: true });
+    }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -171,6 +182,12 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
       const firstElement = focusableElements[0];
       const lastElement = focusableElements.at(-1);
 
+      if (!menu?.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? lastElement : firstElement)?.focus();
+        return;
+      }
+
       if (event.shiftKey && document.activeElement === firstElement) {
         event.preventDefault();
         lastElement?.focus();
@@ -191,7 +208,9 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
         element.inert = false;
       });
       window.removeEventListener("keydown", handleKeyDown);
-      menuButton?.focus();
+      if (restoreFocusRef.current) {
+        menuButton?.focus({ preventScroll: true });
+      }
     };
   }, [menuId, menuVisible]);
 
@@ -215,7 +234,11 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
           motion={menuMotion}
           items={menuItems}
           closeButtonRef={menuCloseButtonRef}
-          onClose={() => closeMenu()}
+          onClose={(event) => {
+            const restoreFocus = event.detail === 0;
+            if (!restoreFocus) event.currentTarget.blur();
+            closeMenu(restoreFocus);
+          }}
           onNavigate={navigateAfterMenuClose}
         />
       ) : null}
