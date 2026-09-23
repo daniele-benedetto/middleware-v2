@@ -15,27 +15,7 @@ type PublicMenuControllerProps = {
   menuItems: PublicMenuItem[];
 };
 
-type MenuState = "closed" | "opening" | "open" | "closing-content" | "closing-shell";
-
-const menuOpenDuration = 620;
-const menuShellCloseDuration = 360;
-const menuItemCloseStagger = 64;
-const menuLinkCloseDuration = 220;
-
-function getMotionDuration(duration: number) {
-  if (
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  ) {
-    return 0;
-  }
-
-  return duration;
-}
-
-function getMenuContentCloseDuration(itemCount: number) {
-  return 140 + Math.max(0, itemCount - 1) * menuItemCloseStagger + menuLinkCloseDuration + 40;
-}
+type MenuPhase = "closed" | "opening" | "open" | "closing";
 
 const focusableSelector = [
   "a[href]",
@@ -52,86 +32,68 @@ function isElementVisible(element: HTMLElement) {
 
 export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
   const router = useRouter();
-  const [menuState, setMenuState] = useState<MenuState>("closed");
-  const [menuMotion, setMenuMotion] = useState<"idle" | "entering">("idle");
+  const [menuPhase, setMenuPhase] = useState<MenuPhase>("closed");
   const menuId = useId();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuCloseButtonRef = useRef<HTMLButtonElement>(null);
-  const animationTimerRefs = useRef<number[]>([]);
   const restoreFocusRef = useRef(false);
+  const menuTimerRef = useRef<number | null>(null);
+  const menuFrameRef = useRef<number | null>(null);
+  const menuCallbackRef = useRef<(() => void) | undefined>(undefined);
   const text = i18n.public.header;
-  const menuContentCloseDuration = getMenuContentCloseDuration(menuItems.length);
-  const menuVisible = menuState !== "closed";
-  const menuClosing = menuState === "closing-content" || menuState === "closing-shell";
+  const menuVisible = menuPhase !== "closed";
 
-  useEffect(() => {
-    return () => {
-      animationTimerRefs.current.forEach((timerId) => window.clearTimeout(timerId));
-      animationTimerRefs.current = [];
-    };
-  }, []);
-
-  const clearAnimationTimer = () => {
-    animationTimerRefs.current.forEach((timerId) => window.clearTimeout(timerId));
-    animationTimerRefs.current = [];
-  };
-
-  const setAnimationTimer = (callback: () => void, delay: number) => {
-    if (delay === 0) {
-      callback();
-      return;
+  const clearMenuTimers = () => {
+    if (menuTimerRef.current !== null) {
+      window.clearTimeout(menuTimerRef.current);
+      menuTimerRef.current = null;
     }
-
-    const timerId = window.setTimeout(() => {
-      animationTimerRefs.current = animationTimerRefs.current.filter((id) => id !== timerId);
-      callback();
-    }, delay);
-    animationTimerRefs.current.push(timerId);
+    if (menuFrameRef.current !== null) {
+      window.cancelAnimationFrame(menuFrameRef.current);
+      menuFrameRef.current = null;
+    }
   };
 
   const openMenu = (restoreFocus: boolean) => {
-    clearAnimationTimer();
+    clearMenuTimers();
     restoreFocusRef.current = restoreFocus;
-    setMenuMotion("entering");
-    setMenuState("opening");
-    setAnimationTimer(() => setMenuState("open"), getMotionDuration(menuOpenDuration));
+    setMenuPhase("opening");
+    menuFrameRef.current = window.requestAnimationFrame(() => {
+      menuFrameRef.current = null;
+      setMenuPhase("open");
+    });
   };
 
   const closeMenu = (restoreFocus = true, onClosed?: () => void) => {
-    if (!menuVisible) {
-      onClosed?.();
+    if (!menuVisible || menuPhase === "closing") {
       return;
     }
 
-    clearAnimationTimer();
+    clearMenuTimers();
     restoreFocusRef.current = restoreFocus;
-    setMenuMotion("idle");
-    setMenuState("closing-content");
-    const contentCloseDuration = getMotionDuration(menuContentCloseDuration);
-    const shellCloseDuration = getMotionDuration(menuShellCloseDuration);
-    setAnimationTimer(() => setMenuState("closing-shell"), contentCloseDuration);
-    setAnimationTimer(() => {
-      setMenuState("closed");
-      if (onClosed) window.requestAnimationFrame(onClosed);
-    }, contentCloseDuration + shellCloseDuration);
+    menuCallbackRef.current = onClosed;
+    setMenuPhase("closing");
+    menuTimerRef.current = window.setTimeout(() => {
+      menuTimerRef.current = null;
+      setMenuPhase("closed");
+      const callback = menuCallbackRef.current;
+      menuCallbackRef.current = undefined;
+      callback?.();
+    }, 180);
   };
 
   const navigateAfterMenuClose = (href: string) => {
-    if (menuClosing) return;
     trackPublicAnalyticsEvent(publicAnalyticsEvents.menuNavigate, {
       target_path: href,
       target_type: href.startsWith("http") ? "external" : "internal",
       external: href.startsWith("http"),
     });
-    clearAnimationTimer();
     restoreFocusRef.current = false;
-    setMenuState("closed");
-    window.requestAnimationFrame(() => router.push(href));
+    closeMenu(false, () => router.push(href));
   };
 
   const toggleMenu = (event: MouseEvent<HTMLButtonElement>) => {
-    if (menuClosing) return;
-    if (menuVisible) {
+    if (menuPhase === "open") {
       const restoreFocus = event.detail === 0;
       if (!restoreFocus) event.currentTarget.blur();
       closeMenu(restoreFocus);
@@ -144,6 +106,10 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
   };
 
   const closeMenuFromEffect = useEffectEvent(() => closeMenu(true));
+
+  useEffect(() => {
+    return () => clearMenuTimers();
+  }, []);
 
   useEffect(() => {
     if (!menuVisible) return;
@@ -230,8 +196,7 @@ export function PublicMenuController({ menuItems }: PublicMenuControllerProps) {
       {menuVisible ? (
         <PublicFullscreenMenu
           id={menuId}
-          state={menuState}
-          motion={menuMotion}
+          state={menuPhase === "opening" || menuPhase === "open" ? "open" : "closing"}
           items={menuItems}
           closeButtonRef={menuCloseButtonRef}
           onClose={(event) => {

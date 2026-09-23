@@ -11,6 +11,7 @@ import { formatArticleNumber } from "@/components/public/sections/dossier/dossie
 import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
+import { TrpcProvider } from "@/lib/trpc/provider";
 import { cn } from "@/lib/utils";
 
 import type {
@@ -30,22 +31,21 @@ const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 type MenuPhase = "closed" | "opening" | "open" | "closing";
+type MenuName = "issues" | "search" | "tableOfContents";
 
-function getMotionDuration() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 200;
-}
-
-export function IssueTableOfContentsMenu({
-  items,
-  issueNumber,
-  issueTitle,
-  issues,
-}: {
+type IssueTableOfContentsMenuProps = {
   items: IssueTableOfContentsItem[];
   issueNumber: string;
   issueTitle: string;
   issues: IssueTableOfContentsIssue[];
-}) {
+};
+
+function IssueTableOfContentsMenuContent({
+  items,
+  issueNumber,
+  issueTitle,
+  issues,
+}: IssueTableOfContentsMenuProps) {
   const router = useRouter();
   const [activeMenu, setActiveMenu] = useState<"issues" | "search" | "tableOfContents" | null>(
     null,
@@ -65,11 +65,9 @@ export function IssueTableOfContentsMenu({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const closeTimerRef = useRef<number | null>(null);
-  const searchFocusTimerRef = useRef<number | null>(null);
   const openFrameRef = useRef<number | null>(null);
   const phaseRef = useRef<MenuPhase>("closed");
   const closeCallbackRef = useRef<(() => void) | undefined>(undefined);
-
   const visible = phase !== "closed";
   const open = phase === "open";
 
@@ -78,35 +76,41 @@ export function IssueTableOfContentsMenu({
     setPhase(nextPhase);
   }
 
-  function clearOpenFrame() {
-    if (openFrameRef.current) {
+  function clearTimers() {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    if (openFrameRef.current !== null) {
       window.cancelAnimationFrame(openFrameRef.current);
       openFrameRef.current = null;
     }
   }
 
-  function clearCloseTimer() {
-    if (closeTimerRef.current) {
-      window.clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-  }
+  function closeMenu(onClosed?: () => void) {
+    if (phaseRef.current === "closed" || phaseRef.current === "closing") return;
 
-  function clearSearchFocusTimer() {
-    if (searchFocusTimerRef.current) {
-      window.clearTimeout(searchFocusTimerRef.current);
-      searchFocusTimerRef.current = null;
-    }
+    if (activeMenu === "search") setSearchValue("");
+    closeCallbackRef.current = onClosed;
+    clearTimers();
+    setMenuPhase("closing");
+    closeTimerRef.current = window.setTimeout(() => {
+      closeTimerRef.current = null;
+      setMenuPhase("closed");
+      setActiveMenu(null);
+      const callback = closeCallbackRef.current;
+      closeCallbackRef.current = undefined;
+      window.requestAnimationFrame(() => {
+        callback?.();
+        triggerRef.current?.focus();
+      });
+    }, 200);
   }
 
   const closeMenuFromEffect = useEffectEvent(() => closeMenu());
 
   useEffect(() => {
-    return () => {
-      clearOpenFrame();
-      clearCloseTimer();
-      clearSearchFocusTimer();
-    };
+    return () => clearTimers();
   }, []);
 
   useEffect(() => {
@@ -186,22 +190,13 @@ export function IssueTableOfContentsMenu({
   }, [activeMenu, menuId, visible]);
 
   useEffect(() => {
-    if (phase !== "closed") return;
+    if (activeMenu === "search") {
+      searchInputRef.current?.focus({ preventScroll: true });
+    }
+  }, [activeMenu, open]);
 
-    const onClosed = closeCallbackRef.current;
-    if (!onClosed) return;
-
-    closeCallbackRef.current = undefined;
-    onClosed();
-  }, [phase]);
-
-  function openMenu(
-    event: ReactMouseEvent<HTMLButtonElement>,
-    menu: "issues" | "search" | "tableOfContents",
-  ) {
-    clearOpenFrame();
-    clearCloseTimer();
-    clearSearchFocusTimer();
+  function openMenu(event: ReactMouseEvent<HTMLButtonElement>, menu: MenuName) {
+    clearTimers();
     closeCallbackRef.current = undefined;
     triggerRef.current = event.currentTarget;
     const source = window.matchMedia("(min-width: 768px)").matches
@@ -219,53 +214,37 @@ export function IssueTableOfContentsMenu({
     setMenuPhase("opening");
     openFrameRef.current = window.requestAnimationFrame(() => {
       openFrameRef.current = null;
-      if (phaseRef.current !== "opening") return;
-
-      setMenuPhase("open");
-      if (menu === "search") {
-        searchFocusTimerRef.current = window.setTimeout(() => {
-          searchFocusTimerRef.current = null;
-          if (phaseRef.current === "open") {
-            searchInputRef.current?.focus({ preventScroll: true });
-          }
-        }, getMotionDuration());
-      }
+      if (phaseRef.current === "opening") setMenuPhase("open");
     });
   }
 
-  function finishClose() {
-    if (phaseRef.current === "closed") return;
+  function scrollToAnchor(itemId: string) {
+    const target = document.getElementById(itemId);
+    if (!target) return;
 
-    clearCloseTimer();
-    setMenuPhase("closed");
-    setActiveMenu(null);
-    window.requestAnimationFrame(() => triggerRef.current?.focus());
-  }
+    const headerHeight =
+      document.querySelector<HTMLElement>("[data-public-header]")?.offsetHeight ?? 0;
+    const issueNavigationHeight =
+      document.querySelector<HTMLElement>("[data-public-issue-navigation]")?.offsetHeight ?? 0;
 
-  function closeMenu(onClosed?: () => void) {
-    if (phaseRef.current === "closed" || phaseRef.current === "closing") return;
-
-    clearOpenFrame();
-    clearSearchFocusTimer();
-    if (activeMenu === "search") setSearchValue("");
-    closeCallbackRef.current = onClosed;
-    const duration = getMotionDuration();
-
-    if (duration === 0) {
-      finishClose();
-      return;
-    }
-
-    setMenuPhase("closing");
-    closeTimerRef.current = window.setTimeout(finishClose, duration + 50);
+    window.scrollTo({
+      top: Math.max(
+        0,
+        window.scrollY +
+          target.getBoundingClientRect().top -
+          headerHeight -
+          issueNavigationHeight -
+          16,
+      ),
+      left: 0,
+      behavior: "smooth",
+    });
   }
 
   function navigateTo(itemId: string) {
     closeMenu(() => {
       window.history.pushState(null, "", `#${itemId}`);
-      document.getElementById(itemId)?.scrollIntoView({
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-      });
+      scrollToAnchor(itemId);
     });
   }
 
@@ -282,11 +261,7 @@ export function IssueTableOfContentsMenu({
 
       if (target.pathname === current.pathname && target.search === current.search && target.hash) {
         window.history.pushState(null, "", `${target.pathname}${target.search}${target.hash}`);
-        document.getElementById(decodeURIComponent(target.hash.slice(1)))?.scrollIntoView({
-          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-            ? "auto"
-            : "smooth",
-        });
+        scrollToAnchor(decodeURIComponent(target.hash.slice(1)));
         return;
       }
 
@@ -373,10 +348,9 @@ export function IssueTableOfContentsMenu({
         ? createPortal(
             <div
               className={cn(
-                "fixed inset-0 z-120 touch-none overscroll-contain bg-foreground/60 transition-opacity md:bg-foreground/80",
+                "fixed inset-0 z-120 touch-none overscroll-contain bg-foreground/60 transition-opacity duration-200 md:bg-foreground/80",
                 open ? "opacity-100" : "opacity-0",
               )}
-              style={{ transitionDuration: `${getMotionDuration()}ms` }}
               onPointerDown={(event) => {
                 if (event.target === event.currentTarget) closeMenu();
               }}
@@ -393,7 +367,7 @@ export function IssueTableOfContentsMenu({
                       : i18n.public.home.dossier.tableOfContentsLabel
                 }
                 className={cn(
-                  "absolute flex touch-pan-y overflow-hidden overscroll-contain bg-background text-foreground transition-transform ease-out",
+                  "absolute flex touch-pan-y overflow-hidden overscroll-contain bg-background text-foreground transition-transform duration-200 ease-out",
                   isSearchMenu
                     ? "inset-0 flex-col border-b-2 border-foreground"
                     : "inset-y-0 w-full flex-col md:w-[min(32rem,42vw)]",
@@ -407,16 +381,6 @@ export function IssueTableOfContentsMenu({
                         ? "-translate-x-full"
                         : "translate-x-full",
                 )}
-                style={{ transitionDuration: `${getMotionDuration()}ms` }}
-                onTransitionEnd={(event) => {
-                  if (
-                    event.target === event.currentTarget &&
-                    event.propertyName === "transform" &&
-                    phaseRef.current === "closing"
-                  ) {
-                    finishClose();
-                  }
-                }}
               >
                 <header className="flex min-h-16 items-center justify-between gap-4 border-b-2 border-foreground px-4 sm:px-6 md:px-8">
                   <h2 className="font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">
@@ -563,5 +527,13 @@ export function IssueTableOfContentsMenu({
           )
         : null}
     </>
+  );
+}
+
+export function IssueTableOfContentsMenu(props: IssueTableOfContentsMenuProps) {
+  return (
+    <TrpcProvider>
+      <IssueTableOfContentsMenuContent {...props} />
+    </TrpcProvider>
   );
 }

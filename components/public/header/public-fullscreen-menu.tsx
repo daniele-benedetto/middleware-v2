@@ -13,7 +13,7 @@ import {
 } from "@/lib/public/analytics";
 import { cn } from "@/lib/utils";
 
-import type { CSSProperties, MouseEvent, MouseEventHandler, RefObject } from "react";
+import type { MouseEvent, MouseEventHandler, RefObject } from "react";
 
 export type PublicMenuItem = {
   id: string;
@@ -24,8 +24,7 @@ export type PublicMenuItem = {
 
 type PublicFullscreenMenuProps = {
   id: string;
-  state: "opening" | "open" | "closing-content" | "closing-shell";
-  motion: "idle" | "entering";
+  state: "open" | "closing";
   items: PublicMenuItem[];
   closeButtonRef: RefObject<HTMLButtonElement | null>;
   onClose: MouseEventHandler<HTMLButtonElement>;
@@ -36,15 +35,9 @@ function shouldUseNativeNavigation(event: MouseEvent<HTMLAnchorElement>) {
   return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
-function getQuoteDelay(itemCount: number) {
-  const lastItemIndex = Math.max(0, itemCount - 1);
-  return 110 + lastItemIndex * 165 + 260;
-}
-
 export function PublicFullscreenMenu({
   id,
   state,
-  motion,
   items,
   closeButtonRef,
   onClose,
@@ -53,8 +46,6 @@ export function PublicFullscreenMenu({
   const pathname = usePathname();
   const text = i18n.public.menu;
   const titleId = `${id}-title`;
-  const menuClosing = state === "closing-content" || state === "closing-shell";
-
   const isCurrentPage = (item: PublicMenuItem) => {
     if (item.external) {
       return false;
@@ -70,9 +61,10 @@ export function PublicFullscreenMenu({
       aria-modal="true"
       aria-labelledby={titleId}
       data-menu-state={state}
-      data-menu-motion={motion}
-      style={{ "--menu-quote-delay": `${getQuoteDelay(items.length)}ms` } as CSSProperties}
-      className="public-menu-overlay fixed inset-0 z-100 flex flex-col overflow-y-auto bg-foreground text-background"
+      className={cn(
+        "public-menu-overlay starting:opacity-0 fixed inset-0 z-100 flex flex-col overflow-y-auto bg-foreground text-background opacity-100 transition-opacity duration-180",
+        state === "closing" && "opacity-0",
+      )}
     >
       <h2 id={titleId} className="sr-only">
         {text.dialogAriaLabel}
@@ -96,7 +88,7 @@ export function PublicFullscreenMenu({
             tone="dark"
             expanded
             controls={id}
-            disabled={menuClosing}
+            disabled={state === "closing"}
             onClick={onClose}
           />
         </div>
@@ -135,13 +127,6 @@ export function PublicFullscreenMenu({
                 isCurrentPage(item) && "text-accent",
               )}
               aria-current={isCurrentPage(item) ? "page" : undefined}
-              tabIndex={state === "opening" ? -1 : undefined}
-              style={
-                {
-                  "--menu-item-index": index,
-                  "--menu-item-reverse-index": items.length - index - 1,
-                } as CSSProperties
-              }
               target={item.external ? "_blank" : undefined}
               rel={item.external ? "noopener noreferrer" : undefined}
             >

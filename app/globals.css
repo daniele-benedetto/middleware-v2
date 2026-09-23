@@ -239,39 +239,6 @@
   --sidebar-ring: var(--ink);
 }
 
-@keyframes listen-next-in {
-  from {
-    opacity: 0.18;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-[data-public-scroll-progress-bar] {
-  transform: scaleX(var(--scroll-progress));
-}
-
-@supports (animation-timeline: scroll()) {
-  @keyframes public-scroll-progress {
-    from {
-      transform: scaleX(0);
-    }
-
-    to {
-      transform: scaleX(1);
-    }
-  }
-
-  [data-public-scroll-progress-bar] {
-    animation: public-scroll-progress linear both;
-    animation-timeline: scroll(root block);
-  }
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -338,6 +305,8 @@ html {
   background: var(--bg-main);
 }
 
+/* Keep hash navigation in the public editorial surface smooth without adding
+   a client component to the server-rendered table of contents. */
 body {
   background: var(--bg-main);
   color: var(--ink);
@@ -374,120 +343,9 @@ body {
   color: var(--bg-main);
 }
 
-/* Anchor the persistent chrome (header, footer, background): the root snapshot
-   and the named footer stay static, so the header never vanishes and the content
-   keeps its position below it. Only the page content (.page-transition) animates.
-   NB: do NOT set `:root { view-transition-name: none }` — that drops the root
-   snapshot entirely and makes the header disappear during the transition. */
-/* The header is position: sticky, so it can't be anchored via the root snapshot
-   (sticky elements interact with scroll and changing page height during a
-   transition). Per the View Transitions guide, lift it into its own snapshot and
-   anchor it: static group, hide the old snapshot to avoid a double-header flash,
-   keep the new one static. This is what stops the header vanishing/fading. */
-[data-public-header] {
-  view-transition-name: public-header;
-}
-
-[data-public-issue-navigation] {
-  view-transition-name: public-issue-navigation;
-}
-
-::view-transition-group(public-header) {
-  animation: none;
-  z-index: 100;
-}
-
-::view-transition-group(public-issue-navigation) {
-  animation: none;
-  z-index: 90;
-}
-
-::view-transition-old(public-header) {
-  display: none;
-}
-
-::view-transition-old(public-issue-navigation) {
-  display: none;
-}
-
-::view-transition-new(public-header) {
-  animation: none;
-}
-
-::view-transition-new(public-issue-navigation) {
-  animation: none;
-}
-
-/* Background and footer stay put; only the page content animates. */
-::view-transition-group(root),
-::view-transition-group(public-footer),
-::view-transition-old(root),
-::view-transition-new(root),
-::view-transition-old(public-footer),
-::view-transition-new(public-footer) {
-  animation: none;
-}
-
-/* The page content is animated by React's <ViewTransition update="page-transition">
-   (PublicPageTransition), which assigns the `page-transition` view-transition-class.
-   Target it with the `.page-transition` class selector. */
-
-::view-transition-image-pair(.page-transition) {
-  isolation: isolate;
-}
-
-::view-transition-old(.page-transition),
-::view-transition-new(.page-transition) {
-  mix-blend-mode: normal;
-}
-
-::view-transition-old(.page-transition) {
-  animation: 180ms var(--easing-standard) both page-transition-out;
-}
-
-::view-transition-new(.page-transition) {
-  animation: 1ms linear both page-transition-in;
-}
-
-@keyframes page-transition-out {
-  to {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes page-transition-in {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-[data-page-reveal] {
-  opacity: 0;
-  clip-path: inset(0 0 100% 0);
-  transform: translateY(18px);
-  animation: public-page-reveal-in 440ms var(--easing-standard) both;
-  animation-delay: var(--page-reveal-delay, 0ms);
-}
-
-[data-page-reveal="media"] {
-  clip-path: inset(0 0 18% 0);
-  transform: translateY(14px) scale(0.992);
-  animation-duration: 560ms;
-}
-
-[data-dossier-content-reveal="pending"] {
-  opacity: 0;
-  clip-path: inset(0 0 100% 0);
-  transform: translateY(18px);
-}
-
-[data-dossier-content-reveal="visible"] {
-  animation: public-page-reveal-in 440ms var(--easing-standard) both;
+.public-menu-link-part {
+  padding-block: 0.08em;
+  margin-block: -0.08em;
 }
 
 [data-page-rule] {
@@ -502,74 +360,6 @@ body {
   height: var(--page-rule-height, 2px);
   content: "";
   background: currentColor;
-  opacity: 0;
-  transform: scaleX(0);
-  transform-origin: left;
-  animation: public-page-rule-in 360ms var(--easing-standard) both;
-  animation-delay: var(--page-rule-delay, 220ms);
-}
-
-@keyframes public-page-reveal-in {
-  from {
-    opacity: 0;
-    clip-path: inset(0 0 100% 0);
-    transform: translateY(18px);
-  }
-
-  to {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-    transform: translateY(0);
-  }
-}
-
-@keyframes public-page-reveal-in-mobile {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes public-page-rule-in {
-  from {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-
-  to {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-}
-
-.public-menu-overlay {
-  clip-path: inset(0 0 0 0);
-  transform-origin: top;
-}
-
-.public-menu-overlay[data-menu-state="opening"] {
-  animation: public-menu-overlay-in 620ms var(--easing-standard) both;
-  will-change: clip-path;
-}
-
-.public-menu-overlay[data-menu-state="closing-shell"] {
-  animation: public-menu-overlay-out 360ms var(--easing-standard) both;
-}
-
-.public-menu-link-part,
-.public-menu-quote {
-  opacity: 0;
-  transform: translateY(18px);
-}
-
-.public-menu-link-part {
-  padding-block: 0.08em;
-  margin-block: -0.08em;
 }
 
 .public-menu-link::after {
@@ -580,46 +370,14 @@ body {
   height: 1px;
   content: "";
   background: var(--dark-line);
-  opacity: 0;
-  transform: scaleX(0);
+  opacity: 1;
+  transform: scaleX(1);
   transform-origin: left;
   transition: background-color var(--motion-fast) var(--easing-standard);
 }
 
 .public-menu-link:hover::after {
   background: var(--accent);
-}
-
-.public-menu-overlay[data-menu-motion="entering"] .public-menu-link-part {
-  animation: public-menu-link-in 380ms var(--easing-standard) both;
-  animation-delay: calc(110ms + var(--menu-item-index) * 165ms);
-  will-change: clip-path, opacity, transform;
-}
-
-.public-menu-overlay[data-menu-motion="entering"] .public-menu-link::after {
-  animation: public-menu-separator-in 300ms var(--easing-standard) both;
-  animation-delay: calc(210ms + var(--menu-item-index) * 165ms);
-  will-change: opacity, transform;
-}
-
-.public-menu-overlay[data-menu-state="closing-content"] .public-menu-link-part {
-  animation: public-menu-link-out 220ms var(--easing-standard) both;
-  animation-delay: calc(140ms + var(--menu-item-reverse-index) * 64ms);
-}
-
-.public-menu-overlay[data-menu-state="closing-content"] .public-menu-link::after {
-  animation: public-menu-separator-out 200ms var(--easing-standard) both;
-  animation-delay: calc(100ms + var(--menu-item-reverse-index) * 64ms);
-}
-
-.public-menu-overlay[data-menu-motion="entering"] .public-menu-quote {
-  animation: public-menu-link-in 420ms var(--easing-standard) both;
-  animation-delay: var(--menu-quote-delay);
-  will-change: clip-path, opacity, transform;
-}
-
-.public-menu-overlay[data-menu-state="closing-content"] .public-menu-quote {
-  animation: public-menu-link-out 190ms var(--easing-standard) both;
 }
 
 .public-menu-icon-line {
@@ -666,76 +424,6 @@ body {
   transform: rotate(-45deg);
 }
 
-@keyframes public-menu-overlay-in {
-  from {
-    clip-path: inset(0 0 100% 0);
-  }
-
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-@keyframes public-menu-overlay-out {
-  from {
-    clip-path: inset(0 0 0 0);
-  }
-
-  to {
-    clip-path: inset(0 0 100% 0);
-  }
-}
-
-@keyframes public-menu-link-in {
-  from {
-    opacity: 0;
-    clip-path: inset(0 0 100% 0);
-    transform: translateY(18px);
-  }
-
-  to {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-    transform: translateY(0);
-  }
-}
-
-@keyframes public-menu-link-out {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  to {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes public-menu-separator-in {
-  from {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-
-  to {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-}
-
-@keyframes public-menu-separator-out {
-  from {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-
-  to {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-}
-
 .font-display {
   font-family: var(--font-archivo), sans-serif;
 }
@@ -771,13 +459,6 @@ body {
     --grid-filters: 1fr;
     --grid-covers: repeat(2, minmax(0, 1fr));
   }
-
-  [data-page-reveal],
-  [data-page-reveal="media"],
-  [data-dossier-content-reveal] {
-    clip-path: none;
-    animation-name: public-page-reveal-in-mobile;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -786,49 +467,6 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
-  }
-
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation-delay: 0s !important;
-    animation-duration: 0s !important;
-  }
-
-  .public-menu-overlay,
-  .public-menu-link,
-  .public-menu-link-part,
-  .public-menu-quote {
-    animation: none !important;
-    clip-path: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  .public-menu-link::after {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  [data-page-reveal] {
-    animation: none !important;
-    clip-path: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  [data-dossier-content-reveal] {
-    animation: none !important;
-    clip-path: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  [data-page-rule]::before {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
   }
 }
 

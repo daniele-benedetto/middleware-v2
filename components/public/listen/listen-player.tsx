@@ -190,7 +190,7 @@ function SyncedTranscript({
             <div
               key={nextChunk.id}
               aria-hidden
-              className="mt-5 flex items-start gap-2 font-editorial text-[clamp(16px,4.8vw,21px)] leading-[1.28] tracking-[-0.012em] text-muted/45 motion-safe:animate-[listen-next-in_300ms_var(--easing-standard)] sm:text-[clamp(19px,2.2vw,26px)] sm:leading-[1.3]"
+              className="mt-5 flex items-start gap-2 font-editorial text-[clamp(16px,4.8vw,21px)] leading-[1.28] tracking-[-0.012em] text-muted/45 sm:text-[clamp(19px,2.2vw,26px)] sm:leading-[1.3]"
             >
               <span className="min-w-0 flex-1">{nextChunk.text}</span>
               {bookmarkedChunkIds.has(nextChunk.id) ? (

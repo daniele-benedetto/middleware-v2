@@ -15,10 +15,7 @@ export function PublicFooter({ sectionsLinks, legalLinks }: PublicFooterProps) {
   const text = i18n.public.footer;
 
   return (
-    <footer
-      className="mt-13 bg-foreground text-background"
-      style={{ viewTransitionName: "public-footer" }}
-    >
+    <footer className="mt-13 bg-foreground text-background">
       <div
         className={`${publicContentClassName} grid grid-cols-1 gap-9 pt-13 pb-10 md:grid-cols-[repeat(auto-fit,minmax(220px,1fr))]`}
       >

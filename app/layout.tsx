@@ -35,15 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="it"
-      data-scroll-behavior="smooth"
-      className={cn(
-        "h-full",
-        "antialiased",
-        "motion-safe:scroll-smooth",
-        archivo.variable,
-        spectral.variable,
-        "font-sans",
-      )}
+      className={cn("h-full", "antialiased", archivo.variable, spectral.variable, "font-sans")}
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>

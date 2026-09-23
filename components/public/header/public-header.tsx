@@ -16,7 +16,6 @@ export function PublicHeader({ className, menuItems }: PublicHeaderProps) {
       data-public-header
       className={cn(
         "sticky top-0 z-50 border-b-2 border-foreground bg-background text-foreground",
-        "transition-[background-color,border-color,color] duration-(--motion-slow) ease-(--easing-standard)",
         className,
       )}
     >

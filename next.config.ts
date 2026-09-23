@@ -150,7 +150,6 @@ const nextConfig: NextConfig = {
   experimental: {
     authInterrupts: true,
     proxyClientMaxBodySize: "100mb",
-    viewTransition: true,
   },
   // Next's tracer copies the sharp wrapper and its .node addon, but not the
   // libvips shared objects: those are dlopen'd, so static tracing never sees

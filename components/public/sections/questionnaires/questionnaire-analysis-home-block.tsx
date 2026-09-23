@@ -1,7 +1,7 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { courseVariantClasses } from "@/components/public/course-variant";
@@ -24,10 +24,6 @@ function isElementVisible(element: HTMLElement) {
   return element.getClientRects().length > 0;
 }
 
-function menuTransitionDuration() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 200;
-}
-
 function MobileQuestionMenu({
   fields,
   activeIndex,
@@ -39,17 +35,30 @@ function MobileQuestionMenu({
   title: string;
   onSelect: (index: number) => void;
 }) {
-  const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [open, setOpen] = useState(false);
   const menuId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const activeField = fields[activeIndex];
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const closeTimerRef = useRef<number | null>(null);
 
+  function closeMenu() {
+    if (!visible) return;
+    setOpen(false);
+    if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => {
+      closeTimerRef.current = null;
+      setVisible(false);
+      buttonRef.current?.focus();
+    }, 180);
+  }
+
+  const closeMenuFromEffect = useEffectEvent(closeMenu);
+
   useEffect(() => {
     return () => {
-      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+      if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
     };
   }, []);
 
@@ -70,7 +79,7 @@ function MobileQuestionMenu({
 
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
-      closeMenu();
+      closeMenuFromEffect();
     }
 
     function trapFocus(event: KeyboardEvent) {
@@ -110,19 +119,9 @@ function MobileQuestionMenu({
   }, [menuId, visible]);
 
   function openMenu() {
-    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
     setVisible(true);
     window.requestAnimationFrame(() => setOpen(true));
-  }
-
-  function closeMenu() {
-    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
-    setOpen(false);
-    const duration = menuTransitionDuration();
-    closeTimerRef.current = window.setTimeout(() => {
-      setVisible(false);
-      window.requestAnimationFrame(() => buttonRef.current?.focus());
-    }, duration);
   }
 
   if (!activeField) return null;
@@ -154,12 +153,11 @@ function MobileQuestionMenu({
               aria-label={i18n.public.questionnaireAnalysis.selectionDialogAriaLabel}
               aria-modal="true"
               className={cn(
-                "fixed inset-0 z-120 flex flex-col border-l border-foreground bg-background text-foreground transition-transform ease-out",
+                "fixed inset-0 z-120 flex flex-col border-l border-foreground bg-background text-foreground transition-transform duration-180 ease-out",
                 open ? "translate-x-0" : "translate-x-full",
               )}
               id={menuId}
               role="dialog"
-              style={{ transitionDuration: `${menuTransitionDuration()}ms` }}
             >
               <header className="flex min-h-16 items-center justify-between gap-4 border-b-2 border-foreground px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-4 sm:px-6">
                 <h2 className="line-clamp-2 min-w-0 font-heading text-(length:--text-lg) leading-[1.2] font-bold tracking-[-0.025em]">

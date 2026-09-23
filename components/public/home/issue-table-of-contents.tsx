@@ -1,6 +1,7 @@
 import { ChartBar, GraduationCap, Map, Newspaper } from "lucide-react";
 
 import { IssueTableOfContentsMenu } from "@/components/public/home/issue-table-of-contents-menu";
+import { PublicSmoothAnchor } from "@/components/public/home/public-smooth-anchor";
 import { publicContentClassName } from "@/components/public/primitives";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { i18n } from "@/lib/i18n";
@@ -62,7 +63,7 @@ export function IssueTableOfContents({
                     data-page-reveal="body"
                     style={{ "--page-reveal-delay": `${600 + index * 70}ms` } as CSSProperties}
                   >
-                    <a
+                    <PublicSmoothAnchor
                       href={`#${item.id}`}
                       className="group flex min-h-18 w-full flex-1 flex-wrap items-center gap-x-4 gap-y-1 py-3.5 transition-colors duration-(--motion-fast) focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-accent md:hover:bg-surface-hover"
                     >
@@ -86,7 +87,7 @@ export function IssueTableOfContents({
                           {item.label}
                         </span>
                       </span>
-                    </a>
+                    </PublicSmoothAnchor>
                   </li>
                 );
               })}
