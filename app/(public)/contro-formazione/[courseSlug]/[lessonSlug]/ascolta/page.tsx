@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 import { LessonListenPage } from "@/components/public/listen/lesson-listen-page";
 import { i18n } from "@/lib/i18n";
@@ -26,7 +25,9 @@ async function PublicLessonListenRouteContent({ params }: PublicLessonListenRout
     notFound();
   }
 
-  return <LessonListenPage data={data} chunksPromise={chunksPromise} />;
+  const chunks = await chunksPromise;
+
+  return <LessonListenPage data={data} chunks={chunks ?? []} />;
 }
 
 export async function generateMetadata({
@@ -54,9 +55,5 @@ export async function generateMetadata({
 }
 
 export default function PublicLessonListenRoute({ params }: PublicLessonListenRouteProps) {
-  return (
-    <Suspense fallback={null}>
-      <PublicLessonListenRouteContent params={params} />
-    </Suspense>
-  );
+  return <PublicLessonListenRouteContent params={params} />;
 }

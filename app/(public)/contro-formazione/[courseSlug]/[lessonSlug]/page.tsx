@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 import { PublicLessonPage } from "@/components/public/pages/public-lesson-page";
 import { i18n } from "@/lib/i18n";
@@ -58,9 +57,5 @@ async function PublicLessonRouteContent({ params }: PublicLessonRouteProps) {
 }
 
 export default function PublicLessonRoute({ params }: PublicLessonRouteProps) {
-  return (
-    <Suspense fallback={null}>
-      <PublicLessonRouteContent params={params} />
-    </Suspense>
-  );
+  return <PublicLessonRouteContent params={params} />;
 }

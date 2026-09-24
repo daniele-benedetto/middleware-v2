@@ -43,7 +43,7 @@ type ListenPlayerProps = {
 
 type SyncedTranscriptProps = {
   chunk: AudioChunk | null;
-  nextChunk: AudioChunk | null;
+  upcomingChunks: AudioChunk[];
   bookmarkedChunkIds: Set<string>;
   currentTime: number;
   isPlaying: boolean;
@@ -108,7 +108,7 @@ function isResumeCandidate(record: AudioProgressRecord) {
 
 function SyncedTranscript({
   chunk,
-  nextChunk,
+  upcomingChunks,
   bookmarkedChunkIds,
   currentTime,
   isPlaying,
@@ -117,6 +117,7 @@ function SyncedTranscript({
 }: SyncedTranscriptProps) {
   const text = i18n.public.listenPage;
   const readingRef = useRef<HTMLDivElement>(null);
+  const activeChunkRef = useRef<HTMLDivElement>(null);
   const playbackTimeRef = useRef(currentTime);
   const maxScrollTopRef = useRef(0);
 
@@ -128,7 +129,10 @@ function SyncedTranscript({
     const reading = readingRef.current;
     if (!reading || !chunk) return;
 
-    maxScrollTopRef.current = Math.max(0, reading.scrollHeight - reading.clientHeight);
+    const activeChunk = activeChunkRef.current;
+    maxScrollTopRef.current = activeChunk
+      ? Math.max(0, activeChunk.scrollHeight - reading.clientHeight)
+      : 0;
     reading.scrollTop = 0;
   }, [chunk]);
 
@@ -175,7 +179,10 @@ function SyncedTranscript({
     >
       <div ref={readingRef} className="relative min-h-0 flex-1 overflow-hidden py-2 sm:py-5">
         <div className="relative z-10">
-          <div className="flex items-start gap-2 py-1 pr-1 font-editorial text-foreground sm:py-1.5">
+          <div
+            ref={activeChunkRef}
+            className="flex items-start gap-2 py-1 pr-1 font-editorial text-foreground sm:py-1.5"
+          >
             <span className="block min-w-0 flex-1 text-[clamp(17px,5.2vw,22px)] leading-[1.28] font-medium tracking-[-0.018em] sm:text-[clamp(20px,2.45vw,28px)] sm:leading-[1.3] sm:tracking-[-0.022em]">
               {chunk.text}
             </span>
@@ -186,21 +193,21 @@ function SyncedTranscript({
               />
             ) : null}
           </div>
-          {nextChunk ? (
+          {upcomingChunks.map((upcomingChunk) => (
             <div
-              key={nextChunk.id}
+              key={upcomingChunk.id}
               aria-hidden
               className="mt-5 flex items-start gap-2 font-editorial text-[clamp(16px,4.8vw,21px)] leading-[1.28] tracking-[-0.012em] text-muted/45 sm:text-[clamp(19px,2.2vw,26px)] sm:leading-[1.3]"
             >
-              <span className="min-w-0 flex-1">{nextChunk.text}</span>
-              {bookmarkedChunkIds.has(nextChunk.id) ? (
+              <span className="min-w-0 flex-1">{upcomingChunk.text}</span>
+              {bookmarkedChunkIds.has(upcomingChunk.id) ? (
                 <BookmarkIcon
                   className="mt-1 size-3.5 shrink-0 fill-accent text-accent sm:size-4"
                   aria-hidden
                 />
               ) : null}
             </div>
-          ) : null}
+          ))}
         </div>
       </div>
     </section>
@@ -424,7 +431,7 @@ export function ListenPlayer({
   const displayedTime = scrubTime ?? currentTime;
   const activeChunkIndex = getCurrentAudioChunkIndex(chunks, currentTime);
   const activeChunk = chunks[activeChunkIndex] ?? null;
-  const nextChunk = chunks[activeChunkIndex + 1] ?? null;
+  const upcomingChunks = chunks.slice(activeChunkIndex + 1, activeChunkIndex + 6);
   const resolvedDuration = duration > 0 ? duration : (chunks.at(-1)?.end ?? 0);
   const bookmarkedChunkIds = useMemo(
     () => new Set(bookmarks.map((bookmark) => bookmark.chunkId)),
@@ -837,7 +844,7 @@ export function ListenPlayer({
       <div className="order-2 flex min-h-0 bg-background">
         <SyncedTranscript
           chunk={activeChunk}
-          nextChunk={nextChunk}
+          upcomingChunks={upcomingChunks}
           bookmarkedChunkIds={bookmarkedChunkIds}
           currentTime={currentTime}
           isPlaying={isPlaying}

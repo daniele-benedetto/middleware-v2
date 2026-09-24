@@ -1,5 +1,3 @@
-import { Suspense, type CSSProperties } from "react";
-
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { ListenEmptyState } from "@/components/public/listen/listen-empty-state";
 import { ListenPlayer } from "@/components/public/listen/listen-player";
@@ -11,10 +9,11 @@ import type {
   PublicLessonListenMetadataData,
   PublicLessonListenPageData,
 } from "@/lib/public/server/lesson-listen-page";
+import type { CSSProperties } from "react";
 
 type LessonListenPageProps = {
   data: PublicLessonListenPageData;
-  chunksPromise: Promise<AudioChunk[] | null>;
+  chunks: AudioChunk[];
 };
 
 function formatLessonDate(value: string) {
@@ -25,14 +24,12 @@ function formatLessonNumber(value: number | null) {
   return value ? String(value).padStart(2, "0") : "MW";
 }
 
-async function LessonListenPlayer({
+function LessonListenPlayer({
   lesson,
-  chunksPromise,
+  chunks,
 }: Pick<PublicLessonListenMetadataData, "lesson"> & {
-  chunksPromise: Promise<AudioChunk[] | null>;
+  chunks: AudioChunk[];
 }) {
-  const chunks = await chunksPromise;
-
   return (
     <ListenPlayer
       contentKind="lesson"
@@ -41,26 +38,13 @@ async function LessonListenPlayer({
       contentTitle={lesson.title}
       contentUpdatedAt={lesson.updatedAt}
       audioUrl={lesson.audioUrl ?? ""}
-      chunks={chunks ?? []}
+      chunks={chunks}
       emptyState={<ListenEmptyState contentKind="lesson" />}
     />
   );
 }
 
-function ListenPlayerFallback() {
-  return (
-    <div
-      className="grid h-full min-h-48 content-start gap-3 py-5"
-      role="status"
-      aria-label={i18n.public.listenPage.transcriptLoading}
-    >
-      <span className="block h-7 w-11/12 animate-pulse bg-foreground/10" />
-      <span className="block h-6 w-2/3 animate-pulse bg-foreground/6" />
-    </div>
-  );
-}
-
-export function LessonListenPage({ data, chunksPromise }: LessonListenPageProps) {
+export function LessonListenPage({ data, chunks }: LessonListenPageProps) {
   const { lesson, lessonNumber } = data;
   const text = i18n.public.lessonPage;
   const metaItems = [
@@ -79,7 +63,7 @@ export function LessonListenPage({ data, chunksPromise }: LessonListenPageProps)
       tabIndex={-1}
       className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
-      <article className="grid min-h-[calc(100svh-var(--public-header-height))] grid-rows-[auto_minmax(0,1fr)]">
+      <article className="grid h-[calc(100svh-var(--public-header-height))] grid-rows-[auto_minmax(0,1fr)]">
         <PublicPageHero
           as="header"
           title={lesson.title}
@@ -92,14 +76,12 @@ export function LessonListenPage({ data, chunksPromise }: LessonListenPageProps)
         />
 
         <section
-          className="min-h-[18rem] overflow-hidden bg-background"
+          className="min-h-0 overflow-hidden bg-background"
           data-page-reveal="body"
           style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
         >
           <div className={`${publicContentClassName} h-full min-h-0 py-2 sm:py-8 lg:py-10`}>
-            <Suspense fallback={<ListenPlayerFallback />}>
-              <LessonListenPlayer lesson={lesson} chunksPromise={chunksPromise} />
-            </Suspense>
+            <LessonListenPlayer lesson={lesson} chunks={chunks} />
           </div>
         </section>
       </article>

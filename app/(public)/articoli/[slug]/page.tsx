@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 import { PublicArticlePage } from "@/components/public/pages/public-article-page";
 import { i18n } from "@/lib/i18n";
@@ -53,9 +52,5 @@ async function PublicArticleRouteContent({ params }: PublicArticleRouteProps) {
 }
 
 export default function PublicArticleRoute({ params }: PublicArticleRouteProps) {
-  return (
-    <Suspense fallback={null}>
-      <PublicArticleRouteContent params={params} />
-    </Suspense>
-  );
+  return <PublicArticleRouteContent params={params} />;
 }

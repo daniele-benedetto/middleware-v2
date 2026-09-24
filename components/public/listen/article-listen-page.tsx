@@ -1,5 +1,3 @@
-import { Suspense, type CSSProperties } from "react";
-
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { ListenEmptyState } from "@/components/public/listen/listen-empty-state";
 import { ListenPlayer } from "@/components/public/listen/listen-player";
@@ -10,10 +8,11 @@ import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 
 import type { AudioChunk } from "@/lib/audio/audio-chunks";
 import type { PublicArticleListenMetadataData } from "@/lib/public/server/article-listen-page";
+import type { CSSProperties } from "react";
 
 type ArticleListenPageProps = {
   data: PublicArticleListenMetadataData;
-  chunksPromise: Promise<AudioChunk[] | null>;
+  chunks: AudioChunk[];
 };
 
 function formatArticleDate(value: string) {
@@ -38,14 +37,12 @@ function getArticleTitleTypographyClassName(title: string) {
   return "font-heading text-[clamp(34px,9vw,64px)] leading-[0.88] font-black tracking-[-0.06em] [text-wrap:balance] sm:text-[clamp(42px,7.5vw,104px)]";
 }
 
-async function ArticleListenPlayer({
+function ArticleListenPlayer({
   article,
-  chunksPromise,
+  chunks,
 }: Pick<PublicArticleListenMetadataData, "article"> & {
-  chunksPromise: Promise<AudioChunk[] | null>;
+  chunks: AudioChunk[];
 }) {
-  const chunks = await chunksPromise;
-
   return (
     <ListenPlayer
       contentKind="article"
@@ -54,26 +51,13 @@ async function ArticleListenPlayer({
       contentTitle={article.title}
       contentUpdatedAt={article.updatedAt}
       audioUrl={article.audioUrl ?? ""}
-      chunks={chunks ?? []}
+      chunks={chunks}
       emptyState={<ListenEmptyState contentKind="article" />}
     />
   );
 }
 
-function ListenPlayerFallback() {
-  return (
-    <div
-      className="grid h-full min-h-48 content-start gap-3 py-5"
-      role="status"
-      aria-label={i18n.public.listenPage.transcriptLoading}
-    >
-      <span className="block h-7 w-11/12 animate-pulse bg-foreground/10" />
-      <span className="block h-6 w-2/3 animate-pulse bg-foreground/6" />
-    </div>
-  );
-}
-
-export function ArticleListenPage({ data, chunksPromise }: ArticleListenPageProps) {
+export function ArticleListenPage({ data, chunks }: ArticleListenPageProps) {
   const { article, articleNumber } = data;
   const text = i18n.public.listenPage;
   const cardText = i18n.public.home.articleCard;
@@ -91,7 +75,7 @@ export function ArticleListenPage({ data, chunksPromise }: ArticleListenPageProp
       tabIndex={-1}
       className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
-      <article className="grid min-h-[calc(100svh-var(--public-header-height))] grid-rows-[auto_minmax(18rem,1fr)]">
+      <article className="grid h-[calc(100svh-var(--public-header-height))] grid-rows-[auto_minmax(0,1fr)]">
         <PublicPageHero
           as="header"
           title={article.title}
@@ -113,14 +97,12 @@ export function ArticleListenPage({ data, chunksPromise }: ArticleListenPageProp
         />
 
         <section
-          className="min-h-[18rem] overflow-hidden bg-background"
+          className="min-h-0 overflow-hidden bg-background"
           data-page-reveal="body"
           style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
         >
           <div className={`${publicContentClassName} h-full min-h-0 py-2 sm:py-8 lg:py-10`}>
-            <Suspense fallback={<ListenPlayerFallback />}>
-              <ArticleListenPlayer article={article} chunksPromise={chunksPromise} />
-            </Suspense>
+            <ArticleListenPlayer article={article} chunks={chunks} />
           </div>
         </section>
       </article>

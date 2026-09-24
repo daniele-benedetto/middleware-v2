@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 import { PublicStaticPage } from "@/components/public/pages/public-static-page";
 import { i18n } from "@/lib/i18n";
@@ -45,9 +44,5 @@ async function PublicStaticPageRouteContent({ params }: PublicStaticPageRoutePro
 }
 
 export default function PublicStaticPageRoute({ params }: PublicStaticPageRouteProps) {
-  return (
-    <Suspense fallback={null}>
-      <PublicStaticPageRouteContent params={params} />
-    </Suspense>
-  );
+  return <PublicStaticPageRouteContent params={params} />;
 }

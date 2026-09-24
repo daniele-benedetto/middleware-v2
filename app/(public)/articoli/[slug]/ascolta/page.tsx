@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 import { ArticleListenPage } from "@/components/public/listen/article-listen-page";
 import { i18n } from "@/lib/i18n";
@@ -25,7 +24,9 @@ async function PublicArticleListenRouteContent({ params }: PublicArticleListenRo
     notFound();
   }
 
-  return <ArticleListenPage data={data} chunksPromise={chunksPromise} />;
+  const chunks = await chunksPromise;
+
+  return <ArticleListenPage data={data} chunks={chunks ?? []} />;
 }
 
 export async function generateMetadata({
@@ -53,9 +54,5 @@ export async function generateMetadata({
 }
 
 export default function PublicArticleListenRoute({ params }: PublicArticleListenRouteProps) {
-  return (
-    <Suspense fallback={null}>
-      <PublicArticleListenRouteContent params={params} />
-    </Suspense>
-  );
+  return <PublicArticleListenRouteContent params={params} />;
 }

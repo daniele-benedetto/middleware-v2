@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 import { PublicCoursePage } from "@/components/public/pages/public-course-page";
 import { i18n } from "@/lib/i18n";
@@ -51,9 +50,5 @@ async function PublicCourseRouteContent({ params }: PublicCourseRouteProps) {
 }
 
 export default function PublicCourseRoute({ params }: PublicCourseRouteProps) {
-  return (
-    <Suspense fallback={null}>
-      <PublicCourseRouteContent params={params} />
-    </Suspense>
-  );
+  return <PublicCourseRouteContent params={params} />;
 }

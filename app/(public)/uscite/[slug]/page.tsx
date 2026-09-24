@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 import { PublicIssuePage as PublicIssuePageView } from "@/components/public/pages/public-issue-page";
 import { i18n } from "@/lib/i18n";
@@ -52,9 +51,5 @@ async function PublicIssueRouteContent({ params }: PublicIssuePageProps) {
 }
 
 export default function PublicIssueRoute({ params }: PublicIssuePageProps) {
-  return (
-    <Suspense fallback={null}>
-      <PublicIssueRouteContent params={params} />
-    </Suspense>
-  );
+  return <PublicIssueRouteContent params={params} />;
 }
