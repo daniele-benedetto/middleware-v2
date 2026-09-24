@@ -33,7 +33,6 @@ export function PublicBrand({ href = "/", onClick, tone = "light", eager }: Publ
         width={221}
         height={33}
         loading={eager ? "eager" : undefined}
-        fetchPriority={eager ? "high" : undefined}
         sizes="221px"
         className="h-7.75 w-auto shrink-0 object-contain md:h-8.5"
       />

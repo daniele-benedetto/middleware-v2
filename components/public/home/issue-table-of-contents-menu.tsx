@@ -1,17 +1,16 @@
 "use client";
 
 import { ChartBar, GraduationCap, List, Map, Newspaper, Search, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { PublicSearchMenuResults } from "@/components/public/home/public-search-menu-results";
 import { publicContentClassName } from "@/components/public/primitives";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
 import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
-import { TrpcProvider } from "@/lib/trpc/provider";
 import { cn } from "@/lib/utils";
 
 import type {
@@ -29,6 +28,16 @@ const blockIcons = {
 
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+const loadIssueSearchMenuResults = () =>
+  import("@/components/public/home/issue-search-menu-results").then(
+    (mod) => mod.IssueSearchMenuResults,
+  );
+
+const IssueSearchMenuResults = dynamic(loadIssueSearchMenuResults, {
+  ssr: false,
+  loading: () => <div aria-hidden="true" className="min-h-full" />,
+});
 
 type MenuPhase = "closed" | "opening" | "open" | "closing";
 type MenuName = "issues" | "search" | "tableOfContents";
@@ -310,6 +319,12 @@ function IssueTableOfContentsMenuContent({
         aria-expanded={visible && activeMenu === "search"}
         aria-label={i18n.public.home.dossier.searchOpen}
         onClick={(event) => openMenu(event, "search")}
+        onPointerEnter={() => {
+          void loadIssueSearchMenuResults();
+        }}
+        onFocus={() => {
+          void loadIssueSearchMenuResults();
+        }}
         className="inline-flex min-h-10 cursor-pointer items-center gap-2 px-2 font-ui text-[11px] font-bold tracking-[0.1em] text-foreground uppercase decoration-1 underline-offset-4 transition-colors duration-(--motion-fast) hover:text-accent hover:underline focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
       >
         <Search size={18} strokeWidth={2.5} aria-hidden="true" />
@@ -433,7 +448,7 @@ function IssueTableOfContentsMenuContent({
                       ) : null}
                     </div>
                     <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1">
-                      <PublicSearchMenuResults
+                      <IssueSearchMenuResults
                         query={searchValue}
                         onNavigate={navigateSearchResult}
                       />
@@ -531,9 +546,5 @@ function IssueTableOfContentsMenuContent({
 }
 
 export function IssueTableOfContentsMenu(props: IssueTableOfContentsMenuProps) {
-  return (
-    <TrpcProvider>
-      <IssueTableOfContentsMenuContent {...props} />
-    </TrpcProvider>
-  );
+  return <IssueTableOfContentsMenuContent {...props} />;
 }
