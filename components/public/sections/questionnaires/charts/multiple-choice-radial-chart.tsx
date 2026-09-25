@@ -20,7 +20,10 @@ export function MultipleChoiceRadialChart({ field }: { field: ChoiceField }) {
   return (
     <div className="grid gap-3">
       <div aria-label="Distribuzione percentuale delle risposte" role="img">
-        <ChartShell config={{ percentage: { label: "Percentuale" } }} className="h-80 min-h-80">
+        <ChartShell
+          config={{ percentage: { label: "Percentuale" } }}
+          className="h-[clamp(15rem,58vw,21rem)] min-h-60"
+        >
           <RadialBarChart
             accessibilityLayer
             data={data}
@@ -37,7 +40,7 @@ export function MultipleChoiceRadialChart({ field }: { field: ChoiceField }) {
               barSize={18}
               cornerRadius={3}
               dataKey="percentage"
-              isAnimationActive={false}
+              isAnimationActive
             />
           </RadialBarChart>
         </ChartShell>

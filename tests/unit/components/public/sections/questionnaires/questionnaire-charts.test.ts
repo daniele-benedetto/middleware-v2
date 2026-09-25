@@ -69,6 +69,36 @@ const multipleChoiceField = {
   },
 };
 
+const scaleField = {
+  id: "00000000-0000-4000-8000-000000000005",
+  label: "Quanto spesso?",
+  description: null,
+  fieldType: "scale" as const,
+  responseCount: 3,
+  missingCount: 0,
+  kind: "number" as const,
+  numericType: "scale" as const,
+  minimum: 1,
+  maximum: 3,
+  average: 2,
+  median: 2,
+  q1: 1,
+  q3: 3,
+  iqr: 2,
+  distribution: [
+    { minimum: 1, maximum: 1, count: 1, percentage: 33.33 },
+    { minimum: 2, maximum: 2, count: 1, percentage: 33.33 },
+    { minimum: 3, maximum: 3, count: 1, percentage: 33.33 },
+  ],
+  discrete: true,
+  visualization: {
+    chart: "discreteBar" as const,
+    alternatives: ["table" as const],
+    rationale: "ordinalDiscrete" as const,
+    methodology: "ordinal_distribution" as const,
+  },
+};
+
 describe("questionnaire chart primitives", () => {
   it("generates deterministic distinct category colors", () => {
     const keys = ["first", "second", "third"];
@@ -113,6 +143,14 @@ describe("questionnaire chart primitives", () => {
     expect(html).toContain("Seconda");
     expect(html).toContain("66.67%");
     expect(html).toContain("33.33%");
+  });
+
+  it("renders scale values with a colored legend", () => {
+    const html = renderToStaticMarkup(createElement(AnalysisFieldRenderer, { field: scaleField }));
+
+    expect(html).toContain("Legenda dei valori");
+    expect(html).toContain("33.33%");
+    expect(html).toContain("data-chart");
   });
 
   it("renders an empty state without chart geometry", () => {
