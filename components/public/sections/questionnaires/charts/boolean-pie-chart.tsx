@@ -2,7 +2,7 @@
 
 import { Cell, Pie, PieChart } from "recharts";
 
-import { getGoldenAngleChartColors } from "./chart-colors";
+import { blurChartFocus, getGoldenAngleChartColors } from "./chart-colors";
 import { ChartShell } from "./chart-shell";
 
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
@@ -22,11 +22,6 @@ function formatPercentage(value: number, total: number) {
   )}%`;
 }
 
-function blurPieFocus() {
-  const activeElement = document.activeElement as (Element & { blur?: () => void }) | null;
-  activeElement?.blur?.();
-}
-
 export function BooleanPieChart({ field }: { field: BooleanField }) {
   const colors = getGoldenAngleChartColors(["true", "false"]);
   const data: BooleanChartItem[] = [
@@ -39,7 +34,7 @@ export function BooleanPieChart({ field }: { field: BooleanField }) {
   return (
     <div className="grid gap-3">
       <ChartShell config={config} className="h-[clamp(15rem,58vw,21rem)] min-h-60">
-        <PieChart accessibilityLayer onClick={blurPieFocus}>
+        <PieChart accessibilityLayer onClick={blurChartFocus}>
           <Pie
             data={data}
             dataKey="value"

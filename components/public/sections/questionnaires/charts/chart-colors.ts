@@ -17,3 +17,8 @@ export function getGoldenAngleChartColors(keys: readonly string[]) {
 export function getSingleSeriesChartColor() {
   return getGoldenAngleChartColors(["series"]).get("series")!;
 }
+
+export function blurChartFocus() {
+  const activeElement = document.activeElement as (Element & { blur?: () => void }) | null;
+  activeElement?.blur?.();
+}

@@ -72,6 +72,10 @@ describe("questionnaire chart primitives", () => {
     const html = renderToStaticMarkup(createElement(AnalysisFieldRenderer, { field: choiceField }));
 
     expect(html).toContain("data-chart");
+    expect(html).toContain("Prima");
+    expect(html).toContain("66.67%");
+    expect(html).toContain("Seconda");
+    expect(html).toContain("33.33%");
     expect(html).not.toContain("Tabella dati");
   });
 
