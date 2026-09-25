@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 type NavigateEventLike = Event & {
   navigationType?: string;
@@ -20,11 +20,11 @@ type PendingNavigation = {
 
 export function PublicRouteScrollReset() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams().toString();
   const initialRenderRef = useRef(true);
   const pendingNavigationRef = useRef<PendingNavigation>({ type: "push", hasHash: false });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const navigation = (window as unknown as { navigation?: NavigationLike }).navigation;
 
     if (navigation) {
@@ -59,13 +59,34 @@ export function PublicRouteScrollReset() {
 
     if (type === "traverse" || hasHash) return;
 
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-
-    const frameId = window.requestAnimationFrame(() => {
+    const scrollToTop = () => {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    };
+    const root = document.documentElement;
+    const previousOverflowAnchor = root.style.overflowAnchor;
+    let secondFrameId: number | null = null;
+    let thirdFrameId: number | null = null;
+
+    // Prevent late streamed layout changes from anchoring the viewport below the top.
+    root.style.overflowAnchor = "none";
+    scrollToTop();
+
+    const firstFrameId = window.requestAnimationFrame(() => {
+      scrollToTop();
+      secondFrameId = window.requestAnimationFrame(() => {
+        scrollToTop();
+        thirdFrameId = window.requestAnimationFrame(() => {
+          root.style.overflowAnchor = previousOverflowAnchor;
+        });
+      });
     });
 
-    return () => window.cancelAnimationFrame(frameId);
+    return () => {
+      window.cancelAnimationFrame(firstFrameId);
+      if (secondFrameId !== null) window.cancelAnimationFrame(secondFrameId);
+      if (thirdFrameId !== null) window.cancelAnimationFrame(thirdFrameId);
+      root.style.overflowAnchor = previousOverflowAnchor;
+    };
   }, [pathname, searchParams]);
 
   return null;
