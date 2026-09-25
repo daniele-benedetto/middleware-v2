@@ -8,6 +8,7 @@ import { DiscreteDistributionChart } from "./discrete-distribution-chart";
 import { DotPlot } from "./dot-plot";
 import { Histogram } from "./histogram";
 import { HourlyBarChart } from "./hourly-bar-chart";
+import { MultipleChoiceRadialChart } from "./multiple-choice-radial-chart";
 import { TemporalBarChart } from "./temporal-bar-chart";
 
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
@@ -35,7 +36,11 @@ export function AnalysisFieldRenderer({ field }: { field: AnalysisField }) {
         <BooleanPieChart field={field} />
       ) : (field.visualization.chart === "bar" || field.visualization.chart === "table") &&
         field.kind === "choice" ? (
-        <ChoiceBarChart field={field} />
+        field.multiple ? (
+          <MultipleChoiceRadialChart field={field} />
+        ) : (
+          <ChoiceBarChart field={field} />
+        )
       ) : field.visualization.chart === "discreteBar" && field.kind === "number" ? (
         <DiscreteDistributionChart field={field} />
       ) : field.visualization.chart === "histogram" && field.kind === "number" ? (

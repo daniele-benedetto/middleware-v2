@@ -57,6 +57,18 @@ const booleanField = {
   },
 };
 
+const multipleChoiceField = {
+  ...choiceField,
+  fieldType: "multipleChoice" as const,
+  multiple: true,
+  visualization: {
+    chart: "table" as const,
+    alternatives: ["bar" as const],
+    rationale: "multipleNominal" as const,
+    methodology: "respondent_percentage" as const,
+  },
+};
+
 describe("questionnaire chart primitives", () => {
   it("generates deterministic distinct category colors", () => {
     const keys = ["first", "second", "third"];
@@ -89,6 +101,18 @@ describe("questionnaire chart primitives", () => {
     expect(html).toContain("60%");
     expect(html).toContain("40%");
     expect(html).not.toContain("Risposte");
+  });
+
+  it("renders multiple choice results as a radial grid", () => {
+    const html = renderToStaticMarkup(
+      createElement(AnalysisFieldRenderer, { field: multipleChoiceField }),
+    );
+
+    expect(html).toContain("Distribuzione percentuale delle risposte");
+    expect(html).toContain("Prima");
+    expect(html).toContain("Seconda");
+    expect(html).toContain("66.67%");
+    expect(html).toContain("33.33%");
   });
 
   it("renders an empty state without chart geometry", () => {
