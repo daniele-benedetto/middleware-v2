@@ -55,6 +55,10 @@
   scale: 1.14;
 }
 
+.public-map-canvas.leaflet-container {
+  touch-action: pan-y;
+}
+
 .leaflet-pane,
 .leaflet-top,
 .leaflet-bottom {

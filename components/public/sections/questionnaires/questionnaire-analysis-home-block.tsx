@@ -324,7 +324,7 @@ export function QuestionnaireAnalysisHomeBlock({
               </p>
             ) : null}
           </header>
-          <div className="relative grid md:grid-cols-[minmax(240px,1fr)_minmax(0,1fr)]">
+          <div className="relative grid md:grid-cols-[minmax(240px,1fr)_minmax(0,2fr)]">
             <MobileQuestionMenu
               fields={analysis.fields}
               activeIndex={activeIndex}

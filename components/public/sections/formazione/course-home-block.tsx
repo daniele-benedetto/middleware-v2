@@ -41,7 +41,8 @@ export function CourseHomeBlock({
           className={cn(
             publicInteraction.cardBaseNoRail,
             variant.surface,
-            "block p-6 md:p-8 lg:p-10",
+            variant.border,
+            "block border p-6 md:p-8 lg:p-10",
           )}
         >
           <div>
@@ -67,9 +68,7 @@ export function CourseHomeBlock({
         </TrackedPublicLink>
         {course.lessons.length > 0 ? (
           <div className="px-4 sm:px-6 md:px-0">
-            <div
-              className={cn("grid md:border-l md:border-t md:border-foreground", lessonsGridClass)}
-            >
+            <div className={cn("grid md:border-l md:border-foreground", lessonsGridClass)}>
               {course.lessons.map((lesson, index) => (
                 <DossierLessonCard
                   key={lesson.id}
