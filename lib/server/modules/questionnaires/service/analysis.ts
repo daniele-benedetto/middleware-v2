@@ -2,11 +2,24 @@ import "server-only";
 
 import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 import {
+  publicQuestionnaireAnalysisDtoSchema,
+  type PublicQuestionnaireAnalysisDto,
+} from "@/lib/server/modules/questionnaires/dto/public";
+import {
+  createQuestionnaireFieldAnswerSchema,
   questionnaireDefinitionSchema,
   questionnaireHomeVariantSchema,
 } from "@/lib/server/modules/questionnaires/schema";
+import {
+  calculateMean,
+  calculateMedian,
+  calculateQuartiles,
+  createNumericDistribution,
+  createTemporalDistribution,
+  roundStatistic,
+} from "@/lib/server/modules/questionnaires/service/statistics";
+import { parseOutput } from "@/lib/server/validation/output";
 
-import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
 import type { QuestionnaireField } from "@/lib/server/modules/questionnaires/schema";
 
 type AnalysisRecord = {
@@ -17,8 +30,13 @@ type AnalysisRecord = {
   descriptionRich: unknown;
   closedAt: Date | null;
   definition: unknown;
-  _count: { responses: number };
   responses: Array<{ answers: unknown }>;
+};
+
+type ParsedFieldValues = {
+  values: unknown[];
+  missingCount: number;
+  invalidCount: number;
 };
 
 function getAnswers(value: unknown) {
@@ -27,172 +45,163 @@ function getAnswers(value: unknown) {
     : {};
 }
 
-function percentage(count: number, total: number) {
-  return total === 0 ? 0 : (count / total) * 100;
-}
+function parseFieldValues(
+  field: QuestionnaireField,
+  records: AnalysisRecord["responses"],
+): ParsedFieldValues {
+  const schema = createQuestionnaireFieldAnswerSchema(field);
+  if (!schema) return { values: [], missingCount: records.length, invalidCount: 0 };
 
-function aggregateNumericDistribution(field: QuestionnaireField, answers: number[]) {
-  if (answers.length === 0) return { discrete: field.type === "scale", distribution: [] };
+  const values: unknown[] = [];
+  let missingCount = 0;
+  let invalidCount = 0;
 
-  const counts = new Map<number, number>();
-  answers.forEach((value) => counts.set(value, (counts.get(value) ?? 0) + 1));
-  const discrete = field.type === "scale" || (field.type === "integer" && counts.size <= 12);
-
-  if (discrete) {
-    if (field.type === "scale") {
-      for (let value = field.min; value <= field.max; value += field.step ?? 1) {
-        if (!counts.has(value)) counts.set(value, 0);
-      }
+  for (const record of records) {
+    const value = getAnswers(record.answers)[field.id];
+    if (value === undefined) {
+      missingCount += 1;
+      continue;
     }
 
-    return {
-      discrete,
-      distribution: [...counts]
-        .sort(([left], [right]) => left - right)
-        .map(([value, count]) => ({ minimum: value, maximum: value, count })),
-    };
+    const result = schema.safeParse(value);
+    if (result.success) values.push(result.data);
+    else invalidCount += 1;
   }
 
-  const minimum = Math.min(...answers);
-  const maximum = Math.max(...answers);
-  if (minimum === maximum) {
-    return { discrete, distribution: [{ minimum, maximum, count: answers.length }] };
-  }
-
-  const bucketCount = Math.min(8, Math.max(2, Math.ceil(Math.sqrt(answers.length))));
-  const bucketSize = (maximum - minimum) / bucketCount;
-  const distribution = Array.from({ length: bucketCount }, (_, index) => ({
-    minimum: minimum + bucketSize * index,
-    maximum: index === bucketCount - 1 ? maximum : minimum + bucketSize * (index + 1),
-    count: 0,
-  }));
-
-  answers.forEach((value) => {
-    const index = Math.min(bucketCount - 1, Math.floor((value - minimum) / bucketSize));
-    distribution[index].count += 1;
-  });
-
-  return { discrete, distribution };
+  return { values, missingCount, invalidCount };
 }
 
-function dateKey(value: string) {
-  return value.length === 10 ? value : new Date(value).toISOString().slice(0, 10);
+function isPublicAnalysisField(field: QuestionnaireField) {
+  return (
+    field.publicResults &&
+    [
+      "boolean",
+      "singleChoice",
+      "multipleChoice",
+      "scale",
+      "integer",
+      "decimal",
+      "date",
+      "datetime",
+    ].includes(field.type)
+  );
 }
 
-function startOfWeek(value: string) {
-  const date = new Date(`${value}T00:00:00.000Z`);
-  const offset = (date.getUTCDay() + 6) % 7;
-  date.setUTCDate(date.getUTCDate() - offset);
-  return date.toISOString().slice(0, 10);
-}
-
-function startOfMonth(value: string) {
-  return `${value.slice(0, 7)}-01`;
-}
-
-function aggregateDateDistribution(answers: string[]) {
-  if (answers.length === 0) return [];
-
-  const minimum = answers[0];
-  const maximum = answers.at(-1) ?? minimum;
-  const spanInDays =
-    (new Date(`${dateKey(maximum)}T00:00:00.000Z`).getTime() -
-      new Date(`${dateKey(minimum)}T00:00:00.000Z`).getTime()) /
-    86_400_000;
-  const keyFor = spanInDays <= 31 ? dateKey : spanInDays <= 180 ? startOfWeek : startOfMonth;
-  const counts = new Map<string, number>();
-
-  answers.forEach((value) => {
-    const key = keyFor(dateKey(value));
-    counts.set(key, (counts.get(key) ?? 0) + 1);
-  });
-
-  return [...counts]
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([date, count]) => ({ date, count }));
-}
-
-function aggregateField(field: QuestionnaireField, records: AnalysisRecord["responses"]) {
-  if (!field.publicResults) return null;
-  const values = records
-    .map((record) => getAnswers(record.answers)[field.id])
-    .filter((value) => value !== undefined);
-  const base = {
+function createBase(field: QuestionnaireField, values: ParsedFieldValues) {
+  return {
     id: field.id,
     label: field.label,
     description: field.description ?? null,
+    fieldType: field.type,
+    responseCount: values.values.length,
+    missingCount: values.missingCount,
   };
+}
 
-  if (field.type === "boolean") {
-    const answers = values.filter((value): value is boolean => typeof value === "boolean");
-    return {
-      ...base,
-      kind: "boolean" as const,
-      responseCount: answers.length,
-      trueLabel: field.trueLabel,
-      falseLabel: field.falseLabel,
-      trueCount: answers.filter(Boolean).length,
-      falseCount: answers.filter((value) => !value).length,
-    };
+function aggregateBoolean(
+  field: Extract<QuestionnaireField, { type: "boolean" }>,
+  parsed: ParsedFieldValues,
+) {
+  const answers = parsed.values as boolean[];
+  return {
+    ...createBase(field, parsed),
+    kind: "boolean" as const,
+    trueLabel: field.trueLabel,
+    falseLabel: field.falseLabel,
+    trueCount: answers.filter(Boolean).length,
+    falseCount: answers.filter((value) => !value).length,
+  };
+}
+
+function aggregateChoice(
+  field: Extract<QuestionnaireField, { type: "singleChoice" | "multipleChoice" }>,
+  parsed: ParsedFieldValues,
+) {
+  const counts = new Map(field.options.map((option) => [option.id, 0]));
+  for (const value of parsed.values) {
+    const selected = field.type === "multipleChoice" ? (value as string[]) : [value as string];
+    for (const optionId of selected) counts.set(optionId, (counts.get(optionId) ?? 0) + 1);
   }
 
+  const options = field.options
+    .map((option, index) => ({
+      id: option.id,
+      label: option.label,
+      count: counts.get(option.id) ?? 0,
+      percentage: 0,
+      originalIndex: index,
+    }))
+    .sort((left, right) => right.count - left.count || left.originalIndex - right.originalIndex)
+    .map(({ originalIndex: _originalIndex, ...option }, index) => ({
+      ...option,
+      percentage:
+        parsed.values.length === 0
+          ? 0
+          : (roundStatistic((option.count / parsed.values.length) * 100) ?? 0),
+      rank: index + 1,
+    }));
+
+  return {
+    ...createBase(field, parsed),
+    kind: "choice" as const,
+    multiple: field.type === "multipleChoice",
+    options,
+  };
+}
+
+function aggregateNumber(
+  field: Extract<QuestionnaireField, { type: "scale" | "integer" | "decimal" }>,
+  parsed: ParsedFieldValues,
+) {
+  const answers = parsed.values as number[];
+  const distribution = createNumericDistribution(field, answers);
+  const quartiles = calculateQuartiles(answers);
+
+  return {
+    ...createBase(field, parsed),
+    kind: "number" as const,
+    numericType: field.type,
+    minimum: answers.length ? roundStatistic(Math.min(...answers)) : null,
+    maximum: answers.length ? roundStatistic(Math.max(...answers)) : null,
+    average: calculateMean(answers),
+    median: calculateMedian(answers),
+    ...quartiles,
+    ...distribution,
+  };
+}
+
+function aggregateDate(
+  field: Extract<QuestionnaireField, { type: "date" | "datetime" }>,
+  parsed: ParsedFieldValues,
+) {
+  const answers = parsed.values as string[];
+  const temporal = createTemporalDistribution(answers);
+  const sorted = [...answers].sort(
+    (left, right) => new Date(left).getTime() - new Date(right).getTime(),
+  );
+
+  return {
+    ...createBase(field, parsed),
+    kind: "date" as const,
+    temporalType: field.type,
+    minimum: sorted[0] ?? null,
+    maximum: sorted.at(-1) ?? null,
+    ...temporal,
+  };
+}
+
+function aggregateField(field: QuestionnaireField, records: AnalysisRecord["responses"]) {
+  if (!isPublicAnalysisField(field)) return null;
+  const parsed = parseFieldValues(field, records);
+
+  if (field.type === "boolean") return aggregateBoolean(field, parsed);
   if (field.type === "singleChoice" || field.type === "multipleChoice") {
-    const counts = new Map(field.options.map((option) => [option.id, 0]));
-    let responseCount = 0;
-    for (const value of values) {
-      const selected = field.type === "multipleChoice" ? value : [value];
-      if (!Array.isArray(selected)) continue;
-      const ids = selected.filter((id): id is string => typeof id === "string" && counts.has(id));
-      if (ids.length === 0) continue;
-      responseCount += 1;
-      ids.forEach((id) => counts.set(id, (counts.get(id) ?? 0) + 1));
-    }
-    return {
-      ...base,
-      kind: "choice" as const,
-      responseCount,
-      multiple: field.type === "multipleChoice",
-      options: field.options.map((option) => {
-        const count = counts.get(option.id) ?? 0;
-        return { label: option.label, count, percentage: percentage(count, responseCount) };
-      }),
-    };
+    return aggregateChoice(field, parsed);
   }
-
   if (field.type === "scale" || field.type === "integer" || field.type === "decimal") {
-    const answers = values.filter(
-      (value): value is number => typeof value === "number" && Number.isFinite(value),
-    );
-    return {
-      ...base,
-      kind: "number" as const,
-      responseCount: answers.length,
-      minimum: answers.length ? Math.min(...answers) : null,
-      maximum: answers.length ? Math.max(...answers) : null,
-      average: answers.length
-        ? answers.reduce((sum, value) => sum + value, 0) / answers.length
-        : null,
-      ...aggregateNumericDistribution(field, answers),
-    };
+    return aggregateNumber(field, parsed);
   }
-
-  if (field.type === "date" || field.type === "datetime") {
-    const answers = values
-      .filter(
-        (value): value is string =>
-          typeof value === "string" && Number.isFinite(new Date(value).getTime()),
-      )
-      .sort((left, right) => new Date(left).getTime() - new Date(right).getTime());
-    return {
-      ...base,
-      kind: "date" as const,
-      responseCount: answers.length,
-      minimum: answers[0] ?? null,
-      maximum: answers.at(-1) ?? null,
-      distribution: aggregateDateDistribution(answers),
-    };
-  }
-
+  if (field.type === "date" || field.type === "datetime") return aggregateDate(field, parsed);
   return null;
 }
 
@@ -207,17 +216,21 @@ export function toPublicQuestionnaireAnalysis(
     .filter((field): field is NonNullable<typeof field> => field !== null);
 
   if (fields.length === 0) return null;
-  return {
-    id: record.id,
-    title: record.title,
-    titleStyled:
-      record.titleStyled === null || record.titleStyled === undefined
-        ? null
-        : issueTitleStyledSchema.parse(record.titleStyled),
-    homeVariant: questionnaireHomeVariantSchema.parse(record.homeVariant ?? "black"),
-    descriptionRich: record.descriptionRich ?? null,
-    closedAt: record.closedAt.toISOString(),
-    responseCount: record._count.responses,
-    fields,
-  };
+
+  return parseOutput(
+    {
+      analysisVersion: 1,
+      id: record.id,
+      title: record.title,
+      titleStyled:
+        record.titleStyled === null || record.titleStyled === undefined
+          ? null
+          : issueTitleStyledSchema.parse(record.titleStyled),
+      homeVariant: questionnaireHomeVariantSchema.parse(record.homeVariant ?? "black"),
+      descriptionRich: record.descriptionRich ?? null,
+      closedAt: record.closedAt.toISOString(),
+      fields,
+    },
+    publicQuestionnaireAnalysisDtoSchema,
+  );
 }

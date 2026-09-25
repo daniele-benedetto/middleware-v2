@@ -10,6 +10,9 @@ const ids = {
   decimal: "00000000-0000-4000-8000-000000000008",
   date: "00000000-0000-4000-8000-000000000009",
   boolean: "00000000-0000-4000-8000-000000000010",
+  multiple: "00000000-0000-4000-8000-000000000011",
+  url: "00000000-0000-4000-8000-000000000012",
+  optionThree: "00000000-0000-4000-8000-000000000013",
 };
 
 function record() {
@@ -80,37 +83,39 @@ describe("toPublicQuestionnaireAnalysis", () => {
   it("returns only aggregate data for supported public fields", () => {
     const analysis = toPublicQuestionnaireAnalysis(record());
 
-    expect(analysis).toMatchObject({ id: ids.questionnaire, responseCount: 2 });
-    expect(analysis?.fields).toEqual([
-      {
-        id: ids.choice,
-        label: "Scelta pubblica",
-        description: null,
-        kind: "choice",
-        responseCount: 2,
-        multiple: false,
-        options: [
-          { label: "Uno", count: 1, percentage: 50 },
-          { label: "Due", count: 1, percentage: 50 },
-        ],
-      },
-      {
-        id: ids.scale,
-        label: "Scala pubblica",
-        description: null,
-        kind: "number",
-        responseCount: 2,
-        minimum: 1,
-        maximum: 3,
-        average: 2,
-        discrete: true,
-        distribution: [
-          { minimum: 1, maximum: 1, count: 1 },
-          { minimum: 2, maximum: 2, count: 0 },
-          { minimum: 3, maximum: 3, count: 1 },
-        ],
-      },
-    ]);
+    expect(analysis).toMatchObject({ id: ids.questionnaire, analysisVersion: 1 });
+    expect(analysis).toMatchObject({
+      fields: [
+        {
+          id: ids.choice,
+          label: "Scelta pubblica",
+          description: null,
+          kind: "choice",
+          responseCount: 2,
+          multiple: false,
+          options: [
+            { label: "Uno", count: 1, percentage: 50 },
+            { label: "Due", count: 1, percentage: 50 },
+          ],
+        },
+        {
+          id: ids.scale,
+          label: "Scala pubblica",
+          description: null,
+          kind: "number",
+          responseCount: 2,
+          minimum: 1,
+          maximum: 3,
+          average: 2,
+          discrete: true,
+          distribution: [
+            { minimum: 1, maximum: 1, count: 1 },
+            { minimum: 2, maximum: 2, count: 0 },
+            { minimum: 3, maximum: 3, count: 1 },
+          ],
+        },
+      ],
+    });
     expect(JSON.stringify(analysis)).not.toContain("Dato sensibile");
   });
 
@@ -180,48 +185,109 @@ describe("toPublicQuestionnaireAnalysis", () => {
       ],
     });
 
-    expect(analysis?.fields).toEqual([
-      {
-        id: ids.decimal,
-        label: "Valore pubblico",
-        description: null,
-        kind: "number",
-        responseCount: 4,
-        minimum: 1.1,
-        maximum: 1.4,
-        average: 1.25,
-        discrete: false,
-        distribution: [
-          { minimum: 1.1, maximum: 1.25, count: 2 },
-          { minimum: 1.25, maximum: 1.4, count: 2 },
+    expect(analysis).toMatchObject({
+      fields: [
+        {
+          id: ids.decimal,
+          label: "Valore pubblico",
+          description: null,
+          kind: "number",
+          responseCount: 4,
+          minimum: 1.1,
+          maximum: 1.4,
+          average: 1.25,
+          discrete: false,
+          distribution: [
+            { minimum: 1.1, maximum: 1.25, count: 2 },
+            { minimum: 1.25, maximum: 1.4, count: 2 },
+          ],
+        },
+        {
+          id: ids.date,
+          label: "Data pubblica",
+          description: null,
+          kind: "date",
+          responseCount: 4,
+          minimum: "2026-01-01",
+          maximum: "2026-01-07",
+          distribution: [
+            { date: "2026-01-01", count: 1 },
+            { date: "2026-01-03", count: 1 },
+            { date: "2026-01-05", count: 1 },
+            { date: "2026-01-07", count: 1 },
+          ],
+        },
+        {
+          id: ids.boolean,
+          label: "Risposta pubblica",
+          description: null,
+          kind: "boolean",
+          responseCount: 4,
+          trueLabel: "Si",
+          falseLabel: "No",
+          trueCount: 3,
+          falseCount: 1,
+        },
+      ],
+    });
+  });
+
+  it("uses field respondents for multiple-choice percentages and excludes URLs", () => {
+    const source = record();
+    const analysis = toPublicQuestionnaireAnalysis({
+      ...source,
+      definition: {
+        ...source.definition,
+        steps: [
+          {
+            id: "00000000-0000-4000-8000-000000000007",
+            fields: [
+              {
+                id: ids.multiple,
+                type: "multipleChoice",
+                label: "Opzioni",
+                publicResults: true,
+                options: [
+                  { id: ids.optionOne, label: "Uno" },
+                  { id: ids.optionTwo, label: "Due" },
+                  { id: ids.optionThree, label: "Tre" },
+                ],
+              },
+              {
+                id: ids.url,
+                type: "url",
+                label: "URL privato",
+                publicResults: true,
+              },
+            ],
+          },
         ],
       },
+      responses: [
+        {
+          answers: {
+            [ids.multiple]: [ids.optionOne, ids.optionTwo],
+            [ids.url]: "https://one.test",
+          },
+        },
+        { answers: { [ids.multiple]: [ids.optionOne], [ids.url]: "https://two.test" } },
+        { answers: { [ids.multiple]: "invalid", [ids.url]: "https://three.test" } },
+      ],
+    });
+
+    expect(analysis?.fields).toMatchObject([
       {
-        id: ids.date,
-        label: "Data pubblica",
-        description: null,
-        kind: "date",
-        responseCount: 4,
-        minimum: "2026-01-01",
-        maximum: "2026-01-07",
-        distribution: [
-          { date: "2026-01-01", count: 1 },
-          { date: "2026-01-03", count: 1 },
-          { date: "2026-01-05", count: 1 },
-          { date: "2026-01-07", count: 1 },
+        id: ids.multiple,
+        responseCount: 2,
+        missingCount: 0,
+        multiple: true,
+        options: [
+          { id: ids.optionOne, count: 2, percentage: 100, rank: 1 },
+          { id: ids.optionTwo, count: 1, percentage: 50, rank: 2 },
+          { id: ids.optionThree, count: 0, percentage: 0, rank: 3 },
         ],
-      },
-      {
-        id: ids.boolean,
-        label: "Risposta pubblica",
-        description: null,
-        kind: "boolean",
-        responseCount: 4,
-        trueLabel: "Si",
-        falseLabel: "No",
-        trueCount: 3,
-        falseCount: 1,
       },
     ]);
+    expect(JSON.stringify(analysis)).not.toContain("https://");
   });
 });

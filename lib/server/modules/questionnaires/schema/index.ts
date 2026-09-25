@@ -41,6 +41,7 @@ export const listQuestionnairesQuerySchema = z.object({
 
 export {
   createQuestionnaireAnswersSchema,
+  createQuestionnaireFieldAnswerSchema,
   questionnaireCopySchema,
   questionnaireDefinitionSchema,
   questionnaireFieldSchema,

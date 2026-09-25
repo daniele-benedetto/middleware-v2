@@ -76,14 +76,31 @@ const publicAnalysisFieldBaseSchema = z.object({
   id: z.string().uuid(),
   label: z.string(),
   description: z.string().nullable(),
+  fieldType: z.enum([
+    "boolean",
+    "singleChoice",
+    "multipleChoice",
+    "scale",
+    "integer",
+    "decimal",
+    "date",
+    "datetime",
+  ]),
   responseCount: z.number().int().nonnegative(),
+  missingCount: z.number().int().nonnegative(),
 });
 
 const publicAnalysisChoiceFieldSchema = publicAnalysisFieldBaseSchema.extend({
   kind: z.literal("choice"),
   multiple: z.boolean(),
   options: z.array(
-    z.object({ label: z.string(), count: z.number().int().nonnegative(), percentage: z.number() }),
+    z.object({
+      id: z.string().uuid(),
+      label: z.string(),
+      count: z.number().int().nonnegative(),
+      percentage: z.number().nonnegative(),
+      rank: z.number().int().positive(),
+    }),
   ),
 });
 const publicAnalysisBooleanFieldSchema = publicAnalysisFieldBaseSchema.extend({
@@ -95,33 +112,49 @@ const publicAnalysisBooleanFieldSchema = publicAnalysisFieldBaseSchema.extend({
 });
 const publicAnalysisNumberFieldSchema = publicAnalysisFieldBaseSchema.extend({
   kind: z.literal("number"),
+  numericType: z.enum(["scale", "integer", "decimal"]),
   minimum: z.number().nullable(),
   maximum: z.number().nullable(),
   average: z.number().nullable(),
+  median: z.number().nullable(),
+  q1: z.number().nullable(),
+  q3: z.number().nullable(),
+  iqr: z.number().nullable(),
   distribution: z.array(
     z.object({
       minimum: z.number(),
       maximum: z.number(),
       count: z.number().int().nonnegative(),
+      percentage: z.number().nonnegative(),
     }),
   ),
   discrete: z.boolean(),
 });
 const publicAnalysisDateFieldSchema = publicAnalysisFieldBaseSchema.extend({
   kind: z.literal("date"),
+  temporalType: z.enum(["date", "datetime"]),
   minimum: z.string().nullable(),
   maximum: z.string().nullable(),
-  distribution: z.array(z.object({ date: z.string(), count: z.number().int().nonnegative() })),
+  bucketUnit: z.enum(["day", "week", "month"]),
+  distribution: z.array(
+    z.object({
+      date: z.string(),
+      start: z.string(),
+      end: z.string(),
+      count: z.number().int().nonnegative(),
+      percentage: z.number().nonnegative(),
+    }),
+  ),
 });
 
 export const publicQuestionnaireAnalysisDtoSchema = z.object({
+  analysisVersion: z.literal(1),
   id: z.string().uuid(),
   title: z.string(),
   titleStyled: issueTitleStyledSchema.nullable(),
   homeVariant: questionnaireHomeVariantSchema,
   descriptionRich: z.unknown().nullable(),
   closedAt: z.string().datetime({ offset: true }),
-  responseCount: z.number().int().nonnegative(),
   fields: z.array(
     z.discriminatedUnion("kind", [
       publicAnalysisChoiceFieldSchema,

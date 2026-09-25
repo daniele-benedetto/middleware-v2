@@ -50,6 +50,7 @@ const textFieldSchema = fieldBaseSchema.extend({
 const numberFieldSchema = fieldBaseSchema
   .extend({
     type: z.enum(["integer", "decimal"]),
+    integerVisualization: z.enum(["discrete", "histogram"]).optional(),
     min: z.number().finite().optional(),
     max: z.number().finite().optional(),
     step: z.number().finite().positive().optional(),
@@ -57,6 +58,15 @@ const numberFieldSchema = fieldBaseSchema
   .refine((field) => field.min === undefined || field.max === undefined || field.min <= field.max, {
     message: "min must be less than or equal to max",
     path: ["max"],
+  })
+  .superRefine((field, context) => {
+    if (field.type !== "integer" && field.integerVisualization !== undefined) {
+      context.addIssue({
+        code: "custom",
+        message: "integerVisualization is only valid for integer fields",
+        path: ["integerVisualization"],
+      });
+    }
   });
 
 const booleanFieldSchema = fieldBaseSchema.extend({
@@ -263,7 +273,7 @@ function createChoiceAnswerSchema(
   return withOptionalRequirement(schema, field.required);
 }
 
-function createFieldAnswerSchema(field: QuestionnaireField) {
+export function createQuestionnaireFieldAnswerSchema(field: QuestionnaireField) {
   switch (field.type) {
     case "text":
     case "textarea":
@@ -297,7 +307,7 @@ export function createQuestionnaireAnswersSchema(definition: QuestionnaireDefini
 
   for (const step of definition.steps) {
     for (const field of step.fields) {
-      const schema = createFieldAnswerSchema(field);
+      const schema = createQuestionnaireFieldAnswerSchema(field);
       if (schema) shape[field.id] = schema;
     }
   }
