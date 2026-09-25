@@ -47,6 +47,12 @@ export {
   questionnaireFieldSchema,
   questionnaireStepSchema,
 } from "@/lib/server/modules/questionnaires/schema/definition";
+export {
+  chartKindSchema,
+  publicVisualizationSchema,
+  visualizationMethodologySchema,
+  visualizationRationaleSchema,
+} from "@/lib/server/modules/questionnaires/schema/visualization";
 
 export type {
   QuestionnaireAnswers,
@@ -55,6 +61,12 @@ export type {
   QuestionnaireField,
   QuestionnaireStep,
 } from "@/lib/server/modules/questionnaires/schema/definition";
+export type {
+  ChartKind,
+  PublicVisualization,
+  VisualizationMethodology,
+  VisualizationRationale,
+} from "@/lib/server/modules/questionnaires/schema/visualization";
 export type CreateQuestionnaireInput = z.infer<typeof createQuestionnaireInputSchema>;
 export type UpdateQuestionnaireInput = z.infer<typeof updateQuestionnaireInputSchema>;
 export type ListQuestionnairesQuery = z.infer<typeof listQuestionnairesQuerySchema>;

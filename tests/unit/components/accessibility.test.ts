@@ -76,6 +76,12 @@ describe("accessibility primitives", () => {
           multiple: false,
           responseCount: 10,
           missingCount: 0,
+          visualization: {
+            chart: "bar",
+            alternatives: ["table"],
+            rationale: "singleNominal",
+            methodology: "category_percentage",
+          },
           options: [
             {
               id: "00000000-0000-4000-8000-000000000002",

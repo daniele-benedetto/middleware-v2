@@ -18,6 +18,7 @@ import {
   createTemporalDistribution,
   roundStatistic,
 } from "@/lib/server/modules/questionnaires/service/statistics";
+import { selectQuestionnaireFieldVisualization } from "@/lib/server/modules/questionnaires/service/visualization";
 import { parseOutput } from "@/lib/server/validation/output";
 
 import type { QuestionnaireField } from "@/lib/server/modules/questionnaires/schema";
@@ -87,7 +88,7 @@ function isPublicAnalysisField(field: QuestionnaireField) {
   );
 }
 
-function createBase(field: QuestionnaireField, values: ParsedFieldValues) {
+function createBase<T extends QuestionnaireField>(field: T, values: ParsedFieldValues) {
   return {
     id: field.id,
     label: field.label,
@@ -161,6 +162,9 @@ function aggregateNumber(
     ...createBase(field, parsed),
     kind: "number" as const,
     numericType: field.type,
+    ...(field.type === "integer"
+      ? { integerVisualization: field.integerVisualization ?? ("discrete" as const) }
+      : {}),
     minimum: answers.length ? roundStatistic(Math.min(...answers)) : null,
     maximum: answers.length ? roundStatistic(Math.max(...answers)) : null,
     average: calculateMean(answers),
@@ -213,7 +217,11 @@ export function toPublicQuestionnaireAnalysis(
   const fields = definition.steps
     .flatMap((step) => step.fields)
     .map((field) => aggregateField(field, record.responses))
-    .filter((field): field is NonNullable<typeof field> => field !== null);
+    .filter((field): field is NonNullable<typeof field> => field !== null)
+    .map((field) => ({
+      ...field,
+      visualization: selectQuestionnaireFieldVisualization(field),
+    }));
 
   if (fields.length === 0) return null;
 

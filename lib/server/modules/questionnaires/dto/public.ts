@@ -4,6 +4,7 @@ import { issueTitleStyledSchema } from "@/lib/server/modules/issues/schema";
 import {
   questionnaireDefinitionSchema,
   questionnaireHomeVariantSchema,
+  publicVisualizationSchema,
 } from "@/lib/server/modules/questionnaires/schema";
 
 export const publicQuestionnaireDtoSchema = z.object({
@@ -88,6 +89,7 @@ const publicAnalysisFieldBaseSchema = z.object({
   ]),
   responseCount: z.number().int().nonnegative(),
   missingCount: z.number().int().nonnegative(),
+  visualization: publicVisualizationSchema,
 });
 
 const publicAnalysisChoiceFieldSchema = publicAnalysisFieldBaseSchema.extend({
@@ -113,6 +115,7 @@ const publicAnalysisBooleanFieldSchema = publicAnalysisFieldBaseSchema.extend({
 const publicAnalysisNumberFieldSchema = publicAnalysisFieldBaseSchema.extend({
   kind: z.literal("number"),
   numericType: z.enum(["scale", "integer", "decimal"]),
+  integerVisualization: z.enum(["discrete", "histogram"]).optional(),
   minimum: z.number().nullable(),
   maximum: z.number().nullable(),
   average: z.number().nullable(),
