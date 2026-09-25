@@ -14,7 +14,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const questionnaire = await getPublicQuestionnairePageData(slug);
   return questionnaire
-    ? buildPageMetadata({ title: questionnaire.title, path: `/questionari/${questionnaire.slug}` })
+    ? buildPageMetadata({
+        title: questionnaire.title,
+        path: `/questionari/${questionnaire.slug}`,
+        index: false,
+      })
     : buildPageMetadata({
         title: i18n.public.metadata.questionnaireNotFound,
         path: `/questionari/${slug}`,

@@ -181,14 +181,14 @@ function SyncedTranscript({
         <div className="relative z-10">
           <div
             ref={activeChunkRef}
-            className="flex items-start gap-2 py-1 pr-1 font-editorial text-foreground sm:py-1.5"
+            className="relative flex items-start gap-2 py-1 pr-8 font-editorial text-foreground sm:py-1.5"
           >
             <span className="block min-w-0 flex-1 text-[clamp(17px,5.2vw,22px)] leading-[1.28] font-medium tracking-[-0.018em] sm:text-[clamp(20px,2.45vw,28px)] sm:leading-[1.3] sm:tracking-[-0.022em]">
               {chunk.text}
             </span>
             {isBookmarked ? (
               <BookmarkIcon
-                className="mt-1 size-3.5 shrink-0 fill-accent text-accent sm:size-4"
+                className="absolute top-1 right-0 size-3.5 fill-accent text-accent sm:top-1.5 sm:size-4"
                 aria-hidden
               />
             ) : null}
@@ -197,12 +197,12 @@ function SyncedTranscript({
             <div
               key={upcomingChunk.id}
               aria-hidden
-              className="mt-5 flex items-start gap-2 font-editorial text-[clamp(16px,4.8vw,21px)] leading-[1.28] tracking-[-0.012em] text-muted/45 sm:text-[clamp(19px,2.2vw,26px)] sm:leading-[1.3]"
+              className="relative mt-5 flex items-start gap-2 pr-8 font-editorial text-[clamp(16px,4.8vw,21px)] leading-[1.28] tracking-[-0.012em] text-muted/45 sm:text-[clamp(19px,2.2vw,26px)] sm:leading-[1.3]"
             >
               <span className="min-w-0 flex-1">{upcomingChunk.text}</span>
               {bookmarkedChunkIds.has(upcomingChunk.id) ? (
                 <BookmarkIcon
-                  className="mt-1 size-3.5 shrink-0 fill-accent text-accent sm:size-4"
+                  className="absolute top-1 right-0 size-3.5 fill-accent text-accent sm:top-1.5 sm:size-4"
                   aria-hidden
                 />
               ) : null}
@@ -713,6 +713,7 @@ export function ListenPlayer({
       audio.play().catch(() => {
         setIsPlaying(false);
         setAudioError(true);
+        trackPublicAnalyticsEvent(publicAnalyticsEvents.audioError, getAudioAnalyticsData());
       });
       return;
     }
@@ -735,7 +736,11 @@ export function ListenPlayer({
 
     setAudioError(false);
     audio.load();
-    void audio.play().catch(() => setAudioError(true));
+    trackPublicAnalyticsEvent(publicAnalyticsEvents.audioRetry, getAudioAnalyticsData());
+    void audio.play().catch(() => {
+      setAudioError(true);
+      trackPublicAnalyticsEvent(publicAnalyticsEvents.audioError, getAudioAnalyticsData());
+    });
   };
 
   const toggleActiveChunkBookmark = () => {
@@ -815,14 +820,27 @@ export function ListenPlayer({
           setIsPlaying(true);
           if (!playTrackedRef.current) {
             playTrackedRef.current = true;
-            trackPublicAnalyticsEvent(
-              publicAnalyticsEvents.articleAudioPlay,
-              getAudioAnalyticsData(),
-            );
+            trackPublicAnalyticsEvent(publicAnalyticsEvents.audioPlay, getAudioAnalyticsData());
+          } else if (currentTimeRef.current >= minimumResumeTime) {
+            trackPublicAnalyticsEvent(publicAnalyticsEvents.audioResume, {
+              ...getAudioAnalyticsData(),
+              position_bucket: getAudioPositionBucket(
+                currentTimeRef.current,
+                durationRef.current || resolvedDuration,
+              ),
+            });
           }
         }}
-        onPause={() => setIsPlaying(false)}
-        onError={() => setAudioError(true)}
+        onPause={() => {
+          setIsPlaying(false);
+          if (currentTimeRef.current < (durationRef.current || resolvedDuration)) {
+            trackPublicAnalyticsEvent(publicAnalyticsEvents.audioPause, getAudioAnalyticsData());
+          }
+        }}
+        onError={() => {
+          setAudioError(true);
+          trackPublicAnalyticsEvent(publicAnalyticsEvents.audioError, getAudioAnalyticsData());
+        }}
         onEnded={(event) => {
           if (pendingSeekTargetRef.current !== null) return;
 

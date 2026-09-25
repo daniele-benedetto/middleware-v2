@@ -4,7 +4,7 @@ import { CourseDossier } from "@/components/public/sections/formazione/course-do
 import { formatCourseDate } from "@/components/public/sections/formazione/course-format";
 import { CoursesArchiveSection } from "@/components/public/sections/formazione/courses-archive-section";
 import { i18n } from "@/lib/i18n";
-import { buildCoursePageJsonLd } from "@/lib/seo";
+import { buildCoursePageJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type {
   PublicCourseDetailDto,
@@ -40,7 +40,7 @@ export function PublicCoursePage({ course, publishedCourses, description }: Publ
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildCoursePageJsonLd(course)),
+          __html: serializeJsonLd(buildCoursePageJsonLd(course)),
         }}
       />
       <article>

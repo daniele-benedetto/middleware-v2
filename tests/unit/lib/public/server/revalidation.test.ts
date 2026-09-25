@@ -5,6 +5,7 @@ import {
   revalidatePublicCourseContent,
   revalidatePublicIssueContent,
   revalidatePublicPageContent,
+  revalidatePublicQuestionnaireAnalysisContent,
 } from "@/lib/public/server/revalidation";
 
 const PUBLIC_ARTICLE_PAGE_CACHE_TAG = "public-article";
@@ -16,6 +17,7 @@ const PUBLIC_ISSUES_ARCHIVE_CACHE_TAG = "public-issues-archive";
 const PUBLIC_PAGE_CACHE_TAG = "public-page";
 const PUBLIC_MEDIA_CACHE_TAG = "public-media";
 const PUBLIC_SITEMAP_CACHE_TAG = "public-sitemap";
+const PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG = "public-questionnaire";
 const revalidateTagMock = vi.hoisted(() => vi.fn());
 
 vi.mock("next/cache", () => ({
@@ -54,6 +56,10 @@ vi.mock("@/lib/public/server/page", () => ({
 
 vi.mock("@/lib/public/server/sitemap", () => ({
   PUBLIC_SITEMAP_CACHE_TAG: "public-sitemap",
+}));
+
+vi.mock("@/lib/public/server/questionnaire-page", () => ({
+  PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG: "public-questionnaire",
 }));
 
 vi.mock("@/lib/server/modules/media/service/public", () => ({
@@ -117,5 +123,15 @@ describe("public cache revalidation", () => {
     revalidatePublicPageContent();
 
     expectExpiredTags([PUBLIC_PAGE_CACHE_TAG, PUBLIC_MEDIA_CACHE_TAG, PUBLIC_SITEMAP_CACHE_TAG]);
+  });
+
+  it("expires questionnaire-dependent public cache tags", () => {
+    revalidatePublicQuestionnaireAnalysisContent();
+
+    expectExpiredTags([
+      PUBLIC_HOME_CACHE_TAG,
+      PUBLIC_ISSUE_PAGE_CACHE_TAG,
+      PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG,
+    ]);
   });
 });

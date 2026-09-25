@@ -4,6 +4,7 @@ import {
   buildIssuePageJsonLd,
   buildIssuesArchiveJsonLd,
   buildStaticPageJsonLd,
+  serializeJsonLd,
 } from "@/lib/seo";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
@@ -76,6 +77,12 @@ const article = {
 } satisfies PublicArticleDetailDto;
 
 describe("seo json-ld", () => {
+  it("escapes script-breaking characters in serialized JSON-LD", () => {
+    const serialized = serializeJsonLd({ title: "</script><script>alert(1)</script>" });
+
+    expect(serialized).not.toContain("</script>");
+    expect(serialized).toContain("\\u003c/script\\u003e");
+  });
   it("builds home collection json-ld with absolute image urls", () => {
     const jsonLd = buildHomeJsonLd(issue);
     const collection = getGraph(jsonLd).find((node) => node["@type"] === "CollectionPage");

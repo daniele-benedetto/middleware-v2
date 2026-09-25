@@ -249,7 +249,6 @@ export const publicIt = {
     viewCourse: "Visualizza la contro-formazione  →",
     previousLabel: "Incontro precedente",
     nextLabel: "Incontro successivo",
-    navigationLabel: "Navigazione",
     lessonLabel: (value: number) => `Incontro ${paddedNumber(value)}`,
     readingTimeLabel: (minutes: number) => `${minutes} min`,
     audioLabel: "Audio",

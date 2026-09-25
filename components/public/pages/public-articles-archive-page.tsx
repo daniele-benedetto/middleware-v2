@@ -3,7 +3,7 @@ import { publicContentClassName } from "@/components/public/primitives";
 import { ArticleArchiveCard } from "@/components/public/sections/archive/article-archive-card";
 import { IssuesArchiveHero } from "@/components/public/sections/archive/issues-archive-hero";
 import { i18n } from "@/lib/i18n";
-import { buildArticlesArchiveJsonLd } from "@/lib/seo";
+import { buildArticlesArchiveJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type { PublicArticleSummaryDto } from "@/lib/server/modules/articles/dto/public";
 import type { CSSProperties } from "react";
@@ -24,7 +24,7 @@ export function PublicArticlesArchivePage({ articles }: PublicArticlesArchivePag
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
+          __html: serializeJsonLd(
             buildArticlesArchiveJsonLd(articles, text.metadata.title, text.metadata.description),
           ),
         }}

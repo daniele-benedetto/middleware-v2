@@ -3,7 +3,7 @@ import { getArchiveIssueViewModels } from "@/components/public/sections/archive/
 import { IssuesArchiveGrid } from "@/components/public/sections/archive/issues-archive-grid";
 import { IssuesArchiveHero } from "@/components/public/sections/archive/issues-archive-hero";
 import { i18n } from "@/lib/i18n";
-import { buildIssuesArchiveJsonLd } from "@/lib/seo";
+import { buildIssuesArchiveJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type { PublicIssueListItem } from "@/lib/public/types/issues";
 
@@ -24,7 +24,7 @@ export function PublicIssuesArchivePage({ issues }: PublicIssuesArchivePageProps
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildIssuesArchiveJsonLd(issues)),
+          __html: serializeJsonLd(buildIssuesArchiveJsonLd(issues)),
         }}
       />
       {issueViewModels.length > 0 ? (

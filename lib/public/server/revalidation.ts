@@ -10,6 +10,7 @@ import { PUBLIC_ISSUE_PAGE_CACHE_TAG } from "@/lib/public/server/issue-page";
 import { PUBLIC_ISSUES_ARCHIVE_CACHE_TAG } from "@/lib/public/server/issues-archive";
 import { PUBLIC_NAVIGATION_CACHE_TAG } from "@/lib/public/server/navigation-cache";
 import { PUBLIC_PAGE_CACHE_TAG } from "@/lib/public/server/page";
+import { PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG } from "@/lib/public/server/questionnaire-page";
 import { PUBLIC_SITEMAP_CACHE_TAG } from "@/lib/public/server/sitemap";
 import { PUBLIC_MEDIA_CACHE_TAG } from "@/lib/server/modules/media/service/public";
 
@@ -53,6 +54,7 @@ export function revalidatePublicMapContent() {
 export function revalidatePublicQuestionnaireAnalysisContent() {
   revalidatePublicTag(PUBLIC_HOME_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG);
 }
 
 export function revalidatePublicPageContent() {

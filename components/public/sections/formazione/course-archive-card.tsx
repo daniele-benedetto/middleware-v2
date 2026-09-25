@@ -34,8 +34,8 @@ export function CourseArchiveCard({ course, className }: CourseArchiveCardProps)
         position: course.courseNumber,
       }}
       className={cn(
-        publicInteraction.cardBase,
-        "relative isolate block overflow-hidden py-7 max-lg:border-b max-lg:last:border-b-0 md:py-10 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:py-14",
+        publicInteraction.cardBaseNoRail,
+        "relative isolate block overflow-hidden py-7 max-lg:border-b max-lg:last:border-b-0 md:py-10 lg:flex lg:min-h-[calc(100svh-var(--public-issue-chrome-height))] lg:items-center lg:py-14",
         variantClasses.surface,
         variantClasses.border,
         variantClasses.cardBorder,

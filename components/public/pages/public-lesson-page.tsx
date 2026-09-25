@@ -2,15 +2,15 @@ import { PlayIcon } from "lucide-react";
 import Image from "next/image";
 
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
-import { HomeSectionHeader } from "@/components/public/home/home-section-header";
 import { publicContentClassName } from "@/components/public/primitives";
+import { PublicReadingDepth } from "@/components/public/public-reading-depth";
 import { PublicRichText } from "@/components/public/rich-text";
-import { DossierLessonCard } from "@/components/public/sections/formazione/dossier-lesson-card";
+import { LessonRelatedSection } from "@/components/public/sections/formazione/lesson-related-section";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
-import { buildLessonPageJsonLd } from "@/lib/seo";
+import { buildLessonPageJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type { PublicCourseLessonSummaryDto } from "@/lib/server/modules/courses/dto/public";
 import type { PublicLessonDetailDto } from "@/lib/server/modules/lessons/dto/public";
@@ -45,26 +45,6 @@ function getLessonTitleTypographyClassName(title: string) {
   return "font-heading text-[clamp(48px,9.5vw,138px)] leading-[0.86] font-black tracking-[-0.06em] [text-wrap:balance]";
 }
 
-function getRelatedLessonsGridClassName(count: number) {
-  if (count === 1) {
-    return "grid md:border-l md:border-t md:border-foreground";
-  }
-
-  if (count === 2) {
-    return "grid md:grid-cols-2 md:border-l md:border-t md:border-foreground";
-  }
-
-  return "grid md:grid-cols-2 md:border-l md:border-t md:border-foreground xl:grid-cols-3";
-}
-
-function getRelatedLessonCardClassName(index: number, count: number) {
-  if (count === 3 && index === 2) {
-    return "md:col-span-2 xl:col-span-1";
-  }
-
-  return undefined;
-}
-
 function LessonMetaRail({ lesson }: { lesson: PublicLessonDetailDto }) {
   const text = i18n.public.lessonPage;
   const metaItems = [
@@ -97,46 +77,6 @@ function LessonMetaRail({ lesson }: { lesson: PublicLessonDetailDto }) {
   );
 }
 
-function OtherLessonsSection({
-  courseSlug,
-  otherLessons,
-}: {
-  courseSlug: string;
-  otherLessons: PublicCourseLessonSummaryDto[];
-}) {
-  const text = i18n.public.lessonPage;
-
-  if (otherLessons.length === 0) return null;
-
-  return (
-    <section className="scroll-mt-20 bg-background py-12 lg:py-14">
-      <div className={publicContentClassName}>
-        <HomeSectionHeader
-          title={text.otherLessonsTitle}
-          action={{ label: text.viewCourse, href: `/contro-formazione/${courseSlug}` }}
-        />
-
-        <div className={getRelatedLessonsGridClassName(otherLessons.length)}>
-          {otherLessons.map((lesson, index) => (
-            <DossierLessonCard
-              key={lesson.id}
-              courseSlug={courseSlug}
-              lesson={lesson}
-              number={lesson.sortOrder + 1}
-              variant="constellationSecondary"
-              className={getRelatedLessonCardClassName(index, otherLessons.length)}
-              showImage={false}
-              analyticsSource="related"
-              analyticsPosition={`related_${index + 1}`}
-              analyticsParentSlug={courseSlug}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function PublicLessonPage({
   lesson,
   lessonNumber,
@@ -152,7 +92,7 @@ export function PublicLessonPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildLessonPageJsonLd(lesson, description)),
+          __html: serializeJsonLd(buildLessonPageJsonLd(lesson, description)),
         }}
       />
       <article>
@@ -189,14 +129,20 @@ export function PublicLessonPage({
           data-page-reveal="body"
           style={{ "--page-reveal-delay": lesson.imageUrl ? "760ms" : "620ms" } as CSSProperties}
         >
-          <div className={publicContentClassName}>
-            <div className="mx-auto max-w-3xl space-y-10">
-              <PublicRichText value={lesson.contentRich} />
+          <PublicReadingDepth
+            contentType="lesson"
+            slug={lesson.slug}
+            courseSlug={lesson.courseSlug}
+          >
+            <div className={publicContentClassName}>
+              <div className="mx-auto max-w-3xl space-y-10">
+                <PublicRichText value={lesson.contentRich} />
+              </div>
             </div>
-          </div>
+          </PublicReadingDepth>
         </div>
 
-        <OtherLessonsSection courseSlug={lesson.courseSlug} otherLessons={otherLessons} />
+        <LessonRelatedSection courseSlug={lesson.courseSlug} otherLessons={otherLessons} />
       </article>
     </main>
   );

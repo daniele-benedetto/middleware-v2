@@ -4,6 +4,7 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { type AudioChunk } from "@/lib/audio/audio-chunks";
 import { loadPublicAudioChunks } from "@/lib/public/server/audio-chunk-source";
+import { getPublicLessonPageData } from "@/lib/public/server/course-page";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicCoursesService } from "@/lib/server/modules/courses/service/public";
 import { publicLessonsService } from "@/lib/server/modules/lessons/service/public";
@@ -19,6 +20,7 @@ export type PublicLessonListenMetadataData = {
 
 export type PublicLessonListenPageData = PublicLessonListenMetadataData & {
   lessonNumber: number | null;
+  otherLessons: Awaited<ReturnType<typeof getPublicLessonPageData>>["otherLessons"];
 };
 
 async function loadAudioChunks(value: unknown) {
@@ -109,8 +111,11 @@ export async function getPublicLessonListenPageData(
     return null;
   }
 
+  const courseData = await getPublicLessonPageData(courseSlug, lessonSlug);
+
   return {
     ...data,
-    lessonNumber: await getLessonNumber(courseSlug, data.lesson.id),
+    lessonNumber: courseData.lessonNumber ?? (await getLessonNumber(courseSlug, data.lesson.id)),
+    otherLessons: courseData.otherLessons,
   };
 }

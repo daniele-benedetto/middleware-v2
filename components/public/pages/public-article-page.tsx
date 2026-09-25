@@ -4,12 +4,13 @@ import { ArticleCoverImage } from "@/components/public/article-cover-image";
 import { DossierArticleCard, PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { HomeSectionHeader } from "@/components/public/home/home-section-header";
 import { publicContentClassName } from "@/components/public/primitives";
+import { PublicReadingDepth } from "@/components/public/public-reading-depth";
 import { PublicRichText } from "@/components/public/rich-text";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
-import { buildArticlePageJsonLd } from "@/lib/seo";
+import { buildArticlePageJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type { PublicRelatedIssueArticle } from "@/lib/public/server/article-page";
 import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
@@ -158,7 +159,7 @@ export function PublicArticlePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildArticlePageJsonLd(article, article.excerpt)),
+          __html: serializeJsonLd(buildArticlePageJsonLd(article, article.excerpt)),
         }}
       />
       <article>
@@ -198,11 +199,13 @@ export function PublicArticlePage({
           data-page-reveal="body"
           style={{ "--page-reveal-delay": article.imageUrl ? "760ms" : "620ms" } as CSSProperties}
         >
-          <div className={publicContentClassName}>
-            <div className="mx-auto max-w-3xl space-y-10">
-              <PublicRichText value={article.contentRich} />
+          <PublicReadingDepth contentType="article" slug={article.slug}>
+            <div className={publicContentClassName}>
+              <div className="mx-auto max-w-3xl space-y-10">
+                <PublicRichText value={article.contentRich} />
+              </div>
             </div>
-          </div>
+          </PublicReadingDepth>
         </div>
 
         <RelatedArticlesSection article={article} relatedArticles={relatedArticles} />

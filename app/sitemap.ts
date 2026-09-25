@@ -23,15 +23,31 @@ function toSitemapItems(
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   await connection();
 
-  const { homeLastModified, articles, issues, courses, lessons, staticPages } =
-    await getPublicSitemapData();
+  const {
+    homeLastModified,
+    articlesArchiveLastModified,
+    issuesArchiveLastModified,
+    coursesArchiveLastModified,
+    articles,
+    issues,
+    courses,
+    lessons,
+    staticPages,
+  } = await getPublicSitemapData();
 
   const indexPaths = ["/", "/uscite", "/articoli", "/contro-formazione"];
+
+  const indexLastModified = new Map([
+    ["/", homeLastModified],
+    ["/uscite", issuesArchiveLastModified],
+    ["/articoli", articlesArchiveLastModified],
+    ["/contro-formazione", coursesArchiveLastModified],
+  ]);
 
   return [
     ...indexPaths.map((path, index) => ({
       url: getCanonicalUrl(path),
-      lastModified: homeLastModified,
+      lastModified: indexLastModified.get(path),
       changeFrequency: "weekly" as const,
       priority: index === 0 ? 1 : 0.8,
     })),

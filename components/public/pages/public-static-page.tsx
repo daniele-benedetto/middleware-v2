@@ -3,7 +3,7 @@ import { publicContentClassName } from "@/components/public/primitives";
 import { PublicRichText } from "@/components/public/rich-text";
 import { i18n } from "@/lib/i18n";
 import { getPublicStaticPagePath, isPublicStaticPageSlug } from "@/lib/public/pages/static-pages";
-import { buildStaticPageJsonLd } from "@/lib/seo";
+import { buildStaticPageJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type { PublicPageDto } from "@/lib/server/modules/pages/dto/public";
 import type { CSSProperties } from "react";
@@ -46,7 +46,7 @@ export function PublicStaticPage({ page }: PublicStaticPageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildStaticPageJsonLd(page.title, canonicalPath)),
+          __html: serializeJsonLd(buildStaticPageJsonLd(page.title, canonicalPath)),
         }}
       />
       <article>

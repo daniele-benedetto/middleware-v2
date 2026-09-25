@@ -124,7 +124,7 @@ export function IssuesArchiveRail({ children, ariaLabel }: IssuesArchiveRailProp
       className="scroll-mt-20 py-0"
       style={sectionHeight ? { height: `${sectionHeight}px` } : undefined}
     >
-      <div className="lg:sticky lg:top-16 lg:flex lg:h-[calc(100vh-4rem)] lg:items-stretch lg:overflow-hidden">
+      <div className="lg:sticky lg:top-[var(--public-issue-chrome-height)] lg:flex lg:h-[calc(100svh-var(--public-issue-chrome-height))] lg:items-stretch lg:overflow-hidden">
         <div ref={trackRef} className="grid gap-0 will-change-transform lg:flex">
           {children}
         </div>

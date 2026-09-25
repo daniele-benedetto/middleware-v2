@@ -18,6 +18,9 @@ export type SitemapEntry = {
 
 export type PublicSitemapData = {
   homeLastModified?: Date;
+  articlesArchiveLastModified?: Date;
+  issuesArchiveLastModified?: Date;
+  coursesArchiveLastModified?: Date;
   articles: SitemapEntry[];
   issues: SitemapEntry[];
   courses: SitemapEntry[];
@@ -45,6 +48,29 @@ async function getHomeLastModified() {
   });
 
   return toLastModified(currentIssue?.updatedAt, currentIssue?.publishedAt);
+}
+
+async function getLatestUpdatedAt(model: "article" | "issue" | "course") {
+  const record =
+    model === "article"
+      ? await prisma.article.findFirst({
+          where: { status: "PUBLISHED", publishedAt: { not: null } },
+          orderBy: { updatedAt: "desc" },
+          select: { updatedAt: true, publishedAt: true },
+        })
+      : model === "issue"
+        ? await prisma.issue.findFirst({
+            where: PUBLISHED_ISSUE_FILTER,
+            orderBy: { updatedAt: "desc" },
+            select: { updatedAt: true, publishedAt: true },
+          })
+        : await prisma.course.findFirst({
+            where: PUBLISHED_ISSUE_FILTER,
+            orderBy: { updatedAt: "desc" },
+            select: { updatedAt: true, publishedAt: true },
+          });
+
+  return toLastModified(record?.updatedAt, record?.publishedAt);
 }
 
 async function getArticleEntries(): Promise<SitemapEntry[]> {
@@ -153,11 +179,24 @@ export async function getPublicSitemapData(): Promise<PublicSitemapData> {
   cacheLife("hours");
   cacheTag(PUBLIC_SITEMAP_CACHE_TAG);
 
-  const [homeLastModified, articles, issues, courses, lessons, staticPages] = await Promise.all([
+  const [
+    homeLastModified,
+    articlesArchiveLastModified,
+    issuesArchiveLastModified,
+    coursesArchiveLastModified,
+    articles,
+    issues,
+    courses,
+    lessons,
+    staticPages,
+  ] = await Promise.all([
     getHomeLastModified().catch((error) => {
       console.error("sitemap home lastModified failed", error);
       return undefined;
     }),
+    getLatestUpdatedAt("article").catch(() => undefined),
+    getLatestUpdatedAt("issue").catch(() => undefined),
+    getLatestUpdatedAt("course").catch(() => undefined),
     resolveOrEmpty("published articles", getArticleEntries),
     resolveOrEmpty("published issues", getIssueEntries),
     resolveOrEmpty("published courses", getCourseEntries),
@@ -165,5 +204,15 @@ export async function getPublicSitemapData(): Promise<PublicSitemapData> {
     resolveOrEmpty("published static pages", getStaticPageEntries),
   ]);
 
-  return { homeLastModified, articles, issues, courses, lessons, staticPages };
+  return {
+    homeLastModified,
+    articlesArchiveLastModified,
+    issuesArchiveLastModified,
+    coursesArchiveLastModified,
+    articles,
+    issues,
+    courses,
+    lessons,
+    staticPages,
+  };
 }

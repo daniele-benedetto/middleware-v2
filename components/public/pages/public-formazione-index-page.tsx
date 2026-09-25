@@ -3,7 +3,7 @@ import { IssuesArchiveHero } from "@/components/public/sections/archive/issues-a
 import { CourseArchiveGrid } from "@/components/public/sections/formazione/course-archive-grid";
 import { getCourseArchiveViewModels } from "@/components/public/sections/formazione/course-archive-view-model";
 import { i18n } from "@/lib/i18n";
-import { buildFormazioneArchiveJsonLd } from "@/lib/seo";
+import { buildFormazioneArchiveJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type { PublicCourseDto } from "@/lib/server/modules/courses/dto/public";
 
@@ -24,7 +24,7 @@ export function PublicFormazioneIndexPage({ courses }: PublicFormazioneIndexPage
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildFormazioneArchiveJsonLd(courses)),
+          __html: serializeJsonLd(buildFormazioneArchiveJsonLd(courses)),
         }}
       />
       {courseViewModels.length > 0 ? (

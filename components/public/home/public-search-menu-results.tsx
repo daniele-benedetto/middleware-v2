@@ -4,6 +4,7 @@ import { AlertCircle, SearchX } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { i18n } from "@/lib/i18n";
+import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 import { trpc } from "@/lib/trpc/react";
 
 export function PublicSearchMenuResults({
@@ -34,6 +35,14 @@ export function PublicSearchMenuResults({
   );
   const suggestions = trpc.public.search.suggestions.useQuery({ limit: 10 }, { staleTime: 30_000 });
 
+  useEffect(() => {
+    if (debouncedQuery.length < 2) return;
+    trackPublicAnalyticsEvent(publicAnalyticsEvents.searchSubmit, {
+      query_length: debouncedQuery.length,
+      source: "public_search",
+    });
+  }, [debouncedQuery]);
+
   const showSearchResults = hasSearchQuery && (searchResults.data?.items.length ?? 0) > 0;
   const hasSearchError = hasSearchQuery && searchResults.isError && !searchResults.data;
   const hasEmptySearch =
@@ -52,6 +61,14 @@ export function PublicSearchMenuResults({
     hasSearchError ||
     hasEmptySearch ||
     (!normalizedQuery && !suggestions.isPending && !results?.length);
+
+  useEffect(() => {
+    if (!hasEmptySearch) return;
+    trackPublicAnalyticsEvent(publicAnalyticsEvents.searchNoResults, {
+      query_length: debouncedQuery.length,
+      source: "public_search",
+    });
+  }, [debouncedQuery, hasEmptySearch]);
 
   if (showEmptyState) {
     const isError = hasSearchError || (!hasSearchQuery && suggestions.isError);
@@ -95,7 +112,7 @@ export function PublicSearchMenuResults({
           : ""}
       </p>
       <ol aria-busy={isLoadingSearch}>
-        {results?.map((result) => (
+        {results?.map((result, index) => (
           <li key={result.id} className="border-b border-foreground last:border-b-0">
             <a
               href={result.href}
@@ -111,6 +128,11 @@ export function PublicSearchMenuResults({
                 }
 
                 event.preventDefault();
+                trackPublicAnalyticsEvent(publicAnalyticsEvents.searchResultClick, {
+                  result_type: result.type,
+                  result_position: index + 1,
+                  source: "public_search",
+                });
                 onNavigate(result.href);
               }}
               className="block cursor-pointer py-4 transition-colors duration-(--motion-fast) hover:bg-surface-hover focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px]"

@@ -1,7 +1,7 @@
 import { getArchiveIssues } from "@/components/public/home/home-view-model";
 import { PublicIssueDossierPage } from "@/components/public/pages/public-issue-dossier-page";
 import { i18n } from "@/lib/i18n";
-import { buildIssuePageJsonLd } from "@/lib/seo";
+import { buildIssuePageJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";
 
@@ -25,7 +25,7 @@ export function PublicIssuePage({ issue, publishedIssues }: PublicIssuePageProps
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify(buildIssuePageJsonLd(issue)),
+              __html: serializeJsonLd(buildIssuePageJsonLd(issue)),
             }}
           />
         ) : null

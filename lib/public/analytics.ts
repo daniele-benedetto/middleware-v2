@@ -3,6 +3,11 @@ export const publicAnalyticsEvents = {
   audioProgress: "audio_progress",
   audioComplete: "audio_complete",
   audioBookmarkAdd: "audio_bookmark_add",
+  audioPause: "audio_pause",
+  audioResume: "audio_resume",
+  audioError: "audio_error",
+  audioRetry: "audio_retry",
+  audioPlay: "audio_play",
   contentCardClick: "content_card_click",
   courseArchiveOpen: "course_archive_open",
   menuOpen: "menu_open",
@@ -15,6 +20,11 @@ export const publicAnalyticsEvents = {
   issueTableOfContentsOpen: "issue_table_of_contents_open",
   issueSwitcherOpen: "issue_switcher_open",
   searchOpen: "search_open",
+  searchSubmit: "search_submit",
+  searchResultClick: "search_result_click",
+  searchNoResults: "search_no_results",
+  contentReadProgress: "content_read_progress",
+  lessonNavigationClick: "lesson_navigation_click",
 } as const;
 
 export type PublicAnalyticsEventName =

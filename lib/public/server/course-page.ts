@@ -35,10 +35,7 @@ export type PublicLessonSibling = {
 export type PublicLessonPageData = {
   lesson: PublicLessonDetailDto | null;
   lessonNumber: number | null;
-  totalLessons: number;
   otherLessons: PublicCourseLessonSummaryDto[];
-  previousLesson: PublicLessonSibling | null;
-  nextLesson: PublicLessonSibling | null;
   description?: string;
 };
 
@@ -133,29 +130,17 @@ export async function getPublicLessonPageData(
     return {
       lesson,
       lessonNumber: null,
-      totalLessons: course?.lessons.length ?? 0,
       otherLessons: [],
-      previousLesson: null,
-      nextLesson: null,
       description: getLessonDescription(lesson),
     };
   }
 
   const orderedLessons = course.lessons;
   const currentIndex = orderedLessons.findIndex((item) => item.id === lesson.id);
-  const previous = currentIndex > 0 ? orderedLessons[currentIndex - 1] : null;
-  const next =
-    currentIndex >= 0 && currentIndex < orderedLessons.length - 1
-      ? orderedLessons[currentIndex + 1]
-      : null;
-
   return {
     lesson,
     lessonNumber: currentIndex >= 0 ? currentIndex + 1 : null,
-    totalLessons: orderedLessons.length,
     otherLessons: orderedLessons.filter((item) => item.id !== lesson.id),
-    previousLesson: previous ? { slug: previous.slug, title: previous.title } : null,
-    nextLesson: next ? { slug: next.slug, title: next.title } : null,
     description: getLessonDescription(lesson),
   };
 }
