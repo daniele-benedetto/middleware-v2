@@ -307,6 +307,62 @@
 
 html {
   background: var(--bg-main);
+  scrollbar-gutter: stable;
+}
+
+/* Keep scrollable surfaces visually transparent and prevent layout shifts. */
+:where(
+  .cms-scroll,
+  [class*="overflow-auto"],
+  [class*="overflow-scroll"],
+  [class*="overflow-y-auto"],
+  [class*="overflow-y-scroll"],
+  [class*="overflow-x-auto"],
+  [class*="overflow-x-scroll"]
+) {
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--ink-30) transparent;
+  scrollbar-width: thin;
+}
+
+:where(
+  .cms-scroll,
+  [class*="overflow-auto"],
+  [class*="overflow-scroll"],
+  [class*="overflow-y-auto"],
+  [class*="overflow-y-scroll"],
+  [class*="overflow-x-auto"],
+  [class*="overflow-x-scroll"]
+)::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+:where(
+  .cms-scroll,
+  [class*="overflow-auto"],
+  [class*="overflow-scroll"],
+  [class*="overflow-y-auto"],
+  [class*="overflow-y-scroll"],
+  [class*="overflow-x-auto"],
+  [class*="overflow-x-scroll"]
+)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+:where(
+  .cms-scroll,
+  [class*="overflow-auto"],
+  [class*="overflow-scroll"],
+  [class*="overflow-y-auto"],
+  [class*="overflow-y-scroll"],
+  [class*="overflow-x-auto"],
+  [class*="overflow-x-scroll"]
+)::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--ink-30);
+  background-clip: padding-box;
 }
 
 /* Keep hash navigation in the public editorial surface smooth without adding
