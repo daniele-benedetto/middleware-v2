@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
+import { getSingleSeriesChartColor } from "./chart-colors";
 import { ChartShell } from "./chart-shell";
 
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
@@ -11,6 +12,7 @@ import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questi
 type DateField = Extract<PublicQuestionnaireAnalysisDto["fields"][number], { kind: "date" }>;
 
 export function HourlyBarChart({ field }: { field: DateField }) {
+  const seriesColor = getSingleSeriesChartColor();
   const data = (field.hourDistribution ?? []).map((item) => ({
     label: `${String(item.hour).padStart(2, "0")}:00`,
     percentage: item.percentage,
@@ -19,7 +21,7 @@ export function HourlyBarChart({ field }: { field: DateField }) {
 
   return (
     <ChartShell
-      config={{ percentage: { label: "Percentuale", color: "var(--chart-2)" } }}
+      config={{ percentage: { label: "Percentuale", color: seriesColor } }}
       className="h-75 min-h-75"
     >
       <BarChart accessibilityLayer data={data} margin={{ left: 8, right: 12 }}>

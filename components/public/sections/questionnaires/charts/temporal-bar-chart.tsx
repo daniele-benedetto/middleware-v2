@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
+import { getSingleSeriesChartColor } from "./chart-colors";
 import { ChartShell } from "./chart-shell";
 
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
@@ -22,13 +23,14 @@ function formatBucket(value: string, field: DateField) {
 }
 
 export function TemporalBarChart({ field }: { field: DateField }) {
+  const seriesColor = getSingleSeriesChartColor();
   const data = field.distribution.map((bucket) => ({
     ...bucket,
     date: formatBucket(bucket.date, field),
   }));
 
   return (
-    <ChartShell config={{ percentage: { label: "Percentuale", color: "var(--chart-2)" } }}>
+    <ChartShell config={{ percentage: { label: "Percentuale", color: seriesColor } }}>
       <BarChart accessibilityLayer data={data} margin={{ left: 8, right: 12 }}>
         <CartesianGrid vertical={false} />
         <XAxis dataKey="date" tickLine={false} tickMargin={8} minTickGap={24} />

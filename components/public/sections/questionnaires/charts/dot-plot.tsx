@@ -4,6 +4,7 @@ import { CartesianGrid, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from "rec
 
 import { ChartTooltipContent } from "@/components/ui/chart";
 
+import { getSingleSeriesChartColor } from "./chart-colors";
 import { ChartShell } from "./chart-shell";
 
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
@@ -11,12 +12,13 @@ import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questi
 type NumberField = Extract<PublicQuestionnaireAnalysisDto["fields"][number], { kind: "number" }>;
 
 export function DotPlot({ field }: { field: NumberField }) {
+  const seriesColor = getSingleSeriesChartColor();
   const data = field.distribution.map((bucket) => ({
     value: (bucket.minimum + bucket.maximum) / 2,
     count: bucket.count,
   }));
   return (
-    <ChartShell config={{ count: { label: "Conteggio", color: "var(--chart-2)" } }}>
+    <ChartShell config={{ count: { label: "Conteggio", color: seriesColor } }}>
       <ScatterChart accessibilityLayer margin={{ left: 8, right: 12 }}>
         <CartesianGrid />
         <XAxis dataKey="value" type="number" tickLine={false} />
