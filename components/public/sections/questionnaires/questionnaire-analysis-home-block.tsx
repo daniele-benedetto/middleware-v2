@@ -235,7 +235,7 @@ function QuestionList({
   }
 
   return (
-    <aside className="hidden min-h-0 flex-col bg-background md:absolute md:inset-y-0 md:left-0 md:flex md:w-1/2 md:border-r md:border-foreground">
+    <aside className="hidden min-h-0 flex-col bg-background md:absolute md:inset-y-0 md:left-0 md:flex md:w-1/3 md:border-r md:border-foreground">
       <nav
         aria-label={i18n.public.questionnaireAnalysis.questionsNavAriaLabel}
         ref={listRef}

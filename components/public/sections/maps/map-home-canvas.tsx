@@ -295,7 +295,7 @@ export function MapHomeCanvas({
             <MapItemDetail
               item={selectedItem}
               onClose={() => onSelectItem(null)}
-              className="fixed inset-0 z-120 flex min-h-0 flex-col bg-background p-5 text-foreground sm:p-7"
+              className="fixed inset-0 z-120 flex min-h-0 flex-col bg-background p-5 text-foreground sm:p-7 md:hidden"
             />,
             document.body,
           )}
