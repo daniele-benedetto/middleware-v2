@@ -362,7 +362,7 @@ function IssueTableOfContentsMenuContent({
       {visible
         ? createPortal(
             <div
-              className={cn("fixed inset-0 z-120 touch-none overscroll-contain bg-foreground")}
+              className={cn("fixed inset-0 z-120 touch-none overscroll-contain bg-foreground/80")}
               onPointerDown={(event) => {
                 if (event.target === event.currentTarget) closeMenu();
               }}

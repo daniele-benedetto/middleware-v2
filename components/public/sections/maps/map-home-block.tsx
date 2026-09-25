@@ -48,7 +48,7 @@ function MobileMapMenu({
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
       setVisible(false);
-      buttonRef.current?.focus();
+      buttonRef.current?.focus({ preventScroll: true });
     }
 
     window.addEventListener("keydown", closeOnEscape);
@@ -67,7 +67,7 @@ function MobileMapMenu({
   function selectItem(itemId: string) {
     onSelect(itemId);
     setVisible(false);
-    buttonRef.current?.focus();
+    buttonRef.current?.focus({ preventScroll: true });
   }
 
   return (
@@ -106,7 +106,7 @@ function MobileMapMenu({
                   type="button"
                   onClick={() => {
                     setVisible(false);
-                    buttonRef.current?.focus();
+                    buttonRef.current?.focus({ preventScroll: true });
                   }}
                   aria-label={i18n.public.maps.closeItemsList}
                   className="flex size-9 shrink-0 items-center justify-center focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
@@ -158,25 +158,13 @@ function MapItemList({
   activeItemId: string | null;
   onSelect: (itemId: string) => void;
 }) {
-  const listRef = useRef<HTMLElement>(null);
-
-  function selectItem(itemId: string, item: HTMLButtonElement) {
-    const list = listRef.current;
-    if (list) {
-      const listBounds = list.getBoundingClientRect();
-      const itemBounds = item.getBoundingClientRect();
-      list.scrollTo({
-        top: list.scrollTop + itemBounds.top - listBounds.top,
-        behavior: "smooth",
-      });
-    }
+  function selectItem(itemId: string) {
     onSelect(itemId);
   }
 
   return (
     <aside className="hidden min-h-0 flex-col bg-background md:absolute md:inset-y-0 md:left-0 md:flex md:w-1/3 md:border-r md:border-foreground">
       <nav
-        ref={listRef}
         aria-label={i18n.public.maps.itemsListAriaLabel}
         className="flex min-h-0 flex-1 overflow-x-auto md:flex-col md:overflow-y-auto"
       >
@@ -189,7 +177,7 @@ function MapItemList({
               aria-current={selected ? "true" : undefined}
               onClick={(event) => {
                 event.preventDefault();
-                selectItem(item.id, event.currentTarget);
+                selectItem(item.id);
               }}
               className={cn(
                 publicInteraction.cardSurface,

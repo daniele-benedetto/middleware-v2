@@ -10,6 +10,7 @@ import { ChoiceBarChart } from "./choice-bar-chart";
 import { DiscreteDistributionChart } from "./discrete-distribution-chart";
 import { DotPlot } from "./dot-plot";
 import { Histogram } from "./histogram";
+import { HourlyBarChart } from "./hourly-bar-chart";
 import { TemporalBarChart } from "./temporal-bar-chart";
 
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
@@ -54,7 +55,11 @@ export function AnalysisFieldRenderer({ field }: { field: AnalysisField }) {
       ) : field.visualization.chart === "dotPlot" && field.kind === "number" ? (
         <DotPlot field={field} />
       ) : field.visualization.chart === "temporalBar" && field.kind === "date" ? (
-        <TemporalBarChart field={field} />
+        field.timeDetail === "hourOfDay" ? (
+          <HourlyBarChart field={field} />
+        ) : (
+          <TemporalBarChart field={field} />
+        )
       ) : field.visualization.chart === "table" ? null : (
         <EmptyField field={field} />
       )}

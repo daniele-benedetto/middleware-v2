@@ -14,6 +14,7 @@ import {
   calculateMean,
   calculateMedian,
   calculateQuartiles,
+  createHourlyDistribution,
   createNumericDistribution,
   createTemporalDistribution,
   roundStatistic,
@@ -179,7 +180,7 @@ function aggregateDate(
   parsed: ParsedFieldValues,
 ) {
   const answers = parsed.values as string[];
-  const temporal = createTemporalDistribution(answers);
+  const temporal = createTemporalDistribution(answers, field.temporalMeaning);
   const sorted = [...answers].sort(
     (left, right) => new Date(left).getTime() - new Date(right).getTime(),
   );
@@ -188,9 +189,15 @@ function aggregateDate(
     ...createBase(field, parsed),
     kind: "date" as const,
     temporalType: field.type,
+    temporalMeaning: field.temporalMeaning,
+    timeDetail: field.timeDetail,
+    timezone: "UTC" as const,
     minimum: sorted[0] ?? null,
     maximum: sorted.at(-1) ?? null,
     ...temporal,
+    ...(field.type === "datetime" && field.timeDetail === "hourOfDay"
+      ? { hourDistribution: createHourlyDistribution(answers) }
+      : {}),
   };
 }
 

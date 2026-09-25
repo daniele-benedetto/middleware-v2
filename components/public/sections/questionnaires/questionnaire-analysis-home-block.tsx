@@ -50,7 +50,7 @@ function MobileQuestionMenu({
     closeTimerRef.current = window.setTimeout(() => {
       closeTimerRef.current = null;
       setVisible(false);
-      buttonRef.current?.focus();
+      buttonRef.current?.focus({ preventScroll: true });
     }, 180);
   }
 
@@ -217,20 +217,7 @@ function QuestionList({
   activeIndex: number;
   onSelect: (index: number) => void;
 }) {
-  const listRef = useRef<HTMLElement>(null);
-
-  function selectQuestion(index: number, item: HTMLButtonElement) {
-    const list = listRef.current;
-    if (list) {
-      const listBounds = list.getBoundingClientRect();
-      const itemBounds = item.getBoundingClientRect();
-      list.scrollTo({
-        top: list.scrollTop + itemBounds.top - listBounds.top,
-        left: list.scrollLeft + itemBounds.left - listBounds.left,
-        behavior: "smooth",
-      });
-    }
-
+  function selectQuestion(index: number) {
     onSelect(index);
   }
 
@@ -238,7 +225,6 @@ function QuestionList({
     <aside className="hidden min-h-0 flex-col bg-background md:absolute md:inset-y-0 md:left-0 md:flex md:w-1/3 md:border-r md:border-foreground">
       <nav
         aria-label={i18n.public.questionnaireAnalysis.questionsNavAriaLabel}
-        ref={listRef}
         className="flex min-h-0 flex-1 overflow-x-auto md:flex-col md:overflow-y-auto"
       >
         {fields.map((field, index) => {
@@ -250,7 +236,7 @@ function QuestionList({
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                selectQuestion(index, event.currentTarget);
+                selectQuestion(index);
               }}
               aria-current={selected ? "true" : undefined}
               className={cn(

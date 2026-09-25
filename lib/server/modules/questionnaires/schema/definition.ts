@@ -78,6 +78,8 @@ const booleanFieldSchema = fieldBaseSchema.extend({
 const dateFieldSchema = fieldBaseSchema
   .extend({
     type: z.enum(["date", "datetime"]),
+    temporalMeaning: z.enum(["distribution", "event"]).default("distribution"),
+    timeDetail: z.enum(["none", "hourOfDay", "dayHour"]).default("none"),
     min: z.string().trim().optional(),
     max: z.string().trim().optional(),
   })
@@ -93,6 +95,14 @@ const dateFieldSchema = fieldBaseSchema
 
     if (field.min && field.max && new Date(field.min).getTime() > new Date(field.max).getTime()) {
       context.addIssue({ code: "custom", message: "min must be before max", path: ["max"] });
+    }
+
+    if (field.type === "date" && field.timeDetail !== "none") {
+      context.addIssue({
+        code: "custom",
+        message: "timeDetail is only valid for datetime fields",
+        path: ["timeDetail"],
+      });
     }
   });
 

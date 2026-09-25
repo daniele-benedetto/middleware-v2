@@ -136,9 +136,13 @@ const publicAnalysisNumberFieldSchema = publicAnalysisFieldBaseSchema.extend({
 const publicAnalysisDateFieldSchema = publicAnalysisFieldBaseSchema.extend({
   kind: z.literal("date"),
   temporalType: z.enum(["date", "datetime"]),
+  temporalMeaning: z.enum(["distribution", "event"]),
+  timeDetail: z.enum(["none", "hourOfDay", "dayHour"]),
+  timezone: z.literal("UTC"),
   minimum: z.string().nullable(),
   maximum: z.string().nullable(),
-  bucketUnit: z.enum(["day", "week", "month"]),
+  bucketUnit: z.enum(["day", "week", "month", "year"]),
+  includeEmptyBuckets: z.boolean(),
   distribution: z.array(
     z.object({
       date: z.string(),
@@ -148,6 +152,15 @@ const publicAnalysisDateFieldSchema = publicAnalysisFieldBaseSchema.extend({
       percentage: z.number().nonnegative(),
     }),
   ),
+  hourDistribution: z
+    .array(
+      z.object({
+        hour: z.number().int().min(0).max(23),
+        count: z.number().int().nonnegative(),
+        percentage: z.number().nonnegative(),
+      }),
+    )
+    .optional(),
 });
 
 export const publicQuestionnaireAnalysisDtoSchema = z.object({

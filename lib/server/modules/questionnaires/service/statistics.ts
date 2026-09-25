@@ -15,6 +15,9 @@ export type TemporalDistributionBucket = {
   percentage: number;
 };
 
+export type TemporalBucketUnit = "day" | "week" | "month" | "year";
+export type TemporalMeaning = "distribution" | "event";
+
 export function calculatePercentage(count: number, total: number) {
   return total === 0 ? 0 : (roundStatistic((count / total) * 100) ?? 0);
 }
@@ -147,38 +150,103 @@ function startOfMonth(value: string) {
   return `${value.slice(0, 7)}-01`;
 }
 
-function endOfBucket(value: string, unit: "day" | "week" | "month") {
+function startOfYear(value: string) {
+  return `${value.slice(0, 4)}-01-01`;
+}
+
+function endOfBucket(value: string, unit: TemporalBucketUnit) {
   const date = new Date(`${value}T00:00:00.000Z`);
   date.setUTCDate(date.getUTCDate() + (unit === "day" ? 1 : unit === "week" ? 7 : 0));
   if (unit === "month") date.setUTCMonth(date.getUTCMonth() + 1);
+  if (unit === "year") date.setUTCFullYear(date.getUTCFullYear() + 1);
   return date.toISOString().slice(0, 10);
 }
 
-export function createTemporalDistribution(values: string[]): {
-  bucketUnit: "day" | "week" | "month";
+function bucketKey(value: string, unit: TemporalBucketUnit) {
+  if (unit === "day") return dateKey(value);
+  if (unit === "week") return startOfWeek(value);
+  if (unit === "month") return startOfMonth(value);
+  return startOfYear(value);
+}
+
+function selectBucketUnit(spanInDays: number): TemporalBucketUnit {
+  if (spanInDays <= 31) return "day";
+  if (spanInDays <= 180) return "week";
+  if (spanInDays <= 730) return "month";
+  return "year";
+}
+
+function createBucketKeys(start: string, end: string, unit: TemporalBucketUnit) {
+  const keys: string[] = [];
+  let current = start;
+  while (current <= end && keys.length < 120) {
+    keys.push(current);
+    current = endOfBucket(current, unit);
+  }
+  return keys;
+}
+
+export function createTemporalDistribution(
+  values: string[],
+  temporalMeaning: TemporalMeaning = "distribution",
+): {
+  bucketUnit: TemporalBucketUnit;
+  includeEmptyBuckets: boolean;
   distribution: TemporalDistributionBucket[];
 } {
-  if (values.length === 0) return { bucketUnit: "day", distribution: [] };
+  if (values.length === 0) {
+    return {
+      bucketUnit: "day",
+      includeEmptyBuckets: temporalMeaning === "event",
+      distribution: [],
+    };
+  }
 
   const dates = values.map(dateKey).sort();
   const first = new Date(`${dates[0]}T00:00:00.000Z`).getTime();
   const last = new Date(`${dates.at(-1)}T00:00:00.000Z`).getTime();
   const spanInDays = (last - first) / 86_400_000;
-  const bucketUnit = spanInDays <= 31 ? "day" : spanInDays <= 180 ? "week" : "month";
-  const keyFor =
-    bucketUnit === "day" ? dateKey : bucketUnit === "week" ? startOfWeek : startOfMonth;
+  const bucketUnit = selectBucketUnit(spanInDays);
   const counts = new Map<string, number>();
 
-  dates.forEach((value) => counts.set(keyFor(value), (counts.get(keyFor(value)) ?? 0) + 1));
+  dates.forEach((value) => {
+    const key = bucketKey(value, bucketUnit);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  });
+
+  const firstBucket = bucketKey(dates[0], bucketUnit);
+  const lastBucket = bucketKey(dates.at(-1) ?? dates[0], bucketUnit);
+  const allBucketKeys = createBucketKeys(firstBucket, lastBucket, bucketUnit);
+  const includeEmptyBuckets = temporalMeaning === "event" && allBucketKeys.at(-1) === lastBucket;
+  const keys = includeEmptyBuckets ? allBucketKeys : [...counts.keys()].sort();
 
   return {
     bucketUnit,
-    distribution: [...counts].map(([date, count]) => ({
-      date,
-      start: date,
-      end: endOfBucket(date, bucketUnit),
-      count,
-      percentage: calculatePercentage(count, dates.length),
-    })),
+    includeEmptyBuckets,
+    distribution: keys.map((date) => {
+      const count = counts.get(date) ?? 0;
+      return {
+        date,
+        start: date,
+        end: endOfBucket(date, bucketUnit),
+        count,
+        percentage: calculatePercentage(count, dates.length),
+      };
+    }),
   };
+}
+
+export function createHourlyDistribution(values: string[]) {
+  const counts = new Map<number, number>();
+  for (let hour = 0; hour < 24; hour += 1) counts.set(hour, 0);
+  values.forEach((value) => {
+    const hour = new Date(value).getUTCHours();
+    counts.set(hour, (counts.get(hour) ?? 0) + 1);
+  });
+
+  return [...counts].map(([hour, count]) => ({
+    hour,
+    count,
+    percentage: calculatePercentage(count, values.length),
+  }));
 }

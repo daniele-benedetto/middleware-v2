@@ -1291,7 +1291,18 @@ function FieldTypeSettings({
             );
           case "date":
             return (
-              <div className="grid gap-4 border-t border-border pt-4 md:grid-cols-2">
+              <div className="grid gap-4 border-t border-border pt-4 md:grid-cols-3">
+                <CmsFormField label={text.temporalMeaning} htmlFor={`${field.id}-temporal-meaning`}>
+                  <CmsSelect
+                    value={field.temporalMeaning}
+                    disabled={disabled}
+                    options={[
+                      { value: "distribution", label: text.temporalMeaningDistribution },
+                      { value: "event", label: text.temporalMeaningEvent },
+                    ]}
+                    onValueChange={(value) => update("temporalMeaning", value)}
+                  />
+                </CmsFormField>
                 <Field label={text.minimum}>
                   <CmsTextInput
                     id={`${field.id}-minimum`}
@@ -1314,7 +1325,30 @@ function FieldTypeSettings({
             );
           case "datetime":
             return (
-              <div className="grid gap-4 border-t border-border pt-4 md:grid-cols-2">
+              <div className="grid gap-4 border-t border-border pt-4 md:grid-cols-4">
+                <CmsFormField label={text.temporalMeaning} htmlFor={`${field.id}-temporal-meaning`}>
+                  <CmsSelect
+                    value={field.temporalMeaning}
+                    disabled={disabled}
+                    options={[
+                      { value: "distribution", label: text.temporalMeaningDistribution },
+                      { value: "event", label: text.temporalMeaningEvent },
+                    ]}
+                    onValueChange={(value) => update("temporalMeaning", value)}
+                  />
+                </CmsFormField>
+                <CmsFormField label={text.timeDetail} htmlFor={`${field.id}-time-detail`}>
+                  <CmsSelect
+                    value={field.timeDetail}
+                    disabled={disabled}
+                    options={[
+                      { value: "none", label: text.timeDetailNone },
+                      { value: "hourOfDay", label: text.timeDetailHourOfDay },
+                      { value: "dayHour", label: text.timeDetailDayHour },
+                    ]}
+                    onValueChange={(value) => update("timeDetail", value)}
+                  />
+                </CmsFormField>
                 <Field label={text.minimum}>
                   <CmsTextInput
                     id={`${field.id}-minimum`}

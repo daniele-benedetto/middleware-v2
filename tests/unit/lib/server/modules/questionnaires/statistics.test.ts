@@ -1,6 +1,7 @@
 import {
   calculateMedian,
   calculateQuartiles,
+  createHourlyDistribution,
   createNumericDistribution,
   createTemporalDistribution,
 } from "@/lib/server/modules/questionnaires/service/statistics";
@@ -42,5 +43,29 @@ describe("questionnaire statistics", () => {
     expect(distribution.distribution).toEqual([
       expect.objectContaining({ date: "2026-01-02", count: 2, percentage: 100 }),
     ]);
+  });
+
+  it("fills event gaps and uses annual buckets for long ranges", () => {
+    const eventDistribution = createTemporalDistribution(["2026-01-01", "2026-01-03"], "event");
+    const annualDistribution = createTemporalDistribution(
+      ["2020-01-01", "2024-01-01"],
+      "distribution",
+    );
+
+    expect(eventDistribution.includeEmptyBuckets).toBe(true);
+    expect(eventDistribution.distribution).toHaveLength(3);
+    expect(eventDistribution.distribution[1]).toMatchObject({ date: "2026-01-02", count: 0 });
+    expect(annualDistribution.bucketUnit).toBe("year");
+  });
+
+  it("creates all UTC hour buckets", () => {
+    const distribution = createHourlyDistribution([
+      "2026-01-01T23:00:00-05:00",
+      "2026-01-02T01:00:00+01:00",
+    ]);
+
+    expect(distribution).toHaveLength(24);
+    expect(distribution[0]).toMatchObject({ hour: 0, count: 1, percentage: 50 });
+    expect(distribution[4]).toMatchObject({ hour: 4, count: 1, percentage: 50 });
   });
 });
