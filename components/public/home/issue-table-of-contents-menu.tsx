@@ -111,7 +111,7 @@ function IssueTableOfContentsMenuContent({
       closeCallbackRef.current = undefined;
       window.requestAnimationFrame(() => {
         callback?.();
-        triggerRef.current?.focus();
+        triggerRef.current?.focus({ preventScroll: true });
       });
     }, 200);
   }
@@ -125,53 +125,23 @@ function IssueTableOfContentsMenuContent({
   useEffect(() => {
     if (!visible) return;
 
-    const previousOverflow = document.body.style.overflow;
-    const previousOverscrollBehavior = document.body.style.overscrollBehavior;
-    const previousDocumentOverflow = document.documentElement.style.overflow;
-    const previousDocumentOverscrollBehavior = document.documentElement.style.overscrollBehavior;
-    const publicHeader = document.querySelector<HTMLElement>("[data-public-header]");
-    const previousHeaderPosition = publicHeader?.style.position;
-    const previousHeaderTop = publicHeader?.style.top;
-    const previousHeaderRight = publicHeader?.style.right;
-    const previousHeaderLeft = publicHeader?.style.left;
-    const previousHeaderWidth = publicHeader?.style.width;
-    const publicIssueNavigation = document.querySelector<HTMLElement>(
-      "[data-public-issue-navigation]",
-    );
-    const previousNavigationPosition = publicIssueNavigation?.style.position;
-    const previousNavigationTop = publicIssueNavigation?.style.top;
-    const previousNavigationRight = publicIssueNavigation?.style.right;
-    const previousNavigationLeft = publicIssueNavigation?.style.left;
-    const previousNavigationWidth = publicIssueNavigation?.style.width;
     const inertElements = Array.from(
       document.querySelectorAll<HTMLElement>(
         "[data-public-header], [data-public-page-content], [data-public-footer]",
       ),
     );
-    document.body.style.overflow = "hidden";
-    document.body.style.overscrollBehavior = "none";
-    document.documentElement.style.overflow = "hidden";
-    document.documentElement.style.overscrollBehavior = "none";
-    if (publicHeader) {
-      publicHeader.style.position = "fixed";
-      publicHeader.style.top = "0";
-      publicHeader.style.right = "0";
-      publicHeader.style.left = "0";
-      publicHeader.style.width = "100%";
-    }
-    if (publicIssueNavigation) {
-      publicIssueNavigation.style.position = "fixed";
-      publicIssueNavigation.style.top = `${publicHeader?.offsetHeight ?? 0}px`;
-      publicIssueNavigation.style.right = "0";
-      publicIssueNavigation.style.left = "0";
-      publicIssueNavigation.style.width = "100%";
-    }
     inertElements.forEach((element) => {
       element.inert = true;
     });
     if (activeMenu !== "search") {
       closeButtonRef.current?.focus();
     }
+
+    const preventBackgroundScroll = (event: Event) => {
+      const menu = document.getElementById(menuId);
+      if (menu?.contains(event.target as Node)) return;
+      event.preventDefault();
+    };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -202,29 +172,15 @@ function IssueTableOfContentsMenuContent({
     };
 
     window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("wheel", preventBackgroundScroll, { passive: false });
+    document.addEventListener("touchmove", preventBackgroundScroll, { passive: false });
     return () => {
-      document.body.style.overflow = previousOverflow;
-      document.body.style.overscrollBehavior = previousOverscrollBehavior;
-      document.documentElement.style.overflow = previousDocumentOverflow;
-      document.documentElement.style.overscrollBehavior = previousDocumentOverscrollBehavior;
-      if (publicHeader) {
-        publicHeader.style.position = previousHeaderPosition ?? "";
-        publicHeader.style.top = previousHeaderTop ?? "";
-        publicHeader.style.right = previousHeaderRight ?? "";
-        publicHeader.style.left = previousHeaderLeft ?? "";
-        publicHeader.style.width = previousHeaderWidth ?? "";
-      }
-      if (publicIssueNavigation) {
-        publicIssueNavigation.style.position = previousNavigationPosition ?? "";
-        publicIssueNavigation.style.top = previousNavigationTop ?? "";
-        publicIssueNavigation.style.right = previousNavigationRight ?? "";
-        publicIssueNavigation.style.left = previousNavigationLeft ?? "";
-        publicIssueNavigation.style.width = previousNavigationWidth ?? "";
-      }
       inertElements.forEach((element) => {
         element.inert = false;
       });
       window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("wheel", preventBackgroundScroll);
+      document.removeEventListener("touchmove", preventBackgroundScroll);
     };
   }, [activeMenu, menuId, visible]);
 

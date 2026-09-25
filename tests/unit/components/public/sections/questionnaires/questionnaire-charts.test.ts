@@ -37,15 +37,14 @@ const choiceField = {
 };
 
 describe("questionnaire chart primitives", () => {
-  it("keeps the accessible table available with a chart", () => {
+  it("renders chart data", () => {
     const html = renderToStaticMarkup(createElement(AnalysisFieldRenderer, { field: choiceField }));
 
-    expect(html).toContain("Tabella dati");
-    expect(html).toContain("Prima");
-    expect(html).toContain("66,67%");
+    expect(html).toContain("data-chart");
+    expect(html).not.toContain("Tabella dati");
   });
 
-  it("renders a table-first empty state without chart geometry", () => {
+  it("renders an empty state without chart geometry", () => {
     const html = renderToStaticMarkup(
       createElement(AnalysisFieldRenderer, {
         field: {
@@ -62,7 +61,6 @@ describe("questionnaire chart primitives", () => {
     );
 
     expect(html).toContain("Nessun dato aggregato disponibile.");
-    expect(html).toContain("Tabella dati");
     expect(html).not.toContain("recharts");
   });
 });

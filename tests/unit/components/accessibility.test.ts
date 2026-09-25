@@ -64,7 +64,7 @@ describe("accessibility primitives", () => {
     expect(editorialImageAlt("Descrizione editoriale")).toBe("Descrizione editoriale");
   });
 
-  it("renders questionnaire aggregates with metrics and an accessible table", () => {
+  it("renders questionnaire aggregates as a chart", () => {
     const html = renderToStaticMarkup(
       createElement(AnalysisFieldRenderer, {
         field: {
@@ -102,10 +102,7 @@ describe("accessibility primitives", () => {
       }),
     );
 
-    expect(html).toContain("Prima opzione");
-    expect(html).toContain("70%");
-    expect(html).toContain("30%");
-    expect(html).toContain("Risposte valide");
-    expect(html).toContain("Tabella dati");
+    expect(html).toContain("data-chart");
+    expect(html).not.toContain("Tabella dati");
   });
 });

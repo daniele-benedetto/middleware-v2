@@ -368,8 +368,6 @@ export const publicIt = {
     methodTemporalDistribution:
       "Distribuzione per intervallo temporale; i bucket datetime sono aggregati in UTC e le fasce orarie sono presentate in Europe/Rome.",
     methodNoData: "Non ci sono valori validi da visualizzare.",
-    tableViewLabel: "Tabella dati",
-    chartViewLabel: "Grafico",
     value: "Valore",
     interval: "Intervallo",
     start: "Inizio",
