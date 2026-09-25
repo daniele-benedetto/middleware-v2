@@ -46,7 +46,13 @@ export function CourseHomeBlock({
           )}
         >
           <div>
-            <h2 className={cn(publicTypography.featureArticleTitle, variant.title, "max-w-[16ch]")}>
+            <h2
+              className={cn(
+                publicTypography.featureArticleTitle,
+                variant.title,
+                "w-full max-w-none",
+              )}
+            >
               <StyledTitle
                 title={course.title}
                 titleStyled={course.titleStyled}

@@ -210,7 +210,9 @@ export function MapHomeBlock({ block }: { block: MapHomeBlockData }) {
           <header
             className={cn(variant.surface, variant.border, "border-b p-4 sm:p-6 md:p-8 lg:p-10")}
           >
-            <h2 className={`${publicTypography.featureArticleTitle} max-w-[14ch] ${variant.title}`}>
+            <h2
+              className={`${publicTypography.featureArticleTitle} w-full max-w-none ${variant.title}`}
+            >
               <StyledTitle
                 title={block.map.title}
                 titleStyled={block.map.titleStyled}

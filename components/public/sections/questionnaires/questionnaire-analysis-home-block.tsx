@@ -300,7 +300,13 @@ export function QuestionnaireAnalysisHomeBlock({
           <header
             className={cn(variant.surface, variant.border, "border-b p-4 sm:p-6 md:p-8 lg:p-10")}
           >
-            <h2 className={cn(publicTypography.featureArticleTitle, variant.title, "max-w-[16ch]")}>
+            <h2
+              className={cn(
+                publicTypography.featureArticleTitle,
+                variant.title,
+                "w-full max-w-none",
+              )}
+            >
               <StyledTitle
                 title={analysis.title}
                 titleStyled={analysis.titleStyled}
