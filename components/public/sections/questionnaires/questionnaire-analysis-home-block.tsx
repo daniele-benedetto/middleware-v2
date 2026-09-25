@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 
 import { courseVariantClasses } from "@/components/public/course-variant";
 import { publicInteraction, publicTypography } from "@/components/public/primitives";
-import { QuestionnaireFieldChart } from "@/components/public/sections/questionnaires/charts/questionnaire-field-chart";
+import { AnalysisFieldRenderer } from "@/components/public/sections/questionnaires/charts/analysis-field-renderer";
 import { StyledTitle } from "@/components/public/styled-title";
 import { i18n } from "@/lib/i18n";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
@@ -273,13 +273,21 @@ function QuestionList({
 }
 
 function QuestionCanvas({ field }: { field: AnalysisField }) {
+  const headingId = useId();
+
   return (
     <section
-      aria-label={i18n.public.questionnaireAnalysis.resultsAriaLabel(field.label)}
+      aria-labelledby={headingId}
       className="min-w-0 p-4 sm:p-6 md:col-start-2 md:p-8 lg:p-10"
     >
+      <h3 className="sr-only" id={headingId}>
+        {i18n.public.questionnaireAnalysis.resultsAriaLabel(field.label)}
+      </h3>
+      <p aria-live="polite" className="sr-only">
+        {i18n.public.questionnaireAnalysis.resultsAriaLabel(field.label)}
+      </p>
       <div className="py-2">
-        <QuestionnaireFieldChart field={field} />
+        <AnalysisFieldRenderer field={field} />
       </div>
     </section>
   );
@@ -292,7 +300,8 @@ export function QuestionnaireAnalysisHomeBlock({
 }) {
   const analysis = block.questionnaireAnalysis;
   const [activeIndex, setActiveIndex] = useState(0);
-  const activeField = analysis.fields[activeIndex];
+  const safeActiveIndex = Math.min(activeIndex, Math.max(0, analysis.fields.length - 1));
+  const activeField = analysis.fields[safeActiveIndex];
   const description = extractPlainText(analysis.descriptionRich);
   const variant = courseVariantClasses[analysis.homeVariant];
 
@@ -327,13 +336,13 @@ export function QuestionnaireAnalysisHomeBlock({
           <div className="relative grid md:grid-cols-[minmax(240px,1fr)_minmax(0,2fr)]">
             <MobileQuestionMenu
               fields={analysis.fields}
-              activeIndex={activeIndex}
+              activeIndex={safeActiveIndex}
               title={analysis.title}
               onSelect={setActiveIndex}
             />
             <QuestionList
               fields={analysis.fields}
-              activeIndex={activeIndex}
+              activeIndex={safeActiveIndex}
               onSelect={setActiveIndex}
             />
             <QuestionCanvas field={activeField} />

@@ -28,7 +28,7 @@ function EmptyField({ field }: { field: AnalysisField }) {
 }
 
 export function AnalysisFieldRenderer({ field }: { field: AnalysisField }) {
-  if (field.visualization.chart === "table" || field.responseCount === 0) {
+  if (field.responseCount === 0) {
     return <EmptyField field={field} />;
   }
 
@@ -55,7 +55,7 @@ export function AnalysisFieldRenderer({ field }: { field: AnalysisField }) {
         <DotPlot field={field} />
       ) : field.visualization.chart === "temporalBar" && field.kind === "date" ? (
         <TemporalBarChart field={field} />
-      ) : (
+      ) : field.visualization.chart === "table" ? null : (
         <EmptyField field={field} />
       )}
       <ChartMethodology methodology={field.visualization} />

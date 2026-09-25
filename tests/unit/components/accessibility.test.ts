@@ -6,7 +6,7 @@ import { CmsErrorState } from "@/components/cms/common/error-state";
 import { CmsLoadingState } from "@/components/cms/common/loading-state";
 import { CmsFormField, CmsPageHeader, CmsTextInput } from "@/components/cms/primitives";
 import { ListenEmptyState } from "@/components/public/listen/listen-empty-state";
-import { QuestionnaireFieldChart } from "@/components/public/sections/questionnaires/charts/questionnaire-field-chart";
+import { AnalysisFieldRenderer } from "@/components/public/sections/questionnaires/charts/analysis-field-renderer";
 import { editorialImageAlt } from "@/lib/public/format/image";
 
 describe("accessibility primitives", () => {
@@ -64,9 +64,9 @@ describe("accessibility primitives", () => {
     expect(editorialImageAlt("Descrizione editoriale")).toBe("Descrizione editoriale");
   });
 
-  it("renders questionnaire aggregates as percentages without response totals or counts", () => {
+  it("renders questionnaire aggregates with metrics and an accessible table", () => {
     const html = renderToStaticMarkup(
-      createElement(QuestionnaireFieldChart, {
+      createElement(AnalysisFieldRenderer, {
         field: {
           id: "00000000-0000-4000-8000-000000000001",
           label: "Scelta",
@@ -105,8 +105,7 @@ describe("accessibility primitives", () => {
     expect(html).toContain("Prima opzione");
     expect(html).toContain("70%");
     expect(html).toContain("30%");
-    expect(html).not.toContain("questionari inviati");
-    expect(html).not.toContain("risposte valide");
-    expect(html).not.toContain("· 7");
+    expect(html).toContain("Risposte valide");
+    expect(html).toContain("Tabella dati");
   });
 });
