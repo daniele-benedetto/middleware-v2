@@ -7,6 +7,7 @@ import {
   getPublicIssueLeadImage,
   getPublicPublishedIssues,
 } from "@/lib/public/server/issues";
+import { getPublicQuestionnaireAnalysisCacheTag } from "@/lib/public/server/questionnaire-page";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicIssuesService } from "@/lib/server/modules/issues/service/public";
 
@@ -44,6 +45,11 @@ export async function getPublicIssuePageData(slug: string): Promise<PublicIssueP
     getIssueBySlug(slug),
     getPublicPublishedIssues("public.getPublicIssuePageData"),
   ]);
+  for (const block of issue?.homeBlocks ?? []) {
+    if (block.type === "questionnaireAnalysis" && block.questionnaireId) {
+      cacheTag(getPublicQuestionnaireAnalysisCacheTag(block.questionnaireId));
+    }
+  }
   const leadImage = getPublicIssueLeadImage(issue);
 
   return {

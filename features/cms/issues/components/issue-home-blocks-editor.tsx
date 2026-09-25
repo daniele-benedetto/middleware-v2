@@ -25,6 +25,7 @@ import {
   CmsFormField,
   CmsMetaText,
   CmsSelect,
+  CmsSearchSelect,
 } from "@/components/cms/primitives";
 import { useSortableSensors } from "@/features/cms/shared/hooks/use-sortable-sensors";
 import {
@@ -56,7 +57,7 @@ type IssueHomeBlockArticle = {
 
 type IssueHomeBlockCourse = { id: string; title: string };
 type IssueHomeBlockMap = { id: string; title: string };
-type IssueHomeBlockQuestionnaire = { id: string; title: string; responseCount: number };
+type IssueHomeBlockQuestionnaire = { id: string; title: string; responseCount?: number };
 type IssueHomeBlockPreviewIssue = { id: string; title: string };
 
 type IssueHomeBlocksEditorText = {
@@ -95,6 +96,8 @@ type IssueHomeBlocksEditorText = {
   typeQuestionnaireAnalysis: string;
   questionnaireAnalysis: string;
   questionnaireAnalysisPlaceholder: string;
+  questionnaireAnalysisLoading: string;
+  questionnaireAnalysisUnavailable: string;
   typePreview: string;
   previewIssue: string;
   previewIssuePlaceholder: string;
@@ -106,6 +109,8 @@ type IssueHomeBlocksEditorProps = {
   courses: IssueHomeBlockCourse[];
   maps: IssueHomeBlockMap[];
   questionnaires: IssueHomeBlockQuestionnaire[];
+  onQuestionnaireSearchChange?: (value: string) => void;
+  questionnaireAnalysisAvailability?: Record<string, "loading" | "available" | "unavailable">;
   previewIssues: IssueHomeBlockPreviewIssue[];
   disabled?: boolean;
   text: IssueHomeBlocksEditorText;
@@ -155,6 +160,8 @@ export function IssueHomeBlocksEditor({
   courses,
   maps,
   questionnaires,
+  onQuestionnaireSearchChange,
+  questionnaireAnalysisAvailability,
   previewIssues,
   disabled,
   text,
@@ -556,13 +563,17 @@ export function IssueHomeBlocksEditor({
                                 label={text.questionnaireAnalysis}
                                 htmlFor={`${block.id}-questionnaire-analysis`}
                               >
-                                <CmsSelect
+                                <CmsSearchSelect
                                   value={block.questionnaireId ?? ""}
                                   placeholder={text.questionnaireAnalysisPlaceholder}
                                   disabled={disabled || questionnaires.length === 0}
+                                  onSearchChange={onQuestionnaireSearchChange}
                                   options={questionnaires.map((questionnaire) => ({
                                     value: questionnaire.id,
-                                    label: `${questionnaire.title} (${questionnaire.responseCount})`,
+                                    label:
+                                      questionnaire.responseCount === undefined
+                                        ? questionnaire.title
+                                        : `${questionnaire.title} (${questionnaire.responseCount})`,
                                   }))}
                                   onValueChange={(questionnaireId) =>
                                     updateBlock(index, {
@@ -571,6 +582,18 @@ export function IssueHomeBlocksEditor({
                                     })
                                   }
                                 />
+                                {block.questionnaireId &&
+                                questionnaireAnalysisAvailability?.[block.questionnaireId] ===
+                                  "loading" ? (
+                                  <CmsMetaText>{text.questionnaireAnalysisLoading}</CmsMetaText>
+                                ) : null}
+                                {block.questionnaireId &&
+                                questionnaireAnalysisAvailability?.[block.questionnaireId] ===
+                                  "unavailable" ? (
+                                  <CmsMetaText className="text-accent">
+                                    {text.questionnaireAnalysisUnavailable}
+                                  </CmsMetaText>
+                                ) : null}
                               </CmsFormField>
                             ) : null}
                             {block.type === "preview" ? (

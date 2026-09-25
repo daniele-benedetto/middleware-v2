@@ -65,7 +65,7 @@ describe("questionnaire statistics", () => {
     ]);
 
     expect(distribution).toHaveLength(24);
-    expect(distribution[0]).toMatchObject({ hour: 0, count: 1, percentage: 50 });
-    expect(distribution[4]).toMatchObject({ hour: 4, count: 1, percentage: 50 });
+    expect(distribution[1]).toMatchObject({ hour: 1, count: 1, percentage: 50 });
+    expect(distribution[5]).toMatchObject({ hour: 5, count: 1, percentage: 50 });
   });
 });

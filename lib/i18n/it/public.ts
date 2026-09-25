@@ -366,7 +366,7 @@ export const publicIt = {
     methodOrdinalDistribution: "Distribuzione dei valori della scala nell'ordine naturale.",
     methodNumericDistribution: "Distribuzione dei valori nei bucket calcolati dal questionario.",
     methodTemporalDistribution:
-      "Distribuzione per intervallo temporale; i bucket datetime sono aggregati in UTC.",
+      "Distribuzione per intervallo temporale; i bucket datetime sono aggregati in UTC e le fasce orarie sono presentate in Europe/Rome.",
     methodNoData: "Non ci sono valori validi da visualizzare.",
     tableViewLabel: "Tabella dati",
     chartViewLabel: "Grafico",

@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Eye, Plus, Save, Trash2, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
 import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import {
@@ -66,6 +66,18 @@ type IssueUpdatePayload = {
   id: string;
   data: UpdateIssueInput;
 };
+
+function getQuestionnaireAnalysisIds(blocks: IssueHomeBlocks) {
+  return [
+    ...new Set(
+      blocks.flatMap((block) =>
+        block.type === "questionnaireAnalysis" && block.questionnaireId
+          ? [block.questionnaireId]
+          : [],
+      ),
+    ),
+  ];
+}
 
 function normalizePickedDate(value: Date) {
   const next = new Date(value);
@@ -274,6 +286,8 @@ function IssueFormContent({
   const articles = useMemo(() => issue?.articles ?? [], [issue?.articles]);
   const coursesQuery = trpc.courses.list.useQuery(lessonCourseOptionsInput);
   const courses = coursesQuery.data?.items ?? [];
+  const [questionnaireSearch, setQuestionnaireSearch] = useState("");
+  const deferredQuestionnaireSearch = useDeferredValue(questionnaireSearch);
   const mapsQuery = trpc.maps.list.useQuery({
     page: 1,
     pageSize: 100,
@@ -282,10 +296,55 @@ function IssueFormContent({
   const maps = mapsQuery.data?.items ?? [];
   const questionnairesQuery = trpc.questionnaires.list.useQuery({
     page: 1,
-    pageSize: 100,
-    query: { status: "CLOSED", sortBy: "closedAt", sortOrder: "desc" },
+    pageSize: 20,
+    query: {
+      status: "CLOSED",
+      q: deferredQuestionnaireSearch.trim() || undefined,
+      sortBy: "closedAt",
+      sortOrder: "desc",
+    },
   });
-  const questionnaires = questionnairesQuery.data?.items ?? [];
+  const questionnaireItems = questionnairesQuery.data?.items;
+  const questionnaireAnalysisIds = useMemo(
+    () => getQuestionnaireAnalysisIds(homeBlocks),
+    [homeBlocks],
+  );
+  const questionnaireAnalysesQuery = trpc.questionnaires.getClosedAnalysesByIds.useQuery(
+    { ids: questionnaireAnalysisIds },
+    { enabled: questionnaireAnalysisIds.length > 0 },
+  );
+  const questionnaireOptions = useMemo(() => {
+    const options = new Map<string, { id: string; title: string; responseCount?: number }>();
+    for (const questionnaire of questionnaireItems ?? []) {
+      options.set(questionnaire.id, {
+        id: questionnaire.id,
+        title: questionnaire.title,
+        responseCount: questionnaire.responseCount,
+      });
+    }
+    for (const analysis of questionnaireAnalysesQuery.data ?? []) {
+      options.set(analysis.id, {
+        id: analysis.id,
+        title: analysis.title,
+      });
+    }
+    return [...options.values()];
+  }, [questionnaireAnalysesQuery.data, questionnaireItems]);
+  const questionnaireAnalysisAvailability = useMemo(() => {
+    const availability: Record<string, "loading" | "available" | "unavailable"> = {};
+    for (const id of questionnaireAnalysisIds) {
+      availability[id] = questionnaireAnalysesQuery.isPending
+        ? "loading"
+        : questionnaireAnalysesQuery.data?.some((analysis) => analysis.id === id)
+          ? "available"
+          : "unavailable";
+    }
+    return availability;
+  }, [
+    questionnaireAnalysesQuery.data,
+    questionnaireAnalysesQuery.isPending,
+    questionnaireAnalysisIds,
+  ]);
   const previewIssuesQuery = trpc.issues.list.useQuery({
     page: 1,
     pageSize: 100,
@@ -420,6 +479,7 @@ function IssueFormContent({
           homeBlocks: homeBlocks.length > 0 ? homeBlocks : null,
           homeVariant,
           articles: previewArticles,
+          questionnaireAnalyses: questionnaireAnalysesQuery.data ?? [],
           statusLabel,
           publicAvailable: Boolean(issue?.isActive && issue.publishedAt),
         }),
@@ -450,6 +510,7 @@ function IssueFormContent({
     previewOpenCount,
     previewArticles,
     previewSessionId,
+    questionnaireAnalysesQuery.data,
     publishedAt,
     resolvedSlug,
     title,
@@ -583,7 +644,9 @@ function IssueFormContent({
               articles={articles}
               courses={courses}
               maps={maps}
-              questionnaires={questionnaires}
+              questionnaires={questionnaireOptions}
+              onQuestionnaireSearchChange={setQuestionnaireSearch}
+              questionnaireAnalysisAvailability={questionnaireAnalysisAvailability}
               previewIssues={previewIssues}
               disabled={isBusy}
               text={issueFormText.homeBlocksEditor}

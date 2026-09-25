@@ -126,26 +126,46 @@ function IssueTableOfContentsMenuContent({
     if (!visible) return;
 
     const previousOverflow = document.body.style.overflow;
-    const previousPosition = document.body.style.position;
-    const previousTop = document.body.style.top;
-    const previousWidth = document.body.style.width;
     const previousOverscrollBehavior = document.body.style.overscrollBehavior;
     const previousDocumentOverflow = document.documentElement.style.overflow;
     const previousDocumentOverscrollBehavior = document.documentElement.style.overscrollBehavior;
-    const scrollY = window.scrollY;
+    const publicHeader = document.querySelector<HTMLElement>("[data-public-header]");
+    const previousHeaderPosition = publicHeader?.style.position;
+    const previousHeaderTop = publicHeader?.style.top;
+    const previousHeaderRight = publicHeader?.style.right;
+    const previousHeaderLeft = publicHeader?.style.left;
+    const previousHeaderWidth = publicHeader?.style.width;
+    const publicIssueNavigation = document.querySelector<HTMLElement>(
+      "[data-public-issue-navigation]",
+    );
+    const previousNavigationPosition = publicIssueNavigation?.style.position;
+    const previousNavigationTop = publicIssueNavigation?.style.top;
+    const previousNavigationRight = publicIssueNavigation?.style.right;
+    const previousNavigationLeft = publicIssueNavigation?.style.left;
+    const previousNavigationWidth = publicIssueNavigation?.style.width;
     const inertElements = Array.from(
       document.querySelectorAll<HTMLElement>(
         "[data-public-header], [data-public-page-content], [data-public-footer]",
       ),
     );
-    // iOS can scroll the document behind a fixed overlay when browser chrome changes height.
     document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
     document.body.style.overscrollBehavior = "none";
     document.documentElement.style.overflow = "hidden";
     document.documentElement.style.overscrollBehavior = "none";
+    if (publicHeader) {
+      publicHeader.style.position = "fixed";
+      publicHeader.style.top = "0";
+      publicHeader.style.right = "0";
+      publicHeader.style.left = "0";
+      publicHeader.style.width = "100%";
+    }
+    if (publicIssueNavigation) {
+      publicIssueNavigation.style.position = "fixed";
+      publicIssueNavigation.style.top = `${publicHeader?.offsetHeight ?? 0}px`;
+      publicIssueNavigation.style.right = "0";
+      publicIssueNavigation.style.left = "0";
+      publicIssueNavigation.style.width = "100%";
+    }
     inertElements.forEach((element) => {
       element.inert = true;
     });
@@ -184,17 +204,27 @@ function IssueTableOfContentsMenuContent({
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       document.body.style.overflow = previousOverflow;
-      document.body.style.position = previousPosition;
-      document.body.style.top = previousTop;
-      document.body.style.width = previousWidth;
       document.body.style.overscrollBehavior = previousOverscrollBehavior;
       document.documentElement.style.overflow = previousDocumentOverflow;
       document.documentElement.style.overscrollBehavior = previousDocumentOverscrollBehavior;
+      if (publicHeader) {
+        publicHeader.style.position = previousHeaderPosition ?? "";
+        publicHeader.style.top = previousHeaderTop ?? "";
+        publicHeader.style.right = previousHeaderRight ?? "";
+        publicHeader.style.left = previousHeaderLeft ?? "";
+        publicHeader.style.width = previousHeaderWidth ?? "";
+      }
+      if (publicIssueNavigation) {
+        publicIssueNavigation.style.position = previousNavigationPosition ?? "";
+        publicIssueNavigation.style.top = previousNavigationTop ?? "";
+        publicIssueNavigation.style.right = previousNavigationRight ?? "";
+        publicIssueNavigation.style.left = previousNavigationLeft ?? "";
+        publicIssueNavigation.style.width = previousNavigationWidth ?? "";
+      }
       inertElements.forEach((element) => {
         element.inert = false;
       });
       window.removeEventListener("keydown", handleKeyDown);
-      window.scrollTo({ top: scrollY, behavior: "instant" });
     };
   }, [activeMenu, menuId, visible]);
 

@@ -305,6 +305,7 @@ type CmsSearchSelectProps = {
   loading?: boolean;
   loadingText?: string;
   searchPlaceholder?: string;
+  onSearchChange?: (value: string) => void;
   searchEmptyText?: string;
   emptyText?: string;
   onValueChange?: (value: string) => void;
@@ -319,6 +320,7 @@ export function CmsSearchSelect({
   loading = false,
   loadingText,
   searchPlaceholder = i18n.cms.listToolbar.searchPlaceholder,
+  onSearchChange,
   searchEmptyText = i18n.cms.forms.searchSelectEmpty,
   emptyText = i18n.cms.forms.searchSelectNoOptions,
   state,
@@ -425,7 +427,10 @@ export function CmsSearchSelect({
                 ref={inputRef}
                 type="search"
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  onSearchChange?.(event.target.value);
+                }}
                 placeholder={searchPlaceholder}
                 className={cn(
                   "flex-1 appearance-none border-0 bg-transparent p-0 outline-none",

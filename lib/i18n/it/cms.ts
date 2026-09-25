@@ -536,6 +536,8 @@ export const cmsIt = {
           typeQuestionnaireAnalysis: "Restituzione questionario",
           questionnaireAnalysis: "Questionario chiuso",
           questionnaireAnalysisPlaceholder: "Seleziona questionario chiuso",
+          questionnaireAnalysisLoading: "Verifica analisi in corso...",
+          questionnaireAnalysisUnavailable: "Analisi non disponibile per questo questionario.",
           typePreview: "Anteprima",
           previewIssue: "Uscita in anteprima",
           previewIssuePlaceholder: "Seleziona uscita",

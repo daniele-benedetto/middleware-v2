@@ -8,6 +8,11 @@ import { publicQuestionnairesService } from "@/lib/server/modules/questionnaires
 import type { PublicQuestionnaireDto } from "@/lib/server/modules/questionnaires/dto/public";
 
 export const PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG = "public-questionnaire";
+export const PUBLIC_QUESTIONNAIRE_ANALYSIS_CACHE_TAG = "public-questionnaire-analysis";
+
+export function getPublicQuestionnaireAnalysisCacheTag(questionnaireId: string) {
+  return `${PUBLIC_QUESTIONNAIRE_ANALYSIS_CACHE_TAG}:${questionnaireId}`;
+}
 
 export async function getPublicQuestionnairePageData(
   slug: string,

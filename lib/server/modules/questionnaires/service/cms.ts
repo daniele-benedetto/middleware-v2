@@ -111,12 +111,14 @@ export const cmsQuestionnairesService = {
         );
     }
     try {
-      return detail(
+      const result = detail(
         await cmsQuestionnairesRepository.update(id, {
           ...input,
           slug: input.slug ? slug(input.slug) : undefined,
         }),
       );
+      if (current.status === "CLOSED") revalidatePublicQuestionnaireAnalysisContent(id);
+      return result;
     } catch (error) {
       map(error);
     }
@@ -143,7 +145,7 @@ export const cmsQuestionnairesService = {
                 : "DRAFT",
         ),
       );
-      revalidatePublicQuestionnaireAnalysisContent();
+      revalidatePublicQuestionnaireAnalysisContent(id);
       return result;
     } catch (error) {
       map(error);
@@ -152,6 +154,7 @@ export const cmsQuestionnairesService = {
   async delete(id: string) {
     try {
       await cmsQuestionnairesRepository.delete(id);
+      revalidatePublicQuestionnaireAnalysisContent(id);
     } catch (error) {
       map(error);
     }

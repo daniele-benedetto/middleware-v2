@@ -9,6 +9,7 @@ import {
   questionnaireResponsesListDtoSchema,
   questionnairesListDtoSchema,
 } from "@/lib/server/modules/questionnaires/dto";
+import { publicQuestionnaireAnalysisDtoSchema } from "@/lib/server/modules/questionnaires/dto/public";
 import { questionnairesPolicy } from "@/lib/server/modules/questionnaires/policy";
 import {
   createQuestionnaireInputSchema,
@@ -16,6 +17,7 @@ import {
   updateQuestionnaireInputSchema,
 } from "@/lib/server/modules/questionnaires/schema";
 import { cmsQuestionnairesService } from "@/lib/server/modules/questionnaires/service/cms";
+import { publicQuestionnairesService } from "@/lib/server/modules/questionnaires/service/public";
 import { router } from "@/lib/server/trpc/init";
 import { auditMiddleware } from "@/lib/server/trpc/middlewares/audit";
 import { requireRoleMiddleware } from "@/lib/server/trpc/middlewares/require-role";
@@ -34,6 +36,7 @@ const listInput = paginationInputSchema.extend({
   query: listQuestionnairesQuerySchema.default({ sortBy: "updatedAt", sortOrder: "desc" }),
 });
 const responseListInput = paginationInputSchema.extend({ questionnaireId: z.string().uuid() });
+const closedAnalysesInput = z.object({ ids: z.array(z.string().uuid()).max(50) });
 const role = requireRoleMiddleware(questionnairesPolicy.allowedRoles);
 const resultsRole = requireRoleMiddleware(questionnairesPolicy.resultsRoles);
 export const questionnairesRouter = router({
@@ -54,6 +57,14 @@ export const questionnairesRouter = router({
       cmsQuestionnairesService
         .getById(input.id)
         .then((x) => parseOutput(x, questionnaireDetailDtoSchema)),
+    ),
+  getClosedAnalysesByIds: protectedProcedure
+    .use(role)
+    .input(closedAnalysesInput)
+    .query(async ({ input }) =>
+      (await publicQuestionnairesService.getClosedAnalysesByIds(input.ids)).map((analysis) =>
+        parseOutput(analysis, publicQuestionnaireAnalysisDtoSchema),
+      ),
     ),
   create: writeProcedure
     .use(role)

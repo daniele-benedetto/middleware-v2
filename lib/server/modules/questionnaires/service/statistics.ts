@@ -238,9 +238,16 @@ export function createTemporalDistribution(
 
 export function createHourlyDistribution(values: string[]) {
   const counts = new Map<number, number>();
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    hourCycle: "h23",
+    timeZone: "Europe/Rome",
+  });
   for (let hour = 0; hour < 24; hour += 1) counts.set(hour, 0);
   values.forEach((value) => {
-    const hour = new Date(value).getUTCHours();
+    const hour = Number(
+      formatter.formatToParts(new Date(value)).find((part) => part.type === "hour")?.value ?? 0,
+    );
     counts.set(hour, (counts.get(hour) ?? 0) + 1);
   });
 

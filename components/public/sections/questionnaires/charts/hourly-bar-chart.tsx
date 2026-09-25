@@ -12,7 +12,7 @@ type DateField = Extract<PublicQuestionnaireAnalysisDto["fields"][number], { kin
 
 export function HourlyBarChart({ field }: { field: DateField }) {
   const data = (field.hourDistribution ?? []).map((item) => ({
-    label: `${String(item.hour).padStart(2, "0")}:00 UTC`,
+    label: `${String(item.hour).padStart(2, "0")}:00`,
     percentage: item.percentage,
     count: item.count,
   }));
