@@ -50,15 +50,10 @@ export function selectQuestionnaireFieldVisualization(
   }
 
   if (field.kind === "number") {
-    const defaultChart =
-      field.numericType === "integer" && field.integerVisualization === "discrete"
-        ? "discreteBar"
-        : field.numericType === "scale"
-          ? "discreteBar"
-          : "histogram";
+    const defaultChart = field.numericType === "scale" ? "discreteBar" : "frequencyArea";
     const smallSample = field.responseCount <= 4;
     return {
-      chart: smallSample ? "dotPlot" : defaultChart,
+      chart: smallSample ? "frequencyArea" : defaultChart,
       alternatives: smallSample ? alternatives(defaultChart, "table") : ["table"],
       rationale:
         field.numericType === "scale"

@@ -141,7 +141,7 @@ const publicAnalysisDateFieldSchema = publicAnalysisFieldBaseSchema.extend({
   timezone: z.literal("UTC"),
   minimum: z.string().nullable(),
   maximum: z.string().nullable(),
-  bucketUnit: z.enum(["day", "week", "month", "year"]),
+  bucketUnit: z.enum(["day", "week", "month", "quarter", "year"]),
   includeEmptyBuckets: z.boolean(),
   distribution: z.array(
     z.object({

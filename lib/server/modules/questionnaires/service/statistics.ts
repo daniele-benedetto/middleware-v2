@@ -15,7 +15,7 @@ export type TemporalDistributionBucket = {
   percentage: number;
 };
 
-export type TemporalBucketUnit = "day" | "week" | "month" | "year";
+export type TemporalBucketUnit = "day" | "week" | "month" | "quarter" | "year";
 export type TemporalMeaning = "distribution" | "event";
 
 export function calculatePercentage(count: number, total: number) {
@@ -150,6 +150,13 @@ function startOfMonth(value: string) {
   return `${value.slice(0, 7)}-01`;
 }
 
+function startOfQuarter(value: string) {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  const month = Math.floor(date.getUTCMonth() / 3) * 3;
+  date.setUTCMonth(month, 1);
+  return date.toISOString().slice(0, 10);
+}
+
 function startOfYear(value: string) {
   return `${value.slice(0, 4)}-01-01`;
 }
@@ -158,6 +165,7 @@ function endOfBucket(value: string, unit: TemporalBucketUnit) {
   const date = new Date(`${value}T00:00:00.000Z`);
   date.setUTCDate(date.getUTCDate() + (unit === "day" ? 1 : unit === "week" ? 7 : 0));
   if (unit === "month") date.setUTCMonth(date.getUTCMonth() + 1);
+  if (unit === "quarter") date.setUTCMonth(date.getUTCMonth() + 3);
   if (unit === "year") date.setUTCFullYear(date.getUTCFullYear() + 1);
   return date.toISOString().slice(0, 10);
 }
@@ -166,14 +174,25 @@ function bucketKey(value: string, unit: TemporalBucketUnit) {
   if (unit === "day") return dateKey(value);
   if (unit === "week") return startOfWeek(value);
   if (unit === "month") return startOfMonth(value);
+  if (unit === "quarter") return startOfQuarter(value);
   return startOfYear(value);
 }
 
-function selectBucketUnit(spanInDays: number): TemporalBucketUnit {
+function selectBucketUnit(dates: string[]): TemporalBucketUnit {
+  const first = new Date(`${dates[0]}T00:00:00.000Z`);
+  const last = new Date(`${dates.at(-1) ?? dates[0]}T00:00:00.000Z`);
+  const spanInDays = (last.getTime() - first.getTime()) / 86_400_000;
+  const years = new Set(dates.map((value) => value.slice(0, 4)));
+  const months = new Set(dates.map((value) => value.slice(0, 7)));
+
+  if (years.size === 1) return months.size === 1 ? "day" : "month";
   if (spanInDays <= 31) return "day";
   if (spanInDays <= 180) return "week";
-  if (spanInDays <= 730) return "month";
-  return "year";
+
+  const calendarYearSpan = last.getUTCFullYear() - first.getUTCFullYear() + 1;
+  if (calendarYearSpan >= 5) return "year";
+  if (calendarYearSpan >= 3) return "quarter";
+  return "month";
 }
 
 function createBucketKeys(start: string, end: string, unit: TemporalBucketUnit) {
@@ -203,10 +222,7 @@ export function createTemporalDistribution(
   }
 
   const dates = values.map(dateKey).sort();
-  const first = new Date(`${dates[0]}T00:00:00.000Z`).getTime();
-  const last = new Date(`${dates.at(-1)}T00:00:00.000Z`).getTime();
-  const spanInDays = (last - first) / 86_400_000;
-  const bucketUnit = selectBucketUnit(spanInDays);
+  const bucketUnit = selectBucketUnit(dates);
   const counts = new Map<string, number>();
 
   dates.forEach((value) => {

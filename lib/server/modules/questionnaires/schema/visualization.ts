@@ -5,6 +5,7 @@ export const chartKindSchema = z.enum([
   "bar",
   "discreteBar",
   "histogram",
+  "frequencyArea",
   "temporalBar",
   "dotPlot",
   "table",

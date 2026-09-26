@@ -45,7 +45,7 @@ describe("questionnaire visualization selection", () => {
     expect(result.chart).not.toBe("pie");
   });
 
-  it("uses editor-selected integer mode", () => {
+  it("uses frequency area for integer distributions", () => {
     const integerField = {
       ...base,
       kind: "number",
@@ -67,11 +67,11 @@ describe("questionnaire visualization selection", () => {
       integerVisualization: "histogram",
     });
 
-    expect(discrete.chart).toBe("discreteBar");
-    expect(histogram.chart).toBe("histogram");
+    expect(discrete.chart).toBe("frequencyArea");
+    expect(histogram.chart).toBe("frequencyArea");
   });
 
-  it("uses dot plot for small numeric samples and table for empty fields", () => {
+  it("uses frequency area for small numeric samples and table for empty fields", () => {
     const small = selectQuestionnaireFieldVisualization({
       ...base,
       kind: "number",
@@ -105,8 +105,8 @@ describe("questionnaire visualization selection", () => {
       },
     });
 
-    expect(small.chart).toBe("dotPlot");
-    expect(small.alternatives).toEqual(["histogram", "table"]);
+    expect(small.chart).toBe("frequencyArea");
+    expect(small.alternatives).toEqual(["frequencyArea", "table"]);
     expect(empty).toEqual({
       chart: "table",
       alternatives: [],

@@ -9,6 +9,7 @@ import { DotPlot } from "./dot-plot";
 import { Histogram } from "./histogram";
 import { HourlyBarChart } from "./hourly-bar-chart";
 import { MultipleChoiceRadialChart } from "./multiple-choice-radial-chart";
+import { NumericFrequencyArea } from "./numeric-frequency-area";
 import { TemporalBarChart } from "./temporal-bar-chart";
 
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
@@ -45,6 +46,8 @@ export function AnalysisFieldRenderer({ field }: { field: AnalysisField }) {
         <DiscreteDistributionChart field={field} />
       ) : field.visualization.chart === "histogram" && field.kind === "number" ? (
         <Histogram field={field} />
+      ) : field.visualization.chart === "frequencyArea" && field.kind === "number" ? (
+        <NumericFrequencyArea field={field} />
       ) : field.visualization.chart === "dotPlot" && field.kind === "number" ? (
         <DotPlot field={field} />
       ) : field.visualization.chart === "temporalBar" && field.kind === "date" ? (

@@ -58,6 +58,16 @@ describe("questionnaire statistics", () => {
     expect(annualDistribution.bucketUnit).toBe("year");
   });
 
+  it("adapts buckets to the calendar distribution", () => {
+    const monthlyDistribution = createTemporalDistribution(["2026-01-05", "2026-11-18"]);
+    const dailyDistribution = createTemporalDistribution(["2026-01-05", "2026-01-18"]);
+    const quarterlyDistribution = createTemporalDistribution(["2020-01-01", "2023-12-31"]);
+
+    expect(monthlyDistribution.bucketUnit).toBe("month");
+    expect(dailyDistribution.bucketUnit).toBe("day");
+    expect(quarterlyDistribution.bucketUnit).toBe("quarter");
+  });
+
   it("creates all UTC hour buckets", () => {
     const distribution = createHourlyDistribution([
       "2026-01-01T23:00:00-05:00",

@@ -99,6 +99,25 @@ const scaleField = {
   },
 };
 
+const numericField = {
+  ...scaleField,
+  fieldType: "decimal" as const,
+  numericType: "decimal" as const,
+  discrete: false,
+  distribution: [
+    { minimum: 20, maximum: 25, count: 1, percentage: 20 },
+    { minimum: 35, maximum: 40, count: 2, percentage: 40 },
+    { minimum: 45, maximum: 50, count: 1, percentage: 20 },
+    { minimum: 55, maximum: 60, count: 1, percentage: 20 },
+  ],
+  visualization: {
+    chart: "frequencyArea" as const,
+    alternatives: ["table" as const],
+    rationale: "numericDistribution" as const,
+    methodology: "numeric_distribution" as const,
+  },
+};
+
 describe("questionnaire chart primitives", () => {
   it("generates deterministic distinct category colors", () => {
     const keys = ["first", "second", "third"];
@@ -151,6 +170,17 @@ describe("questionnaire chart primitives", () => {
     expect(html).toContain("Legenda dei valori");
     expect(html).toContain("33.33%");
     expect(html).toContain("data-chart");
+  });
+
+  it("renders numeric distributions as an area chart without a redundant legend", () => {
+    const html = renderToStaticMarkup(
+      createElement(AnalysisFieldRenderer, { field: numericField }),
+    );
+
+    expect(html).toContain("Distribuzione dei valori");
+    expect(html).toContain("data-chart");
+    expect(html).not.toContain("Legenda");
+    expect(html).not.toContain("Conteggio");
   });
 
   it("renders an empty state without chart geometry", () => {
