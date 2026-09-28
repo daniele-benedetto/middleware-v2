@@ -10,7 +10,6 @@ import {
   lessonsListDtoSchema,
   lessonsPolicy,
   lessonsService,
-  listLessonsQuerySchema,
   reorderLessonsInputSchema,
   updateLessonInputSchema,
 } from "@/lib/server/modules/lessons";
@@ -24,7 +23,6 @@ import {
   reorderProcedure,
   writeProcedure,
 } from "@/lib/server/trpc/procedures";
-import { paginationInputSchema } from "@/lib/server/trpc/schemas/pagination";
 import { successOutputSchema } from "@/lib/server/trpc/schemas/result";
 import { parseOutput } from "@/lib/server/validation/output";
 
@@ -32,32 +30,7 @@ const lessonIdInputSchema = z.object({
   id: z.string().uuid(),
 });
 
-const lessonsListInputSchema = paginationInputSchema.extend({
-  query: listLessonsQuerySchema.default({
-    sortBy: "sortOrder",
-    sortOrder: "asc",
-  }),
-});
-
 export const lessonsRouter = router({
-  list: protectedProcedure
-    .use(requireRoleMiddleware(lessonsPolicy.allowedRoles))
-    .input(lessonsListInputSchema)
-    .query(async ({ input }) => {
-      const result = await lessonsService.list(input.query, {
-        page: input.page,
-        pageSize: input.pageSize,
-      });
-
-      return {
-        items: parseOutput(result.items, lessonsListDtoSchema),
-        pagination: {
-          page: input.page,
-          pageSize: input.pageSize,
-          total: result.total,
-        },
-      };
-    }),
   getById: protectedProcedure
     .use(requireRoleMiddleware(lessonsPolicy.allowedRoles))
     .input(lessonIdInputSchema)

@@ -2,6 +2,7 @@ export const cmsCrudRoutes = {
   issues: {
     create: "/cms/issues/new",
     edit: (id: string) => `/cms/issues/${id}/edit`,
+    print: (id: string) => `/cms/print/${id}`,
   },
   categories: {
     create: "/cms/categories/new",
@@ -20,8 +21,9 @@ export const cmsCrudRoutes = {
     edit: (id: string) => `/cms/contro-formazioni/${id}/edit`,
   },
   lessons: {
-    create: "/cms/incontri/new",
-    edit: (id: string) => `/cms/incontri/${id}/edit`,
+    create: (courseId: string) => `/cms/contro-formazioni/${courseId}/incontri/new`,
+    edit: (courseId: string, lessonId: string) =>
+      `/cms/contro-formazioni/${courseId}/incontri/${lessonId}/edit`,
   },
   maps: {
     create: "/cms/maps/new",
@@ -30,9 +32,6 @@ export const cmsCrudRoutes = {
       create: (mapId: string) => `/cms/maps/${mapId}/items/new`,
       edit: (mapId: string, itemId: string) => `/cms/maps/${mapId}/items/${itemId}/edit`,
     },
-  },
-  mapItems: {
-    list: "/cms/map-items",
   },
   pages: {
     create: "/cms/pages/new",

@@ -11,14 +11,12 @@ export type InitialCmsListData<TItem> = {
 
 export type IssuesListInitialData = RouterOutputs["issues"]["list"];
 export type CoursesListInitialData = RouterOutputs["courses"]["list"];
-export type LessonsListInitialData = RouterOutputs["lessons"]["list"];
 export type CategoriesListInitialData = RouterOutputs["categories"]["list"];
 export type ArticlesListInitialData = RouterOutputs["articles"]["list"];
 export type AuthorsListInitialData = RouterOutputs["authors"]["list"];
 export type AuditLogsListInitialData = RouterOutputs["auditLogs"]["list"];
 export type UsersListInitialData = RouterOutputs["users"]["list"];
 export type MapsListInitialData = RouterOutputs["maps"]["list"];
-export type MapItemsListInitialData = RouterOutputs["maps"]["listItems"];
 export type MapDetailInitialData = RouterOutputs["maps"]["getById"];
 export type QuestionnairesListInitialData = RouterOutputs["questionnaires"]["list"];
 export type QuestionnaireResponsesListInitialData =

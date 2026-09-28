@@ -46,12 +46,9 @@ const questionnairesSortByValues = [
   "closedAt",
   "title",
 ] as const;
-const mapItemsSortByValues = ["createdAt", "updatedAt", "title"] as const;
 const categoriesSortByValues = ["createdAt", "name", "slug"] as const;
 const authorsSortByValues = ["createdAt", "name", "slug"] as const;
 const articlesSortByValues = ["createdAt", "publishedAt"] as const;
-const lessonStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
-const lessonsSortByValues = ["createdAt", "sortOrder", "publishedAt"] as const;
 const pagesSortByValues = ["createdAt", "updatedAt", "publishedAt", "title"] as const;
 const usersSortByValues = ["createdAt", "email"] as const;
 
@@ -190,7 +187,6 @@ export function serializeCmsSearchParams(input: CmsSerializableSearchParams) {
 
 type IssuesListInput = RouterInputs["issues"]["list"];
 type CoursesListInput = RouterInputs["courses"]["list"];
-type LessonsListInput = RouterInputs["lessons"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type AuthorsListInput = RouterInputs["authors"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
@@ -198,7 +194,6 @@ type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 type MapsListInput = RouterInputs["maps"]["list"];
-type MapItemsListInput = RouterInputs["maps"]["listItems"];
 
 export function parseIssuesListSearchParams(input: CmsSearchParamsInput): IssuesListInput {
   const base = parseCmsListSearchParams(input, {
@@ -235,27 +230,6 @@ export function parseCoursesListSearchParams(input: CmsSearchParamsInput): Cours
     query: compactObject({
       isActive: parseBooleanQueryParam(readParam(input, "isActive")),
       published: parseBooleanQueryParam(readParam(input, "published")),
-      q: base.q,
-      sortBy,
-      sortOrder: base.sortOrder,
-    }),
-  };
-}
-
-export function parseLessonsListSearchParams(input: CmsSearchParamsInput): LessonsListInput {
-  const base = parseCmsListSearchParams(input, {
-    allowedSortBy: lessonsSortByValues,
-    defaultSortBy: "sortOrder",
-    defaultSortOrder: "asc",
-  });
-  const sortBy = parseEnumQueryParam(base.sortBy, lessonsSortByValues) ?? "sortOrder";
-
-  return {
-    page: base.page,
-    pageSize: base.pageSize,
-    query: compactObject({
-      status: parseEnumQueryParam(cleanString(readParam(input, "status")), lessonStatusValues),
-      courseId: parseUuidQueryParam(readParam(input, "courseId")),
       q: base.q,
       sortBy,
       sortOrder: base.sortOrder,
@@ -429,26 +403,6 @@ export function parseQuestionnairesListSearchParams(
       ),
       q: base.q,
       sortBy: parseEnumQueryParam(base.sortBy, questionnairesSortByValues) ?? "updatedAt",
-      sortOrder: base.sortOrder,
-    }),
-  };
-}
-
-export function parseMapItemsListSearchParams(input: CmsSearchParamsInput): MapItemsListInput {
-  const base = parseCmsListSearchParams(input, {
-    allowedSortBy: mapItemsSortByValues,
-    defaultSortBy: "updatedAt",
-    defaultSortOrder: "desc",
-  });
-  const sortBy = parseEnumQueryParam(base.sortBy, mapItemsSortByValues) ?? "updatedAt";
-
-  return {
-    page: base.page,
-    pageSize: base.pageSize,
-    query: compactObject({
-      mapId: parseUuidQueryParam(readParam(input, "mapId")),
-      q: base.q,
-      sortBy,
       sortOrder: base.sortOrder,
     }),
   };

@@ -14,7 +14,6 @@ type TrpcCaller = Awaited<ReturnType<typeof getTrpcCaller>>;
 
 type IssuesListInput = RouterInputs["issues"]["list"];
 type CoursesListInput = RouterInputs["courses"]["list"];
-type LessonsListInput = RouterInputs["lessons"]["list"];
 type CategoriesListInput = RouterInputs["categories"]["list"];
 type ArticlesListInput = RouterInputs["articles"]["list"];
 type AuthorsListInput = RouterInputs["authors"]["list"];
@@ -22,7 +21,6 @@ type PagesListInput = RouterInputs["pages"]["list"];
 type AuditLogsListInput = RouterInputs["auditLogs"]["list"];
 type UsersListInput = RouterInputs["users"]["list"];
 type MapsListInput = RouterInputs["maps"]["list"];
-type MapItemsListInput = RouterInputs["maps"]["listItems"];
 type QuestionnairesListInput = RouterInputs["questionnaires"]["list"];
 type MediaListOutput = RouterOutputs["media"]["list"];
 type NavigationMenusOutput = RouterOutputs["navigation"]["listMenus"];
@@ -30,14 +28,12 @@ type NavigationOptionsOutput = RouterOutputs["navigation"]["listOptions"];
 
 type IssuesListOutput = RouterOutputs["issues"]["list"];
 type CoursesListOutput = RouterOutputs["courses"]["list"];
-type LessonsListOutput = RouterOutputs["lessons"]["list"];
 type CategoriesListOutput = RouterOutputs["categories"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
 type AuthorsListOutput = RouterOutputs["authors"]["list"];
 type AuditLogsListOutput = RouterOutputs["auditLogs"]["list"];
 type UsersListOutput = RouterOutputs["users"]["list"];
 type MapsListOutput = RouterOutputs["maps"]["list"];
-type MapItemsListOutput = RouterOutputs["maps"]["listItems"];
 type QuestionnairesListOutput = RouterOutputs["questionnaires"]["list"];
 
 type IssueDetailOutput = RouterOutputs["issues"]["getById"];
@@ -109,10 +105,6 @@ export async function prefetchQuestionnairesList(
   return prefetchCmsList(input, (caller, listInput) => caller.questionnaires.list(listInput));
 }
 
-export async function prefetchMapItemsList(input: MapItemsListInput): Promise<MapItemsListOutput> {
-  return prefetchCmsList(input, (caller, listInput) => caller.maps.listItems(listInput));
-}
-
 export async function prefetchMapById(id: string): Promise<MapDetailOutput> {
   const caller = await getTrpcCaller();
   return caller.maps.getById({ id });
@@ -144,10 +136,6 @@ export async function prefetchNavigationBuilder(): Promise<{
 
 export async function prefetchCoursesList(input: CoursesListInput): Promise<CoursesListOutput> {
   return prefetchCmsList(input, (caller, listInput) => caller.courses.list(listInput));
-}
-
-export async function prefetchLessonsList(input: LessonsListInput): Promise<LessonsListOutput> {
-  return prefetchCmsList(input, (caller, listInput) => caller.lessons.list(listInput));
 }
 
 export async function prefetchCourseById(id: string): Promise<CourseDetailOutput> {

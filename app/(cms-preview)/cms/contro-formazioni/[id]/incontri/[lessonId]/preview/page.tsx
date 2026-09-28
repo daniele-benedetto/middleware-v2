@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation";
+
 import { LessonLivePreviewPage } from "@/features/cms/preview/lesson-live-preview-page";
 import {
   getLessonPreviewContext,
@@ -18,31 +20,35 @@ import { buildCmsMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
-type CmsLessonPreviewPageProps = {
-  params: Promise<{ id: string }>;
+type CmsCourseLessonPreviewPageProps = {
+  params: Promise<{ id: string; lessonId: string }>;
 };
 
 export const metadata: Metadata = buildCmsMetadata({
   title: i18n.cms.forms.resources.lessons.previewMetadataTitle,
-  path: "/cms/incontri/[id]/preview",
+  path: "/cms/contro-formazioni/[id]/incontri/[lessonId]/preview",
 });
 
-export default async function CmsLessonPreviewPage({ params }: CmsLessonPreviewPageProps) {
-  const { id: rawId } = await params;
-  const id = resolveCmsRouteEntityIdOrNotFound(rawId);
+export default async function CmsCourseLessonPreviewPage({
+  params,
+}: CmsCourseLessonPreviewPageProps) {
+  const { id: rawCourseId, lessonId: rawLessonId } = await params;
+  const courseId = resolveCmsRouteEntityIdOrNotFound(rawCourseId);
+  const lessonId = resolveCmsRouteEntityIdOrNotFound(rawLessonId);
   const [lesson, cmsLesson] = await Promise.all([
-    prefetchCmsDetailOrNotFound(() => prefetchLessonPreviewById(id)),
-    prefetchCmsDetailOrNotFound(() => prefetchLessonById(id)),
+    prefetchCmsDetailOrNotFound(() => prefetchLessonPreviewById(lessonId)),
+    prefetchCmsDetailOrNotFound(() => prefetchLessonById(lessonId)),
   ]);
-  const course = await prefetchCmsDetailOrNotFound(() =>
-    prefetchCoursePreviewById(lesson.courseId),
-  );
+
+  if (lesson.courseId !== courseId || cmsLesson.courseId !== courseId) notFound();
+
+  const course = await prefetchCmsDetailOrNotFound(() => prefetchCoursePreviewById(courseId));
   const { lessonNumber, otherLessons } = getLessonPreviewContext(lesson, course);
   const isPublic = cmsLesson.status === "PUBLISHED" && Boolean(cmsLesson.publishedAt);
 
   return (
     <LessonLivePreviewPage
-      sessionId={id}
+      sessionId={lessonId}
       initialSnapshot={toLessonLivePreviewSnapshot({
         id: lesson.id,
         courseId: lesson.courseId,
@@ -63,8 +69,8 @@ export default async function CmsLessonPreviewPage({ params }: CmsLessonPreviewP
       })}
       lessonNumber={lessonNumber}
       otherLessons={otherLessons}
-      editHref={`/cms/incontri/${id}/edit`}
-      refreshHref={`/cms/incontri/${id}/preview`}
+      editHref={`/cms/contro-formazioni/${courseId}/incontri/${lessonId}/edit`}
+      refreshHref={`/cms/contro-formazioni/${courseId}/incontri/${lessonId}/preview`}
     />
   );
 }

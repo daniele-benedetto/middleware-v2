@@ -16,6 +16,7 @@ export const cmsNavigation: CmsNavSection[] = [
     label: i18n.cms.navigation.issues,
     items: [
       { label: i18n.cms.navigation.issues, href: "/cms/issues" },
+      { label: "Prototipo cartaceo", href: "/cms/print/prototype" },
       { label: i18n.cms.navigation.articles, href: "/cms/articles" },
       { label: i18n.cms.navigation.categories, href: "/cms/categories" },
       { label: i18n.cms.navigation.authors, href: "/cms/authors" },
@@ -23,10 +24,7 @@ export const cmsNavigation: CmsNavSection[] = [
   },
   {
     label: i18n.cms.navigation.courses,
-    items: [
-      { label: i18n.cms.navigation.courses, href: "/cms/contro-formazioni" },
-      { label: i18n.cms.navigation.lessons, href: "/cms/incontri" },
-    ],
+    items: [{ label: i18n.cms.navigation.courses, href: "/cms/contro-formazioni" }],
   },
   {
     label: i18n.cms.navigation.questionnaires,
@@ -34,10 +32,7 @@ export const cmsNavigation: CmsNavSection[] = [
   },
   {
     label: i18n.cms.navigation.maps,
-    items: [
-      { label: i18n.cms.navigation.maps, href: "/cms/maps" },
-      { label: i18n.cms.navigation.mapItems, href: "/cms/map-items" },
-    ],
+    items: [{ label: i18n.cms.navigation.maps, href: "/cms/maps" }],
   },
   {
     label: i18n.cms.navigation.system,

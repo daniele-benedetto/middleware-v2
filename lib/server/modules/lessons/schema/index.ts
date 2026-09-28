@@ -46,18 +46,7 @@ export const reorderLessonsInputSchema = z.object({
     }),
 });
 
-const sortOrderSchema = z.enum(["asc", "desc"]);
-
-export const listLessonsQuerySchema = z.object({
-  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"] satisfies LessonStatus[]).optional(),
-  courseId: z.string().uuid().optional(),
-  q: z.string().trim().min(1).optional(),
-  sortBy: z.enum(["createdAt", "sortOrder", "publishedAt"]).default("sortOrder"),
-  sortOrder: sortOrderSchema.default("asc"),
-});
-
 export type LessonTitleStyled = z.infer<typeof courseTitleStyledSchema>;
 export type CreateLessonInput = z.infer<typeof createLessonInputSchema>;
 export type UpdateLessonInput = z.infer<typeof updateLessonInputSchema>;
 export type ReorderLessonsInput = z.infer<typeof reorderLessonsInputSchema>;
-export type ListLessonsQuery = z.infer<typeof listLessonsQuerySchema>;

@@ -11,7 +11,7 @@ import { mediaRepository } from "@/lib/server/modules/media/repository";
 import { usersRepository } from "@/lib/server/modules/users/repository";
 import { StorageNotFoundError } from "@/lib/server/storage/errors";
 
-import type { AuditLogOutcomeValue, AuditLogResourceValue } from "@/lib/audit-logs/constants";
+import type { AuditLogOutcomeValue } from "@/lib/audit-logs/constants";
 import type { UserRole } from "@/lib/server/auth/roles";
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { AuditLogDetailDto, AuditLogDto } from "@/lib/server/modules/audit-logs/dto";
@@ -24,7 +24,7 @@ type AuditLogRecord = {
   actorEmail: string | null;
   actorRole: UserRole | null;
   action: string;
-  resource: AuditLogResourceValue;
+  resource: string;
   resourceId: string | null;
   outcome: AuditLogOutcomeValue;
   errorCode: string | null;
@@ -213,7 +213,7 @@ async function resolveMediaSummary(resourceId: string): Promise<AuditLogResource
 }
 
 async function resolveResourceSummary(
-  resource: AuditLogResourceValue,
+  resource: string,
   resourceId: string | null,
 ): Promise<AuditLogResourceSummary | null> {
   if (!resourceId) {

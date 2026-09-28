@@ -10,7 +10,6 @@ import { assertPublishedAtConsistency } from "@/lib/server/validation/published"
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
 import type { LessonStatus } from "@/lib/generated/prisma/enums";
-import type { PaginationParams } from "@/lib/server/http/pagination";
 import type { LessonDetailDto, LessonDto } from "@/lib/server/modules/lessons/dto";
 import type { PublicLessonDetailDto } from "@/lib/server/modules/lessons/dto/public";
 import type {
@@ -20,7 +19,6 @@ import type {
 import type {
   CreateLessonInput,
   LessonTitleStyled,
-  ListLessonsQuery,
   ReorderLessonsInput,
   UpdateLessonInput,
 } from "@/lib/server/modules/lessons/schema";
@@ -185,17 +183,6 @@ const isRelationError = (error: unknown): boolean => {
 };
 
 export const lessonsService = {
-  async list(query: ListLessonsQuery, pagination: PaginationParams) {
-    const [lessons, total] = await Promise.all([
-      lessonsRepository.list(query, pagination),
-      lessonsRepository.count(query),
-    ]);
-
-    return {
-      items: lessons.map(toLessonDto),
-      total,
-    };
-  },
   async getById(id: string) {
     const lesson = await lessonsRepository.getById(id);
 

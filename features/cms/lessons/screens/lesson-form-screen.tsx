@@ -193,12 +193,16 @@ export function CmsLessonFormScreen({
   initialCourseOptions,
 }: LessonFormScreenProps) {
   const trpcUtils = trpc.useUtils();
-  const { cancel, success } = useCmsFormNavigation("/cms/incontri");
   const text = i18n.cms;
   const formText = text.forms;
   const lessonFormText = formText.resources.lessons;
 
   const lessonQuery = useLessonById(mode === "edit" ? lessonId : undefined, { initialData });
+  const returnPath =
+    courseId || lessonQuery.data?.courseId
+      ? `/cms/contro-formazioni/${courseId ?? lessonQuery.data?.courseId}/edit`
+      : "/cms/contro-formazioni";
+  const { cancel, success } = useCmsFormNavigation(returnPath);
   const courseOptionsQuery = useCourseOptions({ initialData: initialCourseOptions });
   const createMutation = useLessonCreate();
   const updateMutation = useLessonUpdate();
@@ -402,9 +406,11 @@ function LessonFormContent({
 
   const openPreview = () => {
     const previewPath =
-      mode === "edit" && lessonId
-        ? `/cms/incontri/${lessonId}/preview`
-        : `/cms/incontri/new/preview?session=${encodeURIComponent(previewSessionId)}`;
+      mode === "edit" && lessonId && fallbackCourseId
+        ? `/cms/contro-formazioni/${fallbackCourseId}/incontri/${lessonId}/preview`
+        : fallbackCourseId
+          ? `/cms/contro-formazioni/${fallbackCourseId}/incontri/new/preview?session=${encodeURIComponent(previewSessionId)}`
+          : "/cms/contro-formazioni";
     window.open(previewPath, "_blank", "noreferrer");
     setPreviewOpenCount((count) => count + 1);
   };

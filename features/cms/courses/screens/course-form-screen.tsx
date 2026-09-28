@@ -2,6 +2,7 @@
 
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Eye, Plus, Save, Trash2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CmsConfirmDialog, CmsErrorState } from "@/components/cms/common";
@@ -37,6 +38,7 @@ import {
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
+import { cmsCrudRoutes } from "@/lib/cms/crud-routes";
 import { createLivePreviewSessionId, toCourseLivePreviewSnapshot } from "@/lib/cms/preview/live";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
@@ -235,6 +237,7 @@ function CourseFormContent({
   onMutationError,
   onValidationError,
 }: CourseFormContentProps) {
+  const router = useRouter();
   const trpcUtils = trpc.useUtils();
   const text = i18n.cms;
   const formText = text.forms;
@@ -626,8 +629,11 @@ function CourseFormContent({
                 {courseFormText.lessonsSection}
               </div>
               <CourseLessonsPanel
+                courseId={courseId}
                 lessons={lessons}
                 disabled={isBusy || reorderMutation.isPending}
+                addLabel={courseFormText.addLesson}
+                onAdd={() => router.push(cmsCrudRoutes.lessons.create(courseId))}
                 onReorder={handleLessonsReorder}
               />
             </section>

@@ -54,6 +54,26 @@ type CmsAuditLogsListScreenProps = {
   initialData?: AuditLogsListInitialData;
 };
 
+function resolveResourceLabel(resource: string, text: typeof i18n.cms.lists.auditLogs) {
+  const labels: Record<string, string> = {
+    articles: text.resourceArticleLabel,
+    authors: text.resourceAuthorLabel,
+    categories: text.resourceCategoryLabel,
+    courses: text.resourceCourseLabel,
+    issues: text.resourceIssueLabel,
+    lessons: text.resourceLessonLabel,
+    media: text.resourceMediaLabel,
+    maps: text.resourceMapLabel,
+    "map-items": text.resourceMapItemLabel,
+    navigation: text.resourceNavigationLabel,
+    pages: text.resourcePageLabel,
+    questionnaires: text.resourceQuestionnaireLabel,
+    users: text.resourceUserLabel,
+  };
+
+  return labels[resource] ?? text.resourceUnknownLabel;
+}
+
 type AuditLogsListToolbarFiltersState = {
   outcomeValue: string;
 };
@@ -234,19 +254,7 @@ export function CmsAuditLogsListScreen({ initialInput, initialData }: CmsAuditLo
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       <div className="space-y-1">
                         <div className="font-ui text-[10px] font-bold uppercase tracking-[0.08em] text-foreground">
-                          {`${formatAuditActionLabel(entry.action, listText)}: ${
-                            entry.resource === "articles"
-                              ? listText.resourceArticleLabel
-                              : entry.resource === "categories"
-                                ? listText.resourceCategoryLabel
-                                : entry.resource === "issues"
-                                  ? listText.resourceIssueLabel
-                                  : entry.resource === "media"
-                                    ? listText.resourceMediaLabel
-                                    : entry.resource === "users"
-                                      ? listText.resourceUserLabel
-                                      : listText.resourceUnknownLabel
-                          }`}
+                          {`${formatAuditActionLabel(entry.action, listText)}: ${resolveResourceLabel(entry.resource, listText)}`}
                         </div>
                       </div>
                     </TableCell>

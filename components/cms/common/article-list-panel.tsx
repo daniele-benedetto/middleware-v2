@@ -21,6 +21,8 @@ import {
 } from "@/lib/cms/ui/variants";
 import { cn } from "@/lib/utils";
 
+import type { ReactNode } from "react";
+
 export type CmsArticleListPanelItem = {
   id: string;
   title: string;
@@ -33,6 +35,7 @@ type CmsArticleListPanelProps = {
   articles: CmsArticleListPanelItem[];
   className?: string;
   disabled?: boolean;
+  headerAction?: ReactNode;
   onReorder?: (orderedIds: string[]) => void | Promise<void>;
   dndContextId?: string;
 };
@@ -43,6 +46,7 @@ export function CmsArticleListPanel({
   articles,
   className,
   disabled,
+  headerAction,
   onReorder,
   dndContextId,
 }: CmsArticleListPanelProps) {
@@ -89,7 +93,10 @@ export function CmsArticleListPanel({
     <div className={cn("flex h-full min-h-0 flex-col overflow-hidden", cmsPanelClass, className)}>
       <div className="flex shrink-0 items-center justify-between border-b border-foreground px-3 py-2">
         <span className={cmsMetaLabelClass}>{title}</span>
-        <span className={cmsTinyMetaClass}>{articles.length}</span>
+        <div className="flex items-center gap-2">
+          {headerAction}
+          <span className={cmsTinyMetaClass}>{articles.length}</span>
+        </div>
       </div>
 
       {articles.length === 0 ? (

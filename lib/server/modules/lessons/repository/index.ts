@@ -3,12 +3,7 @@ import "server-only";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
-import type { PaginationParams } from "@/lib/server/http/pagination";
-import type {
-  ListLessonsQuery,
-  ReorderLessonsInput,
-  UpdateLessonInput,
-} from "@/lib/server/modules/lessons/schema";
+import type { ReorderLessonsInput, UpdateLessonInput } from "@/lib/server/modules/lessons/schema";
 
 export type CreateLessonPersistInput = {
   courseId: string;
@@ -55,56 +50,7 @@ const LESSON_DETAIL_SELECT = {
   },
 } as const satisfies Prisma.LessonSelect;
 
-const toLessonWhereInput = (query: ListLessonsQuery): Prisma.LessonWhereInput => {
-  return {
-    status: query.status,
-    courseId: query.courseId,
-    OR: query.q
-      ? [
-          { title: { contains: query.q, mode: "insensitive" } },
-          { excerpt: { contains: query.q, mode: "insensitive" } },
-        ]
-      : undefined,
-  };
-};
-
-const toLessonOrderByInput = (query: ListLessonsQuery): Prisma.LessonOrderByWithRelationInput => {
-  return { [query.sortBy]: query.sortOrder };
-};
-
 export const lessonsRepository = {
-  async list(query: ListLessonsQuery, pagination: PaginationParams) {
-    const where = toLessonWhereInput(query);
-    const orderBy = toLessonOrderByInput(query);
-
-    return prisma.lesson.findMany({
-      where,
-      orderBy,
-      skip: (pagination.page - 1) * pagination.pageSize,
-      take: pagination.pageSize,
-      select: {
-        id: true,
-        courseId: true,
-        title: true,
-        titleStyled: true,
-        slug: true,
-        status: true,
-        sortOrder: true,
-        publishedAt: true,
-        createdAt: true,
-        updatedAt: true,
-        course: {
-          select: {
-            title: true,
-          },
-        },
-      },
-    });
-  },
-  async count(query: ListLessonsQuery) {
-    const where = toLessonWhereInput(query);
-    return prisma.lesson.count({ where });
-  },
   async getById(id: string) {
     return prisma.lesson.findUnique({
       where: { id },

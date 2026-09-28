@@ -92,9 +92,9 @@ export async function invalidateCoursesAfterMutation(utils: TrpcUtils, input?: M
   await invalidateResource(utils.courses.list.invalidate, utils.courses.getById.invalidate, input);
 }
 
-export async function invalidateLessonsAfterMutation(utils: TrpcUtils, input?: MutationInput) {
+export async function invalidateLessonsAfterMutation(utils: TrpcUtils) {
   await Promise.all([
-    invalidateResource(utils.lessons.list.invalidate, utils.lessons.getById.invalidate, input),
+    utils.lessons.getById.invalidate(),
     utils.courses.list.invalidate(),
     utils.courses.getById.invalidate(),
   ]);
@@ -131,7 +131,6 @@ export async function invalidatePagesAfterMutation(utils: TrpcUtils, input?: Mut
 export async function invalidateMapsAfterMutation(utils: TrpcUtils, input?: MutationInput) {
   await Promise.all([
     invalidateResource(utils.maps.list.invalidate, utils.maps.getById.invalidate, input),
-    utils.maps.listItems.invalidate(),
   ]);
 }
 
@@ -171,7 +170,7 @@ export async function invalidateAfterCmsMutation(
   }
 
   if (mutation.startsWith("lessons.")) {
-    await invalidateLessonsAfterMutation(utils, input);
+    await invalidateLessonsAfterMutation(utils);
     return;
   }
 

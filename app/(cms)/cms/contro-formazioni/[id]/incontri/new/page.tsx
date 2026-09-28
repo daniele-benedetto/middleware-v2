@@ -4,34 +4,33 @@ import {
   resolveCmsRouteEntityIdOrNotFound,
 } from "@/lib/cms/route-handling";
 import {
-  prefetchLessonById,
+  prefetchCourseById,
   prefetchLessonFormCourseOptions,
 } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
 
 export const metadata = buildCmsMetadata({
-  title: i18n.cms.forms.resources.lessons.editTitle,
-  path: "/cms/incontri/[id]/edit",
+  title: `${i18n.cms.resource.new} ${i18n.cms.navigation.lessons}`,
+  path: "/cms/contro-formazioni/[id]/incontri/new",
 });
 
-type CmsLessonEditPageProps = {
+type CmsCourseLessonNewPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default async function CmsLessonEditPage({ params }: CmsLessonEditPageProps) {
-  const { id: rawId } = await params;
-  const id = resolveCmsRouteEntityIdOrNotFound(rawId);
-  const [initialData, initialCourseOptions] = await Promise.all([
-    prefetchCmsDetailOrNotFound(() => prefetchLessonById(id)),
+export default async function CmsCourseLessonNewPage({ params }: CmsCourseLessonNewPageProps) {
+  const { id: rawCourseId } = await params;
+  const courseId = resolveCmsRouteEntityIdOrNotFound(rawCourseId);
+  const [, initialCourseOptions] = await Promise.all([
+    prefetchCmsDetailOrNotFound(() => prefetchCourseById(courseId)),
     prefetchLessonFormCourseOptions(),
   ]);
 
   return (
     <CmsLessonFormScreen
-      mode="edit"
-      lessonId={id}
-      initialData={initialData}
+      mode="create"
+      courseId={courseId}
       initialCourseOptions={initialCourseOptions}
     />
   );

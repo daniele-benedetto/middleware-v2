@@ -7,13 +7,11 @@ import {
   createMapInputSchema,
   createMapItemInputSchema,
   listMapsQuerySchema,
-  listMapItemsQuerySchema,
   mapDetailDtoSchema,
   mapDtoSchema,
   mapItemDtoSchema,
   mapItemsListDtoSchema,
   mapsListDtoSchema,
-  mapItemsGlobalListDtoSchema,
   mapsPolicy,
   mapsService,
   mapAddressSuggestionDtoSchema,
@@ -41,9 +39,6 @@ const mapItemIdInputSchema = z.object({ mapId: z.string().uuid(), itemId: z.stri
 const mapsListInputSchema = paginationInputSchema.extend({
   query: listMapsQuerySchema.default({ sortBy: "createdAt", sortOrder: "desc" }),
 });
-const mapItemsListInputSchema = paginationInputSchema.extend({
-  query: listMapItemsQuerySchema.default({ sortBy: "updatedAt", sortOrder: "desc" }),
-});
 
 export const mapsRouter = router({
   searchAddress: externalReadProcedure
@@ -65,19 +60,6 @@ export const mapsRouter = router({
       });
       return {
         items: parseOutput(result.items, mapsListDtoSchema),
-        pagination: { page: input.page, pageSize: input.pageSize, total: result.total },
-      };
-    }),
-  listItems: protectedProcedure
-    .use(requireRoleMiddleware(mapsPolicy.allowedRoles))
-    .input(mapItemsListInputSchema)
-    .query(async ({ input }) => {
-      const result = await mapsService.listItems(input.query, {
-        page: input.page,
-        pageSize: input.pageSize,
-      });
-      return {
-        items: parseOutput(result.items, mapItemsGlobalListDtoSchema),
         pagination: { page: input.page, pageSize: input.pageSize, total: result.total },
       };
     }),

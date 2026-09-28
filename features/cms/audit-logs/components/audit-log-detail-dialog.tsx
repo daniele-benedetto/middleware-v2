@@ -146,16 +146,48 @@ function resolveResourceLabel(
     return text.resourceArticleLabel;
   }
 
+  if (resource === "authors") {
+    return text.resourceAuthorLabel;
+  }
+
   if (resource === "categories") {
     return text.resourceCategoryLabel;
+  }
+
+  if (resource === "courses") {
+    return text.resourceCourseLabel;
   }
 
   if (resource === "issues") {
     return text.resourceIssueLabel;
   }
 
+  if (resource === "lessons") {
+    return text.resourceLessonLabel;
+  }
+
   if (resource === "media") {
     return text.resourceMediaLabel;
+  }
+
+  if (resource === "maps") {
+    return text.resourceMapLabel;
+  }
+
+  if (resource === "map-items") {
+    return text.resourceMapItemLabel;
+  }
+
+  if (resource === "navigation") {
+    return text.resourceNavigationLabel;
+  }
+
+  if (resource === "pages") {
+    return text.resourcePageLabel;
+  }
+
+  if (resource === "questionnaires") {
+    return text.resourceQuestionnaireLabel;
   }
 
   if (resource === "users") {

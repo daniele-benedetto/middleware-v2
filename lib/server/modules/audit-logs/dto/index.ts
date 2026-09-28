@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { auditLogOutcomeValues, auditLogResourceValues } from "@/lib/audit-logs/constants";
+import { auditLogOutcomeValues } from "@/lib/audit-logs/constants";
 
 export const auditLogDtoSchema = z.object({
   id: z.string().uuid(),
@@ -9,7 +9,9 @@ export const auditLogDtoSchema = z.object({
   actorEmail: z.string().nullable(),
   actorRole: z.enum(["ADMIN", "EDITOR"]).nullable(),
   action: z.string(),
-  resource: z.enum(auditLogResourceValues),
+  // Audit resources are stored as strings so older or newly introduced resources
+  // must remain readable even before the CMS filter vocabulary is updated.
+  resource: z.string().min(1),
   resourceId: z.string().nullable(),
   outcome: z.enum(auditLogOutcomeValues),
   errorCode: z.string().nullable(),

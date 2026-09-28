@@ -2,7 +2,6 @@ import { isWithinComuneOfModena } from "@/lib/server/modules/maps/boundary/moden
 import {
   createMapInputSchema,
   createMapItemInputSchema,
-  listMapItemsQuerySchema,
   updateMapItemInputSchema,
 } from "@/lib/server/modules/maps/schema";
 
@@ -75,17 +74,5 @@ describe("maps schemas", () => {
         message: "Coordinates must be within the Comune di Modena boundary",
       });
     }
-  });
-
-  it("accepts global point list filters and sorting", () => {
-    expect(
-      listMapItemsQuerySchema.parse({
-        mapId,
-        q: "Centro",
-        sortBy: "title",
-        sortOrder: "asc",
-      }),
-    ).toMatchObject({ mapId, q: "Centro", sortBy: "title", sortOrder: "asc" });
-    expect(listMapItemsQuerySchema.safeParse({ sortBy: "sortOrder" }).success).toBe(false);
   });
 });
