@@ -283,6 +283,42 @@ Editorial image semantics:
 - Keep shared public UI in `components/public`, separated by primitive/compound/section/page responsibility.
 - Prefer extending existing shared helpers over duplicating list/query/error logic per resource.
 
+## Print Edition Architecture
+
+The print edition is a separate presentation target built from the same published editorial data. It must not alter the public web dossier or encode print-only layout state inside `Issue.homeBlocks`.
+
+### Data flow
+
+```text
+published Issue
+  -> print edition manifest
+  -> ordered editorial sequence
+  -> page-family planner
+  -> pagination + diagnostics
+  -> preview renderer
+  -> PDF export
+```
+
+- `Issue.homeBlocks` remains the source of truth for issue order and editorial roles.
+- Print preparation may add an edition-specific manifest containing inclusion, page-family preference, forced page breaks, locked pages, and print metadata.
+- Article print content must use full `contentRich`, internal images, notes, captions, author data, and credits. Home DTO summaries are insufficient for export.
+- The page planner is deterministic and pure: the same manifest, content snapshot, fonts, and page settings must produce the same page sequence.
+- The renderer must expose diagnostics rather than silently repairing editorial problems.
+- Maps and questionnaire analyses need static print assets or print-specific renderers; interactive web canvases cannot be exported as screenshots by default.
+
+### Implementation boundary
+
+The first technical slice should be a domain-level print manifest and deterministic pagination model, tested without a browser or database. CMS UX and PDF infrastructure should be added after the static page-family reference has been approved on a real issue.
+
+### Persistent editions
+
+- `PrintEdition` stores the print-specific title, status, and JSON manifest without changing the web issue regia.
+- The additive migration is `20260928150000_add_print_editions`.
+- The tRPC resource is `printEditions` with role access for `ADMIN` and `EDITOR`.
+- Manifest overrides can exclude an item, choose a page family, lock a page, or select a print asset.
+- `/cms/print` lists saved editions; `/cms/print/[issueId]` opens the current composed preview for the source issue.
+- The current browser PDF remains a review export. A press-ready PDF renderer still requires an explicit rendering engine and print production profile.
+
 ## Related Docs
 
 - `README.md`: operational setup and API baseline.

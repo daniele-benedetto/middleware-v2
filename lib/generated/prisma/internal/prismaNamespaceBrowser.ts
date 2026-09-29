@@ -57,6 +57,7 @@ export const ModelName = {
   Account: 'Account',
   Verification: 'Verification',
   Issue: 'Issue',
+  PrintEdition: 'PrintEdition',
   Category: 'Category',
   Article: 'Article',
   ArticlePopularity: 'ArticlePopularity',
@@ -175,6 +176,19 @@ export const IssueScalarFieldEnum = {
 } as const
 
 export type IssueScalarFieldEnum = (typeof IssueScalarFieldEnum)[keyof typeof IssueScalarFieldEnum]
+
+
+export const PrintEditionScalarFieldEnum = {
+  id: 'id',
+  issueId: 'issueId',
+  title: 'title',
+  status: 'status',
+  manifest: 'manifest',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PrintEditionScalarFieldEnum = (typeof PrintEditionScalarFieldEnum)[keyof typeof PrintEditionScalarFieldEnum]
 
 
 export const CategoryScalarFieldEnum = {

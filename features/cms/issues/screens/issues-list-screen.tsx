@@ -8,7 +8,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Printer, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -212,10 +212,12 @@ type SortableIssueRowProps = {
   isSelected: boolean;
   onToggleSelection: (id: string) => void;
   onEdit: (id: string) => void;
+  onPrint: (id: string) => void;
   onDelete: (id: string) => void;
   selectLabel: string;
   editLabel: string;
   deleteLabel: string;
+  printLabel: string;
   deleteConfirmTitle: string;
   deleteConfirmDescription: string;
   activeLabel: string;
@@ -229,10 +231,12 @@ function SortableIssueRow({
   isSelected,
   onToggleSelection,
   onEdit,
+  onPrint,
   onDelete,
   selectLabel,
   editLabel,
   deleteLabel,
+  printLabel,
   deleteConfirmTitle,
   deleteConfirmDescription,
   activeLabel,
@@ -293,6 +297,17 @@ function SortableIssueRow({
           >
             <Pencil aria-hidden />
             {editLabel}
+          </CmsActionButton>
+          <CmsActionButton
+            variant="outline"
+            size="xs"
+            className={cmsTableClasses.rowActionButton}
+            onClick={() => onPrint(issue.id)}
+            disabled={isPending}
+            aria-label={`${printLabel}: ${issue.title}`}
+          >
+            <Printer aria-hidden />
+            {printLabel}
           </CmsActionButton>
           <CmsConfirmDialog
             triggerLabel={deleteLabel}
@@ -702,10 +717,12 @@ export function CmsIssuesListScreen({ initialInput, initialData }: CmsIssuesList
                         isSelected={selection.isSelected(issue.id)}
                         onToggleSelection={selection.toggleSelection}
                         onEdit={(id) => navigateToCrudRoute(cmsCrudRoutes.issues.edit(id))}
+                        onPrint={(id) => navigateToCrudRoute(cmsCrudRoutes.issues.print(id))}
                         onDelete={(id) => runSingleAction("delete", id)}
                         selectLabel={listText.selectItem(issue.title)}
                         editLabel={quickText.edit}
                         deleteLabel={quickText.delete}
+                        printLabel={quickText.printPreview}
                         deleteConfirmTitle={quickText.confirmDeleteTitle}
                         deleteConfirmDescription={quickText.confirmDeleteSingleIssue}
                         activeLabel={listText.active}

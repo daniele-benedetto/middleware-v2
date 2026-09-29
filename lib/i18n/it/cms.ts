@@ -16,6 +16,7 @@ export const cmsIt = {
     brand: "Middleware",
     app: "CMS",
     issues: "Uscite",
+    printEditions: "Edizioni cartacee",
     categories: "Categorie",
     authors: "Autori",
     articles: "Articoli",

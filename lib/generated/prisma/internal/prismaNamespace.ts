@@ -390,6 +390,7 @@ export const ModelName = {
   Account: 'Account',
   Verification: 'Verification',
   Issue: 'Issue',
+  PrintEdition: 'PrintEdition',
   Category: 'Category',
   Article: 'Article',
   ArticlePopularity: 'ArticlePopularity',
@@ -418,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "category" | "article" | "articlePopularity" | "course" | "lesson" | "map" | "mapItem" | "page" | "questionnaire" | "questionnaireResponse" | "globalSearchDocument" | "navigationMenu" | "auditLog"
+    modelProps: "user" | "author" | "session" | "account" | "verification" | "issue" | "printEdition" | "category" | "article" | "articlePopularity" | "course" | "lesson" | "map" | "mapItem" | "page" | "questionnaire" | "questionnaireResponse" | "globalSearchDocument" | "navigationMenu" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -863,6 +864,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.IssueCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.IssueCountAggregateOutputType> | number
+        }
+      }
+    }
+    PrintEdition: {
+      payload: Prisma.$PrintEditionPayload<ExtArgs>
+      fields: Prisma.PrintEditionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PrintEditionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintEditionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PrintEditionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintEditionPayload>
+        }
+        findFirst: {
+          args: Prisma.PrintEditionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintEditionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PrintEditionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintEditionPayload>
+        }
+        findMany: {
+          args: Prisma.PrintEditionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintEditionPayload>[]
+        }
+        create: {
+          args: Prisma.PrintEditionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintEditionPayload>
+        }
+        createMany: {
+          args: Prisma.PrintEditionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PrintEditionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintEditionPayload>[]
+        }
+        delete: {
+          args: Prisma.PrintEditionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintEditionPayload>
+        }
+        update: {
+          args: Prisma.PrintEditionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintEditionPayload>
+        }
+        deleteMany: {
+          args: Prisma.PrintEditionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PrintEditionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PrintEditionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintEditionPayload>[]
+        }
+        upsert: {
+          args: Prisma.PrintEditionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PrintEditionPayload>
+        }
+        aggregate: {
+          args: Prisma.PrintEditionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePrintEdition>
+        }
+        groupBy: {
+          args: Prisma.PrintEditionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PrintEditionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PrintEditionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PrintEditionCountAggregateOutputType> | number
         }
       }
     }
@@ -1956,6 +2031,19 @@ export const IssueScalarFieldEnum = {
 export type IssueScalarFieldEnum = (typeof IssueScalarFieldEnum)[keyof typeof IssueScalarFieldEnum]
 
 
+export const PrintEditionScalarFieldEnum = {
+  id: 'id',
+  issueId: 'issueId',
+  title: 'title',
+  status: 'status',
+  manifest: 'manifest',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PrintEditionScalarFieldEnum = (typeof PrintEditionScalarFieldEnum)[keyof typeof PrintEditionScalarFieldEnum]
+
+
 export const CategoryScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -2306,6 +2394,20 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'PrintEditionStatus'
+ */
+export type EnumPrintEditionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrintEditionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'PrintEditionStatus[]'
+ */
+export type ListEnumPrintEditionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrintEditionStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'ArticleStatus'
  */
 export type EnumArticleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ArticleStatus'>
@@ -2518,6 +2620,7 @@ export type GlobalOmitConfig = {
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
   issue?: Prisma.IssueOmit
+  printEdition?: Prisma.PrintEditionOmit
   category?: Prisma.CategoryOmit
   article?: Prisma.ArticleOmit
   articlePopularity?: Prisma.ArticlePopularityOmit

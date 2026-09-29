@@ -249,6 +249,93 @@ Rule:
 
 Tokens fondazionali (palette, alpha, filetti, spacing, type scale, line-heights, griglie) sono documentati qui e implementati in `app/globals.css` e nelle primitives CMS. Aggiungere nuovi token solo quando servono davvero e mantenerli coerenti tra documentazione e implementazione.
 
+## Print edition direction
+
+Middleware può diventare un oggetto editoriale stampabile senza perdere la propria identità web. La prima direzione approvata è una rivista-dossier A4 verticale, inizialmente esportata come PDF, con articoli integrali e una sequenza editoriale derivata da `Issue.homeBlocks`.
+
+### Product contract
+
+- Formato: A4 verticale, 210 × 297 mm, pagine in multipli di 4.
+- Prima ipotesi di estensione: 64–96 pagine, da verificare su un issue reale.
+- Griglia: 12 colonne, margini interni più larghi del web, corpo testo prevalentemente su due colonne.
+- Fondo principale: Archive Paper; Paper White solo per separare apparati o tavole.
+- Inchiostri concettuali: Printing Ink + Vermilion Proof; il colore accent è un segnale editoriale, non una campitura decorativa.
+- Tipografia: Archivo per struttura, titoli, numeri, testatine e metadati; Spectral per articoli, sommari, citazioni e note.
+- Linguaggio: piatto, rule-led, squadrato, senza ombre, glassmorphism o card ripetute.
+
+### Editorial sequence
+
+La rivista non è una stampa della home. La home orienta; il numero raccoglie e monta il contenuto integrale.
+
+1. copertina;
+2. colophon e dati del numero;
+3. indice con numeri articolo, autori e pagina di apertura;
+4. apertura dell'issue;
+5. blocco `opening` come apertura dell'articolo principale;
+6. blocchi `body` come corpo di lettura;
+7. blocco `rupture` come momento di rottura tipografica o fotografica;
+8. corso, mappa e analisi come sezioni speciali, mai come semplici article card;
+9. blocco `closing` come chiusura editoriale;
+10. colophon finale e quarta di copertina.
+
+### Page families
+
+Il motore di impaginazione dovrà comporre il numero tramite famiglie di pagina, non tramite un unico layout fluido:
+
+- cover;
+- issue opener;
+- article opener;
+- article continuation;
+- text spread;
+- text + image;
+- image spread;
+- quotation / rupture;
+- course section;
+- map plate;
+- questionnaire analysis;
+- index;
+- colophon.
+
+Ogni famiglia deve definire gerarchia, griglia, margini, comportamento delle immagini e regole di continuazione. L'algoritmo sceglie il flusso; l'editor può bloccare le pagine ad alta intenzione, come copertina, aperture, rotture e tavole.
+
+### Pagination rules
+
+La paginazione automatica deve essere semantica e misurabile:
+
+- caricare `contentRich` completo, non soltanto excerpt e metadati;
+- mantenere titolo, sommario e autore insieme all'apertura dell'articolo;
+- evitare vedove, orfane e titoli isolati a fondo pagina;
+- mantenere didascalia e immagine nella stessa unità;
+- non separare il riferimento di una nota dal suo testo senza una regola esplicita;
+- verificare risoluzione, rapporto e orientamento delle immagini;
+- bilanciare le colonne nelle pagine di continuazione;
+- rispettare la parità delle pagine quando un articolo è configurato per iniziare a destra;
+- segnalare, senza nasconderli, overflow, pagine quasi vuote, asset mancanti e interruzioni manuali in conflitto.
+
+### Special content translation
+
+- `course`: apertura di sezione, descrizione e indice delle lezioni; non una lista di card.
+- `map`: tavola cartografica statica con legenda e riferimenti; mai uno screenshot della mappa interattiva.
+- `questionnaireAnalysis`: testo metodologico breve, grafici statici e legenda dei dati.
+- `preview`: richiamo editoriale o anteprima, con trattamento più breve rispetto a un articolo completo.
+
+### PDF preflight
+
+Prima dell'export il sistema deve produrre una lista di problemi verificabili: immagini mancanti o sottodimensionate, titoli separati, didascalie orfane, note non risolte, contenuti senza pagina, pagine vuote inattese, numerazione incoerente e blocchi speciali privi di asset stampabile.
+
+La preview reale espone già una prima distinzione tra errori bloccanti, warning e informazioni. Gli errori impediscono l'approvazione editoriale; i warning richiedono una decisione; le informazioni documentano interventi automatici come le pagine bianche aggiunte per chiudere il fascicolo.
+
+### Print edition CMS flow
+
+- `Edizioni cartacee` è una risorsa CMS separata dall'issue web.
+- La lista `/cms/print` mostra titolo, stato e data di aggiornamento dell'edizione salvata.
+- La preview di un issue resta raggiungibile dall'elenco issue e dalla schermata di modifica.
+- La composizione reale usa il manifesto, il rich text completo e l'ordine dei `homeBlocks`.
+- L'azione `Stampa / PDF` è disponibile solo nella composizione reale e nasconde la chrome di preparazione in stampa.
+- Le mappe e le analisi senza tavola statica definitiva devono restare visibili come warning, non essere sostituite silenziosamente da contenuti inventati.
+
+La prima implementazione deve usare un issue reale e generare un numero campione statico di 8–12 pagine modello prima di introdurre la dashboard di preparazione. Il prototipo di riferimento deve coprire cover, indice, apertura issue, articolo standard, articolo con immagine, rupture, corso, mappa, analisi e chiusura.
+
 ## Source of truth
 
 - Canonical document: `docs/cms-ui.md`

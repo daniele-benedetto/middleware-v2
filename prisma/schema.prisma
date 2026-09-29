@@ -37,6 +37,13 @@ enum QuestionnaireStatus {
   ARCHIVED
 }
 
+enum PrintEditionStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  EXPORTED
+}
+
 enum AuditLogOutcome {
   SUCCESS
   FAILURE
@@ -137,11 +144,28 @@ model Issue {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  articles Article[]
+  articles      Article[]
+  printEditions PrintEdition[]
 
   @@index([isActive, sortOrder])
   @@index([publishedAt])
   @@map("issues")
+}
+
+model PrintEdition {
+  id        String             @id @default(uuid())
+  issueId   String
+  title     String
+  status    PrintEditionStatus @default(DRAFT)
+  manifest  Json
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId, updatedAt])
+  @@index([status, updatedAt])
+  @@map("print_editions")
 }
 
 model Category {

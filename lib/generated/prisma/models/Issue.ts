@@ -261,6 +261,7 @@ export type IssueWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Issue"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Issue"> | Date | string
   articles?: Prisma.ArticleListRelationFilter
+  printEditions?: Prisma.PrintEditionListRelationFilter
 }
 
 export type IssueOrderByWithRelationInput = {
@@ -277,6 +278,7 @@ export type IssueOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   articles?: Prisma.ArticleOrderByRelationAggregateInput
+  printEditions?: Prisma.PrintEditionOrderByRelationAggregateInput
 }
 
 export type IssueWhereUniqueInput = Prisma.AtLeast<{
@@ -296,6 +298,7 @@ export type IssueWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Issue"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Issue"> | Date | string
   articles?: Prisma.ArticleListRelationFilter
+  printEditions?: Prisma.PrintEditionListRelationFilter
 }, "id" | "slug">
 
 export type IssueOrderByWithAggregationInput = {
@@ -350,6 +353,7 @@ export type IssueCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   articles?: Prisma.ArticleCreateNestedManyWithoutIssueInput
+  printEditions?: Prisma.PrintEditionCreateNestedManyWithoutIssueInput
 }
 
 export type IssueUncheckedCreateInput = {
@@ -366,6 +370,7 @@ export type IssueUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   articles?: Prisma.ArticleUncheckedCreateNestedManyWithoutIssueInput
+  printEditions?: Prisma.PrintEditionUncheckedCreateNestedManyWithoutIssueInput
 }
 
 export type IssueUpdateInput = {
@@ -382,6 +387,7 @@ export type IssueUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   articles?: Prisma.ArticleUpdateManyWithoutIssueNestedInput
+  printEditions?: Prisma.PrintEditionUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueUncheckedUpdateInput = {
@@ -398,6 +404,7 @@ export type IssueUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   articles?: Prisma.ArticleUncheckedUpdateManyWithoutIssueNestedInput
+  printEditions?: Prisma.PrintEditionUncheckedUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueCreateManyInput = {
@@ -505,6 +512,20 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type IssueCreateNestedOneWithoutPrintEditionsInput = {
+  create?: Prisma.XOR<Prisma.IssueCreateWithoutPrintEditionsInput, Prisma.IssueUncheckedCreateWithoutPrintEditionsInput>
+  connectOrCreate?: Prisma.IssueCreateOrConnectWithoutPrintEditionsInput
+  connect?: Prisma.IssueWhereUniqueInput
+}
+
+export type IssueUpdateOneRequiredWithoutPrintEditionsNestedInput = {
+  create?: Prisma.XOR<Prisma.IssueCreateWithoutPrintEditionsInput, Prisma.IssueUncheckedCreateWithoutPrintEditionsInput>
+  connectOrCreate?: Prisma.IssueCreateOrConnectWithoutPrintEditionsInput
+  upsert?: Prisma.IssueUpsertWithoutPrintEditionsInput
+  connect?: Prisma.IssueWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.IssueUpdateToOneWithWhereWithoutPrintEditionsInput, Prisma.IssueUpdateWithoutPrintEditionsInput>, Prisma.IssueUncheckedUpdateWithoutPrintEditionsInput>
+}
+
 export type IssueCreateNestedOneWithoutArticlesInput = {
   create?: Prisma.XOR<Prisma.IssueCreateWithoutArticlesInput, Prisma.IssueUncheckedCreateWithoutArticlesInput>
   connectOrCreate?: Prisma.IssueCreateOrConnectWithoutArticlesInput
@@ -517,6 +538,86 @@ export type IssueUpdateOneRequiredWithoutArticlesNestedInput = {
   upsert?: Prisma.IssueUpsertWithoutArticlesInput
   connect?: Prisma.IssueWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.IssueUpdateToOneWithWhereWithoutArticlesInput, Prisma.IssueUpdateWithoutArticlesInput>, Prisma.IssueUncheckedUpdateWithoutArticlesInput>
+}
+
+export type IssueCreateWithoutPrintEditionsInput = {
+  id?: string
+  title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  slug: string
+  description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
+  isActive?: boolean
+  sortOrder?: number
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  articles?: Prisma.ArticleCreateNestedManyWithoutIssueInput
+}
+
+export type IssueUncheckedCreateWithoutPrintEditionsInput = {
+  id?: string
+  title: string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  slug: string
+  description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: string
+  isActive?: boolean
+  sortOrder?: number
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  articles?: Prisma.ArticleUncheckedCreateNestedManyWithoutIssueInput
+}
+
+export type IssueCreateOrConnectWithoutPrintEditionsInput = {
+  where: Prisma.IssueWhereUniqueInput
+  create: Prisma.XOR<Prisma.IssueCreateWithoutPrintEditionsInput, Prisma.IssueUncheckedCreateWithoutPrintEditionsInput>
+}
+
+export type IssueUpsertWithoutPrintEditionsInput = {
+  update: Prisma.XOR<Prisma.IssueUpdateWithoutPrintEditionsInput, Prisma.IssueUncheckedUpdateWithoutPrintEditionsInput>
+  create: Prisma.XOR<Prisma.IssueCreateWithoutPrintEditionsInput, Prisma.IssueUncheckedCreateWithoutPrintEditionsInput>
+  where?: Prisma.IssueWhereInput
+}
+
+export type IssueUpdateToOneWithWhereWithoutPrintEditionsInput = {
+  where?: Prisma.IssueWhereInput
+  data: Prisma.XOR<Prisma.IssueUpdateWithoutPrintEditionsInput, Prisma.IssueUncheckedUpdateWithoutPrintEditionsInput>
+}
+
+export type IssueUpdateWithoutPrintEditionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  articles?: Prisma.ArticleUpdateManyWithoutIssueNestedInput
+}
+
+export type IssueUncheckedUpdateWithoutPrintEditionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  articles?: Prisma.ArticleUncheckedUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueCreateWithoutArticlesInput = {
@@ -532,6 +633,7 @@ export type IssueCreateWithoutArticlesInput = {
   publishedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  printEditions?: Prisma.PrintEditionCreateNestedManyWithoutIssueInput
 }
 
 export type IssueUncheckedCreateWithoutArticlesInput = {
@@ -547,6 +649,7 @@ export type IssueUncheckedCreateWithoutArticlesInput = {
   publishedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  printEditions?: Prisma.PrintEditionUncheckedCreateNestedManyWithoutIssueInput
 }
 
 export type IssueCreateOrConnectWithoutArticlesInput = {
@@ -578,6 +681,7 @@ export type IssueUpdateWithoutArticlesInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  printEditions?: Prisma.PrintEditionUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueUncheckedUpdateWithoutArticlesInput = {
@@ -593,6 +697,7 @@ export type IssueUncheckedUpdateWithoutArticlesInput = {
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  printEditions?: Prisma.PrintEditionUncheckedUpdateManyWithoutIssueNestedInput
 }
 
 
@@ -602,10 +707,12 @@ export type IssueUncheckedUpdateWithoutArticlesInput = {
 
 export type IssueCountOutputType = {
   articles: number
+  printEditions: number
 }
 
 export type IssueCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   articles?: boolean | IssueCountOutputTypeCountArticlesArgs
+  printEditions?: boolean | IssueCountOutputTypeCountPrintEditionsArgs
 }
 
 /**
@@ -625,6 +732,13 @@ export type IssueCountOutputTypeCountArticlesArgs<ExtArgs extends runtime.Types.
   where?: Prisma.ArticleWhereInput
 }
 
+/**
+ * IssueCountOutputType without action
+ */
+export type IssueCountOutputTypeCountPrintEditionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PrintEditionWhereInput
+}
+
 
 export type IssueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -640,6 +754,7 @@ export type IssueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   createdAt?: boolean
   updatedAt?: boolean
   articles?: boolean | Prisma.Issue$articlesArgs<ExtArgs>
+  printEditions?: boolean | Prisma.Issue$printEditionsArgs<ExtArgs>
   _count?: boolean | Prisma.IssueCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["issue"]>
 
@@ -691,6 +806,7 @@ export type IssueSelectScalar = {
 export type IssueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleStyled" | "slug" | "description" | "homeBlocks" | "homeVariant" | "isActive" | "sortOrder" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["issue"]>
 export type IssueInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   articles?: boolean | Prisma.Issue$articlesArgs<ExtArgs>
+  printEditions?: boolean | Prisma.Issue$printEditionsArgs<ExtArgs>
   _count?: boolean | Prisma.IssueCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type IssueIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -700,6 +816,7 @@ export type $IssuePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   name: "Issue"
   objects: {
     articles: Prisma.$ArticlePayload<ExtArgs>[]
+    printEditions: Prisma.$PrintEditionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1109,6 +1226,7 @@ readonly fields: IssueFieldRefs;
 export interface Prisma__IssueClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   articles<T extends Prisma.Issue$articlesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Issue$articlesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ArticlePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  printEditions<T extends Prisma.Issue$printEditionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Issue$printEditionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PrintEditionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1564,6 +1682,30 @@ export type Issue$articlesArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.ArticleScalarFieldEnum | Prisma.ArticleScalarFieldEnum[]
+}
+
+/**
+ * Issue.printEditions
+ */
+export type Issue$printEditionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PrintEdition
+   */
+  select?: Prisma.PrintEditionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PrintEdition
+   */
+  omit?: Prisma.PrintEditionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PrintEditionInclude<ExtArgs> | null
+  where?: Prisma.PrintEditionWhereInput
+  orderBy?: Prisma.PrintEditionOrderByWithRelationInput | Prisma.PrintEditionOrderByWithRelationInput[]
+  cursor?: Prisma.PrintEditionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PrintEditionScalarFieldEnum | Prisma.PrintEditionScalarFieldEnum[]
 }
 
 /**

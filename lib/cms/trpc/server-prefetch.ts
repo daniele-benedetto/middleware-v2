@@ -27,6 +27,8 @@ type NavigationMenusOutput = RouterOutputs["navigation"]["listMenus"];
 type NavigationOptionsOutput = RouterOutputs["navigation"]["listOptions"];
 
 type IssuesListOutput = RouterOutputs["issues"]["list"];
+type PrintEditionsListOutput = RouterOutputs["printEditions"]["list"];
+type PrintEditionDetailOutput = RouterOutputs["printEditions"]["getById"];
 type CoursesListOutput = RouterOutputs["courses"]["list"];
 type CategoriesListOutput = RouterOutputs["categories"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
@@ -166,6 +168,16 @@ export async function prefetchLessonFormCourseOptions(): Promise<CoursesListOutp
 export async function prefetchIssueById(id: string): Promise<IssueDetailOutput> {
   const caller = await getTrpcCaller();
   return caller.issues.getById({ id });
+}
+
+export async function prefetchPrintEditions(): Promise<PrintEditionsListOutput> {
+  const caller = await getTrpcCaller();
+  return caller.printEditions.list({});
+}
+
+export async function prefetchPrintEditionById(id: string): Promise<PrintEditionDetailOutput> {
+  const caller = await getTrpcCaller();
+  return caller.printEditions.getById({ id });
 }
 
 export async function prefetchQuestionnaireById(id: string): Promise<QuestionnaireDetailOutput> {

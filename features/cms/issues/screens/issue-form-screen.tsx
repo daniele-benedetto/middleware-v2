@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Eye, Plus, Save, Trash2, X } from "lucide-react";
+import { Calendar as CalendarIcon, Eye, Plus, Printer, Save, Trash2, X } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
 import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
@@ -464,6 +464,11 @@ function IssueFormContent({
     setPreviewOpenCount((count) => count + 1);
   };
 
+  const openPrintPreview = () => {
+    if (!issueId) return;
+    window.open(`/cms/print/${issueId}`, "_blank", "noreferrer");
+  };
+
   useEffect(() => {
     const statusLabel = i18n.cms.preview.issueStatus(isActive, Boolean(publishedAt));
 
@@ -534,6 +539,10 @@ function IssueFormContent({
                 <CmsActionButton variant="outline" onClick={openPreview} disabled={isBusy}>
                   <Eye aria-hidden />
                   {text.quickActions.preview}
+                </CmsActionButton>
+                <CmsActionButton variant="outline" onClick={openPrintPreview} disabled={isBusy}>
+                  <Printer aria-hidden />
+                  {text.quickActions.printPreview}
                 </CmsActionButton>
                 <CmsConfirmDialog
                   triggerLabel={text.quickActions.delete}
