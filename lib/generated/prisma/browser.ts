@@ -48,11 +48,6 @@ export type Verification = Prisma.VerificationModel
  */
 export type Issue = Prisma.IssueModel
 /**
- * Model PrintEdition
- * 
- */
-export type PrintEdition = Prisma.PrintEditionModel
-/**
  * Model Category
  * 
  */

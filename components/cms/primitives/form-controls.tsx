@@ -485,6 +485,7 @@ type CmsCheckboxProps = {
   checked?: boolean;
   disabled?: boolean;
   accent?: boolean;
+  compact?: boolean;
   onChange?: (checked: boolean) => void;
 };
 
@@ -493,6 +494,7 @@ export function CmsCheckbox({
   checked = false,
   disabled = false,
   accent = false,
+  compact = false,
   onChange,
 }: CmsCheckboxProps) {
   const labelColor = disabled
@@ -502,8 +504,11 @@ export function CmsCheckbox({
       : "text-foreground";
 
   const boxClass = cn(
-    "size-5 shrink-0 rounded-[5px] border shadow-none ring-0",
-    "[&_[data-slot=checkbox-indicator]>svg]:size-3!",
+    compact ? "size-4 rounded-[4px]" : "size-5 rounded-[5px]",
+    "shrink-0 border shadow-none ring-0",
+    compact
+      ? "[&_[data-slot=checkbox-indicator]>svg]:size-2.5!"
+      : "[&_[data-slot=checkbox-indicator]>svg]:size-3!",
     disabled
       ? "border-border bg-card-hover! cursor-not-allowed"
       : accent
@@ -515,7 +520,9 @@ export function CmsCheckbox({
   return (
     <label
       className={cn(
-        "inline-flex items-center gap-3 font-ui text-[12px] font-bold uppercase tracking-[var(--tracking-meta)]",
+        compact
+          ? "inline-flex items-center gap-1.5 font-ui text-[9px] font-bold uppercase tracking-[0.06em]"
+          : "inline-flex items-center gap-3 font-ui text-[12px] font-bold uppercase tracking-[var(--tracking-meta)]",
         disabled ? "cursor-not-allowed" : "cursor-pointer",
         labelColor,
       )}

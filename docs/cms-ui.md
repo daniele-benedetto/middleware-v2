@@ -325,14 +325,15 @@ Prima dell'export il sistema deve produrre una lista di problemi verificabili: i
 
 La preview reale espone già una prima distinzione tra errori bloccanti, warning e informazioni. Gli errori impediscono l'approvazione editoriale; i warning richiedono una decisione; le informazioni documentano interventi automatici come le pagine bianche aggiunte per chiudere il fascicolo.
 
-### Print edition CMS flow
+### Print preview CMS flow
 
-- `Edizioni cartacee` è una risorsa CMS separata dall'issue web.
-- La lista `/cms/print` mostra titolo, stato e data di aggiornamento dell'edizione salvata.
-- La preview di un issue resta raggiungibile dall'elenco issue e dalla schermata di modifica.
-- La composizione reale usa il manifesto, il rich text completo e l'ordine dei `homeBlocks`.
-- L'azione `Stampa / PDF` è disponibile solo nella composizione reale e nasconde la chrome di preparazione in stampa.
-- Le mappe e le analisi senza tavola statica definitiva devono restare visibili come warning, non essere sostituite silenziosamente da contenuti inventati.
+- La stampa è una vista dell’issue, non una risorsa CMS separata.
+- Il pulsante `Stampa PDF` vive nella testata della schermata di modifica dell’issue.
+- Le preferenze minime, come la visibilità del numero dell’uscita, vivono negli settings della sezione pagina.
+- La preview usa il rich text completo e l’ordine dei `homeBlocks` dell’issue corrente.
+- La UI della preview cambia in base al tipo di blocco, mantenendo per ora una composizione semplice e leggibile.
+- L’azione `Stampa / PDF` nasconde la chrome CMS e usa la stampa del browser.
+- Mappe e analisi restano sezioni riconoscibili e verranno approfondite in una fase successiva.
 
 La prima implementazione deve usare un issue reale e generare un numero campione statico di 8–12 pagine modello prima di introdurre la dashboard di preparazione. Il prototipo di riferimento deve coprire cover, indice, apertura issue, articolo standard, articolo con immagine, rupture, corso, mappa, analisi e chiusura.
 

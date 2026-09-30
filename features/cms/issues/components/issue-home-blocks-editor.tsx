@@ -22,6 +22,7 @@ import { useState, type HTMLAttributes, type ReactNode } from "react";
 import {
   CmsActionButton,
   CmsBody,
+  CmsCheckbox,
   CmsFormField,
   CmsMetaText,
   CmsSelect,
@@ -44,6 +45,8 @@ import { cn } from "@/lib/utils";
 import type {
   IssueHomeArticleBlock,
   IssueHomeBlock,
+  IssueHomeArticlePrintSettings,
+  IssueHomeBlockPrintSettings,
   IssueHomeBlocks,
 } from "@/lib/server/modules/issues/schema";
 
@@ -82,6 +85,10 @@ type IssueHomeBlocksEditorText = {
   removeBlock: string;
   selectedArticleOrder: string;
   sectionPagination: string;
+  showIssueNumberInPrint: string;
+  printShowInIssueIntro: string;
+  printStopWithSiteCta: string;
+  printExcludeFromPrint: string;
   type: string;
   typeBody: string;
   typeClosing: string;
@@ -115,6 +122,8 @@ type IssueHomeBlocksEditorProps = {
   disabled?: boolean;
   text: IssueHomeBlocksEditorText;
   onChange: (value: IssueHomeBlocks) => void;
+  showIssueNumberInPrint: boolean;
+  onShowIssueNumberInPrintChange: (value: boolean) => void;
 };
 
 const blockTypeOptions = [
@@ -166,6 +175,8 @@ export function IssueHomeBlocksEditor({
   disabled,
   text,
   onChange,
+  showIssueNumberInPrint,
+  onShowIssueNumberInPrintChange,
 }: IssueHomeBlocksEditorProps) {
   const sensors = useSortableSensors();
   const [activeDrag, setActiveDrag] = useState<DraggedArticleData | DraggedBlockData | null>(null);
@@ -336,6 +347,14 @@ export function IssueHomeBlocksEditor({
     targetBlockId: string;
     beforeArticleId?: string;
   }) => {
+    const sourceBlock = value.find(
+      (rawBlock) => isArticleHomeBlock(rawBlock) && rawBlock.articleIds.includes(articleId),
+    );
+    const movedPrintSettings =
+      sourceBlock && isArticleHomeBlock(sourceBlock)
+        ? sourceBlock.printSettings?.[articleId]
+        : undefined;
+
     onChange(
       value.map((rawBlock) => {
         if (!isArticleHomeBlock(rawBlock)) return rawBlock;
@@ -362,7 +381,13 @@ export function IssueHomeBlocksEditor({
               ]
             : [...currentArticleIds, articleId];
 
-        return normalizeHomeBlock({ ...block, articleIds });
+        return normalizeHomeBlock({
+          ...block,
+          articleIds,
+          printSettings: movedPrintSettings
+            ? { ...block.printSettings, [articleId]: movedPrintSettings }
+            : block.printSettings,
+        });
       }),
     );
   };
@@ -374,6 +399,11 @@ export function IssueHomeBlocksEditor({
           <CmsMetaText variant="category">{text.sectionPagination}</CmsMetaText>
         </div>
         <div className="flex flex-wrap gap-2">
+          <CmsCheckbox
+            label={text.showIssueNumberInPrint}
+            checked={showIssueNumberInPrint}
+            onChange={onShowIssueNumberInPrintChange}
+          />
           <CmsActionButton
             type="button"
             size="xs"
@@ -658,6 +688,17 @@ export function IssueHomeBlocksEditor({
                                 />
                               </CmsFormField>
                             ) : null}
+
+                            {!isArticleBlock ? (
+                              <PrintBlockSettings
+                                settings={block.printSettings}
+                                disabled={disabled}
+                                text={text}
+                                onChange={(printSettings) =>
+                                  updateBlock(index, { ...block, printSettings })
+                                }
+                              />
+                            ) : null}
                           </div>
 
                           {isArticleBlock ? (
@@ -670,6 +711,7 @@ export function IssueHomeBlocksEditor({
                                   blockId={block.id}
                                   blockType={block.type}
                                   selectedArticles={selectedArticles}
+                                  printSettings={block.printSettings}
                                   disabled={disabled}
                                   text={text}
                                   onMoveUp={(articleIndex) =>
@@ -677,6 +719,15 @@ export function IssueHomeBlocksEditor({
                                   }
                                   onMoveDown={(articleIndex) =>
                                     updateBlock(index, moveArticle(block, articleIndex, 1))
+                                  }
+                                  onPrintSettingsChange={(articleId, settings) =>
+                                    updateBlock(index, {
+                                      ...block,
+                                      printSettings: {
+                                        ...block.printSettings,
+                                        [articleId]: settings,
+                                      },
+                                    })
                                   }
                                 />
                               </div>
@@ -720,6 +771,7 @@ function ArticleDragCard({
   index,
   dragHandle,
   actions,
+  footer,
   isDragging,
   overlay,
 }: {
@@ -727,35 +779,39 @@ function ArticleDragCard({
   index?: number;
   dragHandle?: ReactNode;
   actions?: ReactNode;
+  footer?: ReactNode;
   isDragging?: boolean;
   overlay?: boolean;
 }) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-3 border border-border bg-card px-3 py-2",
+        "border border-border bg-card px-3 py-2",
         overlay && "w-80 border-foreground shadow-(--interactive-rail-shadow)",
         isDragging && !overlay && "opacity-40",
       )}
     >
-      <span className="min-w-0 flex-1">
-        <span className="flex flex-wrap items-center gap-2">
-          <span className="block min-w-0 font-ui text-[12px] font-bold text-foreground">
-            {index === undefined ? null : `${index + 1}. `}
-            {article.title}
+      <div className="flex items-center justify-between gap-3">
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="block min-w-0 font-ui text-[12px] font-bold text-foreground">
+              {index === undefined ? null : `${index + 1}. `}
+              {article.title}
+            </span>
+            <ArticleCategoryBadge article={article} />
           </span>
-          <ArticleCategoryBadge article={article} />
+          <span className="mt-1 block font-ui text-[10px] font-bold tracking-[0.08em] text-muted-foreground uppercase">
+            {article.status}
+          </span>
         </span>
-        <span className="mt-1 block font-ui text-[10px] font-bold tracking-[0.08em] text-muted-foreground uppercase">
-          {article.status}
-        </span>
-      </span>
-      {(actions ?? dragHandle) ? (
-        <span className="flex shrink-0 gap-1">
-          {dragHandle}
-          {actions}
-        </span>
-      ) : null}
+        {(actions ?? dragHandle) ? (
+          <span className="flex shrink-0 gap-1">
+            {dragHandle}
+            {actions}
+          </span>
+        ) : null}
+      </div>
+      {footer}
     </div>
   );
 }
@@ -794,22 +850,76 @@ function SortableBlockSection({
   );
 }
 
+function PrintBlockSettings({
+  settings,
+  disabled,
+  text,
+  onChange,
+}: {
+  settings?: IssueHomeBlockPrintSettings;
+  disabled?: boolean;
+  text: IssueHomeBlocksEditorText;
+  onChange: (settings: IssueHomeBlockPrintSettings) => void;
+}) {
+  const resolvedSettings = {
+    showInIssueIntro: settings?.showInIssueIntro ?? false,
+    stopWithSiteCta: settings?.stopWithSiteCta ?? false,
+    excludeFromPrint: settings?.excludeFromPrint ?? false,
+  };
+
+  return (
+    <div className="grid gap-2 border-t border-border pt-2 sm:grid-cols-3">
+      <CmsCheckbox
+        label={text.printShowInIssueIntro}
+        checked={resolvedSettings.showInIssueIntro}
+        disabled={disabled}
+        compact
+        onChange={(showInIssueIntro) => onChange({ ...resolvedSettings, showInIssueIntro })}
+      />
+      <CmsCheckbox
+        label={text.printStopWithSiteCta}
+        checked={resolvedSettings.stopWithSiteCta}
+        disabled={disabled || resolvedSettings.excludeFromPrint}
+        compact
+        onChange={(stopWithSiteCta) => onChange({ ...resolvedSettings, stopWithSiteCta })}
+      />
+      <CmsCheckbox
+        label={text.printExcludeFromPrint}
+        checked={resolvedSettings.excludeFromPrint}
+        disabled={disabled}
+        compact
+        onChange={(excludeFromPrint) =>
+          onChange({
+            ...resolvedSettings,
+            excludeFromPrint,
+            stopWithSiteCta: excludeFromPrint ? false : resolvedSettings.stopWithSiteCta,
+          })
+        }
+      />
+    </div>
+  );
+}
+
 function SelectedArticlesDropZone({
   blockId,
   blockType,
   selectedArticles,
+  printSettings,
   disabled,
   text,
   onMoveUp,
   onMoveDown,
+  onPrintSettingsChange,
 }: {
   blockId: string;
   blockType: IssueHomeArticleBlock["type"];
   selectedArticles: IssueHomeBlockArticle[];
+  printSettings: IssueHomeArticleBlock["printSettings"];
   disabled?: boolean;
   text: IssueHomeBlocksEditorText;
   onMoveUp: (articleIndex: number) => void;
   onMoveDown: (articleIndex: number) => void;
+  onPrintSettingsChange: (articleId: string, settings: IssueHomeArticlePrintSettings) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `selected-drop-${blockId}`,
@@ -849,15 +959,18 @@ function SelectedArticlesDropZone({
             <SortableSelectedArticle
               key={article.id}
               article={article}
+              printSettings={printSettings?.[article.id]}
               blockId={blockId}
               index={articleIndex}
               disabled={disabled}
+              text={text}
               moveUpLabel={text.moveUp}
               moveDownLabel={text.moveDown}
               canMoveUp={articleIndex > 0}
               canMoveDown={articleIndex < selectedArticles.length - 1}
               onMoveUp={() => onMoveUp(articleIndex)}
               onMoveDown={() => onMoveDown(articleIndex)}
+              onPrintSettingsChange={(settings) => onPrintSettingsChange(article.id, settings)}
             />
           ))
         )}
@@ -952,6 +1065,8 @@ function DraggableAvailableArticle({
 
 function SortableSelectedArticle({
   article,
+  printSettings,
+  text,
   blockId,
   index,
   disabled,
@@ -961,8 +1076,11 @@ function SortableSelectedArticle({
   canMoveDown,
   onMoveUp,
   onMoveDown,
+  onPrintSettingsChange,
 }: {
   article: IssueHomeBlockArticle;
+  printSettings?: IssueHomeArticlePrintSettings;
+  text: IssueHomeBlocksEditorText;
   blockId: string;
   index: number;
   disabled?: boolean;
@@ -972,6 +1090,7 @@ function SortableSelectedArticle({
   canMoveDown: boolean;
   onMoveUp: () => void;
   onMoveDown: () => void;
+  onPrintSettingsChange: (settings: IssueHomeArticlePrintSettings) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `block-article:${blockId}:${article.id}`,
@@ -983,6 +1102,11 @@ function SortableSelectedArticle({
     disabled,
   });
   const articleTransform = transform ? { ...transform, x: 0, scaleX: 1, scaleY: 1 } : null;
+  const resolvedPrintSettings = {
+    showInIssueIntro: printSettings?.showInIssueIntro ?? false,
+    stopWithSiteCta: printSettings?.stopWithSiteCta ?? false,
+    excludeFromPrint: printSettings?.excludeFromPrint ?? false,
+  };
 
   return (
     <div
@@ -1030,6 +1154,41 @@ function SortableSelectedArticle({
               <ArrowDown aria-hidden />
             </CmsActionButton>
           </>
+        }
+        footer={
+          <div className="mt-2 grid gap-2 border-t border-border pt-2 sm:grid-cols-3">
+            <CmsCheckbox
+              label={text.printShowInIssueIntro}
+              checked={resolvedPrintSettings.showInIssueIntro}
+              disabled={disabled}
+              compact
+              onChange={(showInIssueIntro) =>
+                onPrintSettingsChange({ ...resolvedPrintSettings, showInIssueIntro })
+              }
+            />
+            <CmsCheckbox
+              label={text.printStopWithSiteCta}
+              checked={resolvedPrintSettings.stopWithSiteCta}
+              disabled={disabled || resolvedPrintSettings.excludeFromPrint}
+              compact
+              onChange={(stopWithSiteCta) =>
+                onPrintSettingsChange({ ...resolvedPrintSettings, stopWithSiteCta })
+              }
+            />
+            <CmsCheckbox
+              label={text.printExcludeFromPrint}
+              checked={resolvedPrintSettings.excludeFromPrint}
+              disabled={disabled}
+              compact
+              onChange={(excludeFromPrint) =>
+                onPrintSettingsChange({
+                  ...resolvedPrintSettings,
+                  excludeFromPrint,
+                  stopWithSiteCta: excludeFromPrint ? false : resolvedPrintSettings.stopWithSiteCta,
+                })
+              }
+            />
+          </div>
         }
       />
     </div>

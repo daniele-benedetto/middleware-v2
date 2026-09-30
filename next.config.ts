@@ -36,6 +36,12 @@ const contentSecurityPolicy = [
   ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
 
+// The authenticated print preview is embedded by the issue editor on this origin.
+const printPreviewContentSecurityPolicy = contentSecurityPolicy.replace(
+  "frame-ancestors 'none'",
+  "frame-ancestors 'self'",
+);
+
 const securityHeaders = [
   {
     key: "Content-Security-Policy",
@@ -177,6 +183,10 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+      {
+        source: "/cms/print/:id",
+        headers: [{ key: "Content-Security-Policy", value: printPreviewContentSecurityPolicy }],
       },
     ];
   },

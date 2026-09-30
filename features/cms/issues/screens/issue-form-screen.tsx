@@ -22,6 +22,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { IssueHomeBlocksEditor } from "@/features/cms/issues/components/issue-home-blocks-editor";
+import { IssuePrintPreviewDialog } from "@/features/cms/issues/components/issue-print-preview-dialog";
 import {
   useIssueById,
   useIssueCreate,
@@ -30,6 +31,8 @@ import {
   type IssueDetail,
   type UpdateIssueInput,
 } from "@/features/cms/issues/hooks/use-issue-crud";
+import { CmsMediaImage } from "@/features/cms/media/components/media-image";
+import { CmsMediaPickerDialog } from "@/features/cms/media/components/media-picker-dialog";
 import { publishLivePreviewMessage } from "@/features/cms/preview/use-live-preview";
 import {
   mapCrudDomainError,
@@ -40,6 +43,7 @@ import { lessonCourseOptionsInput } from "@/lib/cms/course-options";
 import { createLivePreviewSessionId, toIssueLivePreviewSnapshot } from "@/lib/cms/preview/live";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
+import { extractCmsMediaPathname } from "@/lib/media/blob";
 import { createIssueInputSchema, updateIssueInputSchema } from "@/lib/server/modules/issues/schema";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
@@ -259,11 +263,21 @@ function IssueFormContent({
     mode === "edit" && issueId ? issueId : createLivePreviewSessionId(),
   );
   const [previewOpenCount, setPreviewOpenCount] = useState(0);
+  const [printPreviewOpen, setPrintPreviewOpen] = useState(false);
   const handledPreviewOpenCount = useRef(0);
   const title = getStyledTitlePlainText(titleStyled);
   const [description, setDescription] = useState<unknown>(issue?.description ?? emptyContentDoc);
   const [homeBlocks, setHomeBlocks] = useState<IssueHomeBlocks>(() => issue?.homeBlocks ?? []);
   const [homeVariant, setHomeVariant] = useState<IssueHomeVariant>(issue?.homeVariant ?? "black");
+  const [showIssueNumber, setShowIssueNumber] = useState(
+    issue?.printSettings.showIssueNumber ?? true,
+  );
+  const [coverImageUrl, setCoverImageUrl] = useState(issue?.printSettings.coverImageUrl ?? null);
+  const [coverImageAlt, setCoverImageAlt] = useState(issue?.printSettings.coverImageAlt ?? "");
+  const [coverImageMode, setCoverImageMode] = useState<"contained" | "bleed">(
+    issue?.printSettings.coverImageMode ?? "contained",
+  );
+  const [coverImagePickerOpen, setCoverImagePickerOpen] = useState(false);
   const [isActive, setIsActive] = useState(issue?.isActive ?? true);
   const [publishedAt, setPublishedAt] = useState<Date | null>(
     issue?.publishedAt ? new Date(issue.publishedAt) : null,
@@ -410,6 +424,7 @@ function IssueFormContent({
             slug: slugPayload,
             description,
             homeBlocks: homeBlocksPayload,
+            printSettings: { showIssueNumber, coverImageUrl, coverImageAlt, coverImageMode },
             homeVariant,
             isActive,
             publishedAt: publishedAt ?? undefined,
@@ -434,6 +449,7 @@ function IssueFormContent({
           slug: slugPayload,
           description,
           homeBlocks: homeBlocksPayload,
+          printSettings: { showIssueNumber, coverImageUrl, coverImageAlt, coverImageMode },
           homeVariant,
           isActive,
           publishedAt,
@@ -466,7 +482,7 @@ function IssueFormContent({
 
   const openPrintPreview = () => {
     if (!issueId) return;
-    window.open(`/cms/print/${issueId}`, "_blank", "noreferrer");
+    setPrintPreviewOpen(true);
   };
 
   useEffect(() => {
@@ -658,10 +674,71 @@ function IssueFormContent({
               questionnaireAnalysisAvailability={questionnaireAnalysisAvailability}
               previewIssues={previewIssues}
               disabled={isBusy}
+              showIssueNumberInPrint={showIssueNumber}
+              onShowIssueNumberInPrintChange={setShowIssueNumber}
               text={issueFormText.homeBlocksEditor}
               onChange={setHomeBlocks}
             />
           </CmsFormField>
+          <section className="space-y-3 border-t border-foreground pt-4">
+            <div className="font-ui text-[10px] font-bold uppercase tracking-[0.08em]">
+              {issueFormText.printCoverImage}
+            </div>
+            {coverImageUrl && extractCmsMediaPathname(coverImageUrl) ? (
+              <div className="relative aspect-[16/9] max-w-md overflow-hidden border border-foreground bg-card">
+                <CmsMediaImage
+                  pathname={extractCmsMediaPathname(coverImageUrl)!}
+                  alt={coverImageAlt || issueFormText.printCoverImage}
+                  sizes="(min-width: 1024px) 450px, 90vw"
+                  className="object-cover grayscale"
+                />
+              </div>
+            ) : null}
+            <div className="flex flex-wrap gap-2">
+              <CmsActionButton
+                type="button"
+                variant="outline"
+                disabled={isBusy}
+                onClick={() => setCoverImagePickerOpen(true)}
+              >
+                {coverImageUrl ? issueFormText.printCoverReplace : issueFormText.printCoverSelect}
+              </CmsActionButton>
+              {coverImageUrl ? (
+                <CmsActionButton
+                  type="button"
+                  variant="ghost"
+                  disabled={isBusy}
+                  onClick={() => {
+                    setCoverImageUrl(null);
+                    setCoverImageAlt("");
+                  }}
+                >
+                  {issueFormText.printCoverRemove}
+                </CmsActionButton>
+              ) : null}
+            </div>
+            {coverImageUrl ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <CmsFormField label={issueFormText.printCoverAlt} htmlFor="issue-print-cover-alt">
+                  <CmsTextInput
+                    id="issue-print-cover-alt"
+                    value={coverImageAlt}
+                    onChange={(event) => setCoverImageAlt(event.target.value)}
+                  />
+                </CmsFormField>
+                <CmsFormField label={issueFormText.printCoverMode} htmlFor="issue-print-cover-mode">
+                  <CmsSelect
+                    value={coverImageMode}
+                    onValueChange={(value) => setCoverImageMode(value as "contained" | "bleed")}
+                    options={[
+                      { value: "contained", label: issueFormText.printCoverContained },
+                      { value: "bleed", label: issueFormText.printCoverBleed },
+                    ]}
+                  />
+                </CmsFormField>
+              </div>
+            ) : null}
+          </section>
         </div>
 
         <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-6 overflow-y-auto pb-6 lg:border-l lg:border-foreground lg:pl-6">
@@ -698,6 +775,23 @@ function IssueFormContent({
           </section>
         </div>
       </div>
+      {mode === "edit" && issueId ? (
+        <IssuePrintPreviewDialog
+          issueId={issueId}
+          open={printPreviewOpen}
+          onOpenChange={setPrintPreviewOpen}
+        />
+      ) : null}
+      <CmsMediaPickerDialog
+        open={coverImagePickerOpen}
+        onOpenChange={setCoverImagePickerOpen}
+        title={issueFormText.printCoverImage}
+        description={issueFormText.printCoverPickerDescription}
+        selectActionLabel={issueFormText.printCoverSelect}
+        allowedKinds={["image"]}
+        selectionMode="select-inline"
+        onSelectUrl={setCoverImageUrl}
+      />
     </form>
   );
 }

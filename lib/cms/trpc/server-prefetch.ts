@@ -27,8 +27,6 @@ type NavigationMenusOutput = RouterOutputs["navigation"]["listMenus"];
 type NavigationOptionsOutput = RouterOutputs["navigation"]["listOptions"];
 
 type IssuesListOutput = RouterOutputs["issues"]["list"];
-type PrintEditionsListOutput = RouterOutputs["printEditions"]["list"];
-type PrintEditionDetailOutput = RouterOutputs["printEditions"]["getById"];
 type CoursesListOutput = RouterOutputs["courses"]["list"];
 type CategoriesListOutput = RouterOutputs["categories"]["list"];
 type ArticlesListOutput = RouterOutputs["articles"]["list"];
@@ -170,14 +168,58 @@ export async function prefetchIssueById(id: string): Promise<IssueDetailOutput> 
   return caller.issues.getById({ id });
 }
 
-export async function prefetchPrintEditions(): Promise<PrintEditionsListOutput> {
+export async function prefetchIssuePrintData(id: string) {
   const caller = await getTrpcCaller();
-  return caller.printEditions.list({});
-}
+  const issue = await caller.issues.getById({ id });
+  const blocks = issue.homeBlocks ?? [];
+  const specialRequests: Array<{ id: string; load: () => Promise<{ title: string }> }> = [];
+  for (const block of blocks) {
+    if (block.type === "course" && block.courseId) {
+      const resourceId = block.courseId;
+      specialRequests.push({
+        id: resourceId,
+        load: () => caller.courses.getById({ id: resourceId }),
+      });
+    } else if (block.type === "map" && block.mapId) {
+      const resourceId = block.mapId;
+      specialRequests.push({ id: resourceId, load: () => caller.maps.getById({ id: resourceId }) });
+    } else if (block.type === "questionnaireAnalysis" && block.questionnaireId) {
+      const resourceId = block.questionnaireId;
+      specialRequests.push({
+        id: resourceId,
+        load: () => caller.questionnaires.getById({ id: resourceId }),
+      });
+    } else if (block.type === "preview" && block.previewIssueId) {
+      const resourceId = block.previewIssueId;
+      specialRequests.push({
+        id: resourceId,
+        load: () => caller.issues.getById({ id: resourceId }),
+      });
+    }
+  }
+  const [articles, resources] = await Promise.all([
+    Promise.all(issue.articles.map((article) => caller.articles.getById({ id: article.id }))),
+    Promise.all(
+      specialRequests.map(async ({ id: resourceId, load }) => {
+        try {
+          const resource = await load();
+          return { id: resourceId, title: resource.title };
+        } catch {
+          return null;
+        }
+      }),
+    ),
+  ]);
 
-export async function prefetchPrintEditionById(id: string): Promise<PrintEditionDetailOutput> {
-  const caller = await getTrpcCaller();
-  return caller.printEditions.getById({ id });
+  return {
+    issue,
+    articles,
+    resourceTitles: Object.fromEntries(
+      resources
+        .filter((item): item is NonNullable<typeof item> => item !== null)
+        .map((item) => [item.id, item.title]),
+    ),
+  };
 }
 
 export async function prefetchQuestionnaireById(id: string): Promise<QuestionnaireDetailOutput> {

@@ -16,6 +16,7 @@ export type CreateIssuePersistInput = {
   slug: string;
   description?: unknown;
   homeBlocks?: unknown;
+  printSettings?: unknown;
   homeVariant?: string;
   isActive?: boolean;
   publishedAt?: Date | null;
@@ -60,6 +61,7 @@ export const issuesRepository = {
         slug: true,
         description: true,
         homeBlocks: true,
+        printSettings: true,
         homeVariant: true,
         isActive: true,
         sortOrder: true,
@@ -88,6 +90,7 @@ export const issuesRepository = {
         slug: true,
         description: true,
         homeBlocks: true,
+        printSettings: true,
         homeVariant: true,
         isActive: true,
         sortOrder: true,
@@ -126,6 +129,7 @@ export const issuesRepository = {
         slug: true,
         description: true,
         homeBlocks: true,
+        printSettings: true,
         homeVariant: true,
         isActive: true,
         sortOrder: true,
@@ -179,6 +183,10 @@ export const issuesRepository = {
         input.description === undefined ? undefined : (input.description as Prisma.InputJsonValue),
       homeBlocks:
         input.homeBlocks === undefined ? undefined : (input.homeBlocks as Prisma.InputJsonValue),
+      printSettings:
+        input.printSettings === undefined
+          ? undefined
+          : (input.printSettings as Prisma.InputJsonValue),
       homeVariant: input.homeVariant,
       isActive: input.isActive,
       publishedAt: input.publishedAt ?? null,
@@ -208,6 +216,10 @@ export const issuesRepository = {
           : input.homeBlocks === null
             ? Prisma.JsonNull
             : (input.homeBlocks as Prisma.InputJsonValue),
+      printSettings:
+        input.printSettings === undefined
+          ? undefined
+          : (input.printSettings as Prisma.InputJsonValue),
       homeVariant: input.homeVariant,
       isActive: input.isActive,
       publishedAt: input.publishedAt,
@@ -240,6 +252,10 @@ export const issuesRepository = {
           : input.homeBlocks === null
             ? Prisma.JsonNull
             : (input.homeBlocks as Prisma.InputJsonValue),
+      printSettings:
+        input.printSettings === undefined
+          ? undefined
+          : (input.printSettings as Prisma.InputJsonValue),
       homeVariant: input.homeVariant,
       isActive: input.isActive,
       publishedAt: input.publishedAt,
@@ -282,6 +298,7 @@ export const issuesRepository = {
           slug: true,
           description: true,
           homeBlocks: true,
+          printSettings: true,
           homeVariant: true,
           isActive: true,
           sortOrder: true,

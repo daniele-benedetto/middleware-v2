@@ -4,11 +4,6 @@ export const cmsCrudRoutes = {
     edit: (id: string) => `/cms/issues/${id}/edit`,
     print: (id: string) => `/cms/print/${id}`,
   },
-  printEditions: {
-    create: "/cms/print/new",
-    edit: (id: string) => `/cms/print/editions/${id}/edit`,
-    preview: (id: string) => `/cms/print/editions/${id}`,
-  },
   categories: {
     create: "/cms/categories/new",
     edit: (id: string) => `/cms/categories/${id}/edit`,

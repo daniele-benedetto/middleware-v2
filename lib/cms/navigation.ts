@@ -16,7 +16,6 @@ export const cmsNavigation: CmsNavSection[] = [
     label: i18n.cms.navigation.issues,
     items: [
       { label: i18n.cms.navigation.issues, href: "/cms/issues" },
-      { label: i18n.cms.navigation.printEditions, href: "/cms/print" },
       { label: i18n.cms.navigation.articles, href: "/cms/articles" },
       { label: i18n.cms.navigation.categories, href: "/cms/categories" },
       { label: i18n.cms.navigation.authors, href: "/cms/authors" },

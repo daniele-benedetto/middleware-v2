@@ -7,7 +7,11 @@ import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { ApiError } from "@/lib/server/http/api-error";
 import { issuesRepository } from "@/lib/server/modules/issues/repository";
-import { issueHomeBlocksSchema, issueHomeVariantSchema } from "@/lib/server/modules/issues/schema";
+import {
+  issueHomeBlocksSchema,
+  issueHomeVariantSchema,
+  issuePrintSettingsSchema,
+} from "@/lib/server/modules/issues/schema";
 import { publicIssuesService } from "@/lib/server/modules/issues/service/public";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
@@ -31,6 +35,7 @@ type IssueRecord = {
   slug: string;
   description: unknown;
   homeBlocks: unknown;
+  printSettings: unknown;
   homeVariant?: string | null;
   isActive: boolean;
   sortOrder: number;
@@ -93,6 +98,7 @@ const toIssueDto = (issue: IssueRecord): IssueDto => {
     slug: issue.slug,
     description: issue.description ?? null,
     homeBlocks: normalizeIssueHomeBlocks(issue.homeBlocks),
+    printSettings: issuePrintSettingsSchema.parse(issue.printSettings ?? {}),
     homeVariant: issueHomeVariantSchema.parse(issue.homeVariant ?? "black"),
     isActive: issue.isActive,
     sortOrder: issue.sortOrder,
@@ -233,6 +239,7 @@ export const issuesService = {
           slug: candidateSlug,
           description: input.description,
           homeBlocks: input.homeBlocks ?? null,
+          printSettings: input.printSettings ?? issuePrintSettingsSchema.parse({}),
           homeVariant: input.homeVariant,
           isActive: input.isActive,
           publishedAt: input.publishedAt ?? null,

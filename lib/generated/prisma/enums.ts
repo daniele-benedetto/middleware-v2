@@ -54,16 +54,6 @@ export const QuestionnaireStatus = {
 export type QuestionnaireStatus = (typeof QuestionnaireStatus)[keyof typeof QuestionnaireStatus]
 
 
-export const PrintEditionStatus = {
-  DRAFT: 'DRAFT',
-  IN_REVIEW: 'IN_REVIEW',
-  APPROVED: 'APPROVED',
-  EXPORTED: 'EXPORTED'
-} as const
-
-export type PrintEditionStatus = (typeof PrintEditionStatus)[keyof typeof PrintEditionStatus]
-
-
 export const AuditLogOutcome = {
   SUCCESS: 'SUCCESS',
   FAILURE: 'FAILURE'

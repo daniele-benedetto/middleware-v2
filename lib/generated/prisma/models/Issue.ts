@@ -65,6 +65,7 @@ export type IssueCountAggregateOutputType = {
   slug: number
   description: number
   homeBlocks: number
+  printSettings: number
   homeVariant: number
   isActive: number
   sortOrder: number
@@ -114,6 +115,7 @@ export type IssueCountAggregateInputType = {
   slug?: true
   description?: true
   homeBlocks?: true
+  printSettings?: true
   homeVariant?: true
   isActive?: true
   sortOrder?: true
@@ -216,6 +218,7 @@ export type IssueGroupByOutputType = {
   slug: string
   description: runtime.JsonValue | null
   homeBlocks: runtime.JsonValue | null
+  printSettings: runtime.JsonValue | null
   homeVariant: string
   isActive: boolean
   sortOrder: number
@@ -254,6 +257,7 @@ export type IssueWhereInput = {
   slug?: Prisma.StringFilter<"Issue"> | string
   description?: Prisma.JsonNullableFilter<"Issue">
   homeBlocks?: Prisma.JsonNullableFilter<"Issue">
+  printSettings?: Prisma.JsonNullableFilter<"Issue">
   homeVariant?: Prisma.StringFilter<"Issue"> | string
   isActive?: Prisma.BoolFilter<"Issue"> | boolean
   sortOrder?: Prisma.IntFilter<"Issue"> | number
@@ -261,7 +265,6 @@ export type IssueWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Issue"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Issue"> | Date | string
   articles?: Prisma.ArticleListRelationFilter
-  printEditions?: Prisma.PrintEditionListRelationFilter
 }
 
 export type IssueOrderByWithRelationInput = {
@@ -271,6 +274,7 @@ export type IssueOrderByWithRelationInput = {
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   homeBlocks?: Prisma.SortOrderInput | Prisma.SortOrder
+  printSettings?: Prisma.SortOrderInput | Prisma.SortOrder
   homeVariant?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -278,7 +282,6 @@ export type IssueOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   articles?: Prisma.ArticleOrderByRelationAggregateInput
-  printEditions?: Prisma.PrintEditionOrderByRelationAggregateInput
 }
 
 export type IssueWhereUniqueInput = Prisma.AtLeast<{
@@ -291,6 +294,7 @@ export type IssueWhereUniqueInput = Prisma.AtLeast<{
   titleStyled?: Prisma.JsonNullableFilter<"Issue">
   description?: Prisma.JsonNullableFilter<"Issue">
   homeBlocks?: Prisma.JsonNullableFilter<"Issue">
+  printSettings?: Prisma.JsonNullableFilter<"Issue">
   homeVariant?: Prisma.StringFilter<"Issue"> | string
   isActive?: Prisma.BoolFilter<"Issue"> | boolean
   sortOrder?: Prisma.IntFilter<"Issue"> | number
@@ -298,7 +302,6 @@ export type IssueWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Issue"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Issue"> | Date | string
   articles?: Prisma.ArticleListRelationFilter
-  printEditions?: Prisma.PrintEditionListRelationFilter
 }, "id" | "slug">
 
 export type IssueOrderByWithAggregationInput = {
@@ -308,6 +311,7 @@ export type IssueOrderByWithAggregationInput = {
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   homeBlocks?: Prisma.SortOrderInput | Prisma.SortOrder
+  printSettings?: Prisma.SortOrderInput | Prisma.SortOrder
   homeVariant?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -331,6 +335,7 @@ export type IssueScalarWhereWithAggregatesInput = {
   slug?: Prisma.StringWithAggregatesFilter<"Issue"> | string
   description?: Prisma.JsonNullableWithAggregatesFilter<"Issue">
   homeBlocks?: Prisma.JsonNullableWithAggregatesFilter<"Issue">
+  printSettings?: Prisma.JsonNullableWithAggregatesFilter<"Issue">
   homeVariant?: Prisma.StringWithAggregatesFilter<"Issue"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"Issue"> | boolean
   sortOrder?: Prisma.IntWithAggregatesFilter<"Issue"> | number
@@ -346,6 +351,7 @@ export type IssueCreateInput = {
   slug: string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  printSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeVariant?: string
   isActive?: boolean
   sortOrder?: number
@@ -353,7 +359,6 @@ export type IssueCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   articles?: Prisma.ArticleCreateNestedManyWithoutIssueInput
-  printEditions?: Prisma.PrintEditionCreateNestedManyWithoutIssueInput
 }
 
 export type IssueUncheckedCreateInput = {
@@ -363,6 +368,7 @@ export type IssueUncheckedCreateInput = {
   slug: string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  printSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeVariant?: string
   isActive?: boolean
   sortOrder?: number
@@ -370,7 +376,6 @@ export type IssueUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   articles?: Prisma.ArticleUncheckedCreateNestedManyWithoutIssueInput
-  printEditions?: Prisma.PrintEditionUncheckedCreateNestedManyWithoutIssueInput
 }
 
 export type IssueUpdateInput = {
@@ -380,6 +385,7 @@ export type IssueUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  printSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -387,7 +393,6 @@ export type IssueUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   articles?: Prisma.ArticleUpdateManyWithoutIssueNestedInput
-  printEditions?: Prisma.PrintEditionUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueUncheckedUpdateInput = {
@@ -397,6 +402,7 @@ export type IssueUncheckedUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  printSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -404,7 +410,6 @@ export type IssueUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   articles?: Prisma.ArticleUncheckedUpdateManyWithoutIssueNestedInput
-  printEditions?: Prisma.PrintEditionUncheckedUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueCreateManyInput = {
@@ -414,6 +419,7 @@ export type IssueCreateManyInput = {
   slug: string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  printSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeVariant?: string
   isActive?: boolean
   sortOrder?: number
@@ -429,6 +435,7 @@ export type IssueUpdateManyMutationInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  printSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -444,6 +451,7 @@ export type IssueUncheckedUpdateManyInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  printSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -459,6 +467,7 @@ export type IssueCountOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   description?: Prisma.SortOrder
   homeBlocks?: Prisma.SortOrder
+  printSettings?: Prisma.SortOrder
   homeVariant?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -512,20 +521,6 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type IssueCreateNestedOneWithoutPrintEditionsInput = {
-  create?: Prisma.XOR<Prisma.IssueCreateWithoutPrintEditionsInput, Prisma.IssueUncheckedCreateWithoutPrintEditionsInput>
-  connectOrCreate?: Prisma.IssueCreateOrConnectWithoutPrintEditionsInput
-  connect?: Prisma.IssueWhereUniqueInput
-}
-
-export type IssueUpdateOneRequiredWithoutPrintEditionsNestedInput = {
-  create?: Prisma.XOR<Prisma.IssueCreateWithoutPrintEditionsInput, Prisma.IssueUncheckedCreateWithoutPrintEditionsInput>
-  connectOrCreate?: Prisma.IssueCreateOrConnectWithoutPrintEditionsInput
-  upsert?: Prisma.IssueUpsertWithoutPrintEditionsInput
-  connect?: Prisma.IssueWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.IssueUpdateToOneWithWhereWithoutPrintEditionsInput, Prisma.IssueUpdateWithoutPrintEditionsInput>, Prisma.IssueUncheckedUpdateWithoutPrintEditionsInput>
-}
-
 export type IssueCreateNestedOneWithoutArticlesInput = {
   create?: Prisma.XOR<Prisma.IssueCreateWithoutArticlesInput, Prisma.IssueUncheckedCreateWithoutArticlesInput>
   connectOrCreate?: Prisma.IssueCreateOrConnectWithoutArticlesInput
@@ -540,86 +535,6 @@ export type IssueUpdateOneRequiredWithoutArticlesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.IssueUpdateToOneWithWhereWithoutArticlesInput, Prisma.IssueUpdateWithoutArticlesInput>, Prisma.IssueUncheckedUpdateWithoutArticlesInput>
 }
 
-export type IssueCreateWithoutPrintEditionsInput = {
-  id?: string
-  title: string
-  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  slug: string
-  description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  homeVariant?: string
-  isActive?: boolean
-  sortOrder?: number
-  publishedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  articles?: Prisma.ArticleCreateNestedManyWithoutIssueInput
-}
-
-export type IssueUncheckedCreateWithoutPrintEditionsInput = {
-  id?: string
-  title: string
-  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  slug: string
-  description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  homeVariant?: string
-  isActive?: boolean
-  sortOrder?: number
-  publishedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  articles?: Prisma.ArticleUncheckedCreateNestedManyWithoutIssueInput
-}
-
-export type IssueCreateOrConnectWithoutPrintEditionsInput = {
-  where: Prisma.IssueWhereUniqueInput
-  create: Prisma.XOR<Prisma.IssueCreateWithoutPrintEditionsInput, Prisma.IssueUncheckedCreateWithoutPrintEditionsInput>
-}
-
-export type IssueUpsertWithoutPrintEditionsInput = {
-  update: Prisma.XOR<Prisma.IssueUpdateWithoutPrintEditionsInput, Prisma.IssueUncheckedUpdateWithoutPrintEditionsInput>
-  create: Prisma.XOR<Prisma.IssueCreateWithoutPrintEditionsInput, Prisma.IssueUncheckedCreateWithoutPrintEditionsInput>
-  where?: Prisma.IssueWhereInput
-}
-
-export type IssueUpdateToOneWithWhereWithoutPrintEditionsInput = {
-  where?: Prisma.IssueWhereInput
-  data: Prisma.XOR<Prisma.IssueUpdateWithoutPrintEditionsInput, Prisma.IssueUncheckedUpdateWithoutPrintEditionsInput>
-}
-
-export type IssueUpdateWithoutPrintEditionsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  articles?: Prisma.ArticleUpdateManyWithoutIssueNestedInput
-}
-
-export type IssueUncheckedUpdateWithoutPrintEditionsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  titleStyled?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
-  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  articles?: Prisma.ArticleUncheckedUpdateManyWithoutIssueNestedInput
-}
-
 export type IssueCreateWithoutArticlesInput = {
   id?: string
   title: string
@@ -627,13 +542,13 @@ export type IssueCreateWithoutArticlesInput = {
   slug: string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  printSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeVariant?: string
   isActive?: boolean
   sortOrder?: number
   publishedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  printEditions?: Prisma.PrintEditionCreateNestedManyWithoutIssueInput
 }
 
 export type IssueUncheckedCreateWithoutArticlesInput = {
@@ -643,13 +558,13 @@ export type IssueUncheckedCreateWithoutArticlesInput = {
   slug: string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  printSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeVariant?: string
   isActive?: boolean
   sortOrder?: number
   publishedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  printEditions?: Prisma.PrintEditionUncheckedCreateNestedManyWithoutIssueInput
 }
 
 export type IssueCreateOrConnectWithoutArticlesInput = {
@@ -675,13 +590,13 @@ export type IssueUpdateWithoutArticlesInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  printSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  printEditions?: Prisma.PrintEditionUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueUncheckedUpdateWithoutArticlesInput = {
@@ -691,13 +606,13 @@ export type IssueUncheckedUpdateWithoutArticlesInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeBlocks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  printSettings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   homeVariant?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  printEditions?: Prisma.PrintEditionUncheckedUpdateManyWithoutIssueNestedInput
 }
 
 
@@ -707,12 +622,10 @@ export type IssueUncheckedUpdateWithoutArticlesInput = {
 
 export type IssueCountOutputType = {
   articles: number
-  printEditions: number
 }
 
 export type IssueCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   articles?: boolean | IssueCountOutputTypeCountArticlesArgs
-  printEditions?: boolean | IssueCountOutputTypeCountPrintEditionsArgs
 }
 
 /**
@@ -732,13 +645,6 @@ export type IssueCountOutputTypeCountArticlesArgs<ExtArgs extends runtime.Types.
   where?: Prisma.ArticleWhereInput
 }
 
-/**
- * IssueCountOutputType without action
- */
-export type IssueCountOutputTypeCountPrintEditionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.PrintEditionWhereInput
-}
-
 
 export type IssueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -747,6 +653,7 @@ export type IssueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   slug?: boolean
   description?: boolean
   homeBlocks?: boolean
+  printSettings?: boolean
   homeVariant?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -754,7 +661,6 @@ export type IssueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   createdAt?: boolean
   updatedAt?: boolean
   articles?: boolean | Prisma.Issue$articlesArgs<ExtArgs>
-  printEditions?: boolean | Prisma.Issue$printEditionsArgs<ExtArgs>
   _count?: boolean | Prisma.IssueCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["issue"]>
 
@@ -765,6 +671,7 @@ export type IssueSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   slug?: boolean
   description?: boolean
   homeBlocks?: boolean
+  printSettings?: boolean
   homeVariant?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -780,6 +687,7 @@ export type IssueSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   slug?: boolean
   description?: boolean
   homeBlocks?: boolean
+  printSettings?: boolean
   homeVariant?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -795,6 +703,7 @@ export type IssueSelectScalar = {
   slug?: boolean
   description?: boolean
   homeBlocks?: boolean
+  printSettings?: boolean
   homeVariant?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -803,10 +712,9 @@ export type IssueSelectScalar = {
   updatedAt?: boolean
 }
 
-export type IssueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleStyled" | "slug" | "description" | "homeBlocks" | "homeVariant" | "isActive" | "sortOrder" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["issue"]>
+export type IssueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "titleStyled" | "slug" | "description" | "homeBlocks" | "printSettings" | "homeVariant" | "isActive" | "sortOrder" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["issue"]>
 export type IssueInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   articles?: boolean | Prisma.Issue$articlesArgs<ExtArgs>
-  printEditions?: boolean | Prisma.Issue$printEditionsArgs<ExtArgs>
   _count?: boolean | Prisma.IssueCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type IssueIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -816,7 +724,6 @@ export type $IssuePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   name: "Issue"
   objects: {
     articles: Prisma.$ArticlePayload<ExtArgs>[]
-    printEditions: Prisma.$PrintEditionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -825,6 +732,7 @@ export type $IssuePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     slug: string
     description: runtime.JsonValue | null
     homeBlocks: runtime.JsonValue | null
+    printSettings: runtime.JsonValue | null
     homeVariant: string
     isActive: boolean
     sortOrder: number
@@ -1226,7 +1134,6 @@ readonly fields: IssueFieldRefs;
 export interface Prisma__IssueClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   articles<T extends Prisma.Issue$articlesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Issue$articlesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ArticlePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  printEditions<T extends Prisma.Issue$printEditionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Issue$printEditionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PrintEditionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1262,6 +1169,7 @@ export interface IssueFieldRefs {
   readonly slug: Prisma.FieldRef<"Issue", 'String'>
   readonly description: Prisma.FieldRef<"Issue", 'Json'>
   readonly homeBlocks: Prisma.FieldRef<"Issue", 'Json'>
+  readonly printSettings: Prisma.FieldRef<"Issue", 'Json'>
   readonly homeVariant: Prisma.FieldRef<"Issue", 'String'>
   readonly isActive: Prisma.FieldRef<"Issue", 'Boolean'>
   readonly sortOrder: Prisma.FieldRef<"Issue", 'Int'>
@@ -1682,30 +1590,6 @@ export type Issue$articlesArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.ArticleScalarFieldEnum | Prisma.ArticleScalarFieldEnum[]
-}
-
-/**
- * Issue.printEditions
- */
-export type Issue$printEditionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the PrintEdition
-   */
-  select?: Prisma.PrintEditionSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the PrintEdition
-   */
-  omit?: Prisma.PrintEditionOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.PrintEditionInclude<ExtArgs> | null
-  where?: Prisma.PrintEditionWhereInput
-  orderBy?: Prisma.PrintEditionOrderByWithRelationInput | Prisma.PrintEditionOrderByWithRelationInput[]
-  cursor?: Prisma.PrintEditionWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.PrintEditionScalarFieldEnum | Prisma.PrintEditionScalarFieldEnum[]
 }
 
 /**

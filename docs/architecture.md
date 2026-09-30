@@ -283,41 +283,30 @@ Editorial image semantics:
 - Keep shared public UI in `components/public`, separated by primitive/compound/section/page responsibility.
 - Prefer extending existing shared helpers over duplicating list/query/error logic per resource.
 
-## Print Edition Architecture
+## Issue Print Preview
 
-The print edition is a separate presentation target built from the same published editorial data. It must not alter the public web dossier or encode print-only layout state inside `Issue.homeBlocks`.
+La stampa è una vista dell'uscita, non una risorsa editoriale separata. La pagina dell'issue resta la fonte unica per contenuti, ordine e ruoli editoriali; le impostazioni minime di stampa sono salvate nell'issue.
 
 ### Data flow
 
 ```text
-published Issue
-  -> print edition manifest
-  -> ordered editorial sequence
-  -> page-family planner
-  -> pagination + diagnostics
+Issue
+  -> ordered editorial sequence from homeBlocks
+  -> simple print view model
   -> preview renderer
-  -> PDF export
+  -> browser PDF export
 ```
 
 - `Issue.homeBlocks` remains the source of truth for issue order and editorial roles.
-- Print preparation may add an edition-specific manifest containing inclusion, page-family preference, forced page breaks, locked pages, and print metadata.
-- Article print content must use full `contentRich`, internal images, notes, captions, author data, and credits. Home DTO summaries are insufficient for export.
-- The page planner is deterministic and pure: the same manifest, content snapshot, fonts, and page settings must produce the same page sequence.
-- The renderer must expose diagnostics rather than silently repairing editorial problems.
-- Maps and questionnaire analyses need static print assets or print-specific renderers; interactive web canvases cannot be exported as screenshots by default.
+- `Issue.homeBlocks` è la fonte dell'ordine editoriale e dei tipi di sezione.
+- `Issue.printSettings` contiene solo le preferenze direttamente utili alla preview, come la visibilità del numero dell'uscita.
+- La preview CMS carica il `contentRich` completo tramite dati autenticati, quindi funziona anche per issue non ancora pubblicate.
+- I tipi `opening`, `body`, `rupture`, `closing`, `course`, `map`, `questionnaireAnalysis` e `preview` determinano il trattamento visuale della sezione senza introdurre layout persistiti.
+- L'export corrente usa la stampa del browser; la paginazione tipografica avanzata e un PDF press-ready sono attività successive.
 
 ### Implementation boundary
 
-The first technical slice should be a domain-level print manifest and deterministic pagination model, tested without a browser or database. CMS UX and PDF infrastructure should be added after the static page-family reference has been approved on a real issue.
-
-### Persistent editions
-
-- `PrintEdition` stores the print-specific title, status, and JSON manifest without changing the web issue regia.
-- The additive migration is `20260928150000_add_print_editions`.
-- The tRPC resource is `printEditions` with role access for `ADMIN` and `EDITOR`.
-- Manifest overrides can exclude an item, choose a page family, lock a page, or select a print asset.
-- `/cms/print` lists saved editions; `/cms/print/[issueId]` opens the current composed preview for the source issue.
-- The current browser PDF remains a review export. A press-ready PDF renderer still requires an explicit rendering engine and print production profile.
+La preview deve restare deterministica e semplice: stessa issue, stessi blocchi e stessi contenuti producono la stessa sequenza. Non esistono manifesti o edizioni persistite separate. Un motore PDF tipografico potrà essere introdotto più avanti senza cambiare il flusso CMS.
 
 ## Related Docs
 

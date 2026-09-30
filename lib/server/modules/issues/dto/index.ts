@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   issueHomeBlocksSchema,
   issueHomeVariantSchema,
+  issuePrintSettingsSchema,
   issueTitleStyledSchema,
 } from "@/lib/server/modules/issues/schema";
 
@@ -13,6 +14,7 @@ export const issueDtoSchema = z.object({
   slug: z.string(),
   description: z.unknown().nullable(),
   homeBlocks: issueHomeBlocksSchema.nullable(),
+  printSettings: issuePrintSettingsSchema,
   homeVariant: issueHomeVariantSchema,
   isActive: z.boolean(),
   sortOrder: z.number().int(),

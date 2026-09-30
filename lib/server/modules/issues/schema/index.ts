@@ -9,12 +9,19 @@ export const issueTitleStyledSegmentSchema = z.object({
 export const issueTitleStyledSchema = z.array(issueTitleStyledSegmentSchema).min(1);
 export const issueHomeVariantSchema = z.enum(["black", "red", "default"]);
 export const issueHomeBlockFeaturedPlacementSchema = z.enum(["left", "right"]);
+export const issueHomeArticlePrintSettingsSchema = z.object({
+  showInIssueIntro: z.boolean().default(false),
+  stopWithSiteCta: z.boolean().default(false),
+  excludeFromPrint: z.boolean().default(false),
+});
+export const issueHomeBlockPrintSettingsSchema = issueHomeArticlePrintSettingsSchema;
 
 export const issueHomeArticleBlockSchema = z
   .object({
     id: z.string().trim().min(1),
     type: z.enum(["opening", "body", "rupture", "closing"]),
     articleIds: z.array(z.string().uuid()),
+    printSettings: z.record(z.string().uuid(), issueHomeArticlePrintSettingsSchema).optional(),
     featuredArticleId: z.string().uuid().nullable().optional(),
     featuredPlacement: issueHomeBlockFeaturedPlacementSchema.default("left"),
   })
@@ -31,24 +38,28 @@ export const issueHomeCourseBlockSchema = z.object({
   id: z.string().trim().min(1),
   type: z.literal("course"),
   courseId: z.string().uuid().nullable(),
+  printSettings: issueHomeBlockPrintSettingsSchema.optional(),
 });
 
 export const issueHomeMapBlockSchema = z.object({
   id: z.string().trim().min(1),
   type: z.literal("map"),
   mapId: z.string().uuid().nullable(),
+  printSettings: issueHomeBlockPrintSettingsSchema.optional(),
 });
 
 export const issueHomeQuestionnaireAnalysisBlockSchema = z.object({
   id: z.string().trim().min(1),
   type: z.literal("questionnaireAnalysis"),
   questionnaireId: z.string().uuid().nullable(),
+  printSettings: issueHomeBlockPrintSettingsSchema.optional(),
 });
 
 export const issueHomePreviewBlockSchema = z.object({
   id: z.string().trim().min(1),
   type: z.literal("preview"),
   previewIssueId: z.string().uuid().nullable(),
+  printSettings: issueHomeBlockPrintSettingsSchema.optional(),
 });
 
 export const issueHomeBlockSchema = z.discriminatedUnion("type", [
@@ -81,12 +92,20 @@ export const issueHomeBlocksSchema = z
     message: "an issue can include one preview block only",
   });
 
+export const issuePrintSettingsSchema = z.object({
+  showIssueNumber: z.boolean().default(true),
+  coverImageUrl: z.string().trim().min(1).nullable().default(null),
+  coverImageAlt: z.string().trim().default(""),
+  coverImageMode: z.enum(["contained", "bleed"]).default("contained"),
+});
+
 export const createIssueInputSchema = z.object({
   title: z.string().trim().min(1),
   titleStyled: issueTitleStyledSchema.nullable().optional(),
   slug: z.string().trim().min(1).optional(),
   description: z.unknown().optional(),
   homeBlocks: issueHomeBlocksSchema.nullable().optional(),
+  printSettings: issuePrintSettingsSchema.optional(),
   homeVariant: issueHomeVariantSchema.default("black"),
   isActive: z.boolean().default(true),
   publishedAt: z.coerce.date().nullable().optional(),
@@ -98,6 +117,7 @@ export const updateIssueInputSchema = createIssueInputSchema
     titleStyled: issueTitleStyledSchema.nullable().optional(),
     description: z.unknown().nullable().optional(),
     homeBlocks: issueHomeBlocksSchema.nullable().optional(),
+    printSettings: issuePrintSettingsSchema.optional(),
     homeVariant: issueHomeVariantSchema.optional(),
     isActive: z.boolean().optional(),
     publishedAt: z.coerce.date().nullable().optional(),
@@ -129,6 +149,8 @@ export const listIssuesQuerySchema = z.object({
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
 export type IssueHomeBlock = z.infer<typeof issueHomeBlockSchema>;
 export type IssueHomeArticleBlock = z.infer<typeof issueHomeArticleBlockSchema>;
+export type IssueHomeArticlePrintSettings = z.infer<typeof issueHomeArticlePrintSettingsSchema>;
+export type IssueHomeBlockPrintSettings = z.infer<typeof issueHomeBlockPrintSettingsSchema>;
 export type IssueHomeCourseBlock = z.infer<typeof issueHomeCourseBlockSchema>;
 export type IssueHomeMapBlock = z.infer<typeof issueHomeMapBlockSchema>;
 export type IssueHomeQuestionnaireAnalysisBlock = z.infer<
@@ -136,6 +158,7 @@ export type IssueHomeQuestionnaireAnalysisBlock = z.infer<
 >;
 export type IssueHomePreviewBlock = z.infer<typeof issueHomePreviewBlockSchema>;
 export type IssueHomeBlocks = z.infer<typeof issueHomeBlocksSchema>;
+export type IssuePrintSettings = z.infer<typeof issuePrintSettingsSchema>;
 export type IssueHomeVariant = z.infer<typeof issueHomeVariantSchema>;
 export type IssueTitleStyled = z.infer<typeof issueTitleStyledSchema>;
 export type UpdateIssueInput = z.infer<typeof updateIssueInputSchema>;

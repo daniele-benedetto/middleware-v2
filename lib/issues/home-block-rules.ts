@@ -5,6 +5,7 @@ import type {
   IssueHomeMapBlock,
   IssueHomePreviewBlock,
   IssueHomeQuestionnaireAnalysisBlock,
+  IssueHomeArticlePrintSettings,
 } from "@/lib/server/modules/issues/schema";
 
 export function isArticleHomeBlock(block: IssueHomeBlock): block is IssueHomeArticleBlock {
@@ -32,12 +33,25 @@ export function normalizeHomeBlock(block: IssueHomeArticleBlock): IssueHomeArtic
     block.featuredArticleId && articleIds.includes(block.featuredArticleId)
       ? block.featuredArticleId
       : (articleIds[0] ?? null);
+  const printSettings = Object.fromEntries(
+    Object.entries(block.printSettings ?? {})
+      .filter(([articleId]) => articleIds.includes(articleId))
+      .map(([articleId, settings]) => [
+        articleId,
+        {
+          showInIssueIntro: settings?.showInIssueIntro ?? false,
+          stopWithSiteCta: settings?.stopWithSiteCta ?? false,
+          excludeFromPrint: settings?.excludeFromPrint ?? false,
+        } satisfies IssueHomeArticlePrintSettings,
+      ]),
+  );
 
   return {
     ...block,
     articleIds,
     featuredArticleId,
     featuredPlacement: supportsFeaturedPlacement(block.type) ? block.featuredPlacement : "left",
+    printSettings,
   };
 }
 

@@ -400,6 +400,803 @@ body {
 
 /* Print edition prototype: the page is intentionally A4-shaped on screen so
    the editorial rhythm can be judged before the PDF renderer is connected. */
+.print-v3-shell {
+  --print-v3-paper: #f7f0e7;
+  --print-v3-ink: #000;
+  --print-v3-accent: #c13814;
+  min-height: 100%;
+  margin: -24px;
+  padding: 32px 32px 72px;
+  background: #d8d0c4;
+  color: var(--print-v3-ink);
+  position: relative;
+}
+
+.print-v3-shell--embedded {
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.print-v3-toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 1440px;
+  margin: 0 auto 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--print-v3-ink);
+}
+
+.print-v3-toolbar-title p,
+.print-v3-toolbar-meta,
+.print-v3-page-label,
+.print-v3-cover-meta,
+.print-v3-cover-line-kicker,
+.print-v3-cover-line-page {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.196cqw;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.print-v3-toolbar-title p {
+  margin: 0;
+  color: var(--print-v3-accent);
+}
+
+.print-v3-toolbar h1 {
+  margin: 5px 0 0;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: clamp(24px, 3vw, 42px);
+  font-weight: 900;
+  line-height: 0.94;
+  letter-spacing: -0.06em;
+}
+
+.print-v3-toolbar-meta {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 18px;
+  color: rgb(0 0 0 / 62%);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.print-v3-stage {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 64px;
+  width: 100%;
+  max-width: 1440px;
+  height: calc(100dvh - 96px);
+  min-height: 520px;
+  margin: 0 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 4px 22px;
+  overscroll-behavior-x: contain;
+  scrollbar-gutter: stable;
+}
+
+.print-v3-actions {
+  position: absolute;
+  z-index: 5;
+  top: 24px;
+  right: 32px;
+}
+
+.print-v3-shell--embedded .print-v3-stage {
+  height: 100dvh;
+  max-width: none;
+  margin: 0;
+  padding: 0 64px;
+}
+
+.print-v3-page-group {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-self: center;
+  gap: 14px;
+}
+
+.print-v3-page-label {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.print-v3-page-label span:first-child,
+.print-v3-cover-meta span:last-child,
+.print-v3-cover-line-kicker {
+  color: var(--print-v3-accent);
+}
+
+.print-v3-page {
+  position: relative;
+  container-type: size;
+  width: auto;
+  height: min(calc(100dvh - 190px), 78vh);
+  min-height: 420px;
+  /* The reference artboard is 920 × 1200. Keep its authored proportion on
+     screen; print rules map the same composition onto the final sheet. */
+  aspect-ratio: 920 / 1200;
+  overflow: hidden;
+  background: var(--print-v3-paper);
+  box-shadow: 0 18px 50px rgb(0 0 0 / 25%);
+}
+
+.print-v3-shell--embedded .print-v3-page {
+  height: calc(100dvh - 96px);
+  min-height: 0;
+}
+
+.print-v3-cover-content {
+  position: absolute;
+  inset: 4.67% 6.96% 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.print-v3-cover-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  white-space: nowrap;
+}
+
+.print-v3-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 1.33%;
+}
+
+.print-v3-cover-image {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 28.333cqh;
+  margin-top: 1.67%;
+  overflow: hidden;
+  background: #3a3733;
+  filter: grayscale(1);
+}
+
+.print-v3-cover-image--bleed {
+  margin-right: -6.96%;
+  margin-left: -6.96%;
+}
+
+.print-v3-cover-title {
+  margin: 1.83% 0 0;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 7.39cqw;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  text-wrap: balance;
+}
+
+.text-accent {
+  color: var(--print-v3-accent);
+}
+
+.print-v3-cover-deck {
+  width: 100%;
+  margin: 1.33cqh 0 0;
+  font-family: var(--font-spectral), serif;
+  font-size: 1.63cqw;
+  font-style: italic;
+  line-height: 1.42;
+}
+
+.print-v3-cover-lines {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3.04%;
+  margin-top: 2cqh;
+  padding-top: 1.167cqh;
+  padding-bottom: 10cqh;
+  border-top: 1px solid rgb(0 0 0 / 68%);
+}
+
+.print-v3-cover-line {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.print-v3-cover-line-title {
+  margin-top: 0.5em;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.85cqw;
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.print-v3-cover-line-excerpt {
+  display: -webkit-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 0.65em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  font-family: var(--font-spectral), serif;
+  font-size: 1.36cqw;
+  line-height: 1.45;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.print-v3-cover-line-page {
+  margin-top: auto;
+  padding-top: 0.8em;
+  color: var(--print-v3-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.print-v3-cover-line-empty {
+  grid-column: 1 / -1;
+  font-family: var(--font-spectral), serif;
+  font-size: 1.5cqw;
+  font-style: italic;
+}
+
+.print-v3-cover-footer {
+  position: absolute;
+  right: -6.96%;
+  bottom: 0;
+  left: -6.96%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  gap: 40px;
+  min-height: 8.667%;
+  width: auto;
+  margin: 0;
+  padding: 1.667cqh 6.96%;
+  background: var(--print-v3-ink);
+  color: var(--print-v3-paper);
+}
+
+.print-v3-cover-brand,
+.print-v3-cover-service {
+  display: flex;
+  align-items: center;
+  gap: 1.85cqw;
+}
+
+.print-v3-cover-brand img {
+  width: 5.2cqw;
+  height: 5.2cqw;
+  object-fit: contain;
+}
+
+.print-v3-cover-brand strong {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55cqw;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 2.45cqw;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.print-v3-cover-brand strong span {
+  color: var(--print-v3-accent);
+}
+
+.print-v3-cover-service {
+  flex-shrink: 0;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.2cqw;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.print-v3-cover-service img {
+  width: 5.2cqw;
+  height: 5.2cqw;
+  padding: 0.42cqw;
+  background: var(--print-v3-paper);
+}
+
+.print-v3-index-content {
+  position: absolute;
+  inset: 5.33% 6.09% 8%;
+  display: flex;
+  flex-direction: column;
+}
+
+.print-v3-index h2 {
+  margin: 0;
+  padding-bottom: 1.5%;
+  border-bottom: 2px solid var(--print-v3-ink);
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 7.83cqw;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+}
+
+.print-v3-index-list {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+}
+
+.print-v3-index-list li {
+  display: grid;
+  grid-template-columns: 3.48% minmax(0, 1fr) 5.22%;
+  gap: 1.74%;
+  align-items: center;
+  height: 2.9167cqh;
+  min-height: 2.9167cqh;
+  margin-top: -1px;
+  border-top: 1px solid var(--print-v3-ink);
+}
+
+.print-v3-index-type {
+  display: flex;
+  align-items: center;
+  color: var(--print-v3-accent);
+}
+
+.print-v3-index-icon {
+  width: 1.96cqw;
+  height: 1.96cqw;
+  stroke-width: 2.5;
+}
+
+.print-v3-index-title {
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.74cqw;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.print-v3-index-page {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.96cqw;
+  font-weight: 900;
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.print-v3-index-empty {
+  display: block !important;
+  padding: 2em 0;
+  font-family: var(--font-spectral), serif;
+  font-size: 1.7cqw;
+  font-style: italic;
+}
+
+.print-v3-folio {
+  margin-top: auto;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.41cqw;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .print-v3-shell {
+    margin: -16px;
+    padding: 24px 16px 48px;
+  }
+
+  .print-v3-toolbar {
+    align-items: start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .print-v3-toolbar-meta {
+    justify-content: start;
+    text-align: left;
+  }
+
+  .print-v3-stage {
+    height: 100%;
+    min-height: 400px;
+    gap: 32px;
+  }
+
+  .print-v3-page {
+    height: min(calc(100dvh - 240px), 72vh);
+    min-height: 360px;
+    aspect-ratio: 920 / 1200;
+  }
+}
+
+@media print {
+  .print-v3-shell {
+    margin: 0;
+    padding: 0;
+    background: var(--print-v3-paper);
+  }
+
+  .print-v3-toolbar,
+  .print-v3-actions,
+  .print-v3-page-label {
+    display: none;
+  }
+
+  .print-v3-stage {
+    display: block;
+    height: auto;
+    max-width: none;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .print-v3-page-group {
+    display: block;
+  }
+
+  .print-v3-page {
+    width: 230mm;
+    height: 300mm;
+    min-height: 300mm;
+    box-shadow: none;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .print-v3-page-group:last-child .print-v3-page {
+    break-after: auto;
+    page-break-after: auto;
+  }
+}
+
+@media print {
+  @page {
+    size: 230mm 300mm;
+    margin: 0;
+  }
+}
+
+/* Magazine cover: one 230 × 300 mm composition shared by screen preview and print. */
+.magazine-cover {
+  position: relative;
+  container-type: size;
+  flex: 0 0 auto;
+  width: auto;
+  height: min(calc(100dvh - 190px), 78vh);
+  min-height: 420px;
+  aspect-ratio: 230 / 300;
+  overflow: hidden;
+  background: var(--print-v3-paper);
+  color: var(--print-v3-ink);
+  box-shadow: 0 18px 50px rgb(0 0 0 / 25%);
+}
+
+.print-v3-shell--embedded .magazine-cover {
+  height: calc(100dvh - 96px);
+  min-height: 0;
+}
+
+.magazine-cover__inner {
+  position: absolute;
+  inset: 4.67% 6.96% 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.magazine-cover__meta,
+.magazine-cover__highlight-kicker,
+.magazine-cover__highlight-page {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.196cqw;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.magazine-cover__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  white-space: nowrap;
+}
+
+.magazine-cover__meta span:last-child,
+.magazine-cover__highlight-kicker,
+.magazine-cover__title-accent {
+  color: var(--print-v3-accent);
+}
+
+.magazine-cover__logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 1.4cqh;
+}
+
+.magazine-cover__image {
+  position: relative;
+  height: 18cqh;
+  min-height: 0;
+  margin: 2cqh 0 0;
+  overflow: hidden;
+  background: #3a3733;
+  filter: grayscale(1);
+}
+
+.magazine-cover__image--bleed {
+  margin-right: -6.96%;
+  margin-left: -6.96%;
+}
+
+.magazine-cover__image-content {
+  object-fit: cover;
+}
+
+.magazine-cover__title {
+  max-width: 100%;
+  margin: 2.3cqh 0 0;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 7.39cqw;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+}
+
+.magazine-cover__deck {
+  width: 100%;
+  min-width: 0;
+  margin: 1.5cqh 0 0;
+  font-family: var(--font-spectral), serif;
+  font-size: 1.9cqw;
+  font-style: italic;
+  line-height: 1.38;
+  overflow-wrap: break-word;
+}
+
+.magazine-cover__highlights {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3.04%;
+  min-height: 0;
+  margin-top: 2.4cqh;
+  padding: 1.2cqh 0 2cqh;
+  border-top: 1px solid rgb(0 0 0 / 68%);
+}
+
+.magazine-cover__highlight {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.magazine-cover__highlight-title {
+  margin: 0.5em 0 0;
+  overflow: hidden;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.85cqw;
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.magazine-cover__highlight-excerpt {
+  display: -webkit-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0.65em 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  font-family: var(--font-spectral), serif;
+  font-size: 1.36cqw;
+  line-height: 1.45;
+  hyphens: auto;
+}
+
+.magazine-cover__highlight-page {
+  margin-top: auto;
+  padding-top: 0.8em;
+  color: var(--print-v3-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.magazine-cover__empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-family: var(--font-spectral), serif;
+  font-size: 1.5cqw;
+  font-style: italic;
+}
+
+.magazine-cover__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  min-height: 8.667cqh;
+  margin: 0 -8.08%;
+  padding: 1.5cqh 8.08%;
+  background: var(--print-v3-ink);
+  color: var(--print-v3-paper);
+}
+
+.magazine-cover--long-description .magazine-cover__image {
+  height: 10cqh;
+}
+
+.magazine-cover--long-description .magazine-cover__highlight-excerpt {
+  -webkit-line-clamp: 2;
+}
+
+.magazine-cover__brand,
+.magazine-cover__service {
+  display: flex;
+  align-items: center;
+  gap: 1.85cqw;
+}
+
+.magazine-cover__brand img {
+  width: 5.2cqw;
+  height: 5.2cqw;
+  object-fit: contain;
+}
+
+.magazine-cover__brand strong {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55cqw;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 2.45cqw;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.magazine-cover__brand strong span {
+  color: var(--print-v3-accent);
+}
+
+.magazine-cover__service {
+  flex-shrink: 0;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.2cqw;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.magazine-cover__service img {
+  width: 5.2cqw;
+  height: 5.2cqw;
+  padding: 0.42cqw;
+  background: var(--print-v3-paper);
+}
+
+.print-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.print-preview-hint {
+  color: rgb(247 240 231 / 82%);
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.print-preview-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--print-v3-ink);
+  background: var(--print-v3-ink);
+  color: var(--print-v3-paper);
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.print-preview-action:hover {
+  border-color: var(--print-v3-accent);
+  background: var(--print-v3-accent);
+}
+
+.print-preview-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.print-preview-action:focus-visible {
+  outline: 3px solid var(--print-v3-accent);
+  outline-offset: 3px;
+}
+
+.print-preview-dialog {
+  border-radius: 0 !important;
+}
+
+@media (max-width: 900px) {
+  .magazine-cover {
+    height: min(calc(100dvh - 240px), 72vh);
+    min-height: 360px;
+  }
+
+  .print-v3-shell--embedded .magazine-cover {
+    height: calc(100dvh - 96px);
+  }
+
+  .print-preview-hint {
+    display: none;
+  }
+}
+
+@media print {
+  .magazine-cover {
+    width: 230mm;
+    height: 300mm;
+    min-height: 300mm;
+    box-shadow: none;
+    break-after: page;
+    page-break-after: always;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .print-preview-actions {
+    display: none;
+  }
+}
+
 .print-prototype-shell {
   --print-paper: #f7f0e7;
   --print-ink: #000000;
@@ -569,6 +1366,52 @@ body {
   margin: 0 auto;
 }
 
+.print-prototype-shell--embedded {
+  height: 100dvh;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 24px;
+  background: #ded8cf;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.print-prototype-shell--embedded .print-sheets {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  height: calc(100dvh - 130px);
+  max-width: none;
+  margin: 0;
+  padding: 0 0 24px;
+  align-items: flex-start;
+  box-sizing: border-box;
+  gap: 24px;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-gutter: stable;
+}
+
+html:has(.print-prototype-shell--embedded),
+body:has(.print-prototype-shell--embedded) {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.print-prototype-shell--embedded .print-sheet {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  aspect-ratio: 210 / 297;
+  margin: 0;
+  box-sizing: border-box;
+}
+
 .print-sheet {
   position: relative;
   width: min(100%, 794px);
@@ -605,6 +1448,46 @@ body {
   color: var(--print-paper);
 }
 
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  .print-preview-chrome {
+    display: none;
+  }
+
+  .print-prototype-shell {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  .print-prototype-shell--embedded {
+    padding: 0;
+  }
+
+  .print-sheets {
+    display: block;
+    max-width: none;
+  }
+
+  .print-sheet {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    box-shadow: none;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .print-sheet:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+}
+
 .print-page-header,
 .print-opener-topline {
   display: flex;
@@ -627,19 +1510,90 @@ body {
   color: var(--print-accent);
 }
 
+.print-cover-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 16px;
+}
+
 .print-cover-title {
-  display: flex;
-  flex-direction: column;
-  margin-top: 210px;
+  margin: 22px 0 0;
   font-family: var(--font-archivo), sans-serif;
-  font-size: clamp(94px, 15vw, 176px);
+  font-size: clamp(58px, 8vw, 104px);
   font-weight: 900;
-  line-height: 0.76;
+  line-height: 0.9;
   letter-spacing: -0.085em;
 }
 
-.print-cover-title span:last-child {
+.print-sheet--cover-with-image .print-cover-title {
+  margin-top: 22px;
+}
+
+.print-cover-image-frame {
+  position: relative;
+  height: 25%;
+  min-height: 150px;
+  margin-top: 20px;
+  overflow: hidden;
+  background: #3a3733;
+}
+
+.print-cover-image-frame--bleed {
+  margin-right: -64px;
+  margin-left: -64px;
+}
+
+.print-sheet--cover .print-cover-footer {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  min-height: 82px;
+  padding: 18px 64px;
+  background: var(--print-ink);
+  color: var(--print-paper);
+}
+
+.print-cover-brand,
+.print-cover-service {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.print-cover-brand img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.print-cover-brand strong {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.print-cover-brand strong span {
   color: var(--print-accent);
+}
+
+.print-cover-service {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.print-cover-service img {
+  width: 38px;
+  height: 38px;
+  padding: 3px;
+  background: var(--print-paper);
 }
 
 .print-cover-rule {
@@ -647,6 +1601,37 @@ body {
   height: 2px;
   margin: 52px 0 18px;
   background: var(--print-paper);
+}
+
+.print-cover-intro-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 28px;
+  font-family: var(--font-spectral), serif;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.print-cover-intro-list > div {
+  display: grid;
+  gap: 2px;
+  padding-top: 8px;
+  border-top: 1px solid currentColor;
+}
+
+.print-cover-intro-list span {
+  opacity: 0.72;
+}
+
+.print-site-cta {
+  margin-top: 28px;
+  padding-top: 12px;
+  border-top: 2px solid currentColor;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .print-cover-description {
@@ -733,6 +1718,12 @@ body {
   font-family: var(--font-archivo), sans-serif;
   font-weight: 900;
   letter-spacing: -0.07em;
+}
+
+.print-index-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
 }
 
 .print-index-row__title {
@@ -1695,5 +2686,12 @@ body {
   }
   html {
     @apply font-sans;
+  }
+}
+
+@media print {
+  @page {
+    size: 230mm 300mm;
+    margin: 0;
   }
 }
