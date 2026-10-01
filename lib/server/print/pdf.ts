@@ -1,6 +1,9 @@
 import "server-only";
 
 import { existsSync } from "node:fs";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import puppeteer, { type CookieData } from "puppeteer-core";
 
@@ -94,13 +97,32 @@ export async function renderIssuePagesPdf({
   cookie: string | null;
 }) {
   const timeout = resolveTimeoutMs();
+  // The app user has no home: Chromium gets its own writable profile, home and
+  // crash dump folder, or its crash handler refuses to start.
+  const workDir = await mkdtemp(join(tmpdir(), "middleware-print-"));
   const browser = await step("launch", () =>
     puppeteer.launch({
       executablePath: resolveChromiumExecutablePath(),
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+      userDataDir: join(workDir, "profile"),
+      env: {
+        ...process.env,
+        HOME: workDir,
+        XDG_CONFIG_HOME: join(workDir, ".config"),
+        XDG_CACHE_HOME: join(workDir, ".cache"),
+      },
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-crash-reporter",
+        `--crash-dumps-dir=${join(workDir, "crashes")}`,
+      ],
     }),
-  );
+  ).catch(async (error: unknown) => {
+    await rm(workDir, { recursive: true, force: true });
+    throw error;
+  });
 
   try {
     const page = await browser.newPage();
@@ -147,5 +169,6 @@ export async function renderIssuePagesPdf({
     );
   } finally {
     await browser.close();
+    await rm(workDir, { recursive: true, force: true });
   }
 }

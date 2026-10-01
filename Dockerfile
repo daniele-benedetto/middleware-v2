@@ -102,7 +102,8 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 ENV CHROMIUM_PATH=/usr/bin/chromium
 
-RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs nextjs
+# Chromium (PDF export) needs a writable home for its profile and crash handler.
+RUN groupadd -g 1001 nodejs && useradd -m -u 1001 -g nodejs nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
