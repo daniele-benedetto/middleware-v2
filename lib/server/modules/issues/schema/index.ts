@@ -9,12 +9,15 @@ export const issueTitleStyledSegmentSchema = z.object({
 export const issueTitleStyledSchema = z.array(issueTitleStyledSegmentSchema).min(1);
 export const issueHomeVariantSchema = z.enum(["black", "red", "default"]);
 export const issueHomeBlockFeaturedPlacementSchema = z.enum(["left", "right"]);
-export const issueHomeArticlePrintSettingsSchema = z.object({
+export const issueHomeBlockPrintSettingsSchema = z.object({
   showInIssueIntro: z.boolean().default(false),
   stopWithSiteCta: z.boolean().default(false),
   excludeFromPrint: z.boolean().default(false),
 });
-export const issueHomeBlockPrintSettingsSchema = issueHomeArticlePrintSettingsSchema;
+export const issueHomeArticlePrintLayoutSchema = z.enum(["default", "fullscreen"]);
+export const issueHomeArticlePrintSettingsSchema = issueHomeBlockPrintSettingsSchema.extend({
+  layout: issueHomeArticlePrintLayoutSchema.default("default"),
+});
 
 export const issueHomeArticleBlockSchema = z
   .object({
@@ -151,6 +154,7 @@ export type IssueHomeBlock = z.infer<typeof issueHomeBlockSchema>;
 export type IssueHomeArticleBlock = z.infer<typeof issueHomeArticleBlockSchema>;
 export type IssueHomeArticlePrintSettings = z.infer<typeof issueHomeArticlePrintSettingsSchema>;
 export type IssueHomeBlockPrintSettings = z.infer<typeof issueHomeBlockPrintSettingsSchema>;
+export type IssueHomeArticlePrintLayout = z.infer<typeof issueHomeArticlePrintLayoutSchema>;
 export type IssueHomeCourseBlock = z.infer<typeof issueHomeCourseBlockSchema>;
 export type IssueHomeMapBlock = z.infer<typeof issueHomeMapBlockSchema>;
 export type IssueHomeQuestionnaireAnalysisBlock = z.infer<

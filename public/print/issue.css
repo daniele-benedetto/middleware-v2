@@ -1,0 +1,863 @@
+@font-face {
+  font-family: "Print Archivo";
+  src: url("./fonts/archivo-latin-variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Print Spectral";
+  src: url("./fonts/spectral-latin-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Print Spectral";
+  src: url("./fonts/spectral-latin-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Print Spectral";
+  src: url("./fonts/spectral-latin-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Print Spectral";
+  src: url("./fonts/spectral-latin-600-italic.woff2") format("woff2");
+  font-weight: 600;
+  font-style: italic;
+}
+
+/*
+ * A4 pages, printed as an A3 booklet. Mockup measures are authored at 4 px/mm,
+ * so 1 px of the mockup = 0.25 mm = 0.709 pt.
+ */
+:root {
+  --paper: #fff;
+  --ink: #000;
+  --accent: #c13814;
+  --sans: "Print Archivo", "Archivo", sans-serif;
+  --serif: "Print Spectral", "Spectral", serif;
+  --page-top: 16mm;
+  --page-bottom: 24mm;
+  --page-inner: 18mm;
+  --page-outer: 14mm;
+  --cover-x: 16mm;
+  --cover-y: 14mm;
+  --column-gap: 9mm;
+  /* Same weight as the site's 1px dividers. */
+  --rule: 0.75pt;
+  /* Body 10.5/14.5pt (138%): every vertical step in running text is a multiple
+     of the leading, so baselines stay aligned across columns. */
+  --body-size: 10.5pt;
+  --body-leading: 14.5pt;
+}
+
+@page {
+  size: A4;
+  margin: var(--page-top) var(--page-outer) var(--page-bottom) var(--page-inner);
+  background: var(--paper);
+}
+
+@page :left {
+  margin-left: var(--page-outer);
+  margin-right: var(--page-inner);
+
+  @bottom-left {
+    content: counter(page, decimal-leading-zero);
+    vertical-align: bottom;
+    padding-bottom: 11mm;
+    font-family: var(--sans);
+    font-size: 9.2pt;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+}
+
+@page :right {
+  margin-left: var(--page-inner);
+  margin-right: var(--page-outer);
+
+  @bottom-right {
+    content: counter(page, decimal-leading-zero);
+    vertical-align: bottom;
+    padding-bottom: 11mm;
+    font-family: var(--sans);
+    font-size: 9.2pt;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+}
+
+@page cover {
+  margin: var(--cover-y) var(--cover-x);
+
+  @bottom-right {
+    content: none;
+  }
+}
+
+@page :blank {
+  @bottom-left {
+    content: none;
+  }
+
+  @bottom-right {
+    content: none;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--sans);
+  color: var(--ink);
+  font-kerning: normal;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+/* Cover */
+
+.cover {
+  page: cover;
+  display: flex;
+  flex-direction: column;
+  height: calc(297mm - 2 * var(--cover-y));
+  break-after: page;
+}
+
+.cover__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 6mm;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.cover__logo {
+  margin-top: 4mm;
+  width: 100%;
+  height: auto;
+}
+
+.cover__image {
+  position: relative;
+  flex: 1;
+  min-height: 70mm;
+  margin-top: 5mm;
+  overflow: hidden;
+  background: #3a3733;
+}
+
+.cover__spacer {
+  flex: 1;
+}
+
+.cover__image--bleed {
+  margin-left: calc(-1 * var(--cover-x));
+  margin-right: calc(-1 * var(--cover-x));
+}
+
+.cover__image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  filter: grayscale(1);
+}
+
+.cover__title {
+  margin-top: 5.5mm;
+  font-size: 48pt;
+  line-height: 0.9;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+}
+
+.cover__deck {
+  margin-top: 3mm;
+  font-family: var(--serif);
+  font-size: 10.6pt;
+  line-height: 1.38;
+  font-style: italic;
+}
+
+.cover__highlights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 7mm;
+  margin-top: 6mm;
+  padding-top: 3.5mm;
+  border-top: var(--rule) solid var(--ink);
+}
+
+.cover__highlight {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cover__highlight-kicker {
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Two-line title slot, vertically centered, so the excerpts start on one line. */
+.cover__highlight-title {
+  display: flex;
+  align-items: center;
+  height: calc(2 * 1.12em);
+  margin-top: 1.5mm;
+  overflow: hidden;
+  font-size: 12pt;
+  line-height: 1.12;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Exactly seven lines: the excerpt reaches the page reference and never cuts a line. */
+.cover__highlight-excerpt {
+  display: -webkit-box;
+  height: calc(7 * 1.45em);
+  margin-top: 2mm;
+  overflow: hidden;
+  font-family: var(--serif);
+  font-size: 8.9pt;
+  line-height: 1.45;
+  text-align: justify;
+  hyphens: manual;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 7;
+}
+
+.cover__highlight-page {
+  padding-top: 2mm;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cover__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8mm;
+  margin: 7mm calc(-1 * var(--cover-x)) calc(-1 * var(--cover-y));
+  padding: 4mm var(--cover-x);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.cover__brand,
+.cover__service {
+  display: flex;
+  align-items: center;
+  gap: 4mm;
+  height: 20mm;
+}
+
+.cover__brand img {
+  width: 11mm;
+  height: 11mm;
+}
+
+.cover__brand strong {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5mm;
+  font-size: 15.6pt;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.cover__brand strong span {
+  color: var(--accent);
+}
+
+.cover__service span {
+  font-size: 9.5pt;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.cover__service img {
+  width: 20mm;
+  height: 20mm;
+  padding: 1mm;
+  background: var(--paper);
+}
+
+/* Index */
+
+.toc {
+  display: flex;
+  flex-direction: column;
+  height: calc(297mm - var(--page-top) - var(--page-bottom));
+  break-before: verso;
+  break-after: page;
+}
+
+.toc__title {
+  padding-bottom: 4.5mm;
+  border-bottom: var(--rule) solid var(--ink);
+  font-size: 51pt;
+  line-height: 0.9;
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+
+.toc__list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  list-style: none;
+}
+
+.toc__entry {
+  display: grid;
+  grid-template-columns: 8mm minmax(0, 1fr) 12mm;
+  column-gap: 4mm;
+  align-items: center;
+  height: 8.75mm;
+}
+
+.toc__entry + .toc__entry {
+  border-top: var(--rule) solid var(--ink);
+}
+
+.toc__icon {
+  width: 4.5mm;
+  height: 4.5mm;
+  color: var(--accent);
+}
+
+.toc__entry-title {
+  overflow: hidden;
+  font-size: 11.3pt;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toc__entry-page {
+  font-size: 12.75pt;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.toc__empty {
+  font-family: var(--serif);
+  font-size: 10.6pt;
+  font-style: italic;
+}
+
+/* Special: opening, rupture, closing */
+
+.article {
+  break-before: page;
+}
+
+.article__image {
+  height: 80mm;
+  overflow: hidden;
+  background: #3a3733;
+}
+
+.article__image img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  filter: grayscale(1);
+}
+
+.article__title {
+  font-size: 56.7pt;
+  line-height: 0.9;
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+
+.article__image + .article__header .article__title {
+  margin-top: 9mm;
+}
+
+/* Interviews: the quote is the headline, "Intervista a …" the subtitle. */
+.article__subtitle {
+  margin-top: 3.5mm;
+  font-size: 20pt;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.article__deck {
+  margin-top: 6mm;
+  padding-top: 4.5mm;
+  border-top: var(--rule) solid currentColor;
+  font-family: var(--serif);
+  font-size: 14pt;
+  line-height: 1.35;
+  font-style: italic;
+}
+
+.article__meta {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+  margin-top: 4mm;
+  font-size: 9.2pt;
+  font-weight: 600;
+}
+
+.article__meta-divider {
+  width: 1mm;
+  height: 1mm;
+  border-radius: 0.25mm;
+  background: var(--accent);
+}
+
+.article__body {
+  margin-top: 7mm;
+  columns: 2;
+  column-gap: var(--column-gap);
+  column-rule: var(--rule) solid currentColor;
+  column-fill: auto;
+  font-family: var(--serif);
+  font-size: var(--body-size);
+  line-height: var(--body-leading);
+  text-align: justify;
+  hyphens: manual;
+  orphans: 2;
+  widows: 2;
+}
+
+/* Paragraphs are marked by an indent, not by space: Bringhurst/Tinker, and it
+   keeps the baseline grid. The indent is dropped after any break. */
+.article__body p + p {
+  text-indent: 1em;
+}
+
+/* Interview questions: one blank line before, flush left, set apart by weight. */
+.article__body p.print-question {
+  margin-top: var(--body-leading);
+  text-indent: 0;
+  font-weight: 600;
+}
+
+.article__body p.print-question + p {
+  text-indent: 0;
+}
+
+.article__body ul,
+.article__body ol,
+.article__body blockquote {
+  margin: var(--body-leading) 0;
+}
+
+.article__body > p:first-child::first-letter,
+.article__body > [data-print-fit-text] > p:first-child::first-letter {
+  float: left;
+  margin: 1.5mm 2.5mm 0 0;
+  font-family: var(--sans);
+  font-size: 48pt;
+  line-height: 0.74;
+  font-weight: 900;
+  color: var(--accent);
+}
+
+.article__body h2,
+.article__body h3 {
+  margin: var(--body-leading) 0 0;
+  font-family: var(--sans);
+  line-height: var(--body-leading);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-align: left;
+  break-after: avoid;
+}
+
+.article__body h2 {
+  font-size: 13.5pt;
+}
+
+.article__body h3 {
+  font-size: 11.5pt;
+}
+
+.article__body > :first-child,
+.article__body > [data-print-fit-text] > :first-child {
+  margin-top: 0;
+}
+
+.article__body blockquote {
+  padding-left: 4mm;
+  border-left: var(--rule) solid var(--accent);
+  font-style: italic;
+}
+
+.article__body ul,
+.article__body ol {
+  padding-left: 5mm;
+}
+
+.article__body figure {
+  margin: var(--body-leading) 0;
+  break-inside: avoid;
+}
+
+.article__body figure img {
+  width: 100%;
+  filter: grayscale(1);
+}
+
+.article__body figcaption {
+  margin-top: 1.5mm;
+  font-family: var(--sans);
+  font-size: 8pt;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+/* Fullscreen: the opening fills the first page; the photo grows and pushes
+   title and deck to the foot. The text starts on the next page. */
+.article--fullscreen .article__opening {
+  display: flex;
+  flex-direction: column;
+  height: calc(297mm - var(--page-top) - var(--page-bottom));
+  break-after: page;
+}
+
+.article--fullscreen .article__image {
+  position: relative;
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+
+.article--fullscreen .article__image img {
+  position: absolute;
+  inset: 0;
+}
+
+.article--fullscreen .article__body {
+  margin-top: 0;
+}
+
+/* Fitted sections (cut article, course): a page float reserves the footer strip
+   under the text of the last page, and the QR sits in it on the folio line, as
+   in the map. */
+.print-footer-float {
+  position: relative;
+  float: block-end;
+  float-reference: page;
+  width: 100%;
+  height: 11mm;
+}
+
+/* Course: header as in the articles, then one reading column (~68 characters)
+   with a side column carrying each meeting's number and title, aligned to its
+   start. The viewer trims the meeting texts until the course fits two pages. */
+
+.course {
+  break-before: page;
+}
+
+.course__title {
+  font-size: 56.7pt;
+  line-height: 0.9;
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+
+.course__deck {
+  margin-top: 6mm;
+  padding-top: 4.5mm;
+  border-top: var(--rule) solid var(--ink);
+  font-family: var(--serif);
+  font-size: 14pt;
+  line-height: 1.35;
+  font-style: italic;
+}
+
+.course__lessons {
+  margin-top: 7mm;
+  padding-left: 59mm;
+}
+
+.course__lesson-side {
+  float: left;
+  width: 50mm;
+  margin-left: -59mm;
+}
+
+.course__lesson-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 7mm;
+  height: 7mm;
+  background: var(--accent);
+  color: var(--paper);
+  font-size: 8.5pt;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.course__lesson-title {
+  margin-top: 3mm;
+  font-size: 13.5pt;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* The rule runs along the reading column; spacing is padding, so it never breaks. */
+.course__lesson-text {
+  padding: 0 0 var(--body-leading) 4.5mm;
+  border-left: var(--rule) solid var(--ink);
+  font-family: var(--serif);
+  font-size: var(--body-size);
+  line-height: var(--body-leading);
+  text-align: justify;
+  hyphens: manual;
+  orphans: 2;
+  widows: 2;
+}
+
+/* Map: opener with the plate, then the numbered entries in two columns. */
+
+.map {
+  break-before: page;
+}
+
+.map__opener {
+  display: flex;
+  flex-direction: column;
+  height: calc(297mm - var(--page-top) - var(--page-bottom));
+  break-inside: avoid;
+}
+
+.map__plate {
+  position: relative;
+  flex: 1;
+  min-height: 100mm;
+  overflow: hidden;
+  background: #eeeeee;
+}
+
+.map__canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+.map__tiles {
+  position: absolute;
+  inset: 0;
+  filter: grayscale(1) contrast(0.85) brightness(1.08);
+}
+
+.map__tile {
+  position: absolute;
+  max-width: none;
+}
+
+.map__marker {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 7mm;
+  height: 7mm;
+  margin: -3.5mm 0 0 -3.5mm;
+  border: 0.5mm solid var(--paper);
+  background: var(--accent);
+  color: var(--paper);
+  font-size: 8.5pt;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.map__attribution {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 1mm 2mm;
+  background: var(--paper);
+  font-size: 7pt;
+  font-weight: 600;
+}
+
+.map__title {
+  margin-top: 9mm;
+  font-size: 56.7pt;
+  line-height: 0.9;
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+
+.map__deck {
+  margin-top: 6mm;
+  padding-top: 4.5mm;
+  border-top: var(--rule) solid var(--ink);
+  font-family: var(--serif);
+  font-size: 14pt;
+  line-height: 1.35;
+  font-style: italic;
+}
+
+/* All entries on one page: row height and excerpt lines come from
+   lib/print/map-directory.ts, which mirrors the measures below. */
+.map__directory {
+  position: relative;
+  height: calc(297mm - var(--page-top) - var(--page-bottom));
+  break-before: page;
+  break-inside: avoid;
+}
+
+.map__row {
+  display: flex;
+  overflow: hidden;
+}
+
+.map__entry {
+  flex: 0 0 50%;
+  min-width: 0;
+  padding: 0 calc(var(--column-gap) / 2) 4mm 0;
+}
+
+.map__entry + .map__entry {
+  padding: 0 0 4mm calc(var(--column-gap) / 2);
+  border-left: var(--rule) solid var(--ink);
+}
+
+.map__entry-header {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+  padding-bottom: 2mm;
+  border-bottom: var(--rule) solid var(--ink);
+}
+
+.map__entry-number {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 6mm;
+  height: 6mm;
+  background: var(--accent);
+  color: var(--paper);
+  font-size: 8pt;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Two-line title slot, as on the cover, so every excerpt starts on the same line. */
+.map__entry-title {
+  display: flex;
+  align-items: center;
+  height: calc(2 * 1.15em);
+  overflow: hidden;
+  font-size: 11.3pt;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.map__entry-excerpt {
+  display: -webkit-box;
+  margin-top: 2mm;
+  overflow: hidden;
+  font-family: var(--serif);
+  font-size: var(--body-size);
+  line-height: var(--body-leading);
+  text-align: justify;
+  hyphens: manual;
+  -webkit-box-orient: vertical;
+}
+
+.map__opener--with-service {
+  padding-bottom: 11mm;
+}
+
+/* Footer QR, same block as the cover: its bottom sits on the folio line (11 mm
+   from the edge), on the inner side so it never meets the folio. */
+.map__opener,
+.map__directory {
+  position: relative;
+}
+
+.print-footer-qr {
+  font-family: var(--sans);
+  position: absolute;
+  right: 0;
+  bottom: calc(11mm - var(--page-bottom));
+  display: flex;
+  align-items: center;
+  gap: 4mm;
+  height: 20mm;
+}
+
+.print-footer-qr span {
+  font-size: 9.5pt;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.print-footer-qr img {
+  width: 20mm;
+  height: 20mm;
+  padding: 1mm;
+  background: var(--paper);
+}

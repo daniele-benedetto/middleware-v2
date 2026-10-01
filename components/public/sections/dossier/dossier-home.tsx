@@ -15,6 +15,7 @@ import { UnpaginatedArticleRow } from "@/components/public/sections/dossier/unpa
 import { CourseHomeBlock } from "@/components/public/sections/formazione/course-home-block";
 import { MapHomeBlock } from "@/components/public/sections/maps/map-home-block";
 import { QuestionnaireAnalysisHomeBlock } from "@/components/public/sections/questionnaires/questionnaire-analysis-home-block";
+import { getIssueBlockAnchorId } from "@/lib/issues/block-anchor";
 import { buildIssueNumberMap, formatIssueNumber } from "@/lib/public/format/issue";
 import { getIssueBlockNumberingArticles } from "@/lib/public/issue-numbering";
 
@@ -38,7 +39,7 @@ type DossierHomeProps = {
 };
 
 function getBlockAnchorId(block: ResolvedHomeBlock) {
-  return `issue-block-${block.id}`;
+  return getIssueBlockAnchorId(block.id);
 }
 
 function getArticleIndexItem(

@@ -251,93 +251,43 @@ Tokens fondazionali (palette, alpha, filetti, spacing, type scale, line-heights,
 
 ## Print edition direction
 
-Middleware può diventare un oggetto editoriale stampabile senza perdere la propria identità web. La prima direzione approvata è una rivista-dossier A4 verticale, inizialmente esportata come PDF, con articoli integrali e una sequenza editoriale derivata da `Issue.homeBlocks`.
+Middleware può diventare un oggetto editoriale stampabile senza perdere la propria identità web. Il numero cartaceo è A4 verticale, stampato in casa su A3 e piegato a libretto, con articoli integrali e una sequenza derivata da `Issue.homeBlocks`. Architettura e pipeline: `docs/architecture.md` → Issue Print Preview.
 
 ### Product contract
 
-- Formato: A4 verticale, 210 × 297 mm, pagine in multipli di 4.
-- Prima ipotesi di estensione: 64–96 pagine, da verificare su un issue reale.
-- Griglia: 12 colonne, margini interni più larghi del web, corpo testo prevalentemente su due colonne.
-- Fondo principale: Archive Paper; Paper White solo per separare apparati o tavole.
-- Inchiostri concettuali: Printing Ink + Vermilion Proof; il colore accent è un segnale editoriale, non una campitura decorativa.
-- Tipografia: Archivo per struttura, titoli, numeri, testatine e metadati; Spectral per articoli, sommari, citazioni e note.
-- Linguaggio: piatto, rule-led, squadrato, senza ombre, glassmorphism o card ripetute.
+- Formato: A4 verticale, 210 × 297 mm; il libretto A3 chiude a multipli di 4 pagine con bianche in coda.
+- Fondo: carta bianca, non stampata. Inchiostri: nero + Vermilion `#c13814`.
+- Gabbia interne: testa 16 mm, piede 24 mm, interno 18 mm, esterno 14 mm; testo su due colonne con spazio 9 mm e filetto.
+- Tipografia: Archivo per struttura, titoli, numeri e metadati; Spectral per testo, sommari e citazioni (font in `public/print/fonts`).
+- Folio: solo numero di pagina, nel piede sul lato esterno; assente su copertina e pagine bianche.
+- Scala di lettura: testo Spectral 10,5/14,5 pt (~50 caratteri per colonna, giustificato e sillabato); paragrafi con rientro di 1 em, senza spazio; titoletti nel testo 13,5/11,5 pt Archivo; sommario 14 pt corsivo; titolo d'apertura 56,7 pt; didascalie, occhielli e metadati mai sotto 7,5–8 pt, testo piccolo sempre in nero pieno.
+- Divisori: un solo spessore, 0,75 pt (come i filetti da 1 px del sito).
+- Riferimento visivo: il mockup `Middleware Cartaceo v3 (3).html` (misure a 4 px/mm, 1 px = 0,709 pt).
 
-### Editorial sequence
+### Editorial sequence (scope attuale)
 
-La rivista non è una stampa della home. La home orienta; il numero raccoglie e monta il contenuto integrale.
+1. copertina: numero e data, testata, fotografia (impostazioni copertina o foto della chiusura), titolo, occhiello, fino a tre richiami (`In copertina`) con pagina;
+2. indice: una voce per elemento dello speciale, con icona e pagina di apertura;
+3. articoli dei blocchi apertura, corpo, rottura e chiusura, nell’ordine dei blocchi, ognuno aperto su una nuova pagina: titolo (per le interviste citazione + "Intervista a …"), sommario, categoria e autore, testo su due colonne con capolettera. Solo le aperture dello speciale con foto vanno su fondo del colore del numero.
+4. contro-formazioni (`course`), nella posizione del blocco: due pagine con titolo, occhiello, "Contro-formazione · N incontri", poi gli incontri in una colonna di lettura con numero e titolo nella colonna laterale; ogni incontro mostra estratto e inizio del testo, accorciati in modo che tutti entrino nelle due pagine; il QR di piede, accanto al folio, apre la pagina della contro-formazione con l’elenco degli incontri. Opzioni di stampa del blocco: `In copertina`, `Escludi dal cartaceo`.
+5. mappe (`map`), nella posizione del blocco: apertura con mappa, titolo, descrizione e QR verso l'uscita online; pagina successiva con tutte le schede numerate su un'unica pagina: righe da due di pari altezza, estratto del testo (rich text con grassetto e corsivo, emoji rimosse) alto quanto lo spazio disponibile. Il QR, uguale a quello di copertina, sta nel piede sul lato interno, allineato al folio, e apre la mappa sulla pagina dell'uscita (`/uscite/:slug#issue-block-:id`). Oltre ~22 punti il preflight segnala che le schede non entrano in una pagina. Le opzioni di stampa del blocco mappa sono `In copertina`, `Chiudi con CTA sito` (solo apertura, senza schede) ed `Escludi dal cartaceo`.
 
-1. copertina;
-2. colophon e dati del numero;
-3. indice con numeri articolo, autori e pagina di apertura;
-4. apertura dell'issue;
-5. blocco `opening` come apertura dell'articolo principale;
-6. blocchi `body` come corpo di lettura;
-7. blocco `rupture` come momento di rottura tipografica o fotografica;
-8. corso, mappa e analisi come sezioni speciali, mai come semplici article card;
-9. blocco `closing` come chiusura editoriale;
-10. colophon finale e quarta di copertina.
-
-### Page families
-
-Il motore di impaginazione dovrà comporre il numero tramite famiglie di pagina, non tramite un unico layout fluido:
-
-- cover;
-- issue opener;
-- article opener;
-- article continuation;
-- text spread;
-- text + image;
-- image spread;
-- quotation / rupture;
-- course section;
-- map plate;
-- questionnaire analysis;
-- index;
-- colophon.
-
-Ogni famiglia deve definire gerarchia, griglia, margini, comportamento delle immagini e regole di continuazione. L'algoritmo sceglie il flusso; l'editor può bloccare le pagine ad alta intenzione, come copertina, aperture, rotture e tavole.
+Analisi dei questionari e anteprima verranno aggiunti come nuove famiglie di pagina sullo stesso motore.
 
 ### Pagination rules
 
-La paginazione automatica deve essere semantica e misurabile:
-
-- caricare `contentRich` completo, non soltanto excerpt e metadati;
-- mantenere titolo, sommario e autore insieme all'apertura dell'articolo;
-- evitare vedove, orfane e titoli isolati a fondo pagina;
-- mantenere didascalia e immagine nella stessa unità;
-- non separare il riferimento di una nota dal suo testo senza una regola esplicita;
-- verificare risoluzione, rapporto e orientamento delle immagini;
-- bilanciare le colonne nelle pagine di continuazione;
-- rispettare la parità delle pagine quando un articolo è configurato per iniziare a destra;
-- segnalare, senza nasconderli, overflow, pagine quasi vuote, asset mancanti e interruzioni manuali in conflitto.
-
-### Special content translation
-
-- `course`: apertura di sezione, descrizione e indice delle lezioni; non una lista di card.
-- `map`: tavola cartografica statica con legenda e riferimenti; mai uno screenshot della mappa interattiva.
-- `questionnaireAnalysis`: testo metodologico breve, grafici statici e legenda dei dati.
-- `preview`: richiamo editoriale o anteprima, con trattamento più breve rispetto a un articolo completo.
-
-### PDF preflight
-
-Prima dell'export il sistema deve produrre una lista di problemi verificabili: immagini mancanti o sottodimensionate, titoli separati, didascalie orfane, note non risolte, contenuti senza pagina, pagine vuote inattese, numerazione incoerente e blocchi speciali privi di asset stampabile.
-
-La preview reale espone già una prima distinzione tra errori bloccanti, warning e informazioni. Gli errori impediscono l'approvazione editoriale; i warning richiedono una decisione; le informazioni documentano interventi automatici come le pagine bianche aggiunte per chiudere il fascicolo.
+- Il testo scorre dall'apertura alle pagine successive, a colonne piene; titolo, sommario e meta restano con l'apertura.
+- `Chiudi con CTA sito` ferma l'articolo dopo due pagine, con "…" e, nel piede accanto al folio come nella mappa, il QR con l’invito a leggere l’intero contenuto online (intervista, contributo, editoriale, approfondimento, articolo).
+- `Escludi dal cartaceo` toglie l'articolo da indice, richiami e speciale.
+- `Layout cartaceo` (per articolo): `Standard` (default) o `Full screen`, con la prima pagina dedicata a foto, titolo e sommario e il testo dalla pagina successiva. Serve una foto; senza, si stampa lo standard e la preview lo segnala.
+- Titoli non restano isolati a fondo colonna; immagini e didascalie non si spezzano; orfane e vedove minime di 2 righe.
 
 ### Print preview CMS flow
 
-- La stampa è una vista dell’issue, non una risorsa CMS separata.
-- Il pulsante `Stampa PDF` vive nella testata della schermata di modifica dell’issue.
-- Le preferenze minime, come la visibilità del numero dell’uscita, vivono negli settings della sezione pagina.
-- La preview usa il rich text completo e l’ordine dei `homeBlocks` dell’issue corrente.
-- La UI della preview cambia in base al tipo di blocco, mantenendo per ora una composizione semplice e leggibile.
-- L’azione `Stampa / PDF` nasconde la chrome CMS e scarica il PDF A4 generato da Chromium; la stampa browser resta il fallback manuale.
-- La preview cartacea usa il layout HTML/CSS A4 nativo; Chromium genera il PDF finale con lo stesso documento e le stesse regole di stampa.
-- Il preflight viene eseguito senza aggiungere chrome visibile: immagini non valide e articoli privi di testo vengono marcati sul documento tramite stato tecnico, lasciando il pulsante di stampa come unica azione esposta.
-- Mappe e analisi restano sezioni riconoscibili e verranno approfondite in una fase successiva.
-
-La prima implementazione deve usare un issue reale e generare un numero campione statico di 8–12 pagine modello prima di introdurre la dashboard di preparazione. Il prototipo di riferimento deve coprire cover, indice, apertura issue, articolo standard, articolo con immagine, rupture, corso, mappa, analisi e chiusura.
+- Il pulsante `Preview cartacea` nella schermata di modifica dell'issue apre la preview in un dialog.
+- Le opzioni di stampa compaiono su ogni articolo dei blocchi articolo (apertura, corpo, rottura, chiusura) e sui blocchi mappa e contro-formazione.
+- I QR del cartaceo sono tracciati in Umami con `utm_source=cartaceo`, `utm_medium=qr`, `utm_campaign=numero-<n>` e `utm_content=qr_<posizione>`.
+- La toolbar mostra pagine A4, fogli A3 e pagine bianche aggiunte, gli avvisi di preflight (speciale vuoto, copertina senza immagine, articoli senza testo, contenuti non stampabili) e due azioni: `PDF pagine A4` per la verifica, `PDF da stampare A3` per la stampa fronte/retro sul lato corto.
 
 ## Source of truth
 

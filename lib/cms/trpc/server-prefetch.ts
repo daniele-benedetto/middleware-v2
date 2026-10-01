@@ -6,6 +6,7 @@ import {
   articleIssueOptionsInput,
 } from "@/lib/cms/article-options";
 import { lessonCourseOptionsInput } from "@/lib/cms/course-options";
+import { isArticleHomeBlock } from "@/lib/issues/home-block-rules";
 import { getTrpcCaller } from "@/lib/server/trpc/caller";
 
 import type { RouterInputs, RouterOutputs } from "@/lib/trpc/types";
@@ -171,59 +172,46 @@ export async function prefetchIssueById(id: string): Promise<IssueDetailOutput> 
 export async function prefetchIssuePrintData(id: string) {
   const caller = await getTrpcCaller();
   const issue = await caller.issues.getById({ id });
-  const blocks = issue.homeBlocks ?? [];
+  const issueArticleIds = new Set(issue.articles.map((article) => article.id));
+  const blockArticleIds = [
+    ...new Set(
+      (issue.homeBlocks ?? []).flatMap((block) =>
+        isArticleHomeBlock(block) ? block.articleIds : [],
+      ),
+    ),
+  ].filter((articleId) => issueArticleIds.has(articleId));
   const mapIds = [
     ...new Set(
-      blocks.flatMap((block) => (block.type === "map" && block.mapId ? [block.mapId] : [])),
+      (issue.homeBlocks ?? []).flatMap((block) =>
+        block.type === "map" && block.mapId ? [block.mapId] : [],
+      ),
     ),
   ];
-  const specialRequests: Array<{ id: string; load: () => Promise<{ title: string }> }> = [];
-  for (const block of blocks) {
-    if (block.type === "course" && block.courseId) {
-      const resourceId = block.courseId;
-      specialRequests.push({
-        id: resourceId,
-        load: () => caller.courses.getById({ id: resourceId }),
-      });
-    } else if (block.type === "questionnaireAnalysis" && block.questionnaireId) {
-      const resourceId = block.questionnaireId;
-      specialRequests.push({
-        id: resourceId,
-        load: () => caller.questionnaires.getById({ id: resourceId }),
-      });
-    } else if (block.type === "preview" && block.previewIssueId) {
-      const resourceId = block.previewIssueId;
-      specialRequests.push({
-        id: resourceId,
-        load: () => caller.issues.getById({ id: resourceId }),
-      });
-    }
-  }
-  const [articles, mapResults, resources] = await Promise.all([
-    Promise.all(issue.articles.map((article) => caller.articles.getById({ id: article.id }))),
-    Promise.all(mapIds.map((mapId) => caller.maps.getById({ id: mapId }).catch(() => null))),
-    Promise.all(
-      specialRequests.map(async ({ id: resourceId, load }) => {
-        try {
-          const resource = await load();
-          return { id: resourceId, title: resource.title };
-        } catch {
-          return null;
-        }
-      }),
+  const courseIds = [
+    ...new Set(
+      (issue.homeBlocks ?? []).flatMap((block) =>
+        block.type === "course" && block.courseId ? [block.courseId] : [],
+      ),
     ),
+  ];
+  const loadCourse = async (courseId: string) => {
+    const course = await caller.courses.getById({ id: courseId });
+    const lessons = await Promise.all(
+      course.lessons.map((lesson) => caller.lessons.getById({ id: lesson.id })),
+    );
+    return { ...course, lessons };
+  };
+  const [articles, maps, courses] = await Promise.all([
+    Promise.all(blockArticleIds.map((articleId) => caller.articles.getById({ id: articleId }))),
+    Promise.all(mapIds.map((mapId) => caller.maps.getById({ id: mapId }).catch(() => null))),
+    Promise.all(courseIds.map((courseId) => loadCourse(courseId).catch(() => null))),
   ]);
-  const maps = mapResults.filter((map): map is NonNullable<typeof map> => map !== null);
 
   return {
     issue,
     articles,
-    maps,
-    resourceTitles: Object.fromEntries(
-      [...maps, ...resources.filter((item): item is NonNullable<typeof item> => item !== null)].map(
-        (item) => [item.id, item.title],
-      ),
-    ),
+    maps: maps.filter((map) => map !== null),
+    courses: courses.filter((course) => course !== null),
   };
 }
 

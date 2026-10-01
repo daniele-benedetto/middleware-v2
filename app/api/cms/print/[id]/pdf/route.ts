@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { requireCmsSession } from "@/lib/cms/auth";
-import { renderIssuePdf } from "@/lib/server/print/pdf";
+import { printPdfLayoutSchema } from "@/lib/print/pdf-layout";
+import { imposeBookletPdf } from "@/lib/server/print/booklet-pdf";
+import { renderIssuePagesPdf } from "@/lib/server/print/pdf";
 
 const issueIdSchema = z.string().uuid();
 
@@ -11,21 +13,25 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   const { id: rawId } = await params;
   const parsedId = issueIdSchema.safeParse(rawId);
-  if (!parsedId.success) {
-    return NextResponse.json({ message: "Invalid issue id" }, { status: 400 });
+  const parsedLayout = printPdfLayoutSchema.safeParse(
+    new URL(request.url).searchParams.get("layout") ?? "pages",
+  );
+  if (!parsedId.success || !parsedLayout.success) {
+    return NextResponse.json({ message: "Invalid print request" }, { status: 400 });
   }
 
   try {
-    const pdf = await renderIssuePdf({
+    const pagesPdf = await renderIssuePagesPdf({
       issueId: parsedId.data,
       requestUrl: request.url,
       cookie: request.headers.get("cookie"),
     });
+    const pdf = parsedLayout.data === "booklet" ? await imposeBookletPdf(pagesPdf) : pagesPdf;
 
     return new NextResponse(Buffer.from(pdf), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="middleware-${parsedId.data}.pdf"`,
+        "Content-Disposition": `attachment; filename="middleware-${parsedId.data}-${parsedLayout.data}.pdf"`,
         "Cache-Control": "private, no-store",
       },
     });

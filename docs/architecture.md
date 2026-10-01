@@ -285,30 +285,43 @@ Editorial image semantics:
 
 ## Issue Print Preview
 
-La stampa è una vista dell'uscita, non una risorsa editoriale separata. La pagina dell'issue resta la fonte unica per contenuti, ordine e ruoli editoriali; le impostazioni minime di stampa sono salvate nell'issue.
+La stampa è una vista dell'uscita, non una risorsa editoriale separata. La pagina dell'issue resta la fonte unica per contenuti, ordine e ruoli editoriali; le impostazioni di stampa sono salvate nell'issue e nei `printSettings` dei blocchi.
 
-### Data flow
+### Scope
+
+Il numero cartaceo contiene per ora copertina, indice, gli articoli dei blocchi `opening`, `body`, `rupture`, `closing` (ognuno su una nuova pagina) le mappe (`map`) e le contro-formazioni (`course`), nell'ordine di `Issue.homeBlocks`. `questionnaireAnalysis` e `preview` non vanno ancora in stampa.
+
+### Pipeline
 
 ```text
-Issue
-  -> ordered editorial sequence from homeBlocks
-  -> simple print view model
-  -> semantic print document
-  -> CSS Paged Media preview renderer
-  -> browser PDF export
+Issue + articoli dello speciale (prefetchIssuePrintData)
+  -> buildPrintIssueDocument (lib/print, puro: sequenza, copertina, sillabazione)
+  -> IssuePrintDocument (HTML semantico) + public/print/issue.css (CSS Paged Media)
+  -> Vivliostyle Core nella pagina /cms/print/:id (impaginazione reale)
+  -> resolvePrintPageReferences (numeri di pagina di indice e richiami)
+  -> Chromium headless stampa la stessa pagina (?render=pdf) -> PDF A4
+  -> imposeBookletPdf (pdf-lib) -> PDF A3 a libretto
 ```
 
-- `Issue.homeBlocks` remains the source of truth for issue order and editorial roles.
-- `Issue.homeBlocks` è la fonte dell'ordine editoriale e dei tipi di sezione.
-- `Issue.printSettings` contiene solo le preferenze direttamente utili alla preview, come la visibilità del numero dell'uscita.
-- La preview CMS carica il `contentRich` completo tramite dati autenticati, quindi funziona anche per issue non ancora pubblicate.
-- I tipi `opening`, `body`, `rupture`, `closing`, `course`, `map`, `questionnaireAnalysis` e `preview` determinano il trattamento visuale della sezione senza introdurre layout persistiti.
-- La preview cartacea usa un documento HTML semantico e CSS Paged Media A4; il PDF finale viene generato da Chromium con lo stesso documento.
-- Il pulsante della preview usa l’export PDF deterministico tramite Chromium/Puppeteer; la stampa browser resta disponibile come fallback nativo del browser.
+- Formato: A4 verticale, stampato su A3 fronte/retro (lato corto) e piegato. Il libretto viene completato con pagine bianche in coda fino a un multiplo di 4.
+- Carta bianca: il fondo pagina non viene stampato, neanche in preview.
+- Ogni elemento dello speciale apre su una nuova pagina, senza pagine bianche intermedie; le uniche bianche sono quelle in coda al libretto.
+- `stopWithSiteCta`: l'articolo occupa al massimo due pagine e chiude con "…"; il QR (stesso blocco della copertina) sta nel piede dell'ultima pagina, sulla riga del folio e sul lato opposto, dentro una fascia `print-footer-float` riservata da un page float (`float: block-end; float-reference: page`) che accorcia entrambe le colonne; punta a `/articoli/:slug`, con invito per tipo di contenuto ("Leggi l’intera intervista / l’intero contributo / … su"); altrimenti il testo continua nelle pagine successive.
+- Adattamento a N pagine (`data-print-fit-pages`, `lib/print/fit.ts`, `lib/print/fit-dom.ts`): il viewer impagina, misura il testo (`data-print-fit-text`) finito oltre la pagina N, riduce il budget di caratteri e reimpagina con lo stesso Vivliostyle (massimo 4 passate). Il budget di una sezione si divide tra i suoi testi a riempimento: i testi brevi restano interi, i lunghi si spartiscono il resto. Preview e PDF passano dallo stesso ciclo.
+- Contro-formazione: testata come negli articoli (titolo, occhiello, meta), poi una colonna di lettura (~68 caratteri) con a lato una colonna laterale per numero e titolo di ogni incontro, allineati al suo inizio; due pagine in tutto (estratto + inizio del testo, adattati allo spazio) e QR di piede verso `/contro-formazione/:slug` con l'elenco degli incontri. Gli incontri archiviati non vanno in stampa.
+- Layout articolo (`printSettings[articleId].layout`, default `default`): `fullscreen` dedica la prima pagina a foto, titolo, sommario e meta, con la foto che spinge il testo al piede; il corpo parte dalla pagina successiva. Senza foto si stampa il layout standard e il preflight lo segnala. Un articolo full screen tagliato ha l'apertura più due pagine di testo.
+- Tutti i QR portano i parametri UTM per Umami (`lib/print/campaign.ts`): `utm_source=cartaceo&utm_medium=qr&utm_campaign=numero-<n>&utm_content=qr_<copertina|articolo|mappa|contro_formazione>`, con la campagna allineata ai link social (es. `numero-zero`).
+- Presentazione articoli (`lib/print/article-presentation.ts`): etichetta e icona d'indice dalla categoria; i titoli "“Citazione”, Intervista a …" diventano titolo + sottotitolo; nelle interviste le domande (iniziale in grassetto seguita da testo corsivo, `lib/print/interview.ts`) hanno una riga di stacco.
+- Mappa: apertura con tavola statica OpenStreetMap (stesse tile del sito, in scala di grigi) e marker numerati, poi tutte le schede su un'unica pagina. `buildPrintMapPlate` sceglie lo zoom più vicino che contiene tutti i punti e posiziona tile e marker in percentuale; `buildPrintMapDirectoryLayout` divide l'altezza della pagina tra le righe e calcola le righe di estratto (le misure rispecchiano `issue.css`); il QR apre il blocco mappa sulla pagina dell'uscita tramite l'ancora condivisa `getIssueBlockAnchorId`. Con `stopWithSiteCta` le schede non vengono stampate. Il PDF richiede accesso a internet per le tile.
+- Le aperture dello speciale con fotografia prendono il colore del numero; gli articoli del corpo restano su fondo carta (`homeVariant`: `black` nero, `red` rosso, `default` nessun fondo).
+- La sillabazione italiana è applicata lato server con trattini morbidi (`hyphen`), perché Chromium headless su Linux non ha dizionari.
+- Preview e PDF usano lo stesso DOM paginato: il CSS della pagina ospite che tocca le misure (preflight Tailwind, zoom) è neutralizzato in `app/globals.css`, e lo zoom della preview passa dall'opzione `zoom` di Vivliostyle.
+- Il PDF è servito da `app/api/cms/print/[id]/pdf` (`?layout=pages|booklet`): è l'unica route non tRPC del CMS, perché restituisce un binario.
+- Vivliostyle Core è AGPL-3.0: viene usato solo nel CMS autenticato e nel rendering server del PDF, mai nel sito pubblico.
 
 ### Implementation boundary
 
-La preview deve restare deterministica e semplice: stessa issue, stessi blocchi e stessi contenuti producono lo stesso documento A4. Non esistono manifesti o edizioni persistite separate. La pagina effettiva di apertura di un articolo deriva dal rendering paginato, non da una relazione artificiale uno-a-uno tra contenuto e pagina.
+Stessa issue, stessi blocchi e stessi contenuti producono lo stesso documento. Non esistono manifesti o edizioni persistite. I numeri di pagina derivano dal rendering paginato, non da stime sui caratteri.
 
 ## Related Docs
 

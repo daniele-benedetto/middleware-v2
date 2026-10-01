@@ -13,11 +13,22 @@ const categoryId = randomUUID();
 const authorId = randomUUID();
 const slug = `e2e-print-${suffix}`;
 
-const content = (title, paragraphs) => ({
+const paragraph = (text) => ({ type: "paragraph", content: [{ type: "text", text }] });
+
+const filler = [
+  "Questo paragrafo verifica la resa del testo editoriale nel formato A4 e la continuità della composizione tra la pagina di apertura e le pagine successive, con colonne giustificate e sillabazione italiana.",
+  "Il contenuto viene caricato dal rich text completo, mantenendo titoli, paragrafi e citazioni senza ridurlo a un semplice sommario: la paginazione deve riempire le colonne fino al piede e riprendere dal punto esatto.",
+  "Le trasformazioni del quartiere attraversano la sicurezza, la riqualificazione, la memoria e la vita quotidiana, e diventano terreno di contesa tra soggetti diversi che abitano gli stessi spazi.",
+];
+
+const content = (title, paragraphCount) => ({
   type: "doc",
   content: [
+    ...Array.from({ length: paragraphCount }, (_, index) =>
+      paragraph(filler[index % filler.length]),
+    ),
     { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: title }] },
-    ...paragraphs.map((text) => ({ type: "paragraph", content: [{ type: "text", text }] })),
+    ...filler.map(paragraph),
     {
       type: "blockquote",
       content: [
@@ -36,23 +47,44 @@ const homeBlocks = [
     type: "opening",
     articleIds: [articleIds[0]],
     featuredPlacement: "left",
+    printSettings: {
+      [articleIds[0]]: { showInIssueIntro: true, stopWithSiteCta: false, excludeFromPrint: false },
+    },
   },
   {
     id: randomUUID(),
-    type: "body",
+    type: "rupture",
     articleIds: [articleIds[1]],
     featuredPlacement: "left",
+    printSettings: {
+      [articleIds[1]]: { showInIssueIntro: true, stopWithSiteCta: true, excludeFromPrint: false },
+    },
   },
   {
     id: randomUUID(),
     type: "closing",
     articleIds: [articleIds[2]],
     featuredPlacement: "right",
+    printSettings: {
+      [articleIds[2]]: { showInIssueIntro: true, stopWithSiteCta: false, excludeFromPrint: false },
+    },
   },
 ];
 
 const client = new Client({ connectionString });
 await client.connect();
+
+const {
+  rows: [sampleMap],
+} = await client.query('SELECT id FROM "maps" ORDER BY "createdAt" LIMIT 1');
+if (sampleMap) {
+  homeBlocks.splice(2, 0, {
+    id: randomUUID(),
+    type: "map",
+    mapId: sampleMap.id,
+    printSettings: { showInIssueIntro: false, stopWithSiteCta: false, excludeFromPrint: false },
+  });
+}
 
 try {
   await client.query("BEGIN");
@@ -90,24 +122,29 @@ try {
     ],
   );
 
-  const titles = ["Apertura del numero", "Il corpo della prova", "Chiusura editoriale"];
-  for (let index = 0; index < articleIds.length; index += 1) {
+  const {
+    rows: [sampleImage],
+  } = await client.query(
+    'SELECT "imageUrl" FROM "articles" WHERE "imageUrl" IS NOT NULL ORDER BY "createdAt" LIMIT 1',
+  );
+  const fixtures = [
+    { title: "Apertura del numero", paragraphs: 24, imageUrl: sampleImage?.imageUrl ?? null },
+    { title: "Rottura con rimando al sito", paragraphs: 30, imageUrl: null },
+    { title: "Chiusura editoriale", paragraphs: 10, imageUrl: sampleImage?.imageUrl ?? null },
+  ];
+  for (const [index, fixture] of fixtures.entries()) {
     await client.query(
-      'INSERT INTO "articles" (id, "issueId", "categoryId", "authorId", status, "publishedAt", title, slug, excerpt, "contentRich", "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, \'DRAFT\', NULL, $5, $6, $7, $8, NOW(), NOW())',
+      'INSERT INTO "articles" (id, "issueId", "categoryId", "authorId", status, "publishedAt", title, slug, excerpt, "contentRich", "imageUrl", "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, \'DRAFT\', NULL, $5, $6, $7, $8, $9, NOW(), NOW())',
       [
         articleIds[index],
         issueId,
         categoryId,
         authorId,
-        titles[index],
+        fixture.title,
         `${slug}-${index + 1}`,
-        `Sommario dell’articolo di prova ${index + 1}.`,
-        JSON.stringify(
-          content(titles[index], [
-            "Questo paragrafo verifica la resa del testo editoriale nel formato A4 e la continuità della composizione.",
-            "Il contenuto viene caricato dal rich text completo, mantenendo titoli, paragrafi e citazioni senza ridurlo a un semplice excerpt.",
-          ]),
-        ),
+        `Sommario dell’articolo di prova ${index + 1}, usato anche nei richiami di copertina.`,
+        JSON.stringify(content(fixture.title, fixture.paragraphs)),
+        fixture.imageUrl,
       ],
     );
   }

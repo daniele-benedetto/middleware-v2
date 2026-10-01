@@ -45,6 +45,7 @@ import { cn } from "@/lib/utils";
 import type {
   IssueHomeArticleBlock,
   IssueHomeBlock,
+  IssueHomeArticlePrintLayout,
   IssueHomeArticlePrintSettings,
   IssueHomeBlockPrintSettings,
   IssueHomeBlocks,
@@ -89,6 +90,9 @@ type IssueHomeBlocksEditorText = {
   printShowInIssueIntro: string;
   printStopWithSiteCta: string;
   printExcludeFromPrint: string;
+  printLayout: string;
+  printLayoutDefault: string;
+  printLayoutFullscreen: string;
   type: string;
   typeBody: string;
   typeClosing: string;
@@ -689,9 +693,10 @@ export function IssueHomeBlocksEditor({
                               </CmsFormField>
                             ) : null}
 
-                            {!isArticleBlock ? (
+                            {block.type === "map" || block.type === "course" ? (
                               <PrintBlockSettings
                                 settings={block.printSettings}
+                                allowStop={block.type === "map"}
                                 disabled={disabled}
                                 text={text}
                                 onChange={(printSettings) =>
@@ -852,11 +857,14 @@ function SortableBlockSection({
 
 function PrintBlockSettings({
   settings,
+  allowStop,
   disabled,
   text,
   onChange,
 }: {
   settings?: IssueHomeBlockPrintSettings;
+  /** Courses always close with the QR, so the stop option only applies to maps. */
+  allowStop: boolean;
   disabled?: boolean;
   text: IssueHomeBlocksEditorText;
   onChange: (settings: IssueHomeBlockPrintSettings) => void;
@@ -876,13 +884,15 @@ function PrintBlockSettings({
         compact
         onChange={(showInIssueIntro) => onChange({ ...resolvedSettings, showInIssueIntro })}
       />
-      <CmsCheckbox
-        label={text.printStopWithSiteCta}
-        checked={resolvedSettings.stopWithSiteCta}
-        disabled={disabled || resolvedSettings.excludeFromPrint}
-        compact
-        onChange={(stopWithSiteCta) => onChange({ ...resolvedSettings, stopWithSiteCta })}
-      />
+      {allowStop ? (
+        <CmsCheckbox
+          label={text.printStopWithSiteCta}
+          checked={resolvedSettings.stopWithSiteCta}
+          disabled={disabled || resolvedSettings.excludeFromPrint}
+          compact
+          onChange={(stopWithSiteCta) => onChange({ ...resolvedSettings, stopWithSiteCta })}
+        />
+      ) : null}
       <CmsCheckbox
         label={text.printExcludeFromPrint}
         checked={resolvedSettings.excludeFromPrint}
@@ -1102,10 +1112,11 @@ function SortableSelectedArticle({
     disabled,
   });
   const articleTransform = transform ? { ...transform, x: 0, scaleX: 1, scaleY: 1 } : null;
-  const resolvedPrintSettings = {
+  const resolvedPrintSettings: IssueHomeArticlePrintSettings = {
     showInIssueIntro: printSettings?.showInIssueIntro ?? false,
     stopWithSiteCta: printSettings?.stopWithSiteCta ?? false,
     excludeFromPrint: printSettings?.excludeFromPrint ?? false,
+    layout: printSettings?.layout ?? "default",
   };
 
   return (
@@ -1188,6 +1199,27 @@ function SortableSelectedArticle({
                 })
               }
             />
+            <div className="sm:col-span-3">
+              <CmsFormField
+                label={text.printLayout}
+                htmlFor={`${blockId}-${article.id}-print-layout`}
+              >
+                <CmsSelect
+                  value={resolvedPrintSettings.layout}
+                  disabled={disabled || resolvedPrintSettings.excludeFromPrint}
+                  options={[
+                    { value: "default", label: text.printLayoutDefault },
+                    { value: "fullscreen", label: text.printLayoutFullscreen },
+                  ]}
+                  onValueChange={(layout) =>
+                    onPrintSettingsChange({
+                      ...resolvedPrintSettings,
+                      layout: layout as IssueHomeArticlePrintLayout,
+                    })
+                  }
+                />
+              </CmsFormField>
+            </div>
           </div>
         }
       />

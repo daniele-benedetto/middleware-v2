@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 
 import puppeteer from "puppeteer-core";
 
-const DEFAULT_TIMEOUT_MS = 45_000;
+const DEFAULT_TIMEOUT_MS = 60_000;
 
 function resolveChromiumExecutablePath() {
   const configuredPath =
@@ -35,7 +35,11 @@ function resolveSiteOrigin(requestUrl: string) {
   return configured ? new URL(configured).origin : new URL(requestUrl).origin;
 }
 
-export async function renderIssuePdf({
+/**
+ * Prints the same Vivliostyle-paginated page used by the CMS preview, so the PDF
+ * matches what the editors approved page by page.
+ */
+export async function renderIssuePagesPdf({
   issueId,
   requestUrl,
   cookie,
@@ -59,20 +63,23 @@ export async function renderIssuePdf({
       await page.setExtraHTTPHeaders({ cookie });
     }
 
-    const previewUrl = new URL(`/cms/print/${issueId}`, resolveSiteOrigin(requestUrl));
-    previewUrl.searchParams.set("pdf", "1");
-    await page.goto(previewUrl.toString(), { waitUntil: "networkidle0" });
+    const viewerUrl = new URL(`/cms/print/${issueId}`, resolveSiteOrigin(requestUrl));
+    viewerUrl.searchParams.set("render", "pdf");
+    await page.goto(viewerUrl.toString(), { waitUntil: "networkidle0" });
+    await page.waitForSelector('[data-print-status="ready"], [data-print-status="error"]');
+
+    const status = await page.$eval("[data-print-status]", (element) =>
+      element.getAttribute("data-print-status"),
+    );
+    if (status !== "ready") {
+      throw new Error("Print pagination failed");
+    }
+
     await page.evaluate(() => document.fonts.ready);
-    await page.waitForSelector(".print-v3-stage", { visible: true });
+    await page.waitForFunction(() => Array.from(document.images).every((image) => image.complete));
     await page.emulateMediaType("print");
 
-    return await page.pdf({
-      width: "210mm",
-      height: "297mm",
-      printBackground: true,
-      preferCSSPageSize: false,
-      margin: { top: "0mm", right: "0mm", bottom: "0mm", left: "0mm" },
-    });
+    return await page.pdf({ preferCSSPageSize: true, printBackground: true });
   } finally {
     await browser.close();
   }

@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 
 import { resolveCmsMediaPreviewUrl } from "@/lib/media/blob";
-import { resolveSafeRichTextLinkHref } from "@/lib/rich-text/public-schema";
+import { isInterviewQuestion } from "@/lib/print/interview";
 
 type RichTextNode = {
   type?: unknown;
@@ -25,26 +25,11 @@ function renderMarks(children: ReactNode, marks: unknown) {
   if (!Array.isArray(marks)) return children;
 
   return marks.reduce<ReactNode>((current, mark, index) => {
-    if (!mark || typeof mark !== "object") return current;
-    const value = mark as { type?: unknown; attrs?: unknown };
+    const type = mark && typeof mark === "object" ? (mark as { type?: unknown }).type : null;
 
-    if (value.type === "bold") return <strong key={index}>{current}</strong>;
-    if (value.type === "italic") return <em key={index}>{current}</em>;
-    if (value.type === "strike") return <s key={index}>{current}</s>;
-    if (value.type === "code") return <code key={index}>{current}</code>;
-
-    if (value.type === "link") {
-      const attrs =
-        value.attrs && typeof value.attrs === "object" ? (value.attrs as { href?: unknown }) : {};
-      const href = resolveSafeRichTextLinkHref(attrs.href);
-      return href ? (
-        <a key={index} href={href}>
-          {current}
-        </a>
-      ) : (
-        current
-      );
-    }
+    if (type === "bold") return <strong key={index}>{current}</strong>;
+    if (type === "italic") return <em key={index}>{current}</em>;
+    if (type === "strike") return <s key={index}>{current}</s>;
 
     return current;
   }, children);
@@ -56,6 +41,7 @@ function renderInline(node: RichTextNode, key: string): ReactNode {
   }
 
   if (node.type === "hardBreak") return <br key={key} />;
+  if (node.type === "noteReference") return null;
 
   return (
     <Fragment key={key}>
@@ -64,77 +50,67 @@ function renderInline(node: RichTextNode, key: string): ReactNode {
   );
 }
 
+function renderInlineChildren(node: RichTextNode, key: string) {
+  return childrenOf(node).map((child, index) => renderInline(child, `${key}-${index}`));
+}
+
 function renderBlocks(nodes: RichTextNode[], keyPrefix: string): ReactNode {
   return nodes.map((node, index) => renderBlock(node, `${keyPrefix}-${index}`));
 }
 
+function renderImage(node: RichTextNode, key: string) {
+  const attrs = attrsOf(node);
+  if (typeof attrs.src !== "string" || !attrs.src) return null;
+
+  return (
+    <figure key={key}>
+      {/* The print document is serialized for the paginator, so it needs a plain img. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={resolveCmsMediaPreviewUrl(attrs.src)}
+        alt={typeof attrs.alt === "string" ? attrs.alt : ""}
+      />
+      {typeof attrs.title === "string" && attrs.title ? (
+        <figcaption>{attrs.title}</figcaption>
+      ) : null}
+    </figure>
+  );
+}
+
 function renderBlock(node: RichTextNode, key: string): ReactNode {
-  const children = childrenOf(node);
-
-  if (node.type === "paragraph") {
-    return (
-      <p key={key}>{children.map((child, index) => renderInline(child, `${key}-${index}`))}</p>
-    );
+  switch (node.type) {
+    case "paragraph":
+      return (
+        <p key={key} className={isInterviewQuestion(node) ? "print-question" : undefined}>
+          {renderInlineChildren(node, key)}
+        </p>
+      );
+    case "heading":
+      return attrsOf(node).level === 3 ? (
+        <h3 key={key}>{renderInlineChildren(node, key)}</h3>
+      ) : (
+        <h2 key={key}>{renderInlineChildren(node, key)}</h2>
+      );
+    case "bulletList":
+      return <ul key={key}>{renderBlocks(childrenOf(node), key)}</ul>;
+    case "orderedList":
+      return <ol key={key}>{renderBlocks(childrenOf(node), key)}</ol>;
+    case "listItem":
+      return <li key={key}>{renderBlocks(childrenOf(node), key)}</li>;
+    case "blockquote":
+      return <blockquote key={key}>{renderBlocks(childrenOf(node), key)}</blockquote>;
+    case "image":
+      return renderImage(node, key);
+    case "codeBlock":
+    case "table":
+      return null;
+    default:
+      return <Fragment key={key}>{renderBlocks(childrenOf(node), key)}</Fragment>;
   }
-
-  if (node.type === "heading") {
-    const Heading = attrsOf(node).level === 3 ? "h3" : "h2";
-    return (
-      <Heading key={key}>
-        {children.map((child, index) => renderInline(child, `${key}-${index}`))}
-      </Heading>
-    );
-  }
-
-  if (node.type === "bulletList" || node.type === "orderedList") {
-    const List = node.type === "bulletList" ? "ul" : "ol";
-    return <List key={key}>{renderBlocks(children, key)}</List>;
-  }
-
-  if (node.type === "listItem") {
-    return <li key={key}>{renderBlocks(children, key)}</li>;
-  }
-
-  if (node.type === "blockquote") {
-    return <blockquote key={key}>{renderBlocks(children, key)}</blockquote>;
-  }
-
-  if (node.type === "codeBlock") {
-    return (
-      <pre key={key}>
-        <code>
-          {children.map((child) => (typeof child.text === "string" ? child.text : "")).join("\n")}
-        </code>
-      </pre>
-    );
-  }
-
-  if (node.type === "image") {
-    const attrs = attrsOf(node);
-    const src = typeof attrs.src === "string" ? resolveCmsMediaPreviewUrl(attrs.src) : null;
-    if (!src) return null;
-
-    return (
-      <figure key={key} className="print-rich-text__figure">
-        {/* CMS media is authenticated and cannot use the public Next Image loader. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={typeof attrs.alt === "string" ? attrs.alt : ""} />
-        {typeof attrs.title === "string" && attrs.title ? (
-          <figcaption>{attrs.title}</figcaption>
-        ) : null}
-      </figure>
-    );
-  }
-
-  return <Fragment key={key}>{renderBlocks(children, key)}</Fragment>;
 }
 
 export function PrintRichText({ value }: { value: unknown }) {
   if (!value || typeof value !== "object") return null;
 
-  return (
-    <div className="print-rich-text">
-      {renderBlocks(childrenOf(value as RichTextNode), "rich-text")}
-    </div>
-  );
+  return <>{renderBlocks(childrenOf(value as RichTextNode), "rich-text")}</>;
 }
