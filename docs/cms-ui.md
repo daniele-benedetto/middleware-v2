@@ -260,7 +260,7 @@ Middleware può diventare un oggetto editoriale stampabile senza perdere la prop
 - Gabbia interne: testa 16 mm, piede 24 mm, interno 18 mm, esterno 14 mm; testo su due colonne con spazio 9 mm e filetto.
 - Tipografia: Archivo per struttura, titoli, numeri e metadati; Spectral per testo, sommari e citazioni (font in `public/print/fonts`).
 - Folio: solo numero di pagina, nel piede sul lato esterno; assente su copertina e pagine bianche.
-- Scala di lettura: testo Spectral 10,5/14,5 pt (~50 caratteri per colonna, giustificato e sillabato); paragrafi con rientro di 1 em, senza spazio; titoletti nel testo 13,5/11,5 pt Archivo; sommario 14 pt corsivo; titolo d'apertura 56,7 pt; didascalie, occhielli e metadati mai sotto 7,5–8 pt, testo piccolo sempre in nero pieno.
+- Scala di lettura: testo Spectral 10,5/14,5 pt (~50 caratteri per colonna, giustificato e sillabato); paragrafi con rientro di 1 em, senza spazio; titoletti nel testo 13,5/11,5 pt Archivo; sommario 14 pt corsivo; titoli di sezione (articoli, mappa, contro-formazione, indice) 36 pt, sotto il titolo di copertina (48 pt), sottotitolo delle interviste 16 pt; didascalie, occhielli e metadati mai sotto 7,5–8 pt, testo piccolo sempre in nero pieno.
 - Divisori: un solo spessore, 0,75 pt (come i filetti da 1 px del sito).
 - Riferimento visivo: il mockup `Middleware Cartaceo v3 (3).html` (misure a 4 px/mm, 1 px = 0,709 pt).
 
@@ -277,6 +277,7 @@ Analisi dei questionari e anteprima verranno aggiunti come nuove famiglie di pag
 ### Pagination rules
 
 - Il testo scorre dall'apertura alle pagine successive, a colonne piene; titolo, sommario e meta restano con l'apertura.
+- Code corte: quando un articolo completo lascia sull'ultima pagina al massimo 10 righe, l'impaginazione le recupera da sola abbassando leggermente la foto d'apertura e, se serve, stringendo la spaziatura tra le lettere (al massimo −0,5%); oltre quella soglia la pagina finale resta com'è.
 - `Chiudi con CTA sito` ferma l'articolo dopo due pagine, con "…" e, nel piede accanto al folio come nella mappa, il QR con l’invito a leggere l’intero contenuto online (intervista, contributo, editoriale, approfondimento, articolo).
 - `Escludi dal cartaceo` toglie l'articolo da indice, richiami e speciale.
 - `Layout cartaceo` (per articolo): `Standard` (default) o `Full screen`, con la prima pagina dedicata a foto, titolo e sommario e il testo dalla pagina successiva. Serve una foto; senza, si stampa lo standard e la preview lo segnala.

@@ -7,12 +7,20 @@ import { buildBookletPlan } from "@/lib/print/booklet";
 import { nextFitBudget, PRINT_FIT_MAX_PASSES } from "@/lib/print/fit";
 import {
   applyFitBudgets,
+  applyNudgeLevels,
+  applyTightenLevels,
   collectFitSections,
+  collectNudgeAnchors,
+  collectTightenAnchors,
   fitPrintBoxes,
+  measureArticleOpening,
+  measureArticleTail,
   measureFitSection,
 } from "@/lib/print/fit-dom";
+import { nextNudge, startNudge, type PrintNudgeState } from "@/lib/print/nudge";
 import { resolvePrintPageReferences } from "@/lib/print/page-references";
 import { serializePrintSource } from "@/lib/print/print-source";
+import { nextTighten, startTighten, type PrintTightenState } from "@/lib/print/tighten";
 
 import type { PrintPreflightIssue } from "@/lib/print/preflight";
 import type { PrintDarkTone } from "@/lib/print/theme";
@@ -89,6 +97,12 @@ function usePrintPagination(variant: IssueHomeVariant) {
     }, PAGINATION_TIMEOUT_MS);
 
     const sections = collectFitSections(source);
+    const tightenAnchors = collectTightenAnchors(source);
+    const tightening = new Map<string, PrintTightenState>();
+    const tightenLevels = new Map<string, number>();
+    const nudgeAnchors = collectNudgeAnchors(source);
+    const nudging = new Map<string, PrintNudgeState>();
+    const nudgeLevels = new Map<string, number>();
     const budgets = new Map(
       sections.map((section) => [
         section.anchor,
@@ -102,6 +116,8 @@ function usePrintPagination(variant: IssueHomeVariant) {
       for (let pass = 1; pass <= PRINT_FIT_MAX_PASSES && !cancelled; pass += 1) {
         const working = source!.cloneNode(true) as HTMLElement;
         applyFitBudgets(working, budgets);
+        applyTightenLevels(working, tightenLevels);
+        applyNudgeLevels(working, nudgeLevels);
         const printDocument = new DOMParser().parseFromString(
           serializePrintSource(working, variant, window.location.origin),
           "text/html",
@@ -123,6 +139,28 @@ function usePrintPagination(variant: IssueHomeVariant) {
             );
             if (next !== null) {
               budgets.set(section.anchor, next);
+              changed = true;
+            }
+          }
+
+          for (const anchor of nudgeAnchors) {
+            const opening = measureArticleOpening(result.host, anchor);
+            const previous = nudging.get(anchor);
+            const next = previous ? nextNudge(previous, opening) : startNudge(opening);
+            nudging.set(anchor, next);
+            if (next.level !== (nudgeLevels.get(anchor) ?? 0)) {
+              nudgeLevels.set(anchor, next.level);
+              changed = true;
+            }
+          }
+
+          for (const anchor of tightenAnchors) {
+            const measure = measureArticleTail(result.host, anchor);
+            const previous = tightening.get(anchor);
+            const next = previous ? nextTighten(previous, measure) : startTighten(measure);
+            tightening.set(anchor, next);
+            if (next.level !== (tightenLevels.get(anchor) ?? 0)) {
+              tightenLevels.set(anchor, next.level);
               changed = true;
             }
           }

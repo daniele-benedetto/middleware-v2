@@ -31,7 +31,7 @@ export function distributeFitBudget(lengths: number[], total: number): number[] 
   return budgets;
 }
 
-export const PRINT_FIT_MAX_PASSES = 4;
+export const PRINT_FIT_MAX_PASSES = 8;
 const SHRINK_STEP = 0.94;
 
 export type PrintFitMeasure = {

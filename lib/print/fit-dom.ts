@@ -1,5 +1,7 @@
 import { distributeFitBudget, type PrintFitMeasure } from "@/lib/print/fit";
 
+import type { PrintTailMeasure } from "@/lib/print/tighten";
+
 const PAGE_CONTAINER_SELECTOR = "[data-vivliostyle-page-container]";
 const SECTION_SELECTOR = "[data-print-fit-pages]";
 const TEXT_SELECTOR = "[data-print-fit-text]";
@@ -34,9 +36,7 @@ export function measureFitSection(
   rendered: ParentNode,
   { anchor, maxPages }: Pick<PrintFitSection, "anchor" | "maxPages">,
 ): PrintFitMeasure {
-  const pages = Array.from(rendered.querySelectorAll(PAGE_CONTAINER_SELECTOR)).filter((page) =>
-    page.querySelector(`[data-print-anchor="${CSS.escape(anchor)}"]`),
-  );
+  const pages = pagesWithAnchor(rendered, anchor);
   const textOf = (page: Element) =>
     Array.from(page.querySelectorAll(TEXT_SELECTOR)).reduce(
       (total, element) => total + visibleLength(element),
@@ -127,5 +127,85 @@ export function fitPrintBoxes(rendered: ParentNode) {
 
     box.innerHTML = original;
     truncateFitText(box, low);
+  }
+}
+
+const TIGHTEN_SELECTOR = ".article[data-print-anchor]:not([data-print-fit-pages])";
+const NUDGE_SELECTOR = ".article[data-print-anchor]:not(.article--fullscreen)";
+
+function pagesWithAnchor(rendered: ParentNode, anchor: string) {
+  return Array.from(rendered.querySelectorAll(PAGE_CONTAINER_SELECTOR)).filter((page) =>
+    page.querySelector(`[data-print-anchor="${CSS.escape(anchor)}"]`),
+  );
+}
+
+/** Text lines of an element across its columns, from the rendered line boxes. */
+function countLines(element: Element) {
+  const bounds = element.getBoundingClientRect();
+  const middle = bounds.left + bounds.width / 2;
+  const lines = new Set<string>();
+  const walker = element.ownerDocument.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+  const range = element.ownerDocument.createRange();
+
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (!node.textContent?.trim()) continue;
+    range.selectNodeContents(node);
+    for (const rect of Array.from(range.getClientRects())) {
+      if (rect.width === 0) continue;
+      lines.add(`${rect.left < middle ? 0 : 1}:${Math.round(rect.top)}`);
+    }
+  }
+
+  return lines.size;
+}
+
+/** Full articles: candidates for pulling a short tail back. */
+function collectAnchors(source: ParentNode, selector: string) {
+  return Array.from(source.querySelectorAll(selector)).flatMap((article) => {
+    const anchor = article.getAttribute("data-print-anchor");
+    return anchor ? [anchor] : [];
+  });
+}
+
+export function collectTightenAnchors(source: ParentNode) {
+  return collectAnchors(source, TIGHTEN_SELECTOR);
+}
+
+export function collectNudgeAnchors(source: ParentNode) {
+  return collectAnchors(source, NUDGE_SELECTOR);
+}
+
+export function measureArticleTail(rendered: ParentNode, anchor: string): PrintTailMeasure {
+  const pages = pagesWithAnchor(rendered, anchor);
+  const body = pages.at(-1)?.querySelector(".article__body");
+
+  return { pageCount: pages.length, tailLines: body ? countLines(body) : 0 };
+}
+
+/** Marks each article with its adjustment level (see `data-print-tighten` in issue.css). */
+export function applyTightenLevels(source: ParentNode, levels: Map<string, number>) {
+  for (const [anchor, level] of levels) {
+    const article = source.querySelector(`[data-print-anchor="${CSS.escape(anchor)}"]`);
+    if (!article) continue;
+    if (level > 0) article.setAttribute("data-print-tighten", String(level));
+    else article.removeAttribute("data-print-tighten");
+  }
+}
+
+/** Whether the article's opening page carries body text (see lib/print/nudge.ts). */
+export function measureArticleOpening(rendered: ParentNode, anchor: string) {
+  const pages = pagesWithAnchor(rendered, anchor);
+  const body = pages[0]?.querySelector(".article__body");
+
+  return { pageCount: pages.length, openingHasText: Boolean(body?.textContent?.trim()) };
+}
+
+/** Marks each article with its header gap step (see `data-print-nudge` in issue.css). */
+export function applyNudgeLevels(source: ParentNode, levels: Map<string, number>) {
+  for (const [anchor, level] of levels) {
+    const article = source.querySelector(`[data-print-anchor="${CSS.escape(anchor)}"]`);
+    if (!article) continue;
+    if (level > 0) article.setAttribute("data-print-nudge", String(level));
+    else article.removeAttribute("data-print-nudge");
   }
 }

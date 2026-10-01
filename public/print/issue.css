@@ -56,6 +56,8 @@
      of the leading, so baselines stay aligned across columns. */
   --body-size: 10.5pt;
   --body-leading: 14.5pt;
+  /* Section titles stay below the cover title (48pt): the cover leads. */
+  --section-title-size: 36pt;
 }
 
 @page {
@@ -340,8 +342,8 @@ a {
 .toc__title {
   padding-bottom: 4.5mm;
   border-bottom: var(--rule) solid var(--ink);
-  font-size: 51pt;
-  line-height: 0.9;
+  font-size: var(--section-title-size);
+  line-height: 0.92;
   font-weight: 900;
   letter-spacing: -0.055em;
 }
@@ -418,8 +420,8 @@ a {
 }
 
 .article__title {
-  font-size: 56.7pt;
-  line-height: 0.9;
+  font-size: var(--section-title-size);
+  line-height: 0.92;
   font-weight: 900;
   letter-spacing: -0.055em;
 }
@@ -431,7 +433,7 @@ a {
 /* Interviews: the quote is the headline, "Intervista a …" the subtitle. */
 .article__subtitle {
   margin-top: 3.5mm;
-  font-size: 20pt;
+  font-size: 16pt;
   line-height: 1.1;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -445,6 +447,37 @@ a {
   font-size: 14pt;
   line-height: 1.35;
   font-style: italic;
+}
+
+/* The gap above the text is padding on the header, so the nudge steps below
+   can change it without touching the body. */
+.article__header {
+  padding-bottom: 7mm;
+}
+
+.article--fullscreen .article__header {
+  padding-bottom: 0;
+}
+
+/* Header gap steps for the Vivliostyle workaround in lib/print/nudge.ts. */
+.article[data-print-nudge="1"] .article__header {
+  padding-bottom: 4mm;
+}
+
+.article[data-print-nudge="2"] .article__header {
+  padding-bottom: 11mm;
+}
+
+.article[data-print-nudge="3"] .article__header {
+  padding-bottom: 15mm;
+}
+
+.article[data-print-nudge="4"] .article__header {
+  padding-bottom: 20mm;
+}
+
+.article[data-print-nudge="5"] .article__header {
+  padding-bottom: 25mm;
 }
 
 .article__meta {
@@ -464,7 +497,6 @@ a {
 }
 
 .article__body {
-  margin-top: 7mm;
   columns: 2;
   column-gap: var(--column-gap);
   column-rule: var(--rule) solid currentColor;
@@ -565,6 +597,26 @@ a {
   font-weight: 600;
 }
 
+/* Short tail pull-back (lib/print/tighten.ts): when a full article spills a few
+   lines onto a new page, the viewer tries these levels in order. Leading and
+   type size never change, so the baseline grid holds. */
+.article:not(.article--fullscreen)[data-print-tighten="1"] .article__image {
+  height: 70mm;
+}
+
+.article:not(.article--fullscreen)[data-print-tighten="2"] .article__image,
+.article:not(.article--fullscreen)[data-print-tighten="3"] .article__image {
+  height: 60mm;
+}
+
+.article[data-print-tighten="2"] .article__body {
+  letter-spacing: -0.0025em;
+}
+
+.article[data-print-tighten="3"] .article__body {
+  letter-spacing: -0.005em;
+}
+
 /* Fullscreen: the opening fills the first page; the photo grows and pushes
    title and deck to the foot. The text starts on the next page. */
 .article--fullscreen .article__opening {
@@ -584,10 +636,6 @@ a {
 .article--fullscreen .article__image img {
   position: absolute;
   inset: 0;
-}
-
-.article--fullscreen .article__body {
-  margin-top: 0;
 }
 
 /* Fitted sections (cut article, course): a page float reserves the footer strip
@@ -630,8 +678,8 @@ a {
 }
 
 .course__title {
-  font-size: 56.7pt;
-  line-height: 0.9;
+  font-size: var(--section-title-size);
+  line-height: 0.92;
   font-weight: 900;
   letter-spacing: -0.055em;
 }
@@ -794,8 +842,8 @@ a {
 
 .map__title {
   margin-top: 9mm;
-  font-size: 56.7pt;
-  line-height: 0.9;
+  font-size: var(--section-title-size);
+  line-height: 0.92;
   font-weight: 900;
   letter-spacing: -0.055em;
 }
