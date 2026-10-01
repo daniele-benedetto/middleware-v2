@@ -601,17 +601,32 @@ a {
   height: 11mm;
 }
 
-/* Course: two pages. The first meeting fills the opening page under the
-   header, the others share the second page; each meeting has a divider with
-   number and title and its text on two balanced columns. The viewer trims the
-   texts until each page is full (lib/print/fit.ts). */
+/* Course, as in the mockup: two page-sized boxes. The first meeting fills the
+   opening page under the header; the others share the second page in equal
+   heights. Each meeting: divider with red number and title, then its text on
+   two columns filling the box. The viewer trims the text to fit the box
+   (fitPrintBoxes in lib/print/fit-dom.ts). */
 
 .course {
   break-before: page;
 }
 
+.course__page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: calc(297mm - var(--page-top) - var(--page-bottom));
+  break-inside: avoid;
+}
+
 .course__page--rest {
+  gap: 7mm;
   break-before: page;
+}
+
+/* Leaves the footer strip to the QR, which sits on the folio line. */
+.course__page--with-service {
+  padding-bottom: 11mm;
 }
 
 .course__title {
@@ -632,20 +647,22 @@ a {
 }
 
 .course__lesson {
-  margin-top: 7mm;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
 }
 
-.course__page--rest .course__lesson:first-child {
-  margin-top: 0;
+.course__header + .course__lesson {
+  margin-top: 9mm;
 }
 
 .course__lesson-header {
   display: flex;
   align-items: center;
   gap: 3mm;
-  padding-top: 3mm;
-  border-top: var(--rule) solid var(--ink);
-  break-after: avoid;
+  padding-bottom: 2mm;
+  border-bottom: var(--rule) solid var(--ink);
 }
 
 .course__lesson-number {
@@ -653,28 +670,31 @@ a {
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 7mm;
-  height: 7mm;
+  width: 6mm;
+  height: 6mm;
   background: var(--accent);
   color: var(--paper);
-  font-size: 8.5pt;
+  font-size: 8pt;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
 .course__lesson-title {
-  font-size: 16pt;
-  line-height: 1.1;
+  font-size: 11.3pt;
+  line-height: 1.15;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
 .course__lesson-text {
-  margin-top: 4mm;
+  flex: 1;
+  min-height: 0;
+  margin-top: 3.5mm;
+  overflow: hidden;
   columns: 2;
   column-gap: var(--column-gap);
   column-rule: var(--rule) solid var(--ink);
-  column-fill: balance;
+  column-fill: auto;
   font-family: var(--serif);
   font-size: var(--body-size);
   line-height: var(--body-leading);
@@ -682,6 +702,30 @@ a {
   hyphens: manual;
   orphans: 2;
   widows: 2;
+}
+
+.course__lesson-text p + p {
+  text-indent: 1em;
+}
+
+.course__lesson-lead {
+  font-style: italic;
+}
+
+.course__lesson-text h2,
+.course__lesson-text h3 {
+  margin-top: var(--body-leading);
+  font-family: var(--sans);
+  font-size: 11.5pt;
+  line-height: var(--body-leading);
+  font-weight: 800;
+  text-align: left;
+  break-after: avoid;
+}
+
+.course__lesson-text h2 + p,
+.course__lesson-text h3 + p {
+  text-indent: 0;
 }
 
 /* Map: opener with the plate, then the numbered entries in two columns. */

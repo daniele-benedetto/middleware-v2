@@ -5,7 +5,12 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { PrintPreviewActions } from "@/components/cms/print/print-preview-actions";
 import { buildBookletPlan } from "@/lib/print/booklet";
 import { nextFitBudget, PRINT_FIT_MAX_PASSES } from "@/lib/print/fit";
-import { applyFitBudgets, collectFitSections, measureFitSection } from "@/lib/print/fit-dom";
+import {
+  applyFitBudgets,
+  collectFitSections,
+  fitPrintBoxes,
+  measureFitSection,
+} from "@/lib/print/fit-dom";
 import { resolvePrintPageReferences } from "@/lib/print/page-references";
 import { serializePrintSource } from "@/lib/print/print-source";
 
@@ -127,6 +132,7 @@ function usePrintPagination(variant: IssueHomeVariant) {
 
       if (cancelled || !current) return;
       window.clearTimeout(timeout);
+      fitPrintBoxes(current);
       setPageCount(resolvePrintPageReferences(current));
       setStatus("ready");
     }

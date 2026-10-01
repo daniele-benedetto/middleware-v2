@@ -71,33 +71,3 @@ export function toPrintTextRuns(value: unknown): PrintTextRun[] {
     .filter((run) => run.text)
     .map((run) => ({ ...run, text: hyphenatePrintText(run.text) }));
 }
-
-/** Keeps at most `maxChars` visible characters, cut on a word, closed by an ellipsis. */
-export function truncatePrintTextRuns(runs: PrintTextRun[], maxChars: number): PrintTextRun[] {
-  const result: PrintTextRun[] = [];
-  let remaining = maxChars;
-
-  for (const run of runs) {
-    const visible = run.text.replaceAll("\u00ad", "");
-    if (visible.length <= remaining) {
-      result.push(run);
-      remaining -= visible.length;
-      continue;
-    }
-
-    let cut = 0;
-    let seen = 0;
-    while (cut < run.text.length && seen < remaining) {
-      if (run.text[cut] !== "\u00ad") seen += 1;
-      cut += 1;
-    }
-    const head = run.text.slice(0, cut);
-    const wordEnd = head.search(/\s\S*$/);
-    const text = (wordEnd > 0 ? head.slice(0, wordEnd) : head).trimEnd();
-    if (text) result.push({ ...run, text: `${text}…` });
-    else if (result.length > 0) result.at(-1)!.text = `${result.at(-1)!.text.trimEnd()}…`;
-    return result;
-  }
-
-  return result;
-}

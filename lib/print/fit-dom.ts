@@ -97,3 +97,35 @@ export function applyFitBudgets(source: ParentNode, budgets: Map<string, number>
     texts.forEach((text, index) => truncateFitText(text, shares[index] ?? 0));
   }
 }
+
+const BOX_SELECTOR = "[data-print-fit-box]";
+
+function overflows(box: HTMLElement) {
+  return box.scrollWidth > box.clientWidth + 1 || box.scrollHeight > box.clientHeight + 1;
+}
+
+/**
+ * Fixed-size boxes (course meetings) keep as much text as they can show: a
+ * binary search on the visible characters, ending on a word with an ellipsis.
+ * The boxes do not change size, so the pagination stays valid.
+ */
+export function fitPrintBoxes(rendered: ParentNode) {
+  for (const box of Array.from(rendered.querySelectorAll<HTMLElement>(BOX_SELECTOR))) {
+    if (!overflows(box)) continue;
+
+    const original = box.innerHTML;
+    let low = 0;
+    let high = visibleLength(box);
+
+    while (low < high) {
+      const middle = Math.ceil((low + high) / 2);
+      box.innerHTML = original;
+      truncateFitText(box, middle);
+      if (overflows(box)) high = middle - 1;
+      else low = middle;
+    }
+
+    box.innerHTML = original;
+    truncateFitText(box, low);
+  }
+}

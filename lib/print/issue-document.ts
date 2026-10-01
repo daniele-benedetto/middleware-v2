@@ -14,11 +14,8 @@ import {
   type PrintMapDirectoryLayout,
 } from "@/lib/print/map-directory";
 import { buildPrintMapPlate, type PrintMapPlate } from "@/lib/print/map-plate";
-import {
-  toPrintTextRuns,
-  truncatePrintTextRuns,
-  type PrintTextRun,
-} from "@/lib/print/rich-excerpt";
+import { toPrintTextRuns, type PrintTextRun } from "@/lib/print/rich-excerpt";
+import { truncatePrintRichText } from "@/lib/print/rich-truncate";
 import { resolvePrintDarkTone } from "@/lib/print/theme";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 
@@ -139,7 +136,7 @@ export type PrintCourseLesson = {
   label: string;
   title: string;
   lead: PrintTextRun[];
-  text: PrintTextRun[];
+  content: unknown;
 };
 
 export type PrintCourseSection = PrintSectionSettings & {
@@ -291,10 +288,10 @@ function toPrintMapSection(
 }
 
 /**
- * Lessons are generously pre-trimmed: the viewer fits the course into its two
- * pages and trims again from the measured layout.
+ * Lessons are generously pre-trimmed to keep the print source light: the viewer
+ * trims each meeting again to fill its box on the laid-out page.
  */
-const COURSE_LESSON_MAX_CHARS = 6000;
+const COURSE_LESSON_MAX_CHARS = 8000;
 
 function toPrintCourseSection(
   blockId: string,
@@ -320,16 +317,14 @@ function toPrintCourseSection(
             type: "paragraph",
             content: [{ type: "text", text: lesson.excerpt ?? "" }],
           });
-      const leadLength = lead.reduce((total, run) => total + run.text.length, 0);
 
       return {
         id: lesson.id,
         label: String(index + 1).padStart(2, "0"),
         title: lesson.title,
         lead,
-        text: truncatePrintTextRuns(
-          toPrintTextRuns(lesson.contentRich),
-          Math.max(0, COURSE_LESSON_MAX_CHARS - leadLength),
+        content: hyphenatePrintRichText(
+          truncatePrintRichText(lesson.contentRich, COURSE_LESSON_MAX_CHARS),
         ),
       };
     }),

@@ -1,4 +1,5 @@
 import { PrintFooterQr } from "@/components/cms/print/print-footer-qr";
+import { PrintRichText } from "@/components/cms/print/print-rich-text";
 import { PrintTextRuns } from "@/components/cms/print/print-text-runs";
 import { PrintTitle } from "@/components/cms/print/print-title";
 
@@ -6,28 +7,28 @@ import type { PrintCourseLesson, PrintCourseSection } from "@/lib/print/issue-do
 
 function CourseLesson({ lesson }: { lesson: PrintCourseLesson }) {
   return (
-    <article className="course__lesson">
+    <section className="course__lesson">
       <div className="course__lesson-header">
         <span className="course__lesson-number">{lesson.label}</span>
         <h3 className="course__lesson-title">{lesson.title}</h3>
       </div>
-      <p className="course__lesson-text" data-print-fit-text="">
+      <div className="course__lesson-text" data-print-fit-box="">
         {lesson.lead.length > 0 ? (
-          <em>
-            <PrintTextRuns runs={lesson.lead} />{" "}
-          </em>
+          <p className="course__lesson-lead">
+            <PrintTextRuns runs={lesson.lead} />
+          </p>
         ) : null}
-        <PrintTextRuns runs={lesson.text} />
-      </p>
-    </article>
+        <PrintRichText value={lesson.content} />
+      </div>
+    </section>
   );
 }
 
 /**
- * Two pages: the first meeting fills the opening page under the course header,
- * the others share the second page and the QR closes it. Each page is fitted on
- * its own (`data-print-fit-pages`), so the viewer trims the meeting texts until
- * they fill their page.
+ * Two page-sized boxes, as in the mockup: the first meeting fills the opening
+ * page under the course header, the others share the second page in equal
+ * heights and the footer QR closes it. The viewer trims each meeting to fill
+ * its box (`data-print-fit-box`).
  */
 export function PrintCourse({
   course,
@@ -41,23 +42,17 @@ export function PrintCourse({
   const [first, ...rest] = course.lessons;
   const meetings = course.lessons.length === 1 ? "1 incontro" : `${course.lessons.length} incontri`;
   const service = qrCode ? (
-    <div className="print-footer-float">
-      <PrintFooterQr
-        qrCode={qrCode}
-        label="Leggi tutti gli incontri su"
-        siteLabel={siteLabel}
-        alt={`QR code: ${course.plainTitle}`}
-      />
-    </div>
+    <PrintFooterQr
+      qrCode={qrCode}
+      label="Leggi tutti gli incontri su"
+      siteLabel={siteLabel}
+      alt={`QR code: ${course.plainTitle}`}
+    />
   ) : null;
 
   return (
     <section id={course.anchor} className="course" data-print-anchor={course.anchor}>
-      <div
-        className="course__page"
-        data-print-anchor={`${course.anchor}-opening`}
-        data-print-fit-pages={1}
-      >
+      <div className={`course__page${rest.length === 0 ? " course__page--with-service" : ""}`}>
         <header className="course__header">
           <PrintTitle as="h2" className="course__title" segments={course.title} />
           {course.deck ? <p className="course__deck">{course.deck}</p> : null}
@@ -72,11 +67,7 @@ export function PrintCourse({
       </div>
 
       {rest.length > 0 ? (
-        <div
-          className="course__page course__page--rest"
-          data-print-anchor={`${course.anchor}-rest`}
-          data-print-fit-pages={1}
-        >
+        <div className="course__page course__page--rest course__page--with-service">
           {rest.map((lesson) => (
             <CourseLesson key={lesson.id} lesson={lesson} />
           ))}
