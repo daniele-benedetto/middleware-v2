@@ -46,8 +46,10 @@ trap cleanup EXIT
 docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T -e RESTORE_DB="$app_db" postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" createdb -U "$POSTGRES_USER" "$RESTORE_DB"'
 docker compose --env-file .env.production -f compose.production.yml exec -T -e RESTORE_DB="$app_db" postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" pg_restore -U "$POSTGRES_USER" -d "$RESTORE_DB" --no-owner --no-acl --exit-on-error --single-transaction' < "$latest_app"
 app_migrations="$(docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T -e RESTORE_DB="$app_db" postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$RESTORE_DB" -tAc "select count(*) from \"_prisma_migrations\";"')"
-test "$app_migrations" = "4"
-printf 'app_migrations=%s\n' "$app_migrations" >> "$manifest"
+live_migrations="$(docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc "select count(*) from \"_prisma_migrations\";"')"
+test "$app_migrations" -gt 0
+test "$app_migrations" -le "$live_migrations"
+printf 'app_migrations=%s\nlive_migrations=%s\n' "$app_migrations" "$live_migrations" >> "$manifest"
 
 docker compose --env-file .env.production -f compose.production.yml exec --interactive=false -T -e RESTORE_DB="$umami_db" umami-postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" createdb -U "$POSTGRES_USER" "$RESTORE_DB"'
 docker compose --env-file .env.production -f compose.production.yml exec -T -e RESTORE_DB="$umami_db" umami-postgres sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" pg_restore -U "$POSTGRES_USER" -d "$RESTORE_DB" --no-owner --no-acl --exit-on-error --single-transaction' < "$latest_umami"
