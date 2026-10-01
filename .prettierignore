@@ -9,3 +9,6 @@ pnpm-lock.yaml
 
 # vendored by scripts/sync-maplibre-worker.mjs
 public/maplibre
+
+# local print design reference, intentionally untracked
+Middleware Cartaceo v3 (3).html
