@@ -293,7 +293,8 @@ La stampa è una vista dell'uscita, non una risorsa editoriale separata. La pagi
 Issue
   -> ordered editorial sequence from homeBlocks
   -> simple print view model
-  -> preview renderer
+  -> semantic print document
+  -> CSS Paged Media preview renderer
   -> browser PDF export
 ```
 
@@ -302,11 +303,12 @@ Issue
 - `Issue.printSettings` contiene solo le preferenze direttamente utili alla preview, come la visibilità del numero dell'uscita.
 - La preview CMS carica il `contentRich` completo tramite dati autenticati, quindi funziona anche per issue non ancora pubblicate.
 - I tipi `opening`, `body`, `rupture`, `closing`, `course`, `map`, `questionnaireAnalysis` e `preview` determinano il trattamento visuale della sezione senza introdurre layout persistiti.
-- L'export corrente usa la stampa del browser; la paginazione tipografica avanzata e un PDF press-ready sono attività successive.
+- La preview cartacea usa un documento HTML semantico e CSS Paged Media A4; il PDF finale viene generato da Chromium con lo stesso documento.
+- Il pulsante della preview usa l’export PDF deterministico tramite Chromium/Puppeteer; la stampa browser resta disponibile come fallback nativo del browser.
 
 ### Implementation boundary
 
-La preview deve restare deterministica e semplice: stessa issue, stessi blocchi e stessi contenuti producono la stessa sequenza. Non esistono manifesti o edizioni persistite separate. Un motore PDF tipografico potrà essere introdotto più avanti senza cambiare il flusso CMS.
+La preview deve restare deterministica e semplice: stessa issue, stessi blocchi e stessi contenuti producono lo stesso documento A4. Non esistono manifesti o edizioni persistite separate. La pagina effettiva di apertura di un articolo deriva dal rendering paginato, non da una relazione artificiale uno-a-uno tra contenuto e pagina.
 
 ## Related Docs
 

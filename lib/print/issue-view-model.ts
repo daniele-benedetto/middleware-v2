@@ -3,11 +3,13 @@ import type {
   IssueHomeBlockPrintSettings,
   IssueHomeBlocks,
 } from "@/lib/server/modules/issues/schema";
+import type { IssueTitleStyled } from "@/lib/server/modules/issues/schema";
 
 export type IssuePrintArticle = {
   id: string;
   slug: string;
   title: string;
+  titleStyled?: IssueTitleStyled | null;
   excerpt: string | null;
   authorName: string | null;
   categoryName: string | null;
@@ -15,6 +17,7 @@ export type IssuePrintArticle = {
   imageUrl?: string | null;
   imageAlt?: string | null;
   imageSettings?: unknown;
+  featuredPlacement?: "left" | "right";
 };
 
 export type IssuePrintArticleItem = {
@@ -77,7 +80,12 @@ export function buildIssuePrintSequence(
         assignedIds.add(id);
         const printSettings = resolvePrintSettings(block.printSettings?.[id]);
         if (!printSettings.excludeFromPrint) {
-          sequence.push({ kind: "article", article, type: block.type, printSettings });
+          sequence.push({
+            kind: "article",
+            article: { ...article, featuredPlacement: block.featuredPlacement },
+            type: block.type,
+            printSettings,
+          });
         }
       }
       continue;

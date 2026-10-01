@@ -126,9 +126,9 @@ export function MagazineCover({
             >
               <span className="magazine-cover__highlight-kicker">{blockLabel(item.type)}</span>
               <h2 className="magazine-cover__highlight-title">{itemTitle(item, resourceTitles)}</h2>
-              {item.kind === "article" && item.article.excerpt ? (
-                <p className="magazine-cover__highlight-excerpt">{item.article.excerpt}</p>
-              ) : null}
+              <p className="magazine-cover__highlight-excerpt">
+                {item.kind === "article" ? item.article.excerpt : null}
+              </p>
               <span className="magazine-cover__highlight-page">
                 p. {String(item.page).padStart(2, "0")}
               </span>

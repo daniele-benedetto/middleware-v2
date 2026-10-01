@@ -531,7 +531,7 @@ body {
   min-height: 420px;
   /* The reference artboard is 920 × 1200. Keep its authored proportion on
      screen; print rules map the same composition onto the final sheet. */
-  aspect-ratio: 920 / 1200;
+  aspect-ratio: 210 / 297;
   overflow: hidden;
   background: var(--print-v3-paper);
   box-shadow: 0 18px 50px rgb(0 0 0 / 25%);
@@ -724,15 +724,13 @@ body {
 
 .print-v3-index-content {
   position: absolute;
-  inset: 5.33% 6.09% 8%;
-  display: flex;
-  flex-direction: column;
+  inset: 5.33% 6.09% 4%;
 }
 
 .print-v3-index h2 {
   margin: 0;
   padding-bottom: 1.5%;
-  border-bottom: 2px solid var(--print-v3-ink);
+  border-bottom: 1px solid var(--print-v3-ink);
   font-family: var(--font-archivo), sans-serif;
   font-size: 7.83cqw;
   font-weight: 900;
@@ -742,14 +740,19 @@ body {
 
 .print-v3-index-list {
   display: flex;
-  flex: 1;
+  flex: 0 0 auto;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
   min-height: 0;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   margin: 0;
   padding: 0;
   overflow: hidden;
   list-style: none;
+  transform: translateY(-50%);
 }
 
 .print-v3-index-list li {
@@ -759,7 +762,14 @@ body {
   align-items: center;
   height: 2.9167cqh;
   min-height: 2.9167cqh;
-  margin-top: -1px;
+  margin-top: 0;
+}
+
+.print-v3-index-list li:first-child {
+  border-top: 0;
+}
+
+.print-v3-index-list li + li {
   border-top: 1px solid var(--print-v3-ink);
 }
 
@@ -805,7 +815,9 @@ body {
 }
 
 .print-v3-folio {
-  margin-top: auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
   font-family: var(--font-archivo), sans-serif;
   font-size: 1.41cqw;
   font-weight: 900;
@@ -867,16 +879,25 @@ body {
     display: block;
   }
 
-  .print-v3-page {
-    width: 230mm;
-    height: 300mm;
-    min-height: 300mm;
+  .print-v3-page:not(.print-v3-article) {
+    width: 210mm;
+    height: 297mm;
+    min-height: 297mm;
     box-shadow: none;
     break-after: page;
     page-break-after: always;
   }
 
-  .print-v3-page-group:last-child .print-v3-page {
+  .print-v3-article-group {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .print-v3-article {
+    width: auto;
+    min-height: 0;
+    overflow: visible;
+    box-shadow: none;
     break-after: auto;
     page-break-after: auto;
   }
@@ -884,7 +905,7 @@ body {
 
 @media print {
   @page {
-    size: 230mm 300mm;
+    size: A4 portrait;
     margin: 0;
   }
 }
@@ -897,7 +918,7 @@ body {
   width: auto;
   height: min(calc(100dvh - 190px), 78vh);
   min-height: 420px;
-  aspect-ratio: 230 / 300;
+  aspect-ratio: 210 / 297;
   overflow: hidden;
   background: var(--print-v3-paper);
   color: var(--print-v3-ink);
@@ -951,8 +972,9 @@ body {
 
 .magazine-cover__image {
   position: relative;
-  height: 18cqh;
-  min-height: 0;
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 24cqh;
   margin: 2cqh 0 0;
   overflow: hidden;
   background: #3a3733;
@@ -992,23 +1014,31 @@ body {
 
 .magazine-cover__highlights {
   display: grid;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 3.04%;
+  grid-template-rows: auto auto auto auto;
+  column-gap: 3.04%;
+  row-gap: 0;
   min-height: 0;
   margin-top: 2.4cqh;
   padding: 1.2cqh 0 2cqh;
   border-top: 1px solid rgb(0 0 0 / 68%);
 }
 
+.magazine-cover:not(:has(.magazine-cover__image)) .magazine-cover__highlights {
+  margin-top: auto;
+}
+
 .magazine-cover__highlight {
-  display: flex;
+  display: grid;
   min-width: 0;
-  flex-direction: column;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+  align-items: center;
 }
 
 .magazine-cover__highlight-title {
-  margin: 0.5em 0 0;
+  margin: 0.3em 0 0.35em;
   overflow: hidden;
   font-family: var(--font-archivo), sans-serif;
   font-size: 1.85cqw;
@@ -1021,20 +1051,20 @@ body {
 
 .magazine-cover__highlight-excerpt {
   display: -webkit-box;
-  flex: 1 1 auto;
   min-height: 0;
-  margin: 0.65em 0 0;
+  margin: 0;
   overflow: hidden;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 7;
   font-family: var(--font-spectral), serif;
   font-size: 1.36cqw;
   line-height: 1.45;
   hyphens: auto;
+  align-self: start;
 }
 
 .magazine-cover__highlight-page {
-  margin-top: auto;
+  margin-top: 0;
   padding-top: 0.8em;
   color: var(--print-v3-ink);
   font-variant-numeric: tabular-nums;
@@ -1053,7 +1083,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 40px;
-  min-height: 8.667cqh;
+  min-height: 10cqh;
   margin: 0 -8.08%;
   padding: 1.5cqh 8.08%;
   background: var(--print-v3-ink);
@@ -1061,11 +1091,11 @@ body {
 }
 
 .magazine-cover--long-description .magazine-cover__image {
-  height: 10cqh;
+  min-height: 16cqh;
 }
 
 .magazine-cover--long-description .magazine-cover__highlight-excerpt {
-  -webkit-line-clamp: 2;
+  max-height: none;
 }
 
 .magazine-cover__brand,
@@ -1099,7 +1129,7 @@ body {
 .magazine-cover__service {
   flex-shrink: 0;
   font-family: var(--font-archivo), sans-serif;
-  font-size: 1.2cqw;
+  font-size: 1.45cqw;
   font-weight: 700;
   letter-spacing: 0.1em;
   line-height: 1.4;
@@ -1108,9 +1138,9 @@ body {
 }
 
 .magazine-cover__service img {
-  width: 5.2cqw;
-  height: 5.2cqw;
-  padding: 0.42cqw;
+  width: 7cqw;
+  height: 7cqw;
+  padding: 0.56cqw;
   background: var(--print-v3-paper);
 }
 
@@ -1182,9 +1212,9 @@ body {
 
 @media print {
   .magazine-cover {
-    width: 230mm;
-    height: 300mm;
-    min-height: 300mm;
+    width: 210mm;
+    height: 297mm;
+    min-height: 297mm;
     box-shadow: none;
     break-after: page;
     page-break-after: always;
@@ -1194,6 +1224,332 @@ body {
 
   .print-preview-actions {
     display: none;
+  }
+}
+
+.print-v3-article {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  padding: 16mm 15mm 24mm;
+  background: var(--print-v3-paper);
+  color: var(--print-v3-ink);
+  text-align: left;
+}
+
+.print-v3-article--opening,
+.print-v3-article--rupture,
+.print-v3-article--closing {
+  background: #000;
+  color: #f7f0e7;
+}
+
+.print-v3-article--continuation {
+  background: var(--print-v3-paper);
+  color: var(--print-v3-ink);
+}
+
+.print-v3-article--opening .print-v3-article__image,
+.print-v3-article--rupture .print-v3-article__image,
+.print-v3-article--closing .print-v3-article__image {
+  flex: 1 1 auto;
+  min-height: 30cqh;
+  margin: 0;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--print-v3-ink) 14%, var(--print-v3-paper));
+  filter: grayscale(1);
+}
+
+.print-v3-article__image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.print-v3-article--opening .print-v3-article__header,
+.print-v3-article--rupture .print-v3-article__header,
+.print-v3-article--closing .print-v3-article__header {
+  margin-top: 3cqh;
+  margin-bottom: 2.33cqh;
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.print-v3-article--rupture .print-v3-article__header {
+  margin-top: auto;
+  margin-bottom: auto;
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.print-v3-article--rupture .print-v3-article__header h1 {
+  max-width: 178mm;
+  font-size: 7.39cqw;
+}
+
+.print-v3-article--closing .print-v3-article__header {
+  border-bottom-color: var(--print-v3-rule);
+}
+
+.print-v3-title-primary {
+  color: var(--print-v3-accent);
+}
+
+.print-v3-article__header {
+  max-width: 178mm;
+  margin-bottom: 12mm;
+  padding-bottom: 6mm;
+  border-bottom: 1px solid var(--print-v3-rule, var(--print-v3-ink));
+  break-after: avoid;
+}
+
+.print-v3-article__kicker {
+  margin: 0 0 1.33cqh;
+  color: var(--print-v3-accent);
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.196cqw;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.print-v3-article__header h1 {
+  max-width: 170mm;
+  margin: 0;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 7.39cqw;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+}
+
+.print-v3-article__deck {
+  max-width: 145mm;
+  margin: 2cqh 0 0;
+  padding-top: 1.5cqh;
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: currentColor;
+  font-family: var(--font-spectral), serif;
+  font-size: 1.9cqw;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.print-v3-article__byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.3cqw;
+  margin-top: 1.33cqh;
+  color: rgb(0 0 0 / 72%);
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.41cqw;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.print-v3-article--opening .print-v3-article__byline,
+.print-v3-article--rupture .print-v3-article__byline,
+.print-v3-article--closing .print-v3-article__byline {
+  color: rgb(247 240 231 / 72%);
+}
+
+.print-v3-article--continuation .print-v3-article__byline {
+  color: rgb(0 0 0 / 72%);
+}
+
+.print-v3-article__meta-divider {
+  width: 4px;
+  height: 4px;
+  flex: 0 0 auto;
+  background: var(--print-v3-accent);
+}
+
+.print-v3-article__folio {
+  position: absolute;
+  right: 7.83%;
+  bottom: 3.67%;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.41cqw;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.print-v3-article--continuation .print-v3-article__folio {
+  right: auto;
+  left: 7.83%;
+}
+
+.print-rich-text {
+  max-width: 178mm;
+  columns: 2;
+  column-gap: 3.91cqw;
+  column-rule-width: 1px;
+  column-rule-style: solid;
+  column-rule-color: currentColor;
+  column-fill: balance;
+  font-family: var(--font-spectral), serif;
+  /* 1.76cqw resolves to roughly 10.5pt on an A4 sheet: readable Spectral text
+     in a newspaper-width column without competing with the display hierarchy. */
+  font-size: 1.76cqw;
+  hyphens: auto;
+  line-height: 1.42;
+  orphans: 3;
+  widows: 3;
+}
+
+.print-rich-text > * {
+  break-inside: avoid;
+}
+
+.print-rich-text p {
+  margin: 0 0 1.5cqh;
+}
+
+.print-rich-text h2,
+.print-rich-text h3 {
+  break-after: avoid;
+  font-family: var(--font-archivo), sans-serif;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.print-rich-text h2 {
+  margin: 8mm 0 3mm;
+  font-size: 22pt;
+}
+
+.print-rich-text h3 {
+  margin: 6mm 0 2mm;
+  font-size: 15pt;
+}
+
+.print-rich-text ul,
+.print-rich-text ol {
+  margin: 0 0 4mm;
+  padding-inline-start: 6mm;
+}
+
+.print-rich-text li {
+  margin-bottom: 1.5mm;
+}
+
+.print-rich-text blockquote {
+  break-inside: avoid;
+  margin: 7mm 0;
+  padding: 3mm 0 3mm 5mm;
+  border-inline-start: 2px solid var(--print-v3-accent);
+  font-size: 15pt;
+  font-style: italic;
+  line-height: 1.35;
+}
+
+.print-rich-text pre {
+  break-inside: avoid;
+  margin: 5mm 0;
+  padding: 4mm;
+  background: var(--print-v3-ink);
+  color: var(--print-v3-paper);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 8.5pt;
+  white-space: pre-wrap;
+}
+
+.print-rich-text a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 0.5px;
+  text-underline-offset: 2px;
+}
+
+.print-rich-text__figure {
+  break-inside: avoid;
+  margin: 7mm 0;
+}
+
+.print-rich-text__figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 115mm;
+  object-fit: contain;
+}
+
+.print-rich-text__figure figcaption {
+  margin-top: 2mm;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 8.5pt;
+  line-height: 1.25;
+}
+
+@media print {
+  .print-v3-page,
+  .magazine-cover,
+  .print-rich-text {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .print-v3-article__header,
+  .print-rich-text h2,
+  .print-rich-text h3,
+  .print-rich-text__figure,
+  .print-rich-text blockquote,
+  .print-rich-text pre {
+    break-inside: avoid;
+  }
+}
+
+/* Native browser-print fallback: keep every authored family on the physical
+   A4 sheet even when the Paged.js enhancement is unavailable. */
+@media print {
+  html,
+  body {
+    width: 210mm !important;
+    min-width: 210mm !important;
+    margin: 0 !important;
+  }
+
+  .print-v3-shell,
+  .print-v3-stage {
+    width: 210mm !important;
+    min-width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .print-v3-page-group {
+    width: 210mm !important;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .print-v3-page-group:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  .magazine-cover,
+  .print-v3-page:not(.print-v3-article) {
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+  }
+
+  .print-v3-article {
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    box-sizing: border-box;
   }
 }
 
@@ -1954,124 +2310,176 @@ body:has(.print-prototype-shell--embedded) {
   width: 51%;
 }
 
-.print-map-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(180px, 0.55fr);
-  gap: 28px;
-  margin-top: 72px;
+.print-v3-map-opener__content {
+  position: absolute;
+  inset: 5.33% 7.83% 8% 6.08%;
+  display: flex;
+  flex-direction: column;
 }
 
-.print-map-plate {
+.print-v3-map-plate {
   position: relative;
-  min-height: 670px;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
-  border: 1px solid var(--print-ink);
-  background: rgb(0 0 0 / 3%);
+  background: #e9e3da;
 }
 
-.print-map-plate::before,
-.print-map-plate::after {
+.print-v3-map-plate__lines {
   position: absolute;
-  background: rgb(0 0 0 / 14%);
-  content: "";
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: rgb(0 0 0 / 16%);
+  stroke-width: 4;
 }
 
-.print-map-plate::before {
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
-}
-
-.print-map-plate::after {
-  top: 50%;
-  right: 0;
-  left: 0;
-  height: 1px;
-}
-
-.print-map-axis {
-  position: absolute;
-  font-family: var(--font-archivo), sans-serif;
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-}
-
-.print-map-axis--x {
-  right: 12px;
-  bottom: 10px;
-}
-.print-map-axis--y {
-  top: 12px;
-  left: 12px;
-}
-
-.print-map-point {
+.print-v3-map-marker {
   position: absolute;
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 3.04cqw;
+  height: 3.04cqw;
   place-items: center;
-  border: 2px solid var(--print-accent);
-  background: var(--print-paper);
-  color: var(--print-accent);
+  border: 0.22cqw solid var(--print-v3-paper);
+  background: var(--print-v3-accent);
+  color: var(--print-v3-paper);
   font-family: var(--font-archivo), sans-serif;
-  font-size: 11px;
-  font-weight: 900;
+  font-size: 1.3cqw;
+  font-weight: 800;
+  line-height: 1;
+  transform: translate(-50%, -50%);
 }
 
-.print-map-point--one {
-  top: 19%;
-  left: 25%;
-}
-.print-map-point--two {
-  top: 43%;
-  left: 61%;
-}
-.print-map-point--three {
-  bottom: 18%;
-  left: 39%;
-}
-
-.print-map-path {
+.print-v3-map-attribution {
   position: absolute;
-  top: 24%;
-  left: 29%;
-  width: 39%;
-  height: 34%;
-  border-right: 2px solid var(--print-accent);
-  border-bottom: 2px solid var(--print-accent);
-  transform: rotate(27deg) skew(-18deg);
+  right: 0;
+  bottom: 0;
+  padding: 0.43cqw 0.87cqw;
+  background: var(--print-v3-paper);
+  color: rgb(0 0 0 / 72%);
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 0.98cqw;
+  font-weight: 600;
 }
 
-.print-map-caption h2 {
-  margin: 14px 0 22px;
+.print-v3-map-opener__title {
+  margin: 3cqh 0 0;
   font-family: var(--font-archivo), sans-serif;
-  font-size: 42px;
+  font-size: 8.7cqw;
   font-weight: 900;
-  line-height: 0.86;
-  letter-spacing: -0.07em;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
 }
 
-.print-map-caption > p:not(.print-section-label) {
+.print-v3-map-opener__description {
+  margin: 2cqh 0 0;
+  padding-top: 1.5cqh;
+  border-top: 2px solid var(--print-v3-ink);
   font-family: var(--font-spectral), serif;
-  font-size: 15px;
-  line-height: 1.45;
+  font-size: 2.07cqw;
+  font-style: italic;
+  line-height: 1.4;
 }
 
-.print-map-caption ol {
-  margin: 42px 0 0;
-  padding: 0;
-  list-style: none;
+.print-v3-map-folio {
+  position: absolute;
+  right: 7.83%;
+  bottom: 3.67%;
   font-family: var(--font-archivo), sans-serif;
-  font-size: 12px;
-  line-height: 2.2;
+  font-size: 1.41cqw;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
 }
 
-.print-map-caption li b {
-  margin-right: 12px;
-  color: var(--print-accent);
+.print-v3-map-folio--left {
+  right: auto;
+  left: 7.83%;
+}
+
+.print-v3-map-directory__content {
+  position: absolute;
+  inset: 5.33% 6.08% 8% 7.83%;
+}
+
+.print-v3-map-directory__list {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  column-count: 2;
+  column-gap: 3.91cqw;
+  column-rule: 1px solid var(--print-v3-ink);
+  column-fill: auto;
+  list-style: none;
+}
+
+.print-v3-map-directory__list li {
+  break-inside: avoid;
+  margin: 0 0 2cqh;
+}
+
+.print-v3-map-directory__item-title {
+  display: flex;
+  align-items: center;
+  gap: 1.3cqw;
+  padding-bottom: 1cqh;
+  border-bottom: 1px solid var(--print-v3-ink);
+}
+
+.print-v3-map-directory__item-title span {
+  display: grid;
+  width: 2.61cqw;
+  height: 2.61cqw;
+  flex: 0 0 auto;
+  place-items: center;
+  background: var(--print-v3-accent);
+  color: var(--print-v3-paper);
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.2cqw;
+  font-weight: 800;
+}
+
+.print-v3-map-directory__item-title h2 {
+  margin: 0;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.74cqw;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.print-v3-map-directory__list p {
+  margin: 1cqh 0 0;
+  font-family: var(--font-spectral), serif;
+  font-size: 1.63cqw;
+  line-height: 1.5;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.print-v3-map-directory__service {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 1.3cqw;
+  text-align: right;
+}
+
+.print-v3-map-directory__service img {
+  width: 4.78cqw;
+  height: 4.78cqw;
+}
+
+.print-v3-map-directory__service strong {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 1.2cqw;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
 }
 
 .print-course-layout {
@@ -2691,7 +3099,7 @@ body:has(.print-prototype-shell--embedded) {
 
 @media print {
   @page {
-    size: 230mm 300mm;
+    size: A4 portrait;
     margin: 0;
   }
 }

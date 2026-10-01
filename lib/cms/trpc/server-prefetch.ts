@@ -172,6 +172,11 @@ export async function prefetchIssuePrintData(id: string) {
   const caller = await getTrpcCaller();
   const issue = await caller.issues.getById({ id });
   const blocks = issue.homeBlocks ?? [];
+  const mapIds = [
+    ...new Set(
+      blocks.flatMap((block) => (block.type === "map" && block.mapId ? [block.mapId] : [])),
+    ),
+  ];
   const specialRequests: Array<{ id: string; load: () => Promise<{ title: string }> }> = [];
   for (const block of blocks) {
     if (block.type === "course" && block.courseId) {
@@ -180,9 +185,6 @@ export async function prefetchIssuePrintData(id: string) {
         id: resourceId,
         load: () => caller.courses.getById({ id: resourceId }),
       });
-    } else if (block.type === "map" && block.mapId) {
-      const resourceId = block.mapId;
-      specialRequests.push({ id: resourceId, load: () => caller.maps.getById({ id: resourceId }) });
     } else if (block.type === "questionnaireAnalysis" && block.questionnaireId) {
       const resourceId = block.questionnaireId;
       specialRequests.push({
@@ -197,8 +199,9 @@ export async function prefetchIssuePrintData(id: string) {
       });
     }
   }
-  const [articles, resources] = await Promise.all([
+  const [articles, mapResults, resources] = await Promise.all([
     Promise.all(issue.articles.map((article) => caller.articles.getById({ id: article.id }))),
+    Promise.all(mapIds.map((mapId) => caller.maps.getById({ id: mapId }).catch(() => null))),
     Promise.all(
       specialRequests.map(async ({ id: resourceId, load }) => {
         try {
@@ -210,14 +213,16 @@ export async function prefetchIssuePrintData(id: string) {
       }),
     ),
   ]);
+  const maps = mapResults.filter((map): map is NonNullable<typeof map> => map !== null);
 
   return {
     issue,
     articles,
+    maps,
     resourceTitles: Object.fromEntries(
-      resources
-        .filter((item): item is NonNullable<typeof item> => item !== null)
-        .map((item) => [item.id, item.title]),
+      [...maps, ...resources.filter((item): item is NonNullable<typeof item> => item !== null)].map(
+        (item) => [item.id, item.title],
+      ),
     ),
   };
 }

@@ -40,8 +40,11 @@ describe("buildIssuePrintSequence", () => {
     ]);
     expect(result.specialItems).toEqual([
       {
+        kind: "special",
         id: "map",
         type: "map",
+        resourceId: "map-1",
+        page: 4,
         printSettings: {
           showInIssueIntro: false,
           stopWithSiteCta: false,

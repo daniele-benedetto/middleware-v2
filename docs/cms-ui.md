@@ -332,7 +332,9 @@ La preview reale espone già una prima distinzione tra errori bloccanti, warning
 - Le preferenze minime, come la visibilità del numero dell’uscita, vivono negli settings della sezione pagina.
 - La preview usa il rich text completo e l’ordine dei `homeBlocks` dell’issue corrente.
 - La UI della preview cambia in base al tipo di blocco, mantenendo per ora una composizione semplice e leggibile.
-- L’azione `Stampa / PDF` nasconde la chrome CMS e usa la stampa del browser.
+- L’azione `Stampa / PDF` nasconde la chrome CMS e scarica il PDF A4 generato da Chromium; la stampa browser resta il fallback manuale.
+- La preview cartacea usa il layout HTML/CSS A4 nativo; Chromium genera il PDF finale con lo stesso documento e le stesse regole di stampa.
+- Il preflight viene eseguito senza aggiungere chrome visibile: immagini non valide e articoli privi di testo vengono marcati sul documento tramite stato tecnico, lasciando il pulsante di stampa come unica azione esposta.
 - Mappe e analisi restano sezioni riconoscibili e verranno approfondite in una fase successiva.
 
 La prima implementazione deve usare un issue reale e generare un numero campione statico di 8–12 pagine modello prima di introdurre la dashboard di preparazione. Il prototipo di riferimento deve coprire cover, indice, apertura issue, articolo standard, articolo con immagine, rupture, corso, mappa, analisi e chiusura.

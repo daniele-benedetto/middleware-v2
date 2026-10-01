@@ -22,7 +22,7 @@ export default async function PrintIssuePage({ params, searchParams }: PrintIssu
   const { id: rawId } = await params;
   const { embedded } = await searchParams;
   const id = resolveCmsRouteEntityIdOrNotFound(rawId);
-  const [{ issue, articles, resourceTitles }, publishedIssues] = await Promise.all([
+  const [{ issue, articles, maps, resourceTitles }, publishedIssues] = await Promise.all([
     prefetchCmsDetailOrNotFound(() => prefetchIssuePrintData(id)),
     getPublicPublishedIssues("cms.issuePrintPreview"),
   ]);
@@ -33,6 +33,7 @@ export default async function PrintIssuePage({ params, searchParams }: PrintIssu
     <IssuePrintPreview
       issue={issue}
       articles={articles}
+      maps={maps}
       issueNumber={issueNumber}
       resourceTitles={resourceTitles}
       embedded={embedded === "1"}
