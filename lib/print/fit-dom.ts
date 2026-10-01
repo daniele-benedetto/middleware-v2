@@ -5,11 +5,28 @@ import type { PrintTailMeasure } from "@/lib/print/tighten";
 const PAGE_CONTAINER_SELECTOR = "[data-vivliostyle-page-container]";
 const SECTION_SELECTOR = "[data-print-fit-pages]";
 const TEXT_SELECTOR = "[data-print-fit-text]";
+const FOOTNOTE_SELECTOR = ".print-footnote";
 const SOFT_HYPHEN = /­/g;
 const ELLIPSIS = "…";
 
+/** Running text only: footnotes leave the column and never take the ellipsis. */
+function runningTextNodes(element: Element) {
+  const walker = element.ownerDocument.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node.parentElement?.closest(FOOTNOTE_SELECTOR)
+        ? NodeFilter.FILTER_REJECT
+        : NodeFilter.FILTER_ACCEPT,
+  });
+  const nodes: Text[] = [];
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) nodes.push(node as Text);
+  return nodes;
+}
+
 function visibleLength(element: Element) {
-  return (element.textContent ?? "").replace(SOFT_HYPHEN, "").length;
+  return runningTextNodes(element).reduce(
+    (total, node) => total + (node.textContent ?? "").replace(SOFT_HYPHEN, "").length,
+    0,
+  );
 }
 
 export type PrintFitSection = { anchor: string; maxPages: number; lengths: number[] };
@@ -62,11 +79,9 @@ function removeFollowing(node: Node, boundary: Element) {
 export function truncateFitText(element: Element, budget: number) {
   if (visibleLength(element) <= budget) return;
 
-  const document = element.ownerDocument;
-  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
   let remaining = budget;
 
-  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+  for (const node of runningTextNodes(element)) {
     const text = node.textContent ?? "";
     const visible = text.replace(SOFT_HYPHEN, "");
     if (visible.length <= remaining) {

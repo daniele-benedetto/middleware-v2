@@ -14,6 +14,7 @@ import {
   type PrintMapDirectoryLayout,
 } from "@/lib/print/map-directory";
 import { buildPrintMapPlate, type PrintMapPlate } from "@/lib/print/map-plate";
+import { toPrintNotes } from "@/lib/print/notes";
 import { toPrintTextRuns, type PrintTextRun } from "@/lib/print/rich-excerpt";
 import { truncatePrintRichText } from "@/lib/print/rich-truncate";
 import { resolvePrintDarkTone } from "@/lib/print/theme";
@@ -245,7 +246,7 @@ function toPrintArticleSection(
     deck: article.excerpt ? hyphenatePrintText(article.excerpt) : null,
     author: article.authorName ?? "Redazione",
     image,
-    content: hyphenatePrintRichText(article.contentRich),
+    content: hyphenatePrintRichText(toPrintNotes(article.contentRich)),
     articlePath: `/articoli/${article.slug}`,
     ctaLabel: resolvePrintArticleCta(article.categoryName),
     dark: role !== "body" && Boolean(image && resolvePrintDarkTone(variant)),

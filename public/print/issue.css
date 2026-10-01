@@ -64,6 +64,14 @@
   size: A4;
   margin: var(--page-top) var(--page-outer) var(--page-bottom) var(--page-inner);
   background: var(--paper);
+
+  /* Notes sit above the folio line, across the text block. */
+  @footnote {
+    float-reference: page;
+    margin-top: 3mm;
+    padding-top: 2mm;
+    border-top: var(--rule) solid currentColor;
+  }
 }
 
 @page :left {
@@ -517,6 +525,37 @@ a {
 }
 
 /* Interview questions: one blank line before, flush left, set apart by weight. */
+/* Notes (CMS or hand-typed) become footnotes of the page that calls them. */
+.article {
+  counter-reset: footnote;
+}
+
+.print-footnote {
+  float: footnote;
+  font-family: var(--serif);
+  font-size: 7.5pt;
+  line-height: 9.5pt;
+  font-style: normal;
+  font-weight: 400;
+  text-align: left;
+  text-indent: 0;
+  hyphens: manual;
+}
+
+.print-footnote::footnote-call {
+  content: counter(footnote);
+  font-size: 0.65em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+.print-footnote::footnote-marker {
+  content: counter(footnote) "\00a0";
+  font-size: 0.75em;
+  line-height: 0;
+  vertical-align: super;
+}
+
 .article__body p.print-question {
   margin-top: var(--body-leading);
   text-indent: 0;

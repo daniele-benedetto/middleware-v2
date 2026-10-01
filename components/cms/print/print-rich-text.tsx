@@ -2,6 +2,7 @@ import { Fragment, type ReactNode } from "react";
 
 import { resolveCmsMediaPreviewUrl } from "@/lib/media/blob";
 import { isInterviewQuestion } from "@/lib/print/interview";
+import { PRINT_NOTE_TYPE } from "@/lib/print/notes";
 
 type RichTextNode = {
   type?: unknown;
@@ -42,6 +43,13 @@ function renderInline(node: RichTextNode, key: string): ReactNode {
 
   if (node.type === "hardBreak") return <br key={key} />;
   if (node.type === "noteReference") return null;
+  if (node.type === PRINT_NOTE_TYPE) {
+    return (
+      <span key={key} className="print-footnote">
+        {renderInlineChildren(node, key)}
+      </span>
+    );
+  }
 
   return (
     <Fragment key={key}>
