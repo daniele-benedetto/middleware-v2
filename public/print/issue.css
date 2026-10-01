@@ -601,11 +601,16 @@ a {
   height: 11mm;
 }
 
-/* Course: header as in the articles, then one reading column (~68 characters)
-   with a side column carrying each meeting's number and title, aligned to its
-   start. The viewer trims the meeting texts until the course fits two pages. */
+/* Course: two pages. The first meeting fills the opening page under the
+   header, the others share the second page; each meeting has a divider with
+   number and title and its text on two balanced columns. The viewer trims the
+   texts until each page is full (lib/print/fit.ts). */
 
 .course {
+  break-before: page;
+}
+
+.course__page--rest {
   break-before: page;
 }
 
@@ -626,19 +631,26 @@ a {
   font-style: italic;
 }
 
-.course__lessons {
+.course__lesson {
   margin-top: 7mm;
-  padding-left: 59mm;
 }
 
-.course__lesson-side {
-  float: left;
-  width: 50mm;
-  margin-left: -59mm;
+.course__page--rest .course__lesson:first-child {
+  margin-top: 0;
+}
+
+.course__lesson-header {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+  padding-top: 3mm;
+  border-top: var(--rule) solid var(--ink);
+  break-after: avoid;
 }
 
 .course__lesson-number {
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: center;
   width: 7mm;
@@ -651,17 +663,18 @@ a {
 }
 
 .course__lesson-title {
-  margin-top: 3mm;
-  font-size: 13.5pt;
+  font-size: 16pt;
   line-height: 1.1;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
-/* The rule runs along the reading column; spacing is padding, so it never breaks. */
 .course__lesson-text {
-  padding: 0 0 var(--body-leading) 4.5mm;
-  border-left: var(--rule) solid var(--ink);
+  margin-top: 4mm;
+  columns: 2;
+  column-gap: var(--column-gap);
+  column-rule: var(--rule) solid var(--ink);
+  column-fill: balance;
   font-family: var(--serif);
   font-size: var(--body-size);
   line-height: var(--body-leading);
