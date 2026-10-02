@@ -7,7 +7,9 @@ import {
   type PrintArticleRole,
   type PrintTitleSegment,
 } from "@/lib/print/article-presentation";
+import { stripPrintBodyImages } from "@/lib/print/body-images";
 import { buildPrintCampaign } from "@/lib/print/campaign";
+import { printFormats, type PrintFormat, type PrintFormatSpec } from "@/lib/print/format";
 import { hyphenatePrintRichText, hyphenatePrintText } from "@/lib/print/hyphenation";
 import {
   buildPrintMapDirectoryLayout,
@@ -88,7 +90,12 @@ export type PrintIssueSource = {
 
 export type PrintImage = { url: string; alt: string };
 
-type PrintSectionSettings = { stopWithSiteCta: boolean; showInIssueIntro: boolean };
+type PrintSectionSettings = {
+  stopWithSiteCta: boolean;
+  showInIssueIntro: boolean;
+  /** The red logo across the foot of the section's last page. */
+  showEndLogo: boolean;
+};
 
 export type PrintArticleSection = PrintSectionSettings & {
   kind: "article";
@@ -173,6 +180,7 @@ export type PrintCover = {
 };
 
 export type PrintIssueDocument = {
+  format: PrintFormat;
   variant: IssueHomeVariant;
   /** Umami campaign of the QR codes, e.g. "numero-zero". */
   campaign: string;
@@ -215,12 +223,19 @@ function toPrintImage(url: string | null, alt: string | null, fallbackAlt: strin
 }
 
 function resolveSectionSettings(
-  settings: { stopWithSiteCta?: boolean; showInIssueIntro?: boolean } | undefined,
+  settings:
+    | { stopWithSiteCta?: boolean; showInIssueIntro?: boolean; showEndLogo?: boolean }
+    | undefined,
 ): PrintSectionSettings {
   return {
     stopWithSiteCta: settings?.stopWithSiteCta ?? false,
     showInIssueIntro: settings?.showInIssueIntro ?? false,
+    showEndLogo: settings?.showEndLogo ?? false,
   };
+}
+
+function toPrintBodyContent(value: unknown, spec: PrintFormatSpec) {
+  return spec.bodyImages ? value : stripPrintBodyImages(value);
 }
 
 function toPrintArticleSection(
@@ -228,6 +243,7 @@ function toPrintArticleSection(
   role: PrintArticleRole,
   settings: PrintSectionSettings & { layout: IssueHomeArticlePrintLayout },
   variant: IssueHomeVariant,
+  spec: PrintFormatSpec,
 ): PrintArticleSection {
   const image = toPrintImage(article.imageUrl, article.imageAlt, article.title);
   const layoutFallback = settings.layout === "fullscreen" && !image;
@@ -246,7 +262,7 @@ function toPrintArticleSection(
     deck: article.excerpt ? hyphenatePrintText(article.excerpt) : null,
     author: article.authorName ?? "Redazione",
     image,
-    content: hyphenatePrintRichText(toPrintNotes(article.contentRich)),
+    content: hyphenatePrintRichText(toPrintNotes(toPrintBodyContent(article.contentRich, spec))),
     articlePath: `/articoli/${article.slug}`,
     ctaLabel: resolvePrintArticleCta(article.categoryName),
     dark: role !== "body" && Boolean(image && resolvePrintDarkTone(variant)),
@@ -261,10 +277,12 @@ function toPrintMapSection(
   map: PrintMapSource,
   settings: PrintSectionSettings,
   issueSlug: string,
+  spec: PrintFormatSpec,
 ): PrintMapSection {
   const items = map.items.toSorted((left, right) => left.sortOrder - right.sortOrder);
   const plate = buildPrintMapPlate(
     items.map((item) => ({ latitude: Number(item.latitude), longitude: Number(item.longitude) })),
+    spec.mapPlate,
   );
   const deck = extractPlainText(map.descriptionRich);
 
@@ -282,7 +300,7 @@ function toPrintMapSection(
       title: item.title,
       excerpt: toPrintTextRuns(item.descriptionRich),
     })),
-    directory: buildPrintMapDirectoryLayout(items.length),
+    directory: buildPrintMapDirectoryLayout(items.length, spec.mapDirectory),
     sitePath: `/uscite/${issueSlug}#${getIssueBlockAnchorId(blockId)}`,
     ...settings,
   };
@@ -294,10 +312,34 @@ function toPrintMapSection(
  */
 const COURSE_LESSON_MAX_CHARS = 8000;
 
+function toPrintCourseLesson(
+  lesson: PrintCourseSource["lessons"][number],
+  index: number,
+  spec: PrintFormatSpec,
+) {
+  const lead = lesson.excerptRich
+    ? toPrintTextRuns(lesson.excerptRich)
+    : toPrintTextRuns({
+        type: "paragraph",
+        content: [{ type: "text", text: lesson.excerpt ?? "" }],
+      });
+
+  return {
+    id: lesson.id,
+    label: String(index + 1).padStart(2, "0"),
+    title: lesson.title,
+    lead,
+    content: hyphenatePrintRichText(
+      truncatePrintRichText(toPrintBodyContent(lesson.contentRich, spec), COURSE_LESSON_MAX_CHARS),
+    ),
+  };
+}
+
 function toPrintCourseSection(
   blockId: string,
   course: PrintCourseSource,
   settings: PrintSectionSettings,
+  spec: PrintFormatSpec,
 ): PrintCourseSection {
   const lessons = course.lessons
     .filter((lesson) => lesson.status !== "ARCHIVED")
@@ -311,24 +353,7 @@ function toPrintCourseSection(
     title: toTitleSegments(course.titleStyled, course.title),
     plainTitle: course.title,
     deck: deck ? hyphenatePrintText(deck) : null,
-    lessons: lessons.map((lesson, index) => {
-      const lead = lesson.excerptRich
-        ? toPrintTextRuns(lesson.excerptRich)
-        : toPrintTextRuns({
-            type: "paragraph",
-            content: [{ type: "text", text: lesson.excerpt ?? "" }],
-          });
-
-      return {
-        id: lesson.id,
-        label: String(index + 1).padStart(2, "0"),
-        title: lesson.title,
-        lead,
-        content: hyphenatePrintRichText(
-          truncatePrintRichText(lesson.contentRich, COURSE_LESSON_MAX_CHARS),
-        ),
-      };
-    }),
+    lessons: lessons.map((lesson, index) => toPrintCourseLesson(lesson, index, spec)),
     sitePath: `/contro-formazione/${course.slug}`,
     ...settings,
   };
@@ -344,12 +369,15 @@ export function buildPrintSections({
   articles,
   maps,
   courses,
+  format = "a4",
 }: {
   issue: PrintIssueSource;
   articles: PrintArticleSource[];
   maps: PrintMapSource[];
   courses: PrintCourseSource[];
+  format?: PrintFormat;
 }): PrintSection[] {
+  const spec = printFormats[format];
   const articleById = new Map(articles.map((article) => [article.id, article]));
   const mapById = new Map(maps.map((map) => [map.id, map]));
   const courseById = new Map(courses.map((course) => [course.id, course]));
@@ -359,7 +387,9 @@ export function buildPrintSections({
       const course = block.courseId ? courseById.get(block.courseId) : undefined;
       if (!course || block.printSettings?.excludeFromPrint) return [];
 
-      return [toPrintCourseSection(block.id, course, resolveSectionSettings(block.printSettings))];
+      return [
+        toPrintCourseSection(block.id, course, resolveSectionSettings(block.printSettings), spec),
+      ];
     }
 
     if (block.type === "map") {
@@ -367,7 +397,13 @@ export function buildPrintSections({
       if (!map || block.printSettings?.excludeFromPrint) return [];
 
       return [
-        toPrintMapSection(block.id, map, resolveSectionSettings(block.printSettings), issue.slug),
+        toPrintMapSection(
+          block.id,
+          map,
+          resolveSectionSettings(block.printSettings),
+          issue.slug,
+          spec,
+        ),
       ];
     }
 
@@ -388,6 +424,7 @@ export function buildPrintSections({
           block.type,
           { ...resolveSectionSettings(settings), layout: settings?.layout ?? "default" },
           issue.homeVariant,
+          spec,
         ),
       ];
     });
@@ -417,17 +454,20 @@ export function buildPrintIssueDocument({
   maps,
   courses,
   issueNumber,
+  format = "a4",
 }: {
   issue: PrintIssueSource;
   articles: PrintArticleSource[];
   maps: PrintMapSource[];
   courses: PrintCourseSource[];
   issueNumber: string;
+  format?: PrintFormat;
 }): PrintIssueDocument {
-  const sections = buildPrintSections({ issue, articles, maps, courses });
+  const sections = buildPrintSections({ issue, articles, maps, courses, format });
   const deck = extractPlainText(issue.description);
 
   return {
+    format,
     variant: issue.homeVariant,
     campaign: buildPrintCampaign(issueNumber),
     sections,

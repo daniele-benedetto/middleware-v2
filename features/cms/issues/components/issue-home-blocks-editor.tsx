@@ -90,6 +90,7 @@ type IssueHomeBlocksEditorText = {
   printShowInIssueIntro: string;
   printStopWithSiteCta: string;
   printExcludeFromPrint: string;
+  printShowEndLogo: string;
   printLayout: string;
   printLayoutDefault: string;
   printLayoutFullscreen: string;
@@ -873,6 +874,7 @@ function PrintBlockSettings({
     showInIssueIntro: settings?.showInIssueIntro ?? false,
     stopWithSiteCta: settings?.stopWithSiteCta ?? false,
     excludeFromPrint: settings?.excludeFromPrint ?? false,
+    showEndLogo: settings?.showEndLogo ?? false,
   };
 
   return (
@@ -905,6 +907,13 @@ function PrintBlockSettings({
             stopWithSiteCta: excludeFromPrint ? false : resolvedSettings.stopWithSiteCta,
           })
         }
+      />
+      <CmsCheckbox
+        label={text.printShowEndLogo}
+        checked={resolvedSettings.showEndLogo}
+        disabled={disabled || resolvedSettings.excludeFromPrint}
+        compact
+        onChange={(showEndLogo) => onChange({ ...resolvedSettings, showEndLogo })}
       />
     </div>
   );
@@ -1116,6 +1125,7 @@ function SortableSelectedArticle({
     showInIssueIntro: printSettings?.showInIssueIntro ?? false,
     stopWithSiteCta: printSettings?.stopWithSiteCta ?? false,
     excludeFromPrint: printSettings?.excludeFromPrint ?? false,
+    showEndLogo: printSettings?.showEndLogo ?? false,
     layout: printSettings?.layout ?? "default",
   };
 
@@ -1197,6 +1207,15 @@ function SortableSelectedArticle({
                   excludeFromPrint,
                   stopWithSiteCta: excludeFromPrint ? false : resolvedPrintSettings.stopWithSiteCta,
                 })
+              }
+            />
+            <CmsCheckbox
+              label={text.printShowEndLogo}
+              checked={resolvedPrintSettings.showEndLogo}
+              disabled={disabled || resolvedPrintSettings.excludeFromPrint}
+              compact
+              onChange={(showEndLogo) =>
+                onPrintSettingsChange({ ...resolvedPrintSettings, showEndLogo })
               }
             />
             <div className="sm:col-span-3">

@@ -2,7 +2,7 @@
  * UTM parameters for the print QR codes, so Umami can attribute visits to the
  * paper issue. Same scheme as the social links (e.g. utm_campaign=numero-zero).
  */
-export type PrintQrPlacement = "copertina" | "articolo" | "mappa" | "contro_formazione";
+export type PrintQrPlacement = "articolo" | "mappa" | "contro_formazione";
 
 const ITALIAN_NUMBERS = [
   "zero",

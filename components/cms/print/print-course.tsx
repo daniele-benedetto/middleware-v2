@@ -51,7 +51,12 @@ export function PrintCourse({
   ) : null;
 
   return (
-    <section id={course.anchor} className="course" data-print-anchor={course.anchor}>
+    <section
+      id={course.anchor}
+      className="course"
+      data-print-anchor={course.anchor}
+      data-print-end-logo={course.showEndLogo ? "" : undefined}
+    >
       <div className={`course__page${rest.length === 0 ? " course__page--with-service" : ""}`}>
         <header className="course__header">
           <PrintTitle as="h2" className="course__title" segments={course.title} />

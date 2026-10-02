@@ -1,0 +1,309 @@
+/*
+ * A5 pages, printed as an A4 booklet. Loaded after issue.css, it only changes
+ * measures: one column of running text and a type size that stays readable
+ * once folded. Body 9.5/13pt (137%), about 70 characters per line on 121 mm.
+ * Mirrored by `printFormats.a5` in lib/print/format.ts.
+ */
+:root {
+  --page-top: 12mm;
+  --page-bottom: 19mm;
+  --page-inner: 15mm;
+  --page-outer: 12mm;
+  --cover-x: 11mm;
+  --cover-y: 10mm;
+  --column-gap: 7mm;
+  --page-height: 210mm;
+  --folio-bottom: 8mm;
+  --qr-size: 16mm;
+  --footer-strip: 9mm;
+  --body-size: 9.5pt;
+  --body-leading: 13pt;
+  --section-title-size: 27pt;
+}
+
+@page {
+  size: A5;
+  margin: 12mm 12mm 19mm 15mm;
+}
+
+@page :left {
+  margin-left: 12mm;
+  margin-right: 15mm;
+
+  @bottom-left {
+    padding-bottom: 8mm;
+    font-size: 8.5pt;
+  }
+}
+
+@page :right {
+  margin-left: 15mm;
+  margin-right: 12mm;
+
+  @bottom-right {
+    padding-bottom: 8mm;
+    font-size: 8.5pt;
+  }
+}
+
+@page cover {
+  margin: 10mm 11mm;
+}
+
+/* Cover */
+
+.cover__meta {
+  font-size: 7pt;
+}
+
+.cover__logo {
+  margin-top: 3mm;
+}
+
+.cover__image {
+  min-height: 50mm;
+  margin-top: 4mm;
+}
+
+.cover__title {
+  margin-top: 4mm;
+  font-size: 36pt;
+}
+
+.cover__deck {
+  margin-top: 2.5mm;
+  font-size: 9.5pt;
+}
+
+.cover__highlights {
+  column-gap: 4mm;
+  margin-top: 4.5mm;
+  padding-top: 3mm;
+}
+
+.cover__highlight-kicker {
+  font-size: 6.5pt;
+}
+
+.cover__highlight-title {
+  margin-top: 1mm;
+  font-size: 9.5pt;
+}
+
+.cover__highlight-excerpt {
+  height: calc(6 * 1.4em);
+  margin-top: 1.5mm;
+  font-size: 8pt;
+  line-height: 1.4;
+  text-align: left;
+  -webkit-line-clamp: 6;
+}
+
+.cover__highlight-page {
+  padding-top: 1.5mm;
+  font-size: 7pt;
+}
+
+/* Index */
+
+.toc__title {
+  padding-bottom: 3.5mm;
+}
+
+.toc__entry {
+  grid-template-columns: 6mm minmax(0, 1fr) 10mm;
+  column-gap: 3mm;
+  height: 7.5mm;
+}
+
+.toc__icon {
+  width: 4mm;
+  height: 4mm;
+}
+
+.toc__entry-title {
+  font-size: 10pt;
+}
+
+.toc__entry-page {
+  font-size: 11pt;
+}
+
+.toc__empty {
+  font-size: 9.5pt;
+}
+
+/* Articles: one column of running text. */
+
+.article__image {
+  height: 56mm;
+}
+
+.article__image + .article__header .article__title {
+  margin-top: 6mm;
+}
+
+.article__subtitle {
+  margin-top: 2.5mm;
+  font-size: 13pt;
+}
+
+.article__deck {
+  margin-top: 4mm;
+  padding-top: 3.5mm;
+  font-size: 12pt;
+}
+
+.article__header {
+  padding-bottom: 5mm;
+}
+
+.article__meta {
+  gap: 2.5mm;
+  margin-top: 3mm;
+  font-size: 8.5pt;
+}
+
+.article__body {
+  columns: 1;
+  column-rule: none;
+}
+
+/* Three lines of 13pt, as the A4 drop cap spans three lines of 14.5pt. */
+.article__body > p:first-child::first-letter,
+.article__body > [data-print-fit-text] > p:first-child::first-letter {
+  margin: 1.2mm 2mm 0 0;
+  font-size: 38pt;
+}
+
+.article__body h2 {
+  font-size: 12pt;
+}
+
+.article__body h3 {
+  font-size: 10.5pt;
+}
+
+.article__body blockquote {
+  padding-left: 3.5mm;
+}
+
+.article__body ul,
+.article__body ol {
+  padding-left: 4.5mm;
+}
+
+.article__body figcaption {
+  font-size: 7.5pt;
+}
+
+.article:not(.article--fullscreen)[data-print-tighten="1"] .article__image {
+  height: 48mm;
+}
+
+.article:not(.article--fullscreen)[data-print-tighten="2"] .article__image,
+.article:not(.article--fullscreen)[data-print-tighten="3"] .article__image {
+  height: 42mm;
+}
+
+/* Course */
+
+.course__page--rest {
+  gap: 5mm;
+}
+
+.course__deck {
+  margin-top: 4mm;
+  padding-top: 3.5mm;
+  font-size: 12pt;
+}
+
+.course__header + .course__lesson {
+  margin-top: 6mm;
+}
+
+.course__lesson-header {
+  gap: 2.5mm;
+  padding-bottom: 1.5mm;
+}
+
+.course__lesson-number {
+  width: 5mm;
+  height: 5mm;
+  font-size: 7pt;
+}
+
+.course__lesson-title {
+  font-size: 10pt;
+}
+
+.course__lesson-text {
+  margin-top: 2.5mm;
+  columns: 1;
+  column-rule: none;
+}
+
+.course__lesson-text h2,
+.course__lesson-text h3 {
+  font-size: 10.5pt;
+}
+
+/* Map */
+
+.map__plate {
+  min-height: 70mm;
+}
+
+.map__marker {
+  width: 6mm;
+  height: 6mm;
+  margin: -3mm 0 0 -3mm;
+  font-size: 7.5pt;
+}
+
+.map__title {
+  margin-top: 6mm;
+}
+
+.map__deck {
+  margin-top: 4mm;
+  padding-top: 3.5mm;
+  font-size: 12pt;
+}
+
+.map__entry {
+  padding-bottom: 3mm;
+}
+
+.map__entry + .map__entry {
+  padding-bottom: 3mm;
+}
+
+.map__entry-header {
+  gap: 2.5mm;
+  padding-bottom: 1.5mm;
+}
+
+.map__entry-number {
+  width: 5mm;
+  height: 5mm;
+  font-size: 7pt;
+}
+
+.map__entry-title {
+  font-size: 10pt;
+}
+
+.map__entry-excerpt {
+  margin-top: 1.5mm;
+}
+
+/* Footer QR */
+
+.print-footer-qr {
+  gap: 3mm;
+}
+
+.print-footer-qr span {
+  font-size: 8pt;
+}

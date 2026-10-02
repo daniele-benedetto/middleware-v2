@@ -1,9 +1,7 @@
+import { printFormats } from "@/lib/print/format";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 
 import type { PrintIssueDocument } from "@/lib/print/issue-document";
-
-/** Index entries that fit one page: 8.75 mm rows in the page area below the title. */
-const TOC_CAPACITY = 26;
 
 export type PrintPreflightIssue = {
   code:
@@ -37,6 +35,7 @@ function collectUnsupportedNodes(value: unknown, found: Set<string>) {
 
 export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPreflightIssue[] {
   const issues: PrintPreflightIssue[] = [];
+  const { tocCapacity } = printFormats[document.format];
 
   if (document.sections.length === 0) {
     issues.push({
@@ -49,10 +48,10 @@ export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPr
     issues.push({ code: "missing-cover-image", message: "La copertina non ha un’immagine." });
   }
 
-  if (document.sections.length > TOC_CAPACITY) {
+  if (document.sections.length > tocCapacity) {
     issues.push({
       code: "crowded-toc",
-      message: `L’indice ha ${document.sections.length} voci: ne entrano ${TOC_CAPACITY} in una pagina.`,
+      message: `L’indice ha ${document.sections.length} voci: ne entrano ${tocCapacity} in una pagina.`,
     });
   }
 

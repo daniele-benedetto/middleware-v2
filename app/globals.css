@@ -518,6 +518,30 @@ body {
   background-color: var(--print-dark-accent) !important;
 }
 
+/* Closing logo (printSettings.showEndLogo), on the page box of the section's last
+   page, outside the paginated flow (lib/print/end-logo.ts). Adjust it here. */
+.print-end-logo {
+  --print-end-logo-left: 0mm;
+  --print-end-logo-bottom: 0mm;
+  --print-end-logo-width: 104%;
+  --print-end-logo-shift-y: 50%;
+  --print-end-logo-opacity: 0.12;
+  position: absolute !important;
+  left: var(--print-end-logo-left);
+  bottom: var(--print-end-logo-bottom);
+  width: var(--print-end-logo-width) !important;
+  max-width: none !important;
+  height: auto !important;
+  transform: translateY(var(--print-end-logo-shift-y));
+  opacity: var(--print-end-logo-opacity);
+  pointer-events: none;
+}
+
+/* The logo is wider than the page: the page edge clips it, as on paper. */
+[data-vivliostyle-page-container]:has(.print-end-logo) {
+  overflow: clip !important;
+}
+
 /* The footer QR stays on the inner side, opposite the folio.
    Absolute positioning only, so the pagination is not affected. */
 [data-vivliostyle-page-container][data-vivliostyle-page-side="right"] .print-footer-qr {

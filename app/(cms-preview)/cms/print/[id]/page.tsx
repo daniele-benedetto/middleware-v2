@@ -5,6 +5,7 @@ import {
   resolveCmsRouteEntityIdOrNotFound,
 } from "@/lib/cms/route-handling";
 import { prefetchIssuePrintData } from "@/lib/cms/trpc/server-prefetch";
+import { resolvePrintFormat } from "@/lib/print/format";
 import { buildPrintIssueDocument } from "@/lib/print/issue-document";
 import { inspectPrintIssueDocument } from "@/lib/print/preflight";
 import { resolvePrintDarkTone } from "@/lib/print/theme";
@@ -16,7 +17,7 @@ import type { Metadata } from "next";
 
 type PrintIssuePageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ render?: string }>;
+  searchParams: Promise<{ render?: string; format?: string }>;
 };
 
 export const metadata: Metadata = {
@@ -25,7 +26,8 @@ export const metadata: Metadata = {
 
 export default async function PrintIssuePage({ params, searchParams }: PrintIssuePageProps) {
   const { id: rawId } = await params;
-  const { render } = await searchParams;
+  const { render, format: rawFormat } = await searchParams;
+  const format = resolvePrintFormat(rawFormat);
   const id = resolveCmsRouteEntityIdOrNotFound(rawId);
   const [{ issue, articles, maps, courses }, publishedIssues] = await Promise.all([
     prefetchCmsDetailOrNotFound(() => prefetchIssuePrintData(id)),
@@ -39,11 +41,14 @@ export default async function PrintIssuePage({ params, searchParams }: PrintIssu
     maps,
     courses,
     issueNumber,
+    format,
   });
 
   return (
     <IssuePrintViewer
+      key={format}
       issueId={issue.id}
+      format={format}
       variant={document.variant}
       tone={resolvePrintDarkTone(document.variant)}
       mode={render === "pdf" ? "pdf" : "preview"}

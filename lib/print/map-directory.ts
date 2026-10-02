@@ -1,15 +1,15 @@
-const PT_TO_MM = 25.4 / 72;
+import { printFormats } from "@/lib/print/format";
 
-/** Mirrors public/print/issue.css: page area, footer QR and entry chrome, in mm. */
-export const printMapDirectoryMetrics = {
-  pageAreaHeightMm: 297 - 16 - 24,
-  footerIntrusionMm: 7,
-  footerGapMm: 4,
-  headerHeightMm: 2 * 11.3 * 1.15 * PT_TO_MM,
-  headerPaddingMm: 2,
-  excerptMarginMm: 2,
-  rowGapMm: 4,
-  lineHeightMm: 14.5 * PT_TO_MM,
+/** Page area, footer QR and entry chrome in mm, mirroring the print stylesheets. */
+export type PrintMapDirectoryMetrics = {
+  pageAreaHeightMm: number;
+  footerIntrusionMm: number;
+  footerGapMm: number;
+  headerHeightMm: number;
+  headerPaddingMm: number;
+  excerptMarginMm: number;
+  rowGapMm: number;
+  lineHeightMm: number;
 };
 
 export type PrintMapDirectoryLayout = {
@@ -23,7 +23,7 @@ export type PrintMapDirectoryLayout = {
  */
 export function buildPrintMapDirectoryLayout(
   entryCount: number,
-  metrics = printMapDirectoryMetrics,
+  metrics: PrintMapDirectoryMetrics = printFormats.a4.mapDirectory,
 ): PrintMapDirectoryLayout {
   const rows = Math.max(1, Math.ceil(entryCount / 2));
   const availableMm = metrics.pageAreaHeightMm - metrics.footerIntrusionMm - metrics.footerGapMm;

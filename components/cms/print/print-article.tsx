@@ -37,6 +37,7 @@ export function PrintArticle({
       id={article.anchor}
       className={articleClassName(article)}
       data-print-anchor={article.anchor}
+      data-print-end-logo={article.showEndLogo ? "" : undefined}
       data-print-fit-pages={article.stopWithSiteCta ? fitPages(article) : undefined}
     >
       <div className="article__opening">

@@ -1,3 +1,5 @@
+import { printFormats } from "@/lib/print/format";
+
 export type PrintMapCoordinate = { latitude: number; longitude: number };
 
 export type PrintMapTile = {
@@ -30,15 +32,7 @@ export type PrintMapPlateOptions = {
   maxZoom: number;
 };
 
-export const printMapPlateOptions: PrintMapPlateOptions = {
-  widthMm: 178,
-  heightMm: 200,
-  safeWidthMm: 150,
-  safeHeightMm: 100,
-  tileSizeMm: 45,
-  minZoom: 10,
-  maxZoom: 16,
-};
+export const printMapPlateOptions: PrintMapPlateOptions = printFormats.a4.mapPlate;
 
 const TILE_SIZE_PX = 256;
 const TILE_SUBDOMAINS = ["a", "b", "c"];

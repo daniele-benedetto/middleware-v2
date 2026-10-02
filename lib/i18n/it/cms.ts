@@ -534,6 +534,7 @@ export const cmsIt = {
           printShowInIssueIntro: "In copertina",
           printStopWithSiteCta: "Chiudi con CTA sito",
           printExcludeFromPrint: "Escludi dal cartaceo",
+          printShowEndLogo: "Logo in chiusura",
           printLayout: "Layout cartaceo",
           printLayoutDefault: "Standard",
           printLayoutFullscreen: "Full screen",

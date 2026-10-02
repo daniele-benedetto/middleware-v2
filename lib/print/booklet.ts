@@ -15,8 +15,9 @@ function pageOrBlank(page: number, pageCount: number) {
 }
 
 /**
- * Saddle-stitch imposition for A4 pages printed two-up on A3, duplex flipped on
- * the short edge. Page numbers are 1-based; missing pages become blanks at the end.
+ * Saddle-stitch imposition for pages printed two-up on a sheet twice their size
+ * (A4 on A3, A5 on A4), duplex flipped on the short edge. Page numbers are
+ * 1-based; missing pages become blanks at the end.
  */
 export function buildBookletPlan(pageCount: number): BookletPlan {
   const paddedPageCount = Math.max(

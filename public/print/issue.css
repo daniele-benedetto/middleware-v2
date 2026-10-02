@@ -35,7 +35,8 @@
 
 /*
  * A4 pages, printed as an A3 booklet. Mockup measures are authored at 4 px/mm,
- * so 1 px of the mockup = 0.25 mm = 0.709 pt.
+ * so 1 px of the mockup = 0.25 mm = 0.709 pt. The A5 booklet (printed on A4)
+ * loads issue-a5.css on top of this file.
  */
 :root {
   --paper: #fff;
@@ -49,6 +50,12 @@
   --page-outer: 14mm;
   --cover-x: 16mm;
   --cover-y: 14mm;
+  --page-height: 297mm;
+  /* Folio line and footer QR, from the bottom edge; the strip is what the QR
+     takes from the text area (QR top minus the bottom margin, plus a gap). */
+  --folio-bottom: 11mm;
+  --qr-size: 20mm;
+  --footer-strip: 11mm;
   --column-gap: 9mm;
   /* Same weight as the site's 1px dividers. */
   --rule: 0.75pt;
@@ -159,7 +166,7 @@ a {
   page: cover;
   display: flex;
   flex-direction: column;
-  height: calc(297mm - 2 * var(--cover-y));
+  height: calc(var(--page-height) - 2 * var(--cover-y));
   break-after: page;
 }
 
@@ -283,66 +290,12 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
-.cover__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8mm;
-  margin: 7mm calc(-1 * var(--cover-x)) calc(-1 * var(--cover-y));
-  padding: 4mm var(--cover-x);
-  background: var(--ink);
-  color: var(--paper);
-}
-
-.cover__brand,
-.cover__service {
-  display: flex;
-  align-items: center;
-  gap: 4mm;
-  height: 20mm;
-}
-
-.cover__brand img {
-  width: 11mm;
-  height: 11mm;
-}
-
-.cover__brand strong {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5mm;
-  font-size: 15.6pt;
-  line-height: 1;
-  font-weight: 900;
-  letter-spacing: -0.03em;
-}
-
-.cover__brand strong span {
-  color: var(--accent);
-}
-
-.cover__service span {
-  font-size: 9.5pt;
-  line-height: 1.4;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-align: right;
-  text-transform: uppercase;
-}
-
-.cover__service img {
-  width: 20mm;
-  height: 20mm;
-  padding: 1mm;
-  background: var(--paper);
-}
-
 /* Index */
 
 .toc {
   display: flex;
   flex-direction: column;
-  height: calc(297mm - var(--page-top) - var(--page-bottom));
+  height: calc(var(--page-height) - var(--page-top) - var(--page-bottom));
   break-before: verso;
   break-after: page;
 }
@@ -661,7 +614,7 @@ a {
 .article--fullscreen .article__opening {
   display: flex;
   flex-direction: column;
-  height: calc(297mm - var(--page-top) - var(--page-bottom));
+  height: calc(var(--page-height) - var(--page-top) - var(--page-bottom));
   break-after: page;
 }
 
@@ -685,7 +638,7 @@ a {
   float: block-end;
   float-reference: page;
   width: 100%;
-  height: 11mm;
+  height: var(--footer-strip);
 }
 
 /* Course, as in the mockup: two page-sized boxes. The first meeting fills the
@@ -702,7 +655,7 @@ a {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: calc(297mm - var(--page-top) - var(--page-bottom));
+  height: calc(var(--page-height) - var(--page-top) - var(--page-bottom));
   break-inside: avoid;
 }
 
@@ -713,7 +666,7 @@ a {
 
 /* Leaves the footer strip to the QR, which sits on the folio line. */
 .course__page--with-service {
-  padding-bottom: 11mm;
+  padding-bottom: var(--footer-strip);
 }
 
 .course__title {
@@ -824,7 +777,7 @@ a {
 .map__opener {
   display: flex;
   flex-direction: column;
-  height: calc(297mm - var(--page-top) - var(--page-bottom));
+  height: calc(var(--page-height) - var(--page-top) - var(--page-bottom));
   break-inside: avoid;
 }
 
@@ -901,7 +854,7 @@ a {
    lib/print/map-directory.ts, which mirrors the measures below. */
 .map__directory {
   position: relative;
-  height: calc(297mm - var(--page-top) - var(--page-bottom));
+  height: calc(var(--page-height) - var(--page-top) - var(--page-bottom));
   break-before: page;
   break-inside: avoid;
 }
@@ -969,7 +922,7 @@ a {
 }
 
 .map__opener--with-service {
-  padding-bottom: 11mm;
+  padding-bottom: var(--footer-strip);
 }
 
 /* Footer QR, same block as the cover: its bottom sits on the folio line (11 mm
@@ -983,11 +936,11 @@ a {
   font-family: var(--sans);
   position: absolute;
   right: 0;
-  bottom: calc(11mm - var(--page-bottom));
+  bottom: calc(var(--folio-bottom) - var(--page-bottom));
   display: flex;
   align-items: center;
   gap: 4mm;
-  height: 20mm;
+  height: var(--qr-size);
 }
 
 .print-footer-qr span {
@@ -1000,8 +953,8 @@ a {
 }
 
 .print-footer-qr img {
-  width: 20mm;
-  height: 20mm;
+  width: var(--qr-size);
+  height: var(--qr-size);
   padding: 1mm;
   background: var(--paper);
 }

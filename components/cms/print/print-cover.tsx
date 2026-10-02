@@ -5,20 +5,12 @@ import type { PrintCover as PrintCoverModel } from "@/lib/print/issue-document";
 
 /* eslint-disable @next/next/no-img-element -- the print document is serialized for the paginator. */
 
-export function PrintCover({
-  cover,
-  qrCode,
-  siteLabel,
-}: {
-  cover: PrintCoverModel;
-  qrCode: string;
-  siteLabel: string;
-}) {
+export function PrintCover({ cover }: { cover: PrintCoverModel }) {
   return (
     <section className="cover" aria-label="Copertina">
       <header className="cover__meta">
         <span>{cover.meta}</span>
-        <span className="accent">Offerta libera</span>
+        <span className="accent">Laboratorio d’inchiesta</span>
       </header>
 
       <img
@@ -54,23 +46,6 @@ export function PrintCover({
           ))}
         </div>
       ) : null}
-
-      <footer className="cover__footer">
-        <div className="cover__brand">
-          <img src="/brand/middleware-pictogram-red.png" alt="" />
-          <strong>
-            Laboratorio di inchiesta <span>Modena</span>
-          </strong>
-        </div>
-        <div className="cover__service">
-          <span>
-            Leggi online
-            <br />
-            {siteLabel}
-          </span>
-          <img src={qrCode} alt={`QR code: ${siteLabel}`} />
-        </div>
-      </footer>
     </section>
   );
 }

@@ -102,7 +102,12 @@ export function PrintMap({
   ) : null;
 
   return (
-    <section id={map.anchor} className="map" data-print-anchor={map.anchor}>
+    <section
+      id={map.anchor}
+      className="map"
+      data-print-anchor={map.anchor}
+      data-print-end-logo={map.showEndLogo ? "" : undefined}
+    >
       <div className={`map__opener${showDirectory ? "" : " map__opener--with-service"}`}>
         <MapPlate map={map} />
         <PrintTitle as="h2" className="map__title" segments={map.title} />

@@ -266,11 +266,11 @@ Middleware può diventare un oggetto editoriale stampabile senza perdere la prop
 
 ### Editorial sequence (scope attuale)
 
-1. copertina: numero e data, testata, fotografia (impostazioni copertina o foto della chiusura), titolo, occhiello, fino a tre richiami (`In copertina`) con pagina;
+1. copertina: numero e data con "Laboratorio d’inchiesta" sul lato opposto, testata, fotografia (impostazioni copertina o foto della chiusura), titolo, occhiello, fino a tre richiami (`In copertina`) con pagina; nessun piede;
 2. indice: una voce per elemento dello speciale, con icona e pagina di apertura;
 3. articoli dei blocchi apertura, corpo, rottura e chiusura, nell’ordine dei blocchi, ognuno aperto su una nuova pagina: titolo (per le interviste citazione + "Intervista a …"), sommario, categoria e autore, testo su due colonne con capolettera. Solo le aperture dello speciale con foto vanno su fondo del colore del numero.
 4. contro-formazioni (`course`), nella posizione del blocco: due pagine con titolo, occhiello, "Contro-formazione · N incontri", il primo incontro occupa il resto della prima pagina, gli altri si dividono la seconda in altezze uguali; ogni incontro ha un divisore con numero rosso e titolo e il testo (estratto e paragrafi, accorciati con "…" per riempire il suo spazio) su due colonne; il QR di piede, accanto al folio, apre la pagina della contro-formazione con l’elenco degli incontri. Opzioni di stampa del blocco: `In copertina`, `Escludi dal cartaceo`.
-5. mappe (`map`), nella posizione del blocco: apertura con mappa, titolo, descrizione e QR verso l'uscita online; pagina successiva con tutte le schede numerate su un'unica pagina: righe da due di pari altezza, estratto del testo (rich text con grassetto e corsivo, emoji rimosse) alto quanto lo spazio disponibile. Il QR, uguale a quello di copertina, sta nel piede sul lato interno, allineato al folio, e apre la mappa sulla pagina dell'uscita (`/uscite/:slug#issue-block-:id`). Oltre ~22 punti il preflight segnala che le schede non entrano in una pagina. Le opzioni di stampa del blocco mappa sono `In copertina`, `Chiudi con CTA sito` (solo apertura, senza schede) ed `Escludi dal cartaceo`.
+5. mappe (`map`), nella posizione del blocco: apertura con mappa, titolo, descrizione e QR verso l'uscita online; pagina successiva con tutte le schede numerate su un'unica pagina: righe da due di pari altezza, estratto del testo (rich text con grassetto e corsivo, emoji rimosse) alto quanto lo spazio disponibile. Il QR sta nel piede sul lato interno, allineato al folio, e apre la mappa sulla pagina dell'uscita (`/uscite/:slug#issue-block-:id`). Oltre ~22 punti il preflight segnala che le schede non entrano in una pagina. Le opzioni di stampa del blocco mappa sono `In copertina`, `Chiudi con CTA sito` (solo apertura, senza schede) ed `Escludi dal cartaceo`.
 
 Analisi dei questionari e anteprima verranno aggiunti come nuove famiglie di pagina sullo stesso motore.
 
@@ -280,6 +280,7 @@ Analisi dei questionari e anteprima verranno aggiunti come nuove famiglie di pag
 - Code corte: quando un articolo completo lascia sull'ultima pagina al massimo 10 righe, l'impaginazione le recupera da sola abbassando leggermente la foto d'apertura e, se serve, stringendo la spaziatura tra le lettere (al massimo −0,5%); oltre quella soglia la pagina finale resta com'è.
 - `Chiudi con CTA sito` ferma l'articolo dopo due pagine, con "…" e, nel piede accanto al folio come nella mappa, il QR con l’invito a leggere l’intero contenuto online (intervista, contributo, editoriale, approfondimento, articolo).
 - `Escludi dal cartaceo` toglie l'articolo da indice, richiami e speciale.
+- `Logo in chiusura` (articoli, mappe, contro-formazioni): pittogramma rosso trasparente al piede dell'ultima pagina, a cavallo del bordo inferiore e più largo della pagina.
 - `Layout cartaceo` (per articolo): `Standard` (default) o `Full screen`, con la prima pagina dedicata a foto, titolo e sommario e il testo dalla pagina successiva. Serve una foto; senza, si stampa lo standard e la preview lo segnala.
 - Titoli non restano isolati a fondo colonna; immagini e didascalie non si spezzano; orfane e vedove minime di 2 righe.
 
@@ -288,7 +289,8 @@ Analisi dei questionari e anteprima verranno aggiunti come nuove famiglie di pag
 - Il pulsante `Preview cartacea` nella schermata di modifica dell'issue apre la preview in un dialog.
 - Le opzioni di stampa compaiono su ogni articolo dei blocchi articolo (apertura, corpo, rottura, chiusura) e sui blocchi mappa e contro-formazione.
 - I QR del cartaceo sono tracciati in Umami con `utm_source=cartaceo`, `utm_medium=qr`, `utm_campaign=numero-<n>` e `utm_content=qr_<posizione>`.
-- La toolbar mostra pagine A4, fogli A3 e pagine bianche aggiunte, gli avvisi di preflight (speciale vuoto, copertina senza immagine, articoli senza testo, contenuti non stampabili) e due azioni: `PDF pagine A4` per la verifica, `PDF da stampare A3` per la stampa fronte/retro sul lato corto.
+- La toolbar mostra il selettore di formato `A4`/`A5`, pagine, fogli e pagine bianche aggiunte, gli avvisi di preflight (speciale vuoto, copertina senza immagine, articoli senza testo, contenuti non stampabili) e due azioni: `PDF pagine A4|A5` per la verifica, `PDF da stampare A3|A4` per la stampa fronte/retro sul lato corto.
+- Formato A5 (libretto su A4): testo a una colonna 9,5/13 pt, niente immagini dentro il testo; taglio a due pagine come in A4.
 
 ## Source of truth
 

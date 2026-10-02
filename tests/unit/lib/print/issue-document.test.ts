@@ -63,6 +63,7 @@ const issue = (overrides: Partial<PrintIssueSource> = {}): PrintIssueSource => (
           showInIssueIntro: true,
           stopWithSiteCta: true,
           excludeFromPrint: false,
+          showEndLogo: true,
           layout: "default",
         },
       },
@@ -165,6 +166,7 @@ describe("buildPrintIssueDocument", () => {
                 showInIssueIntro: false,
                 stopWithSiteCta: false,
                 excludeFromPrint: true,
+                showEndLogo: false,
                 layout: "default" as const,
               },
             },
@@ -186,8 +188,10 @@ describe("buildPrintIssueDocument", () => {
     ]);
     expect(document.sections[2]).toMatchObject({
       stopWithSiteCta: true,
+      showEndLogo: true,
       articlePath: "/articoli/slug-3",
     });
+    expect(document.sections[0]).toMatchObject({ showEndLogo: false });
     expect(document.cover.highlights.map((highlight) => highlight.anchor)).toEqual([
       `print-${ids.rupture}`,
     ]);
@@ -271,6 +275,7 @@ describe("buildPrintIssueDocument article layouts", () => {
                 showInIssueIntro: false,
                 stopWithSiteCta: false,
                 excludeFromPrint: false,
+                showEndLogo: false,
                 layout,
               },
             },
@@ -326,6 +331,7 @@ describe("buildPrintIssueDocument maps", () => {
     showInIssueIntro: boolean;
     stopWithSiteCta: boolean;
     excludeFromPrint: boolean;
+    showEndLogo: boolean;
   }) => [
     ...issue().homeBlocks!.slice(0, 1),
     { id: "m", type: "map" as const, mapId: map.id, printSettings },
@@ -367,6 +373,7 @@ describe("buildPrintIssueDocument maps", () => {
           showInIssueIntro: false,
           stopWithSiteCta: false,
           excludeFromPrint: true,
+          showEndLogo: false,
         }),
       }),
       articles,
@@ -380,6 +387,7 @@ describe("buildPrintIssueDocument maps", () => {
           showInIssueIntro: true,
           stopWithSiteCta: true,
           excludeFromPrint: false,
+          showEndLogo: false,
         }),
       }),
       articles,

@@ -13,6 +13,7 @@ export const issueHomeBlockPrintSettingsSchema = z.object({
   showInIssueIntro: z.boolean().default(false),
   stopWithSiteCta: z.boolean().default(false),
   excludeFromPrint: z.boolean().default(false),
+  showEndLogo: z.boolean().default(false),
 });
 export const issueHomeArticlePrintLayoutSchema = z.enum(["default", "fullscreen"]);
 export const issueHomeArticlePrintSettingsSchema = issueHomeBlockPrintSettingsSchema.extend({

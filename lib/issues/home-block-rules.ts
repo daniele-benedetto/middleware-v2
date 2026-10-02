@@ -42,6 +42,7 @@ export function normalizeHomeBlock(block: IssueHomeArticleBlock): IssueHomeArtic
           showInIssueIntro: settings?.showInIssueIntro ?? false,
           stopWithSiteCta: settings?.stopWithSiteCta ?? false,
           excludeFromPrint: settings?.excludeFromPrint ?? false,
+          showEndLogo: settings?.showEndLogo ?? false,
           layout: settings?.layout ?? "default",
         } satisfies IssueHomeArticlePrintSettings,
       ]),

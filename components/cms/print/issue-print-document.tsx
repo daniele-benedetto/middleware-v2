@@ -41,19 +41,16 @@ export async function IssuePrintDocument({
   const siteLabel = siteUrl.host;
   const track = (path: string, placement: PrintQrPlacement) =>
     withPrintCampaign(new URL(path, siteUrl), { campaign: document.campaign, placement });
-  const [coverQrCode, sectionQrCodes] = await Promise.all([
-    createQrCode(track("/", "copertina")),
-    Promise.all(
-      document.sections.map((section) => {
-        const target = sectionQrTarget(section);
-        return target ? createQrCode(track(target.path, target.placement)) : null;
-      }),
-    ),
-  ]);
+  const sectionQrCodes = await Promise.all(
+    document.sections.map((section) => {
+      const target = sectionQrTarget(section);
+      return target ? createQrCode(track(target.path, target.placement)) : null;
+    }),
+  );
 
   return (
     <>
-      <PrintCover cover={document.cover} qrCode={coverQrCode} siteLabel={siteLabel} />
+      <PrintCover cover={document.cover} />
       <PrintToc sections={document.sections} />
       {document.sections.map((section, index) => {
         const qrCode = sectionQrCodes[index] ?? null;

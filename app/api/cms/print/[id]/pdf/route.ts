@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { requireCmsSession } from "@/lib/cms/auth";
+import { printFormatSchema } from "@/lib/print/format";
 import { printPdfLayoutSchema } from "@/lib/print/pdf-layout";
 import { imposeBookletPdf } from "@/lib/server/print/booklet-pdf";
 import { renderIssuePagesPdf } from "@/lib/server/print/pdf";
@@ -13,25 +14,29 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   const { id: rawId } = await params;
   const parsedId = issueIdSchema.safeParse(rawId);
-  const parsedLayout = printPdfLayoutSchema.safeParse(
-    new URL(request.url).searchParams.get("layout") ?? "pages",
-  );
-  if (!parsedId.success || !parsedLayout.success) {
+  const searchParams = new URL(request.url).searchParams;
+  const parsedLayout = printPdfLayoutSchema.safeParse(searchParams.get("layout") ?? "pages");
+  const parsedFormat = printFormatSchema.safeParse(searchParams.get("format") ?? "a4");
+  if (!parsedId.success || !parsedLayout.success || !parsedFormat.success) {
     return NextResponse.json({ message: "Invalid print request" }, { status: 400 });
   }
 
   try {
     const pagesPdf = await renderIssuePagesPdf({
       issueId: parsedId.data,
+      format: parsedFormat.data,
       requestUrl: request.url,
       cookie: request.headers.get("cookie"),
     });
-    const pdf = parsedLayout.data === "booklet" ? await imposeBookletPdf(pagesPdf) : pagesPdf;
+    const pdf =
+      parsedLayout.data === "booklet"
+        ? await imposeBookletPdf(pagesPdf, parsedFormat.data)
+        : pagesPdf;
 
     return new NextResponse(Buffer.from(pdf), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="middleware-${parsedId.data}-${parsedLayout.data}.pdf"`,
+        "Content-Disposition": `attachment; filename="middleware-${parsedId.data}-${parsedFormat.data}-${parsedLayout.data}.pdf"`,
         "Cache-Control": "private, no-store",
       },
     });
