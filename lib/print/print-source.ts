@@ -1,4 +1,4 @@
-import { printFormats, type PrintFormat } from "@/lib/print/format";
+import { PRINT_STYLESHEET } from "@/lib/print/format";
 
 import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 
@@ -13,7 +13,6 @@ function escapeAttribute(value: string) {
 export function serializePrintSource(
   source: HTMLElement,
   variant: IssueHomeVariant,
-  format: PrintFormat,
   origin: string,
 ) {
   const clone = source.cloneNode(true) as HTMLElement;
@@ -22,14 +21,12 @@ export function serializePrintSource(
     image.setAttribute("src", new URL(image.getAttribute("src") ?? "", origin).href);
   });
 
-  const stylesheets = printFormats[format].stylesheets
-    .map((path) => `<link rel="stylesheet" href="${escapeAttribute(new URL(path, origin).href)}">`)
-    .join("");
+  const stylesheet = escapeAttribute(new URL(PRINT_STYLESHEET, origin).href);
 
   return [
     "<!doctype html>",
-    `<html lang="it" data-variant="${variant}" data-format="${format}">`,
-    `<head><meta charset="utf-8">${stylesheets}</head>`,
+    `<html lang="it" data-variant="${variant}">`,
+    `<head><meta charset="utf-8"><link rel="stylesheet" href="${stylesheet}"></head>`,
     `<body>${clone.innerHTML}</body>`,
     "</html>",
   ].join("");

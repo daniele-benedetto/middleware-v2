@@ -1,4 +1,4 @@
-import { printFormats } from "@/lib/print/format";
+import { printFormat } from "@/lib/print/format";
 
 /** Page area, footer QR and entry chrome in mm, mirroring the print stylesheets. */
 export type PrintMapDirectoryMetrics = {
@@ -23,7 +23,7 @@ export type PrintMapDirectoryLayout = {
  */
 export function buildPrintMapDirectoryLayout(
   entryCount: number,
-  metrics: PrintMapDirectoryMetrics = printFormats.a4.mapDirectory,
+  metrics: PrintMapDirectoryMetrics = printFormat.mapDirectory,
 ): PrintMapDirectoryLayout {
   const rows = Math.max(1, Math.ceil(entryCount / 2));
   const availableMm = metrics.pageAreaHeightMm - metrics.footerIntrusionMm - metrics.footerGapMm;

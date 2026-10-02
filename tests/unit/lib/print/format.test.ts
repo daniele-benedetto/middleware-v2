@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { printFormats, resolvePrintFormat } from "@/lib/print/format";
+import { printFormat } from "@/lib/print/format";
 import { buildPrintIssueDocument } from "@/lib/print/issue-document";
 import { inspectPrintIssueDocument } from "@/lib/print/preflight";
 
@@ -29,7 +29,7 @@ const article: PrintArticleSource = {
   imageAlt: null,
 };
 
-const issue = (sectionCount = 1): PrintIssueSource => ({
+const issue = (sectionCount = 1, showBodyImages = true): PrintIssueSource => ({
   slug: "numero-zero",
   title: "Numero",
   titleStyled: null,
@@ -54,54 +54,43 @@ const issue = (sectionCount = 1): PrintIssueSource => ({
         excludeFromPrint: false,
         showEndLogo: false,
         layout: "default" as const,
+        showBodyImages,
       },
     },
   })),
 });
 
-const build = (format: "a4" | "a5", sectionCount = 1) =>
+const build = (sectionCount = 1, showBodyImages = true) =>
   buildPrintIssueDocument({
-    issue: issue(sectionCount),
+    issue: issue(sectionCount, showBodyImages),
     articles: [article],
     maps: [],
     courses: [],
     issueNumber: "N. 00",
-    format,
   });
 
-describe("resolvePrintFormat", () => {
-  it("defaults to A4 and rejects unknown formats", () => {
-    expect(resolvePrintFormat(undefined)).toBe("a4");
-    expect(resolvePrintFormat("a5")).toBe("a5");
-    expect(resolvePrintFormat("a3")).toBe("a4");
-  });
-});
+const hasImages = (showBodyImages: boolean) => {
+  const [section] = build(1, showBodyImages).sections;
+  const content = section?.kind === "article" ? section.content : null;
+  return JSON.stringify(content).includes('"type":"image"');
+};
 
-describe("print formats", () => {
-  it("imposes each format two-up on a sheet twice its size", () => {
-    for (const spec of Object.values(printFormats)) {
-      expect(spec.sheet.heightMm).toBe(spec.page.heightMm);
-      expect(spec.sheet.widthMm).toBeGreaterThanOrEqual(2 * spec.page.widthMm);
-    }
+describe("print format", () => {
+  it("imposes the A5 pages two-up on an A4 sheet", () => {
+    expect(printFormat.sheet.heightMm).toBe(printFormat.page.heightMm);
+    expect(printFormat.sheet.widthMm).toBeGreaterThanOrEqual(2 * printFormat.page.widthMm);
   });
 
-  it("leaves the images inside the text out of A5 only", () => {
-    const images = (format: "a4" | "a5") => {
-      const [section] = build(format).sections;
-      const content = section?.kind === "article" ? section.content : null;
-      return JSON.stringify(content).includes('"type":"image"');
-    };
-
-    expect(build("a5").format).toBe("a5");
-    expect(images("a4")).toBe(true);
-    expect(images("a5")).toBe(false);
+  it("prints the images inside the article text unless the article turns them off", () => {
+    expect(hasImages(true)).toBe(true);
+    expect(hasImages(false)).toBe(false);
   });
 
-  it("checks the index capacity of the format", () => {
-    const codes = (format: "a4" | "a5") =>
-      inspectPrintIssueDocument(build(format, 24)).map((entry) => entry.code);
+  it("checks the index capacity of one page", () => {
+    const codes = (sectionCount: number) =>
+      inspectPrintIssueDocument(build(sectionCount)).map((entry) => entry.code);
 
-    expect(codes("a4")).not.toContain("crowded-toc");
-    expect(codes("a5")).toContain("crowded-toc");
+    expect(codes(printFormat.tocCapacity)).not.toContain("crowded-toc");
+    expect(codes(printFormat.tocCapacity + 1)).toContain("crowded-toc");
   });
 });

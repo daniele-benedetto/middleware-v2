@@ -91,6 +91,7 @@ type IssueHomeBlocksEditorText = {
   printStopWithSiteCta: string;
   printExcludeFromPrint: string;
   printShowEndLogo: string;
+  printShowBodyImages: string;
   printLayout: string;
   printLayoutDefault: string;
   printLayoutFullscreen: string;
@@ -1127,6 +1128,7 @@ function SortableSelectedArticle({
     excludeFromPrint: printSettings?.excludeFromPrint ?? false,
     showEndLogo: printSettings?.showEndLogo ?? false,
     layout: printSettings?.layout ?? "default",
+    showBodyImages: printSettings?.showBodyImages ?? true,
   };
 
   return (
@@ -1216,6 +1218,15 @@ function SortableSelectedArticle({
               compact
               onChange={(showEndLogo) =>
                 onPrintSettingsChange({ ...resolvedPrintSettings, showEndLogo })
+              }
+            />
+            <CmsCheckbox
+              label={text.printShowBodyImages}
+              checked={resolvedPrintSettings.showBodyImages}
+              disabled={disabled || resolvedPrintSettings.excludeFromPrint}
+              compact
+              onChange={(showBodyImages) =>
+                onPrintSettingsChange({ ...resolvedPrintSettings, showBodyImages })
               }
             />
             <div className="sm:col-span-3">

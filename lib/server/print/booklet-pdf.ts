@@ -3,7 +3,7 @@ import "server-only";
 import { PDFDocument, type PDFEmbeddedPage, type PDFPage } from "pdf-lib";
 
 import { buildBookletPlan, type BookletSide } from "@/lib/print/booklet";
-import { printFormats, type PrintFormat } from "@/lib/print/format";
+import { printFormat } from "@/lib/print/format";
 
 const MM_TO_PT = 72 / 25.4;
 
@@ -39,11 +39,11 @@ function drawSheetSide(
 }
 
 /**
- * Imposes the pages two-up on landscape sheets (A4 pages on A3, A5 pages on A4):
- * print duplex, flip on short edge, fold.
+ * Imposes the A5 pages two-up on landscape A4 sheets: print duplex, flip on
+ * short edge, fold.
  */
-export async function imposeBookletPdf(pagesPdf: Uint8Array, format: PrintFormat = "a4") {
-  const { sheet } = printFormats[format];
+export async function imposeBookletPdf(pagesPdf: Uint8Array) {
+  const { sheet } = printFormat;
   const sheetSize = { width: sheet.widthMm * MM_TO_PT, height: sheet.heightMm * MM_TO_PT };
   const source = await PDFDocument.load(pagesPdf);
   const output = await PDFDocument.create();

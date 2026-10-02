@@ -1,13 +1,13 @@
 /**
  * Pulling back a short tail: when a full article spills onto a new page by a
- * few lines, the viewer tries stronger, invisible adjustments (photo height,
- * then a hair of tracking, see public/print/issue.css) until the tail fits on
- * the previous page. If none works, the article goes back to its layout.
+ * few lines, the viewer tries a hair of tracking, then a little more (see
+ * public/print/issue.css) until the tail fits on the previous page. Photos
+ * keep their height. If none works, the article goes back to its layout.
  */
 
 /** Lines on the last page that are worth pulling back. */
 export const PRINT_TAIL_MAX_LINES = 10;
-export const PRINT_TIGHTEN_MAX_LEVEL = 3;
+export const PRINT_TIGHTEN_MAX_LEVEL = 2;
 
 export type PrintTightenState = {
   level: number;

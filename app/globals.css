@@ -518,21 +518,40 @@ body {
   background-color: var(--print-dark-accent) !important;
 }
 
+/* Back cover in the next issue's color (preview block, black or red variant). */
+[data-vivliostyle-page-container]:has(.back-cover--dark) [data-vivliostyle-bleed-box] {
+  background-color: var(--print-back-cover-bg) !important;
+}
+
+[data-vivliostyle-page-container]:has(.back-cover--dark) [data-vivliostyle-page-box] * {
+  color: var(--print-back-cover-ink) !important;
+}
+
+[data-vivliostyle-page-container]:has(.back-cover--dark) .back-cover .accent {
+  color: var(--print-back-cover-accent) !important;
+}
+
+[data-vivliostyle-page-container]:has(.back-cover--dark) .article__meta-divider {
+  background-color: var(--print-back-cover-accent) !important;
+}
+
 /* Closing logo (printSettings.showEndLogo), on the page box of the section's last
    page, outside the paginated flow (lib/print/end-logo.ts). Adjust it here. */
 .print-end-logo {
-  --print-end-logo-left: 0mm;
-  --print-end-logo-bottom: 0mm;
-  --print-end-logo-width: 104%;
+  --print-end-logo-left: 50%;
+  --print-end-logo-bottom: 0;
+  --print-end-logo-width: 125%;
   --print-end-logo-shift-y: 50%;
-  --print-end-logo-opacity: 0.12;
+  --print-end-logo-shift-x: -50%;
+  --print-end-logo-opacity: 0.1;
   position: absolute !important;
+  z-index: -1;
   left: var(--print-end-logo-left);
   bottom: var(--print-end-logo-bottom);
   width: var(--print-end-logo-width) !important;
   max-width: none !important;
   height: auto !important;
-  transform: translateY(var(--print-end-logo-shift-y));
+  transform: translate(var(--print-end-logo-shift-x), var(--print-end-logo-shift-y));
   opacity: var(--print-end-logo-opacity);
   pointer-events: none;
 }
@@ -540,6 +559,12 @@ body {
 /* The logo is wider than the page: the page edge clips it, as on paper. */
 [data-vivliostyle-page-container]:has(.print-end-logo) {
   overflow: clip !important;
+}
+
+/* Own stacking context: the logo (z-index -1) stays above the page background
+   and below the text and the folio. */
+[data-vivliostyle-page-box]:has(> .print-end-logo) {
+  isolation: isolate;
 }
 
 /* The footer QR stays on the inner side, opposite the folio.

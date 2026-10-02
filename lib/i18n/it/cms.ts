@@ -535,6 +535,7 @@ export const cmsIt = {
           printStopWithSiteCta: "Chiudi con CTA sito",
           printExcludeFromPrint: "Escludi dal cartaceo",
           printShowEndLogo: "Logo in chiusura",
+          printShowBodyImages: "Immagini nel testo",
           printLayout: "Layout cartaceo",
           printLayoutDefault: "Standard",
           printLayoutFullscreen: "Full screen",
@@ -764,7 +765,7 @@ export const cmsIt = {
   quickActions: {
     edit: "Modifica",
     preview: "Anteprima",
-    printPreview: "Preview cartacea",
+    printPreview: "Anteprima cartacea",
     delete: "Elimina",
     setAdmin: "Imposta ADMIN",
     setEditor: "Imposta EDITOR",

@@ -18,6 +18,7 @@ export const issueHomeBlockPrintSettingsSchema = z.object({
 export const issueHomeArticlePrintLayoutSchema = z.enum(["default", "fullscreen"]);
 export const issueHomeArticlePrintSettingsSchema = issueHomeBlockPrintSettingsSchema.extend({
   layout: issueHomeArticlePrintLayoutSchema.default("default"),
+  showBodyImages: z.boolean().default(true),
 });
 
 export const issueHomeArticleBlockSchema = z

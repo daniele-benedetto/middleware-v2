@@ -47,7 +47,6 @@ function TocIcon({ section }: { section: PrintSection }) {
 export function PrintToc({ sections }: { sections: PrintSection[] }) {
   return (
     <nav className="toc" aria-label="Indice">
-      <h2 className="toc__title">Indice</h2>
       {sections.length > 0 ? (
         <ol className="toc__list">
           {sections.map((section) => (

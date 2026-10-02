@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 
 import { PrintArticle } from "@/components/cms/print/print-article";
+import { PrintBackCover } from "@/components/cms/print/print-back-cover";
 import { PrintCourse } from "@/components/cms/print/print-course";
 import { PrintCover } from "@/components/cms/print/print-cover";
 import { PrintMap } from "@/components/cms/print/print-map";
@@ -38,15 +39,20 @@ export async function IssuePrintDocument({
   document: PrintIssueDocument;
   siteUrl: URL;
 }) {
-  const siteLabel = siteUrl.host;
+  const siteLabel = siteUrl.host.replace(/^www\./, "");
   const track = (path: string, placement: PrintQrPlacement) =>
     withPrintCampaign(new URL(path, siteUrl), { campaign: document.campaign, placement });
-  const sectionQrCodes = await Promise.all(
-    document.sections.map((section) => {
-      const target = sectionQrTarget(section);
-      return target ? createQrCode(track(target.path, target.placement)) : null;
-    }),
-  );
+  const [sectionQrCodes, backCoverQrCode] = await Promise.all([
+    Promise.all(
+      document.sections.map((section) => {
+        const target = sectionQrTarget(section);
+        return target ? createQrCode(track(target.path, target.placement)) : null;
+      }),
+    ),
+    document.backCover
+      ? createQrCode(track(document.backCover.articlePath, "anteprima"))
+      : Promise.resolve(null),
+  ]);
 
   return (
     <>
@@ -80,6 +86,13 @@ export async function IssuePrintDocument({
             );
         }
       })}
+      {document.backCover ? (
+        <PrintBackCover
+          backCover={document.backCover}
+          qrCode={backCoverQrCode}
+          siteLabel={siteLabel}
+        />
+      ) : null}
     </>
   );
 }

@@ -3,6 +3,12 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 import { PrintPreviewActions } from "@/components/cms/print/print-preview-actions";
+import {
+  applyBackCoverFillers,
+  countBackCoverFillers,
+  countPrintPages,
+  hasPrintBackCover,
+} from "@/lib/print/back-cover-fill";
 import { buildBookletPlan } from "@/lib/print/booklet";
 import { collectEndLogoAnchors, placePrintEndLogos } from "@/lib/print/end-logo";
 import { nextFitBudget, PRINT_FIT_MAX_PASSES } from "@/lib/print/fit";
@@ -18,7 +24,7 @@ import {
   measureArticleTail,
   measureFitSection,
 } from "@/lib/print/fit-dom";
-import { printFormats, type PrintFormat } from "@/lib/print/format";
+import { printFormat } from "@/lib/print/format";
 import { nextNudge, startNudge, type PrintNudgeState } from "@/lib/print/nudge";
 import { resolvePrintPageReferences } from "@/lib/print/page-references";
 import { serializePrintSource } from "@/lib/print/print-source";
@@ -33,9 +39,9 @@ type PrintViewerStatus = "loading" | "ready" | "error";
 
 type IssuePrintViewerProps = {
   issueId: string;
-  format: PrintFormat;
   variant: IssueHomeVariant;
   tone: PrintDarkTone | null;
+  backCoverTone: PrintDarkTone | null;
   mode: "preview" | "pdf";
   preflight: PrintPreflightIssue[];
   children: ReactNode;
@@ -46,11 +52,14 @@ const PREVIEW_STAGE_PADDING_PX = 48;
 // Long issues in a background tab are throttled by the browser: only flag a real stall.
 const PAGINATION_TIMEOUT_MS = 180_000;
 
-function toneStyle(tone: PrintDarkTone | null) {
+function toneStyle(tone: PrintDarkTone | null, backCoverTone: PrintDarkTone | null) {
   return {
     "--print-dark-bg": tone?.background ?? "#ffffff",
     "--print-dark-ink": tone?.ink ?? "#000000",
     "--print-dark-accent": tone?.accent ?? "#c13814",
+    "--print-back-cover-bg": backCoverTone?.background ?? "#ffffff",
+    "--print-back-cover-ink": backCoverTone?.ink ?? "#000000",
+    "--print-back-cover-accent": backCoverTone?.accent ?? "#c13814",
   } as CSSProperties;
 }
 
@@ -80,12 +89,13 @@ function paginate(
  * pages (courses, cut articles) are measured after each pass and their texts
  * trimmed, then the issue is laid out again with the same paginator.
  */
-function usePrintPagination(variant: IssueHomeVariant, format: PrintFormat) {
+function usePrintPagination(variant: IssueHomeVariant) {
   const sourceRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<CoreViewer | null>(null);
   const [status, setStatus] = useState<PrintViewerStatus>("loading");
   const [pageCount, setPageCount] = useState(0);
+  const [fillerCount, setFillerCount] = useState(0);
 
   useEffect(() => {
     const source = sourceRef.current;
@@ -107,6 +117,8 @@ function usePrintPagination(variant: IssueHomeVariant, format: PrintFormat) {
     const endLogoAnchors = collectEndLogoAnchors(source);
     const nudging = new Map<string, PrintNudgeState>();
     const nudgeLevels = new Map<string, number>();
+    const backCover = hasPrintBackCover(source);
+    let fillers = 0;
     const budgets = new Map(
       sections.map((section) => [
         section.anchor,
@@ -122,8 +134,9 @@ function usePrintPagination(variant: IssueHomeVariant, format: PrintFormat) {
         applyFitBudgets(working, budgets);
         applyTightenLevels(working, tightenLevels);
         applyNudgeLevels(working, nudgeLevels);
+        applyBackCoverFillers(working, fillers);
         const printDocument = new DOMParser().parseFromString(
-          serializePrintSource(working, variant, format, window.location.origin),
+          serializePrintSource(working, variant, window.location.origin),
           "text/html",
         );
 
@@ -168,6 +181,14 @@ function usePrintPagination(variant: IssueHomeVariant, format: PrintFormat) {
               changed = true;
             }
           }
+
+          if (backCover) {
+            const next = countBackCoverFillers(countPrintPages(result.host), fillers);
+            if (next !== fillers) {
+              fillers = next;
+              changed = true;
+            }
+          }
         }
         if (!changed) break;
       }
@@ -177,6 +198,7 @@ function usePrintPagination(variant: IssueHomeVariant, format: PrintFormat) {
       fitPrintBoxes(current);
       placePrintEndLogos(current, endLogoAnchors);
       setPageCount(resolvePrintPageReferences(current));
+      setFillerCount(fillers);
       setStatus("ready");
     }
 
@@ -190,9 +212,9 @@ function usePrintPagination(variant: IssueHomeVariant, format: PrintFormat) {
       window.clearTimeout(timeout);
       viewport.querySelectorAll(".print-viewer__host").forEach((host) => host.remove());
     };
-  }, [variant, format]);
+  }, [variant]);
 
-  return { sourceRef, viewportRef, viewerRef, status, pageCount };
+  return { sourceRef, viewportRef, viewerRef, status, pageCount, fillerCount };
 }
 
 /**
@@ -244,8 +266,12 @@ function usePreviewZoom(
   return stageRef;
 }
 
-function describePagination(pageCount: number, format: PrintFormat) {
-  const { pageLabel, sheetLabel } = printFormats[format];
+function countBlankPages(count: number) {
+  return `${count} ${count === 1 ? "pagina bianca" : "pagine bianche"}`;
+}
+
+function describePagination(pageCount: number, fillerCount: number) {
+  const { pageLabel, sheetLabel } = printFormat;
   const booklet = buildBookletPlan(pageCount);
   const blankPages = booklet.paddedPageCount - pageCount;
   const sheets = booklet.sheets.length;
@@ -253,9 +279,8 @@ function describePagination(pageCount: number, format: PrintFormat) {
   return [
     `${pageCount} pagine ${pageLabel}`,
     `${sheets} ${sheets === 1 ? "foglio" : "fogli"} ${sheetLabel}`,
-    blankPages > 0
-      ? `${blankPages} ${blankPages === 1 ? "pagina bianca" : "pagine bianche"} in coda`
-      : null,
+    fillerCount > 0 ? `${countBlankPages(fillerCount)} prima della quarta` : null,
+    blankPages > 0 ? `${countBlankPages(blankPages)} in coda` : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -263,29 +288,27 @@ function describePagination(pageCount: number, format: PrintFormat) {
 
 export function IssuePrintViewer({
   issueId,
-  format,
   variant,
   tone,
+  backCoverTone,
   mode,
   preflight,
   children,
 }: IssuePrintViewerProps) {
-  const { sourceRef, viewportRef, viewerRef, status, pageCount } = usePrintPagination(
-    variant,
-    format,
-  );
+  const { sourceRef, viewportRef, viewerRef, status, pageCount, fillerCount } =
+    usePrintPagination(variant);
   const stageRef = usePreviewZoom(
     viewerRef,
     viewportRef,
     mode === "preview" ? status : "loading",
-    printFormats[format].page.heightMm,
+    printFormat.page.heightMm,
   );
 
   return (
     <div
       className={`print-viewer print-viewer--${mode}`}
       data-print-status={status}
-      style={toneStyle(tone)}
+      style={toneStyle(tone, backCoverTone)}
     >
       <div ref={sourceRef} hidden>
         {children}
@@ -295,10 +318,10 @@ export function IssuePrintViewer({
         <header className="print-viewer__toolbar">
           <div className="min-w-0 space-y-1">
             <p className="font-ui text-[12px] font-bold tracking-[0.08em] uppercase">
-              Preview cartacea
+              Anteprima cartacea
               <span className="ml-3 font-semibold tracking-normal normal-case text-muted-foreground">
                 {status === "ready"
-                  ? describePagination(pageCount, format)
+                  ? describePagination(pageCount, fillerCount)
                   : status === "error"
                     ? "Impaginazione non riuscita"
                     : "Impaginazione in corso…"}
@@ -312,7 +335,7 @@ export function IssuePrintViewer({
               </ul>
             ) : null}
           </div>
-          <PrintPreviewActions issueId={issueId} format={format} disabled={status !== "ready"} />
+          <PrintPreviewActions issueId={issueId} disabled={status !== "ready"} />
         </header>
       ) : null}
 

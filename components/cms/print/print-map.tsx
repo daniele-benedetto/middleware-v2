@@ -106,6 +106,7 @@ export function PrintMap({
       id={map.anchor}
       className="map"
       data-print-anchor={map.anchor}
+      data-print-label={map.label}
       data-print-end-logo={map.showEndLogo ? "" : undefined}
     >
       <div className={`map__opener${showDirectory ? "" : " map__opener--with-service"}`}>

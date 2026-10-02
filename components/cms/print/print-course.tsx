@@ -55,6 +55,7 @@ export function PrintCourse({
       id={course.anchor}
       className="course"
       data-print-anchor={course.anchor}
+      data-print-label={course.label}
       data-print-end-logo={course.showEndLogo ? "" : undefined}
     >
       <div className={`course__page${rest.length === 0 ? " course__page--with-service" : ""}`}>

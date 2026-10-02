@@ -7,8 +7,6 @@ import { join } from "node:path";
 
 import puppeteer, { type CookieData } from "puppeteer-core";
 
-import type { PrintFormat } from "@/lib/print/format";
-
 // Same budget as the viewer's own pagination timeout.
 const DEFAULT_TIMEOUT_MS = 180_000;
 
@@ -91,12 +89,10 @@ async function step<T>(name: string, run: () => Promise<T>) {
  */
 export async function renderIssuePagesPdf({
   issueId,
-  format,
   requestUrl,
   cookie,
 }: {
   issueId: string;
-  format: PrintFormat;
   requestUrl: string;
   cookie: string | null;
 }) {
@@ -140,7 +136,6 @@ export async function renderIssuePagesPdf({
     if (cookies.length > 0) await browser.setCookie(...cookies);
 
     const viewerUrl = new URL(`/cms/print/${issueId}`, origin);
-    viewerUrl.searchParams.set("format", format);
     viewerUrl.searchParams.set("render", "pdf");
     const response = await step("open viewer", () =>
       page.goto(viewerUrl.toString(), { waitUntil: "load" }),

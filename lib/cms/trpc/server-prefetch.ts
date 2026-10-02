@@ -201,10 +201,18 @@ export async function prefetchIssuePrintData(id: string) {
     );
     return { ...course, lessons };
   };
-  const [articles, maps, courses] = await Promise.all([
+  const hasPreviewBlock = (issue.homeBlocks ?? []).some(
+    (block) => block.type === "preview" && block.previewIssueId,
+  );
+  const loadPreviewIssue = async () => {
+    const preview = await caller.issues.getPreviewById({ id });
+    return preview.previewIssues?.[0] ?? null;
+  };
+  const [articles, maps, courses, previewIssue] = await Promise.all([
     Promise.all(blockArticleIds.map((articleId) => caller.articles.getById({ id: articleId }))),
     Promise.all(mapIds.map((mapId) => caller.maps.getById({ id: mapId }).catch(() => null))),
     Promise.all(courseIds.map((courseId) => loadCourse(courseId).catch(() => null))),
+    hasPreviewBlock ? loadPreviewIssue().catch(() => null) : null,
   ]);
 
   return {
@@ -212,6 +220,7 @@ export async function prefetchIssuePrintData(id: string) {
     articles,
     maps: maps.filter((map) => map !== null),
     courses: courses.filter((course) => course !== null),
+    previewIssue,
   };
 }
 

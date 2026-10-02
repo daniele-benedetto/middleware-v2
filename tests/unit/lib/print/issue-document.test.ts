@@ -65,6 +65,7 @@ const issue = (overrides: Partial<PrintIssueSource> = {}): PrintIssueSource => (
           excludeFromPrint: false,
           showEndLogo: true,
           layout: "default",
+          showBodyImages: true,
         },
       },
     },
@@ -168,6 +169,7 @@ describe("buildPrintIssueDocument", () => {
                 excludeFromPrint: true,
                 showEndLogo: false,
                 layout: "default" as const,
+                showBodyImages: true,
               },
             },
           }
@@ -277,6 +279,7 @@ describe("buildPrintIssueDocument article layouts", () => {
                 excludeFromPrint: false,
                 showEndLogo: false,
                 layout,
+                showBodyImages: true,
               },
             },
           }
@@ -304,7 +307,11 @@ describe("buildPrintIssueDocument article layouts", () => {
       issueNumber: "00",
     });
 
-    expect(document.sections[0]).toMatchObject({ layout: "fullscreen", layoutFallback: false });
+    const [section] = document.sections;
+    const text = JSON.stringify(section?.kind === "article" ? section.content : null);
+
+    expect(section).toMatchObject({ layout: "fullscreen", layoutFallback: false });
+    expect(text.replaceAll("\\u00ad", "").replaceAll("\u00ad", "")).not.toContain("Sommario");
   });
 
   it("falls back to the standard layout and warns when there is no photo", () => {
@@ -504,5 +511,128 @@ describe("buildPrintIssueDocument courses", () => {
       ["01", "Contesto e origini", "Primo incontro"],
       ["02", "Genealogia e lessico", "Secondo incontro"],
     ]);
+  });
+});
+
+describe("buildPrintIssueDocument back cover", () => {
+  const previewIssueId = "00000000-0000-4000-8000-000000000020";
+  const previewIssue = {
+    id: previewIssueId,
+    homeVariant: "red" as const,
+    article: {
+      slug: "prossimo-articolo",
+      title: "“Torneremo in piazza”, Intervista a Luca",
+      titleStyled: null,
+      excerpt: "Sommario del prossimo numero",
+      authorName: null,
+      categoryName: "Interviste",
+    },
+  };
+  const withPreviewBlock = (excludeFromPrint = false) =>
+    issue({
+      homeBlocks: [
+        ...(issue().homeBlocks ?? []),
+        {
+          id: "p",
+          type: "preview",
+          previewIssueId,
+          printSettings: {
+            showInIssueIntro: false,
+            stopWithSiteCta: false,
+            excludeFromPrint,
+            showEndLogo: false,
+          },
+        },
+      ],
+    });
+
+  it("turns the preview block into the back cover, in the next issue's color", () => {
+    const document = buildPrintIssueDocument({
+      issue: withPreviewBlock(),
+      articles,
+      maps: [],
+      courses: [],
+      issueNumber: "N. 00",
+      previewIssue,
+      previewIssueNumber: "N. 01",
+    });
+
+    expect(document.sections).toHaveLength(4);
+    expect(document.backCover).toMatchObject({
+      issueNumber: "N. 01",
+      label: "Interviste",
+      title: [{ text: "“Torneremo in piazza”", accent: false, breakAfter: false }],
+      subtitle: "Intervista a Luca",
+      author: "Redazione",
+      articlePath: "/articoli/prossimo-articolo",
+      variant: "red",
+      dark: true,
+    });
+    expect(document.backCoverUnavailable).toBe(false);
+  });
+
+  it("has no back cover without a preview block, or when it is excluded from print", () => {
+    const withoutBlock = buildPrintIssueDocument({
+      issue: issue(),
+      articles,
+      maps: [],
+      courses: [],
+      issueNumber: "N. 00",
+      previewIssue,
+      previewIssueNumber: "N. 01",
+    });
+    const excluded = buildPrintIssueDocument({
+      issue: withPreviewBlock(true),
+      articles,
+      maps: [],
+      courses: [],
+      issueNumber: "N. 00",
+      previewIssue,
+      previewIssueNumber: "N. 01",
+    });
+
+    expect(withoutBlock.backCover).toBeNull();
+    expect(excluded.backCover).toBeNull();
+    expect(inspectPrintIssueDocument(excluded).map((issue) => issue.code)).not.toContain(
+      "unavailable-back-cover",
+    );
+  });
+
+  it("flags a preview whose issue has nothing published", () => {
+    const document = buildPrintIssueDocument({
+      issue: withPreviewBlock(),
+      articles,
+      maps: [],
+      courses: [],
+      issueNumber: "N. 00",
+      previewIssue: null,
+    });
+
+    expect(document.backCover).toBeNull();
+    expect(inspectPrintIssueDocument(document).map((issue) => issue.code)).toContain(
+      "unavailable-back-cover",
+    );
+  });
+});
+
+describe("buildPrintIssueDocument excerpt", () => {
+  it("opens the article text with the excerpt, as a plain paragraph", () => {
+    const document = buildPrintIssueDocument({
+      issue: issue(),
+      articles,
+      maps: [],
+      courses: [],
+      issueNumber: "00",
+    });
+    const [section] = document.sections;
+    const paragraphs =
+      section?.kind === "article"
+        ? (section.content as { content: Array<{ content: Array<{ text: string }> }> }).content.map(
+            (node) => node.content.map((run) => run.text.replaceAll("­", "")).join(""),
+          )
+        : [];
+
+    expect(paragraphs).toEqual(["Sommario 1", "Testo"]);
+    expect(section).toMatchObject({ hasText: true });
   });
 });

@@ -8,7 +8,7 @@ export type BookletPlan = {
   sheets: BookletSheet[];
 };
 
-const PAGES_PER_SHEET = 4;
+export const PAGES_PER_SHEET = 4;
 
 function pageOrBlank(page: number, pageCount: number) {
   return page <= pageCount ? page : null;

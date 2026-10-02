@@ -34,9 +34,9 @@
 }
 
 /*
- * A4 pages, printed as an A3 booklet. Mockup measures are authored at 4 px/mm,
- * so 1 px of the mockup = 0.25 mm = 0.709 pt. The A5 booklet (printed on A4)
- * loads issue-a5.css on top of this file.
+ * A5 pages, printed two-up on A4 sheets and folded into a booklet. One column of
+ * running text, about 70 characters per line on 121 mm. Measures that depend on
+ * the page are mirrored by `printFormat` in lib/print/format.ts.
  */
 :root {
   --paper: #fff;
@@ -44,31 +44,33 @@
   --accent: #c13814;
   --sans: "Print Archivo", "Archivo", sans-serif;
   --serif: "Print Spectral", "Spectral", serif;
-  --page-top: 16mm;
-  --page-bottom: 24mm;
-  --page-inner: 18mm;
-  --page-outer: 14mm;
-  --cover-x: 16mm;
-  --cover-y: 14mm;
-  --page-height: 297mm;
+  --page-top: 19mm;
+  --page-bottom: 19mm;
+  --page-inner: 15mm;
+  --page-outer: 12mm;
+  --cover-x: 11mm;
+  --cover-y: 10mm;
+  --page-height: 210mm;
   /* Folio line and footer QR, from the bottom edge; the strip is what the QR
      takes from the text area (QR top minus the bottom margin, plus a gap). */
-  --folio-bottom: 11mm;
-  --qr-size: 20mm;
-  --footer-strip: 11mm;
-  --column-gap: 9mm;
+  --folio-bottom: 8mm;
+  --qr-size: 16mm;
+  --footer-strip: 9mm;
+  --column-gap: 7mm;
   /* Same weight as the site's 1px dividers. */
   --rule: 0.75pt;
-  /* Body 10.5/14.5pt (138%): every vertical step in running text is a multiple
-     of the leading, so baselines stay aligned across columns. */
-  --body-size: 10.5pt;
-  --body-leading: 14.5pt;
-  /* Section titles stay below the cover title (48pt): the cover leads. */
-  --section-title-size: 36pt;
+  /* Body 9.5/13pt (137%): every vertical step in running text is a multiple
+     of the leading, so baselines stay aligned. */
+  --body-size: 9.5pt;
+  --body-leading: 13pt;
+  /* Section titles stay below the cover title (36pt): the cover leads. */
+  --section-title-size: 27pt;
+  /* Opening photo of the articles; the images inside the text match it. */
+  --article-image-height: 62mm;
 }
 
 @page {
-  size: A4;
+  size: A5;
   margin: var(--page-top) var(--page-outer) var(--page-bottom) var(--page-inner);
   background: var(--paper);
 
@@ -81,16 +83,31 @@
   }
 }
 
+/* Running heads on the outer side: the section's rubric on the verso, its title
+   on the recto, as far from the top edge as the folio from the bottom one.
+   `first-except` leaves them out of the opening page, under the big title. */
 @page :left {
   margin-left: var(--page-outer);
   margin-right: var(--page-inner);
 
+  @top-left {
+    content: string(print-label, first-except);
+    vertical-align: top;
+    padding-top: var(--folio-bottom);
+    font-family: var(--sans);
+    font-size: 6.5pt;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
   @bottom-left {
     content: counter(page, decimal-leading-zero);
     vertical-align: bottom;
-    padding-bottom: 11mm;
+    padding-bottom: var(--folio-bottom);
     font-family: var(--sans);
-    font-size: 9.2pt;
+    font-size: 8.5pt;
     font-weight: 900;
     font-variant-numeric: tabular-nums;
     color: var(--ink);
@@ -101,12 +118,24 @@
   margin-left: var(--page-inner);
   margin-right: var(--page-outer);
 
+  @top-right {
+    content: string(print-title, first-except);
+    vertical-align: top;
+    padding-top: var(--folio-bottom);
+    font-family: var(--sans);
+    font-size: 6.5pt;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
   @bottom-right {
     content: counter(page, decimal-leading-zero);
     vertical-align: bottom;
-    padding-bottom: 11mm;
+    padding-bottom: var(--folio-bottom);
     font-family: var(--sans);
-    font-size: 9.2pt;
+    font-size: 8.5pt;
     font-weight: 900;
     font-variant-numeric: tabular-nums;
     color: var(--ink);
@@ -122,6 +151,14 @@
 }
 
 @page :blank {
+  @top-left {
+    content: none;
+  }
+
+  @top-right {
+    content: none;
+  }
+
   @bottom-left {
     content: none;
   }
@@ -129,6 +166,52 @@
   @bottom-right {
     content: none;
   }
+}
+
+/* The back cover is the last page: no running head, no folio. */
+@page back-cover {
+  @top-left {
+    content: none;
+  }
+
+  @bottom-left {
+    content: none;
+  }
+}
+
+/* Blank pages before the back cover (lib/print/back-cover-fill.ts). */
+@page filler {
+  @top-left {
+    content: none;
+  }
+
+  @top-right {
+    content: none;
+  }
+
+  @bottom-left {
+    content: none;
+  }
+
+  @bottom-right {
+    content: none;
+  }
+}
+
+.print-filler {
+  page: filler;
+  height: calc(var(--page-height) - var(--page-top) - var(--page-bottom));
+  break-before: page;
+}
+
+[data-print-label] {
+  string-set: print-label attr(data-print-label);
+}
+
+.article__title,
+.course__title,
+.map__title {
+  string-set: print-title content(text);
 }
 
 * {
@@ -174,7 +257,7 @@ a {
   display: flex;
   justify-content: space-between;
   gap: 6mm;
-  font-size: 8pt;
+  font-size: 7pt;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -182,7 +265,7 @@ a {
 }
 
 .cover__logo {
-  margin-top: 4mm;
+  margin-top: 3mm;
   width: 100%;
   height: auto;
 }
@@ -190,8 +273,8 @@ a {
 .cover__image {
   position: relative;
   flex: 1;
-  min-height: 70mm;
-  margin-top: 5mm;
+  min-height: 50mm;
+  margin-top: 3mm;
   overflow: hidden;
   background: #3a3733;
 }
@@ -216,17 +299,17 @@ a {
 }
 
 .cover__title {
-  margin-top: 5.5mm;
-  font-size: 48pt;
+  margin-top: 4mm;
+  font-size: 36pt;
   line-height: 0.9;
   font-weight: 900;
   letter-spacing: -0.06em;
 }
 
 .cover__deck {
-  margin-top: 3mm;
+  margin-top: 2.5mm;
   font-family: var(--serif);
-  font-size: 10.6pt;
+  font-size: 9.5pt;
   line-height: 1.38;
   font-style: italic;
 }
@@ -234,9 +317,9 @@ a {
 .cover__highlights {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  column-gap: 7mm;
-  margin-top: 6mm;
-  padding-top: 3.5mm;
+  column-gap: 4mm;
+  margin-top: 3.5mm;
+  padding-top: 3mm;
   border-top: var(--rule) solid var(--ink);
 }
 
@@ -247,7 +330,7 @@ a {
 }
 
 .cover__highlight-kicker {
-  font-size: 7.5pt;
+  font-size: 6.5pt;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -259,32 +342,32 @@ a {
   display: flex;
   align-items: center;
   height: calc(2 * 1.12em);
-  margin-top: 1.5mm;
+  margin-top: 1mm;
   overflow: hidden;
-  font-size: 12pt;
+  font-size: 9.5pt;
   line-height: 1.12;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
-/* Exactly seven lines: the excerpt reaches the page reference and never cuts a line. */
+/* Exactly five lines: the excerpt reaches the page reference and never cuts a line. */
 .cover__highlight-excerpt {
   display: -webkit-box;
-  height: calc(7 * 1.45em);
-  margin-top: 2mm;
+  height: calc(5 * 1.4em);
+  margin-top: 1.5mm;
   overflow: hidden;
   font-family: var(--serif);
-  font-size: 8.9pt;
-  line-height: 1.45;
-  text-align: justify;
+  font-size: 8pt;
+  line-height: 1.4;
+  text-align: left;
   hyphens: manual;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 7;
+  -webkit-line-clamp: 5;
 }
 
 .cover__highlight-page {
-  padding-top: 2mm;
-  font-size: 8pt;
+  padding-top: 1.5mm;
+  font-size: 7pt;
   font-weight: 700;
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
@@ -300,15 +383,6 @@ a {
   break-after: page;
 }
 
-.toc__title {
-  padding-bottom: 4.5mm;
-  border-bottom: var(--rule) solid var(--ink);
-  font-size: var(--section-title-size);
-  line-height: 0.92;
-  font-weight: 900;
-  letter-spacing: -0.055em;
-}
-
 .toc__list {
   display: flex;
   flex: 1;
@@ -317,12 +391,14 @@ a {
   list-style: none;
 }
 
+/* Long titles wrap onto a second line instead of being cut. */
 .toc__entry {
   display: grid;
-  grid-template-columns: 8mm minmax(0, 1fr) 12mm;
-  column-gap: 4mm;
+  grid-template-columns: 6mm minmax(0, 1fr) 10mm;
+  column-gap: 3mm;
   align-items: center;
-  height: 8.75mm;
+  min-height: 7.5mm;
+  padding: 1.2mm 0;
 }
 
 .toc__entry + .toc__entry {
@@ -330,23 +406,20 @@ a {
 }
 
 .toc__icon {
-  width: 4.5mm;
-  height: 4.5mm;
+  width: 4mm;
+  height: 4mm;
   color: var(--accent);
 }
 
 .toc__entry-title {
-  overflow: hidden;
-  font-size: 11.3pt;
-  line-height: 1;
+  font-size: 10pt;
+  line-height: 1.15;
   font-weight: 700;
   letter-spacing: -0.01em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .toc__entry-page {
-  font-size: 12.75pt;
+  font-size: 11pt;
   line-height: 1;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -356,7 +429,7 @@ a {
 
 .toc__empty {
   font-family: var(--serif);
-  font-size: 10.6pt;
+  font-size: 9.5pt;
   font-style: italic;
 }
 
@@ -367,7 +440,7 @@ a {
 }
 
 .article__image {
-  height: 80mm;
+  height: var(--article-image-height);
   overflow: hidden;
   background: #3a3733;
 }
@@ -388,32 +461,22 @@ a {
 }
 
 .article__image + .article__header .article__title {
-  margin-top: 9mm;
+  margin-top: 6mm;
 }
 
 /* Interviews: the quote is the headline, "Intervista a …" the subtitle. */
 .article__subtitle {
-  margin-top: 3.5mm;
-  font-size: 16pt;
+  margin-top: 2.5mm;
+  font-size: 13pt;
   line-height: 1.1;
   font-weight: 800;
   letter-spacing: -0.03em;
 }
 
-.article__deck {
-  margin-top: 6mm;
-  padding-top: 4.5mm;
-  border-top: var(--rule) solid currentColor;
-  font-family: var(--serif);
-  font-size: 14pt;
-  line-height: 1.35;
-  font-style: italic;
-}
-
 /* The gap above the text is padding on the header, so the nudge steps below
    can change it without touching the body. */
 .article__header {
-  padding-bottom: 7mm;
+  padding-bottom: 5mm;
 }
 
 .article--fullscreen .article__header {
@@ -444,10 +507,27 @@ a {
 .article__meta {
   display: flex;
   align-items: center;
-  gap: 3mm;
-  margin-top: 4mm;
-  font-size: 9.2pt;
+  gap: 2.5mm;
+  margin-top: 3mm;
+  font-size: 8.5pt;
   font-weight: 600;
+}
+
+/* Fullscreen opening: the excerpt stays with the title, set as running text. */
+.article__lead {
+  margin-top: 4mm;
+  font-family: var(--serif);
+  font-size: var(--body-size);
+  line-height: var(--body-leading);
+  text-align: justify;
+  hyphens: manual;
+}
+
+/* The rule that set the excerpt apart now sits above category and author. */
+.article__header .article__meta {
+  margin-top: 4mm;
+  padding-top: 3.5mm;
+  border-top: var(--rule) solid currentColor;
 }
 
 .article__meta-divider {
@@ -458,9 +538,7 @@ a {
 }
 
 .article__body {
-  columns: 2;
-  column-gap: var(--column-gap);
-  column-rule: var(--rule) solid currentColor;
+  columns: 1;
   column-fill: auto;
   font-family: var(--serif);
   font-size: var(--body-size);
@@ -528,9 +606,9 @@ a {
 .article__body > p:first-child::first-letter,
 .article__body > [data-print-fit-text] > p:first-child::first-letter {
   float: left;
-  margin: 1.5mm 2.5mm 0 0;
+  margin: 1.2mm 2mm 0 0;
   font-family: var(--sans);
-  font-size: 48pt;
+  font-size: 38pt;
   line-height: 0.74;
   font-weight: 900;
   color: var(--accent);
@@ -548,11 +626,11 @@ a {
 }
 
 .article__body h2 {
-  font-size: 13.5pt;
+  font-size: 12pt;
 }
 
 .article__body h3 {
-  font-size: 11.5pt;
+  font-size: 10.5pt;
 }
 
 .article__body > :first-child,
@@ -561,51 +639,51 @@ a {
 }
 
 .article__body blockquote {
-  padding-left: 4mm;
+  padding-left: 3.5mm;
   border-left: var(--rule) solid var(--accent);
   font-style: italic;
 }
 
 .article__body ul,
 .article__body ol {
-  padding-left: 5mm;
+  padding-left: 4.5mm;
 }
 
+/* Images inside the text (printSettings showBodyImages): as tall as the opening
+   photo, centered, width from their proportions; wider ones are fitted to the
+   column. */
 .article__body figure {
   margin: var(--body-leading) 0;
   break-inside: avoid;
 }
 
 .article__body figure img {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  height: var(--article-image-height);
+  margin: 0 auto;
+  object-fit: contain;
   filter: grayscale(1);
 }
 
 .article__body figcaption {
   margin-top: 1.5mm;
+  text-align: center;
   font-family: var(--sans);
-  font-size: 8pt;
+  font-size: 7.5pt;
   line-height: 1.3;
   font-weight: 600;
 }
 
 /* Short tail pull-back (lib/print/tighten.ts): when a full article spills a few
-   lines onto a new page, the viewer tries these levels in order. Leading and
-   type size never change, so the baseline grid holds. */
-.article:not(.article--fullscreen)[data-print-tighten="1"] .article__image {
-  height: 70mm;
-}
-
-.article:not(.article--fullscreen)[data-print-tighten="2"] .article__image,
-.article:not(.article--fullscreen)[data-print-tighten="3"] .article__image {
-  height: 60mm;
-}
-
-.article[data-print-tighten="2"] .article__body {
+   lines onto a new page, the viewer tries these levels in order. Photos keep
+   their height; leading and type size never change, so the baseline grid
+   holds. */
+.article[data-print-tighten="1"] .article__body {
   letter-spacing: -0.0025em;
 }
 
-.article[data-print-tighten="3"] .article__body {
+.article[data-print-tighten="2"] .article__body {
   letter-spacing: -0.005em;
 }
 
@@ -630,6 +708,66 @@ a {
   inset: 0;
 }
 
+/* Back cover (preview block): the last page of the booklet. The viewer adds
+   the blank pages that make the issue a whole number of sheets before it. */
+.back-cover {
+  page: back-cover;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: calc(var(--page-height) - var(--page-top) - var(--page-bottom));
+  padding-bottom: var(--footer-strip);
+  break-before: page;
+}
+
+.back-cover__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 6mm;
+  padding-bottom: 2.5mm;
+  border-bottom: var(--rule) solid currentColor;
+  font-size: 7pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.back-cover__number {
+  margin-top: 4mm;
+  font-size: 110pt;
+  line-height: 0.8;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.back-cover__article {
+  margin-top: auto;
+}
+
+.back-cover__title {
+  font-size: var(--section-title-size);
+  line-height: 0.92;
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+
+.back-cover__deck {
+  margin-top: 4mm;
+  padding-top: 3.5mm;
+  border-top: var(--rule) solid currentColor;
+  font-family: var(--serif);
+  font-size: 12pt;
+  line-height: 1.35;
+  font-style: italic;
+}
+
+.back-cover__logo {
+  width: 42mm;
+  margin-top: 8mm;
+}
+
 /* Fitted sections (cut article, course): a page float reserves the footer strip
    under the text of the last page, and the QR sits in it on the folio line, as
    in the map. */
@@ -643,8 +781,8 @@ a {
 
 /* Course, as in the mockup: two page-sized boxes. The first meeting fills the
    opening page under the header; the others share the second page in equal
-   heights. Each meeting: divider with red number and title, then its text on
-   two columns filling the box. The viewer trims the text to fit the box
+   heights. Each meeting: divider with red number and title, then its text
+   filling the box. The viewer trims the text to fit the box
    (fitPrintBoxes in lib/print/fit-dom.ts). */
 
 .course {
@@ -660,7 +798,7 @@ a {
 }
 
 .course__page--rest {
-  gap: 7mm;
+  gap: 5mm;
   break-before: page;
 }
 
@@ -677,11 +815,11 @@ a {
 }
 
 .course__deck {
-  margin-top: 6mm;
-  padding-top: 4.5mm;
+  margin-top: 4mm;
+  padding-top: 3.5mm;
   border-top: var(--rule) solid var(--ink);
   font-family: var(--serif);
-  font-size: 14pt;
+  font-size: 12pt;
   line-height: 1.35;
   font-style: italic;
 }
@@ -694,14 +832,14 @@ a {
 }
 
 .course__header + .course__lesson {
-  margin-top: 9mm;
+  margin-top: 6mm;
 }
 
 .course__lesson-header {
   display: flex;
   align-items: center;
-  gap: 3mm;
-  padding-bottom: 2mm;
+  gap: 2.5mm;
+  padding-bottom: 1.5mm;
   border-bottom: var(--rule) solid var(--ink);
 }
 
@@ -710,17 +848,17 @@ a {
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 6mm;
-  height: 6mm;
+  width: 5mm;
+  height: 5mm;
   background: var(--accent);
   color: var(--paper);
-  font-size: 8pt;
+  font-size: 7pt;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
 .course__lesson-title {
-  font-size: 11.3pt;
+  font-size: 10pt;
   line-height: 1.15;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -729,11 +867,9 @@ a {
 .course__lesson-text {
   flex: 1;
   min-height: 0;
-  margin-top: 3.5mm;
+  margin-top: 2.5mm;
   overflow: hidden;
-  columns: 2;
-  column-gap: var(--column-gap);
-  column-rule: var(--rule) solid var(--ink);
+  columns: 1;
   column-fill: auto;
   font-family: var(--serif);
   font-size: var(--body-size);
@@ -756,7 +892,7 @@ a {
 .course__lesson-text h3 {
   margin-top: var(--body-leading);
   font-family: var(--sans);
-  font-size: 11.5pt;
+  font-size: 10.5pt;
   line-height: var(--body-leading);
   font-weight: 800;
   text-align: left;
@@ -784,7 +920,7 @@ a {
 .map__plate {
   position: relative;
   flex: 1;
-  min-height: 100mm;
+  min-height: 70mm;
   overflow: hidden;
   background: #eeeeee;
 }
@@ -811,13 +947,13 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 7mm;
-  height: 7mm;
-  margin: -3.5mm 0 0 -3.5mm;
+  width: 6mm;
+  height: 6mm;
+  margin: -3mm 0 0 -3mm;
   border: 0.5mm solid var(--paper);
   background: var(--accent);
   color: var(--paper);
-  font-size: 8.5pt;
+  font-size: 7.5pt;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -833,7 +969,7 @@ a {
 }
 
 .map__title {
-  margin-top: 9mm;
+  margin-top: 6mm;
   font-size: var(--section-title-size);
   line-height: 0.92;
   font-weight: 900;
@@ -841,11 +977,11 @@ a {
 }
 
 .map__deck {
-  margin-top: 6mm;
-  padding-top: 4.5mm;
+  margin-top: 4mm;
+  padding-top: 3.5mm;
   border-top: var(--rule) solid var(--ink);
   font-family: var(--serif);
-  font-size: 14pt;
+  font-size: 12pt;
   line-height: 1.35;
   font-style: italic;
 }
@@ -867,19 +1003,19 @@ a {
 .map__entry {
   flex: 0 0 50%;
   min-width: 0;
-  padding: 0 calc(var(--column-gap) / 2) 4mm 0;
+  padding: 0 calc(var(--column-gap) / 2) 3mm 0;
 }
 
 .map__entry + .map__entry {
-  padding: 0 0 4mm calc(var(--column-gap) / 2);
+  padding: 0 0 3mm calc(var(--column-gap) / 2);
   border-left: var(--rule) solid var(--ink);
 }
 
 .map__entry-header {
   display: flex;
   align-items: center;
-  gap: 3mm;
-  padding-bottom: 2mm;
+  gap: 2.5mm;
+  padding-bottom: 1.5mm;
   border-bottom: var(--rule) solid var(--ink);
 }
 
@@ -888,11 +1024,11 @@ a {
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 6mm;
-  height: 6mm;
+  width: 5mm;
+  height: 5mm;
   background: var(--accent);
   color: var(--paper);
-  font-size: 8pt;
+  font-size: 7pt;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -903,7 +1039,7 @@ a {
   align-items: center;
   height: calc(2 * 1.15em);
   overflow: hidden;
-  font-size: 11.3pt;
+  font-size: 10pt;
   line-height: 1.15;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -911,7 +1047,7 @@ a {
 
 .map__entry-excerpt {
   display: -webkit-box;
-  margin-top: 2mm;
+  margin-top: 1.5mm;
   overflow: hidden;
   font-family: var(--serif);
   font-size: var(--body-size);
@@ -939,12 +1075,12 @@ a {
   bottom: calc(var(--folio-bottom) - var(--page-bottom));
   display: flex;
   align-items: center;
-  gap: 4mm;
+  gap: 3mm;
   height: var(--qr-size);
 }
 
 .print-footer-qr span {
-  font-size: 9.5pt;
+  font-size: 8pt;
   line-height: 1.4;
   font-weight: 700;
   letter-spacing: 0.1em;

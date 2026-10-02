@@ -1,4 +1,4 @@
-import { printFormats } from "@/lib/print/format";
+import { printFormat } from "@/lib/print/format";
 
 export type PrintMapCoordinate = { latitude: number; longitude: number };
 
@@ -32,7 +32,7 @@ export type PrintMapPlateOptions = {
   maxZoom: number;
 };
 
-export const printMapPlateOptions: PrintMapPlateOptions = printFormats.a4.mapPlate;
+export const printMapPlateOptions: PrintMapPlateOptions = printFormat.mapPlate;
 
 const TILE_SIZE_PX = 256;
 const TILE_SUBDOMAINS = ["a", "b", "c"];

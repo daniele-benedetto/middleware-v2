@@ -13,7 +13,7 @@ export function collectEndLogoAnchors(source: ParentNode) {
 }
 
 /**
- * Lays the red logo over the last page of each flagged section, once the issue
+ * Lays the red logo under the text of the last page of each flagged section, once the issue
  * is paginated: it sits on the page box, outside the flow, so the layout does
  * not change. Position and size live in `.print-end-logo` (app/globals.css).
  */

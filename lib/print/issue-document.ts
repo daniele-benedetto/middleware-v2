@@ -9,8 +9,9 @@ import {
 } from "@/lib/print/article-presentation";
 import { stripPrintBodyImages } from "@/lib/print/body-images";
 import { buildPrintCampaign } from "@/lib/print/campaign";
-import { printFormats, type PrintFormat, type PrintFormatSpec } from "@/lib/print/format";
+import { printFormat } from "@/lib/print/format";
 import { hyphenatePrintRichText, hyphenatePrintText } from "@/lib/print/hyphenation";
+import { prependPrintLeadParagraph } from "@/lib/print/lead-paragraph";
 import {
   buildPrintMapDirectoryLayout,
   type PrintMapDirectoryLayout,
@@ -77,6 +78,16 @@ export type PrintMapSource = {
   }>;
 };
 
+/** The issue chosen in the preview block, with its lead article (as on the site). */
+export type PrintPreviewIssueSource = {
+  id: string;
+  homeVariant: IssueHomeVariant;
+  article: Pick<
+    PrintArticleSource,
+    "slug" | "title" | "titleStyled" | "excerpt" | "authorName" | "categoryName"
+  >;
+};
+
 export type PrintIssueSource = {
   slug: string;
   title: string;
@@ -105,13 +116,19 @@ export type PrintArticleSection = PrintSectionSettings & {
   title: PrintTitleSegment[];
   subtitle: string | null;
   plainTitle: string;
+  /**
+   * The excerpt, for the cover highlights. On paper it opens `content`, or sits
+   * on the opening page of a fullscreen article.
+   */
   deck: string | null;
   author: string;
   image: PrintImage | null;
   content: unknown;
+  /** The article text has words of its own, besides the excerpt. */
+  hasText: boolean;
   articlePath: string;
   ctaLabel: string;
-  /** "fullscreen": the first page holds only photo, title and deck. */
+  /** "fullscreen": the first page holds photo, title and excerpt. */
   layout: IssueHomeArticlePrintLayout;
   /** Requested fullscreen without a photo: printed with the standard layout. */
   layoutFallback: boolean;
@@ -179,13 +196,30 @@ export type PrintCover = {
   highlights: PrintCoverHighlight[];
 };
 
+/** Back cover from the preview block: the lead article of the next issue. */
+export type PrintBackCover = {
+  issueNumber: string;
+  label: string;
+  title: PrintTitleSegment[];
+  subtitle: string | null;
+  plainTitle: string;
+  deck: string | null;
+  author: string;
+  articlePath: string;
+  /** The next issue's color, as its card on the site. */
+  variant: IssueHomeVariant;
+  dark: boolean;
+};
+
 export type PrintIssueDocument = {
-  format: PrintFormat;
   variant: IssueHomeVariant;
   /** Umami campaign of the QR codes, e.g. "numero-zero". */
   campaign: string;
   cover: PrintCover;
   sections: PrintSection[];
+  backCover: PrintBackCover | null;
+  /** A preview block is set but its issue has no published article to show. */
+  backCoverUnavailable: boolean;
 };
 
 const COVER_HIGHLIGHTS_LIMIT = 3;
@@ -234,19 +268,24 @@ function resolveSectionSettings(
   };
 }
 
-function toPrintBodyContent(value: unknown, spec: PrintFormatSpec) {
-  return spec.bodyImages ? value : stripPrintBodyImages(value);
-}
+type PrintArticleSettings = PrintSectionSettings & {
+  layout: IssueHomeArticlePrintLayout;
+  /** Images inside the text; the opening photo is always printed. */
+  showBodyImages: boolean;
+};
 
 function toPrintArticleSection(
   article: PrintArticleSource,
   role: PrintArticleRole,
-  settings: PrintSectionSettings & { layout: IssueHomeArticlePrintLayout },
+  { showBodyImages, ...settings }: PrintArticleSettings,
   variant: IssueHomeVariant,
-  spec: PrintFormatSpec,
 ): PrintArticleSection {
   const image = toPrintImage(article.imageUrl, article.imageAlt, article.title);
+  const body = toPrintNotes(
+    showBodyImages ? article.contentRich : stripPrintBodyImages(article.contentRich),
+  );
   const layoutFallback = settings.layout === "fullscreen" && !image;
+  const fullscreen = settings.layout === "fullscreen" && !layoutFallback;
   const { headline, subtitle } = splitPrintHeadline(
     toTitleSegments(article.titleStyled, article.title),
   );
@@ -262,7 +301,10 @@ function toPrintArticleSection(
     deck: article.excerpt ? hyphenatePrintText(article.excerpt) : null,
     author: article.authorName ?? "Redazione",
     image,
-    content: hyphenatePrintRichText(toPrintNotes(toPrintBodyContent(article.contentRich, spec))),
+    content: hyphenatePrintRichText(
+      fullscreen ? body : prependPrintLeadParagraph(body, article.excerpt),
+    ),
+    hasText: Boolean(extractPlainText(body)),
     articlePath: `/articoli/${article.slug}`,
     ctaLabel: resolvePrintArticleCta(article.categoryName),
     dark: role !== "body" && Boolean(image && resolvePrintDarkTone(variant)),
@@ -277,12 +319,11 @@ function toPrintMapSection(
   map: PrintMapSource,
   settings: PrintSectionSettings,
   issueSlug: string,
-  spec: PrintFormatSpec,
 ): PrintMapSection {
   const items = map.items.toSorted((left, right) => left.sortOrder - right.sortOrder);
   const plate = buildPrintMapPlate(
     items.map((item) => ({ latitude: Number(item.latitude), longitude: Number(item.longitude) })),
-    spec.mapPlate,
+    printFormat.mapPlate,
   );
   const deck = extractPlainText(map.descriptionRich);
 
@@ -300,7 +341,7 @@ function toPrintMapSection(
       title: item.title,
       excerpt: toPrintTextRuns(item.descriptionRich),
     })),
-    directory: buildPrintMapDirectoryLayout(items.length, spec.mapDirectory),
+    directory: buildPrintMapDirectoryLayout(items.length, printFormat.mapDirectory),
     sitePath: `/uscite/${issueSlug}#${getIssueBlockAnchorId(blockId)}`,
     ...settings,
   };
@@ -308,15 +349,12 @@ function toPrintMapSection(
 
 /**
  * Lessons are generously pre-trimmed to keep the print source light: the viewer
- * trims each meeting again to fill its box on the laid-out page.
+ * trims each meeting again to fill its box on the laid-out page. Their images
+ * are left out: each meeting has a fixed box.
  */
 const COURSE_LESSON_MAX_CHARS = 8000;
 
-function toPrintCourseLesson(
-  lesson: PrintCourseSource["lessons"][number],
-  index: number,
-  spec: PrintFormatSpec,
-) {
+function toPrintCourseLesson(lesson: PrintCourseSource["lessons"][number], index: number) {
   const lead = lesson.excerptRich
     ? toPrintTextRuns(lesson.excerptRich)
     : toPrintTextRuns({
@@ -330,7 +368,7 @@ function toPrintCourseLesson(
     title: lesson.title,
     lead,
     content: hyphenatePrintRichText(
-      truncatePrintRichText(toPrintBodyContent(lesson.contentRich, spec), COURSE_LESSON_MAX_CHARS),
+      truncatePrintRichText(stripPrintBodyImages(lesson.contentRich), COURSE_LESSON_MAX_CHARS),
     ),
   };
 }
@@ -339,7 +377,6 @@ function toPrintCourseSection(
   blockId: string,
   course: PrintCourseSource,
   settings: PrintSectionSettings,
-  spec: PrintFormatSpec,
 ): PrintCourseSection {
   const lessons = course.lessons
     .filter((lesson) => lesson.status !== "ARCHIVED")
@@ -353,7 +390,7 @@ function toPrintCourseSection(
     title: toTitleSegments(course.titleStyled, course.title),
     plainTitle: course.title,
     deck: deck ? hyphenatePrintText(deck) : null,
-    lessons: lessons.map((lesson, index) => toPrintCourseLesson(lesson, index, spec)),
+    lessons: lessons.map((lesson, index) => toPrintCourseLesson(lesson, index)),
     sitePath: `/contro-formazione/${course.slug}`,
     ...settings,
   };
@@ -362,22 +399,19 @@ function toPrintCourseSection(
 /**
  * The printed sequence follows the home blocks: the special (opening, rupture,
  * closing), the body articles, the map plates and the courses. Questionnaires
- * and previews are not printed yet.
+ * are not printed; the preview becomes the back cover (`backCover`).
  */
 export function buildPrintSections({
   issue,
   articles,
   maps,
   courses,
-  format = "a4",
 }: {
   issue: PrintIssueSource;
   articles: PrintArticleSource[];
   maps: PrintMapSource[];
   courses: PrintCourseSource[];
-  format?: PrintFormat;
 }): PrintSection[] {
-  const spec = printFormats[format];
   const articleById = new Map(articles.map((article) => [article.id, article]));
   const mapById = new Map(maps.map((map) => [map.id, map]));
   const courseById = new Map(courses.map((course) => [course.id, course]));
@@ -387,9 +421,7 @@ export function buildPrintSections({
       const course = block.courseId ? courseById.get(block.courseId) : undefined;
       if (!course || block.printSettings?.excludeFromPrint) return [];
 
-      return [
-        toPrintCourseSection(block.id, course, resolveSectionSettings(block.printSettings), spec),
-      ];
+      return [toPrintCourseSection(block.id, course, resolveSectionSettings(block.printSettings))];
     }
 
     if (block.type === "map") {
@@ -397,13 +429,7 @@ export function buildPrintSections({
       if (!map || block.printSettings?.excludeFromPrint) return [];
 
       return [
-        toPrintMapSection(
-          block.id,
-          map,
-          resolveSectionSettings(block.printSettings),
-          issue.slug,
-          spec,
-        ),
+        toPrintMapSection(block.id, map, resolveSectionSettings(block.printSettings), issue.slug),
       ];
     }
 
@@ -422,13 +448,45 @@ export function buildPrintSections({
         toPrintArticleSection(
           article,
           block.type,
-          { ...resolveSectionSettings(settings), layout: settings?.layout ?? "default" },
+          {
+            ...resolveSectionSettings(settings),
+            layout: settings?.layout ?? "default",
+            showBodyImages: settings?.showBodyImages ?? true,
+          },
           issue.homeVariant,
-          spec,
         ),
       ];
     });
   });
+}
+
+function hasPrintablePreviewBlock(blocks: IssueHomeBlocks | null) {
+  return (blocks ?? []).some(
+    (block) =>
+      block.type === "preview" &&
+      Boolean(block.previewIssueId) &&
+      !block.printSettings?.excludeFromPrint,
+  );
+}
+
+function toPrintBackCover(source: PrintPreviewIssueSource, issueNumber: string): PrintBackCover {
+  const { article } = source;
+  const { headline, subtitle } = splitPrintHeadline(
+    toTitleSegments(article.titleStyled, article.title),
+  );
+
+  return {
+    issueNumber,
+    label: resolvePrintArticleLabel(article.categoryName, "opening"),
+    title: headline,
+    subtitle,
+    plainTitle: article.title,
+    deck: article.excerpt ? hyphenatePrintText(article.excerpt) : null,
+    author: article.authorName ?? "Redazione",
+    articlePath: `/articoli/${article.slug}`,
+    variant: source.homeVariant,
+    dark: Boolean(resolvePrintDarkTone(source.homeVariant)),
+  };
 }
 
 function resolveCoverImage(issue: PrintIssueSource, sections: PrintSection[]) {
@@ -454,23 +512,31 @@ export function buildPrintIssueDocument({
   maps,
   courses,
   issueNumber,
-  format = "a4",
+  previewIssue = null,
+  previewIssueNumber = null,
 }: {
   issue: PrintIssueSource;
   articles: PrintArticleSource[];
   maps: PrintMapSource[];
   courses: PrintCourseSource[];
   issueNumber: string;
-  format?: PrintFormat;
+  previewIssue?: PrintPreviewIssueSource | null;
+  previewIssueNumber?: string | null;
 }): PrintIssueDocument {
-  const sections = buildPrintSections({ issue, articles, maps, courses, format });
+  const sections = buildPrintSections({ issue, articles, maps, courses });
   const deck = extractPlainText(issue.description);
+  const backCoverRequested = hasPrintablePreviewBlock(issue.homeBlocks);
+  const backCover =
+    backCoverRequested && previewIssue && previewIssueNumber
+      ? toPrintBackCover(previewIssue, previewIssueNumber)
+      : null;
 
   return {
-    format,
     variant: issue.homeVariant,
     campaign: buildPrintCampaign(issueNumber),
     sections,
+    backCover,
+    backCoverUnavailable: backCoverRequested && !backCover,
     cover: {
       meta: buildCoverMeta(issue, issueNumber),
       title: toTitleSegments(issue.titleStyled, issue.title),

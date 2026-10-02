@@ -7,8 +7,8 @@ describe("buildPrintMapDirectoryLayout", () => {
     const ten = buildPrintMapDirectoryLayout(10);
     const four = buildPrintMapDirectoryLayout(4);
 
-    expect(ten.rowHeightMm * 5).toBeLessThanOrEqual(246);
-    expect(ten.excerptLines).toBe(6);
+    expect(ten.rowHeightMm * 5).toBeLessThanOrEqual(170);
+    expect(ten.excerptLines).toBe(4);
     expect(four.excerptLines).toBeGreaterThan(ten.excerptLines * 2);
   });
 

@@ -251,46 +251,50 @@ Tokens fondazionali (palette, alpha, filetti, spacing, type scale, line-heights,
 
 ## Print edition direction
 
-Middleware può diventare un oggetto editoriale stampabile senza perdere la propria identità web. Il numero cartaceo è A4 verticale, stampato in casa su A3 e piegato a libretto, con articoli integrali e una sequenza derivata da `Issue.homeBlocks`. Architettura e pipeline: `docs/architecture.md` → Issue Print Preview.
+Middleware può diventare un oggetto editoriale stampabile senza perdere la propria identità web. Il numero cartaceo è A5 verticale, stampato in casa su fogli A4 e piegato a libretto, con articoli integrali e una sequenza derivata da `Issue.homeBlocks`. Architettura e pipeline: `docs/architecture.md` → Issue Print Preview.
 
 ### Product contract
 
-- Formato: A4 verticale, 210 × 297 mm; il libretto A3 chiude a multipli di 4 pagine con bianche in coda.
+- Formato: A5 verticale, 148 × 210 mm; il libretto su fogli A4 chiude a multipli di 4 pagine con bianche in coda.
 - Fondo: carta bianca, non stampata. Inchiostri: nero + Vermilion `#c13814`.
-- Gabbia interne: testa 16 mm, piede 24 mm, interno 18 mm, esterno 14 mm; testo su due colonne con spazio 9 mm e filetto.
+- Gabbia interne: testa 19 mm, piede 19 mm, interno 15 mm, esterno 12 mm; testo a una colonna. Testatina e folio a 8 mm dal bordo.
 - Tipografia: Archivo per struttura, titoli, numeri e metadati; Spectral per testo, sommari e citazioni (font in `public/print/fonts`).
 - Folio: solo numero di pagina, nel piede sul lato esterno; assente su copertina e pagine bianche.
-- Scala di lettura: testo Spectral 10,5/14,5 pt (~50 caratteri per colonna, giustificato e sillabato); paragrafi con rientro di 1 em, senza spazio; titoletti nel testo 13,5/11,5 pt Archivo; sommario 14 pt corsivo; titoli di sezione (articoli, mappa, contro-formazione, indice) 36 pt, sotto il titolo di copertina (48 pt), sottotitolo delle interviste 16 pt; didascalie, occhielli e metadati mai sotto 7,5–8 pt, testo piccolo sempre in nero pieno.
+- Scala di lettura: testo Spectral 9,5/13 pt (~70 caratteri per riga, giustificato e sillabato); paragrafi con rientro di 1 em, senza spazio; titoletti nel testo 12/10,5 pt Archivo; sommario 12 pt corsivo; titoli di sezione (articoli, mappa, contro-formazione, indice) 27 pt, sotto il titolo di copertina (36 pt), sottotitolo delle interviste 13 pt; didascalie, occhielli e metadati mai sotto 6,5–7 pt, testo piccolo sempre in nero pieno.
 - Divisori: un solo spessore, 0,75 pt (come i filetti da 1 px del sito).
-- Riferimento visivo: il mockup `Middleware Cartaceo v3 (3).html` (misure a 4 px/mm, 1 px = 0,709 pt).
+- Riferimento visivo: il mockup `Middleware Cartaceo v3 (3).html`, disegnato in A4 e ridotto in A5.
 
 ### Editorial sequence (scope attuale)
 
 1. copertina: numero e data con "Laboratorio d’inchiesta" sul lato opposto, testata, fotografia (impostazioni copertina o foto della chiusura), titolo, occhiello, fino a tre richiami (`In copertina`) con pagina; nessun piede;
-2. indice: una voce per elemento dello speciale, con icona e pagina di apertura;
-3. articoli dei blocchi apertura, corpo, rottura e chiusura, nell’ordine dei blocchi, ognuno aperto su una nuova pagina: titolo (per le interviste citazione + "Intervista a …"), sommario, categoria e autore, testo su due colonne con capolettera. Solo le aperture dello speciale con foto vanno su fondo del colore del numero.
-4. contro-formazioni (`course`), nella posizione del blocco: due pagine con titolo, occhiello, "Contro-formazione · N incontri", il primo incontro occupa il resto della prima pagina, gli altri si dividono la seconda in altezze uguali; ogni incontro ha un divisore con numero rosso e titolo e il testo (estratto e paragrafi, accorciati con "…" per riempire il suo spazio) su due colonne; il QR di piede, accanto al folio, apre la pagina della contro-formazione con l’elenco degli incontri. Opzioni di stampa del blocco: `In copertina`, `Escludi dal cartaceo`.
+2. indice: una voce per elemento dello speciale, con icona e pagina di apertura, senza titolo;
+3. articoli dei blocchi apertura, corpo, rottura e chiusura, nell’ordine dei blocchi, ognuno aperto su una nuova pagina: titolo (per le interviste citazione + "Intervista a …"), filetto, categoria e autore, testo con capolettera che si apre con il sommario come primo paragrafo, in testo normale e immagini del testo centrate (opzione `Immagini nel testo` per articolo). Solo le aperture dello speciale con foto vanno su fondo del colore del numero.
+4. contro-formazioni (`course`), nella posizione del blocco: due pagine con titolo, occhiello, "Contro-formazione · N incontri", il primo incontro occupa il resto della prima pagina, gli altri si dividono la seconda in altezze uguali; ogni incontro ha un divisore con numero rosso e titolo e il testo (estratto e paragrafi, accorciati con "…" per riempire il suo spazio); il QR di piede, accanto al folio, apre la pagina della contro-formazione con l’elenco degli incontri. Opzioni di stampa del blocco: `In copertina`, `Escludi dal cartaceo`.
 5. mappe (`map`), nella posizione del blocco: apertura con mappa, titolo, descrizione e QR verso l'uscita online; pagina successiva con tutte le schede numerate su un'unica pagina: righe da due di pari altezza, estratto del testo (rich text con grassetto e corsivo, emoji rimosse) alto quanto lo spazio disponibile. Il QR sta nel piede sul lato interno, allineato al folio, e apre la mappa sulla pagina dell'uscita (`/uscite/:slug#issue-block-:id`). Oltre ~22 punti il preflight segnala che le schede non entrano in una pagina. Le opzioni di stampa del blocco mappa sono `In copertina`, `Chiudi con CTA sito` (solo apertura, senza schede) ed `Escludi dal cartaceo`.
 
-Analisi dei questionari e anteprima verranno aggiunti come nuove famiglie di pagina sullo stesso motore.
+6. quarta di copertina (`preview`): "Nel prossimo numero" con il numero dell'uscita in anteprima, titolo, sommario e meta del suo articolo d'apertura, logo e QR verso l'articolo, nel colore di quell'uscita. È sempre l'ultima pagina del libretto: prima vengono aggiunte da 0 a 3 pagine bianche, quante ne servono a chiudere i fogli (4 pagine per foglio).
+
+Le pagine interne hanno la testatina sul lato esterno (rubrica a sinistra, titolo a destra), tranne quelle d'apertura con il titolo grande.
+
+L'analisi dei questionari verrà aggiunta come nuova famiglia di pagina sullo stesso motore.
 
 ### Pagination rules
 
-- Il testo scorre dall'apertura alle pagine successive, a colonne piene; titolo, sommario e meta restano con l'apertura.
-- Code corte: quando un articolo completo lascia sull'ultima pagina al massimo 10 righe, l'impaginazione le recupera da sola abbassando leggermente la foto d'apertura e, se serve, stringendo la spaziatura tra le lettere (al massimo −0,5%); oltre quella soglia la pagina finale resta com'è.
+- Il testo scorre dall'apertura alle pagine successive, a colonne piene; titolo e meta restano con l'apertura.
+- Code corte: quando un articolo completo lascia sull'ultima pagina al massimo 10 righe, l'impaginazione le recupera da sola stringendo la spaziatura tra le lettere (al massimo −0,5%), senza toccare l'altezza delle foto; oltre quella soglia la pagina finale resta com'è.
 - `Chiudi con CTA sito` ferma l'articolo dopo due pagine, con "…" e, nel piede accanto al folio come nella mappa, il QR con l’invito a leggere l’intero contenuto online (intervista, contributo, editoriale, approfondimento, articolo).
 - `Escludi dal cartaceo` toglie l'articolo da indice, richiami e speciale.
 - `Logo in chiusura` (articoli, mappe, contro-formazioni): pittogramma rosso trasparente al piede dell'ultima pagina, a cavallo del bordo inferiore e più largo della pagina.
-- `Layout cartaceo` (per articolo): `Standard` (default) o `Full screen`, con la prima pagina dedicata a foto, titolo e sommario e il testo dalla pagina successiva. Serve una foto; senza, si stampa lo standard e la preview lo segnala.
+- `Immagini nel testo` (per articolo, attiva di default): stampa le immagini inserite nel testo, alte quanto la foto d’apertura e centrate; disattivata le toglie. La foto d'apertura resta sempre.
+- `Layout cartaceo` (per articolo): `Standard` (default) o `Full screen`, con la prima pagina dedicata a foto, titolo e sommario (in testo normale) e il testo dalla pagina successiva. Serve una foto; senza, si stampa lo standard e la preview lo segnala.
 - Titoli non restano isolati a fondo colonna; immagini e didascalie non si spezzano; orfane e vedove minime di 2 righe.
 
 ### Print preview CMS flow
 
-- Il pulsante `Preview cartacea` nella schermata di modifica dell'issue apre la preview in un dialog.
+- Il pulsante `Anteprima cartacea` nella schermata di modifica dell'issue apre l'anteprima in un dialog.
 - Le opzioni di stampa compaiono su ogni articolo dei blocchi articolo (apertura, corpo, rottura, chiusura) e sui blocchi mappa e contro-formazione.
 - I QR del cartaceo sono tracciati in Umami con `utm_source=cartaceo`, `utm_medium=qr`, `utm_campaign=numero-<n>` e `utm_content=qr_<posizione>`.
-- La toolbar mostra il selettore di formato `A4`/`A5`, pagine, fogli e pagine bianche aggiunte, gli avvisi di preflight (speciale vuoto, copertina senza immagine, articoli senza testo, contenuti non stampabili) e due azioni: `PDF pagine A4|A5` per la verifica, `PDF da stampare A3|A4` per la stampa fronte/retro sul lato corto.
-- Formato A5 (libretto su A4): testo a una colonna 9,5/13 pt, niente immagini dentro il testo; taglio a due pagine come in A4.
+- La toolbar mostra pagine, fogli e pagine bianche aggiunte, gli avvisi di preflight (speciale vuoto, copertina senza immagine, articoli senza testo, contenuti non stampabili) e un'unica azione, `Scarica il libretto da stampare (fogli A4)`, per la stampa fronte/retro sul lato corto.
 
 ## Source of truth
 

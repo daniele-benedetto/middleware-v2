@@ -37,6 +37,7 @@ export function PrintArticle({
       id={article.anchor}
       className={articleClassName(article)}
       data-print-anchor={article.anchor}
+      data-print-label={article.label}
       data-print-end-logo={article.showEndLogo ? "" : undefined}
       data-print-fit-pages={article.stopWithSiteCta ? fitPages(article) : undefined}
     >
@@ -50,7 +51,9 @@ export function PrintArticle({
         <header className="article__header">
           <PrintTitle as="h2" className="article__title" segments={article.title} />
           {article.subtitle ? <p className="article__subtitle">{article.subtitle}</p> : null}
-          {article.deck ? <p className="article__deck">{article.deck}</p> : null}
+          {article.layout === "fullscreen" && article.deck ? (
+            <p className="article__lead">{article.deck}</p>
+          ) : null}
           <p className="article__meta">
             <span>{article.label}</span>
             <span className="article__meta-divider" aria-hidden="true" />

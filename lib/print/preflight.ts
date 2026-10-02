@@ -1,5 +1,4 @@
-import { printFormats } from "@/lib/print/format";
-import { extractPlainText } from "@/lib/rich-text/plain-text";
+import { printFormat } from "@/lib/print/format";
 
 import type { PrintIssueDocument } from "@/lib/print/issue-document";
 
@@ -13,7 +12,8 @@ export type PrintPreflightIssue = {
     | "crowded-map"
     | "crowded-toc"
     | "empty-course"
-    | "fullscreen-without-image";
+    | "fullscreen-without-image"
+    | "unavailable-back-cover";
   message: string;
 };
 
@@ -35,7 +35,7 @@ function collectUnsupportedNodes(value: unknown, found: Set<string>) {
 
 export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPreflightIssue[] {
   const issues: PrintPreflightIssue[] = [];
-  const { tocCapacity } = printFormats[document.format];
+  const { tocCapacity } = printFormat;
 
   if (document.sections.length === 0) {
     issues.push({
@@ -46,6 +46,14 @@ export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPr
 
   if (!document.cover.image) {
     issues.push({ code: "missing-cover-image", message: "La copertina non ha un’immagine." });
+  }
+
+  if (document.backCoverUnavailable) {
+    issues.push({
+      code: "unavailable-back-cover",
+      message:
+        "L’uscita in anteprima non ha articoli pubblicati: la quarta di copertina non viene stampata.",
+    });
   }
 
   if (document.sections.length > tocCapacity) {
@@ -88,7 +96,7 @@ export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPr
         message: `“${article.plainTitle}” è in full screen ma non ha un’immagine: stampato con il layout standard.`,
       });
     }
-    if (!extractPlainText(article.content)) {
+    if (!article.hasText) {
       issues.push({
         code: "empty-article",
         message: `“${article.plainTitle}” non contiene testo stampabile.`,
