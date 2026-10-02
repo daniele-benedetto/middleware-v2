@@ -67,6 +67,7 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "next-env.d.ts",
     ".opencode/**",
+    ".claude/**",
   ]),
 ]);
 
