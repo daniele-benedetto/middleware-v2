@@ -13,6 +13,7 @@ function articleClassName(article: PrintArticleSection) {
     article.dark ? "article--dark" : null,
     article.stopWithSiteCta ? "article--stop" : null,
     article.layout === "fullscreen" ? "article--fullscreen" : null,
+    article.layout === "halfpage" ? "article--halfpage" : null,
   ]
     .filter(Boolean)
     .join(" ");
@@ -32,6 +33,14 @@ export function PrintArticle({
   qrCode: string | null;
   siteLabel: string;
 }) {
+  const meta = (
+    <p className="article__meta">
+      <span>{article.label}</span>
+      <span className="article__meta-divider" aria-hidden="true" />
+      <span>{article.author}</span>
+    </p>
+  );
+
   return (
     <article
       id={article.anchor}
@@ -54,13 +63,11 @@ export function PrintArticle({
           {article.layout === "fullscreen" && article.deck ? (
             <p className="article__lead">{article.deck}</p>
           ) : null}
-          <p className="article__meta">
-            <span>{article.label}</span>
-            <span className="article__meta-divider" aria-hidden="true" />
-            <span>{article.author}</span>
-          </p>
+          {article.layout === "halfpage" ? null : meta}
         </header>
       </div>
+
+      {article.layout === "halfpage" ? meta : null}
 
       <div className="article__body">
         {article.stopWithSiteCta ? (

@@ -12,7 +12,7 @@ export type PrintPreflightIssue = {
     | "crowded-map"
     | "crowded-toc"
     | "empty-course"
-    | "fullscreen-without-image"
+    | "layout-without-image"
     | "unavailable-back-cover";
   message: string;
 };
@@ -32,6 +32,8 @@ function collectUnsupportedNodes(value: unknown, found: Set<string>) {
   if (Array.isArray(node.content))
     node.content.forEach((child) => collectUnsupportedNodes(child, found));
 }
+
+const layoutLabels = { fullscreen: "full screen", halfpage: "mezza pagina" } as const;
 
 export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPreflightIssue[] {
   const issues: PrintPreflightIssue[] = [];
@@ -92,8 +94,8 @@ export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPr
     const article = section;
     if (article.layoutFallback) {
       issues.push({
-        code: "fullscreen-without-image",
-        message: `“${article.plainTitle}” è in full screen ma non ha un’immagine: stampato con il layout standard.`,
+        code: "layout-without-image",
+        message: `“${article.plainTitle}” è in ${layoutLabels[article.layoutFallback]} ma non ha un’immagine: stampato con il layout standard.`,
       });
     }
     if (!article.hasText) {

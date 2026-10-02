@@ -267,7 +267,7 @@ const map: PrintMapSource = {
 };
 
 describe("buildPrintIssueDocument article layouts", () => {
-  const withLayout = (articleId: string, layout: "default" | "fullscreen") =>
+  const withLayout = (articleId: string, layout: "default" | "fullscreen" | "halfpage") =>
     issue().homeBlocks!.map((block) =>
       "articleIds" in block && block.articleIds.includes(articleId)
         ? {
@@ -295,7 +295,7 @@ describe("buildPrintIssueDocument article layouts", () => {
       issueNumber: "00",
     });
 
-    expect(document.sections[0]).toMatchObject({ layout: "default", layoutFallback: false });
+    expect(document.sections[0]).toMatchObject({ layout: "default", layoutFallback: null });
   });
 
   it("prints fullscreen openings when the article has a photo", () => {
@@ -310,8 +310,38 @@ describe("buildPrintIssueDocument article layouts", () => {
     const [section] = document.sections;
     const text = JSON.stringify(section?.kind === "article" ? section.content : null);
 
-    expect(section).toMatchObject({ layout: "fullscreen", layoutFallback: false });
+    expect(section).toMatchObject({ layout: "fullscreen", layoutFallback: null });
     expect(text.replaceAll("\\u00ad", "").replaceAll("\u00ad", "")).not.toContain("Sommario");
+  });
+
+  it("prints half-page openings with the excerpt opening the text", () => {
+    const document = buildPrintIssueDocument({
+      issue: issue({ homeBlocks: withLayout(ids.opening, "halfpage") }),
+      articles,
+      maps: [],
+      courses: [],
+      issueNumber: "00",
+    });
+    const [section] = document.sections;
+    const text = JSON.stringify(section?.kind === "article" ? section.content : null);
+
+    expect(section).toMatchObject({ layout: "halfpage", layoutFallback: null });
+    expect(text.replaceAll("\u00ad", "")).toContain("Sommario");
+  });
+
+  it("names the requested layout when a half page has no photo", () => {
+    const document = buildPrintIssueDocument({
+      issue: issue({ homeBlocks: withLayout(ids.rupture, "halfpage") }),
+      articles,
+      maps: [],
+      courses: [],
+      issueNumber: "00",
+    });
+
+    expect(
+      inspectPrintIssueDocument(document).find((entry) => entry.code === "layout-without-image")
+        ?.message,
+    ).toContain("mezza pagina");
   });
 
   it("falls back to the standard layout and warns when there is no photo", () => {
@@ -326,9 +356,9 @@ describe("buildPrintIssueDocument article layouts", () => {
       (section) => section.kind === "article" && section.role === "rupture",
     );
 
-    expect(rupture).toMatchObject({ layout: "default", layoutFallback: true });
+    expect(rupture).toMatchObject({ layout: "default", layoutFallback: "fullscreen" });
     expect(inspectPrintIssueDocument(document).map((entry) => entry.code)).toContain(
-      "fullscreen-without-image",
+      "layout-without-image",
     );
   });
 });

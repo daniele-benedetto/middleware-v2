@@ -561,6 +561,11 @@ body {
   overflow: clip !important;
 }
 
+/* Half-page openings bleed off the page: the page edge clips the photo. */
+[data-vivliostyle-page-container]:has(.article--halfpage .article__image) {
+  overflow: clip !important;
+}
+
 /* Own stacking context: the logo (z-index -1) stays above the page background
    and below the text and the folio. */
 [data-vivliostyle-page-box]:has(> .print-end-logo) {

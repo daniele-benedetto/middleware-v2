@@ -286,7 +286,7 @@ L'analisi dei questionari verrà aggiunta come nuova famiglia di pagina sullo st
 - `Escludi dal cartaceo` toglie l'articolo da indice, richiami e speciale.
 - `Logo in chiusura` (articoli, mappe, contro-formazioni): pittogramma rosso trasparente al piede dell'ultima pagina, a cavallo del bordo inferiore e più largo della pagina.
 - `Immagini nel testo` (per articolo, attiva di default): stampa le immagini inserite nel testo, alte quanto la foto d’apertura e centrate; disattivata le toglie. La foto d'apertura resta sempre.
-- `Layout cartaceo` (per articolo): `Standard` (default) o `Full screen`, con la prima pagina dedicata a foto, titolo e sommario (in testo normale) e il testo dalla pagina successiva. Serve una foto; senza, si stampa lo standard e la preview lo segnala.
+- `Layout cartaceo` (per articolo): `Standard` (default), `Full screen`, con la prima pagina dedicata a foto, titolo e sommario (in testo normale) e il testo dalla pagina successiva, oppure `Mezza pagina`, con la foto al vivo (bordi alto e laterali) e il titolo nella metà superiore, il filetto a metà pagina e il testo nella metà inferiore. Full screen e mezza pagina servono una foto; senza, si stampa lo standard e la preview lo segnala.
 - Titoli non restano isolati a fondo colonna; immagini e didascalie non si spezzano; orfane e vedove minime di 2 righe.
 
 ### Print preview CMS flow

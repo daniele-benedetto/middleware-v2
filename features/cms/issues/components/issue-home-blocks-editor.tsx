@@ -95,6 +95,7 @@ type IssueHomeBlocksEditorText = {
   printLayout: string;
   printLayoutDefault: string;
   printLayoutFullscreen: string;
+  printLayoutHalfpage: string;
   type: string;
   typeBody: string;
   typeClosing: string;
@@ -1240,6 +1241,7 @@ function SortableSelectedArticle({
                   options={[
                     { value: "default", label: text.printLayoutDefault },
                     { value: "fullscreen", label: text.printLayoutFullscreen },
+                    { value: "halfpage", label: text.printLayoutHalfpage },
                   ]}
                   onValueChange={(layout) =>
                     onPrintSettingsChange({

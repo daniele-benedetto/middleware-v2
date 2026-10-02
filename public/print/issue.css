@@ -687,6 +687,38 @@ a {
   letter-spacing: -0.005em;
 }
 
+/* Half page: the photo bleeds off the top and both sides (the page edge clips
+   it), the title follows, and the rule above category and author marks the
+   middle of the page; the text fills the lower half. */
+.article--halfpage .article__opening {
+  display: flex;
+  flex-direction: column;
+  height: calc(var(--page-height) / 2 - var(--page-top));
+}
+
+.article--halfpage .article__image {
+  position: relative;
+  flex: 1;
+  height: auto;
+  min-height: 0;
+  margin: calc(-1 * var(--page-top)) calc(-1 * var(--page-inner)) 0;
+}
+
+.article--halfpage .article__image img {
+  position: absolute;
+  inset: 0;
+}
+
+.article--halfpage .article__header {
+  padding-bottom: 4mm;
+}
+
+.article--halfpage > .article__meta {
+  margin: 0 0 5mm;
+  padding-top: 3.5mm;
+  border-top: var(--rule) solid currentColor;
+}
+
 /* Fullscreen: the opening fills the first page; the photo grows and pushes
    title and deck to the foot. The text starts on the next page. */
 .article--fullscreen .article__opening {

@@ -539,6 +539,7 @@ export const cmsIt = {
           printLayout: "Layout cartaceo",
           printLayoutDefault: "Standard",
           printLayoutFullscreen: "Full screen",
+          printLayoutHalfpage: "Mezza pagina",
           type: "Tipo blocco",
           typeBody: "Corpo",
           typeClosing: "Chiusura",

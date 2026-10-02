@@ -128,10 +128,13 @@ export type PrintArticleSection = PrintSectionSettings & {
   hasText: boolean;
   articlePath: string;
   ctaLabel: string;
-  /** "fullscreen": the first page holds photo, title and excerpt. */
+  /**
+   * "fullscreen": the first page holds photo, title and excerpt. "halfpage":
+   * photo (bleeding off the page) and title fill the top half, the text the rest.
+   */
   layout: IssueHomeArticlePrintLayout;
-  /** Requested fullscreen without a photo: printed with the standard layout. */
-  layoutFallback: boolean;
+  /** A photo layout requested without a photo: printed with the standard layout. */
+  layoutFallback: Exclude<IssueHomeArticlePrintLayout, "default"> | null;
   dark: boolean;
 };
 
@@ -284,7 +287,7 @@ function toPrintArticleSection(
   const body = toPrintNotes(
     showBodyImages ? article.contentRich : stripPrintBodyImages(article.contentRich),
   );
-  const layoutFallback = settings.layout === "fullscreen" && !image;
+  const layoutFallback = settings.layout !== "default" && !image ? settings.layout : null;
   const fullscreen = settings.layout === "fullscreen" && !layoutFallback;
   const { headline, subtitle } = splitPrintHeadline(
     toTitleSegments(article.titleStyled, article.title),

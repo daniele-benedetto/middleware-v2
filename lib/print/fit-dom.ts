@@ -146,7 +146,8 @@ export function fitPrintBoxes(rendered: ParentNode) {
 }
 
 const TIGHTEN_SELECTOR = ".article[data-print-anchor]:not([data-print-fit-pages])";
-const NUDGE_SELECTOR = ".article[data-print-anchor]:not(.article--fullscreen)";
+const NUDGE_SELECTOR =
+  ".article[data-print-anchor]:not(.article--fullscreen):not(.article--halfpage)";
 
 export function pagesWithAnchor(rendered: ParentNode, anchor: string) {
   return Array.from(rendered.querySelectorAll(PAGE_CONTAINER_SELECTOR)).filter((page) =>

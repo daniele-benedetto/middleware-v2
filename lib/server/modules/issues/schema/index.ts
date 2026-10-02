@@ -15,7 +15,7 @@ export const issueHomeBlockPrintSettingsSchema = z.object({
   excludeFromPrint: z.boolean().default(false),
   showEndLogo: z.boolean().default(false),
 });
-export const issueHomeArticlePrintLayoutSchema = z.enum(["default", "fullscreen"]);
+export const issueHomeArticlePrintLayoutSchema = z.enum(["default", "fullscreen", "halfpage"]);
 export const issueHomeArticlePrintSettingsSchema = issueHomeBlockPrintSettingsSchema.extend({
   layout: issueHomeArticlePrintLayoutSchema.default("default"),
   showBodyImages: z.boolean().default(true),
