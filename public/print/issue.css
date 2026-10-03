@@ -67,6 +67,9 @@
   --section-title-size: 27pt;
   /* Opening photo of the articles; the images inside the text match it. */
   --article-image-height: 62mm;
+  /* Images beside the text: half the column, a leading's gap. */
+  --body-image-width: 50%;
+  --body-image-gap: 4.5mm;
 }
 
 @page {
@@ -649,26 +652,58 @@ a {
   padding-left: 4.5mm;
 }
 
-/* Images inside the text (printSettings showBodyImages): as tall as the opening
-   photo, centered, width from their proportions; wider ones are fitted to the
-   column. */
+/* Images inside the text (printSettings showBodyImages, lib/print/body-images.ts):
+   half the column, on alternating sides, in a frame ten lines tall cropped
+   around the CMS focal point. The text runs beside them and full width below;
+   each image clears the previous one so no line is squeezed between two.
+   Images running past the page foot are moved by the viewer
+   (lib/print/inline-figures.ts). */
 .article__body figure {
-  margin: var(--body-leading) 0;
+  clear: both;
+  width: var(--body-image-width);
+  margin: 0 var(--body-image-gap) 0 0;
+  float: left;
   break-inside: avoid;
 }
 
+.article__body figure[data-print-side="end"] {
+  margin: 0 0 0 var(--body-image-gap);
+  float: right;
+}
+
 .article__body figure img {
-  width: auto;
-  max-width: 100%;
-  height: var(--article-image-height);
-  margin: 0 auto;
-  object-fit: contain;
+  width: 100%;
+  height: calc(10 * var(--body-leading) - 1.5mm);
+  object-fit: cover;
   filter: grayscale(1);
 }
 
+/* A new paragraph next to an image keeps its indent; headings start below. */
+.article__body p + figure + p {
+  text-indent: 1em;
+}
+
+.article__body h2,
+.article__body h3 {
+  clear: both;
+}
+
+/* Lists and quotes narrow beside an image instead of running under it. */
+.article__body ul,
+.article__body ol,
+.article__body blockquote {
+  display: flow-root;
+}
+
+.article__body::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
 .article__body figcaption {
-  margin-top: 1.5mm;
-  text-align: center;
+  margin: 1.5mm 0;
+  text-align: left;
   font-family: var(--sans);
   font-size: 7.5pt;
   line-height: 1.3;

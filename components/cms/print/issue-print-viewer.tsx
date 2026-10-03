@@ -25,6 +25,12 @@ import {
   measureFitSection,
 } from "@/lib/print/fit-dom";
 import { printFormat } from "@/lib/print/format";
+import { nextFigurePlacement } from "@/lib/print/inline-figures";
+import {
+  applyFigurePlacements,
+  markInlineFigures,
+  measureInlineFigure,
+} from "@/lib/print/inline-figures-dom";
 import { nextNudge, startNudge, type PrintNudgeState } from "@/lib/print/nudge";
 import { resolvePrintPageReferences } from "@/lib/print/page-references";
 import { serializePrintSource } from "@/lib/print/print-source";
@@ -118,6 +124,8 @@ function usePrintPagination(variant: IssueHomeVariant) {
     const nudging = new Map<string, PrintNudgeState>();
     const nudgeLevels = new Map<string, number>();
     const backCover = hasPrintBackCover(source);
+    const figures = markInlineFigures(source.cloneNode(true) as HTMLElement);
+    const placements = new Map(figures.map((figure) => [figure.id, figure.placement]));
     let fillers = 0;
     const budgets = new Map(
       sections.map((section) => [
@@ -131,6 +139,8 @@ function usePrintPagination(variant: IssueHomeVariant) {
 
       for (let pass = 1; pass <= PRINT_FIT_MAX_PASSES && !cancelled; pass += 1) {
         const working = source!.cloneNode(true) as HTMLElement;
+        markInlineFigures(working);
+        applyFigurePlacements(working, placements);
         applyFitBudgets(working, budgets);
         applyTightenLevels(working, tightenLevels);
         applyNudgeLevels(working, nudgeLevels);
@@ -156,6 +166,18 @@ function usePrintPagination(variant: IssueHomeVariant) {
             );
             if (next !== null) {
               budgets.set(section.anchor, next);
+              changed = true;
+            }
+          }
+
+          for (const figure of figures) {
+            const next = nextFigurePlacement(
+              placements.get(figure.id) ?? figure.placement,
+              measureInlineFigure(result.host, figure.id),
+              figure.blockCount,
+            );
+            if (next !== null) {
+              placements.set(figure.id, next);
               changed = true;
             }
           }

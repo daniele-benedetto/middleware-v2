@@ -1,5 +1,6 @@
 import { Fragment, type ReactNode } from "react";
 
+import { resolveArticleImageSettings } from "@/lib/articles/image-settings";
 import { resolveCmsMediaPreviewUrl } from "@/lib/media/blob";
 import { isInterviewQuestion } from "@/lib/print/interview";
 import { PRINT_NOTE_TYPE } from "@/lib/print/notes";
@@ -70,13 +71,18 @@ function renderImage(node: RichTextNode, key: string) {
   const attrs = attrsOf(node);
   if (typeof attrs.src !== "string" || !attrs.src) return null;
 
+  const side =
+    attrs.printSide === "start" || attrs.printSide === "end" ? attrs.printSide : undefined;
+  const { positionX, positionY } = resolveArticleImageSettings(attrs.imageSettings);
+
   return (
-    <figure key={key}>
+    <figure key={key} data-print-side={side}>
       {/* The print document is serialized for the paginator, so it needs a plain img. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={resolveCmsMediaPreviewUrl(attrs.src)}
         alt={typeof attrs.alt === "string" ? attrs.alt : ""}
+        style={{ objectPosition: `${positionX}% ${positionY}%` }}
       />
       {typeof attrs.title === "string" && attrs.title ? (
         <figcaption>{attrs.title}</figcaption>

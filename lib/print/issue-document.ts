@@ -7,7 +7,7 @@ import {
   type PrintArticleRole,
   type PrintTitleSegment,
 } from "@/lib/print/article-presentation";
-import { stripPrintBodyImages } from "@/lib/print/body-images";
+import { placePrintBodyImages, stripPrintBodyImages } from "@/lib/print/body-images";
 import { buildPrintCampaign } from "@/lib/print/campaign";
 import { printFormat } from "@/lib/print/format";
 import { hyphenatePrintRichText, hyphenatePrintText } from "@/lib/print/hyphenation";
@@ -285,7 +285,9 @@ function toPrintArticleSection(
 ): PrintArticleSection {
   const image = toPrintImage(article.imageUrl, article.imageAlt, article.title);
   const body = toPrintNotes(
-    showBodyImages ? article.contentRich : stripPrintBodyImages(article.contentRich),
+    showBodyImages
+      ? placePrintBodyImages(article.contentRich)
+      : stripPrintBodyImages(article.contentRich),
   );
   const layoutFallback = settings.layout !== "default" && !image ? settings.layout : null;
   const fullscreen = settings.layout === "fullscreen" && !layoutFallback;
