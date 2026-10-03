@@ -731,17 +731,13 @@ a {
   height: calc(var(--page-height) / 2 - var(--page-top));
 }
 
+/* The photo fills the flexed frame in flow: an absolutely positioned photo is
+   dropped from Chromium's print output. */
 .article--halfpage .article__image {
-  position: relative;
-  flex: 1;
+  flex: 1 1 0;
   height: auto;
   min-height: 0;
   margin: calc(-1 * var(--page-top)) calc(-1 * var(--page-inner)) 0;
-}
-
-.article--halfpage .article__image img {
-  position: absolute;
-  inset: 0;
 }
 
 .article--halfpage .article__header {
