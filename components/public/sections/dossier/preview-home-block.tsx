@@ -45,7 +45,6 @@ export function PreviewHomeBlock({ block, issueNumber, priority = false }: Previ
           "relative isolate block overflow-hidden py-10 md:py-12",
           variantClasses.surface,
           variantClasses.border,
-          variantClasses.cardBorder,
         )}
       >
         <div className={cn(publicContentClassName, "relative z-10")}>
