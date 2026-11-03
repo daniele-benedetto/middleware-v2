@@ -153,6 +153,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   cacheComponents: true,
+  partialPrefetching: false,
   experimental: {
     authInterrupts: true,
     proxyClientMaxBodySize: "100mb",

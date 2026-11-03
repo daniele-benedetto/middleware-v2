@@ -2,7 +2,7 @@ import "server-only";
 
 import { getRedisClient } from "@/lib/redis";
 
-import type { BetterAuthRateLimitStorage, RateLimit } from "better-auth";
+import type { BetterAuthRateLimitStorage } from "better-auth";
 
 const AUTH_RATE_LIMIT_KEY_PREFIX = "better-auth:rate-limit";
 const AUTH_RATE_LIMIT_CONSUME_SCRIPT = `
@@ -33,25 +33,6 @@ async function getRequiredRedisClient() {
 }
 
 export const authRateLimitStorage: BetterAuthRateLimitStorage = {
-  async get(key) {
-    const redis = await getRequiredRedisClient();
-
-    if (!redis) {
-      return null;
-    }
-
-    const value = await redis.get(buildRateLimitKey(key));
-    return value ? (JSON.parse(value) as RateLimit) : null;
-  },
-  async set(key, value) {
-    const redis = await getRequiredRedisClient();
-
-    if (!redis) {
-      return;
-    }
-
-    await redis.set(buildRateLimitKey(key), JSON.stringify(value), { EX: 3600 });
-  },
   async consume(key, rule) {
     const redis = await getRequiredRedisClient();
 

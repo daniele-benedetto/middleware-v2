@@ -53,7 +53,8 @@ export function CmsSidebar({ role, userName, userEmail }: CmsSidebarProps) {
       router.replace("/cms/login");
       router.refresh();
     } catch {
-      window.location.href = "/cms/login";
+      router.replace("/cms/login");
+      router.refresh();
     } finally {
       setIsSigningOut(false);
     }
