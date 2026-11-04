@@ -1,3 +1,5 @@
+import { protectPrintTitleCompounds } from "@/lib/print/title-compounds";
+
 import type { PrintTitleSegment } from "@/lib/print/issue-document";
 
 export function PrintTitle({
@@ -13,7 +15,7 @@ export function PrintTitle({
     <Heading className={className}>
       {segments.map((segment, index) => (
         <span key={`${segment.text}-${index}`} className={segment.accent ? "accent" : undefined}>
-          {segment.text}
+          {protectPrintTitleCompounds(segment.text)}
           {segment.breakAfter ? <br /> : null}
         </span>
       ))}

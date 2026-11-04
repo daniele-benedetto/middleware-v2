@@ -8,6 +8,7 @@ import { archiveCoverVariantClasses } from "@/components/public/sections/archive
 import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
+import { isLongPublicTitle } from "@/lib/public/title-scale";
 import { cn } from "@/lib/utils";
 
 import type { PreviewHomeBlock as PreviewHomeBlockModel } from "@/components/public/home/home-view-model";
@@ -25,6 +26,7 @@ export function PreviewHomeBlock({ block, issueNumber, priority = false }: Previ
   const variantClasses = archiveCoverVariantClasses[homeVariant];
   const articleMetaTone =
     homeVariant === "black" ? "dark" : homeVariant === "red" ? "accent" : "light";
+  const longTitle = isLongPublicTitle(article.title);
 
   return (
     <section className="my-10 md:my-12">
@@ -64,8 +66,11 @@ export function PreviewHomeBlock({ block, issueNumber, priority = false }: Previ
             <h2
               id={titleId}
               className={cn(
-                publicTypography.homeHeroTitle,
-                "w-full max-w-[16ch] pb-[0.18em] leading-[0.94]",
+                longTitle
+                  ? "font-heading text-[clamp(38px,6.3vw,94px)] leading-[0.96] font-black tracking-[-0.052em]"
+                  : cn(publicTypography.homeHeroTitle, "leading-[0.94]"),
+                "w-full pb-[0.18em]",
+                longTitle ? "max-w-[19ch]" : "max-w-[16ch]",
                 variantClasses.title,
               )}
             >

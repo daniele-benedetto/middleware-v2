@@ -57,7 +57,7 @@ export async function IssuePrintDocument({
   return (
     <>
       <PrintCover cover={document.cover} />
-      <PrintToc sections={document.sections} />
+      <PrintToc sections={document.sections} backCover={document.backCover} />
       {document.sections.map((section, index) => {
         const qrCode = sectionQrCodes[index] ?? null;
 

@@ -1,7 +1,7 @@
 import { PDFDocument } from "pdf-lib";
 import { describe, expect, it } from "vitest";
 
-import { imposeBookletPdf } from "@/lib/server/print/booklet-pdf";
+import { coverBookletSlot, imposeBookletPdf } from "@/lib/server/print/booklet-pdf";
 
 const A5: [number, number] = [419.53, 595.28];
 
@@ -14,6 +14,15 @@ async function createPagesPdf(pageCount: number, size = A5) {
 }
 
 describe("imposeBookletPdf", () => {
+  it("extends an A5 page across its A4 half without a white edge", () => {
+    const slot = { width: (297 * 72) / 25.4 / 2, height: (210 * 72) / 25.4 };
+    const { x, y, scale } = coverBookletSlot({ width: A5[0], height: A5[1] }, slot.width, slot);
+
+    expect(x).toBeCloseTo(slot.width, 2);
+    expect(A5[0] * scale).toBeGreaterThanOrEqual(slot.width);
+    expect(y).toBeLessThanOrEqual(0);
+  });
+
   it("lays out padded A5 pages on duplex A4 landscape sheets", async () => {
     const booklet = await PDFDocument.load(await imposeBookletPdf(await createPagesPdf(6)));
     const sheets = booklet.getPages();

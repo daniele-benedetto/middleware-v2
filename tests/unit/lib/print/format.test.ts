@@ -81,8 +81,8 @@ describe("print format", () => {
     expect(printFormat.sheet.widthMm).toBeGreaterThanOrEqual(2 * printFormat.page.widthMm);
   });
 
-  it("prints the images inside the article text unless the article turns them off", () => {
-    expect(hasImages(true)).toBe(true);
+  it("omits body images regardless of legacy print settings", () => {
+    expect(hasImages(true)).toBe(false);
     expect(hasImages(false)).toBe(false);
   });
 

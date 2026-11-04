@@ -169,6 +169,18 @@ export function pagesWithAnchor(rendered: ParentNode, anchor: string) {
   );
 }
 
+/** Last preview fragment: measure its actual text-to-QR distance in body lines. */
+export function measurePreviewQrGap(rendered: ParentNode, anchor: string): number | null {
+  const page = pagesWithAnchor(rendered, anchor).at(-1);
+  const text = page?.querySelector<HTMLElement>(".back-cover [data-print-fit-text]");
+  const qr = page?.querySelector<HTMLElement>(".print-footer-qr");
+  if (!text || !qr) return null;
+
+  const lineHeight = Number.parseFloat(getComputedStyle(text).lineHeight);
+  if (!Number.isFinite(lineHeight) || lineHeight <= 0) return null;
+  return (qr.getBoundingClientRect().top - text.getBoundingClientRect().bottom) / lineHeight;
+}
+
 /** Text lines of an element across its columns, from the rendered line boxes. */
 function countLines(element: Element) {
   const bounds = element.getBoundingClientRect();

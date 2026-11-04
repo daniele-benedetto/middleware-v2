@@ -65,11 +65,8 @@
   --body-leading: 13pt;
   /* Section titles stay below the cover title (36pt): the cover leads. */
   --section-title-size: 27pt;
-  /* Opening photo of the articles; the images inside the text match it. */
+  /* Opening photo of the articles; body images are omitted from print. */
   --article-image-height: 62mm;
-  /* Images beside the text: half the column, a leading's gap. */
-  --body-image-width: 50%;
-  --body-image-gap: 4.5mm;
 }
 
 @page {
@@ -587,10 +584,10 @@ a {
   widows: 2;
 }
 
-/* Paragraphs are marked by an indent, not by space: Bringhurst/Tinker, and it
-   keeps the baseline grid. The indent is dropped after any break. */
+/* Separate paragraphs by half a baseline: no first-line indent or apparent
+   leading space before the text. */
 .article__body p + p {
-  text-indent: 1em;
+  margin-top: calc(var(--body-leading) / 2);
 }
 
 /* Interview questions: one blank line before, flush left, set apart by weight. */
@@ -627,12 +624,7 @@ a {
 
 .article__body p.print-question {
   margin-top: var(--body-leading);
-  text-indent: 0;
   font-weight: 600;
-}
-
-.article__body p.print-question + p {
-  text-indent: 0;
 }
 
 .article__body ul,
@@ -685,64 +677,6 @@ a {
 .article__body ul,
 .article__body ol {
   padding-left: 4.5mm;
-}
-
-/* Images inside the text (printSettings showBodyImages, lib/print/body-images.ts):
-   half the column, on alternating sides, in a frame ten lines tall cropped
-   around the CMS focal point. The text runs beside them and full width below;
-   each image clears the previous one so no line is squeezed between two.
-   Images running past the page foot are moved by the viewer
-   (lib/print/inline-figures.ts). */
-.article__body figure {
-  clear: both;
-  width: var(--body-image-width);
-  margin: 0 var(--body-image-gap) 0 0;
-  float: left;
-  break-inside: avoid;
-}
-
-.article__body figure[data-print-side="end"] {
-  margin: 0 0 0 var(--body-image-gap);
-  float: right;
-}
-
-.article__body figure img {
-  width: 100%;
-  height: calc(10 * var(--body-leading) - 1.5mm);
-  object-fit: cover;
-  filter: grayscale(1);
-}
-
-/* A new paragraph next to an image keeps its indent; headings start below. */
-.article__body p + figure + p {
-  text-indent: 1em;
-}
-
-.article__body h2,
-.article__body h3 {
-  clear: both;
-}
-
-/* Lists and quotes narrow beside an image instead of running under it. */
-.article__body ul,
-.article__body ol,
-.article__body blockquote {
-  display: flow-root;
-}
-
-.article__body::after {
-  content: "";
-  display: block;
-  clear: both;
-}
-
-.article__body figcaption {
-  margin: 1.5mm 0;
-  text-align: left;
-  font-family: var(--sans);
-  font-size: 7.5pt;
-  line-height: 1.3;
-  font-weight: 600;
 }
 
 /* Short tail pull-back (lib/print/tighten.ts): when a full article spills a few

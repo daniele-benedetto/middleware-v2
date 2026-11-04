@@ -40,7 +40,7 @@ export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPr
   const issues: PrintPreflightIssue[] = [];
   const { tocCapacity } = printFormat;
 
-  if (document.sections.length === 0) {
+  if (document.sections.length === 0 && !document.backCover) {
     issues.push({
       code: "missing-sections",
       message: "Nessun contenuto assegnato ai blocchi stampabili (articoli o mappe).",
@@ -66,10 +66,11 @@ export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPr
     });
   }
 
-  if (document.sections.length > tocCapacity) {
+  const tocEntries = document.sections.length + Number(Boolean(document.backCover));
+  if (tocEntries > tocCapacity) {
     issues.push({
       code: "crowded-toc",
-      message: `L’indice ha ${document.sections.length} voci: ne entrano ${tocCapacity} in una pagina.`,
+      message: `L’indice ha ${tocEntries} voci: ne entrano ${tocCapacity} in una pagina.`,
     });
   }
 

@@ -91,7 +91,6 @@ type IssueHomeBlocksEditorText = {
   printStopWithSiteCta: string;
   printExcludeFromPrint: string;
   printShowEndLogo: string;
-  printShowBodyImages: string;
   printLayout: string;
   printLayoutDefault: string;
   printLayoutFullscreen: string;
@@ -1226,15 +1225,6 @@ function SortableSelectedArticle({
                 }
               />
             ) : null}
-            <CmsCheckbox
-              label={text.printShowBodyImages}
-              checked={resolvedPrintSettings.showBodyImages}
-              disabled={disabled || resolvedPrintSettings.excludeFromPrint}
-              compact
-              onChange={(showBodyImages) =>
-                onPrintSettingsChange({ ...resolvedPrintSettings, showBodyImages })
-              }
-            />
             <div className="sm:col-span-3">
               <CmsFormField
                 label={text.printLayout}

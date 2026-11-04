@@ -1,6 +1,14 @@
-import { GraduationCap, Map as MapIcon, MessageCircle, Mic, Pencil, Search } from "lucide-react";
+import {
+  ArrowUpRight,
+  GraduationCap,
+  Map as MapIcon,
+  MessageCircle,
+  Mic,
+  Pencil,
+  Search,
+} from "lucide-react";
 
-import type { PrintSection } from "@/lib/print/issue-document";
+import type { PrintBackCover, PrintSection } from "@/lib/print/issue-document";
 
 type TocIconKind = "editorial" | "contribution" | "interview" | "inquiry" | "map" | "course";
 
@@ -44,10 +52,16 @@ function TocIcon({ section }: { section: PrintSection }) {
   }
 }
 
-export function PrintToc({ sections }: { sections: PrintSection[] }) {
+export function PrintToc({
+  sections,
+  backCover,
+}: {
+  sections: PrintSection[];
+  backCover: PrintBackCover | null;
+}) {
   return (
     <nav className="toc" aria-label="Indice">
-      {sections.length > 0 ? (
+      {sections.length > 0 || backCover ? (
         <ol className="toc__list">
           {sections.map((section) => (
             <li className="toc__entry" key={section.anchor}>
@@ -56,6 +70,13 @@ export function PrintToc({ sections }: { sections: PrintSection[] }) {
               <span className="toc__entry-page" data-print-ref={section.anchor} />
             </li>
           ))}
+          {backCover ? (
+            <li className="toc__entry">
+              <ArrowUpRight className="toc__icon" aria-hidden strokeWidth={2.5} />
+              <span className="toc__entry-title">{backCover.plainTitle}</span>
+              <span className="toc__entry-page" data-print-ref={backCover.anchor} />
+            </li>
+          ) : null}
         </ol>
       ) : (
         <p className="toc__empty">Nessun contenuto assegnato al numero.</p>

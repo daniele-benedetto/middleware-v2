@@ -557,7 +557,10 @@ describe("buildPrintIssueDocument back cover", () => {
       excerpt: "Sommario del prossimo numero",
       contentRich: {
         type: "doc",
-        content: [{ type: "paragraph", content: [{ type: "text", text: "Il testo vero." }] }],
+        content: [
+          { type: "paragraph", content: [{ type: "text", text: "Il testo vero." }] },
+          { type: "image", attrs: { src: "/immagine-nel-corpo.jpg" } },
+        ],
       },
       authorName: null,
       categoryName: "Interviste",
@@ -604,6 +607,13 @@ describe("buildPrintIssueDocument back cover", () => {
     });
     expect(document.backCoverUnavailable).toBe(false);
     expect(extractPlainText(document.backCover?.content)).toContain("Il testo vero.");
+    expect(JSON.stringify(document.backCover?.content)).not.toContain('"type":"image"');
+    expect(
+      inspectPrintIssueDocument({
+        ...document,
+        sections: Array.from({ length: 21 }, () => document.sections[0]!),
+      }).map((entry) => entry.code),
+    ).toContain("crowded-toc");
   });
 
   it("has no back cover without a preview block, or when it is excluded from print", () => {

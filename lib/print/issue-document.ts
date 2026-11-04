@@ -7,7 +7,7 @@ import {
   type PrintArticleRole,
   type PrintTitleSegment,
 } from "@/lib/print/article-presentation";
-import { placePrintBodyImages, stripPrintBodyImages } from "@/lib/print/body-images";
+import { stripPrintBodyImages } from "@/lib/print/body-images";
 import { buildPrintCampaign } from "@/lib/print/campaign";
 import { printFormat } from "@/lib/print/format";
 import { hyphenatePrintRichText, hyphenatePrintText } from "@/lib/print/hyphenation";
@@ -274,22 +274,16 @@ function resolveSectionSettings(
 
 type PrintArticleSettings = PrintSectionSettings & {
   layout: IssueHomeArticlePrintLayout;
-  /** Images inside the text; the opening photo is always printed. */
-  showBodyImages: boolean;
 };
 
 function toPrintArticleSection(
   article: PrintArticleSource,
   role: PrintArticleRole,
-  { showBodyImages, ...settings }: PrintArticleSettings,
+  settings: PrintArticleSettings,
   variant: IssueHomeVariant,
 ): PrintArticleSection {
   const image = toPrintImage(article.imageUrl, article.imageAlt, article.title);
-  const body = toPrintNotes(
-    showBodyImages
-      ? placePrintBodyImages(article.contentRich)
-      : stripPrintBodyImages(article.contentRich),
-  );
+  const body = toPrintNotes(stripPrintBodyImages(article.contentRich));
   const layoutFallback = settings.layout !== "default" && !image ? settings.layout : null;
   const fullscreen = settings.layout === "fullscreen" && !layoutFallback;
   const { headline, subtitle } = splitPrintHeadline(
@@ -457,7 +451,6 @@ export function buildPrintSections({
           {
             ...resolveSectionSettings(settings),
             layout: settings?.layout ?? "default",
-            showBodyImages: settings?.showBodyImages ?? true,
           },
           issue.homeVariant,
         ),
@@ -477,7 +470,7 @@ function hasPrintablePreviewBlock(blocks: IssueHomeBlocks | null) {
 
 function toPrintBackCover(source: PrintPreviewIssueSource): PrintBackCover {
   const { article } = source;
-  const body = toPrintNotes(placePrintBodyImages(article.contentRich));
+  const body = toPrintNotes(stripPrintBodyImages(article.contentRich));
   const { headline, subtitle } = splitPrintHeadline(
     toTitleSegments(article.titleStyled, article.title),
   );

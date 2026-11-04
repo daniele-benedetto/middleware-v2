@@ -17,13 +17,23 @@ function drawPageSlot(
 ) {
   if (!page) return;
 
-  const scale = Math.min(slot.width / page.width, slot.height / page.height);
+  const { x, y, scale } = coverBookletSlot(page, offsetX, slot);
   sheet.drawPage(page, {
-    x: offsetX + (slot.width - page.width * scale) / 2,
-    y: (slot.height - page.height * scale) / 2,
+    x,
+    y,
     xScale: scale,
     yScale: scale,
   });
+}
+
+/** A5 is 148 mm wide; half an A4 is 148.5 mm. Fill that half millimetre. */
+export function coverBookletSlot(page: SheetSize, offsetX: number, slot: SheetSize) {
+  const scale = Math.max(slot.width / page.width, slot.height / page.height);
+  return {
+    x: offsetX + (slot.width - page.width * scale) / 2,
+    y: (slot.height - page.height * scale) / 2,
+    scale,
+  };
 }
 
 function drawSheetSide(

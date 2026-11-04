@@ -24,18 +24,14 @@ import {
   measureArticleOpening,
   measureArticleTail,
   measureFitSection,
+  measurePreviewQrGap,
   pagesWithAnchor,
 } from "@/lib/print/fit-dom";
 import { printFormat } from "@/lib/print/format";
-import { nextFigurePlacement } from "@/lib/print/inline-figures";
-import {
-  applyFigurePlacements,
-  markInlineFigures,
-  measureInlineFigure,
-} from "@/lib/print/inline-figures-dom";
 import { nextNudge, startNudge, type PrintNudgeState } from "@/lib/print/nudge";
 import { resolvePrintPageReferences } from "@/lib/print/page-references";
 import { canExpandPreview, initialPreviewBudget } from "@/lib/print/preview-budget";
+import { nextPreviewFill, startPreviewFill, type PreviewFillState } from "@/lib/print/preview-fill";
 import { serializePrintSource } from "@/lib/print/print-source";
 import { nextTighten, startTighten, type PrintTightenState } from "@/lib/print/tighten";
 
@@ -132,6 +128,8 @@ function usePrintPagination(variant: IssueHomeVariant) {
     const pageLimits = new Map(sections.map((section) => [section.anchor, section.maxPages]));
     const attempted = new Set<string>();
     let recovered = 0;
+    let previewFill: PreviewFillState | null = null;
+    let previewFillFinished = false;
     let expansion: {
       anchor: string;
       budget: number;
@@ -147,8 +145,6 @@ function usePrintPagination(variant: IssueHomeVariant) {
     const nudging = new Map<string, PrintNudgeState>();
     const nudgeLevels = new Map<string, number>();
     const backCover = hasPrintBackCover(source);
-    const figures = markInlineFigures(source.cloneNode(true) as HTMLElement);
-    const placements = new Map(figures.map((figure) => [figure.id, figure.placement]));
     let fillers = 0;
     const budgets = new Map(
       sections.map((section) => [
@@ -167,8 +163,6 @@ function usePrintPagination(variant: IssueHomeVariant) {
       for (let pass = 1; pass <= PRINT_FIT_MAX_PASSES && !cancelled; pass += 1) {
         const working = source!.cloneNode(true) as HTMLElement;
         if (!hasPreviewQr) working.querySelector(".back-cover .print-footer-float")?.remove();
-        markInlineFigures(working);
-        applyFigurePlacements(working, placements);
         applyFitBudgets(working, budgets);
         applyTightenLevels(working, tightenLevels);
         applyNudgeLevels(working, nudgeLevels);
@@ -188,6 +182,7 @@ function usePrintPagination(variant: IssueHomeVariant) {
         if (pass < PRINT_FIT_MAX_PASSES) {
           for (const section of sections) {
             if (section.anchor === previewAnchor && !hasPreviewQr) continue;
+            if (section.anchor === previewAnchor && previewFill) continue;
             const next = nextFitBudget(
               measureFitSection(result.host, {
                 anchor: section.anchor,
@@ -198,18 +193,6 @@ function usePrintPagination(variant: IssueHomeVariant) {
             );
             if (next !== null) {
               budgets.set(section.anchor, next);
-              changed = true;
-            }
-          }
-
-          for (const figure of figures) {
-            const next = nextFigurePlacement(
-              placements.get(figure.id) ?? figure.placement,
-              measureInlineFigure(result.host, figure.id),
-              figure.blockCount,
-            );
-            if (next !== null) {
-              placements.set(figure.id, next);
               changed = true;
             }
           }
@@ -236,7 +219,7 @@ function usePrintPagination(variant: IssueHomeVariant) {
             }
           }
 
-          if (backCover) {
+          if (backCover && !previewFill) {
             const next = countBackCoverFillers(countPrintPages(result.host), fillers);
             if (next !== fillers) {
               fillers = next;
@@ -251,6 +234,18 @@ function usePrintPagination(variant: IssueHomeVariant) {
             ? fillers
             : buildBookletPlan(countPrintPages(result.host)).paddedPageCount -
               countPrintPages(result.host);
+
+          // A complete article has nothing to continue online. Removing its QR
+          // must trigger another pass so the final page and booklet are measured again.
+          if (
+            !changed &&
+            hasPreviewQr &&
+            previewAnchor &&
+            (budgets.get(previewAnchor) ?? 0) >= previewLength
+          ) {
+            hasPreviewQr = false;
+            changed = true;
+          }
 
           if (!changed && expansion) {
             const afterPages = pagesWithAnchor(result.host, expansion.anchor).length;
@@ -280,6 +275,46 @@ function usePrintPagination(variant: IssueHomeVariant) {
               changed = true;
             }
             expansion = null;
+          }
+
+          if (!changed && previewFill && previewAnchor) {
+            const measure = measureFitSection(result.host, {
+              anchor: previewAnchor,
+              maxPages: pageLimits.get(previewAnchor) ?? 1,
+            });
+            const next = nextPreviewFill(previewFill, {
+              fits: measure.pageCount <= (pageLimits.get(previewAnchor) ?? 1),
+              gapLines: measurePreviewQrGap(result.host, previewAnchor),
+            });
+            previewFill = next.state;
+            if (next.budget !== null) {
+              budgets.set(previewAnchor, next.budget);
+              changed = true;
+            } else {
+              previewFillFinished = true;
+            }
+          }
+
+          if (
+            !changed &&
+            !previewFill &&
+            !previewFillFinished &&
+            !expansion &&
+            available === 0 &&
+            hasPreviewQr &&
+            previewAnchor &&
+            pass < PRINT_FIT_MAX_PASSES - 10
+          ) {
+            previewFill = startPreviewFill(
+              budgets.get(previewAnchor) ?? 0,
+              initialPreviewBudget(previewLength),
+            );
+            if (previewFill) {
+              budgets.set(previewAnchor, previewFill.current);
+              changed = true;
+            } else {
+              previewFillFinished = true;
+            }
           }
 
           if (!changed && !expansion && available > 0 && pass < PRINT_FIT_MAX_PASSES - 4) {
@@ -325,7 +360,7 @@ function usePrintPagination(variant: IssueHomeVariant) {
       }
 
       if (cancelled || !current) return;
-      if (!settled || expansion) {
+      if (!settled || expansion || previewFill) {
         setStatus("error");
         return;
       }

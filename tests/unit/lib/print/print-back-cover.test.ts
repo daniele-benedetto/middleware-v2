@@ -38,5 +38,6 @@ describe("printed next-issue article", () => {
     expect(html).toContain('data-print-fit-pages="1"');
     expect(html).toContain('data-print-fit-text=""');
     expect(html).not.toContain("back-cover__logo");
+    expect(html).not.toContain("print-footer-qr");
   });
 });
