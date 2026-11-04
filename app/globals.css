@@ -561,6 +561,14 @@ body {
   overflow: clip !important;
 }
 
+/* A quiet signature on the last page of the dossier, beneath its final lines. */
+[data-vivliostyle-page-container]:has(.article--closing) .print-end-logo {
+  --print-end-logo-left: 83%;
+  --print-end-logo-width: 48%;
+  --print-end-logo-shift-y: 42%;
+  --print-end-logo-opacity: 0.08;
+}
+
 /* Half-page openings bleed off the page: the page edge clips the photo. */
 [data-vivliostyle-page-container]:has(.article--halfpage .article__image) {
   overflow: clip !important;

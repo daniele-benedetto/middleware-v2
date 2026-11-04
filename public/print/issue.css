@@ -177,7 +177,15 @@
     content: none;
   }
 
+  @top-right {
+    content: none;
+  }
+
   @bottom-left {
+    content: none;
+  }
+
+  @bottom-right {
     content: none;
   }
 }
@@ -779,56 +787,82 @@ a {
   display: flex;
   flex-direction: column;
   height: calc(var(--page-height) - var(--page-top) - var(--page-bottom));
-  padding-bottom: var(--footer-strip);
   break-before: page;
 }
 
-.back-cover__meta {
+.back-cover__masthead {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 6mm;
-  padding-bottom: 2.5mm;
+  gap: 4mm;
+  padding-bottom: 4mm;
   border-bottom: var(--rule) solid currentColor;
-  font-size: 7pt;
+  font-size: 6.5pt;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.back-cover__logo {
+  width: 34mm;
+}
+
+.back-cover__edition {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 7mm;
+  padding-bottom: 5mm;
+  border-bottom: var(--rule) solid currentColor;
   font-variant-numeric: tabular-nums;
 }
 
 .back-cover__number {
-  margin-top: 4mm;
-  font-size: 110pt;
+  font-size: 72pt;
   line-height: 0.8;
   font-weight: 900;
   letter-spacing: -0.06em;
-  font-variant-numeric: tabular-nums;
+}
+
+.back-cover__edition-label {
+  font-size: 8pt;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .back-cover__article {
   margin-top: auto;
+  padding-top: 8mm;
 }
 
 .back-cover__title {
-  font-size: var(--section-title-size);
-  line-height: 0.92;
+  font-size: 25pt;
+  line-height: 0.97;
   font-weight: 900;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
 }
 
 .back-cover__deck {
-  margin-top: 4mm;
-  padding-top: 3.5mm;
-  border-top: var(--rule) solid currentColor;
+  margin-top: 5mm;
   font-family: var(--serif);
-  font-size: 12pt;
-  line-height: 1.35;
-  font-style: italic;
+  font-size: 10.5pt;
+  line-height: 1.32;
 }
 
-.back-cover__logo {
-  width: 42mm;
+.back-cover__article .article__meta {
+  margin-top: 5mm;
+  padding-top: 3mm;
+  border-top: var(--rule) solid currentColor;
+}
+
+.back-cover__footer {
+  position: relative;
+  flex: none;
+  height: 14mm;
   margin-top: 8mm;
+  border-top: var(--rule) solid currentColor;
 }
 
 /* Fitted sections (cut article, course): a page float reserves the footer strip

@@ -23,14 +23,25 @@ export function PrintBackCover({
       className={`back-cover${backCover.dark ? " back-cover--dark" : ""}`}
       aria-label="Quarta di copertina"
     >
-      <header className="back-cover__meta">
-        <span className="accent">Nel prossimo numero</span>
-        <span>{backCover.issueNumber}</span>
+      <header className="back-cover__masthead">
+        <img
+          className="back-cover__logo"
+          src={
+            backCover.dark
+              ? "/brand/middleware-logo-extended-white.png"
+              : "/brand/middleware-logo-extended-black.png"
+          }
+          alt="Middleware"
+        />
+        <span>Nel prossimo numero</span>
       </header>
 
-      <p className="back-cover__number accent" aria-hidden="true">
-        {issueDigits(backCover.issueNumber)}
-      </p>
+      <div className="back-cover__edition">
+        <span className="back-cover__number accent" aria-hidden="true">
+          {issueDigits(backCover.issueNumber)}
+        </span>
+        <span className="back-cover__edition-label">{backCover.issueNumber}</span>
+      </div>
 
       <article className="back-cover__article">
         <PrintTitle as="h2" className="back-cover__title" segments={backCover.title} />
@@ -43,24 +54,16 @@ export function PrintBackCover({
         </p>
       </article>
 
-      <img
-        className="back-cover__logo"
-        src={
-          backCover.dark
-            ? "/brand/middleware-logo-extended-white.png"
-            : "/brand/middleware-logo-extended-black.png"
-        }
-        alt="Middleware"
-      />
-
-      {qrCode ? (
-        <PrintFooterQr
-          qrCode={qrCode}
-          label="Leggi l’anteprima su"
-          siteLabel={siteLabel}
-          alt={`QR code: ${backCover.plainTitle}`}
-        />
-      ) : null}
+      <footer className="back-cover__footer">
+        {qrCode ? (
+          <PrintFooterQr
+            qrCode={qrCode}
+            label="Leggi l’anteprima su"
+            siteLabel={siteLabel}
+            alt={`QR code: ${backCover.plainTitle}`}
+          />
+        ) : null}
+      </footer>
     </section>
   );
 }

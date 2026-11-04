@@ -10,6 +10,7 @@ import {
   hasPrintBackCover,
 } from "@/lib/print/back-cover-fill";
 import { buildBookletPlan } from "@/lib/print/booklet";
+import { acceptsClosingExpansion, nextClosingSection } from "@/lib/print/closing-pages";
 import { collectEndLogoAnchors, placePrintEndLogos } from "@/lib/print/end-logo";
 import { nextFitBudget, PRINT_FIT_MAX_PASSES } from "@/lib/print/fit";
 import {
@@ -23,6 +24,7 @@ import {
   measureArticleOpening,
   measureArticleTail,
   measureFitSection,
+  pagesWithAnchor,
 } from "@/lib/print/fit-dom";
 import { printFormat } from "@/lib/print/format";
 import { nextFigurePlacement } from "@/lib/print/inline-figures";
@@ -102,6 +104,7 @@ function usePrintPagination(variant: IssueHomeVariant) {
   const [status, setStatus] = useState<PrintViewerStatus>("loading");
   const [pageCount, setPageCount] = useState(0);
   const [fillerCount, setFillerCount] = useState(0);
+  const [recoveredPages, setRecoveredPages] = useState(0);
 
   useEffect(() => {
     const source = sourceRef.current;
@@ -116,6 +119,16 @@ function usePrintPagination(variant: IssueHomeVariant) {
     }, PAGINATION_TIMEOUT_MS);
 
     const sections = collectFitSections(source);
+    const pageLimits = new Map(sections.map((section) => [section.anchor, section.maxPages]));
+    const attempted = new Set<string>();
+    let recovered = 0;
+    let expansion: {
+      anchor: string;
+      budget: number;
+      maxPages: number;
+      pages: number;
+      fillers: number;
+    } | null = null;
     const tightenAnchors = collectTightenAnchors(source);
     const tightening = new Map<string, PrintTightenState>();
     const tightenLevels = new Map<string, number>();
@@ -136,6 +149,7 @@ function usePrintPagination(variant: IssueHomeVariant) {
 
     async function run() {
       const { CoreViewer: Viewer } = await import("@vivliostyle/core");
+      let settled = false;
 
       for (let pass = 1; pass <= PRINT_FIT_MAX_PASSES && !cancelled; pass += 1) {
         const working = source!.cloneNode(true) as HTMLElement;
@@ -160,8 +174,11 @@ function usePrintPagination(variant: IssueHomeVariant) {
         if (pass < PRINT_FIT_MAX_PASSES) {
           for (const section of sections) {
             const next = nextFitBudget(
-              measureFitSection(result.host, section),
-              section.maxPages,
+              measureFitSection(result.host, {
+                anchor: section.anchor,
+                maxPages: pageLimits.get(section.anchor) ?? section.maxPages,
+              }),
+              pageLimits.get(section.anchor) ?? section.maxPages,
               budgets.get(section.anchor) ?? 0,
             );
             if (next !== null) {
@@ -211,16 +228,72 @@ function usePrintPagination(variant: IssueHomeVariant) {
               changed = true;
             }
           }
+
+          // Reuse spare leaves for actual omitted prose, starting with the
+          // latest cut article. A trial is committed only after a stable render
+          // consumes exactly one blank and gives it a meaningful amount of text.
+          const available = backCover
+            ? fillers
+            : buildBookletPlan(countPrintPages(result.host)).paddedPageCount -
+              countPrintPages(result.host);
+
+          if (!changed && expansion) {
+            const afterPages = pagesWithAnchor(result.host, expansion.anchor).length;
+            const tailLines = measureArticleTail(result.host, expansion.anchor).tailLines;
+            const accepted = acceptsClosingExpansion({
+              beforePages: expansion.pages,
+              afterPages,
+              beforeFillers: expansion.fillers,
+              afterFillers: available,
+              tailLines,
+            });
+            if (accepted) recovered += 1;
+            else {
+              budgets.set(expansion.anchor, expansion.budget);
+              pageLimits.set(expansion.anchor, expansion.maxPages);
+              changed = true;
+            }
+            expansion = null;
+          }
+
+          if (!changed && !expansion && available > 0 && pass < PRINT_FIT_MAX_PASSES - 4) {
+            const candidate = nextClosingSection(sections, budgets, attempted);
+            if (candidate) {
+              attempted.add(candidate.anchor);
+              expansion = {
+                anchor: candidate.anchor,
+                budget: budgets.get(candidate.anchor) ?? 0,
+                maxPages: pageLimits.get(candidate.anchor) ?? candidate.maxPages,
+                pages: pagesWithAnchor(result.host, candidate.anchor).length,
+                fillers: available,
+              };
+              pageLimits.set(candidate.anchor, expansion.maxPages + 1);
+              const originalLength = candidate.lengths.reduce((sum, length) => sum + length, 0);
+              budgets.set(
+                candidate.anchor,
+                Math.min(originalLength, Math.ceil(expansion.budget * 1.5)),
+              );
+              changed = true;
+            }
+          }
         }
-        if (!changed) break;
+        if (!changed) {
+          settled = true;
+          break;
+        }
       }
 
       if (cancelled || !current) return;
+      if (!settled || expansion) {
+        setStatus("error");
+        return;
+      }
       window.clearTimeout(timeout);
       fitPrintBoxes(current);
       placePrintEndLogos(current, endLogoAnchors);
       setPageCount(resolvePrintPageReferences(current));
       setFillerCount(fillers);
+      setRecoveredPages(recovered);
       setStatus("ready");
     }
 
@@ -236,7 +309,7 @@ function usePrintPagination(variant: IssueHomeVariant) {
     };
   }, [variant]);
 
-  return { sourceRef, viewportRef, viewerRef, status, pageCount, fillerCount };
+  return { sourceRef, viewportRef, viewerRef, status, pageCount, fillerCount, recoveredPages };
 }
 
 /**
@@ -292,7 +365,7 @@ function countBlankPages(count: number) {
   return `${count} ${count === 1 ? "pagina bianca" : "pagine bianche"}`;
 }
 
-function describePagination(pageCount: number, fillerCount: number) {
+function describePagination(pageCount: number, fillerCount: number, recoveredPages: number) {
   const { pageLabel, sheetLabel } = printFormat;
   const booklet = buildBookletPlan(pageCount);
   const blankPages = booklet.paddedPageCount - pageCount;
@@ -301,6 +374,9 @@ function describePagination(pageCount: number, fillerCount: number) {
   return [
     `${pageCount} pagine ${pageLabel}`,
     `${sheets} ${sheets === 1 ? "foglio" : "fogli"} ${sheetLabel}`,
+    recoveredPages > 0
+      ? `${recoveredPages} ${recoveredPages === 1 ? "pagina recuperata" : "pagine recuperate"} per il testo`
+      : null,
     fillerCount > 0 ? `${countBlankPages(fillerCount)} prima della quarta` : null,
     blankPages > 0 ? `${countBlankPages(blankPages)} in coda` : null,
   ]
@@ -317,7 +393,7 @@ export function IssuePrintViewer({
   preflight,
   children,
 }: IssuePrintViewerProps) {
-  const { sourceRef, viewportRef, viewerRef, status, pageCount, fillerCount } =
+  const { sourceRef, viewportRef, viewerRef, status, pageCount, fillerCount, recoveredPages } =
     usePrintPagination(variant);
   const stageRef = usePreviewZoom(
     viewerRef,
@@ -343,7 +419,7 @@ export function IssuePrintViewer({
               Anteprima cartacea
               <span className="ml-3 font-semibold tracking-normal normal-case text-muted-foreground">
                 {status === "ready"
-                  ? describePagination(pageCount, fillerCount)
+                  ? describePagination(pageCount, fillerCount, recoveredPages)
                   : status === "error"
                     ? "Impaginazione non riuscita"
                     : "Impaginazione in corso…"}
