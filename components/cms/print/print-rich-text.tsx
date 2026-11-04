@@ -1,5 +1,6 @@
 import { Fragment, type ReactNode } from "react";
 
+import { splitPrintDropCap } from "@/lib/print/drop-cap";
 import { isInterviewQuestion } from "@/lib/print/interview";
 import { PRINT_NOTE_TYPE } from "@/lib/print/notes";
 
@@ -61,8 +62,26 @@ function renderInlineChildren(node: RichTextNode, key: string) {
   return childrenOf(node).map((child, index) => renderInline(child, `${key}-${index}`));
 }
 
-function renderBlocks(nodes: RichTextNode[], keyPrefix: string): ReactNode {
-  return nodes.map((node, index) => renderBlock(node, `${keyPrefix}-${index}`));
+function renderLeadParagraph(node: RichTextNode, key: string) {
+  const [first, ...following] = childrenOf(node);
+  const initial = typeof first?.text === "string" ? splitPrintDropCap(first.text) : null;
+  if (!initial) return renderBlock(node, key);
+
+  return (
+    <p key={key} className="print-lead--manual-dropcap">
+      <span className="print-drop-cap">{initial.initial}</span>
+      {renderMarks(initial.rest, first?.marks)}
+      {following.map((child, index) => renderInline(child, `${key}-${index + 1}`))}
+    </p>
+  );
+}
+
+function renderBlocks(nodes: RichTextNode[], keyPrefix: string, dropCap = false): ReactNode {
+  return nodes.map((node, index) =>
+    dropCap && index === 0 && node.type === "paragraph"
+      ? renderLeadParagraph(node, `${keyPrefix}-${index}`)
+      : renderBlock(node, `${keyPrefix}-${index}`),
+  );
 }
 
 function renderBlock(node: RichTextNode, key: string): ReactNode {
@@ -97,8 +116,8 @@ function renderBlock(node: RichTextNode, key: string): ReactNode {
   }
 }
 
-export function PrintRichText({ value }: { value: unknown }) {
+export function PrintRichText({ value, dropCap = false }: { value: unknown; dropCap?: boolean }) {
   if (!value || typeof value !== "object") return null;
 
-  return <>{renderBlocks(childrenOf(value as RichTextNode), "rich-text")}</>;
+  return <>{renderBlocks(childrenOf(value as RichTextNode), "rich-text", dropCap)}</>;
 }

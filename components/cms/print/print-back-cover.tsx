@@ -34,7 +34,7 @@ export function PrintBackCover({
 
       <div className="article__body">
         <div data-print-fit-text="">
-          <PrintRichText value={backCover.content} />
+          <PrintRichText value={backCover.content} dropCap />
         </div>
         {qrCode ? (
           <div className="print-footer-float" data-print-anchor={backCover.anchor}>

@@ -633,8 +633,11 @@ a {
   margin: var(--body-leading) 0;
 }
 
-.article__body > p:first-child::first-letter,
-.article__body > [data-print-fit-text] > p:first-child::first-letter {
+.article__body > p:first-child:not(.print-lead--manual-dropcap)::first-letter,
+.article__body
+  > [data-print-fit-text]
+  > p:first-child:not(.print-lead--manual-dropcap)::first-letter,
+.print-drop-cap {
   float: left;
   margin: 1.2mm 2mm 0 0;
   font-family: var(--sans);

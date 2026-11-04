@@ -510,7 +510,8 @@ body {
 
 [data-vivliostyle-page-container]:has(.article--dark .article__image) .article__title .accent,
 [data-vivliostyle-page-container]:has(.article--dark .article__image)
-  [data-adapt-pseudo="first-letter"] {
+  [data-adapt-pseudo="first-letter"],
+[data-vivliostyle-page-container]:has(.article--dark .article__image) .print-drop-cap {
   color: var(--print-dark-accent) !important;
 }
 
@@ -529,6 +530,10 @@ body {
 }
 
 [data-vivliostyle-page-container]:has(.back-cover--dark) .back-cover .accent {
+  color: var(--print-back-cover-accent) !important;
+}
+
+[data-vivliostyle-page-container]:has(.back-cover--dark) .print-drop-cap {
   color: var(--print-back-cover-accent) !important;
 }
 

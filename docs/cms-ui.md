@@ -261,6 +261,7 @@ Middleware può diventare un oggetto editoriale stampabile senza perdere la prop
 - Tipografia: Archivo per struttura, titoli, numeri e metadati; Spectral per testo, sommari e citazioni (font in `public/print/fonts`).
 - Folio: solo numero di pagina, nel piede sul lato esterno; assente su copertina e pagine bianche.
 - Scala di lettura: testo Spectral 9,5/13 pt (~70 caratteri per riga, giustificato e sillabato); paragrafi senza rientro e separati da mezza interlinea; titoletti nel testo 12/10,5 pt Archivo; sommario 12 pt corsivo; titoli di sezione (articoli, mappa, contro-formazione, indice) 27 pt, sotto il titolo di copertina (36 pt), sottotitolo delle interviste 13 pt; didascalie, occhielli e metadati mai sotto 6,5–7 pt, testo piccolo sempre in nero pieno.
+- Nei capilettera l'apostrofo che segue l'iniziale (`L’`) e le virgolette che la precedono restano attaccati alla lettera grande, invece di iniziare in corpo piccolo sulla riga accanto.
 - Divisori: un solo spessore, 0,75 pt (come i filetti da 1 px del sito).
 - Riferimento visivo: il mockup `Middleware Cartaceo v3 (3).html`, disegnato in A4 e ridotto in A5.
 

@@ -72,10 +72,10 @@ export function PrintArticle({
       <div className="article__body">
         {article.stopWithSiteCta ? (
           <div data-print-fit-text="">
-            <PrintRichText value={article.content} />
+            <PrintRichText value={article.content} dropCap />
           </div>
         ) : (
-          <PrintRichText value={article.content} />
+          <PrintRichText value={article.content} dropCap />
         )}
         {article.stopWithSiteCta && qrCode ? (
           <div className="print-footer-float">
