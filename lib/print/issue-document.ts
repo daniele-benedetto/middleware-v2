@@ -85,7 +85,7 @@ export type PrintPreviewIssueSource = {
   article: Pick<
     PrintArticleSource,
     "slug" | "title" | "titleStyled" | "excerpt" | "authorName" | "categoryName"
-  >;
+  > & { contentRich: unknown };
 };
 
 export type PrintIssueSource = {
@@ -201,12 +201,13 @@ export type PrintCover = {
 
 /** Back cover from the preview block: the lead article of the next issue. */
 export type PrintBackCover = {
-  issueNumber: string;
+  anchor: string;
   label: string;
   title: PrintTitleSegment[];
   subtitle: string | null;
   plainTitle: string;
-  deck: string | null;
+  content: unknown;
+  hasText: boolean;
   author: string;
   articlePath: string;
   /** The next issue's color, as its card on the site. */
@@ -474,19 +475,21 @@ function hasPrintablePreviewBlock(blocks: IssueHomeBlocks | null) {
   );
 }
 
-function toPrintBackCover(source: PrintPreviewIssueSource, issueNumber: string): PrintBackCover {
+function toPrintBackCover(source: PrintPreviewIssueSource): PrintBackCover {
   const { article } = source;
+  const body = toPrintNotes(placePrintBodyImages(article.contentRich));
   const { headline, subtitle } = splitPrintHeadline(
     toTitleSegments(article.titleStyled, article.title),
   );
 
   return {
-    issueNumber,
+    anchor: `print-next-issue-${source.id}`,
     label: resolvePrintArticleLabel(article.categoryName, "opening"),
     title: headline,
     subtitle,
     plainTitle: article.title,
-    deck: article.excerpt ? hyphenatePrintText(article.excerpt) : null,
+    content: hyphenatePrintRichText(prependPrintLeadParagraph(body, article.excerpt)),
+    hasText: Boolean(extractPlainText(body)),
     author: article.authorName ?? "Redazione",
     articlePath: `/articoli/${article.slug}`,
     variant: source.homeVariant,
@@ -518,7 +521,6 @@ export function buildPrintIssueDocument({
   courses,
   issueNumber,
   previewIssue = null,
-  previewIssueNumber = null,
 }: {
   issue: PrintIssueSource;
   articles: PrintArticleSource[];
@@ -526,15 +528,11 @@ export function buildPrintIssueDocument({
   courses: PrintCourseSource[];
   issueNumber: string;
   previewIssue?: PrintPreviewIssueSource | null;
-  previewIssueNumber?: string | null;
 }): PrintIssueDocument {
   const sections = buildPrintSections({ issue, articles, maps, courses });
   const deck = extractPlainText(issue.description);
   const backCoverRequested = hasPrintablePreviewBlock(issue.homeBlocks);
-  const backCover =
-    backCoverRequested && previewIssue && previewIssueNumber
-      ? toPrintBackCover(previewIssue, previewIssueNumber)
-      : null;
+  const backCover = backCoverRequested && previewIssue ? toPrintBackCover(previewIssue) : null;
 
   return {
     variant: issue.homeVariant,

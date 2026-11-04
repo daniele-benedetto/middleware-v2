@@ -1,4 +1,5 @@
 import { distributeFitBudget, type PrintFitMeasure } from "@/lib/print/fit";
+import { nearestPrintSentenceEnd } from "@/lib/print/sentence-boundary";
 
 import type { PrintTailMeasure } from "@/lib/print/tighten";
 
@@ -76,10 +77,18 @@ function removeFollowing(node: Node, boundary: Element) {
 }
 
 /** Cuts an element after `budget` visible characters, on a word, with an ellipsis. */
-export function truncateFitText(element: Element, budget: number) {
+export function truncateFitText(element: Element, budget: number, preferSentence = false) {
   if (visibleLength(element) <= budget) return;
 
-  let remaining = budget;
+  const sentenceEnd = preferSentence
+    ? nearestPrintSentenceEnd(
+        runningTextNodes(element)
+          .map((node) => (node.textContent ?? "").replace(SOFT_HYPHEN, ""))
+          .join(""),
+        budget,
+      )
+    : null;
+  let remaining = sentenceEnd ?? budget;
 
   for (const node of runningTextNodes(element)) {
     const text = node.textContent ?? "";
@@ -95,7 +104,10 @@ export function truncateFitText(element: Element, budget: number) {
     }
     const head = text.slice(0, cut);
     const wordEnd = head.search(/\s\S*$/);
-    node.textContent = `${(wordEnd > 0 ? head.slice(0, wordEnd) : head).trimEnd()}${ELLIPSIS}`;
+    node.textContent =
+      sentenceEnd !== null
+        ? head.trimEnd()
+        : `${(wordEnd > 0 ? head.slice(0, wordEnd) : head).trimEnd()}${ELLIPSIS}`;
     removeFollowing(node, element);
     return;
   }
@@ -109,7 +121,9 @@ export function applyFitBudgets(source: ParentNode, budgets: Map<string, number>
 
     const texts = Array.from(section.querySelectorAll(TEXT_SELECTOR));
     const shares = distributeFitBudget(texts.map(visibleLength), budget);
-    texts.forEach((text, index) => truncateFitText(text, shares[index] ?? 0));
+    texts.forEach((text, index) =>
+      truncateFitText(text, shares[index] ?? 0, section.matches(".back-cover")),
+    );
   }
 }
 

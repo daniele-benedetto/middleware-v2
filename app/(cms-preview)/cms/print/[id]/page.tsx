@@ -46,9 +46,6 @@ export default async function PrintIssuePage({ params, searchParams }: PrintIssu
     courses,
     issueNumber: formatIssueNumber(issuePosition),
     previewIssue,
-    previewIssueNumber: previewIssue
-      ? (issueNumbers.get(previewIssue.id) ?? formatIssueNumber(issuePosition + 1))
-      : null,
   });
 
   return (

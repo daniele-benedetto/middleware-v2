@@ -980,6 +980,7 @@ function SelectedArticlesDropZone({
             <SortableSelectedArticle
               key={article.id}
               article={article}
+              blockType={blockType}
               printSettings={printSettings?.[article.id]}
               blockId={blockId}
               index={articleIndex}
@@ -1086,6 +1087,7 @@ function DraggableAvailableArticle({
 
 function SortableSelectedArticle({
   article,
+  blockType,
   printSettings,
   text,
   blockId,
@@ -1100,6 +1102,7 @@ function SortableSelectedArticle({
   onPrintSettingsChange,
 }: {
   article: IssueHomeBlockArticle;
+  blockType: IssueHomeArticleBlock["type"];
   printSettings?: IssueHomeArticlePrintSettings;
   text: IssueHomeBlocksEditorText;
   blockId: string;
@@ -1212,15 +1215,17 @@ function SortableSelectedArticle({
                 })
               }
             />
-            <CmsCheckbox
-              label={text.printShowEndLogo}
-              checked={resolvedPrintSettings.showEndLogo}
-              disabled={disabled || resolvedPrintSettings.excludeFromPrint}
-              compact
-              onChange={(showEndLogo) =>
-                onPrintSettingsChange({ ...resolvedPrintSettings, showEndLogo })
-              }
-            />
+            {blockType !== "closing" ? (
+              <CmsCheckbox
+                label={text.printShowEndLogo}
+                checked={resolvedPrintSettings.showEndLogo}
+                disabled={disabled || resolvedPrintSettings.excludeFromPrint}
+                compact
+                onChange={(showEndLogo) =>
+                  onPrintSettingsChange({ ...resolvedPrintSettings, showEndLogo })
+                }
+              />
+            ) : null}
             <CmsCheckbox
               label={text.printShowBodyImages}
               checked={resolvedPrintSettings.showBodyImages}

@@ -206,7 +206,11 @@ export async function prefetchIssuePrintData(id: string) {
   );
   const loadPreviewIssue = async () => {
     const preview = await caller.issues.getPreviewById({ id });
-    return preview.previewIssues?.[0] ?? null;
+    const nextIssue = preview.previewIssues?.[0];
+    if (!nextIssue) return null;
+
+    const article = await caller.articles.getById({ id: nextIssue.article.id });
+    return { ...nextIssue, article: { ...nextIssue.article, contentRich: article.contentRich } };
   };
   const [articles, maps, courses, previewIssue] = await Promise.all([
     Promise.all(blockArticleIds.map((articleId) => caller.articles.getById({ id: articleId }))),

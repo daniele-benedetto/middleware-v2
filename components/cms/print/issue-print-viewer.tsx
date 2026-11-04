@@ -35,6 +35,7 @@ import {
 } from "@/lib/print/inline-figures-dom";
 import { nextNudge, startNudge, type PrintNudgeState } from "@/lib/print/nudge";
 import { resolvePrintPageReferences } from "@/lib/print/page-references";
+import { canExpandPreview, initialPreviewBudget } from "@/lib/print/preview-budget";
 import { serializePrintSource } from "@/lib/print/print-source";
 import { nextTighten, startTighten, type PrintTightenState } from "@/lib/print/tighten";
 
@@ -105,6 +106,9 @@ function usePrintPagination(variant: IssueHomeVariant) {
   const [pageCount, setPageCount] = useState(0);
   const [fillerCount, setFillerCount] = useState(0);
   const [recoveredPages, setRecoveredPages] = useState(0);
+  const [previewPages, setPreviewPages] = useState(0);
+  const [previewHasQr, setPreviewHasQr] = useState(false);
+  const [paginationIssue, setPaginationIssue] = useState<string | null>(null);
 
   useEffect(() => {
     const source = sourceRef.current;
@@ -119,6 +123,12 @@ function usePrintPagination(variant: IssueHomeVariant) {
     }, PAGINATION_TIMEOUT_MS);
 
     const sections = collectFitSections(source);
+    const previewAnchor = source.querySelector(".back-cover")?.getAttribute("data-print-anchor");
+    const previewSection = sections.find((section) => section.anchor === previewAnchor);
+    const previewLength = previewSection?.lengths.reduce((sum, length) => sum + length, 0) ?? 0;
+    let hasPreviewQr = Boolean(
+      previewAnchor && initialPreviewBudget(previewLength) < previewLength,
+    );
     const pageLimits = new Map(sections.map((section) => [section.anchor, section.maxPages]));
     const attempted = new Set<string>();
     let recovered = 0;
@@ -146,6 +156,9 @@ function usePrintPagination(variant: IssueHomeVariant) {
         section.lengths.reduce((total, length) => total + length, 0),
       ]),
     );
+    if (previewAnchor && hasPreviewQr) {
+      budgets.set(previewAnchor, initialPreviewBudget(previewLength));
+    }
 
     async function run() {
       const { CoreViewer: Viewer } = await import("@vivliostyle/core");
@@ -153,6 +166,7 @@ function usePrintPagination(variant: IssueHomeVariant) {
 
       for (let pass = 1; pass <= PRINT_FIT_MAX_PASSES && !cancelled; pass += 1) {
         const working = source!.cloneNode(true) as HTMLElement;
+        if (!hasPreviewQr) working.querySelector(".back-cover .print-footer-float")?.remove();
         markInlineFigures(working);
         applyFigurePlacements(working, placements);
         applyFitBudgets(working, budgets);
@@ -173,6 +187,7 @@ function usePrintPagination(variant: IssueHomeVariant) {
         let changed = false;
         if (pass < PRINT_FIT_MAX_PASSES) {
           for (const section of sections) {
+            if (section.anchor === previewAnchor && !hasPreviewQr) continue;
             const next = nextFitBudget(
               measureFitSection(result.host, {
                 anchor: section.anchor,
@@ -247,10 +262,21 @@ function usePrintPagination(variant: IssueHomeVariant) {
               afterFillers: available,
               tailLines,
             });
-            if (accepted) recovered += 1;
-            else {
+            if (accepted) {
+              if (expansion.anchor === previewAnchor) {
+                if ((pageLimits.get(expansion.anchor) ?? 1) < 4) {
+                  attempted.delete(expansion.anchor);
+                }
+              } else {
+                recovered += 1;
+              }
+            } else {
               budgets.set(expansion.anchor, expansion.budget);
               pageLimits.set(expansion.anchor, expansion.maxPages);
+              if (expansion.anchor === previewAnchor) {
+                hasPreviewQr = false;
+                budgets.set(expansion.anchor, previewLength);
+              }
               changed = true;
             }
             expansion = null;
@@ -259,6 +285,16 @@ function usePrintPagination(variant: IssueHomeVariant) {
           if (!changed && !expansion && available > 0 && pass < PRINT_FIT_MAX_PASSES - 4) {
             const candidate = nextClosingSection(sections, budgets, attempted);
             if (candidate) {
+              if (
+                candidate.anchor === previewAnchor &&
+                !canExpandPreview(previewLength, budgets.get(candidate.anchor) ?? 0)
+              ) {
+                hasPreviewQr = false;
+                budgets.set(candidate.anchor, previewLength);
+                attempted.add(candidate.anchor);
+                changed = true;
+                continue;
+              }
               attempted.add(candidate.anchor);
               expansion = {
                 anchor: candidate.anchor,
@@ -271,7 +307,12 @@ function usePrintPagination(variant: IssueHomeVariant) {
               const originalLength = candidate.lengths.reduce((sum, length) => sum + length, 0);
               budgets.set(
                 candidate.anchor,
-                Math.min(originalLength, Math.ceil(expansion.budget * 1.5)),
+                Math.min(
+                  candidate.anchor === previewAnchor
+                    ? initialPreviewBudget(originalLength)
+                    : originalLength,
+                  Math.ceil(expansion.budget * (candidate.anchor === previewAnchor ? 2.2 : 1.5)),
+                ),
               );
               changed = true;
             }
@@ -288,9 +329,21 @@ function usePrintPagination(variant: IssueHomeVariant) {
         setStatus("error");
         return;
       }
+      if (backCover && fillers > 0) {
+        window.clearTimeout(timeout);
+        setPaginationIssue(
+          `Mancano contenuti per sostituire ${countBlankPages(fillers)}: aggiungi testo stampabile al numero.`,
+        );
+        setStatus("error");
+        return;
+      }
       window.clearTimeout(timeout);
       fitPrintBoxes(current);
       placePrintEndLogos(current, endLogoAnchors);
+      if (previewAnchor) {
+        setPreviewPages(pagesWithAnchor(current, previewAnchor).length);
+        setPreviewHasQr(hasPreviewQr);
+      }
       setPageCount(resolvePrintPageReferences(current));
       setFillerCount(fillers);
       setRecoveredPages(recovered);
@@ -309,7 +362,18 @@ function usePrintPagination(variant: IssueHomeVariant) {
     };
   }, [variant]);
 
-  return { sourceRef, viewportRef, viewerRef, status, pageCount, fillerCount, recoveredPages };
+  return {
+    sourceRef,
+    viewportRef,
+    viewerRef,
+    status,
+    pageCount,
+    fillerCount,
+    recoveredPages,
+    previewPages,
+    previewHasQr,
+    paginationIssue,
+  };
 }
 
 /**
@@ -365,7 +429,13 @@ function countBlankPages(count: number) {
   return `${count} ${count === 1 ? "pagina bianca" : "pagine bianche"}`;
 }
 
-function describePagination(pageCount: number, fillerCount: number, recoveredPages: number) {
+function describePagination(
+  pageCount: number,
+  fillerCount: number,
+  recoveredPages: number,
+  previewPages: number,
+  previewHasQr: boolean,
+) {
   const { pageLabel, sheetLabel } = printFormat;
   const booklet = buildBookletPlan(pageCount);
   const blankPages = booklet.paddedPageCount - pageCount;
@@ -374,6 +444,9 @@ function describePagination(pageCount: number, fillerCount: number, recoveredPag
   return [
     `${pageCount} pagine ${pageLabel}`,
     `${sheets} ${sheets === 1 ? "foglio" : "fogli"} ${sheetLabel}`,
+    previewPages > 0
+      ? `Anticipazione: ${previewPages} ${previewPages === 1 ? "pagina" : "pagine"} · ${previewHasQr ? "continua online" : "testo integrale"}`
+      : null,
     recoveredPages > 0
       ? `${recoveredPages} ${recoveredPages === 1 ? "pagina recuperata" : "pagine recuperate"} per il testo`
       : null,
@@ -393,18 +466,31 @@ export function IssuePrintViewer({
   preflight,
   children,
 }: IssuePrintViewerProps) {
-  const { sourceRef, viewportRef, viewerRef, status, pageCount, fillerCount, recoveredPages } =
-    usePrintPagination(variant);
+  const {
+    sourceRef,
+    viewportRef,
+    viewerRef,
+    status,
+    pageCount,
+    fillerCount,
+    recoveredPages,
+    previewPages,
+    previewHasQr,
+    paginationIssue,
+  } = usePrintPagination(variant);
   const stageRef = usePreviewZoom(
     viewerRef,
     viewportRef,
     mode === "preview" ? status : "loading",
     printFormat.page.heightMm,
   );
+  // Both outputs paginate under the same host CSS; PDF switches to its print
+  // frame only after Vivliostyle has finished laying out the page boxes.
+  const frameMode = status === "ready" ? mode : "preview";
 
   return (
     <div
-      className={`print-viewer print-viewer--${mode}`}
+      className={`print-viewer print-viewer--${frameMode}`}
       data-print-status={status}
       style={toneStyle(tone, backCoverTone)}
     >
@@ -419,9 +505,15 @@ export function IssuePrintViewer({
               Anteprima cartacea
               <span className="ml-3 font-semibold tracking-normal normal-case text-muted-foreground">
                 {status === "ready"
-                  ? describePagination(pageCount, fillerCount, recoveredPages)
+                  ? describePagination(
+                      pageCount,
+                      fillerCount,
+                      recoveredPages,
+                      previewPages,
+                      previewHasQr,
+                    )
                   : status === "error"
-                    ? "Impaginazione non riuscita"
+                    ? (paginationIssue ?? "Impaginazione non riuscita")
                     : "Impaginazione in corso…"}
               </span>
             </p>

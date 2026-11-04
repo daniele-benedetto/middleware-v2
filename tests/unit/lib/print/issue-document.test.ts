@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { buildPrintIssueDocument } from "@/lib/print/issue-document";
 import { inspectPrintIssueDocument } from "@/lib/print/preflight";
+import { extractPlainText } from "@/lib/rich-text/plain-text";
 
 import type {
   PrintArticleSource,
@@ -554,6 +555,10 @@ describe("buildPrintIssueDocument back cover", () => {
       title: "“Torneremo in piazza”, Intervista a Luca",
       titleStyled: null,
       excerpt: "Sommario del prossimo numero",
+      contentRich: {
+        type: "doc",
+        content: [{ type: "paragraph", content: [{ type: "text", text: "Il testo vero." }] }],
+      },
       authorName: null,
       categoryName: "Interviste",
     },
@@ -584,12 +589,11 @@ describe("buildPrintIssueDocument back cover", () => {
       courses: [],
       issueNumber: "N. 00",
       previewIssue,
-      previewIssueNumber: "N. 01",
     });
 
     expect(document.sections).toHaveLength(4);
     expect(document.backCover).toMatchObject({
-      issueNumber: "N. 01",
+      anchor: `print-next-issue-${previewIssueId}`,
       label: "Interviste",
       title: [{ text: "“Torneremo in piazza”", accent: false, breakAfter: false }],
       subtitle: "Intervista a Luca",
@@ -599,6 +603,7 @@ describe("buildPrintIssueDocument back cover", () => {
       dark: true,
     });
     expect(document.backCoverUnavailable).toBe(false);
+    expect(extractPlainText(document.backCover?.content)).toContain("Il testo vero.");
   });
 
   it("has no back cover without a preview block, or when it is excluded from print", () => {
@@ -609,7 +614,6 @@ describe("buildPrintIssueDocument back cover", () => {
       courses: [],
       issueNumber: "N. 00",
       previewIssue,
-      previewIssueNumber: "N. 01",
     });
     const excluded = buildPrintIssueDocument({
       issue: withPreviewBlock(true),
@@ -618,7 +622,6 @@ describe("buildPrintIssueDocument back cover", () => {
       courses: [],
       issueNumber: "N. 00",
       previewIssue,
-      previewIssueNumber: "N. 01",
     });
 
     expect(withoutBlock.backCover).toBeNull();
@@ -641,6 +644,24 @@ describe("buildPrintIssueDocument back cover", () => {
     expect(document.backCover).toBeNull();
     expect(inspectPrintIssueDocument(document).map((issue) => issue.code)).toContain(
       "unavailable-back-cover",
+    );
+  });
+
+  it("warns when the anticipation has an excerpt but no article body", () => {
+    const document = buildPrintIssueDocument({
+      issue: withPreviewBlock(),
+      articles,
+      maps: [],
+      courses: [],
+      issueNumber: "N. 00",
+      previewIssue: {
+        ...previewIssue,
+        article: { ...previewIssue.article, contentRich: { type: "doc", content: [] } },
+      },
+    });
+
+    expect(inspectPrintIssueDocument(document).map((issue) => issue.code)).toContain(
+      "empty-preview-article",
     );
   });
 });

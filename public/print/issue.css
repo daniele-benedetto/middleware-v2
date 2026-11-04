@@ -171,7 +171,8 @@
   }
 }
 
-/* The back cover is the last page: no running head, no folio. */
+/* Preview pages use the article grid, with the next-issue label outside the
+   text block. The last fragment remains the unnumbered back cover. */
 @page back-cover {
   @top-left {
     content: none;
@@ -187,6 +188,32 @@
 
   @bottom-right {
     content: none;
+  }
+}
+
+@page back-cover:left {
+  @top-left {
+    content: string(print-label);
+    vertical-align: top;
+    padding-top: var(--folio-bottom);
+    font-family: var(--sans);
+    font-size: 6.5pt;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+}
+
+@page back-cover:right {
+  @top-right {
+    content: string(print-label);
+    vertical-align: top;
+    padding-top: var(--folio-bottom);
+    font-family: var(--sans);
+    font-size: 6.5pt;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 }
 
@@ -779,90 +806,16 @@ a {
   inset: 0;
 }
 
-/* Back cover (preview block): the last page of the booklet. The viewer adds
-   the blank pages that make the issue a whole number of sheets before it. */
+/* The next issue begins as an article. Its last fragment is the back cover. */
 .back-cover {
   page: back-cover;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: calc(var(--page-height) - var(--page-top) - var(--page-bottom));
   break-before: page;
+  counter-reset: footnote;
 }
 
-.back-cover__masthead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4mm;
-  padding-bottom: 4mm;
-  border-bottom: var(--rule) solid currentColor;
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.back-cover__logo {
-  width: 34mm;
-}
-
-.back-cover__edition {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-top: 7mm;
-  padding-bottom: 5mm;
-  border-bottom: var(--rule) solid currentColor;
-  font-variant-numeric: tabular-nums;
-}
-
-.back-cover__number {
-  font-size: 72pt;
-  line-height: 0.8;
-  font-weight: 900;
-  letter-spacing: -0.06em;
-}
-
-.back-cover__edition-label {
-  font-size: 8pt;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.back-cover__article {
-  margin-top: auto;
-  padding-top: 8mm;
-}
-
-.back-cover__title {
-  font-size: 25pt;
-  line-height: 0.97;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  overflow-wrap: anywhere;
-}
-
-.back-cover__deck {
-  margin-top: 5mm;
-  font-family: var(--serif);
-  font-size: 10.5pt;
-  line-height: 1.32;
-}
-
-.back-cover__article .article__meta {
-  margin-top: 5mm;
-  padding-top: 3mm;
-  border-top: var(--rule) solid currentColor;
-}
-
-.back-cover__footer {
-  position: relative;
-  flex: none;
-  height: 14mm;
-  margin-top: 8mm;
-  border-top: var(--rule) solid currentColor;
+/* Preserve the article's measure while avoiding a stranded short final word. */
+.back-cover .article__body p {
+  text-wrap: pretty;
 }
 
 /* Fitted sections (cut article, course): a page float reserves the footer strip

@@ -13,7 +13,8 @@ export type PrintPreflightIssue = {
     | "crowded-toc"
     | "empty-course"
     | "layout-without-image"
-    | "unavailable-back-cover";
+    | "unavailable-back-cover"
+    | "empty-preview-article";
   message: string;
 };
 
@@ -55,6 +56,13 @@ export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPr
       code: "unavailable-back-cover",
       message:
         "L’uscita in anteprima non ha articoli pubblicati: la quarta di copertina non viene stampata.",
+    });
+  }
+
+  if (document.backCover && !document.backCover.hasText) {
+    issues.push({
+      code: "empty-preview-article",
+      message: "L’articolo di anticipazione non ha testo oltre al sommario.",
     });
   }
 

@@ -47,7 +47,7 @@ export function PrintArticle({
       className={articleClassName(article)}
       data-print-anchor={article.anchor}
       data-print-label={article.label}
-      data-print-end-logo={article.showEndLogo ? "" : undefined}
+      data-print-end-logo={article.showEndLogo && article.role !== "closing" ? "" : undefined}
       data-print-fit-pages={article.stopWithSiteCta ? fitPages(article) : undefined}
     >
       <div className="article__opening">

@@ -523,7 +523,8 @@ body {
   background-color: var(--print-back-cover-bg) !important;
 }
 
-[data-vivliostyle-page-container]:has(.back-cover--dark) [data-vivliostyle-page-box] * {
+[data-vivliostyle-page-container]:has(.back-cover--dark) [data-vivliostyle-page-box] *,
+[data-vivliostyle-page-container]:has(.back-cover--dark) [data-vivliostyle-page-margin-box] {
   color: var(--print-back-cover-ink) !important;
 }
 
@@ -559,14 +560,6 @@ body {
 /* The logo is wider than the page: the page edge clips it, as on paper. */
 [data-vivliostyle-page-container]:has(.print-end-logo) {
   overflow: clip !important;
-}
-
-/* A quiet signature on the last page of the dossier, beneath its final lines. */
-[data-vivliostyle-page-container]:has(.article--closing) .print-end-logo {
-  --print-end-logo-left: 83%;
-  --print-end-logo-width: 48%;
-  --print-end-logo-shift-y: 42%;
-  --print-end-logo-opacity: 0.08;
 }
 
 /* Half-page openings bleed off the page: the page edge clips the photo. */

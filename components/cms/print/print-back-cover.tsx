@@ -1,13 +1,8 @@
 import { PrintFooterQr } from "@/components/cms/print/print-footer-qr";
+import { PrintRichText } from "@/components/cms/print/print-rich-text";
 import { PrintTitle } from "@/components/cms/print/print-title";
 
 import type { PrintBackCover as PrintBackCoverModel } from "@/lib/print/issue-document";
-
-/* eslint-disable @next/next/no-img-element -- the print document is serialized for the paginator. */
-
-function issueDigits(issueNumber: string) {
-  return issueNumber.match(/\d+/)?.[0] ?? issueNumber;
-}
 
 export function PrintBackCover({
   backCover,
@@ -19,51 +14,39 @@ export function PrintBackCover({
   siteLabel: string;
 }) {
   return (
-    <section
+    <article
+      id={backCover.anchor}
       className={`back-cover${backCover.dark ? " back-cover--dark" : ""}`}
-      aria-label="Quarta di copertina"
+      aria-label="Anticipazione del prossimo numero"
+      data-print-anchor={backCover.anchor}
+      data-print-label="Nel prossimo numero"
+      data-print-fit-pages={1}
     >
-      <header className="back-cover__masthead">
-        <img
-          className="back-cover__logo"
-          src={
-            backCover.dark
-              ? "/brand/middleware-logo-extended-white.png"
-              : "/brand/middleware-logo-extended-black.png"
-          }
-          alt="Middleware"
-        />
-        <span>Nel prossimo numero</span>
-      </header>
-
-      <div className="back-cover__edition">
-        <span className="back-cover__number accent" aria-hidden="true">
-          {issueDigits(backCover.issueNumber)}
-        </span>
-        <span className="back-cover__edition-label">{backCover.issueNumber}</span>
-      </div>
-
-      <article className="back-cover__article">
-        <PrintTitle as="h2" className="back-cover__title" segments={backCover.title} />
+      <header className="article__header">
+        <PrintTitle as="h2" className="article__title" segments={backCover.title} />
         {backCover.subtitle ? <p className="article__subtitle">{backCover.subtitle}</p> : null}
-        {backCover.deck ? <p className="back-cover__deck">{backCover.deck}</p> : null}
         <p className="article__meta">
           <span>{backCover.label}</span>
           <span className="article__meta-divider" aria-hidden="true" />
           <span>{backCover.author}</span>
         </p>
-      </article>
+      </header>
 
-      <footer className="back-cover__footer">
+      <div className="article__body">
+        <div data-print-fit-text="">
+          <PrintRichText value={backCover.content} />
+        </div>
         {qrCode ? (
-          <PrintFooterQr
-            qrCode={qrCode}
-            label="Leggi l’anteprima su"
-            siteLabel={siteLabel}
-            alt={`QR code: ${backCover.plainTitle}`}
-          />
+          <div className="print-footer-float" data-print-anchor={backCover.anchor}>
+            <PrintFooterQr
+              qrCode={qrCode}
+              label="Continua a leggere su"
+              siteLabel={siteLabel}
+              alt={`QR code: ${backCover.plainTitle}`}
+            />
+          </div>
         ) : null}
-      </footer>
-    </section>
+      </div>
+    </article>
   );
 }
