@@ -11,6 +11,7 @@ const backCover: PrintBackCover = {
   label: "Editoriale",
   title: [{ text: "La prossima inchiesta", accent: false, breakAfter: false }],
   subtitle: null,
+  image: null,
   plainTitle: "La prossima inchiesta",
   content: null,
   hasText: true,

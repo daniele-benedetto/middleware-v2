@@ -1,5 +1,5 @@
+import { PrintImage } from "@/components/cms/print/print-image";
 import { PrintTitle } from "@/components/cms/print/print-title";
-import { resolveCmsMediaPreviewUrl } from "@/lib/media/blob";
 
 import type { PrintCover as PrintCoverModel } from "@/lib/print/issue-document";
 
@@ -21,7 +21,7 @@ export function PrintCover({ cover }: { cover: PrintCoverModel }) {
 
       {cover.image ? (
         <figure className={`cover__image${cover.image.bleed ? " cover__image--bleed" : ""}`}>
-          <img src={resolveCmsMediaPreviewUrl(cover.image.url)} alt={cover.image.alt} />
+          <PrintImage image={cover.image} />
         </figure>
       ) : (
         <div className="cover__spacer" />

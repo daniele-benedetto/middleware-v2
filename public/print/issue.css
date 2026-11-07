@@ -330,6 +330,10 @@ a {
   height: 100%;
   max-width: none;
   object-fit: cover;
+}
+
+/* Photos print in colour unless their settings ask for black and white. */
+.print-image--grayscale {
   filter: grayscale(1);
 }
 
@@ -485,7 +489,6 @@ a {
   height: 100%;
   max-width: none;
   object-fit: cover;
-  filter: grayscale(1);
 }
 
 .article__title {

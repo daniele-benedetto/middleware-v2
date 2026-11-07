@@ -1,3 +1,4 @@
+import { resolveArticleImageSettings } from "@/lib/articles/image-settings";
 import { getIssueBlockAnchorId } from "@/lib/issues/block-anchor";
 import { isArticleHomeBlock, isSingleArticleBlock } from "@/lib/issues/home-block-rules";
 import {
@@ -44,6 +45,8 @@ export type PrintArticleSource = {
   contentRich: unknown;
   imageUrl: string | null;
   imageAlt: string | null;
+  /** Article image settings: the print honours their black-and-white choice. */
+  imageSettings?: unknown;
 };
 
 export type PrintCourseSource = {
@@ -84,7 +87,15 @@ export type PrintPreviewIssueSource = {
   homeVariant: IssueHomeVariant;
   article: Pick<
     PrintArticleSource,
-    "slug" | "title" | "titleStyled" | "excerpt" | "authorName" | "categoryName"
+    | "slug"
+    | "title"
+    | "titleStyled"
+    | "excerpt"
+    | "authorName"
+    | "categoryName"
+    | "imageUrl"
+    | "imageAlt"
+    | "imageSettings"
   > & { contentRich: unknown };
 };
 
@@ -99,7 +110,7 @@ export type PrintIssueSource = {
   printSettings: IssuePrintSettings;
 };
 
-export type PrintImage = { url: string; alt: string };
+export type PrintImage = { url: string; alt: string; grayscale: boolean };
 
 type PrintSectionSettings = {
   stopWithSiteCta: boolean;
@@ -206,6 +217,7 @@ export type PrintBackCover = {
   title: PrintTitleSegment[];
   subtitle: string | null;
   plainTitle: string;
+  image: PrintImage | null;
   content: unknown;
   hasText: boolean;
   author: string;
@@ -256,8 +268,20 @@ function buildCoverMeta(issue: PrintIssueSource, issueNumber: string) {
     .join(" · ");
 }
 
-function toPrintImage(url: string | null, alt: string | null, fallbackAlt: string) {
-  return url ? { url, alt: alt || fallbackAlt } : null;
+/** Without settings an image stays black and white, as on the site. */
+function toPrintImage(
+  url: string | null,
+  alt: string | null,
+  fallbackAlt: string,
+  settings?: unknown,
+): PrintImage | null {
+  if (!url) return null;
+
+  return {
+    url,
+    alt: alt || fallbackAlt,
+    grayscale: resolveArticleImageSettings(settings).grayscale,
+  };
 }
 
 function resolveSectionSettings(
@@ -282,7 +306,12 @@ function toPrintArticleSection(
   settings: PrintArticleSettings,
   variant: IssueHomeVariant,
 ): PrintArticleSection {
-  const image = toPrintImage(article.imageUrl, article.imageAlt, article.title);
+  const image = toPrintImage(
+    article.imageUrl,
+    article.imageAlt,
+    article.title,
+    article.imageSettings,
+  );
   const body = toPrintNotes(stripPrintBodyImages(article.contentRich));
   const layoutFallback = settings.layout !== "default" && !image ? settings.layout : null;
   const fullscreen = settings.layout === "fullscreen" && !layoutFallback;
@@ -481,6 +510,7 @@ function toPrintBackCover(source: PrintPreviewIssueSource): PrintBackCover {
     title: headline,
     subtitle,
     plainTitle: article.title,
+    image: toPrintImage(article.imageUrl, article.imageAlt, article.title, article.imageSettings),
     content: hyphenatePrintRichText(prependPrintLeadParagraph(body, article.excerpt)),
     hasText: Boolean(extractPlainText(body)),
     author: article.authorName ?? "Redazione",

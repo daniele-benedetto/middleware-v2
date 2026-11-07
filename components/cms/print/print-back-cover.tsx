@@ -1,4 +1,5 @@
 import { PrintFooterQr } from "@/components/cms/print/print-footer-qr";
+import { PrintImage } from "@/components/cms/print/print-image";
 import { PrintRichText } from "@/components/cms/print/print-rich-text";
 import { PrintTitle } from "@/components/cms/print/print-title";
 
@@ -22,15 +23,23 @@ export function PrintBackCover({
       data-print-label="Nel prossimo numero"
       data-print-fit-pages={1}
     >
-      <header className="article__header">
-        <PrintTitle as="h2" className="article__title" segments={backCover.title} />
-        {backCover.subtitle ? <p className="article__subtitle">{backCover.subtitle}</p> : null}
-        <p className="article__meta">
-          <span>{backCover.label}</span>
-          <span className="article__meta-divider" aria-hidden="true" />
-          <span>{backCover.author}</span>
-        </p>
-      </header>
+      <div className="article__opening">
+        {backCover.image ? (
+          <figure className="article__image">
+            <PrintImage image={backCover.image} />
+          </figure>
+        ) : null}
+
+        <header className="article__header">
+          <PrintTitle as="h2" className="article__title" segments={backCover.title} />
+          {backCover.subtitle ? <p className="article__subtitle">{backCover.subtitle}</p> : null}
+          <p className="article__meta">
+            <span>{backCover.label}</span>
+            <span className="article__meta-divider" aria-hidden="true" />
+            <span>{backCover.author}</span>
+          </p>
+        </header>
+      </div>
 
       <div className="article__body">
         <div data-print-fit-text="">

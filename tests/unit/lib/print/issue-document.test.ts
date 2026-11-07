@@ -213,6 +213,7 @@ describe("buildPrintIssueDocument", () => {
     expect(document.cover.image).toEqual({
       url: "/api/cms/media/blob?pathname=closing.jpg",
       alt: "Foto",
+      grayscale: true,
       bleed: false,
     });
   });
@@ -237,6 +238,7 @@ describe("buildPrintIssueDocument", () => {
     expect(document.cover.image).toEqual({
       url: "/api/cms/media/blob?pathname=cover.jpg",
       alt: "Titolo del numero",
+      grayscale: true,
       bleed: true,
     });
   });
@@ -564,6 +566,9 @@ describe("buildPrintIssueDocument back cover", () => {
       },
       authorName: null,
       categoryName: "Interviste",
+      imageUrl: "/api/cms/media/blob?pathname=prossimo.jpg",
+      imageAlt: "Corteo",
+      imageSettings: { grayscale: false },
     },
   };
   const withPreviewBlock = (excludeFromPrint = false) =>
@@ -604,6 +609,11 @@ describe("buildPrintIssueDocument back cover", () => {
       articlePath: "/articoli/prossimo-articolo",
       variant: "red",
       dark: true,
+      image: {
+        url: "/api/cms/media/blob?pathname=prossimo.jpg",
+        alt: "Corteo",
+        grayscale: false,
+      },
     });
     expect(document.backCoverUnavailable).toBe(false);
     expect(extractPlainText(document.backCover?.content)).toContain("Il testo vero.");
@@ -673,6 +683,35 @@ describe("buildPrintIssueDocument back cover", () => {
     expect(inspectPrintIssueDocument(document).map((issue) => issue.code)).toContain(
       "empty-preview-article",
     );
+  });
+});
+
+describe("buildPrintIssueDocument image colour", () => {
+  it("prints article photos in colour unless their settings ask for black and white", () => {
+    const document = buildPrintIssueDocument({
+      issue: issue(),
+      articles: [
+        article(ids.opening, {
+          imageUrl: "/api/cms/media/blob?pathname=colore.jpg",
+          imageSettings: { grayscale: false },
+        }),
+        article(ids.closing, {
+          imageUrl: "/api/cms/media/blob?pathname=bn.jpg",
+          imageSettings: { grayscale: true },
+        }),
+      ],
+      maps: [],
+      courses: [],
+      issueNumber: "N. 00",
+    });
+    const images = document.sections.flatMap((section) =>
+      section.kind === "article" && section.image ? [section.image] : [],
+    );
+
+    expect(images).toEqual([
+      expect.objectContaining({ url: expect.stringContaining("colore.jpg"), grayscale: false }),
+      expect.objectContaining({ url: expect.stringContaining("bn.jpg"), grayscale: true }),
+    ]);
   });
 });
 

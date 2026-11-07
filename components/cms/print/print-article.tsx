@@ -1,10 +1,8 @@
 import { PrintFooterQr } from "@/components/cms/print/print-footer-qr";
+import { PrintImage } from "@/components/cms/print/print-image";
 import { PrintRichText } from "@/components/cms/print/print-rich-text";
 import { PrintTitle } from "@/components/cms/print/print-title";
-import { resolveCmsMediaPreviewUrl } from "@/lib/media/blob";
 import { PRINT_FIT_PAGES, type PrintArticleSection } from "@/lib/print/issue-document";
-
-/* eslint-disable @next/next/no-img-element -- the print document is serialized for the paginator. */
 
 function articleClassName(article: PrintArticleSection) {
   return [
@@ -53,7 +51,7 @@ export function PrintArticle({
       <div className="article__opening">
         {article.image ? (
           <figure className="article__image">
-            <img src={resolveCmsMediaPreviewUrl(article.image.url)} alt={article.image.alt} />
+            <PrintImage image={article.image} />
           </figure>
         ) : null}
 

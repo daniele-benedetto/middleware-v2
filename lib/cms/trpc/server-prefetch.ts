@@ -210,7 +210,16 @@ export async function prefetchIssuePrintData(id: string) {
     if (!nextIssue) return null;
 
     const article = await caller.articles.getById({ id: nextIssue.article.id });
-    return { ...nextIssue, article: { ...nextIssue.article, contentRich: article.contentRich } };
+    return {
+      ...nextIssue,
+      article: {
+        ...nextIssue.article,
+        contentRich: article.contentRich,
+        imageUrl: article.imageUrl,
+        imageAlt: article.imageAlt,
+        imageSettings: article.imageSettings,
+      },
+    };
   };
   const [articles, maps, courses, previewIssue] = await Promise.all([
     Promise.all(blockArticleIds.map((articleId) => caller.articles.getById({ id: articleId }))),
