@@ -27,7 +27,8 @@ export const printFormat: PrintFormatSpec = {
   sheetLabel: "A4",
   page: { widthMm: 148, heightMm: 210 },
   sheet: { widthMm: 297, heightMm: 210 },
-  tocCapacity: 21,
+  /* Under the "In questo numero" kicker; quote and acknowledgements take more (preflight). */
+  tocCapacity: 20,
   mapPlate: {
     widthMm: 121,
     heightMm: 128,

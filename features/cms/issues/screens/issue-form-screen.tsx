@@ -284,6 +284,10 @@ function IssueFormContent({
     issue?.printSettings.coverImageSettings ?? defaultArticleImageSettings,
   );
   const [coverImagePickerOpen, setCoverImagePickerOpen] = useState(false);
+  const [showMenuQuote, setShowMenuQuote] = useState(issue?.printSettings.showMenuQuote ?? true);
+  const [acknowledgements, setAcknowledgements] = useState<unknown>(
+    issue?.printSettings.acknowledgements ?? null,
+  );
   const [isActive, setIsActive] = useState(issue?.isActive ?? true);
   const [publishedAt, setPublishedAt] = useState<Date | null>(
     issue?.publishedAt ? new Date(issue.publishedAt) : null,
@@ -436,6 +440,8 @@ function IssueFormContent({
               coverImageAlt,
               coverImageMode,
               coverImageSettings,
+              showMenuQuote,
+              acknowledgements,
             },
             homeVariant,
             isActive,
@@ -467,6 +473,8 @@ function IssueFormContent({
             coverImageAlt,
             coverImageMode,
             coverImageSettings,
+            showMenuQuote,
+            acknowledgements,
           },
           homeVariant,
           isActive,
@@ -816,6 +824,30 @@ function IssueFormContent({
                     { value: "contained", label: issueFormText.printCoverContained },
                     { value: "bleed", label: issueFormText.printCoverBleed },
                   ]}
+                />
+              </CmsFormField>
+
+              <CmsCheckbox
+                label={issueFormText.printMenuQuoteLabel}
+                checked={showMenuQuote}
+                onChange={setShowMenuQuote}
+              />
+
+              <CmsFormField
+                label={issueFormText.printAcknowledgements}
+                htmlFor="issue-print-acknowledgements"
+                hint={issueFormText.printAcknowledgementsHint}
+              >
+                <CmsRichTextEditor
+                  value={acknowledgements}
+                  onChange={setAcknowledgements}
+                  disabled={isBusy}
+                  ariaLabel={issueFormText.printAcknowledgementsEditorAriaLabel}
+                  allowHeadings={false}
+                  allowBlockquote={false}
+                  allowImages={false}
+                  allowCodeBlock={false}
+                  allowLinks={false}
                 />
               </CmsFormField>
             </div>

@@ -8,7 +8,14 @@ import {
   Search,
 } from "lucide-react";
 
-import type { PrintBackCover, PrintSection } from "@/lib/print/issue-document";
+import { PrintRichText } from "@/components/cms/print/print-rich-text";
+
+import type {
+  PrintBackCover,
+  PrintColophon,
+  PrintQuoteSegment,
+  PrintSection,
+} from "@/lib/print/issue-document";
 
 type TocIconKind = "editorial" | "contribution" | "interview" | "inquiry" | "map" | "course";
 
@@ -52,15 +59,41 @@ function TocIcon({ section }: { section: PrintSection }) {
   }
 }
 
+function TocQuote({ quote }: { quote: PrintQuoteSegment[][] }) {
+  return (
+    <footer className="toc__closing">
+      <blockquote className="toc__quote">
+        {quote.map((line, lineIndex) => (
+          <span key={lineIndex}>
+            {lineIndex > 0 ? <br /> : null}
+            {line.map((segment, index) =>
+              segment.accent ? (
+                <span key={index} className="accent">
+                  {segment.text}
+                </span>
+              ) : (
+                segment.text
+              ),
+            )}
+          </span>
+        ))}
+      </blockquote>
+    </footer>
+  );
+}
+
 export function PrintToc({
   sections,
   backCover,
+  colophon,
 }: {
   sections: PrintSection[];
   backCover: PrintBackCover | null;
+  colophon: PrintColophon | null;
 }) {
   return (
     <nav className="toc" aria-label="Indice">
+      <p className="toc__kicker">In questo numero</p>
       {sections.length > 0 || backCover ? (
         <ol className="toc__list">
           {sections.map((section) => (
@@ -81,6 +114,15 @@ export function PrintToc({
       ) : (
         <p className="toc__empty">Nessun contenuto assegnato al numero.</p>
       )}
+      {colophon?.acknowledgements ? (
+        <section className="toc__thanks" aria-label="Ringraziamenti">
+          <p className="toc__kicker">Ringraziamenti</p>
+          <div className="toc__thanks-text">
+            <PrintRichText value={colophon.acknowledgements} />
+          </div>
+        </section>
+      ) : null}
+      {colophon?.quote ? <TocQuote quote={colophon.quote} /> : null}
     </nav>
   );
 }

@@ -42,6 +42,8 @@ const issue = (sectionCount = 1, showBodyImages = true): PrintIssueSource => ({
     coverImageUrl: null,
     coverImageAlt: "",
     coverImageSettings: defaultArticleImageSettings,
+    showMenuQuote: false,
+    acknowledgements: null,
     coverImageMode: "contained",
   },
   homeBlocks: Array.from({ length: sectionCount }, (_, index) => ({
@@ -94,5 +96,31 @@ describe("print format", () => {
 
     expect(codes(printFormat.tocCapacity)).not.toContain("crowded-toc");
     expect(codes(printFormat.tocCapacity + 1)).toContain("crowded-toc");
+  });
+
+  it("leaves less room in the index for the quote and the acknowledgements", () => {
+    const withColophon = (sectionCount: number, acknowledgements: unknown) => {
+      const source = issue(sectionCount);
+      return inspectPrintIssueDocument(
+        buildPrintIssueDocument({
+          issue: {
+            ...source,
+            printSettings: { ...source.printSettings, showMenuQuote: true, acknowledgements },
+          },
+          articles: [article],
+          maps: [],
+          courses: [],
+          issueNumber: "N. 00",
+        }),
+      ).map((entry) => entry.code);
+    };
+    const thanks = {
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: "Grazie. ".repeat(40) }] }],
+    };
+
+    expect(withColophon(printFormat.tocCapacity - 3, null)).not.toContain("crowded-toc");
+    expect(withColophon(printFormat.tocCapacity - 2, null)).toContain("crowded-toc");
+    expect(withColophon(printFormat.tocCapacity - 3, thanks)).toContain("crowded-toc");
   });
 });

@@ -504,6 +504,10 @@ export const cmsIt = {
           "Descrivi il contenuto informativo dell'immagine. Lascia vuoto solo se è puramente decorativa.",
         printCoverSettingsDescription:
           "Le impostazioni vengono applicate alla copertina del cartaceo.",
+        printMenuQuoteLabel: "Citazione del menu sotto l'indice",
+        printAcknowledgements: "Ringraziamenti",
+        printAcknowledgementsHint: "Stampati sotto l'indice, dopo la citazione.",
+        printAcknowledgementsEditorAriaLabel: "Editor ringraziamenti del cartaceo",
         printCoverAlt: "Descrizione immagine",
         printCoverMode: "Disposizione immagine",
         printCoverContained: "Nei margini",

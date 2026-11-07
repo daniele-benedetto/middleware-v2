@@ -412,7 +412,8 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
-/* Index */
+/* Index, from the top of the text block: kicker, list between two rules, the
+   acknowledgements after it, and the menu quote alone on the bottom margin. */
 
 .toc {
   display: flex;
@@ -422,12 +423,20 @@ a {
   break-after: page;
 }
 
+/* Same voice as the cover kickers. */
+.toc__kicker {
+  margin-bottom: 3mm;
+  font-family: var(--sans);
+  font-size: 6.5pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
 .toc__list {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  justify-content: center;
   list-style: none;
+  border-top: var(--rule) solid var(--ink);
 }
 
 /* Long titles wrap onto a second line instead of being cut. */
@@ -438,10 +447,7 @@ a {
   align-items: center;
   min-height: 7.5mm;
   padding: 1.2mm 0;
-}
-
-.toc__entry + .toc__entry {
-  border-top: var(--rule) solid var(--ink);
+  border-bottom: var(--rule) solid var(--ink);
 }
 
 .toc__icon {
@@ -464,6 +470,32 @@ a {
   letter-spacing: -0.02em;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* Acknowledgements (printSettings.acknowledgements): between the notes (7.5pt)
+   and the body (9.5pt); paragraphs follow each other without indent or gap. */
+.toc__thanks {
+  margin-top: calc(3 * var(--body-leading));
+}
+
+.toc__thanks-text {
+  font-family: var(--serif);
+  font-size: 8pt;
+  line-height: 11.5pt;
+}
+
+/* The menu quote (printSettings.showMenuQuote) closes the page on the bottom
+   margin, with at least two lines of white above it. */
+.toc__closing {
+  margin-top: auto;
+  padding-top: calc(2 * var(--body-leading));
+}
+
+.toc__quote {
+  font-family: var(--serif);
+  font-size: 11pt;
+  line-height: 14pt;
+  font-style: italic;
 }
 
 .toc__empty {

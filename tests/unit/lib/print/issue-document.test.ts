@@ -50,6 +50,8 @@ const issue = (overrides: Partial<PrintIssueSource> = {}): PrintIssueSource => (
     coverImageUrl: null,
     coverImageAlt: "",
     coverImageSettings: defaultArticleImageSettings,
+    showMenuQuote: false,
+    acknowledgements: null,
     coverImageMode: "contained",
   },
   homeBlocks: [
@@ -235,6 +237,8 @@ describe("buildPrintIssueDocument", () => {
             positionY: 100,
             zoom: 120,
           },
+          showMenuQuote: false,
+          acknowledgements: null,
         },
       }),
       articles,
@@ -692,6 +696,45 @@ describe("buildPrintIssueDocument back cover", () => {
     expect(inspectPrintIssueDocument(document).map((issue) => issue.code)).toContain(
       "empty-preview-article",
     );
+  });
+});
+
+describe("buildPrintIssueDocument colophon", () => {
+  const withColophon = (showMenuQuote: boolean, acknowledgements: unknown) =>
+    buildPrintIssueDocument({
+      issue: issue({
+        printSettings: { ...issue().printSettings, showMenuQuote, acknowledgements },
+      }),
+      articles,
+      maps: [],
+      courses: [],
+      issueNumber: "N. 00",
+    }).colophon;
+
+  it("prints the menu quote and the acknowledgements under the index", () => {
+    const colophon = withColophon(true, content("Grazie a chi ha aperto le porte."));
+
+    const lines = colophon?.quote?.map((line) => line.map((segment) => segment.text).join(""));
+    const accents = colophon?.quote?.flat().filter((segment) => segment.accent);
+
+    expect(lines).toEqual([
+      "La conoscenza è legata alla lotta.",
+      "Conosce veramente chi veramente odia.",
+    ]);
+    expect(accents?.map((segment) => segment.text)).toEqual(["lotta", "odia"]);
+    expect(colophon?.acknowledgementsText).toBe("Grazie a chi ha aperto le porte.");
+    expect(extractPlainText(colophon?.acknowledgements)?.replaceAll("\u00ad", "")).toContain(
+      "Grazie a chi",
+    );
+  });
+
+  it("drops what is switched off or empty", () => {
+    expect(withColophon(false, content("Grazie."))?.quote).toBeNull();
+    expect(withColophon(true, { type: "doc", content: [{ type: "paragraph" }] })).toMatchObject({
+      acknowledgements: null,
+      acknowledgementsText: null,
+    });
+    expect(withColophon(false, null)).toBeNull();
   });
 });
 

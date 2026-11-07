@@ -2,6 +2,7 @@ import {
   resolveArticleImageSettings,
   type ArticleImageSettings,
 } from "@/lib/articles/image-settings";
+import { i18n } from "@/lib/i18n";
 import { getIssueBlockAnchorId } from "@/lib/issues/block-anchor";
 import { isArticleHomeBlock, isSingleArticleBlock } from "@/lib/issues/home-block-rules";
 import {
@@ -231,6 +232,16 @@ export type PrintBackCover = {
   dark: boolean;
 };
 
+/** Under the index: the menu quote and the issue acknowledgements. */
+export type PrintQuoteSegment = { text: string; accent: boolean };
+
+export type PrintColophon = {
+  /** One entry per line of the menu quote. */
+  quote: PrintQuoteSegment[][] | null;
+  acknowledgements: unknown;
+  acknowledgementsText: string | null;
+};
+
 export type PrintIssueDocument = {
   variant: IssueHomeVariant;
   /** Umami campaign of the QR codes, e.g. "numero-zero". */
@@ -240,6 +251,7 @@ export type PrintIssueDocument = {
   backCover: PrintBackCover | null;
   /** A preview block is set but its issue has no published article to show. */
   backCoverUnavailable: boolean;
+  colophon: PrintColophon | null;
 };
 
 const COVER_HIGHLIGHTS_LIMIT = 3;
@@ -542,6 +554,33 @@ function resolveCoverImage(issue: PrintIssueSource, sections: PrintSection[]) {
   return fallback ? { ...fallback, bleed } : null;
 }
 
+/** Words of the menu quote printed in accent, as the accent words of the titles. */
+const QUOTE_ACCENT_WORDS = new Set(["lotta", "odia"]);
+
+function toQuoteSegments(line: string): PrintQuoteSegment[] {
+  return line
+    .split(/(\p{L}+)/u)
+    .filter(Boolean)
+    .map((text) => ({ text, accent: QUOTE_ACCENT_WORDS.has(text.toLowerCase()) }));
+}
+
+function buildPrintColophon(settings: IssuePrintSettings): PrintColophon | null {
+  const quote = settings.showMenuQuote
+    ? [i18n.public.menu.quote_1, i18n.public.menu.quote_2].map(toQuoteSegments)
+    : null;
+  const acknowledgementsText = extractPlainText(settings.acknowledgements);
+
+  if (!quote && !acknowledgementsText) return null;
+
+  return {
+    quote,
+    acknowledgements: acknowledgementsText
+      ? hyphenatePrintRichText(settings.acknowledgements)
+      : null,
+    acknowledgementsText,
+  };
+}
+
 export function buildPrintIssueDocument({
   issue,
   articles,
@@ -568,6 +607,7 @@ export function buildPrintIssueDocument({
     sections,
     backCover,
     backCoverUnavailable: backCoverRequested && !backCover,
+    colophon: buildPrintColophon(issue.printSettings),
     cover: {
       meta: buildCoverMeta(issue, issueNumber),
       title: toTitleSegments(issue.titleStyled, issue.title),

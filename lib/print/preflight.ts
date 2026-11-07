@@ -1,6 +1,6 @@
 import { printFormat } from "@/lib/print/format";
 
-import type { PrintIssueDocument } from "@/lib/print/issue-document";
+import type { PrintColophon, PrintIssueDocument } from "@/lib/print/issue-document";
 
 export type PrintPreflightIssue = {
   code:
@@ -36,6 +36,27 @@ function collectUnsupportedNodes(value: unknown, found: Set<string>) {
 
 const layoutLabels = { fullscreen: "full screen", halfpage: "mezza pagina" } as const;
 
+/**
+ * Index rows (about 8 mm each) taken by what follows the list, estimated from
+ * issue.css: the quote with the white above it, and the acknowledgements with
+ * their gap and kicker plus about 180 characters (two 8pt lines) per row.
+ */
+const COLOPHON_QUOTE_ENTRIES = 3;
+const ACKNOWLEDGEMENT_FRAME_ENTRIES = 3;
+const ACKNOWLEDGEMENT_CHARS_PER_ENTRY = 180;
+
+function estimateColophonEntries(colophon: PrintColophon | null) {
+  if (!colophon) return 0;
+
+  const quote = colophon.quote ? COLOPHON_QUOTE_ENTRIES : 0;
+  const thanks = colophon.acknowledgementsText
+    ? ACKNOWLEDGEMENT_FRAME_ENTRIES +
+      Math.ceil(colophon.acknowledgementsText.length / ACKNOWLEDGEMENT_CHARS_PER_ENTRY)
+    : 0;
+
+  return quote + thanks;
+}
+
 export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPreflightIssue[] {
   const issues: PrintPreflightIssue[] = [];
   const { tocCapacity } = printFormat;
@@ -67,10 +88,13 @@ export function inspectPrintIssueDocument(document: PrintIssueDocument): PrintPr
   }
 
   const tocEntries = document.sections.length + Number(Boolean(document.backCover));
-  if (tocEntries > tocCapacity) {
+  const tocRoom = tocCapacity - estimateColophonEntries(document.colophon);
+  if (tocEntries > tocRoom) {
     issues.push({
       code: "crowded-toc",
-      message: `L’indice ha ${tocEntries} voci: ne entrano ${tocCapacity} in una pagina.`,
+      message: document.colophon
+        ? `L’indice ha ${tocEntries} voci: con citazione e ringraziamenti ne entrano circa ${tocRoom} in una pagina.`
+        : `L’indice ha ${tocEntries} voci: ne entrano ${tocCapacity} in una pagina.`,
     });
   }
 
