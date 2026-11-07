@@ -20,6 +20,7 @@ vi.mock("@/lib/server/modules/issues/service/public", () => ({
   },
 }));
 
+import { defaultArticleImageSettings } from "@/lib/articles/image-settings";
 import { issuesService } from "@/lib/server/modules/issues/service";
 import { createPrismaKnownRequestError } from "@/tests/helpers/create-prisma-known-request-error";
 
@@ -72,6 +73,7 @@ describe("issuesService", () => {
         coverImageUrl: null,
         coverImageAlt: "",
         coverImageMode: "contained",
+        coverImageSettings: defaultArticleImageSettings,
       },
       homeVariant: "black",
       isActive: true,
@@ -88,6 +90,7 @@ describe("issuesService", () => {
         coverImageUrl: null,
         coverImageAlt: "",
         coverImageMode: "contained",
+        coverImageSettings: defaultArticleImageSettings,
       },
       homeVariant: "black",
       isActive: true,

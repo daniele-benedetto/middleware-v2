@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 type ArticleImageSettingsDialogProps = {
   imageUrl: string;
   value: ArticleImageSettings;
+  /** Where the settings apply, when not the article cover. */
+  description?: string;
   disabled?: boolean;
   onChange: (value: ArticleImageSettings) => void;
 };
@@ -42,6 +44,7 @@ const focusPoints = [
 export function ArticleImageSettingsDialog({
   imageUrl,
   value,
+  description,
   disabled,
   onChange,
 }: ArticleImageSettingsDialogProps) {
@@ -64,7 +67,7 @@ export function ArticleImageSettingsDialog({
       >
         <DialogHeader>
           <DialogTitle>{text.title}</DialogTitle>
-          <DialogDescription>{text.description}</DialogDescription>
+          <DialogDescription>{description ?? text.description}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_15rem]">

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { defaultArticleImageSettings } from "@/lib/articles/image-settings";
 import { printFormat } from "@/lib/print/format";
 import { buildPrintIssueDocument } from "@/lib/print/issue-document";
 import { inspectPrintIssueDocument } from "@/lib/print/preflight";
@@ -40,6 +41,7 @@ const issue = (sectionCount = 1, showBodyImages = true): PrintIssueSource => ({
     showIssueNumber: true,
     coverImageUrl: null,
     coverImageAlt: "",
+    coverImageSettings: defaultArticleImageSettings,
     coverImageMode: "contained",
   },
   homeBlocks: Array.from({ length: sectionCount }, (_, index) => ({

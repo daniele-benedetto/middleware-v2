@@ -288,7 +288,7 @@ export const cmsIt = {
           trigger: "Visualizzazione",
           title: "Visualizzazione copertina",
           description:
-            "Le impostazioni vengono applicate in tutte le card e nella pagina dell'articolo.",
+            "Le impostazioni vengono applicate in tutte le card, nella pagina dell'articolo e nel cartaceo.",
           grayscaleLabel: "Bianco e nero",
           grayscaleHint: "Filtro monocromatico",
           fitLabel: "Adattamento",
@@ -491,11 +491,19 @@ export const cmsIt = {
         updated: "Uscita aggiornata.",
         invalidPublishedAt: "Data pubblicazione non valida.",
         activeLabel: "Uscita attiva",
+        printCoverSection: "Cartaceo",
         printCoverImage: "Immagine di copertina cartacea",
         printCoverPickerDescription: "Seleziona una fotografia per la sola edizione cartacea.",
         printCoverSelect: "Scegli immagine",
-        printCoverReplace: "Sostituisci immagine",
+        printCoverLibrary: "Libreria immagini",
         printCoverRemove: "Rimuovi immagine",
+        printCoverPlaceholderTitle: "Nessuna immagine selezionata",
+        printCoverPlaceholderDescription:
+          "Senza immagine la copertina usa la foto dell'articolo di chiusura o di apertura.",
+        printCoverAltHint:
+          "Descrivi il contenuto informativo dell'immagine. Lascia vuoto solo se è puramente decorativa.",
+        printCoverSettingsDescription:
+          "Le impostazioni vengono applicate alla copertina del cartaceo.",
         printCoverAlt: "Descrizione immagine",
         printCoverMode: "Disposizione immagine",
         printCoverContained: "Nei margini",

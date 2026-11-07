@@ -1,4 +1,7 @@
-import { resolveArticleImageSettings } from "@/lib/articles/image-settings";
+import {
+  resolveArticleImageSettings,
+  type ArticleImageSettings,
+} from "@/lib/articles/image-settings";
 import { getIssueBlockAnchorId } from "@/lib/issues/block-anchor";
 import { isArticleHomeBlock, isSingleArticleBlock } from "@/lib/issues/home-block-rules";
 import {
@@ -110,7 +113,8 @@ export type PrintIssueSource = {
   printSettings: IssuePrintSettings;
 };
 
-export type PrintImage = { url: string; alt: string; grayscale: boolean };
+/** A printed photo with the same display settings as on the site. */
+export type PrintImage = { url: string; alt: string; settings: ArticleImageSettings };
 
 type PrintSectionSettings = {
   stopWithSiteCta: boolean;
@@ -268,7 +272,7 @@ function buildCoverMeta(issue: PrintIssueSource, issueNumber: string) {
     .join(" · ");
 }
 
-/** Without settings an image stays black and white, as on the site. */
+/** Without settings an image uses the site defaults (black and white, centred). */
 function toPrintImage(
   url: string | null,
   alt: string | null,
@@ -280,7 +284,7 @@ function toPrintImage(
   return {
     url,
     alt: alt || fallbackAlt,
-    grayscale: resolveArticleImageSettings(settings).grayscale,
+    settings: resolveArticleImageSettings(settings),
   };
 }
 
@@ -526,6 +530,7 @@ function resolveCoverImage(issue: PrintIssueSource, sections: PrintSection[]) {
     issue.printSettings.coverImageUrl,
     issue.printSettings.coverImageAlt,
     issue.title,
+    issue.printSettings.coverImageSettings,
   );
   if (configured) return { ...configured, bleed };
 

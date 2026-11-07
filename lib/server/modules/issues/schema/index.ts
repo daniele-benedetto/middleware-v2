@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+  articleImageSettingsSchema,
+  defaultArticleImageSettings,
+} from "@/lib/articles/image-settings";
+
 export const issueTitleStyledSegmentSchema = z.object({
   text: z.string().min(1),
   tone: z.enum(["default", "primary"]).default("default"),
@@ -102,6 +107,8 @@ export const issuePrintSettingsSchema = z.object({
   coverImageUrl: z.string().trim().min(1).nullable().default(null),
   coverImageAlt: z.string().trim().default(""),
   coverImageMode: z.enum(["contained", "bleed"]).default("contained"),
+  /** Same display settings as an article cover (black and white, fit, focal point, zoom). */
+  coverImageSettings: articleImageSettingsSchema.default(defaultArticleImageSettings),
 });
 
 export const createIssueInputSchema = z.object({

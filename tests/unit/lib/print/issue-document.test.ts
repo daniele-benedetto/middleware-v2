@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { defaultArticleImageSettings } from "@/lib/articles/image-settings";
 import { buildPrintIssueDocument } from "@/lib/print/issue-document";
 import { inspectPrintIssueDocument } from "@/lib/print/preflight";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
@@ -48,6 +49,7 @@ const issue = (overrides: Partial<PrintIssueSource> = {}): PrintIssueSource => (
     showIssueNumber: true,
     coverImageUrl: null,
     coverImageAlt: "",
+    coverImageSettings: defaultArticleImageSettings,
     coverImageMode: "contained",
   },
   homeBlocks: [
@@ -213,7 +215,7 @@ describe("buildPrintIssueDocument", () => {
     expect(document.cover.image).toEqual({
       url: "/api/cms/media/blob?pathname=closing.jpg",
       alt: "Foto",
-      grayscale: true,
+      settings: defaultArticleImageSettings,
       bleed: false,
     });
   });
@@ -226,6 +228,13 @@ describe("buildPrintIssueDocument", () => {
           coverImageUrl: "/api/cms/media/blob?pathname=cover.jpg",
           coverImageAlt: "",
           coverImageMode: "bleed",
+          coverImageSettings: {
+            grayscale: false,
+            fit: "contain",
+            positionX: 0,
+            positionY: 100,
+            zoom: 120,
+          },
         },
       }),
       articles,
@@ -238,7 +247,7 @@ describe("buildPrintIssueDocument", () => {
     expect(document.cover.image).toEqual({
       url: "/api/cms/media/blob?pathname=cover.jpg",
       alt: "Titolo del numero",
-      grayscale: true,
+      settings: { grayscale: false, fit: "contain", positionX: 0, positionY: 100, zoom: 120 },
       bleed: true,
     });
   });
@@ -612,7 +621,7 @@ describe("buildPrintIssueDocument back cover", () => {
       image: {
         url: "/api/cms/media/blob?pathname=prossimo.jpg",
         alt: "Corteo",
-        grayscale: false,
+        settings: { ...defaultArticleImageSettings, grayscale: false },
       },
     });
     expect(document.backCoverUnavailable).toBe(false);
@@ -709,8 +718,14 @@ describe("buildPrintIssueDocument image colour", () => {
     );
 
     expect(images).toEqual([
-      expect.objectContaining({ url: expect.stringContaining("colore.jpg"), grayscale: false }),
-      expect.objectContaining({ url: expect.stringContaining("bn.jpg"), grayscale: true }),
+      expect.objectContaining({
+        url: expect.stringContaining("colore.jpg"),
+        settings: expect.objectContaining({ grayscale: false }),
+      }),
+      expect.objectContaining({
+        url: expect.stringContaining("bn.jpg"),
+        settings: expect.objectContaining({ grayscale: true }),
+      }),
     ]);
   });
 });

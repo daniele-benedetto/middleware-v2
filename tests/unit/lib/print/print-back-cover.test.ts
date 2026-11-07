@@ -49,7 +49,11 @@ describe("printed next-issue article", () => {
       label: "Editoriale",
       title: [{ text: "Il prossimo articolo", accent: false, breakAfter: false }],
       subtitle: null,
-      image: { url: "/api/cms/media/blob?pathname=prossimo.jpg", alt: "Corteo", grayscale: false },
+      image: {
+        url: "/api/cms/media/blob?pathname=prossimo.jpg",
+        alt: "Corteo",
+        settings: { grayscale: false, fit: "contain", positionX: 0, positionY: 100, zoom: 120 },
+      },
       plainTitle: "Il prossimo articolo",
       content: null,
       hasText: true,
@@ -67,9 +71,11 @@ describe("printed next-issue article", () => {
     expect(colour).toContain('<figure class="article__image"><img src=');
     expect(colour).toContain('alt="Corteo"');
     expect(colour).not.toContain("print-image--grayscale");
+    expect(colour).toContain("object-fit:contain;object-position:0% 100%;transform:scale(1.2)");
 
-    expect(render({ ...base, image: { ...base.image!, grayscale: true } })).toContain(
-      'class="print-image--grayscale"',
-    );
+    const image = base.image!;
+    expect(
+      render({ ...base, image: { ...image, settings: { ...image.settings, grayscale: true } } }),
+    ).toContain('class="print-image--grayscale"');
   });
 });

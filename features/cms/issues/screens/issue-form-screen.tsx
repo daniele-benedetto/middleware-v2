@@ -7,8 +7,10 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { CmsConfirmDialog, CmsErrorState, CmsLoadingState } from "@/components/cms/common";
 import {
   CmsActionButton,
+  CmsBody,
   CmsCheckbox,
   CmsFormField,
+  CmsMetaText,
   CmsPageHeader,
   CmsRichTextEditor,
   CmsSelect,
@@ -21,6 +23,8 @@ import {
 } from "@/components/cms/primitives";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ArticleImageSettingsDialog } from "@/features/cms/articles/components/article-image-settings-dialog";
+import { ArticleMediaFieldPreview } from "@/features/cms/articles/components/article-media-field-preview";
 import { IssueHomeBlocksEditor } from "@/features/cms/issues/components/issue-home-blocks-editor";
 import { IssuePrintPreviewDialog } from "@/features/cms/issues/components/issue-print-preview-dialog";
 import {
@@ -31,7 +35,6 @@ import {
   type IssueDetail,
   type UpdateIssueInput,
 } from "@/features/cms/issues/hooks/use-issue-crud";
-import { CmsMediaImage } from "@/features/cms/media/components/media-image";
 import { CmsMediaPickerDialog } from "@/features/cms/media/components/media-picker-dialog";
 import { publishLivePreviewMessage } from "@/features/cms/preview/use-live-preview";
 import {
@@ -39,11 +42,11 @@ import {
   useCmsFormNavigation,
   validateFormInput,
 } from "@/features/cms/shared/forms";
+import { defaultArticleImageSettings } from "@/lib/articles/image-settings";
 import { lessonCourseOptionsInput } from "@/lib/cms/course-options";
 import { createLivePreviewSessionId, toIssueLivePreviewSnapshot } from "@/lib/cms/preview/live";
 import { invalidateAfterCmsMutation } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
-import { extractCmsMediaPathname } from "@/lib/media/blob";
 import { createIssueInputSchema, updateIssueInputSchema } from "@/lib/server/modules/issues/schema";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
@@ -277,6 +280,9 @@ function IssueFormContent({
   const [coverImageMode, setCoverImageMode] = useState<"contained" | "bleed">(
     issue?.printSettings.coverImageMode ?? "contained",
   );
+  const [coverImageSettings, setCoverImageSettings] = useState(
+    issue?.printSettings.coverImageSettings ?? defaultArticleImageSettings,
+  );
   const [coverImagePickerOpen, setCoverImagePickerOpen] = useState(false);
   const [isActive, setIsActive] = useState(issue?.isActive ?? true);
   const [publishedAt, setPublishedAt] = useState<Date | null>(
@@ -424,7 +430,13 @@ function IssueFormContent({
             slug: slugPayload,
             description,
             homeBlocks: homeBlocksPayload,
-            printSettings: { showIssueNumber, coverImageUrl, coverImageAlt, coverImageMode },
+            printSettings: {
+              showIssueNumber,
+              coverImageUrl,
+              coverImageAlt,
+              coverImageMode,
+              coverImageSettings,
+            },
             homeVariant,
             isActive,
             publishedAt: publishedAt ?? undefined,
@@ -449,7 +461,13 @@ function IssueFormContent({
           slug: slugPayload,
           description,
           homeBlocks: homeBlocksPayload,
-          printSettings: { showIssueNumber, coverImageUrl, coverImageAlt, coverImageMode },
+          printSettings: {
+            showIssueNumber,
+            coverImageUrl,
+            coverImageAlt,
+            coverImageMode,
+            coverImageSettings,
+          },
           homeVariant,
           isActive,
           publishedAt,
@@ -680,65 +698,6 @@ function IssueFormContent({
               onChange={setHomeBlocks}
             />
           </CmsFormField>
-          <section className="space-y-3 border-t border-foreground pt-4">
-            <div className="font-ui text-[10px] font-bold uppercase tracking-[0.08em]">
-              {issueFormText.printCoverImage}
-            </div>
-            {coverImageUrl && extractCmsMediaPathname(coverImageUrl) ? (
-              <div className="relative aspect-[16/9] max-w-md overflow-hidden border border-foreground bg-card">
-                <CmsMediaImage
-                  pathname={extractCmsMediaPathname(coverImageUrl)!}
-                  alt={coverImageAlt || issueFormText.printCoverImage}
-                  sizes="(min-width: 1024px) 450px, 90vw"
-                  className="object-cover grayscale"
-                />
-              </div>
-            ) : null}
-            <div className="flex flex-wrap gap-2">
-              <CmsActionButton
-                type="button"
-                variant="outline"
-                disabled={isBusy}
-                onClick={() => setCoverImagePickerOpen(true)}
-              >
-                {coverImageUrl ? issueFormText.printCoverReplace : issueFormText.printCoverSelect}
-              </CmsActionButton>
-              {coverImageUrl ? (
-                <CmsActionButton
-                  type="button"
-                  variant="ghost"
-                  disabled={isBusy}
-                  onClick={() => {
-                    setCoverImageUrl(null);
-                    setCoverImageAlt("");
-                  }}
-                >
-                  {issueFormText.printCoverRemove}
-                </CmsActionButton>
-              ) : null}
-            </div>
-            {coverImageUrl ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <CmsFormField label={issueFormText.printCoverAlt} htmlFor="issue-print-cover-alt">
-                  <CmsTextInput
-                    id="issue-print-cover-alt"
-                    value={coverImageAlt}
-                    onChange={(event) => setCoverImageAlt(event.target.value)}
-                  />
-                </CmsFormField>
-                <CmsFormField label={issueFormText.printCoverMode} htmlFor="issue-print-cover-mode">
-                  <CmsSelect
-                    value={coverImageMode}
-                    onValueChange={(value) => setCoverImageMode(value as "contained" | "bleed")}
-                    options={[
-                      { value: "contained", label: issueFormText.printCoverContained },
-                      { value: "bleed", label: issueFormText.printCoverBleed },
-                    ]}
-                  />
-                </CmsFormField>
-              </div>
-            ) : null}
-          </section>
         </div>
 
         <div className="cms-scroll flex min-h-0 min-w-0 flex-col gap-6 overflow-y-auto pb-6 lg:border-l lg:border-foreground lg:pl-6">
@@ -769,6 +728,94 @@ function IssueFormContent({
                   placeholder={issueFormText.selectDatePlaceholder}
                   clearLabel={formText.clearDate}
                   onChange={setPublishedAt}
+                />
+              </CmsFormField>
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <div className="font-ui text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+              {issueFormText.printCoverSection}
+            </div>
+
+            <div className="space-y-4">
+              <CmsFormField label={issueFormText.printCoverImage} htmlFor="issue-print-cover-image">
+                <div className="space-y-3">
+                  {coverImageUrl ? (
+                    <ArticleMediaFieldPreview kind="image" url={coverImageUrl} />
+                  ) : (
+                    <div className="flex aspect-16/10 items-center justify-center border border-dashed border-border bg-card-hover px-6 text-center">
+                      <div className="space-y-1.5">
+                        <CmsMetaText variant="category">
+                          {issueFormText.printCoverPlaceholderTitle}
+                        </CmsMetaText>
+                        <CmsBody size="sm" tone="muted">
+                          {issueFormText.printCoverPlaceholderDescription}
+                        </CmsBody>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    <CmsActionButton
+                      id="issue-print-cover-image"
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      disabled={isBusy}
+                      onClick={() => setCoverImagePickerOpen(true)}
+                    >
+                      {issueFormText.printCoverLibrary}
+                    </CmsActionButton>
+                    {coverImageUrl ? (
+                      <ArticleImageSettingsDialog
+                        imageUrl={coverImageUrl}
+                        value={coverImageSettings}
+                        description={issueFormText.printCoverSettingsDescription}
+                        disabled={isBusy}
+                        onChange={setCoverImageSettings}
+                      />
+                    ) : null}
+                    {coverImageUrl ? (
+                      <CmsActionButton
+                        type="button"
+                        variant="ghost"
+                        size="xs"
+                        disabled={isBusy}
+                        onClick={() => {
+                          setCoverImageUrl(null);
+                          setCoverImageAlt("");
+                        }}
+                      >
+                        {issueFormText.printCoverRemove}
+                      </CmsActionButton>
+                    ) : null}
+                  </div>
+                </div>
+              </CmsFormField>
+
+              <CmsFormField
+                label={issueFormText.printCoverAlt}
+                htmlFor="issue-print-cover-alt"
+                hint={issueFormText.printCoverAltHint}
+              >
+                <CmsTextInput
+                  id="issue-print-cover-alt"
+                  value={coverImageAlt}
+                  disabled={isBusy || !coverImageUrl}
+                  placeholder={issueFormText.printCoverAlt}
+                  onChange={(event) => setCoverImageAlt(event.target.value)}
+                />
+              </CmsFormField>
+
+              <CmsFormField label={issueFormText.printCoverMode} htmlFor="issue-print-cover-mode">
+                <CmsSelect
+                  value={coverImageMode}
+                  disabled={isBusy || !coverImageUrl}
+                  onValueChange={(value) => setCoverImageMode(value as "contained" | "bleed")}
+                  options={[
+                    { value: "contained", label: issueFormText.printCoverContained },
+                    { value: "bleed", label: issueFormText.printCoverBleed },
+                  ]}
                 />
               </CmsFormField>
             </div>
