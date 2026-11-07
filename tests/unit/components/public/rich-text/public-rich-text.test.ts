@@ -307,3 +307,48 @@ describe("PublicRichTextInline", () => {
     expect(html).toBe("x");
   });
 });
+
+describe("PublicRichText drop cap", () => {
+  const lead = (text: string) => ({
+    type: "doc",
+    content: [
+      { type: "paragraph", content: [{ type: "text", text }] },
+      { type: "paragraph", content: [{ type: "text", text: "Secondo" }] },
+    ],
+  });
+
+  it.each([
+    ["Parlare di sicurezza", "P", "arlare di sicurezza"],
+    ["L’evento", "L’", "evento"],
+    ["«Ascoltiamo", "«A", "scoltiamo"],
+  ])("splits the initial of %s", (text, initial, rest) => {
+    const html = renderToStaticMarkup(
+      createElement(PublicRichText, { value: lead(text), dropCap: true }),
+    );
+
+    expect(html).toMatch(
+      new RegExp(`<p><span class="[^"]*text-accent[^"]*">${initial}</span>${rest}</p>`),
+    );
+    expect(html).toContain("<p>Secondo</p>");
+  });
+
+  it("does not render a drop cap unless requested or when the body starts with a heading", () => {
+    expect(
+      renderToStaticMarkup(createElement(PublicRichText, { value: lead("Parlare") })),
+    ).not.toContain("text-accent");
+
+    const html = renderToStaticMarkup(
+      createElement(PublicRichText, {
+        value: {
+          type: "doc",
+          content: [
+            { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Titolo" }] },
+            { type: "paragraph", content: [{ type: "text", text: "Testo" }] },
+          ],
+        },
+        dropCap: true,
+      }),
+    );
+    expect(html).toContain("<p>Testo</p>");
+  });
+});

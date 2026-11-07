@@ -5,6 +5,7 @@ import { publicTypography } from "@/components/public/primitives";
 import { TrackedExternalLink } from "@/components/public/tracked-external-link";
 import { i18n } from "@/lib/i18n";
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
+import { splitPrintDropCap } from "@/lib/print/drop-cap";
 import { resolvePublicImageSettings } from "@/lib/public/image-settings";
 import {
   isExternalRichTextLink,
@@ -30,6 +31,7 @@ type RichTextNode = {
 type PublicRichTextProps = {
   value: unknown;
   className?: string;
+  dropCap?: boolean;
 };
 
 type PublicRichTextInlineProps = {
@@ -216,6 +218,53 @@ function renderBlockChildren(node: RichTextNode, key: string, context: RenderCon
   );
 }
 
+const dropCapClassName =
+  "float-left mt-[0.06em] mr-[0.08em] font-heading text-[4.1em] leading-[0.74] font-black text-accent";
+
+function splitDropCap(text: string) {
+  const split = splitPrintDropCap(text);
+  if (split) return split;
+
+  const match = text.match(/^\p{L}/u);
+  return match ? { initial: match[0], rest: text.slice(match[0].length) } : null;
+}
+
+function renderDropCapParagraph(
+  node: RichTextNode,
+  key: string,
+  context: RenderContext,
+): ReactNode {
+  const [first, ...following] = getNodeContent(node);
+  const initial = typeof first?.text === "string" ? splitDropCap(first.text) : null;
+
+  if (!first || !initial) {
+    return renderBlockNode(node, key, context);
+  }
+
+  return (
+    <p key={key}>
+      <span className={dropCapClassName}>{initial.initial}</span>
+      {renderMarks(initial.rest, first.marks)}
+      {following.map((child, index) => renderInlineNode(child, `${key}-${index + 1}`, context))}
+    </p>
+  );
+}
+
+function renderTopLevelNode(
+  node: RichTextNode,
+  index: number,
+  context: RenderContext,
+  dropCap: boolean,
+): ReactNode {
+  const key = String(index);
+
+  if (dropCap && index === 0 && node.type === "paragraph") {
+    return renderDropCapParagraph(node, key, context);
+  }
+
+  return renderBlockNode(node, key, context);
+}
+
 function renderBlockNode(node: RichTextNode, key: string, context: RenderContext): ReactNode {
   if (!isPublicRichTextNodeType(node.type)) {
     return <Fragment key={key}>{renderInlineContent(node, key, context)}</Fragment>;
@@ -363,7 +412,7 @@ function renderNotes(entries: NoteEntry[], context: RenderContext): ReactNode {
   );
 }
 
-export function PublicRichText({ value, className }: PublicRichTextProps) {
+export function PublicRichText({ value, className, dropCap = false }: PublicRichTextProps) {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -382,7 +431,7 @@ export function PublicRichText({ value, className }: PublicRichTextProps) {
         className,
       )}
     >
-      {getNodeContent(root).map((node, index) => renderBlockNode(node, String(index), context))}
+      {getNodeContent(root).map((node, index) => renderTopLevelNode(node, index, context, dropCap))}
       {renderNotes(noteEntries, context)}
     </div>
   );

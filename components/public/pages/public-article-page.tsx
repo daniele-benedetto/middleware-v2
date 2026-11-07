@@ -212,7 +212,7 @@ export function PublicArticlePage({
           <PublicReadingDepth contentType="article" slug={article.slug}>
             <div className={publicContentClassName}>
               <div className="mx-auto max-w-3xl space-y-10">
-                <PublicRichText value={article.contentRich} />
+                <PublicRichText value={article.contentRich} dropCap />
               </div>
             </div>
           </PublicReadingDepth>
