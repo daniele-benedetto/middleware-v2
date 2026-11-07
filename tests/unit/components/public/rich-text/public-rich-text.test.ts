@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { PublicRichText } from "@/components/public/rich-text";
+import { PublicRichText, PublicRichTextInline } from "@/components/public/rich-text";
 import {
   PUBLIC_RICH_TEXT_MARK_TYPES,
   PUBLIC_RICH_TEXT_NODE_TYPES,
@@ -249,5 +249,61 @@ describe("PublicRichText", () => {
     expect(html).toContain("[2]");
     expect(html).toContain("<strong>importante</strong>");
     expect(html).toContain('href="https://example.com/"');
+  });
+});
+
+describe("PublicRichTextInline", () => {
+  it("renders links and marks inline, joining blocks with line breaks", () => {
+    const html = renderToStaticMarkup(
+      createElement(PublicRichTextInline, {
+        value: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                { type: "text", text: "Leggi " },
+                {
+                  type: "text",
+                  text: "qui",
+                  marks: [{ type: "link", attrs: { href: "/articoli/altro" } }],
+                },
+              ],
+            },
+            { type: "paragraph" },
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Fine", marks: [{ type: "bold" }] }],
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(html).toBe('Leggi <a href="/articoli/altro">qui</a><br/><strong>Fine</strong>');
+  });
+
+  it("drops unsafe link hrefs", () => {
+    const html = renderToStaticMarkup(
+      createElement(PublicRichTextInline, {
+        value: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "x",
+                  marks: [{ type: "link", attrs: { href: "javascript:alert(1)" } }],
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(html).toBe("x");
   });
 });

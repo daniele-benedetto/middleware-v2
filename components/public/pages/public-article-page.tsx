@@ -5,12 +5,13 @@ import { DossierArticleCard, PublicMetaRail, PublicPageHero } from "@/components
 import { HomeSectionHeader } from "@/components/public/home/home-section-header";
 import { publicContentClassName } from "@/components/public/primitives";
 import { PublicReadingDepth } from "@/components/public/public-reading-depth";
-import { PublicRichText } from "@/components/public/rich-text";
+import { PublicRichText, PublicRichTextInline } from "@/components/public/rich-text";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
 import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 import { isLongPublicTitle } from "@/lib/public/title-scale";
+import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { buildArticlePageJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type { PublicRelatedIssueArticle } from "@/lib/public/server/article-page";
@@ -68,6 +69,14 @@ function getArticleTitleTypographyClassName(title: string) {
   }
 
   return "font-heading text-[clamp(48px,9.5vw,138px)] leading-[0.86] font-black tracking-[-0.06em] [text-wrap:balance]";
+}
+
+function renderArticleExcerpt(article: PublicArticleDetailDto) {
+  if (extractPlainText(article.excerptRich)) {
+    return <PublicRichTextInline value={article.excerptRich} />;
+  }
+
+  return article.excerpt;
 }
 
 function ArticleMetaRail({ article }: ArticleOnlyProps) {
@@ -170,7 +179,7 @@ export function PublicArticlePage({
           titleStyled={article.titleStyled}
           titleTypographyClassName={getArticleTitleTypographyClassName(article.title)}
           backgroundCode={formatArticleNumber(articleNumber)}
-          description={article.excerpt}
+          description={renderArticleExcerpt(article)}
           meta={<ArticleMetaRail article={article} />}
         />
 

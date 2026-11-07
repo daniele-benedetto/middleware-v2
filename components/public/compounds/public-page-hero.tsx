@@ -11,7 +11,7 @@ type PublicPageHeroProps = {
   title: string;
   titleStyled?: IssueTitleStyled | null;
   backgroundCode?: string;
-  description?: string | null;
+  description?: ReactNode;
   meta?: ReactNode;
   eyebrow?: ReactNode;
   as?: "header" | "section";
@@ -104,7 +104,7 @@ export function PublicPageHero({
           >
             <p
               className={cn(
-                "font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] italic",
+                "font-editorial text-[clamp(18px,1.8vw,25px)] leading-[1.36] italic [&_a]:underline [&_a]:underline-offset-4 [&_a]:transition-colors [&_a]:hover:text-accent",
                 descriptionClassName,
               )}
               data-page-reveal="description"

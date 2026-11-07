@@ -32,6 +32,10 @@ type PublicRichTextProps = {
   className?: string;
 };
 
+type PublicRichTextInlineProps = {
+  value: unknown;
+};
+
 type NoteEntry = {
   number: number;
   contentRich: RichTextNode;
@@ -382,4 +386,31 @@ export function PublicRichText({ value, className }: PublicRichTextProps) {
       {renderNotes(noteEntries, context)}
     </div>
   );
+}
+
+/**
+ * Renders a rich-text document as inline content (marks and links preserved),
+ * joining top-level blocks with line breaks. Meant for short texts such as
+ * excerpts rendered inside an existing paragraph element.
+ */
+export function PublicRichTextInline({ value }: PublicRichTextInlineProps) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const context: RenderContext = {
+    noteNumbers: new WeakMap<RichTextNode, number>(),
+    renderNoteReferences: false,
+  };
+
+  const blocks = getNodeContent(value as RichTextNode).filter(
+    (node) => getNodeContent(node).length > 0,
+  );
+
+  return blocks.map((node, index) => (
+    <Fragment key={index}>
+      {index > 0 ? <br /> : null}
+      {renderInlineContent(node, String(index), context)}
+    </Fragment>
+  ));
 }

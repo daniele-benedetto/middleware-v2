@@ -1,1 +1,4 @@
-export { PublicRichText } from "@/components/public/rich-text/public-rich-text";
+export {
+  PublicRichText,
+  PublicRichTextInline,
+} from "@/components/public/rich-text/public-rich-text";
