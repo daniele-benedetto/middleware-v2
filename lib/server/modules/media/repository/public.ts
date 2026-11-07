@@ -3,15 +3,11 @@ import "server-only";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
-const PUBLIC_ISSUE_WHERE = {
-  isActive: true,
-  publishedAt: { not: null },
-} as const satisfies Prisma.IssueWhereInput;
-
+// Mirrors public article visibility: a published article is readable even when its
+// issue is not public, so its media must be served too.
 const PUBLIC_ARTICLE_MEDIA_WHERE = {
   status: "PUBLISHED",
   publishedAt: { not: null },
-  issue: PUBLIC_ISSUE_WHERE,
 } as const satisfies Prisma.ArticleWhereInput;
 
 const PUBLIC_COURSE_WHERE = {
@@ -79,11 +75,8 @@ export const publicMediaRepository = {
           prisma.$queryRaw<Array<{ id: string }>>`
           SELECT a."id"
           FROM "articles" a
-          INNER JOIN "issues" i ON i."id" = a."issueId"
           WHERE a."status" = 'PUBLISHED'
             AND a."publishedAt" IS NOT NULL
-            AND i."isActive" = true
-            AND i."publishedAt" IS NOT NULL
             AND (
               jsonb_path_exists(
                 a."contentRich",

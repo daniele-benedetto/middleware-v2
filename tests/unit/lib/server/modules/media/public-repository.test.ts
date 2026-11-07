@@ -115,6 +115,18 @@ describe("publicMediaRepository", () => {
     expect(sql).not.toContain("strict $.** ? (@ == $reference)");
   });
 
+  it("follows public article visibility without requiring a public issue", async () => {
+    await publicMediaRepository.hasPublishedArticleMedia("covers/hero.jpg");
+
+    const where = articleFindFirstMock.mock.calls[0]?.[0]?.where;
+    expect(where).toMatchObject({ status: "PUBLISHED", publishedAt: { not: null } });
+    expect(where).not.toHaveProperty("issue");
+
+    const sql = queryRawMock.mock.calls.map(([strings]) => strings.join("?")).join("\n");
+    expect(sql).toContain(`a."status" = 'PUBLISHED'`);
+    expect(sql).not.toContain('"issues"');
+  });
+
   it("does not query rich text when direct article media matches", async () => {
     articleFindFirstMock.mockResolvedValue({ id: "article-1" });
 
