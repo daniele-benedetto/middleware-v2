@@ -1,6 +1,6 @@
 import "server-only";
 
-import { PDFDocument, type PDFEmbeddedPage, type PDFPage } from "pdf-lib";
+import { PDFDocument, type PDFEmbeddedPage, type PDFPage, type PageBoundingBox } from "pdf-lib";
 
 import { buildBookletPlan, type BookletSide } from "@/lib/print/booklet";
 import { printFormat } from "@/lib/print/format";
@@ -24,6 +24,19 @@ function drawPageSlot(
     xScale: scale,
     yScale: scale,
   });
+}
+
+/**
+ * Chromium rounds the paper of a CSS `size: A5` page up to whole points
+ * (420 x 595.92 pt instead of 419.53 x 595.28 pt), and Vivliostyle draws the
+ * 148 x 210 mm page from the top-left corner: the extra strip on the right and
+ * at the bottom shows the host page background. Keep only the CSS page.
+ */
+export function cssPageBox(paper: SheetSize, page: SheetSize): PageBoundingBox {
+  const width = Math.min(paper.width, page.width);
+  const height = Math.min(paper.height, page.height);
+
+  return { left: 0, bottom: paper.height - height, right: width, top: paper.height };
 }
 
 /** A5 is 148 mm wide; half an A4 is 148.5 mm. Fill that half millimetre. */
@@ -53,11 +66,16 @@ function drawSheetSide(
  * short edge, fold.
  */
 export async function imposeBookletPdf(pagesPdf: Uint8Array) {
-  const { sheet } = printFormat;
+  const { sheet, page } = printFormat;
   const sheetSize = { width: sheet.widthMm * MM_TO_PT, height: sheet.heightMm * MM_TO_PT };
+  const pageSize = { width: page.widthMm * MM_TO_PT, height: page.heightMm * MM_TO_PT };
   const source = await PDFDocument.load(pagesPdf);
   const output = await PDFDocument.create();
-  const pages = await output.embedPages(source.getPages());
+  const sourcePages = source.getPages();
+  const pages = await output.embedPages(
+    sourcePages,
+    sourcePages.map((sourcePage) => cssPageBox(sourcePage.getSize(), pageSize)),
+  );
   const plan = buildBookletPlan(pages.length);
 
   for (const planned of plan.sheets) {
