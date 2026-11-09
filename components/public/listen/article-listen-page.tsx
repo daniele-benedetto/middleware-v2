@@ -1,13 +1,15 @@
-import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
+import { ListenCover } from "@/components/public/listen/listen-cover";
 import { ListenEmptyState } from "@/components/public/listen/listen-empty-state";
+import { ListenInfo } from "@/components/public/listen/listen-info";
 import { ListenPlayer } from "@/components/public/listen/listen-player";
 import { publicContentClassName } from "@/components/public/primitives";
-import { PublicLink as Link } from "@/components/public/public-link";
 import { i18n } from "@/lib/i18n";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 
+import type { PublicMetaRailItem } from "@/components/public/compounds";
 import type { AudioChunk } from "@/lib/audio/audio-chunks";
 import type { PublicArticleListenMetadataData } from "@/lib/public/server/article-listen-page";
+import type { PublicArticleDetailDto } from "@/lib/server/modules/articles/dto/public";
 import type { CSSProperties } from "react";
 
 type ArticleListenPageProps = {
@@ -15,59 +17,33 @@ type ArticleListenPageProps = {
   chunks: AudioChunk[];
 };
 
-function formatArticleDate(value: string) {
-  return formatIssueMonthYearLong(value);
+function buildKicker(article: PublicArticleDetailDto): PublicMetaRailItem[] {
+  return [
+    {
+      key: "issue",
+      label: article.issueTitle,
+      href: article.isIssuePublic !== false ? `/uscite/${article.issueSlug}` : undefined,
+    },
+    { key: "category", label: article.categoryName },
+  ];
 }
 
-function formatArticleNumber(value: number | null) {
-  return value ? String(value).padStart(2, "0") : "MW";
-}
+function buildMeta(article: PublicArticleDetailDto): PublicMetaRailItem[] {
+  const cardText = i18n.public.home.articleCard;
 
-function getArticleTitleTypographyClassName(title: string) {
-  const wordCount = title.trim().split(/\s+/).filter(Boolean).length;
-
-  if (wordCount >= 14) {
-    return "font-heading text-[clamp(28px,7.5vw,52px)] leading-[0.96] font-black tracking-[-0.052em] [text-wrap:balance] sm:text-[clamp(34px,5vw,76px)]";
-  }
-
-  if (wordCount >= 9) {
-    return "font-heading text-[clamp(30px,8vw,58px)] leading-[0.94] font-black tracking-[-0.056em] [text-wrap:balance] sm:text-[clamp(38px,5.8vw,88px)]";
-  }
-
-  return "font-heading text-[clamp(34px,9vw,64px)] leading-[0.88] font-black tracking-[-0.06em] [text-wrap:balance] sm:text-[clamp(42px,7.5vw,104px)]";
-}
-
-function ArticleListenPlayer({
-  article,
-  chunks,
-}: Pick<PublicArticleListenMetadataData, "article"> & {
-  chunks: AudioChunk[];
-}) {
-  return (
-    <ListenPlayer
-      contentKind="article"
-      contentId={article.id}
-      contentSlug={article.slug}
-      contentTitle={article.title}
-      contentUpdatedAt={article.updatedAt}
-      audioUrl={article.audioUrl ?? ""}
-      chunks={chunks}
-      emptyState={<ListenEmptyState contentKind="article" />}
-    />
-  );
+  return [
+    article.authorName ? { key: "author", label: article.authorName } : null,
+    { key: "reading-time", label: cardText.readingTimeLabel(article.readingTimeMinutes) },
+    {
+      key: "date",
+      label: formatIssueMonthYearLong(article.publishedAt),
+      dateTime: article.publishedAt,
+    },
+  ].filter((item) => item !== null);
 }
 
 export function ArticleListenPage({ data, chunks }: ArticleListenPageProps) {
-  const { article, articleNumber } = data;
-  const text = i18n.public.listenPage;
-  const cardText = i18n.public.home.articleCard;
-  const metaItems = [
-    { key: "issue", label: article.issueTitle, href: `/uscite/${article.issueSlug}` },
-    { key: "category", label: article.categoryName },
-    article.authorName ? { key: "author", label: article.authorName } : null,
-    { key: "reading-time", label: cardText.readingTimeLabel(article.readingTimeMinutes) },
-    { key: "date", label: formatArticleDate(article.publishedAt), dateTime: article.publishedAt },
-  ].filter((item) => item !== null);
+  const { article } = data;
 
   return (
     <main
@@ -75,36 +51,40 @@ export function ArticleListenPage({ data, chunks }: ArticleListenPageProps) {
       tabIndex={-1}
       className="flex flex-1 flex-col bg-background font-heading text-foreground focus:outline-none"
     >
-      <article className="grid h-[calc(100svh-var(--public-header-height))] grid-rows-[auto_minmax(0,1fr)]">
-        <PublicPageHero
-          as="header"
-          title={article.title}
-          titleStyled={article.titleStyled}
-          titleTypographyClassName={getArticleTitleTypographyClassName(article.title)}
-          containerClassName="pt-4 pb-3 sm:py-9 lg:py-12"
-          backgroundCode={formatArticleNumber(articleNumber)}
-          meta={
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <PublicMetaRail items={metaItems} />
-              <Link
-                href={`/articoli/${article.slug}`}
-                className="inline-flex w-fit shrink-0 pb-1 font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase transition-colors duration-(--motion-fast) md:hover:text-foreground"
-              >
-                {text.backToArticle}
-              </Link>
-            </div>
+      <article
+        className={`${publicContentClassName} h-[calc(100svh-var(--public-issue-chrome-height))] py-4 lg:py-10`}
+        data-page-reveal="body"
+        style={{ "--page-reveal-delay": "120ms" } as CSSProperties}
+      >
+        <ListenPlayer
+          contentKind="article"
+          contentId={article.id}
+          contentSlug={article.slug}
+          contentTitle={article.title}
+          contentUpdatedAt={article.updatedAt}
+          audioUrl={article.audioUrl ?? ""}
+          chunks={chunks}
+          emptyState={<ListenEmptyState contentKind="article" />}
+          cover={
+            <ListenCover
+              imageUrl={article.imageUrl}
+              imageAlt={article.imageAlt}
+              imageSettings={article.imageSettings}
+            />
+          }
+          info={
+            <ListenInfo
+              kicker={buildKicker(article)}
+              title={article.title}
+              titleStyled={article.titleStyled}
+              meta={buildMeta(article)}
+              backLink={{
+                href: `/articoli/${article.slug}`,
+                label: i18n.public.listenPage.backToArticle,
+              }}
+            />
           }
         />
-
-        <section
-          className="min-h-0 overflow-hidden bg-background"
-          data-page-reveal="body"
-          style={{ "--page-reveal-delay": "620ms" } as CSSProperties}
-        >
-          <div className={`${publicContentClassName} h-full min-h-0 py-2 sm:py-8 lg:py-10`}>
-            <ArticleListenPlayer article={article} chunks={chunks} />
-          </div>
-        </section>
       </article>
     </main>
   );

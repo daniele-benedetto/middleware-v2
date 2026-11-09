@@ -1,7 +1,7 @@
 "use client";
 
 import { BookmarkIcon, PauseIcon, PlayIcon, RotateCcwIcon, RotateCwIcon } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import {
   formatAudioTime,
@@ -39,14 +39,16 @@ type ListenPlayerProps = {
   audioUrl: string;
   chunks: AudioChunk[];
   emptyState: ReactNode;
+  /** Square cover: small beside the title on mobile, large above it on desktop. */
+  cover: ReactNode;
+  /** Kicker, title and meta of the content being played. */
+  info: ReactNode;
 };
 
 type SyncedTranscriptProps = {
-  chunk: AudioChunk | null;
-  upcomingChunks: AudioChunk[];
+  chunks: AudioChunk[];
+  activeIndex: number;
   bookmarkedChunkIds: Set<string>;
-  currentTime: number;
-  isPlaying: boolean;
   isScrubbing: boolean;
   emptyState: ReactNode;
 };
@@ -78,6 +80,9 @@ const completionThresholdSeconds = 3;
 const seekConfirmationToleranceSeconds = 0.75;
 const playbackRates = [1, 1.25, 1.5] as const;
 const audioProgressMilestones = [25, 50, 75] as const;
+/** The line being read sits at this fraction of the transcript height. */
+const activeLineAnchor = 0.3;
+const lineTransition = "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)";
 
 function formatPlaybackRate(rate: number) {
   return `${rate.toFixed(2)}x`;
@@ -106,113 +111,104 @@ function isResumeCandidate(record: AudioProgressRecord) {
   return true;
 }
 
-function SyncedTranscript({
-  chunk,
-  upcomingChunks,
+/**
+ * The whole text as one list that glides so the line being read stays at the
+ * same height, as in synced lyrics. It only renders again when the line
+ * changes; the movement is a CSS transform, so playback does not re-render it.
+ */
+const SyncedTranscript = memo(function SyncedTranscript({
+  chunks,
+  activeIndex,
   bookmarkedChunkIds,
-  currentTime,
-  isPlaying,
   isScrubbing,
   emptyState,
 }: SyncedTranscriptProps) {
   const text = i18n.public.listenPage;
-  const readingRef = useRef<HTMLDivElement>(null);
-  const activeChunkRef = useRef<HTMLDivElement>(null);
-  const playbackTimeRef = useRef(currentTime);
-  const maxScrollTopRef = useRef(0);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLOListElement>(null);
+  const previousIndexRef = useRef(activeIndex);
+  const activeIndexRef = useRef(activeIndex);
+
+  // Reads the active line from a ref, so it stays stable and the resize
+  // observer below is created once (re-creating it would cancel the glide).
+  const alignActiveLine = useCallback((animate: boolean) => {
+    const viewport = viewportRef.current;
+    const list = listRef.current;
+    const line = list?.children[activeIndexRef.current] as HTMLElement | undefined;
+    if (!viewport || !list || !line) return;
+
+    // Every line, the first one too, is read at the same height.
+    const offset = line.offsetTop - viewport.clientHeight * activeLineAnchor;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    list.style.transition = animate && !reduceMotion ? lineTransition : "none";
+    list.style.transform = `translate3d(0, ${-offset}px, 0)`;
+  }, []);
+
+  useLayoutEffect(() => {
+    // A seek or a scrub jumps straight to the line; reading moves on smoothly.
+    const isJump = isScrubbing || Math.abs(activeIndex - previousIndexRef.current) > 1;
+    previousIndexRef.current = activeIndex;
+    activeIndexRef.current = activeIndex;
+    alignActiveLine(!isJump);
+  }, [activeIndex, isScrubbing, alignActiveLine]);
 
   useEffect(() => {
-    playbackTimeRef.current = currentTime;
-  }, [currentTime]);
+    const viewport = viewportRef.current;
+    const list = listRef.current;
+    if (!viewport || !list) return;
 
-  useEffect(() => {
-    const reading = readingRef.current;
-    if (!reading || !chunk) return;
+    // Realign only when the layout really changes (viewport height, text width).
+    let lastSize = `${viewport.clientHeight}x${list.clientWidth}`;
+    const observer = new ResizeObserver(() => {
+      const size = `${viewport.clientHeight}x${list.clientWidth}`;
+      if (size === lastSize) return;
+      lastSize = size;
+      alignActiveLine(false);
+    });
+    observer.observe(viewport);
+    observer.observe(list);
+    return () => observer.disconnect();
+  }, [alignActiveLine]);
 
-    const activeChunk = activeChunkRef.current;
-    maxScrollTopRef.current = activeChunk
-      ? Math.max(0, activeChunk.scrollHeight - reading.clientHeight)
-      : 0;
-    reading.scrollTop = 0;
-  }, [chunk]);
-
-  useEffect(() => {
-    const reading = readingRef.current;
-    if (!reading || !chunk) return;
-
-    const getTargetScrollTop = () => {
-      const duration = Math.max(chunk.end - chunk.start, 0.001);
-      const progress = Math.min(1, Math.max(0, (playbackTimeRef.current - chunk.start) / duration));
-      return maxScrollTopRef.current * progress;
-    };
-
-    if (!isPlaying || isScrubbing) {
-      const frameId = window.requestAnimationFrame(() => {
-        reading.scrollTop = getTargetScrollTop();
-      });
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    let frameId = 0;
-    const followPlayback = () => {
-      const targetScrollTop = getTargetScrollTop();
-      const distance = targetScrollTop - reading.scrollTop;
-      reading.scrollTop += distance * 0.18;
-      frameId = window.requestAnimationFrame(followPlayback);
-    };
-
-    frameId = window.requestAnimationFrame(followPlayback);
-    return () => window.cancelAnimationFrame(frameId);
-  }, [chunk, isPlaying, isScrubbing]);
-
-  if (!chunk) {
+  if (chunks.length === 0) {
     return <div className="min-h-0 overflow-hidden">{emptyState}</div>;
   }
 
-  const isBookmarked = bookmarkedChunkIds.has(chunk.id);
-
   return (
-    <section
-      className="flex min-h-0 flex-col overflow-hidden"
+    <div
+      ref={viewportRef}
       role="group"
       aria-label={text.syncedText}
+      className="relative h-full min-h-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_82%,transparent)]"
     >
-      <div ref={readingRef} className="relative min-h-0 flex-1 overflow-hidden py-2 sm:py-5">
-        <div className="relative z-10">
-          <div
-            ref={activeChunkRef}
-            className="relative flex items-start gap-2 py-1 pr-8 font-editorial text-foreground sm:py-1.5"
-          >
-            <span className="block min-w-0 flex-1 text-[clamp(17px,5.2vw,22px)] leading-[1.28] font-medium tracking-[-0.018em] sm:text-[clamp(20px,2.45vw,28px)] sm:leading-[1.3] sm:tracking-[-0.022em]">
-              {chunk.text}
-            </span>
-            {isBookmarked ? (
-              <BookmarkIcon
-                className="absolute top-1 right-0 size-3.5 fill-accent text-accent sm:top-1.5 sm:size-4"
-                aria-hidden
-              />
-            ) : null}
-          </div>
-          {upcomingChunks.map((upcomingChunk) => (
-            <div
-              key={upcomingChunk.id}
-              aria-hidden
-              className="relative mt-5 flex items-start gap-2 pr-8 font-editorial text-[clamp(16px,4.8vw,21px)] leading-[1.28] tracking-[-0.012em] text-muted/45 sm:text-[clamp(19px,2.2vw,26px)] sm:leading-[1.3]"
+      <ol ref={listRef} className="list-none pb-[60%] will-change-transform">
+        {chunks.map((chunk, index) => {
+          const isActive = index === activeIndex;
+
+          return (
+            <li
+              key={chunk.id}
+              aria-hidden={isActive ? undefined : true}
+              aria-current={isActive ? "true" : undefined}
+              className={cn(
+                "relative pr-7 pb-(--listen-line-gap) font-editorial text-[clamp(19px,5vw,24px)] leading-[1.32] tracking-[-0.015em] transition-colors duration-500 motion-reduce:transition-none lg:text-[clamp(22px,1.9vw,30px)]",
+                isActive ? "text-foreground" : "text-foreground/28",
+              )}
             >
-              <span className="min-w-0 flex-1">{upcomingChunk.text}</span>
-              {bookmarkedChunkIds.has(upcomingChunk.id) ? (
+              {chunk.text}
+              {bookmarkedChunkIds.has(chunk.id) ? (
                 <BookmarkIcon
-                  className="absolute top-1 right-0 size-3.5 fill-accent text-accent sm:top-1.5 sm:size-4"
+                  className="absolute top-[0.3em] right-0 size-3.5 fill-accent text-accent sm:size-4"
                   aria-hidden
                 />
               ) : null}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
-}
+});
 
 function ListenControls({
   bookmarks,
@@ -237,10 +233,7 @@ function ListenControls({
   const text = i18n.public.listenPage;
 
   return (
-    <section
-      className="mx-auto grid w-full max-w-3xl gap-3 sm:gap-4"
-      aria-label={text.controlsAriaLabel}
-    >
+    <section className="grid w-full gap-3 sm:gap-4" aria-label={text.controlsAriaLabel}>
       <p role="status" className="sr-only">
         {isPlaying ? text.playingStatus : text.pausedStatus}
       </p>
@@ -403,6 +396,8 @@ export function ListenPlayer({
   audioUrl,
   chunks,
   emptyState,
+  cover,
+  info,
 }: ListenPlayerProps) {
   const contentKey = `${contentKind}:${contentId}`;
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -431,7 +426,6 @@ export function ListenPlayer({
   const displayedTime = scrubTime ?? currentTime;
   const activeChunkIndex = getCurrentAudioChunkIndex(chunks, currentTime);
   const activeChunk = chunks[activeChunkIndex] ?? null;
-  const upcomingChunks = chunks.slice(activeChunkIndex + 1, activeChunkIndex + 6);
   const resolvedDuration = duration > 0 ? duration : (chunks.at(-1)?.end ?? 0);
   const bookmarkedChunkIds = useMemo(
     () => new Set(bookmarks.map((bookmark) => bookmark.chunkId)),
@@ -544,6 +538,28 @@ export function ListenPlayer({
     const audio = audioRef.current;
     if (audio) audio.playbackRate = playbackRate;
   }, [playbackRate]);
+
+  // `timeupdate` fires only a few times a second: while playing, follow the
+  // audio clock on every frame so lines change exactly with the voice.
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    let frameId = 0;
+    const followAudioClock = () => {
+      const audio = audioRef.current;
+      if (audio && !isScrubbingRef.current && pendingSeekTargetRef.current === null) {
+        const audioTime = audio.currentTime;
+        if (Number.isFinite(audioTime) && audioTime !== currentTimeRef.current) {
+          currentTimeRef.current = audioTime;
+          setCurrentTime(audioTime);
+        }
+      }
+      frameId = window.requestAnimationFrame(followAudioClock);
+    };
+
+    frameId = window.requestAnimationFrame(followAudioClock);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [isPlaying]);
 
   useEffect(() => {
     if (!hasInteracted || currentTime < minimumResumeTime) return;
@@ -788,7 +804,7 @@ export function ListenPlayer({
   };
 
   return (
-    <section className="mx-auto grid h-full min-h-0 w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)] gap-3 sm:gap-6">
+    <section className="grid h-full min-h-0 w-full grid-cols-[4.5rem_minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)_auto] gap-x-4 gap-y-5 [--listen-line-gap:0.85em] [grid-template-areas:'cover_info'_'lyrics_lyrics'_'controls_controls'] lg:grid-cols-[minmax(17rem,24rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)_auto_auto] lg:gap-x-[clamp(3rem,6vw,7rem)] lg:gap-y-6 lg:[grid-template-areas:'cover_lyrics'_'info_lyrics'_'controls_lyrics']">
       <audio
         ref={audioRef}
         src={audioUrl}
@@ -859,19 +875,26 @@ export function ListenPlayer({
         }}
       />
 
-      <div className="order-2 flex min-h-0 bg-background">
+      {/* Desktop: the largest square that fits the space left above the title. */}
+      <div className="aspect-square w-18 self-center [grid-area:cover] lg:flex lg:aspect-auto lg:size-full lg:min-h-0 lg:items-end lg:[container-type:size]">
+        <div className="relative size-full overflow-hidden lg:aspect-square lg:size-auto lg:w-[min(100cqw,100cqh)]">
+          {cover}
+        </div>
+      </div>
+
+      <div className="min-w-0 self-center [grid-area:info]">{info}</div>
+
+      <div className="min-h-0 [grid-area:lyrics]">
         <SyncedTranscript
-          chunk={activeChunk}
-          upcomingChunks={upcomingChunks}
+          chunks={chunks}
+          activeIndex={activeChunkIndex}
           bookmarkedChunkIds={bookmarkedChunkIds}
-          currentTime={currentTime}
-          isPlaying={isPlaying}
           isScrubbing={isScrubbing}
           emptyState={emptyState}
         />
       </div>
 
-      <div className="order-1 relative z-20 -mx-(--article-padding-x) bg-background px-(--article-padding-x) pt-1 pb-4 sm:mx-0 sm:px-0 sm:pt-0 sm:pb-0">
+      <div className="relative z-20 [grid-area:controls]">
         <ListenControls
           bookmarks={bookmarks}
           displayedTime={displayedTime}
