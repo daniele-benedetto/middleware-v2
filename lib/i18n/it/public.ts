@@ -64,6 +64,7 @@ export const publicIt = {
     },
     dossier: {
       articlesLabel: "Materiali del numero",
+      previewLabel: "Nel prossimo numero",
       audioCountLabel,
       tableOfContentsLabel: "Indice del numero",
       tableOfContentsMenuTitle: "Indice",

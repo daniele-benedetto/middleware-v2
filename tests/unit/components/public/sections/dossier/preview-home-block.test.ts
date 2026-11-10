@@ -45,7 +45,7 @@ describe("PreviewHomeBlock", () => {
     expect(html).toContain("relative isolate block overflow-hidden py-10 md:py-12");
     expect(html).toContain("absolute -top-10 right-5 -z-10");
     expect(html).toContain("/articoli/articolo-in-arrivo");
-    expect(html).not.toContain("Nel prossimo numero");
+    expect(html).toContain("Nel prossimo numero");
     expect(html).toContain("Editoriale");
   });
 });

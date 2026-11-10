@@ -7,12 +7,21 @@ import {
 import { archiveCoverVariantClasses } from "@/components/public/sections/archive/issue-archive-card";
 import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
+import { i18n } from "@/lib/i18n";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { isLongPublicTitle } from "@/lib/public/title-scale";
 import { cn } from "@/lib/utils";
 
 import type { PreviewHomeBlock as PreviewHomeBlockModel } from "@/components/public/home/home-view-model";
+import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 import type { CSSProperties } from "react";
+
+// Solid square badge that contrasts with each preview surface (no pills on public pages).
+const previewBadgeClasses: Record<IssueHomeVariant, string> = {
+  default: "bg-accent text-background",
+  red: "bg-foreground text-background",
+  black: "bg-accent text-background",
+};
 
 type PreviewHomeBlockProps = {
   block: PreviewHomeBlockModel;
@@ -63,6 +72,14 @@ export function PreviewHomeBlock({ block, issueNumber, priority = false }: Previ
             </span>
           ) : null}
           <article>
+            <p
+              className={cn(
+                "mb-6 inline-block px-2.5 py-1.5 font-heading text-[11px] leading-none font-bold tracking-[0.14em] uppercase",
+                previewBadgeClasses[homeVariant],
+              )}
+            >
+              {i18n.public.home.dossier.previewLabel}
+            </p>
             <h2
               id={titleId}
               className={cn(

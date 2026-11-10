@@ -50,7 +50,9 @@ async function getArticleBySlug(slug: string) {
   }
 }
 
-function resolveNarrativeBlocks(issue: PublicIssueDetailDto): NarrativeBlock[] {
+type IssueNumberingSource = Pick<PublicIssueDetailDto, "articles" | "homeBlocks">;
+
+function resolveNarrativeBlocks(issue: IssueNumberingSource): NarrativeBlock[] {
   const articlesById = new Map(issue.articles.map((item) => [item.id, item]));
   const manualArticleIds = new Set<string>();
   const blocks: NarrativeBlock[] = [];
@@ -121,12 +123,45 @@ function getContextualArticles(
   };
 }
 
-async function getIssueArticleContext(article: PublicArticleDetailDto | null) {
-  if (!article || article.isIssuePublic === false) {
+function getArticleNumberInIssue(article: PublicArticleDetailDto, issue: IssueNumberingSource) {
+  const numberedArticles = buildNumberedIssueArticles(
+    issue.articles,
+    resolveNarrativeBlocks(issue),
+  );
+  return numberedArticles.find((item) => item.article.id === article.id)?.number ?? null;
+}
+
+// Articles previewed before their issue is out keep their order number, but no related
+// articles: the rest of the issue is not public yet.
+async function getUpcomingIssueArticleContext(article: PublicArticleDetailDto) {
+  try {
+    const issue = await publicIssuesService.getUpcomingNumberingById(article.issueId);
+    return {
+      articleNumber: issue ? getArticleNumberInIssue(article, issue) : null,
+      relatedArticles: [],
+    };
+  } catch (error) {
+    console.error("public.getPublicArticlePageData upcoming issue context failed", {
+      issueId: article.issueId,
+      error,
+    });
     return {
       articleNumber: null,
       relatedArticles: [],
     };
+  }
+}
+
+async function getIssueArticleContext(article: PublicArticleDetailDto | null) {
+  if (!article) {
+    return {
+      articleNumber: null,
+      relatedArticles: [],
+    };
+  }
+
+  if (article.isIssuePublic === false) {
+    return getUpcomingIssueArticleContext(article);
   }
 
   try {

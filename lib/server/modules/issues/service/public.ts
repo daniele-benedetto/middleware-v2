@@ -205,8 +205,23 @@ async function getPreviewIssues(blocks: IssueHomeBlocks | null): Promise<PublicI
   return previews.filter((preview): preview is PublicIssuePreviewDto => Boolean(preview));
 }
 
+// Numbering inputs for an issue that is not public yet, so previewed articles keep their order.
+async function getUpcomingNumberingById(id: string) {
+  const issue = await publicIssuesRepository.getPreviewById(id);
+
+  if (!issue) {
+    return null;
+  }
+
+  return {
+    articles: issue.articles.map(toPublicIssueArticleSummaryDto),
+    homeBlocks: normalizeIssueHomeBlocks(issue.homeBlocks),
+  };
+}
+
 export const publicIssuesService = {
   getPreviewIssueById,
+  getUpcomingNumberingById,
   async listPublishedItems(pagination: PaginationParams) {
     const issues = await publicIssuesRepository.listPublished(pagination);
     return issues.map(toPublicIssueDto);

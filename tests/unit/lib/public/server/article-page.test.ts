@@ -3,6 +3,7 @@ const publicArticlesServiceMock = vi.hoisted(() => ({
 }));
 const publicIssuesServiceMock = vi.hoisted(() => ({
   getBySlug: vi.fn(),
+  getUpcomingNumberingById: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({
@@ -56,8 +57,34 @@ describe("public article page data", () => {
     vi.clearAllMocks();
   });
 
-  it("does not load issue context when the article issue is not public", async () => {
+  it("numbers an article of an unpublished issue without exposing related articles", async () => {
+    const article = createArticle();
+    const sibling = createArticle({ id: "00000000-0000-0000-0000-000000000004", slug: "sibling" });
+    publicArticlesServiceMock.getBySlug.mockResolvedValue(article);
+    publicIssuesServiceMock.getUpcomingNumberingById.mockResolvedValue({
+      articles: [sibling, article],
+      homeBlocks: [
+        {
+          id: "opening",
+          type: "opening",
+          articleIds: [sibling.id, article.id],
+          featuredArticleId: sibling.id,
+        },
+      ],
+    });
+
+    await expect(getPublicArticlePageData("article-slug")).resolves.toMatchObject({
+      articleNumber: 2,
+      relatedArticles: [],
+    });
+
+    expect(publicIssuesServiceMock.getUpcomingNumberingById).toHaveBeenCalledWith(article.issueId);
+    expect(publicIssuesServiceMock.getBySlug).not.toHaveBeenCalled();
+  });
+
+  it("falls back to no number when the unpublished issue cannot be loaded", async () => {
     publicArticlesServiceMock.getBySlug.mockResolvedValue(createArticle());
+    publicIssuesServiceMock.getUpcomingNumberingById.mockResolvedValue(null);
 
     await expect(getPublicArticlePageData("article-slug")).resolves.toMatchObject({
       articleNumber: null,
