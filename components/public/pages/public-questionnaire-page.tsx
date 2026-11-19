@@ -9,6 +9,7 @@ import { QuestionnaireIntro } from "@/components/public/questionnaires/questionn
 import { QuestionnaireProgressHeader } from "@/components/public/questionnaires/questionnaire-progress-header";
 import { QuestionnaireReview } from "@/components/public/questionnaires/questionnaire-review";
 import { QuestionnaireStepForm } from "@/components/public/questionnaires/questionnaire-step-form";
+import { QuestionnaireThankYou } from "@/components/public/questionnaires/questionnaire-thank-you";
 import {
   isSafeHref,
   questionnaireColumnClass,
@@ -20,7 +21,7 @@ import {
   useQuestionnaireHistoryTraversal,
 } from "@/components/public/questionnaires/use-questionnaire-history";
 import { getQuestionnaireResultsPath } from "@/components/public/sections/questionnaires/analysis-format";
-import { PublicSystemActionLink, PublicSystemScreen } from "@/components/public/system-screen";
+import { PublicSystemScreen } from "@/components/public/system-screen";
 import { i18n } from "@/lib/i18n";
 import {
   getFirstInvalidStepIndex,
@@ -334,16 +335,27 @@ export function PublicQuestionnairePage({
     );
   }
 
-  // One thank-you screen, whether the answers were just sent or on an earlier visit.
   if (phase === "submitted" || phase === "already-submitted" || hasResponded) {
+    const justSubmitted = phase === "submitted";
+    const progress = justSubmitted ? getQuestionnaireProgress(definition, answers) : null;
     return (
-      <PublicSystemScreen
-        code={definition.copy.successTitle}
-        title={questionnaire.title}
-        description={definition.copy.successMessage}
-        actions={
-          <PublicSystemActionLink href={completionHref}>{completionLabel}</PublicSystemActionLink>
+      <QuestionnaireThankYou
+        variant={justSubmitted ? "submitted" : "already"}
+        questionnaireTitle={questionnaire.title}
+        title={justSubmitted ? definition.copy.successTitle : definition.copy.alreadySubmittedTitle}
+        message={
+          justSubmitted ? definition.copy.successMessage : definition.copy.alreadySubmittedMessage
         }
+        receipt={
+          progress && submit.data
+            ? { ...progress, submittedAt: submit.data.submittedAt }
+            : undefined
+        }
+        showResultsNote={definition.steps.some((step) =>
+          step.fields.some((field) => field.publicResults),
+        )}
+        actionHref={completionHref}
+        actionLabel={completionLabel}
       />
     );
   }

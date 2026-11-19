@@ -713,6 +713,103 @@ body {
   }
 }
 
+/* Questionnaire thank-you screen: one-shot entrance, collapsed by the reduced-motion rule below. */
+@keyframes questionnaire-thanks-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes questionnaire-thanks-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes questionnaire-thanks-ring {
+  from {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+
+@keyframes questionnaire-thanks-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes questionnaire-thanks-rule {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes questionnaire-thanks-halo {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.questionnaire-thanks-rise {
+  animation: questionnaire-thanks-rise 560ms var(--easing-standard) both;
+}
+
+.questionnaire-thanks-pop {
+  animation: questionnaire-thanks-pop 520ms var(--easing-standard) both;
+}
+
+.questionnaire-thanks-ring {
+  animation: questionnaire-thanks-ring 900ms ease-out 420ms both;
+}
+
+.questionnaire-thanks-draw {
+  stroke-dasharray: 1;
+  animation: questionnaire-thanks-draw 420ms var(--easing-standard) both;
+}
+
+.questionnaire-thanks-rule {
+  animation: questionnaire-thanks-rule 520ms var(--easing-standard) both;
+}
+
+.questionnaire-thanks-halo {
+  animation: questionnaire-thanks-halo 1200ms var(--easing-standard) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="questionnaire-thanks-"] {
+    animation-delay: 0ms !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 1ms !important;
