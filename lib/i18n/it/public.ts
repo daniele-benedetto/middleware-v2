@@ -393,18 +393,6 @@ export const publicIt = {
     },
     submitting: "Invio in corso...",
     submittingStatus: "Invio del questionario in corso",
-    thankYou: {
-      kicker: "Questionario completato",
-      alreadyKicker: "Risposta già registrata",
-      lead: (title: string) =>
-        `Grazie per aver compilato «${title}» e per il tempo che ci hai dedicato: ogni risposta conta, e la tua è arrivata.`,
-      alreadyLead: (title: string) =>
-        `Hai già compilato «${title}» da questo dispositivo. Grazie ancora per il tuo contributo.`,
-      answersLabel: "Domande a cui hai risposto",
-      submittedAtLabel: "Inviato il",
-      resultsNote:
-        "Quando il questionario sarà chiuso pubblicheremo i risultati aggregati, in forma anonima.",
-    },
   },
   maps: {
     closeItemDetail: "Chiudi dettaglio punto",

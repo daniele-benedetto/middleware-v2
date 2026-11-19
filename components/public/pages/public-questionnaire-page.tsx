@@ -337,23 +337,12 @@ export function PublicQuestionnairePage({
 
   if (phase === "submitted" || phase === "already-submitted" || hasResponded) {
     const justSubmitted = phase === "submitted";
-    const progress = justSubmitted ? getQuestionnaireProgress(definition, answers) : null;
     return (
       <QuestionnaireThankYou
-        variant={justSubmitted ? "submitted" : "already"}
-        questionnaireTitle={questionnaire.title}
         title={justSubmitted ? definition.copy.successTitle : definition.copy.alreadySubmittedTitle}
         message={
           justSubmitted ? definition.copy.successMessage : definition.copy.alreadySubmittedMessage
         }
-        receipt={
-          progress && submit.data
-            ? { ...progress, submittedAt: submit.data.submittedAt }
-            : undefined
-        }
-        showResultsNote={definition.steps.some((step) =>
-          step.fields.some((field) => field.publicResults),
-        )}
         actionHref={completionHref}
         actionLabel={completionLabel}
       />
