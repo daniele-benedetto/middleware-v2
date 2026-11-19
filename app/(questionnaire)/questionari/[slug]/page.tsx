@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { PublicQuestionnairePage } from "@/components/public/pages/public-questionnaire-page";
 import { i18n } from "@/lib/i18n";
 import { getPublicQuestionnairePageData } from "@/lib/public/server/questionnaire-page";
+import { getQuestionnaireResponderStatus } from "@/lib/public/server/questionnaire-responder";
 import { buildPageMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
@@ -29,7 +30,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 async function Content({ params }: Props) {
   const questionnaire = await getPublicQuestionnairePageData((await params).slug);
   if (!questionnaire) notFound();
-  return <PublicQuestionnairePage questionnaire={questionnaire} />;
+  // Resolved on the server: the page is sent already in its final state (thanks or form).
+  const responder = questionnaire.isClosed
+    ? { hasResponded: false, isKnown: true }
+    : await getQuestionnaireResponderStatus(questionnaire.id);
+  return <PublicQuestionnairePage questionnaire={questionnaire} responder={responder} />;
 }
 
 export default function PublicQuestionnaireRoute({ params }: Props) {

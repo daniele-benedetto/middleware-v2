@@ -2,7 +2,10 @@
 
 import { QuestionnaireFieldError } from "@/components/public/questionnaires/questionnaire-field-error";
 import { QuestionnaireFieldInput } from "@/components/public/questionnaires/questionnaire-field-input";
-import { questionnaireHeadingId } from "@/components/public/questionnaires/questionnaire-ui";
+import {
+  questionnaireHeadingId,
+  questionnaireType,
+} from "@/components/public/questionnaires/questionnaire-ui";
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -39,35 +42,30 @@ export function QuestionnaireStepForm({
   onAnswerChange: (id: string, value: unknown) => void;
 }) {
   return (
-    <section
-      aria-labelledby={questionnaireHeadingId}
-      className="border-t-[3px] border-accent bg-card p-5 sm:p-8"
-    >
-      <div className="border-b border-foreground pb-6">
+    <section aria-labelledby={questionnaireHeadingId}>
+      <div className="border-b-2 border-foreground pb-6">
         <h1
           id={questionnaireHeadingId}
           tabIndex={-1}
-          className="font-heading text-[clamp(30px,4vw,48px)] leading-[0.94] font-black tracking-[-0.045em] text-foreground outline-none"
+          className={cn(questionnaireType.stopTitle, "outline-none")}
         >
           {step.title || i18n.public.questionnaire.defaultStepTitle}
         </h1>
         {step.description ? (
-          <p className="mt-4 font-editorial text-[18px] leading-relaxed text-body-text">
-            {step.description}
-          </p>
+          <p className={cn(questionnaireType.body, "mt-4")}>{step.description}</p>
         ) : null}
       </div>
 
       {errorSummary ? (
         <div
           role="alert"
-          className="mt-6 border-l-[3px] border-accent bg-(--ui-error-bg) px-4 py-3 font-ui text-[11px] font-bold tracking-[0.06em] text-accent uppercase"
+          className="mt-6 border-l-[3px] border-accent bg-(--ui-error-bg) px-4 py-3 font-heading text-[15px] leading-snug font-semibold text-accent"
         >
           {errorSummary}
         </div>
       ) : null}
 
-      <div className="divide-y divide-foreground">
+      <div className="divide-y divide-foreground/20">
         {fields.map((field) => {
           const error = errors[field.id];
           const inputId = `question-${field.id}`;
@@ -75,18 +73,27 @@ export function QuestionnaireStepForm({
           const descriptionId = field.description ? `${inputId}-description` : undefined;
           const information = field.type === "information";
           const labelClass = cn(
-            "block font-heading text-[clamp(20px,2.4vw,27px)] leading-[1.05] font-black tracking-[-0.025em]",
+            "block",
+            questionnaireType.question,
             error ? "text-accent" : "text-foreground",
           );
           const labelContent = (
             <>
               {field.label}
-              {field.required ? <span aria-hidden> *</span> : null}
+              {field.required ? (
+                <span aria-hidden className="text-accent">
+                  {" *"}
+                </span>
+              ) : null}
             </>
           );
 
           return (
-            <section className="py-7" key={field.id}>
+            // A question revealed by an earlier answer fades in instead of popping.
+            <section
+              className="py-8 transition-opacity duration-300 starting:opacity-0 motion-reduce:transition-none"
+              key={field.id}
+            >
               {!information ? (
                 <div className="mb-4">
                   {isGroupField(field) ? (
@@ -99,10 +106,7 @@ export function QuestionnaireStepForm({
                     </label>
                   )}
                   {field.description ? (
-                    <p
-                      id={descriptionId}
-                      className="mt-2 font-editorial text-[16px] leading-relaxed text-muted"
-                    >
+                    <p id={descriptionId} className={cn(questionnaireType.help, "mt-1.5")}>
                       {field.description}
                     </p>
                   ) : null}

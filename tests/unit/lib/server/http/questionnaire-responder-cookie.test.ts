@@ -1,5 +1,6 @@
 import {
   ensureQuestionnaireResponder,
+  hashQuestionnaireResponderCookie,
   hashQuestionnaireResponderToken,
   questionnaireResponderCookie,
 } from "@/lib/server/http/questionnaire-responder-cookie";
@@ -23,7 +24,7 @@ describe("questionnaire responder cookie", () => {
 
     expect(responder.tokenHash).toMatch(/^[a-f0-9]{64}$/);
     expect(cookie).toContain(`${questionnaireResponderCookie.name}=`);
-    expect(cookie).toContain("Path=/api/trpc");
+    expect(cookie).toMatch(/Path=\/(;|$)/);
     expect(cookie).toContain("HttpOnly");
     expect(cookie).toContain("SameSite=Lax");
     expect(cookie).toContain(`Max-Age=${questionnaireResponderCookie.maxAgeSeconds}`);
@@ -42,6 +43,23 @@ describe("questionnaire responder cookie", () => {
 
     expect(responder.tokenHash).toBe(hashQuestionnaireResponderToken(token));
     expect(headers.get("set-cookie")).toBeNull();
+  });
+
+  it("re-issues the same token on request and hashes raw cookie values", () => {
+    const token = "b".repeat(43);
+    const headers = new Headers();
+    ensureQuestionnaireResponder(
+      new Request("http://localhost:3000/api/trpc", {
+        headers: { cookie: `${questionnaireResponderCookie.name}=${token}` },
+      }),
+      headers,
+      { refresh: true },
+    );
+
+    expect(headers.get("set-cookie")).toContain(`${questionnaireResponderCookie.name}=${token};`);
+    expect(hashQuestionnaireResponderCookie(token)).toBe(hashQuestionnaireResponderToken(token));
+    expect(hashQuestionnaireResponderCookie("not-a-token")).toBeNull();
+    expect(hashQuestionnaireResponderCookie(undefined)).toBeNull();
   });
 
   it("uses Secure only in production", () => {

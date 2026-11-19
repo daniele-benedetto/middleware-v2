@@ -2,11 +2,14 @@
 
 import { QuestionnaireChoiceInput } from "@/components/public/questionnaires/questionnaire-choice-input";
 import {
+  choiceMarkerClass,
   choiceOptionClass,
   optionFocusClass,
   optionStateClass,
+  questionnaireType,
   textInputClass,
 } from "@/components/public/questionnaires/questionnaire-ui";
+import { i18n } from "@/lib/i18n";
 import { toDateTimeLocalValue, toIsoDateTimeValue } from "@/lib/questionnaires/flow";
 import { cn } from "@/lib/utils";
 
@@ -36,26 +39,42 @@ export function QuestionnaireFieldInput({
 
   if (field.type === "information") {
     return (
-      <p className="font-editorial text-[18px] leading-relaxed text-body-text">
-        {field.description ?? field.label}
-      </p>
+      <div className="border-l-[3px] border-accent pl-4">
+        <p className={cn(questionnaireType.body, "whitespace-pre-line")}>{field.label}</p>
+        {field.description ? (
+          <p className={cn(questionnaireType.help, "mt-1.5 whitespace-pre-line")}>
+            {field.description}
+          </p>
+        ) : null}
+      </div>
     );
   }
 
   if (field.type === "textarea") {
+    const text = typeof value === "string" ? value : "";
     return (
-      <textarea
-        id={inputId}
-        className={cn(inputClass, "min-h-36 resize-y")}
-        value={typeof value === "string" ? value : ""}
-        placeholder={field.placeholder}
-        minLength={field.minLength}
-        maxLength={field.maxLength}
-        required={field.required}
-        aria-invalid={Boolean(error)}
-        aria-describedby={describedBy}
-        onChange={(event) => onChange(event.target.value)}
-      />
+      <div>
+        <textarea
+          id={inputId}
+          className={cn(inputClass, "block min-h-36 resize-y")}
+          value={text}
+          placeholder={field.placeholder}
+          minLength={field.minLength}
+          maxLength={field.maxLength}
+          required={field.required}
+          aria-invalid={Boolean(error)}
+          aria-describedby={describedBy}
+          onChange={(event) => onChange(event.target.value)}
+        />
+        {field.maxLength ? (
+          <p
+            aria-hidden
+            className="mt-1.5 text-right font-heading text-[13px] font-medium text-muted tabular-nums"
+          >
+            {i18n.public.questionnaire.characterCount(text.length, field.maxLength)}
+          </p>
+        ) : null}
+      </div>
     );
   }
 
@@ -67,7 +86,7 @@ export function QuestionnaireFieldInput({
         aria-describedby={describedBy}
         aria-invalid={Boolean(error)}
         aria-required={field.required}
-        className="grid gap-2"
+        className="grid gap-2 sm:grid-cols-2"
       >
         {[
           { value: true, label: field.trueLabel },
@@ -78,7 +97,7 @@ export function QuestionnaireFieldInput({
               id={`${inputId}-${option.value}`}
               type="radio"
               name={field.id}
-              className="size-5 shrink-0 accent-accent"
+              className={choiceMarkerClass}
               checked={value === option.value}
               required={field.required}
               onChange={() => onChange(option.value)}
@@ -93,16 +112,11 @@ export function QuestionnaireFieldInput({
   if (field.type === "consent") {
     return (
       <div role="group" aria-labelledby={labelId}>
-        <label
-          className={cn(
-            "flex cursor-pointer items-start gap-3 border border-foreground bg-card p-4 font-editorial text-[17px] leading-snug text-body-text",
-            optionFocusClass,
-          )}
-        >
+        <label className={cn(choiceOptionClass(value === true), "items-start py-4")}>
           <input
             id={inputId}
             type="checkbox"
-            className="mt-0.5 size-5 shrink-0 accent-accent"
+            className={cn(choiceMarkerClass, "mt-0.5")}
             checked={value === true}
             required={field.required}
             aria-invalid={Boolean(error)}
@@ -145,7 +159,7 @@ export function QuestionnaireFieldInput({
           {options.map((option) => (
             <label
               className={cn(
-                "flex min-h-12 cursor-pointer items-center justify-center border-r border-b font-ui text-sm font-bold transition-colors",
+                "flex min-h-13 cursor-pointer items-center justify-center border-r border-b font-heading text-[17px] font-bold tabular-nums transition-colors",
                 optionFocusClass,
                 optionStateClass(value === option),
               )}
@@ -165,15 +179,13 @@ export function QuestionnaireFieldInput({
           ))}
         </div>
         {field.minLabel || field.maxLabel ? (
-          <div className="mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1 font-ui text-[10px] font-bold tracking-[0.08em] text-muted uppercase">
+          <div className="mt-2.5 flex justify-between gap-4 font-heading text-[14px] leading-snug font-medium text-muted">
             {field.minLabel ? (
-              <span>
-                {options[0]} = {field.minLabel}
-              </span>
+              <span>{i18n.public.questionnaire.scaleEnd(options[0], field.minLabel)}</span>
             ) : null}
             {field.maxLabel ? (
               <span className="ml-auto text-right">
-                {options[options.length - 1]} = {field.maxLabel}
+                {i18n.public.questionnaire.scaleEnd(options[options.length - 1], field.maxLabel)}
               </span>
             ) : null}
           </div>
@@ -219,6 +231,9 @@ export function QuestionnaireFieldInput({
         field.type === "decimal" ? "decimal" : field.type === "integer" ? "numeric" : undefined
       }
       autoComplete={field.type === "email" ? "email" : field.type === "phone" ? "tel" : undefined}
+      autoCapitalize={field.type === "email" || field.type === "url" ? "none" : undefined}
+      spellCheck={field.type === "text" ? undefined : false}
+      enterKeyHint="next"
       required={field.required}
       aria-invalid={Boolean(error)}
       aria-describedby={describedBy}

@@ -71,6 +71,7 @@ Regole SSH:
 - `vm.overcommit_memory=1` e persistito per l'affidabilita Redis.
 - `auditd` e attivo con watch su SSH, sudoers, env/secrets, Compose e Caddy.
 - Build production richiede il plugin `docker-buildx` sulla VPS.
+- I questionari pubblici richiedono `QUESTIONNAIRE_TOKEN_SECRET` in `.env.production`: senza, ogni chiamata `public.questionnaires.*` risponde `500`. Il segreto firma il cookie anonimo che impedisce le risposte doppie: ruotarlo solo a questionari chiusi o prima di raccogliere risposte, perche dopo la rotazione chi ha gia risposto non viene piu riconosciuto.
 
 ## Comandi Base
 

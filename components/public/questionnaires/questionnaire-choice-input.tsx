@@ -4,6 +4,7 @@ import { useEffect, useRef, type RefObject } from "react";
 
 import { QuestionnaireFieldError } from "@/components/public/questionnaires/questionnaire-field-error";
 import {
+  choiceMarkerClass,
   choiceOptionClass,
   textInputClass,
 } from "@/components/public/questionnaires/questionnaire-ui";
@@ -59,6 +60,7 @@ function OtherTextInput({
         aria-required
         aria-invalid={Boolean(errorMessage)}
         aria-describedby={errorMessage ? errorId : undefined}
+        enterKeyHint="next"
         onChange={(event) => onChange(event.target.value)}
       />
       {errorMessage ? <QuestionnaireFieldError id={errorId} message={errorMessage} /> : null}
@@ -134,7 +136,7 @@ export function QuestionnaireChoiceInput({
               id={`${inputId}-${option.id}`}
               type={inputType}
               name={field.id}
-              className="size-5 shrink-0 accent-accent"
+              className={choiceMarkerClass}
               checked={selected}
               required={field.required && !multiple}
               onChange={(event) => toggleOption(option.id, event.target.checked)}
@@ -150,7 +152,7 @@ export function QuestionnaireChoiceInput({
               id={`${inputId}-other`}
               type={inputType}
               name={field.id}
-              className="size-5 shrink-0 accent-accent"
+              className={choiceMarkerClass}
               checked={otherSelected}
               required={field.required && !multiple}
               onChange={(event) => toggleOther(event.target.checked)}

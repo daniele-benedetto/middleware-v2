@@ -38,7 +38,9 @@ export const publicQuestionnairesRouter = router({
   status: publicReadProcedure
     .input(publicQuestionnaireIdInputSchema)
     .query(async ({ ctx, input }) => {
-      const responder = ensureQuestionnaireResponder(ctx.request, ctx.responseHeaders);
+      const responder = ensureQuestionnaireResponder(ctx.request, ctx.responseHeaders, {
+        refresh: true,
+      });
       return parseOutput(
         {
           hasResponded: await questionnaireResponsesService.hasResponded(

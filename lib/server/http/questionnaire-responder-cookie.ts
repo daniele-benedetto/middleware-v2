@@ -37,7 +37,8 @@ function readCookie(request: Request, name: string) {
 function serializeResponderCookie(token: string) {
   const attributes = [
     `${cookieName}=${token}`,
-    "Path=/api/trpc",
+    // Site-wide: the questionnaire page reads it on the server to render the right screen.
+    "Path=/",
     "HttpOnly",
     "SameSite=Lax",
     `Max-Age=${cookieMaxAgeSeconds}`,
@@ -58,15 +59,28 @@ export function hashQuestionnaireResponderToken(token: string) {
   return createHmac("sha256", getTokenSecret()).update(token).digest("hex");
 }
 
-export function ensureQuestionnaireResponder(request: Request, responseHeaders: Headers) {
+/**
+ * `refresh` re-issues the cookie even when the request already carries a valid one: it moves
+ * the cookies issued under the old `/api/trpc` path to the site-wide one, same token.
+ */
+export function ensureQuestionnaireResponder(
+  request: Request,
+  responseHeaders: Headers,
+  options: { refresh?: boolean } = {},
+) {
   const currentToken = readCookie(request, cookieName);
   const token = currentToken && tokenPattern.test(currentToken) ? currentToken : createToken();
 
-  if (token !== currentToken) {
+  if (token !== currentToken || options.refresh) {
     responseHeaders.append("Set-Cookie", serializeResponderCookie(token));
   }
 
   return { tokenHash: hashQuestionnaireResponderToken(token) };
+}
+
+/** Hash of the responder token found in a raw cookie value, or null when it is not a token. */
+export function hashQuestionnaireResponderCookie(value: string | undefined): string | null {
+  return value && tokenPattern.test(value) ? hashQuestionnaireResponderToken(value) : null;
 }
 
 export const questionnaireResponderCookie = {

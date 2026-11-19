@@ -1,13 +1,18 @@
 import { Check } from "lucide-react";
 
-import { PublicBrand } from "@/components/public/header/public-brand";
+import {
+  questionnaireColumnClass,
+  questionnaireType,
+} from "@/components/public/questionnaires/questionnaire-ui";
 import { i18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
+/** One short line that never wraps: the header keeps its height while answers are saved. */
 function DraftStatus({ status }: { status: "idle" | "saving" | "saved" }) {
   const text = i18n.public.questionnaire.draftStatus;
 
   return (
-    <p className="flex items-center gap-1.5 text-right">
+    <p className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
       {status === "saved" ? (
         <>
           <Check className="size-3 shrink-0" aria-hidden />
@@ -22,7 +27,8 @@ function DraftStatus({ status }: { status: "idle" | "saving" | "saved" }) {
 
 /**
  * Sticky header of the form: where the user is ("Sezione X di Y" or the review) and how many
- * of the visible questions have been answered (the progress bar).
+ * of the visible questions have been answered (the progress bar). Its height is fixed: every
+ * line is a single, non-wrapping one, so the page below never moves when its texts change.
  */
 export function QuestionnaireProgressHeader({
   label,
@@ -44,16 +50,13 @@ export function QuestionnaireProgressHeader({
 
   return (
     <header className="sticky top-0 z-40 bg-background">
-      <div className="mx-auto w-full max-w-3xl px-4 pt-3 sm:px-6 sm:pt-5">
-        <div className="flex items-center justify-between gap-4">
-          <PublicBrand eager />
-          <p className="text-right font-heading text-[15px] leading-tight font-black">
-            {label ? (
-              <span className="block font-ui text-[10px] font-bold tracking-[0.08em] text-muted uppercase">
-                {label}
-              </span>
-            ) : null}
+      <div className={cn(questionnaireColumnClass, "pt-3 sm:pt-4")}>
+        <div className="flex h-7 items-center justify-between gap-4">
+          <p className="truncate font-heading text-[15px] leading-none font-extrabold tracking-[-0.01em] text-foreground">
             {position}
+          </p>
+          <p className={cn(questionnaireType.meta, "shrink-0 whitespace-nowrap text-muted")}>
+            {questionProgress}
           </p>
         </div>
         <div
@@ -62,7 +65,7 @@ export function QuestionnaireProgressHeader({
           aria-valuemin={0}
           aria-valuenow={answered}
           aria-valuetext={`${questionProgress} · ${position}`}
-          className="mt-3 h-0.75 bg-foreground/15"
+          className="mt-2 h-1 bg-foreground/15"
           role="progressbar"
         >
           <div
@@ -70,11 +73,11 @@ export function QuestionnaireProgressHeader({
             style={{ width: `${percentage}%` }}
           />
         </div>
-        <div className="mt-1.5 flex min-h-4 items-start justify-between gap-4 font-ui text-[10px] font-bold tracking-[0.08em] text-muted uppercase">
-          <p>{questionProgress}</p>
+        <div className={cn(questionnaireType.meta, "flex h-7 items-center justify-end text-muted")}>
           <DraftStatus status={draftStatus} />
         </div>
       </div>
+      <div className="border-b border-foreground/15" />
     </header>
   );
 }

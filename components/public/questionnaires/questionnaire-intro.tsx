@@ -1,11 +1,17 @@
 import { ArrowRight, Clock3, RotateCcw } from "lucide-react";
 
-import { PublicBrand } from "@/components/public/header/public-brand";
 import { PublicLink } from "@/components/public/public-link";
-import { isSafeHref, primaryCtaClass } from "@/components/public/questionnaires/questionnaire-ui";
+import {
+  isSafeHref,
+  primaryCtaClass,
+  questionnaireColumnClass,
+  questionnaireType,
+  secondaryCtaClass,
+} from "@/components/public/questionnaires/questionnaire-ui";
 import { PublicRichText } from "@/components/public/rich-text";
 import { i18n } from "@/lib/i18n";
 import { getEstimatedMinutes } from "@/lib/questionnaires/flow";
+import { cn } from "@/lib/utils";
 
 import type { PublicQuestionnaireDto } from "@/lib/server/modules/questionnaires/dto/public";
 
@@ -26,7 +32,10 @@ function QuestionnaireIntroActions({
     return (
       <p
         role="status"
-        className="mt-8 inline-flex min-h-12 items-center border border-border px-5 py-3 font-ui text-[12px] font-bold tracking-[0.08em] text-muted uppercase"
+        className={cn(
+          questionnaireType.button,
+          "mt-8 inline-flex min-h-12 items-center border border-border px-5 py-3 text-muted",
+        )}
       >
         {text.loading}
       </p>
@@ -47,20 +56,14 @@ function QuestionnaireIntroActions({
   return (
     <div className="mt-8">
       {resumeMessage ? (
-        <p className="mb-4 max-w-[52ch] font-editorial text-[18px] leading-relaxed text-body-text">
-          {resumeMessage}
-        </p>
+        <p className={cn(questionnaireType.body, "mb-4 max-w-[52ch]")}>{resumeMessage}</p>
       ) : null}
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3">
         <button type="button" className={primaryCtaClass} onClick={() => onStart(true)}>
           <RotateCcw className="size-4" aria-hidden />
           {text.resumeCta}
         </button>
-        <button
-          type="button"
-          className="inline-flex min-h-12 items-center gap-2 border border-foreground px-5 py-3 font-ui text-[12px] font-bold tracking-[0.08em] text-foreground uppercase transition-colors hover:bg-surface-hover focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-accent"
-          onClick={() => onStart(false)}
-        >
+        <button type="button" className={secondaryCtaClass} onClick={() => onStart(false)}>
           {text.restartCta}
         </button>
       </div>
@@ -71,17 +74,17 @@ function QuestionnaireIntroActions({
 function QuestionnairePrivacyNotice({ notice, href }: { notice?: string; href?: string }) {
   const safeHref = isSafeHref(href) ? href : null;
   if (!notice && !safeHref) return null;
-  const external = safeHref ? !safeHref.startsWith("/") : false;
 
   return (
-    <p className="mt-10 max-w-[60ch] font-editorial text-[16px] leading-relaxed whitespace-pre-line text-muted">
+    <p className={cn(questionnaireType.help, "mt-8 max-w-[60ch] whitespace-pre-line")}>
       {notice}
       {notice && safeHref ? " " : null}
       {safeHref ? (
         <PublicLink
           href={safeHref}
-          target={external ? "_blank" : undefined}
-          rel={external ? "noopener noreferrer" : undefined}
+          // Always a new tab: reading the policy must not lose the questionnaire.
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-accent underline underline-offset-3 hover:text-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           {i18n.public.questionnaire.privacyLinkLabel}
@@ -120,41 +123,39 @@ export function QuestionnaireIntro({
       tabIndex={-1}
       className="flex flex-1 bg-background py-10 focus:outline-none sm:py-16"
     >
-      <section className="mx-auto w-full max-w-3xl px-4 sm:px-6">
-        <div className="mb-6">
-          <PublicBrand eager />
-        </div>
-        <div className="border-t-[3px] border-accent bg-card p-6 sm:p-10" data-page-reveal="body">
-          <h1 className="max-w-[13ch] font-heading text-[clamp(42px,7vw,82px)] leading-[0.86] font-black tracking-[-0.06em] text-foreground">
+      <section className={questionnaireColumnClass}>
+        <div data-page-reveal="body">
+          <h1 className="max-w-[14ch] font-heading text-[clamp(40px,9vw,72px)] leading-[0.9] font-black tracking-[-0.05em] text-foreground">
             {questionnaire.title}
           </h1>
           {questionnaire.descriptionRich ? (
             <PublicRichText value={questionnaire.descriptionRich} className="mt-8 max-w-[60ch]" />
           ) : null}
           {definition.copy.introduction ? (
-            <p className="mt-8 max-w-[60ch] font-editorial text-[20px] leading-relaxed whitespace-pre-line text-body-text">
+            <p className="mt-8 max-w-[60ch] font-editorial text-[clamp(18px,2.4vw,20px)] leading-[1.55] whitespace-pre-line text-body-text">
               {definition.copy.introduction}
             </p>
           ) : null}
-          <div className="mt-10 grid border-l border-t border-foreground sm:grid-cols-3">
+          <dl className="mt-10 grid grid-cols-3 divide-x divide-foreground/25 border-y border-foreground/25">
             {stats.map((stat) => (
-              <div className="border-r border-b border-foreground p-4" key={stat.label}>
-                <p className="font-ui text-[10px] font-bold tracking-[0.08em] text-muted uppercase">
-                  {stat.label}
-                </p>
-                <p className="mt-2 font-heading text-3xl leading-none font-black">{stat.value}</p>
+              <div className="px-4 py-4 first:pl-0" key={stat.label}>
+                <dt className={cn(questionnaireType.meta, "text-muted")}>{stat.label}</dt>
+                <dd className="mt-2 font-heading text-[28px] leading-none font-black tabular-nums">
+                  {stat.value}
+                </dd>
               </div>
             ))}
-            <div className="border-r border-b border-foreground p-4">
-              <p className="font-ui text-[10px] font-bold tracking-[0.08em] text-muted uppercase">
+            <div className="px-4 py-4">
+              <dt className={cn(questionnaireType.meta, "text-muted")}>
                 {text.stats.estimatedTimeLabel}
-              </p>
-              <p className="mt-2 flex items-center gap-2 font-heading text-3xl leading-none font-black">
-                <Clock3 className="size-5 text-accent" aria-hidden />
-                {estimatedMinutes} {text.stats.minutes}
-              </p>
+              </dt>
+              <dd className="mt-2 flex items-center gap-1.5 font-heading text-[28px] leading-none font-black tabular-nums">
+                <Clock3 className="size-4 shrink-0 text-accent" aria-hidden />
+                {estimatedMinutes}
+                <span className="text-[15px] font-bold">{text.stats.minutes}</span>
+              </dd>
             </div>
-          </div>
+          </dl>
           <QuestionnairePrivacyNotice
             notice={definition.copy.privacyNotice}
             href={definition.copy.privacyUrl}

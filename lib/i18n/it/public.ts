@@ -360,13 +360,15 @@ export const publicIt = {
     closedResultsCta: "Vedi i risultati",
     privacyLinkLabel: "Leggi l'informativa sulla privacy",
     draftStatus: {
-      saving: "Salvataggio in corso",
-      saved: "Risposte salvate su questo dispositivo",
+      saving: "Salvataggio…",
+      saved: "Salvato",
     },
+    characterCount: (current: number, maximum: number) => `${current} / ${maximum}`,
+    scaleEnd: (value: number, label: string) => `${value} · ${label}`,
     stats: {
       stepsLabel: "Step",
       questionsLabel: "Domande",
-      estimatedTimeLabel: "Tempo stimato",
+      estimatedTimeLabel: "Durata",
       minutes: "min",
     },
     resumeCta: "Riprendi le risposte",

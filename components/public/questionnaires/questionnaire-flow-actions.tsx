@@ -1,6 +1,16 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
-/** Sticky footer of the form: the "back" button and the primary (submit) button of the stop. */
+import {
+  primaryCtaClass,
+  questionnaireColumnClass,
+  secondaryCtaClass,
+} from "@/components/public/questionnaires/questionnaire-ui";
+import { cn } from "@/lib/utils";
+
+/**
+ * Footer of the form: the "back" button and the primary (submit) button of the stop, always on
+ * one row, stuck to the bottom of the screen.
+ */
 export function QuestionnaireFlowActions({
   backLabel,
   backDisabled,
@@ -17,25 +27,32 @@ export function QuestionnaireFlowActions({
   onBack: () => void;
 }) {
   return (
-    <div className="sticky bottom-0 z-30 -mx-4 mt-8 flex flex-col-reverse gap-3 border-t-2 border-foreground bg-background px-4 py-4 sm:-mx-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
-      <button
-        type="button"
-        disabled={backDisabled}
-        className="inline-flex min-h-11 w-full items-center justify-center gap-2 border border-foreground px-4 py-2.5 font-ui text-[11px] font-bold tracking-[0.08em] text-foreground uppercase transition-colors hover:bg-surface-hover disabled:border-border disabled:text-muted sm:w-auto"
-        onClick={onBack}
+    <div className="sticky bottom-0 z-30 mt-10 border-t border-foreground bg-background">
+      <div
+        className={cn(
+          questionnaireColumnClass,
+          "flex items-center gap-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        )}
       >
-        <ArrowLeft className="size-4" aria-hidden />
-        {backLabel}
-      </button>
-      <button
-        type="submit"
-        disabled={primaryDisabled}
-        className="inline-flex min-h-11 w-full items-center justify-center gap-2 bg-foreground px-5 py-2.5 font-ui text-[11px] font-bold tracking-[0.08em] text-background uppercase transition-colors hover:bg-accent disabled:bg-muted sm:w-auto"
-        aria-describedby={primaryDescribedBy}
-      >
-        {primaryLabel}
-        <ArrowRight className="size-4" aria-hidden />
-      </button>
+        <button
+          type="button"
+          disabled={backDisabled}
+          className={cn(secondaryCtaClass, "shrink-0 px-4")}
+          onClick={onBack}
+        >
+          <ArrowLeft className="size-4" aria-hidden />
+          {backLabel}
+        </button>
+        <button
+          type="submit"
+          disabled={primaryDisabled}
+          className={cn(primaryCtaClass, "min-w-0 flex-1 sm:ml-auto sm:flex-none sm:px-8")}
+          aria-describedby={primaryDescribedBy}
+        >
+          <span className="truncate">{primaryLabel}</span>
+          <ArrowRight className="size-4 shrink-0" aria-hidden />
+        </button>
+      </div>
     </div>
   );
 }

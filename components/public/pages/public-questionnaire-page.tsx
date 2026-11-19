@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import { PublicLink } from "@/components/public/public-link";
-import { QuestionnaireFinishScreen } from "@/components/public/questionnaires/questionnaire-finish-screen";
+import { focusNextControlOnEnter } from "@/components/public/questionnaires/focus-next-control";
 import { QuestionnaireFlowActions } from "@/components/public/questionnaires/questionnaire-flow-actions";
 import { QuestionnaireIntro } from "@/components/public/questionnaires/questionnaire-intro";
 import { QuestionnaireProgressHeader } from "@/components/public/questionnaires/questionnaire-progress-header";
@@ -11,6 +11,7 @@ import { QuestionnaireReview } from "@/components/public/questionnaires/question
 import { QuestionnaireStepForm } from "@/components/public/questionnaires/questionnaire-step-form";
 import {
   isSafeHref,
+  questionnaireColumnClass,
   questionnaireHeadingId,
 } from "@/components/public/questionnaires/questionnaire-ui";
 import { useQuestionnaireDraft } from "@/components/public/questionnaires/use-questionnaire-draft";
@@ -19,7 +20,7 @@ import {
   useQuestionnaireHistoryTraversal,
 } from "@/components/public/questionnaires/use-questionnaire-history";
 import { getQuestionnaireResultsPath } from "@/components/public/sections/questionnaires/analysis-format";
-import { PublicSystemScreen } from "@/components/public/system-screen";
+import { PublicSystemActionLink, PublicSystemScreen } from "@/components/public/system-screen";
 import { i18n } from "@/lib/i18n";
 import {
   getFirstInvalidStepIndex,
@@ -31,7 +32,9 @@ import {
   normalizeAnswersForSubmission,
 } from "@/lib/questionnaires/flow";
 import { trpc } from "@/lib/trpc/react";
+import { cn } from "@/lib/utils";
 
+import type { QuestionnaireResponderStatus } from "@/lib/public/server/questionnaire-responder";
 import type {
   QuestionnaireAnswerError,
   QuestionnaireAnswerValues,
@@ -69,8 +72,11 @@ function prefersReducedMotion() {
 
 export function PublicQuestionnairePage({
   questionnaire,
+  responder,
 }: {
   questionnaire: PublicQuestionnaireDto;
+  /** Whether the visitor already answered, resolved on the server. */
+  responder: QuestionnaireResponderStatus;
 }) {
   const { definition } = questionnaire;
   const text = i18n.public.questionnaire;
@@ -92,7 +98,13 @@ export function PublicQuestionnairePage({
   const { clear: clearDraft, isHydrated: isDraftHydrated } = draft;
   const responderStatus = trpc.public.questionnaires.status.useQuery(
     { questionnaireId: questionnaire.id },
-    { enabled: !questionnaire.isClosed, staleTime: Number.POSITIVE_INFINITY },
+    {
+      enabled: !questionnaire.isClosed,
+      // The server already answered: no request, and the right screen from the first paint.
+      // When it could not tell (no cookie on the page request) the API is asked once.
+      initialData: { hasResponded: responder.hasResponded },
+      staleTime: responder.isKnown ? Number.POSITIVE_INFINITY : 0,
+    },
   );
   const hasResponded = responderStatus.data?.hasResponded === true;
 
@@ -322,24 +334,16 @@ export function PublicQuestionnairePage({
     );
   }
 
-  if (phase === "submitted") {
+  // One thank-you screen, whether the answers were just sent or on an earlier visit.
+  if (phase === "submitted" || phase === "already-submitted" || hasResponded) {
     return (
-      <QuestionnaireFinishScreen
-        title={definition.copy.successTitle}
-        message={definition.copy.successMessage}
-        actionLabel={completionLabel}
-        actionHref={completionHref}
-      />
-    );
-  }
-
-  if (phase === "already-submitted" || hasResponded) {
-    return (
-      <QuestionnaireFinishScreen
-        title={definition.copy.alreadySubmittedTitle}
-        message={definition.copy.alreadySubmittedMessage}
-        actionLabel={completionLabel}
-        actionHref={completionHref}
+      <PublicSystemScreen
+        code={definition.copy.successTitle}
+        title={questionnaire.title}
+        description={definition.copy.successMessage}
+        actions={
+          <PublicSystemActionLink href={completionHref}>{completionLabel}</PublicSystemActionLink>
+        }
       />
     );
   }
@@ -348,7 +352,7 @@ export function PublicQuestionnairePage({
     return (
       <QuestionnaireIntro
         questionnaire={questionnaire}
-        isLoading={responderStatus.isLoading || !draft.isHydrated}
+        isLoading={!draft.isHydrated}
         hasDraft={started ? Object.keys(answers).length > 0 : draft.restoredDraft !== null}
         onStart={start}
       />
@@ -379,15 +383,17 @@ export function PublicQuestionnairePage({
         total={progress.total}
         draftStatus={draft.status}
       />
-      <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-        <form
-          noValidate
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (currentStep) next();
-            else void submitAnswers();
-          }}
-        >
+      <form
+        noValidate
+        className="flex flex-1 flex-col"
+        onKeyDown={focusNextControlOnEnter}
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (currentStep) next();
+          else void submitAnswers();
+        }}
+      >
+        <div className={cn(questionnaireColumnClass, "flex-1 pt-8 sm:pt-12")}>
           {currentStep ? (
             <QuestionnaireStepForm
               step={currentStep.step}
@@ -407,24 +413,24 @@ export function PublicQuestionnairePage({
           {submitError ? (
             <p
               role="alert"
-              className="mt-5 border-l-[3px] border-accent bg-(--ui-error-bg) px-4 py-3 font-ui text-[11px] font-bold tracking-[0.06em] text-accent uppercase"
+              className="mt-6 border-l-[3px] border-accent bg-(--ui-error-bg) px-4 py-3 font-heading text-[15px] leading-snug font-semibold text-accent"
             >
               {submitError}
             </p>
           ) : null}
-          <QuestionnaireFlowActions
-            backLabel={definition.copy.backLabel}
-            backDisabled={!previousStep || submit.isPending}
-            primaryLabel={primaryLabel}
-            primaryDisabled={submit.isPending}
-            primaryDescribedBy={`${pageId}-submit-status`}
-            onBack={goBack}
-          />
-          <p id={`${pageId}-submit-status`} className="sr-only" aria-live="polite">
-            {submit.isPending ? text.submittingStatus : ""}
-          </p>
-        </form>
-      </div>
+        </div>
+        <QuestionnaireFlowActions
+          backLabel={definition.copy.backLabel}
+          backDisabled={!previousStep || submit.isPending}
+          primaryLabel={primaryLabel}
+          primaryDisabled={submit.isPending}
+          primaryDescribedBy={`${pageId}-submit-status`}
+          onBack={goBack}
+        />
+        <p id={`${pageId}-submit-status`} className="sr-only" aria-live="polite">
+          {submit.isPending ? text.submittingStatus : ""}
+        </p>
+      </form>
     </main>
   );
 }
