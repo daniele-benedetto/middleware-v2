@@ -19,6 +19,7 @@ import {
 } from "@/features/cms/questionnaires/utils/response-format";
 import { mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
+import { resolveQuestionnaireLogic } from "@/lib/server/modules/questionnaires/schema/definition";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +57,9 @@ function ResponseAnswersLoading() {
 }
 
 function ResponseAnswers({ detail }: { detail: ResponseDetail }) {
+  // Tells "not shown to this respondent" (conditional logic) from "shown and left empty".
+  const { visibleFieldIds } = resolveQuestionnaireLogic(detail.definitionSnapshot, detail.answers);
+
   return (
     <div className="space-y-6">
       {detail.definitionSnapshot.steps.map((step, stepIndex) => (
@@ -76,9 +80,13 @@ function ResponseAnswers({ detail }: { detail: ResponseDetail }) {
                   {field.label}
                 </dt>
                 <dd className="mt-1 font-editorial text-[16px] whitespace-pre-wrap text-foreground">
-                  {field.type === "information"
-                    ? text.answerSelected
-                    : formatResponseAnswer(detail.answers[field.id], field, text)}
+                  {!visibleFieldIds.has(field.id) ? (
+                    <span className="text-muted-foreground">{text.answerNotShown}</span>
+                  ) : field.type === "information" ? (
+                    text.answerSelected
+                  ) : (
+                    formatResponseAnswer(detail.answers[field.id], field, text)
+                  )}
                 </dd>
               </div>
             ))}

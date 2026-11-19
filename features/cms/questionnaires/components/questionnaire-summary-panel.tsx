@@ -1,17 +1,25 @@
 "use client";
 
+import { keepPreviousData } from "@tanstack/react-query";
+import { useState, type ComponentProps, type ReactNode } from "react";
+
 import { CmsEmptyState, CmsErrorState } from "@/components/cms/common";
 import { CmsBadge, CmsEyebrow, CmsHeading, CmsSurface } from "@/components/cms/primitives";
 import { QuestionnaireSummaryLoading } from "@/features/cms/questionnaires/components/questionnaire-list-loading";
 import { QuestionnaireResponsesTimelineChart } from "@/features/cms/questionnaires/components/questionnaire-responses-timeline-chart";
+import { QuestionnaireRuleEditor } from "@/features/cms/questionnaires/components/questionnaire-rule-editor";
 import { QuestionnaireSummaryFieldCard } from "@/features/cms/questionnaires/components/questionnaire-summary-field-card";
+import { useQuestionnaireById } from "@/features/cms/questionnaires/hooks/use-questionnaire-crud";
 import { formatResponseDateTime } from "@/features/cms/questionnaires/utils/response-format";
 import { mapTrpcErrorToCmsUiMessage } from "@/lib/cms/trpc";
 import { i18n } from "@/lib/i18n";
+import {
+  listQuestionnaireRuleSourceFields,
+  type QuestionnaireRule,
+} from "@/lib/server/modules/questionnaires/schema/definition";
 import { trpc } from "@/lib/trpc/react";
 
 import type { QuestionnaireSummaryInitialData } from "@/features/cms/shared/types/initial-data";
-import type { ComponentProps, ReactNode } from "react";
 
 type Summary = QuestionnaireSummaryInitialData;
 type SummaryField = Summary["fields"][number];
@@ -23,6 +31,7 @@ type StepGroup = {
 };
 
 const text = i18n.cms.lists.questionnaires.responses.summary;
+const ruleText = i18n.cms.forms.resources.questionnaires.rules;
 const numberFormatter = new Intl.NumberFormat("it-IT");
 
 const statusBadgeVariants: Record<Summary["status"], ComponentProps<typeof CmsBadge>["variant"]> = {
@@ -110,7 +119,18 @@ export function QuestionnaireSummaryPanel({
   initialData?: Summary;
   onOpenResponse: (responseId: string) => void;
 }) {
-  const query = trpc.questionnaires.getSummary.useQuery({ id: questionnaireId }, { initialData });
+  const [filter, setFilter] = useState<QuestionnaireRule>();
+  const query = trpc.questionnaires.getSummary.useQuery(
+    { id: questionnaireId, filter },
+    // The server-rendered summary is the unfiltered one; keep the previous one while a new
+    // filter loads so the page does not collapse into a skeleton at every change.
+    { initialData: filter ? undefined : initialData, placeholderData: keepPreviousData },
+  );
+  // The filter can reference any question: their definition comes with the questionnaire.
+  const questionnaire = useQuestionnaireById(questionnaireId);
+  const filterSources = questionnaire.data
+    ? listQuestionnaireRuleSourceFields(questionnaire.data.definition, { kind: "all" })
+    : [];
 
   if (query.isPending) return <QuestionnaireSummaryLoading />;
   if (query.isError) {
@@ -130,10 +150,40 @@ export function QuestionnaireSummaryPanel({
   return (
     <div className="space-y-6 pb-6">
       {summary.status === "PUBLISHED" ? <PartialResultsNote /> : null}
+      {summary.totalResponseCount > 0 && filterSources.length > 0 ? (
+        <CmsSurface as="section" className="grid gap-2">
+          <QuestionnaireRuleEditor
+            id={`${questionnaireId}-summary-filter`}
+            rule={filter}
+            sources={filterSources}
+            disabled={false}
+            text={ruleText.filter}
+            onChange={setFilter}
+          />
+          {filter ? (
+            <p
+              data-testid="summary-filter-count"
+              className="font-ui text-[12px] font-bold text-foreground"
+            >
+              {text.filteredResponses(
+                numberFormatter.format(summary.responseCount),
+                numberFormatter.format(summary.totalResponseCount),
+              )}
+            </p>
+          ) : null}
+        </CmsSurface>
+      ) : null}
       <SummaryTotals summary={summary} />
       {summary.responseCount === 0 ? (
         <CmsSurface>
-          <CmsEmptyState title={text.emptyTitle} description={text.emptyDescription} />
+          {filter ? (
+            <CmsEmptyState
+              title={text.filterEmptyTitle}
+              description={text.filterEmptyDescription}
+            />
+          ) : (
+            <CmsEmptyState title={text.emptyTitle} description={text.emptyDescription} />
+          )}
         </CmsSurface>
       ) : (
         <>

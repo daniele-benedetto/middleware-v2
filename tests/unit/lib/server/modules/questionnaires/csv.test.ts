@@ -168,13 +168,13 @@ describe("createQuestionnaireResponsesCsv: Altro and conditional fields", () => 
     expect(lines[1]).not.toContain("[object Object]");
   });
 
-  it("leaves the cell of a hidden field empty and keeps old answers unchanged", () => {
+  it("marks the cell of a hidden field as not shown and keeps old answers unchanged", () => {
     const lines = createQuestionnaireResponsesCsv([
       row("00000000-0000-4000-8000-000000000021", { [fieldId]: { other: "Tre" } }),
       row("00000000-0000-4000-8000-000000000022", { [fieldId]: optionId, [detailId]: "Visibile" }),
     ]).split("\r\n");
 
-    expect(lines[1]?.endsWith('"Altro: Tre","",""')).toBe(true);
+    expect(lines[1]?.endsWith('"Altro: Tre","","(non mostrata)"')).toBe(true);
     expect(lines[2]?.endsWith('"Uno","","Visibile"')).toBe(true);
   });
 });

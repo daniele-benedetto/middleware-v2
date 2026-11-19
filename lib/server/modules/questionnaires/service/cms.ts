@@ -17,6 +17,7 @@ import {
 } from "@/lib/server/modules/questionnaires/schema";
 import {
   createResponsesTimeline,
+  filterResponsesByRule,
   findQuestionnaireField,
   isFreeTextQuestionnaireField,
   listFreeTextFieldAnswers,
@@ -32,6 +33,7 @@ import type {
   ListQuestionnairesQuery,
   UpdateQuestionnaireInput,
 } from "@/lib/server/modules/questionnaires/schema";
+import type { QuestionnaireRule } from "@/lib/server/modules/questionnaires/schema/definition";
 
 type CmsQuestionnaireRecord = {
   id: string;
@@ -210,17 +212,22 @@ export const cmsQuestionnairesService = {
    * Aggregates over the current definition: the structure (everything but `copy`) is locked
    * by `update` once `firstResponseAt` is set, so every response snapshot has the same fields.
    */
-  async getSummary(id: string) {
+  /**
+   * `filter` keeps only the responses whose answers satisfy the rule (any field of the
+   * definition can be referenced), to read the results of a group of respondents.
+   */
+  async getSummary(id: string, filter?: QuestionnaireRule) {
     const record = await cmsQuestionnairesRepository.getWithResponsesForResults(id);
     if (!record) throw new ApiError(404, "NOT_FOUND", "Questionnaire not found");
     const definition = questionnaireDefinitionSchema.parse(record.definition);
-    const { responses } = record;
+    const responses = filterResponsesByRule(definition, record.responses, filter);
     return {
       id: record.id,
       status: record.status,
       publishedAt: record.publishedAt?.toISOString() ?? null,
       closedAt: record.closedAt?.toISOString() ?? null,
       responseCount: responses.length,
+      totalResponseCount: record.responses.length,
       firstResponseAt: responses[0]?.submittedAt.toISOString() ?? null,
       lastResponseAt: responses.at(-1)?.submittedAt.toISOString() ?? null,
       timeline: createResponsesTimeline(responses.map((response) => response.submittedAt)),

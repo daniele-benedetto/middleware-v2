@@ -6,7 +6,10 @@ import {
   questionnaireHomeVariantSchema,
   publicVisualizationSchema,
 } from "@/lib/server/modules/questionnaires/schema";
-import { choiceResultsOrderSchema } from "@/lib/server/modules/questionnaires/schema/definition";
+import {
+  choiceResultsOrderSchema,
+  questionnaireConditionOperatorSchema,
+} from "@/lib/server/modules/questionnaires/schema/definition";
 
 export const publicQuestionnaireDtoSchema = z.object({
   id: z.string().uuid(),
@@ -76,6 +79,34 @@ export const publicQuestionnaireResultsDtoSchema = z.array(
   ]),
 );
 
+const describedConditionDtoSchema = z.object({
+  fieldLabel: z.string(),
+  operator: questionnaireConditionOperatorSchema,
+  /** How `values` must be formatted; `consent` carries `1` (given) or `0` (not given). */
+  valueKind: z.enum(["none", "text", "number", "date", "datetime", "consent"]),
+  values: z.array(z.union([z.string(), z.number()])),
+});
+
+export const questionnaireDescribedRuleDtoSchema = z.object({
+  match: z.enum(["all", "any"]),
+  conditions: z.array(describedConditionDtoSchema),
+});
+
+/** Who a conditional field was shown to. */
+export const questionnaireFieldAudienceDtoSchema = z.object({
+  /** Responses the field was shown to. */
+  shownCount: z.number().int().nonnegative(),
+  /** Responses considered. */
+  totalCount: z.number().int().nonnegative(),
+  /** Rules that must ALL hold for the field to be shown, labels already resolved. */
+  rules: z.array(questionnaireDescribedRuleDtoSchema),
+  /**
+   * Rules of the earlier steps that END the questionnaire (`endWhen`): the field is not shown
+   * to the respondents who satisfied any of them.
+   */
+  endRules: z.array(questionnaireDescribedRuleDtoSchema).optional(),
+});
+
 const publicAnalysisFieldBaseSchema = z.object({
   id: z.string().uuid(),
   label: z.string(),
@@ -91,7 +122,10 @@ const publicAnalysisFieldBaseSchema = z.object({
     "datetime",
   ]),
   responseCount: z.number().int().nonnegative(),
+  /** Responses without an answer, the ones the field was not shown to included. */
   missingCount: z.number().int().nonnegative(),
+  /** Present only for conditional fields; absent means "shown to every respondent". */
+  audience: questionnaireFieldAudienceDtoSchema.optional(),
   visualization: publicVisualizationSchema,
 });
 
@@ -199,3 +233,5 @@ export const publicQuestionnaireAnalysisDtoSchema = z.object({
 
 export type PublicQuestionnaireDto = z.infer<typeof publicQuestionnaireDtoSchema>;
 export type PublicQuestionnaireAnalysisDto = z.infer<typeof publicQuestionnaireAnalysisDtoSchema>;
+export type QuestionnaireFieldAudienceDto = z.infer<typeof questionnaireFieldAudienceDtoSchema>;
+export type QuestionnaireDescribedRuleDto = z.infer<typeof questionnaireDescribedRuleDtoSchema>;

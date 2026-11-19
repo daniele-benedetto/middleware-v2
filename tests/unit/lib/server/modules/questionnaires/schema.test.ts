@@ -445,10 +445,10 @@ describe("questionnaire conditional fields (visibleWhen)", () => {
   it("lists the earlier eligible fields and builds a default condition", () => {
     expect(
       listQuestionnaireConditionSourceFields(parsed, logicIds.newsDetail).map((field) => field.id),
-    ).toEqual([logicIds.hasPet, logicIds.petKind, logicIds.topics]);
+    ).toEqual([logicIds.hasPet, logicIds.petKind, logicIds.dogName, logicIds.topics]);
     expect(listQuestionnaireConditionSourceFields(parsed, logicIds.hasPet)).toEqual([]);
 
-    const [hasPet, petKind, topics] = listQuestionnaireConditionSourceFields(
+    const [hasPet, petKind, dogName, topics] = listQuestionnaireConditionSourceFields(
       parsed,
       logicIds.newsDetail,
     );
@@ -459,10 +459,14 @@ describe("questionnaire conditional fields (visibleWhen)", () => {
     });
     expect(createQuestionnaireCondition(petKind!)?.value).toBe(logicIds.dog);
     expect(createQuestionnaireCondition(topics!)?.operator).toBe("includes");
-    expect(getQuestionnaireConditionOperators(parsed.steps[1]!.fields[3]!)).toEqual([
-      "equals",
-      "notEquals",
-    ]);
+    // Free text can only be checked for presence, so its default condition has no value.
+    expect(createQuestionnaireCondition(dogName!)).toEqual({
+      fieldId: logicIds.dogName,
+      operator: "answered",
+    });
+    expect(getQuestionnaireConditionOperators(parsed.steps[1]!.fields[3]!)).toEqual(
+      expect.arrayContaining(["equals", "notEquals", "greaterThan", "lessThanOrEqual", "between"]),
+    );
   });
 
   it("clears conditions that became dangling or forward, leaving valid ones untouched", () => {

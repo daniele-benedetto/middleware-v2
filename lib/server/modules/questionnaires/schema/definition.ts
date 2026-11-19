@@ -1,5 +1,19 @@
 import { z } from "zod";
 
+import {
+  forEachQuestionnaireRule,
+  getQuestionnaireRuleIssues,
+  getQuestionnaireRulePath,
+  isQuestionnaireScaleValue,
+  QUESTIONNAIRE_OTHER_OPTION_ID,
+  questionnaireRuleSchema,
+  resolveQuestionnaireLogic,
+} from "@/lib/server/modules/questionnaires/schema/logic";
+
+import type { QuestionnaireOtherAnswer } from "@/lib/server/modules/questionnaires/schema/logic";
+
+export * from "@/lib/server/modules/questionnaires/schema/logic";
+
 const fieldIdSchema = z.string().uuid();
 const copyTextSchema = z.string().trim();
 const dateSchema = z.iso.date();
@@ -27,35 +41,23 @@ export const questionnaireCopySchema = z.object({
   completionCtaHref: copyTextSchema.optional(),
 });
 
-/**
- * Conditional visibility: the field is shown only when the answer of an EARLIER field
- * (boolean, singleChoice, multipleChoice or scale) satisfies the condition.
- * - boolean: `equals` / `notEquals` with a boolean value
- * - singleChoice: `equals` / `notEquals` with an option id of the controlling field
- * - scale: `equals` / `notEquals` with a number inside the scale range
- * - multipleChoice: `includes` with an option id of the controlling field
- * A condition is never satisfied while the controlling field is hidden or unanswered,
- * whatever the operator. Cross-field consistency is validated by the definition schema.
- */
-export const questionnaireFieldConditionSchema = z.object({
-  fieldId: fieldIdSchema,
-  operator: z.enum(["equals", "notEquals", "includes"]),
-  value: z.union([z.boolean(), z.number().finite(), z.string().uuid()]),
-});
-
 const fieldBaseSchema = z.object({
   id: fieldIdSchema,
   label: copyTextSchema,
   description: copyTextSchema.optional(),
   required: z.boolean().default(false),
   publicResults: z.boolean().default(false),
-  /** Absent means "always visible". */
-  visibleWhen: questionnaireFieldConditionSchema.optional(),
+  /** Absent means "always visible". See `schema/logic.ts`. */
+  visibleWhen: questionnaireRuleSchema.optional(),
+  /** The field is mandatory while this rule is satisfied, on top of `required`. */
+  requiredWhen: questionnaireRuleSchema.optional(),
 });
 
 const choiceOptionSchema = z.object({
   id: fieldIdSchema,
   label: copyTextSchema,
+  /** The option is offered only while this rule is satisfied. Absent means "always". */
+  visibleWhen: questionnaireRuleSchema.optional(),
 });
 
 const textFieldSchema = fieldBaseSchema.extend({
@@ -136,12 +138,6 @@ const contactFieldSchema = fieldBaseSchema.extend({
  */
 export const choiceResultsOrderSchema = z.enum(["frequency", "definition"]);
 
-/**
- * Id of the synthetic "Altro" option in aggregates (analysis, public results).
- * It is never stored in answers (the free text travels as `{ other: string }`) and can never be
- * the id of an authored option.
- */
-export const QUESTIONNAIRE_OTHER_OPTION_ID = "ffffffff-ffff-4fff-8fff-ffffffffffff";
 export const QUESTIONNAIRE_OTHER_DEFAULT_LABEL = "Altro";
 /** Max length of the "Altro" free text when the field does not set `otherMaxLength`. */
 export const QUESTIONNAIRE_OTHER_DEFAULT_MAX_LENGTH = 200;
@@ -222,6 +218,13 @@ export const questionnaireStepSchema = z.object({
   id: fieldIdSchema,
   title: copyTextSchema.optional(),
   description: copyTextSchema.optional(),
+  /** The whole step is shown only while this rule (on fields of earlier steps) is satisfied. */
+  visibleWhen: questionnaireRuleSchema.optional(),
+  /**
+   * When satisfied once the step is filled in (fields up to this step included), the
+   * questionnaire ends here: every later step is skipped.
+   */
+  endWhen: questionnaireRuleSchema.optional(),
   fields: z.array(questionnaireFieldSchema),
 });
 
@@ -234,7 +237,6 @@ export const questionnaireDefinitionSchema = z
   .superRefine((definition, context) => {
     const seenStepIds = new Set<string>();
     const seenFieldIds = new Set<string>();
-    const earlierFields = new Map<string, QuestionnaireField>();
 
     definition.steps.forEach((step, stepIndex) => {
       if (seenStepIds.has(step.id)) {
@@ -257,21 +259,6 @@ export const questionnaireDefinitionSchema = z
         }
         seenFieldIds.add(field.id);
 
-        if (field.visibleWhen) {
-          const message = getQuestionnaireConditionIssue(
-            field.visibleWhen,
-            earlierFields.get(field.visibleWhen.fieldId),
-          );
-          if (message) {
-            context.addIssue({
-              code: "custom",
-              message,
-              path: ["steps", stepIndex, "fields", fieldIndex, "visibleWhen"],
-            });
-          }
-        }
-        earlierFields.set(field.id, field);
-
         if (field.type !== "singleChoice" && field.type !== "multipleChoice") return;
 
         field.options.forEach((option, optionIndex) => {
@@ -293,6 +280,16 @@ export const questionnaireDefinitionSchema = z
         });
       });
     });
+
+    forEachQuestionnaireRule(definition, ({ location, rule, controllers }) => {
+      for (const issue of getQuestionnaireRuleIssues(rule, controllers)) {
+        context.addIssue({
+          code: "custom",
+          message: issue.message,
+          path: [...getQuestionnaireRulePath(location), ...issue.path],
+        });
+      }
+    });
   });
 
 function withOptionalRequirement<T extends z.ZodType>(schema: T, required: boolean) {
@@ -313,7 +310,12 @@ function createNumberAnswerSchema(
   if (field.type === "integer") schema = schema.int();
   if (field.min !== undefined) schema = schema.min(field.min);
   if (field.max !== undefined) schema = schema.max(field.max);
-  return withOptionalRequirement(schema, field.required);
+  if (field.type !== "scale") return withOptionalRequirement(schema, field.required);
+  // A scale only offers `min`, `min + step`, …: anything in between is not a real answer.
+  const scaleSchema = schema.refine((value) => isQuestionnaireScaleValue(field, value), {
+    message: "Value is not one of the scale values",
+  });
+  return withOptionalRequirement(scaleSchema, field.required);
 }
 
 function createDateAnswerSchema(field: Extract<QuestionnaireField, { type: "date" | "datetime" }>) {
@@ -345,11 +347,6 @@ function forwardIssues(
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/** True for the "Altro" variant of a choice answer: `{ other: "free text" }`. */
-export function isQuestionnaireOtherAnswer(value: unknown): value is QuestionnaireOtherAnswer {
-  return isPlainObject(value) && typeof value.other === "string";
 }
 
 /** Label of the "Altro" choice of a field. */
@@ -441,202 +438,15 @@ export function createQuestionnaireFieldAnswerSchema(field: QuestionnaireField) 
   }
 }
 
-const CONDITION_SOURCE_TYPES = ["boolean", "singleChoice", "multipleChoice", "scale"] as const;
-
-/** Field types whose answer can control the visibility of a later field. */
-export function isQuestionnaireConditionSourceField(
-  field: QuestionnaireField,
-): field is QuestionnaireConditionSourceField {
-  return (CONDITION_SOURCE_TYPES as readonly string[]).includes(field.type);
-}
-
-/** Operators a condition can use on a controlling field, first one being the default. */
-export function getQuestionnaireConditionOperators(
-  field: QuestionnaireField,
-): QuestionnaireFieldCondition["operator"][] {
-  if (field.type === "multipleChoice") return ["includes"];
-  return isQuestionnaireConditionSourceField(field) ? ["equals", "notEquals"] : [];
-}
-
-/**
- * Why `condition` is not valid against its controlling field, or null when it is valid.
- * `controller` must be the field with id `condition.fieldId` taken among the fields that come
- * BEFORE the conditioned one in definition order (undefined when there is none).
- */
-export function getQuestionnaireConditionIssue(
-  condition: QuestionnaireFieldCondition,
-  controller: QuestionnaireField | undefined,
-): string | null {
-  if (!controller) return "visibleWhen must reference an earlier field";
-  if (!getQuestionnaireConditionOperators(controller).includes(condition.operator)) {
-    return "visibleWhen operator is not compatible with the referenced field";
-  }
-
-  const { value } = condition;
-  switch (controller.type) {
-    case "boolean":
-      return typeof value === "boolean" ? null : "visibleWhen value must be a boolean";
-    case "scale":
-      return typeof value === "number" && value >= controller.min && value <= controller.max
-        ? null
-        : "visibleWhen value must be a number inside the scale range";
-    case "singleChoice":
-    case "multipleChoice":
-      return controller.options.some((option) => option.id === value)
-        ? null
-        : "visibleWhen value must be an option of the referenced field";
-    default:
-      return "visibleWhen operator is not compatible with the referenced field";
-  }
-}
-
-/**
- * Fields a condition on `fieldId` can reference: the eligible fields that come before it in
- * definition order (choice fields need at least one option to compare with).
- */
-export function listQuestionnaireConditionSourceFields(
-  definition: QuestionnaireDefinitionShape,
-  fieldId: string,
-): QuestionnaireConditionSourceField[] {
-  const sources: QuestionnaireConditionSourceField[] = [];
-
-  for (const step of definition.steps) {
-    for (const field of step.fields) {
-      if (field.id === fieldId) return sources;
-      if (!isQuestionnaireConditionSourceField(field)) continue;
-      if (
-        (field.type === "singleChoice" || field.type === "multipleChoice") &&
-        !field.options.length
-      )
-        continue;
-      sources.push(field);
-    }
-  }
-
-  return [];
-}
-
-/** Default condition when `controller` is picked as the controlling field. */
-export function createQuestionnaireCondition(
-  controller: QuestionnaireConditionSourceField,
-): QuestionnaireFieldCondition | null {
-  const operator = getQuestionnaireConditionOperators(controller)[0];
-  const value =
-    controller.type === "boolean"
-      ? true
-      : controller.type === "scale"
-        ? controller.min
-        : controller.options[0]?.id;
-  return value === undefined ? null : { fieldId: controller.id, operator, value };
-}
-
-function isConditionSatisfied(
-  condition: QuestionnaireFieldCondition,
-  controller: QuestionnaireField,
-  answer: unknown,
-) {
-  if (controller.type === "multipleChoice") {
-    return (
-      condition.operator === "includes" && Array.isArray(answer) && answer.includes(condition.value)
-    );
-  }
-
-  const answered =
-    controller.type === "boolean"
-      ? typeof answer === "boolean"
-      : controller.type === "scale"
-        ? typeof answer === "number" && Number.isFinite(answer)
-        : controller.type === "singleChoice"
-          ? (typeof answer === "string" && answer !== "") || isQuestionnaireOtherAnswer(answer)
-          : false;
-  if (!answered) return false;
-  if (condition.operator === "equals") return answer === condition.value;
-  if (condition.operator === "notEquals") return answer !== condition.value;
-  return false;
-}
-
-/**
- * Ids of the fields currently visible given `answers` (raw client values or stored answers),
- * resolved in definition order. A conditioned field is visible only when its controlling field
- * comes earlier, is itself visible and its answer satisfies the condition, so chains of
- * conditions collapse as expected and answers left on hidden fields are ignored.
- */
-export function getVisibleQuestionnaireFieldIds(
-  definition: QuestionnaireDefinitionShape,
-  answers: Record<string, unknown>,
-): Set<string> {
-  const visible = new Set<string>();
-  const earlierFields = new Map<string, QuestionnaireField>();
-
-  for (const step of definition.steps) {
-    for (const field of step.fields) {
-      const condition = field.visibleWhen;
-      const controller = condition ? earlierFields.get(condition.fieldId) : undefined;
-      if (
-        !condition ||
-        (controller &&
-          visible.has(controller.id) &&
-          isConditionSatisfied(condition, controller, answers[controller.id]))
-      ) {
-        visible.add(field.id);
-      }
-      earlierFields.set(field.id, field);
-    }
-  }
-
-  return visible;
-}
-
-/**
- * Whether `field` is visible given `answers`. `definition` must be the FULL definition:
- * a condition whose controlling field is not found before `field` hides the field.
- * When checking many fields, prefer one `getVisibleQuestionnaireFieldIds` call.
- */
-export function isQuestionnaireFieldVisible(
-  definition: QuestionnaireDefinitionShape,
-  field: { id: string },
-  answers: Record<string, unknown>,
-): boolean {
-  return getVisibleQuestionnaireFieldIds(definition, answers).has(field.id);
-}
-
-/**
- * Removes every `visibleWhen` that is not valid any more (controlling field removed, moved after
- * the conditioned field, changed type, option removed, value out of range).
- * Returns the same reference when nothing has to change.
- */
-export function clearInvalidQuestionnaireConditions<T extends QuestionnaireDefinitionShape>(
-  definition: T,
-): T {
-  const earlierFields = new Map<string, QuestionnaireField>();
-  let changed = false;
-
-  const steps = definition.steps.map((step) => {
-    let stepChanged = false;
-    const fields = step.fields.map((field) => {
-      const condition = field.visibleWhen;
-      const invalid =
-        condition !== undefined &&
-        getQuestionnaireConditionIssue(condition, earlierFields.get(condition.fieldId)) !== null;
-      earlierFields.set(field.id, field);
-      if (!invalid) return field;
-      stepChanged = true;
-      const { visibleWhen: _visibleWhen, ...rest } = field;
-      return rest as typeof field;
-    });
-    if (!stepChanged) return step;
-    changed = true;
-    return { ...step, fields };
-  });
-
-  return changed ? ({ ...definition, steps } as T) : definition;
-}
-
 function createAnswersSchema(definition: QuestionnaireDefinition, stepId?: string) {
   const fields = definition.steps.flatMap((step) =>
     step.fields.map((field) => ({
       field,
       schema: createQuestionnaireFieldAnswerSchema(field),
+      // Used while a `requiredWhen` rule makes an optional field mandatory.
+      requiredSchema: field.required
+        ? null
+        : createQuestionnaireFieldAnswerSchema({ ...field, required: true }),
       validated: stepId === undefined || step.id === stepId,
     })),
   );
@@ -650,12 +460,22 @@ function createAnswersSchema(definition: QuestionnaireDefinition, stepId?: strin
       context.addIssue({ code: "unrecognized_keys", keys: unknownKeys, input });
     }
 
-    const visibleIds = getVisibleQuestionnaireFieldIds(definition, input);
+    const logic = resolveQuestionnaireLogic(definition, input);
     const output: Record<string, unknown> = {};
 
-    for (const { field, schema, validated } of fields) {
-      if (!schema || !validated || !visibleIds.has(field.id)) continue;
-      const result = schema.safeParse(input[field.id]);
+    for (const { field, schema, requiredSchema, validated } of fields) {
+      if (!schema || !validated || !logic.visibleFieldIds.has(field.id)) continue;
+      const value = input[field.id];
+      const picksHiddenOption = (Array.isArray(value) ? value : [value]).some(
+        (entry) => typeof entry === "string" && logic.hiddenOptionIds.has(entry),
+      );
+      if (picksHiddenOption) {
+        context.addIssue({ code: "custom", message: "Unknown option", path: [field.id] });
+        continue;
+      }
+      const fieldSchema =
+        requiredSchema && logic.requiredFieldIds.has(field.id) ? requiredSchema : schema;
+      const result = fieldSchema.safeParse(value);
       if (!result.success) forwardIssues(context, result.error.issues, [field.id]);
       else if (result.data !== undefined) output[field.id] = result.data;
     }
@@ -667,8 +487,10 @@ function createAnswersSchema(definition: QuestionnaireDefinition, stepId?: strin
 /**
  * Schema of a whole submission (`fieldId → answer`).
  * - Keys that are not answerable fields of the definition are rejected.
- * - Hidden fields (see `visibleWhen`) are never required and their answers are STRIPPED from the
- *   parsed output without validation: what gets stored only contains answers of visible fields.
+ * - Hidden fields (see `schema/logic.ts`) are never required and their answers are STRIPPED from
+ *   the parsed output without validation: what gets stored only contains answers of visible
+ *   fields. Fields made mandatory by `requiredWhen` are required; options that are not offered
+ *   are rejected.
  * - Issues are reported with `path[0] === fieldId` and the code/bounds of the field schema.
  */
 export function createQuestionnaireAnswersSchema(definition: QuestionnaireDefinition) {
@@ -692,18 +514,10 @@ export type QuestionnaireCopy = z.infer<typeof questionnaireCopySchema>;
 export type QuestionnaireDefinition = z.infer<typeof questionnaireDefinitionSchema>;
 export type QuestionnaireField = z.infer<typeof questionnaireFieldSchema>;
 export type QuestionnaireStep = z.infer<typeof questionnaireStepSchema>;
-/** Minimal structure needed to resolve visibility (a full definition satisfies it). */
-export type QuestionnaireDefinitionShape = { steps: Array<{ fields: QuestionnaireField[] }> };
-export type QuestionnaireFieldCondition = z.infer<typeof questionnaireFieldConditionSchema>;
 export type QuestionnaireChoiceField = Extract<
   QuestionnaireField,
   { type: "singleChoice" | "multipleChoice" }
 >;
-export type QuestionnaireConditionSourceField = Extract<
-  QuestionnaireField,
-  { type: "boolean" | "singleChoice" | "multipleChoice" | "scale" }
->;
-export type QuestionnaireOtherAnswer = { other: string };
 /** Stored answer of a singleChoice field / one entry of a multipleChoice answer. */
 export type QuestionnaireChoiceAnswerValue = string | QuestionnaireOtherAnswer;
 export type QuestionnaireAnswers = z.infer<ReturnType<typeof createQuestionnaireAnswersSchema>>;

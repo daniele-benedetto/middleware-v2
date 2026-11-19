@@ -264,7 +264,7 @@ Editorial image semantics:
 - `Issue.homeVariant` stores the visual variant for the issue across dossier blocks and issue archive cards (`black`, `red`, or `default`).
 - `Issue.homeBlocks` is a validated JSON array. Narrative blocks store article assignment and featured placement; resource blocks store their referenced resource ID; visual variant state belongs to the issue, not to individual blocks.
 - Blocks use only manually assigned articles. Empty blocks are allowed in CMS state and are skipped by the public renderer.
-- Supported block types are `opening`, `body`, `rupture`, `closing`, `course`, `map`, `questionnaireAnalysis`, and `preview`.
+- Supported block types are `opening`, `body`, `rupture`, `closing`, `course`, `map`, `questionnaireAnalysis`, `questionnaireInvite`, and `preview`.
 - `body` blocks can set `featuredPlacement` to `left` or `right`; `right` also makes the featured article last in that block's numbering order.
 - One article can be assigned to one home block only. The server schema rejects duplicate article assignments across blocks.
 - `opening`, `rupture`, and `closing` are single-article blocks.
@@ -273,6 +273,18 @@ Editorial image semantics:
 - A `preview` block selects another issue through `previewIssueId`. The target issue may be unpublished, but the rendered article must be published. The resolver uses its `opening` article first, then the first published article assigned by its home regia. Preview articles are public independently of their parent issue, while unpublished issues remain unavailable as dossiers.
 - The public renderer resolves blocks from `Issue.homeBlocks`. If no valid blocks exist, it renders the issue's unpaginated articles.
 - Shared helper rules for editing and layout generation live in `lib/issues/home-block-rules.ts`. Server validation remains in `lib/server/modules/issues/schema/index.ts`; keep both aligned when block rules change.
+
+## Questionnaire Conditional Logic
+
+- A questionnaire is a versioned JSON `definition` (steps → fields) stored on `Questionnaire`; every response keeps the `definitionSnapshot` it was answered with. The structure is locked after the first response.
+- All conditional behaviour is one rule shape, defined and evaluated in `lib/server/modules/questionnaires/schema/logic.ts` (pure, shared by server validation, the public fill-in flow and the CMS editor). `schema/definition.ts` re-exports it.
+- A rule is a single condition (`{ fieldId, operator, value? }`, the original shape, still valid) or a group `{ match: "all" | "any", conditions }` (E / O, no nesting).
+- Where a rule can live: `field.visibleWhen` (show), `field.requiredWhen` (mandatory on top of `required`), `option.visibleWhen` (offer a choice option), `step.visibleWhen` (show the whole step), `step.endWhen` (skip every later step and go to the review).
+- A rule only references fields that come before it (`step.endWhen` also sees its own step), so cycles are impossible. Every answerable field type can control a rule; operators depend on the type (comparisons and ranges on numbers and dates, sets and selection counts on choices, the synthetic "Altro" option, presence on anything).
+- Invariants: a condition is never satisfied while its controlling field is hidden; while it is unanswered only `notAnswered` holds. A choice left without options to pick is hidden. Scale conditions and scale answers must be values the scale offers.
+- `resolveQuestionnaireLogic(definition, answers)` is the single evaluator: visible fields, currently mandatory fields, hidden options, early end. `createQuestionnaireAnswersSchema` validates submissions with it and stores only answers of visible fields.
+- Results: conditional fields carry an `audience` (shown to N of M, with the label-resolved rules) in the public analysis and in the CMS summary; the CSV marks cells of fields that were not shown; the CMS summary can be filtered with a rule over any field (`questionnaires.getSummary({ filter })`).
+- New operators or rule locations must stay additive: stored definitions and cached public payloads are parsed with the current schema.
 
 ## Decision Boundaries
 

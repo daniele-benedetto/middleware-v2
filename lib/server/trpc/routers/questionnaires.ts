@@ -22,6 +22,7 @@ import {
   listQuestionnairesQuerySchema,
   updateQuestionnaireInputSchema,
 } from "@/lib/server/modules/questionnaires/schema";
+import { questionnaireRuleSchema } from "@/lib/server/modules/questionnaires/schema/definition";
 import { cmsQuestionnairesService } from "@/lib/server/modules/questionnaires/service/cms";
 import { publicQuestionnairesService } from "@/lib/server/modules/questionnaires/service/public";
 import { router } from "@/lib/server/trpc/init";
@@ -48,6 +49,7 @@ const fieldAnswersInput = paginationInputSchema.extend({
   questionnaireId: z.string().uuid(),
   fieldId: z.string().uuid(),
 });
+const summaryInput = id.extend({ filter: questionnaireRuleSchema.optional() });
 const closedAnalysesInput = z.object({ ids: z.array(z.string().uuid()).max(50) });
 const openInvitesInput = z.object({ ids: z.array(z.string().uuid()).max(50) });
 const role = requireRoleMiddleware(questionnairesPolicy.allowedRoles);
@@ -212,10 +214,10 @@ export const questionnairesRouter = router({
     ),
   getSummary: protectedProcedure
     .use(resultsRole)
-    .input(id)
+    .input(summaryInput)
     .query(({ input }) =>
       cmsQuestionnairesService
-        .getSummary(input.id)
+        .getSummary(input.id, input.filter)
         .then((x) => parseOutput(x, questionnaireSummaryDtoSchema)),
     ),
   listFieldAnswers: protectedProcedure

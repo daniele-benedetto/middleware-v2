@@ -2,13 +2,14 @@ import { i18n } from "@/lib/i18n";
 import {
   createQuestionnaireStepAnswersSchema,
   getQuestionnaireOtherLabel,
-  getVisibleQuestionnaireFieldIds,
   isQuestionnaireOtherAnswer,
+  resolveQuestionnaireLogic,
 } from "@/lib/server/modules/questionnaires/schema/definition";
 
 import type {
   QuestionnaireDefinition,
   QuestionnaireField,
+  QuestionnaireLogicState,
   QuestionnaireStep,
 } from "@/lib/server/modules/questionnaires/schema/definition";
 
@@ -25,7 +26,11 @@ export type QuestionnaireAnswerError = { message: string; target: "field" | "oth
 export type VisibleQuestionnaireStep = {
   step: QuestionnaireStep;
   stepIndex: number;
-  /** Visible fields of the step, in definition order (never empty). */
+  /**
+   * Visible fields of the step, in definition order (never empty), as the respondent must see
+   * them: `required` already accounts for `requiredWhen` and choice fields only list the
+   * options currently offered.
+   */
   fields: QuestionnaireField[];
 };
 export type QuestionnaireReviewItem = { field: QuestionnaireField; answer: string | null };
@@ -86,13 +91,17 @@ export function toIsoDateTimeValue(value: string): string {
   return Number.isNaN(date.getTime()) ? "" : date.toISOString();
 }
 
-function isEmptyAnswer(field: QuestionnaireField, value: unknown) {
+function isEmptyAnswer(
+  field: QuestionnaireField,
+  value: unknown,
+  required: boolean = field.required,
+) {
   if (value === undefined || value === null) return true;
   if (typeof value === "string") return value.trim() === "";
   if (typeof value === "number") return Number.isNaN(value);
   if (Array.isArray(value)) return value.length === 0;
   // An unchecked mandatory consent is a missing answer, not a "false" one.
-  return field.type === "consent" && field.required && value === false;
+  return field.type === "consent" && required && value === false;
 }
 
 function isBlankOtherAnswer(value: unknown) {
@@ -126,7 +135,8 @@ function normalizeAnswer(field: QuestionnaireField, value: unknown) {
  * Prepares answers for the answers schema:
  * - empty values are omitted (so cleared optional fields do not fail validation and cleared
  *   required ones are reported as missing);
- * - answers of hidden fields (see `visibleWhen`) and keys outside the definition are dropped;
+ * - answers of hidden fields, choices of options that are not offered any more (see
+ *   `schema/logic.ts`) and keys outside the definition are dropped;
  * - datetime values are converted to ISO strings;
  * - the "Altro" text is trimmed. An "Altro" choice left without text is KEPT (as `{ other: "" }`)
  *   so that validation asks for it instead of silently discarding the choice.
@@ -135,14 +145,16 @@ export function normalizeAnswersForSubmission(
   definition: QuestionnaireDefinition,
   answers: QuestionnaireAnswerValues,
 ): QuestionnaireAnswerValues {
-  const visibleIds = getVisibleQuestionnaireFieldIds(definition, answers);
+  const logic = resolveQuestionnaireLogic(definition, answers);
   const normalized: QuestionnaireAnswerValues = {};
 
   for (const step of definition.steps) {
     for (const field of step.fields) {
-      if (field.type === "information" || !visibleIds.has(field.id)) continue;
-      const value = normalizeAnswer(field, answers[field.id]);
-      if (!isEmptyAnswer(field, value)) normalized[field.id] = value;
+      if (field.type === "information" || !logic.visibleFieldIds.has(field.id)) continue;
+      const value = normalizeAnswer(field, logic.answers[field.id]);
+      if (!isEmptyAnswer(field, value, logic.requiredFieldIds.has(field.id))) {
+        normalized[field.id] = value;
+      }
     }
   }
 
@@ -278,20 +290,43 @@ function isStepUntouched(fields: QuestionnaireField[], answers: QuestionnaireAns
   );
 }
 
+/** The field as the respondent must see it: resolved `required`, only the offered options. */
+function toPresentedField(
+  field: QuestionnaireField,
+  logic: QuestionnaireLogicState,
+): QuestionnaireField {
+  const required = logic.requiredFieldIds.has(field.id);
+  if (field.type !== "singleChoice" && field.type !== "multipleChoice") {
+    return required === field.required ? field : { ...field, required };
+  }
+  const options = field.options.filter((option) => !logic.hiddenOptionIds.has(option.id));
+  return required === field.required && options.length === field.options.length
+    ? field
+    : { ...field, required, options };
+}
+
+function getVisibleSteps(
+  definition: QuestionnaireDefinition,
+  logic: QuestionnaireLogicState,
+): VisibleQuestionnaireStep[] {
+  return definition.steps.flatMap((step, stepIndex) => {
+    const fields = step.fields
+      .filter((field) => logic.visibleFieldIds.has(field.id))
+      .map((field) => toPresentedField(field, logic));
+    return fields.length > 0 ? [{ step, stepIndex, fields }] : [];
+  });
+}
+
 /**
  * Steps that have at least one visible field given `answers`, each with its visible fields.
- * Steps left without visible fields are skipped by the flow in both directions.
+ * Steps left without visible fields (hidden by a rule, or coming after a step whose `endWhen`
+ * ended the questionnaire) are skipped by the flow in both directions.
  */
 export function getVisibleQuestionnaireSteps(
   definition: QuestionnaireDefinition,
   answers: QuestionnaireAnswerValues,
 ): VisibleQuestionnaireStep[] {
-  const visibleIds = getVisibleQuestionnaireFieldIds(definition, answers);
-
-  return definition.steps.flatMap((step, stepIndex) => {
-    const fields = step.fields.filter((field) => visibleIds.has(field.id));
-    return fields.length > 0 ? [{ step, stepIndex, fields }] : [];
-  });
+  return getVisibleSteps(definition, resolveQuestionnaireLogic(definition, answers));
 }
 
 /** Answered and total visible questions (information fields are not questions). */
@@ -299,12 +334,13 @@ export function getQuestionnaireProgress(
   definition: QuestionnaireDefinition,
   answers: QuestionnaireAnswerValues,
 ): { answered: number; total: number } {
-  const questions = getVisibleQuestionnaireSteps(definition, answers)
+  const logic = resolveQuestionnaireLogic(definition, answers);
+  const questions = getVisibleSteps(definition, logic)
     .flatMap((visibleStep) => visibleStep.fields)
     .filter((field) => field.type !== "information");
 
   return {
-    answered: questions.filter((field) => isAnswered(field, answers[field.id])).length,
+    answered: questions.filter((field) => isAnswered(field, logic.answers[field.id])).length,
     total: questions.length,
   };
 }
@@ -434,7 +470,7 @@ function estimatedFieldSeconds(field: QuestionnaireField) {
         Math.min(field.options.length + (field.allowOther ? 1 : 0), maxWeightedChoiceOptions) *
           estimatedSecondsPerChoiceOption
       : base;
-  return field.visibleWhen ? seconds * conditionalFieldWeight : seconds;
+  return seconds;
 }
 
 /**
@@ -443,7 +479,12 @@ function estimatedFieldSeconds(field: QuestionnaireField) {
  */
 export function getEstimatedMinutes(definition: QuestionnaireDefinition): number {
   const seconds = definition.steps
-    .flatMap((step) => step.fields)
-    .reduce((total, field) => total + estimatedFieldSeconds(field), 0);
+    .flatMap((step) =>
+      step.fields.map((field) => {
+        const conditional = step.visibleWhen !== undefined || field.visibleWhen !== undefined;
+        return estimatedFieldSeconds(field) * (conditional ? conditionalFieldWeight : 1);
+      }),
+    )
+    .reduce((total, seconds) => total + seconds, 0);
   return Math.max(1, Math.round(seconds / 60));
 }

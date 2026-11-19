@@ -1,11 +1,15 @@
 import "server-only";
 
+import { ApiError } from "@/lib/server/http/api-error";
 import { QUESTIONNAIRE_SUMMARY_TIMEZONE } from "@/lib/server/modules/questionnaires/dto/summary";
 import {
   getQuestionnaireOtherMaxLength,
+  getQuestionnaireRuleIssues,
   isQuestionnaireOtherAnswer,
+  matchesQuestionnaireRule,
 } from "@/lib/server/modules/questionnaires/schema/definition";
 import { aggregateQuestionnaireAnalysisField } from "@/lib/server/modules/questionnaires/service/analysis";
+import { createQuestionnaireFieldAudiences } from "@/lib/server/modules/questionnaires/service/audience";
 
 import type {
   QuestionnaireSummaryFieldDto,
@@ -15,7 +19,10 @@ import type {
   QuestionnaireDefinition,
   QuestionnaireField,
 } from "@/lib/server/modules/questionnaires/schema";
-import type { QuestionnaireChoiceField } from "@/lib/server/modules/questionnaires/schema/definition";
+import type {
+  QuestionnaireChoiceField,
+  QuestionnaireRule,
+} from "@/lib/server/modules/questionnaires/schema/definition";
 
 export type SummaryResponseRecord = { id: string; answers: unknown; submittedAt: Date };
 
@@ -173,11 +180,13 @@ export function summarizeQuestionnaireFields(
   definition: QuestionnaireDefinition,
   responses: SummaryResponseRecord[],
 ): QuestionnaireSummaryFieldDto[] {
+  const audiences = createQuestionnaireFieldAudiences(definition, responses);
   return definition.steps.flatMap((step, stepIndex) =>
     step.fields.flatMap((field) => {
       if (field.type === "information") return [];
       const result = summarizeFieldResult(field, responses);
       if (!result) return [];
+      const audience = audiences.get(field.id);
       return [
         {
           id: field.id,
@@ -189,6 +198,7 @@ export function summarizeQuestionnaireFields(
           stepId: step.id,
           stepIndex,
           stepTitle: step.title ?? null,
+          ...(audience ? { audience } : {}),
           ...result,
         },
       ];
@@ -214,4 +224,33 @@ export function listFreeTextFieldAnswers(fieldId: string, responses: SummaryResp
         : [{ responseId: response.id, submittedAt: response.submittedAt, value }];
     }),
   );
+}
+
+/**
+ * Responses whose answers satisfy `rule` (all of them without a rule). Any field of the
+ * definition can be referenced; a rule that is not valid for the definition is a 400.
+ */
+export function filterResponsesByRule<T extends { answers: unknown }>(
+  definition: QuestionnaireDefinition,
+  responses: T[],
+  rule: QuestionnaireRule | undefined,
+): T[] {
+  if (!rule) return responses;
+  const fields = new Map(
+    definition.steps.flatMap((step) => step.fields).map((field) => [field.id, field]),
+  );
+  const issues = getQuestionnaireRuleIssues(rule, fields);
+  if (issues.length > 0) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Questionnaire filter is invalid", { issues });
+  }
+  return responses.filter((response) => {
+    const answers = response.answers;
+    return matchesQuestionnaireRule(
+      definition,
+      answers && typeof answers === "object" && !Array.isArray(answers)
+        ? (answers as Record<string, unknown>)
+        : {},
+      rule,
+    );
+  });
 }

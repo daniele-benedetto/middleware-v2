@@ -20,6 +20,7 @@ import {
 import { QuestionnaireFieldAnswersList } from "@/features/cms/questionnaires/components/questionnaire-field-answers-list";
 import { QuestionnaireOtherAnswersList } from "@/features/cms/questionnaires/components/questionnaire-other-answers-list";
 import { i18n } from "@/lib/i18n";
+import { formatQuestionnaireAudience } from "@/lib/questionnaires/rule-format";
 import { QUESTIONNAIRE_OTHER_DEFAULT_LABEL } from "@/lib/server/modules/questionnaires/schema/definition";
 
 import type { RouterOutputs } from "@/lib/trpc/types";
@@ -48,6 +49,13 @@ function buildStats(field: SummaryField): Stat[] {
     { label: text.answered, value: formatChartNumber(field.answeredCount) },
     { label: text.missing, value: formatChartNumber(field.missingCount) },
   ];
+  if (field.audience) {
+    // Splits "senza risposta" between who saw the question and who never did.
+    stats.push({
+      label: text.notShown,
+      value: formatChartNumber(field.audience.totalCount - field.audience.shownCount),
+    });
+  }
   if (field.invalidCount > 0) {
     stats.push({ label: text.invalid, value: formatChartNumber(field.invalidCount) });
   }
@@ -245,6 +253,7 @@ export function QuestionnaireSummaryFieldCard({
   onOpenResponse: (responseId: string) => void;
 }) {
   const { result } = field;
+  const audience = field.audience ? formatQuestionnaireAudience(field.audience) : null;
 
   return (
     <CmsSurface as="article" className="grid gap-4">
@@ -260,11 +269,21 @@ export function QuestionnaireSummaryFieldCard({
             {field.publicResults ? (
               <CmsBadge variant="status-published">{text.publicBadge}</CmsBadge>
             ) : null}
+            {audience ? <CmsBadge variant="status-new">{text.conditionalBadge}</CmsBadge> : null}
           </div>
         </div>
         {field.description ? (
           <p className="max-w-[68ch] font-editorial text-[15px] text-body-text">
             {field.description}
+          </p>
+        ) : null}
+        {audience ? (
+          <p
+            data-testid="summary-field-audience"
+            className="max-w-[68ch] font-ui text-[12px] leading-normal text-muted-foreground"
+          >
+            {audience.shown}
+            {audience.condition ? `. ${audience.condition}.` : "."}
           </p>
         ) : null}
       </header>

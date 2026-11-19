@@ -1,5 +1,6 @@
 import { publicTypography } from "@/components/public/primitives";
 import { i18n } from "@/lib/i18n";
+import { formatQuestionnaireAudience } from "@/lib/questionnaires/rule-format";
 import { cn } from "@/lib/utils";
 
 import { formatQuestionNumber, getAnalysisFieldAnchorId } from "./analysis-format";
@@ -61,6 +62,7 @@ export function AnalysisFieldHeader({
   total: number;
 }) {
   const methodologyNote = methodologyNotes[field.visualization.methodology];
+  const audience = field.audience ? formatQuestionnaireAudience(field.audience) : null;
 
   return (
     <header className="grid gap-4">
@@ -93,6 +95,16 @@ export function AnalysisFieldHeader({
           </div>
         ))}
       </dl>
+      {audience ? (
+        <p
+          data-testid="analysis-field-audience"
+          className="max-w-[68ch] font-ui text-xs leading-normal text-muted"
+        >
+          <span className="font-bold text-foreground">{strings.conditionalQuestion}</span>{" "}
+          {audience.shown}
+          {audience.condition ? `. ${audience.condition}.` : "."}
+        </p>
+      ) : null}
       {methodologyNote ? (
         <p className="max-w-[68ch] font-ui text-xs leading-normal text-muted">{methodologyNote}</p>
       ) : null}

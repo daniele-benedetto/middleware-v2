@@ -3,6 +3,7 @@ import { questionnaireDefinitionSchema } from "@/lib/server/modules/questionnair
 import {
   getQuestionnaireOtherLabel,
   isQuestionnaireOtherAnswer,
+  resolveQuestionnaireLogic,
 } from "@/lib/server/modules/questionnaires/schema/definition";
 
 type CsvResponse = {
@@ -30,7 +31,7 @@ function formatAnswerValue(value: unknown, column: CsvColumn) {
   return column.options?.get(String(value)) ?? String(value ?? "");
 }
 
-/** Unanswered fields, including the ones hidden by a `visibleWhen` condition, are empty cells. */
+/** Unanswered fields are empty cells (fields that were not shown are marked by the caller). */
 function formatAnswer(value: unknown, column: CsvColumn) {
   if (Array.isArray(value)) {
     return value.map((item) => formatAnswerValue(item, column)).join(" | ");
@@ -71,12 +72,22 @@ export function createQuestionnaireResponsesCsv(responses: CsvResponse[]) {
     i18n.cms.forms.resources.questionnaires.csv.schemaVersion,
     ...columns.map((column) => column.label),
   ];
-  const rows = responses.map((response) => [
-    response.id,
-    response.submittedAt.toISOString(),
-    response.schemaVersion,
-    ...columns.map((column) => formatAnswer(response.answers[column.id], column)),
-  ]);
+  const notShown = i18n.cms.forms.resources.questionnaires.csv.notShown;
+  const rows = responses.map((response) => {
+    // Tells "not shown to this respondent" (hidden by the conditional logic) from "left empty".
+    const definition = questionnaireDefinitionSchema.parse(response.definitionSnapshot);
+    const { visibleFieldIds } = resolveQuestionnaireLogic(definition, response.answers);
+    return [
+      response.id,
+      response.submittedAt.toISOString(),
+      response.schemaVersion,
+      ...columns.map((column) =>
+        visibleFieldIds.has(column.id)
+          ? formatAnswer(response.answers[column.id], column)
+          : notShown,
+      ),
+    ];
+  });
 
   return [header, ...rows].map((row) => row.map(escapeCsv).join(",")).join("\r\n");
 }

@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { publicQuestionnaireAnalysisDtoSchema } from "@/lib/server/modules/questionnaires/dto/public";
+import {
+  publicQuestionnaireAnalysisDtoSchema,
+  questionnaireFieldAudienceDtoSchema,
+} from "@/lib/server/modules/questionnaires/dto/public";
 import { questionnaireStatusSchema } from "@/lib/server/modules/questionnaires/schema";
 
 /** Exactly the field shape of the public analysis, so the public chart/table components apply. */
@@ -63,8 +66,10 @@ export const questionnaireSummaryFieldDtoSchema = z.object({
   stepTitle: z.string().nullable(),
   /** Responses with a valid, non-empty answer for this field. */
   answeredCount: countSchema,
-  /** Responses without an answer for this field. */
+  /** Responses without an answer for this field, the ones it was not shown to included. */
   missingCount: countSchema,
+  /** Present only for conditional fields; absent means "shown to every respondent". */
+  audience: questionnaireFieldAudienceDtoSchema.optional(),
   /** Responses whose stored answer no longer validates against the field definition. */
   invalidCount: countSchema,
   result: questionnaireSummaryFieldResultDtoSchema,
@@ -81,7 +86,10 @@ export const questionnaireSummaryDtoSchema = z.object({
   status: questionnaireStatusSchema,
   publishedAt: z.string().nullable(),
   closedAt: z.string().nullable(),
+  /** Responses the summary is computed on (the ones matching the filter, when there is one). */
   responseCount: countSchema,
+  /** Every response of the questionnaire, whatever the filter. */
+  totalResponseCount: countSchema,
   firstResponseAt: z.string().nullable(),
   lastResponseAt: z.string().nullable(),
   timeline: questionnaireSummaryTimelineDtoSchema,

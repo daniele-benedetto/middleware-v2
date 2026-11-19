@@ -30,8 +30,8 @@ import {
   hasStyledTitleFormatting,
 } from "@/components/cms/primitives";
 import { QuestionnaireChoiceOtherSettings } from "@/features/cms/questionnaires/components/questionnaire-choice-other-settings";
-import { QuestionnaireFieldVisibilitySettings } from "@/features/cms/questionnaires/components/questionnaire-field-visibility-settings";
 import { CmsQuestionnaireFormLoading } from "@/features/cms/questionnaires/components/questionnaire-form-loading";
+import { QuestionnaireRuleEditor } from "@/features/cms/questionnaires/components/questionnaire-rule-editor";
 import {
   useQuestionnaireById,
   useQuestionnaireCreate,
@@ -57,7 +57,9 @@ import {
 } from "@/lib/server/modules/questionnaires/schema";
 import {
   clearInvalidQuestionnaireConditions,
+  countQuestionnaireConditions,
   listQuestionnaireConditionSourceFields,
+  listQuestionnaireRuleSourceFields,
 } from "@/lib/server/modules/questionnaires/schema/definition";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
@@ -326,8 +328,18 @@ function QuestionnaireFormContent({
   const sensors = useSortableSensors();
   const updateDefinition = (
     transform: (value: QuestionnaireDefinition) => QuestionnaireDefinition,
-    // A removed, moved, retyped or edited controlling field must never leave a dangling condition.
-  ) => setDefinition((current) => clearInvalidQuestionnaireConditions(transform(current)));
+  ) => {
+    // A removed, moved, retyped or edited controlling field must never leave a dangling
+    // condition: they are dropped, and the editor is told instead of finding out later.
+    const preview = transform(definition);
+    const removed =
+      countQuestionnaireConditions(preview) -
+      countQuestionnaireConditions(clearInvalidQuestionnaireConditions(preview));
+    if (removed > 0) {
+      cmsToast.info(text.rules.conditionsRemoved(removed), text.rules.conditionsRemovedTitle);
+    }
+    setDefinition((current) => clearInvalidQuestionnaireConditions(transform(current)));
+  };
   const title = getStyledTitlePlainText(titleStyled);
   const initialAutoSlug = useMemo(
     () => normalizeSlug(questionnaire?.title ?? ""),
@@ -937,6 +949,26 @@ function StepCanvas({
           />
         </CmsFormField>
       </div>
+      {stepIndex > 0 ? (
+        <QuestionnaireRuleEditor
+          id={`${step.id}-visible-when`}
+          rule={step.visibleWhen}
+          sources={listQuestionnaireRuleSourceFields(definition, { kind: "step", stepIndex })}
+          disabled={locked}
+          text={text.rules.stepVisibleWhen}
+          onChange={(visibleWhen) => onStepChange((current) => ({ ...current, visibleWhen }))}
+        />
+      ) : null}
+      {stepIndex < totalSteps - 1 ? (
+        <QuestionnaireRuleEditor
+          id={`${step.id}-end-when`}
+          rule={step.endWhen}
+          sources={listQuestionnaireRuleSourceFields(definition, { kind: "stepEnd", stepIndex })}
+          disabled={locked}
+          text={text.rules.stepEndWhen}
+          onChange={(endWhen) => onStepChange((current) => ({ ...current, endWhen }))}
+        />
+      ) : null}
       <div className="border-t border-foreground pt-4">
         <CmsMetaText variant="category">{text.questions}</CmsMetaText>
       </div>
@@ -1099,6 +1131,7 @@ function FieldEditor({
   const change = (key: string, value: unknown) =>
     onChange({ ...field, [key]: value } as QuestionnaireField);
   const hasOptions = field.type === "singleChoice" || field.type === "multipleChoice";
+  const [ruleOptionId, setRuleOptionId] = useState<string | null>(null);
   return (
     <article>
       <div
@@ -1204,29 +1237,57 @@ function FieldEditor({
           {hasOptions ? (
             <div className="space-y-2">
               {field.options.map((option, index) => (
-                <div className="flex gap-2" key={option.id}>
-                  <CmsTextInput
-                    value={option.label}
-                    disabled={disabled}
-                    onChange={(event) =>
-                      onChange({
-                        ...field,
-                        options: field.options.map((item, idx) =>
-                          idx === index ? { ...item, label: event.target.value } : item,
-                        ),
-                      })
-                    }
-                  />
-                  <Button
-                    label={text.remove}
-                    disabled={disabled}
-                    onClick={() =>
-                      onChange({
-                        ...field,
-                        options: field.options.filter((_, idx) => idx !== index),
-                      })
-                    }
-                  />
+                <div className="space-y-2" key={option.id}>
+                  <div className="flex gap-2">
+                    <CmsTextInput
+                      value={option.label}
+                      disabled={disabled}
+                      onChange={(event) =>
+                        onChange({
+                          ...field,
+                          options: field.options.map((item, idx) =>
+                            idx === index ? { ...item, label: event.target.value } : item,
+                          ),
+                        })
+                      }
+                    />
+                    <Button
+                      label={text.remove}
+                      disabled={disabled}
+                      onClick={() =>
+                        onChange({
+                          ...field,
+                          options: field.options.filter((_, idx) => idx !== index),
+                        })
+                      }
+                    />
+                    <Button
+                      label={
+                        option.visibleWhen
+                          ? text.rules.optionConditionActive
+                          : text.rules.optionCondition
+                      }
+                      disabled={disabled && !option.visibleWhen}
+                      onClick={() => setRuleOptionId(ruleOptionId === option.id ? null : option.id)}
+                    />
+                  </div>
+                  {ruleOptionId === option.id ? (
+                    <QuestionnaireRuleEditor
+                      id={`${option.id}-visible-when`}
+                      rule={option.visibleWhen}
+                      sources={conditionSources}
+                      disabled={disabled}
+                      text={text.rules.optionVisibleWhen}
+                      onChange={(visibleWhen) =>
+                        onChange({
+                          ...field,
+                          options: field.options.map((item, idx) =>
+                            idx === index ? { ...item, visibleWhen } : item,
+                          ),
+                        })
+                      }
+                    />
+                  ) : null}
                 </div>
               ))}
               <Button
@@ -1254,12 +1315,24 @@ function FieldEditor({
               onChange={onChange}
             />
           ) : null}
-          <QuestionnaireFieldVisibilitySettings
-            field={field}
+          <QuestionnaireRuleEditor
+            id={`${field.id}-visible-when`}
+            rule={field.visibleWhen}
             sources={conditionSources}
             disabled={disabled}
+            text={text.rules.visibleWhen}
             onChange={(visibleWhen) => onChange({ ...field, visibleWhen })}
           />
+          {field.type !== "information" && !field.required ? (
+            <QuestionnaireRuleEditor
+              id={`${field.id}-required-when`}
+              rule={field.requiredWhen}
+              sources={conditionSources}
+              disabled={disabled}
+              text={text.rules.requiredWhen}
+              onChange={(requiredWhen) => onChange({ ...field, requiredWhen })}
+            />
+          ) : null}
         </div>
       ) : null}
     </article>
