@@ -15,6 +15,7 @@ import { UnpaginatedArticleRow } from "@/components/public/sections/dossier/unpa
 import { CourseHomeBlock } from "@/components/public/sections/formazione/course-home-block";
 import { MapHomeBlock } from "@/components/public/sections/maps/map-home-block";
 import { QuestionnaireAnalysisHomeBlock } from "@/components/public/sections/questionnaires/questionnaire-analysis-home-block";
+import { QuestionnaireInviteHomeBlock } from "@/components/public/sections/questionnaires/questionnaire-invite-home-block";
 import { getIssueBlockAnchorId } from "@/lib/issues/block-anchor";
 import { buildIssueNumberMap, formatIssueNumber } from "@/lib/public/format/issue";
 import { getIssueBlockNumberingArticles } from "@/lib/public/issue-numbering";
@@ -81,6 +82,15 @@ function getBlockIndexItems(
           type: "questionnaire",
         },
       ];
+    case "questionnaireInvite":
+      return [
+        {
+          id: getBlockAnchorId(block),
+          label: block.questionnaireInvite.title,
+          icon: "questionnaireInvite",
+          type: "questionnaire",
+        },
+      ];
     case "preview":
       return [
         {
@@ -144,6 +154,8 @@ function renderBlock(
       return <MapHomeBlock key={block.id} block={block} />;
     case "questionnaireAnalysis":
       return <QuestionnaireAnalysisHomeBlock key={block.id} block={block} />;
+    case "questionnaireInvite":
+      return <QuestionnaireInviteHomeBlock key={block.id} block={block} />;
     case "preview":
       return (
         <PreviewHomeBlock
@@ -211,6 +223,7 @@ export function DossierHome({ hero, issue, publishedIssues }: DossierHomeProps) 
       block.type !== "course" &&
       block.type !== "map" &&
       block.type !== "questionnaireAnalysis" &&
+      block.type !== "questionnaireInvite" &&
       block.type !== "preview",
   );
   const unpaginatedArticles = getUnpaginatedArticles(issue, articleBlocks);
@@ -235,6 +248,7 @@ export function DossierHome({ hero, issue, publishedIssues }: DossierHomeProps) 
       block.type !== "map" &&
       block.type !== "course" &&
       block.type !== "questionnaireAnalysis" &&
+      block.type !== "questionnaireInvite" &&
       block.type !== "preview"
     ) {
       addArticles(getIssueBlockNumberingArticles(block));

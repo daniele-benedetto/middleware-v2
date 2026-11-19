@@ -34,6 +34,7 @@ import {
   createEmptyMapHomeBlock,
   createEmptyPreviewHomeBlock,
   createEmptyQuestionnaireAnalysisHomeBlock,
+  createEmptyQuestionnaireInviteHomeBlock,
   createEmptyHomeBlock,
   isArticleHomeBlock,
   isSingleArticleBlock,
@@ -111,6 +112,11 @@ type IssueHomeBlocksEditorText = {
   questionnaireAnalysisPlaceholder: string;
   questionnaireAnalysisLoading: string;
   questionnaireAnalysisUnavailable: string;
+  typeQuestionnaireInvite: string;
+  questionnaireInvite: string;
+  questionnaireInvitePlaceholder: string;
+  questionnaireInviteLoading: string;
+  questionnaireInviteUnavailable: string;
   typePreview: string;
   previewIssue: string;
   previewIssuePlaceholder: string;
@@ -124,6 +130,9 @@ type IssueHomeBlocksEditorProps = {
   questionnaires: IssueHomeBlockQuestionnaire[];
   onQuestionnaireSearchChange?: (value: string) => void;
   questionnaireAnalysisAvailability?: Record<string, "loading" | "available" | "unavailable">;
+  openQuestionnaires: IssueHomeBlockQuestionnaire[];
+  onOpenQuestionnaireSearchChange?: (value: string) => void;
+  questionnaireInviteAvailability?: Record<string, "loading" | "available" | "unavailable">;
   previewIssues: IssueHomeBlockPreviewIssue[];
   disabled?: boolean;
   text: IssueHomeBlocksEditorText;
@@ -140,6 +149,7 @@ const blockTypeOptions = [
   { value: "course", labelKey: "typeCourse" },
   { value: "map", labelKey: "typeMap" },
   { value: "questionnaireAnalysis", labelKey: "typeQuestionnaireAnalysis" },
+  { value: "questionnaireInvite", labelKey: "typeQuestionnaireInvite" },
   { value: "preview", labelKey: "typePreview" },
 ] as const;
 
@@ -177,6 +187,9 @@ export function IssueHomeBlocksEditor({
   questionnaires,
   onQuestionnaireSearchChange,
   questionnaireAnalysisAvailability,
+  openQuestionnaires,
+  onOpenQuestionnaireSearchChange,
+  questionnaireInviteAvailability,
   previewIssues,
   disabled,
   text,
@@ -241,9 +254,11 @@ export function IssueHomeBlocksEditor({
         ? createEmptyMapHomeBlock()
         : block.type === "questionnaireAnalysis"
           ? createEmptyQuestionnaireAnalysisHomeBlock()
-          : block.type === "preview"
-            ? createEmptyPreviewHomeBlock()
-            : createEmptyCourseHomeBlock();
+          : block.type === "questionnaireInvite"
+            ? createEmptyQuestionnaireInviteHomeBlock()
+            : block.type === "preview"
+              ? createEmptyPreviewHomeBlock()
+              : createEmptyCourseHomeBlock();
     onChange([...value.slice(0, index + 1), clone, ...value.slice(index + 1)]);
   };
 
@@ -477,9 +492,11 @@ export function IssueHomeBlocksEditor({
                                   ? text.map
                                   : block.type === "questionnaireAnalysis"
                                     ? text.questionnaireAnalysis
-                                    : block.type === "preview"
-                                      ? text.previewIssue
-                                      : text.course}
+                                    : block.type === "questionnaireInvite"
+                                      ? text.questionnaireInvite
+                                      : block.type === "preview"
+                                        ? text.previewIssue
+                                        : text.course}
                             </CmsBody>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
@@ -554,12 +571,16 @@ export function IssueHomeBlocksEditor({
                                           ? createEmptyQuestionnaireAnalysisHomeBlock(
                                               `${block.id}-questionnaire-analysis`,
                                             )
-                                          : nextType === "preview"
-                                            ? createEmptyPreviewHomeBlock(`${block.id}-preview`)
-                                            : createEmptyHomeBlock(
-                                                nextType as IssueHomeArticleBlock["type"],
-                                                block.id,
-                                              ),
+                                          : nextType === "questionnaireInvite"
+                                            ? createEmptyQuestionnaireInviteHomeBlock(
+                                                `${block.id}-questionnaire-invite`,
+                                              )
+                                            : nextType === "preview"
+                                              ? createEmptyPreviewHomeBlock(`${block.id}-preview`)
+                                              : createEmptyHomeBlock(
+                                                  nextType as IssueHomeArticleBlock["type"],
+                                                  block.id,
+                                                ),
                                   )
                                 }
                               />
@@ -628,6 +649,41 @@ export function IssueHomeBlocksEditor({
                                   "unavailable" ? (
                                   <CmsMetaText className="text-accent">
                                     {text.questionnaireAnalysisUnavailable}
+                                  </CmsMetaText>
+                                ) : null}
+                              </CmsFormField>
+                            ) : null}
+                            {block.type === "questionnaireInvite" ? (
+                              <CmsFormField
+                                label={text.questionnaireInvite}
+                                htmlFor={`${block.id}-questionnaire-invite`}
+                              >
+                                <CmsSearchSelect
+                                  value={block.questionnaireId ?? ""}
+                                  placeholder={text.questionnaireInvitePlaceholder}
+                                  disabled={disabled || openQuestionnaires.length === 0}
+                                  onSearchChange={onOpenQuestionnaireSearchChange}
+                                  options={openQuestionnaires.map((questionnaire) => ({
+                                    value: questionnaire.id,
+                                    label: questionnaire.title,
+                                  }))}
+                                  onValueChange={(questionnaireId) =>
+                                    updateBlock(index, {
+                                      ...block,
+                                      questionnaireId: questionnaireId || null,
+                                    })
+                                  }
+                                />
+                                {block.questionnaireId &&
+                                questionnaireInviteAvailability?.[block.questionnaireId] ===
+                                  "loading" ? (
+                                  <CmsMetaText>{text.questionnaireInviteLoading}</CmsMetaText>
+                                ) : null}
+                                {block.questionnaireId &&
+                                questionnaireInviteAvailability?.[block.questionnaireId] ===
+                                  "unavailable" ? (
+                                  <CmsMetaText className="text-accent">
+                                    {text.questionnaireInviteUnavailable}
                                   </CmsMetaText>
                                 ) : null}
                               </CmsFormField>

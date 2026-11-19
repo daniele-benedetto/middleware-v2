@@ -11,8 +11,13 @@ import {
   questionnaireHomeVariantSchema,
 } from "@/lib/server/modules/questionnaires/schema";
 import {
+  getQuestionnaireOtherLabel,
+  QUESTIONNAIRE_OTHER_OPTION_ID,
+} from "@/lib/server/modules/questionnaires/schema/definition";
+import {
   calculateMean,
   calculateMedian,
+  calculatePercentage,
   calculateQuartiles,
   createHourlyDistribution,
   createNumericDistribution,
@@ -23,6 +28,9 @@ import { selectQuestionnaireFieldVisualization } from "@/lib/server/modules/ques
 import { parseOutput } from "@/lib/server/validation/output";
 
 import type { QuestionnaireField } from "@/lib/server/modules/questionnaires/schema";
+import type { QuestionnaireChoiceAnswerValue } from "@/lib/server/modules/questionnaires/schema/definition";
+
+export type AnalysisResponseRecord = { answers: unknown };
 
 type AnalysisRecord = {
   id: string;
@@ -32,7 +40,7 @@ type AnalysisRecord = {
   descriptionRich: unknown;
   closedAt: Date | null;
   definition: unknown;
-  responses: Array<{ answers: unknown }>;
+  responses: AnalysisResponseRecord[];
 };
 
 type ParsedFieldValues = {
@@ -49,7 +57,7 @@ function getAnswers(value: unknown) {
 
 function parseFieldValues(
   field: QuestionnaireField,
-  records: AnalysisRecord["responses"],
+  records: AnalysisResponseRecord[],
 ): ParsedFieldValues {
   const schema = createQuestionnaireFieldAnswerSchema(field);
   if (!schema) return { values: [], missingCount: records.length, invalidCount: 0 };
@@ -73,23 +81,28 @@ function parseFieldValues(
   return { values, missingCount, invalidCount };
 }
 
-function isPublicAnalysisField(field: QuestionnaireField) {
-  return (
-    field.publicResults &&
-    [
-      "boolean",
-      "singleChoice",
-      "multipleChoice",
-      "scale",
-      "integer",
-      "decimal",
-      "date",
-      "datetime",
-    ].includes(field.type)
-  );
+const ANALYSIS_FIELD_TYPES = [
+  "boolean",
+  "singleChoice",
+  "multipleChoice",
+  "scale",
+  "integer",
+  "decimal",
+  "date",
+  "datetime",
+] as const;
+
+type AnalysisFieldType = (typeof ANALYSIS_FIELD_TYPES)[number];
+type AnalysisSourceField = Extract<QuestionnaireField, { type: AnalysisFieldType }>;
+
+/** Field types that can be aggregated into a chart/table, whatever their `publicResults` flag. */
+export function isQuestionnaireAnalysisField(
+  field: QuestionnaireField,
+): field is AnalysisSourceField {
+  return (ANALYSIS_FIELD_TYPES as readonly string[]).includes(field.type);
 }
 
-function createBase<T extends QuestionnaireField>(field: T, values: ParsedFieldValues) {
+function createBase(field: AnalysisSourceField, values: ParsedFieldValues) {
   return {
     id: field.id,
     label: field.label,
@@ -121,32 +134,51 @@ function aggregateChoice(
 ) {
   const counts = new Map(field.options.map((option) => [option.id, 0]));
   for (const value of parsed.values) {
-    const selected = field.type === "multipleChoice" ? (value as string[]) : [value as string];
-    for (const optionId of selected) counts.set(optionId, (counts.get(optionId) ?? 0) + 1);
+    const selected = (
+      field.type === "multipleChoice" ? value : [value]
+    ) as QuestionnaireChoiceAnswerValue[];
+    for (const item of selected) {
+      // Every "Altro" answer, whatever its free text, is counted under one synthetic option.
+      const optionId = typeof item === "string" ? item : QUESTIONNAIRE_OTHER_OPTION_ID;
+      counts.set(optionId, (counts.get(optionId) ?? 0) + 1);
+    }
   }
 
-  const options = field.options
-    .map((option, index) => ({
-      id: option.id,
-      label: option.label,
-      count: counts.get(option.id) ?? 0,
-      percentage: 0,
-      originalIndex: index,
-    }))
-    .sort((left, right) => right.count - left.count || left.originalIndex - right.originalIndex)
-    .map(({ originalIndex: _originalIndex, ...option }, index) => ({
+  const sourceOptions = [
+    ...field.options.map((option) => ({ id: option.id, label: option.label })),
+    ...(field.allowOther
+      ? [
+          {
+            id: QUESTIONNAIRE_OTHER_OPTION_ID,
+            label: getQuestionnaireOtherLabel(field),
+            isOther: true as const,
+          },
+        ]
+      : []),
+  ];
+  const counted = sourceOptions.map((option, index) => ({
+    ...option,
+    count: counts.get(option.id) ?? 0,
+    percentage: calculatePercentage(counts.get(option.id) ?? 0, parsed.values.length),
+    definitionIndex: index,
+  }));
+  const byFrequency = [...counted].sort(
+    (left, right) => right.count - left.count || left.definitionIndex - right.definitionIndex,
+  );
+  const rankByOptionId = new Map(byFrequency.map((option, index) => [option.id, index + 1]));
+  const resultsOrder = field.resultsOrder ?? "frequency";
+  const options = (resultsOrder === "definition" ? counted : byFrequency).map(
+    ({ definitionIndex: _definitionIndex, ...option }) => ({
       ...option,
-      percentage:
-        parsed.values.length === 0
-          ? 0
-          : (roundStatistic((option.count / parsed.values.length) * 100) ?? 0),
-      rank: index + 1,
-    }));
+      rank: rankByOptionId.get(option.id) ?? 1,
+    }),
+  );
 
   return {
     ...createBase(field, parsed),
     kind: "choice" as const,
     multiple: field.type === "multipleChoice",
+    resultsOrder,
     options,
   };
 }
@@ -201,8 +233,8 @@ function aggregateDate(
   };
 }
 
-function aggregateField(field: QuestionnaireField, records: AnalysisRecord["responses"]) {
-  if (!isPublicAnalysisField(field)) return null;
+function aggregateField(field: QuestionnaireField, records: AnalysisResponseRecord[]) {
+  if (!isQuestionnaireAnalysisField(field)) return null;
   const parsed = parseFieldValues(field, records);
 
   if (field.type === "boolean") return aggregateBoolean(field, parsed);
@@ -216,6 +248,20 @@ function aggregateField(field: QuestionnaireField, records: AnalysisRecord["resp
   return null;
 }
 
+/**
+ * Aggregate + visualization of one field, in the public analysis field shape.
+ * Ignores `publicResults`: callers decide which fields they are allowed to expose.
+ * Returns null for field types that cannot be aggregated (free text, consent, information).
+ */
+export function aggregateQuestionnaireAnalysisField(
+  field: QuestionnaireField,
+  records: AnalysisResponseRecord[],
+) {
+  const aggregate = aggregateField(field, records);
+  if (!aggregate) return null;
+  return { ...aggregate, visualization: selectQuestionnaireFieldVisualization(aggregate) };
+}
+
 export function toPublicQuestionnaireAnalysis(
   record: AnalysisRecord,
 ): PublicQuestionnaireAnalysisDto | null {
@@ -223,12 +269,9 @@ export function toPublicQuestionnaireAnalysis(
   const definition = questionnaireDefinitionSchema.parse(record.definition);
   const fields = definition.steps
     .flatMap((step) => step.fields)
-    .map((field) => aggregateField(field, record.responses))
-    .filter((field): field is NonNullable<typeof field> => field !== null)
-    .map((field) => ({
-      ...field,
-      visualization: selectQuestionnaireFieldVisualization(field),
-    }));
+    .filter((field) => field.publicResults)
+    .map((field) => aggregateQuestionnaireAnalysisField(field, record.responses))
+    .filter((field): field is NonNullable<typeof field> => field !== null);
 
   if (fields.length === 0) return null;
 

@@ -223,6 +223,7 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
               block.type !== "course" &&
               block.type !== "map" &&
               block.type !== "questionnaireAnalysis" &&
+              block.type !== "questionnaireInvite" &&
               block.type !== "preview",
           )
           .flatMap((block) => ("articleIds" in block ? block.articleIds : [])),

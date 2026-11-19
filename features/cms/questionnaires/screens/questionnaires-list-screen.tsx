@@ -1,6 +1,7 @@
 "use client";
 
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -54,6 +55,8 @@ type QuestionnairesListInput = RouterInputs["questionnaires"]["list"];
 type Props = {
   initialInput?: QuestionnairesListInput;
   initialData?: QuestionnairesListInitialData;
+  /** Individual responses are reserved to the results roles: only they get the link. */
+  canViewResponses?: boolean;
 };
 type Filters = { status: string; sortBy: string; sortOrder: string };
 const defaults: Filters = { status: "all", sortBy: "updatedAt", sortOrder: "desc" };
@@ -114,7 +117,11 @@ function FiltersFields({
   );
 }
 
-export function CmsQuestionnairesListScreen({ initialInput, initialData }: Props) {
+export function CmsQuestionnairesListScreen({
+  initialInput,
+  initialData,
+  canViewResponses = false,
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const trpcUtils = trpc.useUtils();
@@ -310,7 +317,17 @@ export function CmsQuestionnairesListScreen({ initialInput, initialData }: Props
                     <TableCell className={cmsTableClasses.bodyCellMeta}>{item.slug}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>{item.status}</TableCell>
                     <TableCell className={cmsTableClasses.bodyCellNumeric}>
-                      {item.responseCount}
+                      {canViewResponses && item.responseCount > 0 ? (
+                        <Link
+                          href={cmsCrudRoutes.questionnaires.responses(item.id)}
+                          aria-label={listText.openResponses(item.title)}
+                          className="underline decoration-1 underline-offset-2"
+                        >
+                          {item.responseCount}
+                        </Link>
+                      ) : (
+                        item.responseCount
+                      )}
                     </TableCell>
                     <TableCell className={cmsTableClasses.bodyCellMeta}>
                       {formatDate(item.updatedAt)}

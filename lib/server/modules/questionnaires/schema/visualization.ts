@@ -7,9 +7,15 @@ export const chartKindSchema = z.enum([
   "histogram",
   "frequencyArea",
   "temporalBar",
-  "dotPlot",
   "table",
 ]);
+
+/**
+ * Minimum number of valid responses a field needs before a chart is the default view.
+ * Below it the selection falls back to the data table: a chart of a handful of answers
+ * suggests a distribution that the data cannot support.
+ */
+export const MIN_CHART_SAMPLE_SIZE = 5;
 
 export const visualizationRationaleSchema = z.enum([
   "binaryNominal",

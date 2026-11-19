@@ -29,6 +29,8 @@ import {
   getStyledTitlePlainText,
   hasStyledTitleFormatting,
 } from "@/components/cms/primitives";
+import { QuestionnaireChoiceOtherSettings } from "@/features/cms/questionnaires/components/questionnaire-choice-other-settings";
+import { QuestionnaireFieldVisibilitySettings } from "@/features/cms/questionnaires/components/questionnaire-field-visibility-settings";
 import { CmsQuestionnaireFormLoading } from "@/features/cms/questionnaires/components/questionnaire-form-loading";
 import {
   useQuestionnaireById,
@@ -53,6 +55,10 @@ import {
   type QuestionnaireDefinition,
   type QuestionnaireField,
 } from "@/lib/server/modules/questionnaires/schema";
+import {
+  clearInvalidQuestionnaireConditions,
+  listQuestionnaireConditionSourceFields,
+} from "@/lib/server/modules/questionnaires/schema/definition";
 import { trpc } from "@/lib/trpc/react";
 import { cn } from "@/lib/utils";
 import { normalizeSlug } from "@/lib/validation/slug";
@@ -166,9 +172,16 @@ type Props = {
   mode: "create" | "edit";
   questionnaireId?: string;
   initialData?: QuestionnaireDetail;
+  /** Results are reserved to the results roles: others do not get the entry point. */
+  canViewResponses?: boolean;
 };
 
-export function CmsQuestionnaireFormScreen({ mode, questionnaireId, initialData }: Props) {
+export function CmsQuestionnaireFormScreen({
+  mode,
+  questionnaireId,
+  initialData,
+  canViewResponses = false,
+}: Props) {
   const query = useQuestionnaireById(mode === "edit" ? questionnaireId : undefined, {
     initialData,
   });
@@ -200,6 +213,7 @@ export function CmsQuestionnaireFormScreen({ mode, questionnaireId, initialData 
       mode={mode}
       questionnaireId={questionnaireId}
       questionnaire={query.data}
+      canViewResponses={canViewResponses}
       busy={
         create.isPending ||
         update.isPending ||
@@ -270,6 +284,7 @@ function QuestionnaireFormContent({
   mode,
   questionnaireId,
   questionnaire,
+  canViewResponses,
   busy,
   onCancel,
   onStatusChange,
@@ -278,6 +293,7 @@ function QuestionnaireFormContent({
   mode: "create" | "edit";
   questionnaireId?: string;
   questionnaire?: QuestionnaireDetail;
+  canViewResponses: boolean;
   busy: boolean;
   onCancel: () => void;
   onStatusChange: (status: QuestionnaireDetail["status"]) => Promise<void>;
@@ -310,7 +326,8 @@ function QuestionnaireFormContent({
   const sensors = useSortableSensors();
   const updateDefinition = (
     transform: (value: QuestionnaireDefinition) => QuestionnaireDefinition,
-  ) => setDefinition(transform);
+    // A removed, moved, retyped or edited controlling field must never leave a dangling condition.
+  ) => setDefinition((current) => clearInvalidQuestionnaireConditions(transform(current)));
   const title = getStyledTitlePlainText(titleStyled);
   const initialAutoSlug = useMemo(
     () => normalizeSlug(questionnaire?.title ?? ""),
@@ -460,7 +477,10 @@ function QuestionnaireFormContent({
         title={mode === "create" ? text.createTitle : text.editTitle}
         actions={
           <div className="flex flex-wrap gap-2">
-            {mode === "edit" && questionnaireId && questionnaire?.responseCount ? (
+            {canViewResponses &&
+            mode === "edit" &&
+            questionnaireId &&
+            questionnaire?.responseCount ? (
               <CmsActionButton
                 type="button"
                 variant="outline"
@@ -714,6 +734,7 @@ function QuestionnaireFormContent({
           {activeStep ? (
             <StepCanvas
               step={activeStep}
+              definition={definition}
               stepIndex={activeStepIndex}
               totalSteps={definition.steps.length}
               locked={locked}
@@ -833,6 +854,7 @@ function EditorNavButton({
 
 function StepCanvas({
   step,
+  definition,
   stepIndex,
   totalSteps,
   locked,
@@ -846,6 +868,7 @@ function StepCanvas({
   onAddField,
 }: {
   step: QuestionnaireDefinition["steps"][number];
+  definition: QuestionnaireDefinition;
   stepIndex: number;
   totalSteps: number;
   locked: boolean;
@@ -937,6 +960,11 @@ function StepCanvas({
                 {(dragHandleProps) => (
                   <FieldEditor
                     field={field}
+                    conditionSources={
+                      expandedFieldId === field.id
+                        ? listQuestionnaireConditionSourceFields(definition, field.id)
+                        : []
+                    }
                     disabled={locked}
                     expanded={expandedFieldId === field.id}
                     text={text}
@@ -1049,6 +1077,7 @@ function SortableFieldCard({
 
 function FieldEditor({
   field,
+  conditionSources,
   disabled,
   expanded,
   text,
@@ -1058,6 +1087,7 @@ function FieldEditor({
   dragHandleProps,
 }: {
   field: QuestionnaireField;
+  conditionSources: ReturnType<typeof listQuestionnaireConditionSourceFields>;
   disabled: boolean;
   expanded: boolean;
   text: typeof i18n.cms.forms.resources.questionnaires;
@@ -1159,6 +1189,16 @@ function FieldEditor({
                 onChange={(value) => change("publicResults", value)}
               />
             ) : null}
+            {hasOptions && field.publicResults ? (
+              <CmsCheckbox
+                label={text.resultsOrderDefinition}
+                checked={field.resultsOrder === "definition"}
+                disabled={disabled}
+                onChange={(value) =>
+                  onChange({ ...field, resultsOrder: value ? "definition" : undefined })
+                }
+              />
+            ) : null}
           </div>
           <FieldTypeSettings field={field} disabled={disabled} text={text} onChange={onChange} />
           {hasOptions ? (
@@ -1207,6 +1247,19 @@ function FieldEditor({
               />
             </div>
           ) : null}
+          {hasOptions ? (
+            <QuestionnaireChoiceOtherSettings
+              field={field}
+              disabled={disabled}
+              onChange={onChange}
+            />
+          ) : null}
+          <QuestionnaireFieldVisibilitySettings
+            field={field}
+            sources={conditionSources}
+            disabled={disabled}
+            onChange={(visibleWhen) => onChange({ ...field, visibleWhen })}
+          />
         </div>
       ) : null}
     </article>

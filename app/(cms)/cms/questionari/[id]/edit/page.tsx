@@ -1,4 +1,5 @@
 import { CmsQuestionnaireFormScreen } from "@/features/cms/questionnaires/screens/questionnaire-form-screen";
+import { hasAnyCmsRole, requireCmsSession } from "@/lib/cms/auth";
 import {
   prefetchCmsDetailOrNotFound,
   resolveCmsRouteEntityIdOrNotFound,
@@ -6,6 +7,7 @@ import {
 import { prefetchQuestionnaireById } from "@/lib/cms/trpc/server-prefetch";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
+import { questionnairesPolicy } from "@/lib/server/modules/questionnaires/policy";
 
 export const metadata = buildCmsMetadata({
   title: `${i18n.cms.quickActions.edit} ${i18n.cms.navigation.questionnaires}`,
@@ -17,6 +19,16 @@ export default async function CmsQuestionnaireEditPage({
   params: Promise<{ id: string }>;
 }) {
   const id = resolveCmsRouteEntityIdOrNotFound((await params).id);
-  const initialData = await prefetchCmsDetailOrNotFound(() => prefetchQuestionnaireById(id));
-  return <CmsQuestionnaireFormScreen mode="edit" questionnaireId={id} initialData={initialData} />;
+  const [session, initialData] = await Promise.all([
+    requireCmsSession(),
+    prefetchCmsDetailOrNotFound(() => prefetchQuestionnaireById(id)),
+  ]);
+  return (
+    <CmsQuestionnaireFormScreen
+      mode="edit"
+      questionnaireId={id}
+      initialData={initialData}
+      canViewResponses={hasAnyCmsRole(session, questionnairesPolicy.resultsRoles)}
+    />
+  );
 }

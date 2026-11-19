@@ -1,7 +1,10 @@
 import "server-only";
 
 import { Prisma } from "@/lib/generated/prisma/client";
-import { revalidatePublicQuestionnaireAnalysisContent } from "@/lib/public/server/revalidation";
+import {
+  revalidatePublicQuestionnaireAnalysisContent,
+  revalidatePublicQuestionnaireInviteContent,
+} from "@/lib/public/server/revalidation";
 import { ApiError } from "@/lib/server/http/api-error";
 import { createQuestionnaireResponsesCsv } from "@/lib/server/modules/questionnaires/csv";
 import {
@@ -12,12 +15,20 @@ import {
   questionnaireDefinitionSchema,
   questionnaireHomeVariantSchema,
 } from "@/lib/server/modules/questionnaires/schema";
+import {
+  createResponsesTimeline,
+  findQuestionnaireField,
+  isFreeTextQuestionnaireField,
+  listFreeTextFieldAnswers,
+  summarizeQuestionnaireFields,
+} from "@/lib/server/modules/questionnaires/service/summary";
 import { normalizeSlug } from "@/lib/server/validation/slug";
 
 import type { QuestionnaireStatus } from "@/lib/generated/prisma/enums";
 import type { PaginationParams } from "@/lib/server/http/pagination";
 import type {
   CreateQuestionnaireInput,
+  ListQuestionnaireResponsesFilter,
   ListQuestionnairesQuery,
   UpdateQuestionnaireInput,
 } from "@/lib/server/modules/questionnaires/schema";
@@ -118,6 +129,7 @@ export const cmsQuestionnairesService = {
         }),
       );
       if (current.status === "CLOSED") revalidatePublicQuestionnaireAnalysisContent(id);
+      if (current.status === "PUBLISHED") revalidatePublicQuestionnaireInviteContent(id);
       return result;
     } catch (error) {
       map(error);
@@ -146,6 +158,7 @@ export const cmsQuestionnairesService = {
         ),
       );
       revalidatePublicQuestionnaireAnalysisContent(id);
+      revalidatePublicQuestionnaireInviteContent(id);
       return result;
     } catch (error) {
       map(error);
@@ -155,14 +168,23 @@ export const cmsQuestionnairesService = {
     try {
       await cmsQuestionnairesRepository.delete(id);
       revalidatePublicQuestionnaireAnalysisContent(id);
+      revalidatePublicQuestionnaireInviteContent(id);
     } catch (error) {
       map(error);
     }
   },
-  async listResponses(questionnaireId: string, pagination: PaginationParams) {
+  async listResponses(
+    questionnaireId: string,
+    filter: ListQuestionnaireResponsesFilter,
+    pagination: PaginationParams,
+  ) {
+    const range = {
+      submittedFrom: filter.submittedFrom ? new Date(filter.submittedFrom) : undefined,
+      submittedTo: filter.submittedTo ? new Date(filter.submittedTo) : undefined,
+    };
     const [items, total] = await Promise.all([
-      questionnaireResponsesRepository.listForCms(questionnaireId, pagination),
-      questionnaireResponsesRepository.countForCms(questionnaireId),
+      questionnaireResponsesRepository.listForCms(questionnaireId, range, pagination),
+      questionnaireResponsesRepository.countForCms(questionnaireId, range),
     ]);
     return {
       items: items.map((item) => ({ ...item, submittedAt: item.submittedAt.toISOString() })),
@@ -172,6 +194,7 @@ export const cmsQuestionnairesService = {
   async getResponseById(id: string, questionnaireId?: string) {
     const item = await questionnaireResponsesRepository.getByIdForCms(id, questionnaireId);
     if (!item) throw new ApiError(404, "NOT_FOUND", "Questionnaire response not found");
+    const adjacent = await questionnaireResponsesRepository.getAdjacentIdsForCms(item);
     return {
       id: item.id,
       questionnaireId: item.questionnaireId,
@@ -179,6 +202,52 @@ export const cmsQuestionnairesService = {
       definitionSnapshot: questionnaireDefinitionSchema.parse(item.definitionSnapshot),
       answers: item.answers,
       submittedAt: item.submittedAt.toISOString(),
+      previousResponseId: adjacent.previousId,
+      nextResponseId: adjacent.nextId,
+    };
+  },
+  /**
+   * Aggregates over the current definition: the structure (everything but `copy`) is locked
+   * by `update` once `firstResponseAt` is set, so every response snapshot has the same fields.
+   */
+  async getSummary(id: string) {
+    const record = await cmsQuestionnairesRepository.getWithResponsesForResults(id);
+    if (!record) throw new ApiError(404, "NOT_FOUND", "Questionnaire not found");
+    const definition = questionnaireDefinitionSchema.parse(record.definition);
+    const { responses } = record;
+    return {
+      id: record.id,
+      status: record.status,
+      publishedAt: record.publishedAt?.toISOString() ?? null,
+      closedAt: record.closedAt?.toISOString() ?? null,
+      responseCount: responses.length,
+      firstResponseAt: responses[0]?.submittedAt.toISOString() ?? null,
+      lastResponseAt: responses.at(-1)?.submittedAt.toISOString() ?? null,
+      timeline: createResponsesTimeline(responses.map((response) => response.submittedAt)),
+      fields: summarizeQuestionnaireFields(definition, responses),
+    };
+  },
+  async listFieldAnswers(questionnaireId: string, fieldId: string, pagination: PaginationParams) {
+    const record = await cmsQuestionnairesRepository.getWithResponsesForResults(questionnaireId);
+    if (!record) throw new ApiError(404, "NOT_FOUND", "Questionnaire not found");
+    const match = findQuestionnaireField(
+      questionnaireDefinitionSchema.parse(record.definition),
+      fieldId,
+    );
+    if (!match) throw new ApiError(404, "NOT_FOUND", "Questionnaire field not found");
+    if (!isFreeTextQuestionnaireField(match.field))
+      throw new ApiError(400, "VALIDATION_ERROR", "Questionnaire field is not a free-text field");
+    const answers = listFreeTextFieldAnswers(fieldId, record.responses);
+    const offset = (pagination.page - 1) * pagination.pageSize;
+    return {
+      field: {
+        id: match.field.id,
+        type: match.field.type,
+        label: match.field.label,
+        stepTitle: match.stepTitle,
+      },
+      items: answers.slice(offset, offset + pagination.pageSize),
+      total: answers.length,
     };
   },
   async exportResponsesCsv(questionnaireId: string) {

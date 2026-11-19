@@ -32,11 +32,19 @@ export const questionnaireResponseDtoSchema = z.object({
   schemaVersion: z.number().int(),
   submittedAt: z.string(),
 });
+const questionnaireResponseAnswersDtoSchema = z.record(z.string(), z.unknown());
+export const questionnaireResponseListItemDtoSchema = questionnaireResponseDtoSchema.extend({
+  answers: questionnaireResponseAnswersDtoSchema,
+});
 export const questionnaireResponseDetailDtoSchema = questionnaireResponseDtoSchema.extend({
   definitionSnapshot: questionnaireDefinitionSchema,
-  answers: z.record(z.string(), z.unknown()),
+  answers: questionnaireResponseAnswersDtoSchema,
+  /** Response submitted immediately before this one (older), null on the first. */
+  previousResponseId: z.string().uuid().nullable(),
+  /** Response submitted immediately after this one (newer), null on the last. */
+  nextResponseId: z.string().uuid().nullable(),
 });
-export const questionnaireResponsesListDtoSchema = z.array(questionnaireResponseDtoSchema);
+export const questionnaireResponsesListDtoSchema = z.array(questionnaireResponseListItemDtoSchema);
 export const questionnaireResponsesCsvDtoSchema = z.object({
   filename: z.string().min(1),
   content: z.string(),

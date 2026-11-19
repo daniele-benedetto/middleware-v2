@@ -6,6 +6,7 @@ import {
   revalidatePublicIssueContent,
   revalidatePublicPageContent,
   revalidatePublicQuestionnaireAnalysisContent,
+  revalidatePublicQuestionnaireInviteContent,
 } from "@/lib/public/server/revalidation";
 
 const PUBLIC_ARTICLE_PAGE_CACHE_TAG = "public-article";
@@ -60,6 +61,8 @@ vi.mock("@/lib/public/server/sitemap", () => ({
 
 vi.mock("@/lib/public/server/questionnaire-page", () => ({
   PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG: "public-questionnaire",
+  getPublicQuestionnaireAnalysisCacheTag: (id: string) => `public-questionnaire-analysis:${id}`,
+  getPublicQuestionnaireInviteCacheTag: (id: string) => `public-questionnaire-invite:${id}`,
 }));
 
 vi.mock("@/lib/server/modules/media/service/public", () => ({
@@ -132,6 +135,19 @@ describe("public cache revalidation", () => {
       PUBLIC_HOME_CACHE_TAG,
       PUBLIC_ISSUE_PAGE_CACHE_TAG,
       PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG,
+    ]);
+  });
+
+  it("expires the invite tag of an open questionnaire with the pages that show it", () => {
+    const questionnaireId = "00000000-0000-4000-8000-000000000001";
+
+    revalidatePublicQuestionnaireInviteContent(questionnaireId);
+
+    expectExpiredTags([
+      PUBLIC_HOME_CACHE_TAG,
+      PUBLIC_ISSUE_PAGE_CACHE_TAG,
+      PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG,
+      `public-questionnaire-invite:${questionnaireId}`,
     ]);
   });
 });

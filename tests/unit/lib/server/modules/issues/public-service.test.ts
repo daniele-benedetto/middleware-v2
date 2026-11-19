@@ -10,6 +10,7 @@ const publicCoursesServiceMock = vi.hoisted(() => ({ getByIds: vi.fn().mockResol
 const publicMapsServiceMock = vi.hoisted(() => ({ getByIds: vi.fn().mockResolvedValue([]) }));
 const publicQuestionnairesServiceMock = vi.hoisted(() => ({
   getClosedAnalysesByIds: vi.fn().mockResolvedValue([]),
+  getOpenInvitesByIds: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("@/lib/server/modules/issues/repository/public", () => ({
@@ -131,5 +132,42 @@ describe("publicIssuesService", () => {
     expect(result.previewIssues).toMatchObject([
       { id: previewIssueId, article: { id: previewArticle.id } },
     ]);
+  });
+
+  it("resolves invite blocks through open questionnaires only", async () => {
+    const questionnaireId = crypto.randomUUID();
+    const closedQuestionnaireId = crypto.randomUUID();
+    const invite = {
+      id: questionnaireId,
+      title: "Questionario aperto",
+      titleStyled: null,
+      slug: "questionario-aperto",
+      description: null,
+      homeVariant: "black",
+      questionCount: 3,
+      estimatedMinutes: 2,
+    };
+    publicIssuesRepositoryMock.getCurrent.mockResolvedValue(
+      createIssueRecord({
+        homeBlocks: [
+          { id: "invito", type: "questionnaireInvite", questionnaireId },
+          { id: "invito-bis", type: "questionnaireInvite", questionnaireId },
+          { id: "invito-vuoto", type: "questionnaireInvite", questionnaireId: null },
+          { id: "analisi", type: "questionnaireAnalysis", questionnaireId: closedQuestionnaireId },
+        ],
+        articles: [],
+      }),
+    );
+    publicQuestionnairesServiceMock.getOpenInvitesByIds.mockResolvedValue([invite]);
+
+    const result = await publicIssuesService.getCurrent();
+
+    expect(publicQuestionnairesServiceMock.getOpenInvitesByIds).toHaveBeenCalledWith([
+      questionnaireId,
+    ]);
+    expect(publicQuestionnairesServiceMock.getClosedAnalysesByIds).toHaveBeenCalledWith([
+      closedQuestionnaireId,
+    ]);
+    expect(result.questionnaireInvites).toEqual([invite]);
   });
 });

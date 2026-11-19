@@ -192,4 +192,40 @@ describe("home view model", () => {
       ),
     ).toMatchObject([{ id: "apertura", articles: [{ title: "Lead" }] }]);
   });
+
+  it("shows an invite block only while its questionnaire is open", () => {
+    const questionnaireId = crypto.randomUUID();
+    const invite = {
+      id: questionnaireId,
+      title: "Questionario aperto",
+      titleStyled: null,
+      slug: "questionario-aperto",
+      description: null,
+      homeVariant: "black" as const,
+      questionCount: 3,
+      estimatedMinutes: 2,
+    };
+    const homeBlocks: PublicCurrentIssueDetail["homeBlocks"] = [
+      { id: "invito", type: "questionnaireInvite", questionnaireId },
+    ];
+
+    expect(
+      resolveIssueHomeBlocks({ ...issue([], homeBlocks), questionnaireInvites: [invite] }),
+    ).toEqual([{ id: "invito", type: "questionnaireInvite", questionnaireInvite: invite }]);
+    expect(resolveIssueHomeBlocks({ ...issue([], homeBlocks), questionnaireInvites: [] })).toEqual(
+      [],
+    );
+    expect(resolveIssueHomeBlocks(issue([], homeBlocks))).toEqual([]);
+  });
+
+  it("never turns an invite block into an analysis block once the questionnaire closes", () => {
+    const questionnaireId = crypto.randomUUID();
+    const closedIssue = {
+      ...issue([], [{ id: "invito", type: "questionnaireInvite", questionnaireId }]),
+      questionnaireInvites: [],
+      questionnaireAnalyses: [{ id: questionnaireId }],
+    } as unknown as PublicCurrentIssueDetail;
+
+    expect(resolveIssueHomeBlocks(closedIssue)).toEqual([]);
+  });
 });

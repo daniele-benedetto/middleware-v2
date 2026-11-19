@@ -9,10 +9,16 @@ import {
   questionnaireResponsesListDtoSchema,
   questionnairesListDtoSchema,
 } from "@/lib/server/modules/questionnaires/dto";
+import { publicQuestionnaireInviteDtoSchema } from "@/lib/server/modules/questionnaires/dto/invite";
 import { publicQuestionnaireAnalysisDtoSchema } from "@/lib/server/modules/questionnaires/dto/public";
+import {
+  questionnaireFieldAnswersDtoSchema,
+  questionnaireSummaryDtoSchema,
+} from "@/lib/server/modules/questionnaires/dto/summary";
 import { questionnairesPolicy } from "@/lib/server/modules/questionnaires/policy";
 import {
   createQuestionnaireInputSchema,
+  listQuestionnaireResponsesFilterSchema,
   listQuestionnairesQuerySchema,
   updateQuestionnaireInputSchema,
 } from "@/lib/server/modules/questionnaires/schema";
@@ -35,8 +41,15 @@ const id = z.object({ id: z.string().uuid() });
 const listInput = paginationInputSchema.extend({
   query: listQuestionnairesQuerySchema.default({ sortBy: "updatedAt", sortOrder: "desc" }),
 });
-const responseListInput = paginationInputSchema.extend({ questionnaireId: z.string().uuid() });
+const responseListInput = paginationInputSchema
+  .extend({ questionnaireId: z.string().uuid() })
+  .and(listQuestionnaireResponsesFilterSchema);
+const fieldAnswersInput = paginationInputSchema.extend({
+  questionnaireId: z.string().uuid(),
+  fieldId: z.string().uuid(),
+});
 const closedAnalysesInput = z.object({ ids: z.array(z.string().uuid()).max(50) });
+const openInvitesInput = z.object({ ids: z.array(z.string().uuid()).max(50) });
 const role = requireRoleMiddleware(questionnairesPolicy.allowedRoles);
 const resultsRole = requireRoleMiddleware(questionnairesPolicy.resultsRoles);
 export const questionnairesRouter = router({
@@ -64,6 +77,14 @@ export const questionnairesRouter = router({
     .query(async ({ input }) =>
       (await publicQuestionnairesService.getClosedAnalysesByIds(input.ids)).map((analysis) =>
         parseOutput(analysis, publicQuestionnaireAnalysisDtoSchema),
+      ),
+    ),
+  getOpenInvitesByIds: protectedProcedure
+    .use(role)
+    .input(openInvitesInput)
+    .query(async ({ input }) =>
+      (await publicQuestionnairesService.getOpenInvitesByIds(input.ids)).map((invite) =>
+        parseOutput(invite, publicQuestionnaireInviteDtoSchema),
       ),
     ),
   create: writeProcedure
@@ -171,7 +192,11 @@ export const questionnairesRouter = router({
     .use(resultsRole)
     .input(responseListInput)
     .query(async ({ input }) => {
-      const result = await cmsQuestionnairesService.listResponses(input.questionnaireId, input);
+      const result = await cmsQuestionnairesService.listResponses(
+        input.questionnaireId,
+        input,
+        input,
+      );
       return {
         items: parseOutput(result.items, questionnaireResponsesListDtoSchema),
         pagination: { page: input.page, pageSize: input.pageSize, total: result.total },
@@ -185,6 +210,30 @@ export const questionnairesRouter = router({
         .getResponseById(input.id, input.questionnaireId)
         .then((x) => parseOutput(x, questionnaireResponseDetailDtoSchema)),
     ),
+  getSummary: protectedProcedure
+    .use(resultsRole)
+    .input(id)
+    .query(({ input }) =>
+      cmsQuestionnairesService
+        .getSummary(input.id)
+        .then((x) => parseOutput(x, questionnaireSummaryDtoSchema)),
+    ),
+  listFieldAnswers: protectedProcedure
+    .use(resultsRole)
+    .input(fieldAnswersInput)
+    .query(async ({ input }) => {
+      const result = await cmsQuestionnairesService.listFieldAnswers(
+        input.questionnaireId,
+        input.fieldId,
+        input,
+      );
+      const { field, items } = parseOutput(result, questionnaireFieldAnswersDtoSchema);
+      return {
+        field,
+        items,
+        pagination: { page: input.page, pageSize: input.pageSize, total: result.total },
+      };
+    }),
   exportResponsesCsv: protectedProcedure
     .use(resultsRole)
     .input(id)

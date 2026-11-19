@@ -87,6 +87,14 @@ const getQuestionnaireAnalysisIds = (blocks: IssueHomeBlocks | null) => [
   ),
 ];
 
+const getQuestionnaireInviteIds = (blocks: IssueHomeBlocks | null) => [
+  ...new Set(
+    (blocks ?? []).flatMap((block) =>
+      block.type === "questionnaireInvite" && block.questionnaireId ? [block.questionnaireId] : [],
+    ),
+  ),
+];
+
 const getPreviewIssueIds = (blocks: IssueHomeBlocks | null) => [
   ...new Set(
     (blocks ?? []).flatMap((block) =>
@@ -149,6 +157,7 @@ const toPublicIssueDetailDto = (issue: PublicIssueDetailRecord): PublicIssueDeta
     courses: [],
     maps: [],
     questionnaireAnalyses: [],
+    questionnaireInvites: [],
     previewIssues: [],
   };
 };
@@ -159,6 +168,7 @@ function getPreviewArticleId(blocks: IssueHomeBlocks | null, articleIds: Set<str
       block.type !== "course" &&
       block.type !== "map" &&
       block.type !== "questionnaireAnalysis" &&
+      block.type !== "questionnaireInvite" &&
       block.type !== "preview",
   );
   const opening = articleBlocks.find((block) => block.type === "opening");
@@ -245,15 +255,17 @@ export const publicIssuesService = {
     }
 
     const dto = toPublicIssueDetailDto(issue);
-    const [courses, maps, questionnaireAnalyses, previewIssues] = await Promise.all([
-      publicCoursesService.getByIds(getCourseIds(dto.homeBlocks)),
-      publicMapsService.getByIds(getMapIds(dto.homeBlocks)),
-      publicQuestionnairesService.getClosedAnalysesByIds(
-        getQuestionnaireAnalysisIds(dto.homeBlocks),
-      ),
-      getPreviewIssues(dto.homeBlocks),
-    ]);
-    return { ...dto, courses, maps, questionnaireAnalyses, previewIssues };
+    const [courses, maps, questionnaireAnalyses, questionnaireInvites, previewIssues] =
+      await Promise.all([
+        publicCoursesService.getByIds(getCourseIds(dto.homeBlocks)),
+        publicMapsService.getByIds(getMapIds(dto.homeBlocks)),
+        publicQuestionnairesService.getClosedAnalysesByIds(
+          getQuestionnaireAnalysisIds(dto.homeBlocks),
+        ),
+        publicQuestionnairesService.getOpenInvitesByIds(getQuestionnaireInviteIds(dto.homeBlocks)),
+        getPreviewIssues(dto.homeBlocks),
+      ]);
+    return { ...dto, courses, maps, questionnaireAnalyses, questionnaireInvites, previewIssues };
   },
   async getBySlug(slug: string) {
     const issue = await publicIssuesRepository.getBySlug(slug);
@@ -263,14 +275,16 @@ export const publicIssuesService = {
     }
 
     const dto = toPublicIssueDetailDto(issue);
-    const [courses, maps, questionnaireAnalyses, previewIssues] = await Promise.all([
-      publicCoursesService.getByIds(getCourseIds(dto.homeBlocks)),
-      publicMapsService.getByIds(getMapIds(dto.homeBlocks)),
-      publicQuestionnairesService.getClosedAnalysesByIds(
-        getQuestionnaireAnalysisIds(dto.homeBlocks),
-      ),
-      getPreviewIssues(dto.homeBlocks),
-    ]);
-    return { ...dto, courses, maps, questionnaireAnalyses, previewIssues };
+    const [courses, maps, questionnaireAnalyses, questionnaireInvites, previewIssues] =
+      await Promise.all([
+        publicCoursesService.getByIds(getCourseIds(dto.homeBlocks)),
+        publicMapsService.getByIds(getMapIds(dto.homeBlocks)),
+        publicQuestionnairesService.getClosedAnalysesByIds(
+          getQuestionnaireAnalysisIds(dto.homeBlocks),
+        ),
+        publicQuestionnairesService.getOpenInvitesByIds(getQuestionnaireInviteIds(dto.homeBlocks)),
+        getPreviewIssues(dto.homeBlocks),
+      ]);
+    return { ...dto, courses, maps, questionnaireAnalyses, questionnaireInvites, previewIssues };
   },
 };

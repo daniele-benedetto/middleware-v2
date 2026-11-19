@@ -2,7 +2,24 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { AnalysisFieldRenderer } from "@/components/public/sections/questionnaires/charts/analysis-field-renderer";
-import { getGoldenAngleChartColors } from "@/components/public/sections/questionnaires/charts/chart-colors";
+import { BooleanPieChart } from "@/components/public/sections/questionnaires/charts/boolean-pie-chart";
+import {
+  CHART_SECONDARY_COLOR,
+  CHART_SERIES_COLOR,
+} from "@/components/public/sections/questionnaires/charts/chart-colors";
+import {
+  formatChartPercentage,
+  formatChartRange,
+  getPercentageAxisMaximum,
+} from "@/components/public/sections/questionnaires/charts/chart-format";
+import {
+  AnalysisChartTooltip,
+  ChartTooltipBody,
+} from "@/components/public/sections/questionnaires/charts/chart-tooltip";
+import { ChoiceBarChart } from "@/components/public/sections/questionnaires/charts/choice-bar-chart";
+import { DiscreteDistributionChart } from "@/components/public/sections/questionnaires/charts/discrete-distribution-chart";
+import { Histogram } from "@/components/public/sections/questionnaires/charts/histogram";
+import { NumericFrequencyArea } from "@/components/public/sections/questionnaires/charts/numeric-frequency-area";
 
 const choiceField = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -62,8 +79,8 @@ const multipleChoiceField = {
   fieldType: "multipleChoice" as const,
   multiple: true,
   visualization: {
-    chart: "table" as const,
-    alternatives: ["bar" as const],
+    chart: "bar" as const,
+    alternatives: ["table" as const],
     rationale: "multipleNominal" as const,
     methodology: "respondent_percentage" as const,
   },
@@ -118,73 +135,130 @@ const numericField = {
   },
 };
 
+function render(element: ReturnType<typeof createElement>) {
+  return renderToStaticMarkup(element);
+}
+
 describe("questionnaire chart primitives", () => {
-  it("generates deterministic distinct category colors", () => {
-    const keys = ["first", "second", "third"];
-    const first = getGoldenAngleChartColors(keys);
-    const second = getGoldenAngleChartColors(keys);
-
-    expect(first.get("first")).toBe(second.get("first"));
-    expect(new Set(first.values()).size).toBe(3);
-    expect(first.get("first")).toMatch(/^oklch\(/);
+  it("resolves chart colours from theme tokens instead of generated hues", () => {
+    expect(CHART_SERIES_COLOR).toBe("var(--chart-1)");
+    expect(CHART_SECONDARY_COLOR).toBe("var(--chart-2)");
   });
 
-  it("renders chart data", () => {
-    const html = renderToStaticMarkup(createElement(AnalysisFieldRenderer, { field: choiceField }));
-
-    expect(html).toContain("data-chart");
-    expect(html).toContain("Prima");
-    expect(html).toContain("66.67%");
-    expect(html).toContain("Seconda");
-    expect(html).toContain("33.33%");
-    expect(html).not.toContain("Tabella dati");
+  it("formats percentages, ranges and axis bounds", () => {
+    expect(formatChartPercentage(66.67)).toBe("66,7%");
+    expect(formatChartPercentage(40)).toBe("40%");
+    expect(formatChartRange(2, 2)).toBe("2");
+    expect(formatChartRange(1.5, 2.25)).toBe("1,5–2,25");
+    expect(getPercentageAxisMaximum([12, 33.33])).toBe(40);
+    expect(getPercentageAxisMaximum([3])).toBe(10);
+    expect(getPercentageAxisMaximum([100])).toBe(100);
+    expect(getPercentageAxisMaximum([])).toBe(10);
   });
 
-  it("renders both boolean choices with their percentages", () => {
-    const html = renderToStaticMarkup(
-      createElement(AnalysisFieldRenderer, { field: booleanField }),
+  it("renders the shared tooltip with label, percentage and count", () => {
+    const html = render(
+      createElement(ChartTooltipBody, { label: "Prima", percentage: 66.67, count: 2 }),
     );
+
+    expect(html).toContain("Prima");
+    expect(html).toContain("Percentuale");
+    expect(html).toContain("66,7%");
+    expect(html).toContain("Risposte");
+    expect(html).toContain(">2<");
+  });
+
+  it("omits the count row when the datum has no count and stays hidden when inactive", () => {
+    const withoutCount = render(
+      createElement(AnalysisChartTooltip, {
+        active: true,
+        payload: [{ payload: { label: "Prima", percentage: 50 } }],
+      }),
+    );
+    const inactive = render(
+      createElement(AnalysisChartTooltip, {
+        active: false,
+        payload: [{ payload: { label: "Prima", percentage: 50 } }],
+      }),
+    );
+
+    expect(withoutCount).toContain("50%");
+    expect(withoutCount).not.toContain("Risposte");
+    expect(inactive).toBe("");
+  });
+
+  it.each([
+    ["single", choiceField],
+    ["multiple", multipleChoiceField],
+  ])("renders %s choice as labelled single-colour bars without a legend", (_name, field) => {
+    const html = render(createElement(ChoiceBarChart, { field }));
+
+    expect(html).toContain("Distribuzione percentuale delle risposte");
+    expect(html).toContain("Prima");
+    expect(html).toContain("66,7%");
+    expect(html).toContain("Seconda");
+    expect(html).toContain("33,3%");
+    expect(html).toContain("width:66.67%");
+    expect(html).toContain("width:33.33%");
+    expect(html).not.toContain("Legenda");
+    expect(html).not.toContain("truncate");
+    expect(html).not.toContain("oklch(");
+    expect(html.match(/background-color:var\(--chart-1\)/g)).toHaveLength(2);
+  });
+
+  it("keeps the option order it receives", () => {
+    const html = render(
+      createElement(ChoiceBarChart, {
+        field: { ...choiceField, options: [...choiceField.options].reverse() },
+      }),
+    );
+
+    expect(html.indexOf("Seconda")).toBeLessThan(html.indexOf("Prima"));
+  });
+
+  it("uses thinner bars as the number of options grows", () => {
+    const options = Array.from({ length: 9 }, (_, index) => ({
+      id: `00000000-0000-4000-8000-0000000001${String(index).padStart(2, "0")}`,
+      label: `Opzione ${index + 1}`,
+      count: 1,
+      percentage: 11.11,
+      rank: index + 1,
+    }));
+    const few = render(createElement(ChoiceBarChart, { field: choiceField }));
+    const many = render(createElement(ChoiceBarChart, { field: { ...choiceField, options } }));
+
+    expect(few).toContain("h-4");
+    expect(many).toContain("h-2");
+    expect(many).not.toContain("h-4");
+  });
+
+  it("renders both boolean choices with their percentages in two token colours", () => {
+    const html = render(createElement(BooleanPieChart, { field: booleanField }));
 
     expect(html).toContain("Sì, sono d&#x27;accordo");
     expect(html).toContain("No, non sono d&#x27;accordo");
     expect(html).toContain("60%");
     expect(html).toContain("40%");
-    expect(html).not.toContain("Risposte");
+    expect(html).toContain("var(--chart-1)");
+    expect(html).toContain("var(--chart-2)");
+    expect(html).not.toContain("truncate");
   });
 
-  it("renders multiple choice results as a radial grid", () => {
-    const html = renderToStaticMarkup(
-      createElement(AnalysisFieldRenderer, { field: multipleChoiceField }),
-    );
+  it.each([
+    ["scale values", DiscreteDistributionChart, scaleField, "Distribuzione dei valori"],
+    ["histogram bins", Histogram, numericField, "Distribuzione dei valori per intervallo"],
+    ["numeric frequencies", NumericFrequencyArea, numericField, "Distribuzione dei valori"],
+  ] as const)("renders %s without a per-bar legend", (_name, Chart, field, label) => {
+    const html = render(createElement(Chart, { field }));
 
-    expect(html).toContain("Distribuzione percentuale delle risposte");
-    expect(html).toContain("Prima");
-    expect(html).toContain("Seconda");
-    expect(html).toContain("66.67%");
-    expect(html).toContain("33.33%");
-  });
-
-  it("renders scale values with a colored legend", () => {
-    const html = renderToStaticMarkup(createElement(AnalysisFieldRenderer, { field: scaleField }));
-
-    expect(html).toContain("Legenda dei valori");
-    expect(html).toContain("33.33%");
-    expect(html).toContain("data-chart");
-  });
-
-  it("renders numeric distributions as an area chart without a redundant legend", () => {
-    const html = renderToStaticMarkup(
-      createElement(AnalysisFieldRenderer, { field: numericField }),
-    );
-
-    expect(html).toContain("Distribuzione dei valori");
+    expect(html).toContain(label);
     expect(html).toContain("data-chart");
     expect(html).not.toContain("Legenda");
-    expect(html).not.toContain("Conteggio");
+    expect(html).not.toContain("oklch(");
   });
 
   it("renders an empty state without chart geometry", () => {
-    const html = renderToStaticMarkup(
+    const html = render(
       createElement(AnalysisFieldRenderer, {
         field: {
           ...choiceField,

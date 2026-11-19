@@ -6,6 +6,7 @@ import {
   questionnaireHomeVariantSchema,
   publicVisualizationSchema,
 } from "@/lib/server/modules/questionnaires/schema";
+import { choiceResultsOrderSchema } from "@/lib/server/modules/questionnaires/schema/definition";
 
 export const publicQuestionnaireDtoSchema = z.object({
   id: z.string().uuid(),
@@ -14,6 +15,8 @@ export const publicQuestionnaireDtoSchema = z.object({
   descriptionRich: z.unknown().nullable(),
   definition: questionnaireDefinitionSchema,
   isClosed: z.boolean(),
+  /** True when the questionnaire is closed and its results page (`/questionari/:slug/risultati`) exists. */
+  hasPublicResults: z.boolean(),
 });
 
 export const publicQuestionnaireResponderDtoSchema = z.object({
@@ -95,6 +98,9 @@ const publicAnalysisFieldBaseSchema = z.object({
 const publicAnalysisChoiceFieldSchema = publicAnalysisFieldBaseSchema.extend({
   kind: z.literal("choice"),
   multiple: z.boolean(),
+  /** Order of `options`; absent in payloads cached before the setting existed (= "frequency"). */
+  resultsOrder: choiceResultsOrderSchema.optional(),
+  /** `rank` is always the position by frequency (1 = most chosen), whatever the order. */
   options: z.array(
     z.object({
       id: z.string().uuid(),
@@ -102,6 +108,12 @@ const publicAnalysisChoiceFieldSchema = publicAnalysisFieldBaseSchema.extend({
       count: z.number().int().nonnegative(),
       percentage: z.number().nonnegative(),
       rank: z.number().int().positive(),
+      /**
+       * True only for the synthetic "Altro (specificare)" option (id
+       * `QUESTIONNAIRE_OTHER_OPTION_ID`), present when the field allows it; the free texts are
+       * never part of the public analysis.
+       */
+      isOther: z.literal(true).optional(),
     }),
   ),
 });
@@ -166,6 +178,10 @@ const publicAnalysisDateFieldSchema = publicAnalysisFieldBaseSchema.extend({
 export const publicQuestionnaireAnalysisDtoSchema = z.object({
   analysisVersion: z.literal(1),
   id: z.string().uuid(),
+  /** Slug of the results page; absent in payloads built without it (e.g. cached before it existed). */
+  slug: z.string().optional(),
+  /** Number of submitted responses, whatever the fields answered; same availability as `slug`. */
+  totalResponses: z.number().int().nonnegative().optional(),
   title: z.string(),
   titleStyled: issueTitleStyledSchema.nullable(),
   homeVariant: questionnaireHomeVariantSchema,

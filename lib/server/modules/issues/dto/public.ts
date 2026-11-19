@@ -8,6 +8,7 @@ import {
   issueTitleStyledSchema,
 } from "@/lib/server/modules/issues/schema";
 import { publicMapDetailDtoSchema } from "@/lib/server/modules/maps/dto/public";
+import { publicQuestionnaireInviteDtoSchema } from "@/lib/server/modules/questionnaires/dto/invite";
 import { publicQuestionnaireAnalysisDtoSchema } from "@/lib/server/modules/questionnaires/dto/public";
 
 export const publicIssueArticleSummaryDtoSchema = z.object({
@@ -44,6 +45,7 @@ export const publicIssueDetailDtoSchema = publicIssueDtoSchema.extend({
   courses: z.array(publicCourseDetailDtoSchema),
   maps: z.array(publicMapDetailDtoSchema),
   questionnaireAnalyses: z.array(publicQuestionnaireAnalysisDtoSchema).optional(),
+  questionnaireInvites: z.array(publicQuestionnaireInviteDtoSchema).optional(),
   previewIssues: z
     .array(
       z.object({

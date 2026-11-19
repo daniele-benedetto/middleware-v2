@@ -1,4 +1,4 @@
-import { ChartBar, GraduationCap, Map, Newspaper } from "lucide-react";
+import { ChartBar, ClipboardList, GraduationCap, Map, Newspaper } from "lucide-react";
 
 import { IssueTableOfContentsMenu } from "@/components/public/home/issue-table-of-contents-menu";
 import { PublicSmoothAnchor } from "@/components/public/home/public-smooth-anchor";
@@ -13,7 +13,7 @@ export type IssueTableOfContentsItem = {
   label: string;
   number?: number;
   type: "article" | "course" | "map" | "questionnaire";
-  icon?: "course" | "map" | "questionnaireAnalysis" | "preview";
+  icon?: "course" | "map" | "questionnaireAnalysis" | "questionnaireInvite" | "preview";
 };
 
 export type IssueTableOfContentsIssue = {
@@ -28,6 +28,7 @@ const blockIcons = {
   course: GraduationCap,
   map: Map,
   questionnaireAnalysis: ChartBar,
+  questionnaireInvite: ClipboardList,
   preview: Newspaper,
 } as const;
 

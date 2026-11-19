@@ -86,6 +86,18 @@ function getQuestionnaireAnalysisIds(blocks: IssueHomeBlocks) {
   ];
 }
 
+function getQuestionnaireInviteIds(blocks: IssueHomeBlocks) {
+  return [
+    ...new Set(
+      blocks.flatMap((block) =>
+        block.type === "questionnaireInvite" && block.questionnaireId
+          ? [block.questionnaireId]
+          : [],
+      ),
+    ),
+  ];
+}
+
 function normalizePickedDate(value: Date) {
   const next = new Date(value);
   next.setHours(12, 0, 0, 0);
@@ -369,6 +381,45 @@ function IssueFormContent({
     questionnaireAnalysesQuery.isPending,
     questionnaireAnalysisIds,
   ]);
+  const [openQuestionnaireSearch, setOpenQuestionnaireSearch] = useState("");
+  const deferredOpenQuestionnaireSearch = useDeferredValue(openQuestionnaireSearch);
+  const openQuestionnairesQuery = trpc.questionnaires.list.useQuery({
+    page: 1,
+    pageSize: 20,
+    query: {
+      status: "PUBLISHED",
+      q: deferredOpenQuestionnaireSearch.trim() || undefined,
+      sortBy: "publishedAt",
+      sortOrder: "desc",
+    },
+  });
+  const openQuestionnaireItems = openQuestionnairesQuery.data?.items;
+  const questionnaireInviteIds = useMemo(() => getQuestionnaireInviteIds(homeBlocks), [homeBlocks]);
+  const questionnaireInvitesQuery = trpc.questionnaires.getOpenInvitesByIds.useQuery(
+    { ids: questionnaireInviteIds },
+    { enabled: questionnaireInviteIds.length > 0 },
+  );
+  const openQuestionnaireOptions = useMemo(() => {
+    const options = new Map<string, { id: string; title: string }>();
+    for (const questionnaire of openQuestionnaireItems ?? []) {
+      options.set(questionnaire.id, { id: questionnaire.id, title: questionnaire.title });
+    }
+    for (const invite of questionnaireInvitesQuery.data ?? []) {
+      options.set(invite.id, { id: invite.id, title: invite.title });
+    }
+    return [...options.values()];
+  }, [openQuestionnaireItems, questionnaireInvitesQuery.data]);
+  const questionnaireInviteAvailability = useMemo(() => {
+    const availability: Record<string, "loading" | "available" | "unavailable"> = {};
+    for (const id of questionnaireInviteIds) {
+      availability[id] = questionnaireInvitesQuery.isPending
+        ? "loading"
+        : questionnaireInvitesQuery.data?.some((invite) => invite.id === id)
+          ? "available"
+          : "unavailable";
+    }
+    return availability;
+  }, [questionnaireInviteIds, questionnaireInvitesQuery.data, questionnaireInvitesQuery.isPending]);
   const previewIssuesQuery = trpc.issues.list.useQuery({
     page: 1,
     pageSize: 100,
@@ -527,6 +578,7 @@ function IssueFormContent({
           homeVariant,
           articles: previewArticles,
           questionnaireAnalyses: questionnaireAnalysesQuery.data ?? [],
+          questionnaireInvites: questionnaireInvitesQuery.data ?? [],
           statusLabel,
           publicAvailable: Boolean(issue?.isActive && issue.publishedAt),
         }),
@@ -558,6 +610,7 @@ function IssueFormContent({
     previewArticles,
     previewSessionId,
     questionnaireAnalysesQuery.data,
+    questionnaireInvitesQuery.data,
     publishedAt,
     resolvedSlug,
     title,
@@ -698,6 +751,9 @@ function IssueFormContent({
               questionnaires={questionnaireOptions}
               onQuestionnaireSearchChange={setQuestionnaireSearch}
               questionnaireAnalysisAvailability={questionnaireAnalysisAvailability}
+              openQuestionnaires={openQuestionnaireOptions}
+              onOpenQuestionnaireSearchChange={setOpenQuestionnaireSearch}
+              questionnaireInviteAvailability={questionnaireInviteAvailability}
               previewIssues={previewIssues}
               disabled={isBusy}
               showIssueNumberInPrint={showIssueNumber}

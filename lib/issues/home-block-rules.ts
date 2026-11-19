@@ -5,6 +5,7 @@ import type {
   IssueHomeMapBlock,
   IssueHomePreviewBlock,
   IssueHomeQuestionnaireAnalysisBlock,
+  IssueHomeQuestionnaireInviteBlock,
   IssueHomeArticlePrintSettings,
 } from "@/lib/server/modules/issues/schema";
 
@@ -13,6 +14,7 @@ export function isArticleHomeBlock(block: IssueHomeBlock): block is IssueHomeArt
     block.type !== "course" &&
     block.type !== "map" &&
     block.type !== "questionnaireAnalysis" &&
+    block.type !== "questionnaireInvite" &&
     block.type !== "preview"
   );
 }
@@ -96,6 +98,12 @@ export function createEmptyQuestionnaireAnalysisHomeBlock(
   id = `questionnaire-analysis-${Date.now().toString(36)}`,
 ): IssueHomeQuestionnaireAnalysisBlock {
   return { id, type: "questionnaireAnalysis", questionnaireId: null };
+}
+
+export function createEmptyQuestionnaireInviteHomeBlock(
+  id = `questionnaire-invite-${Date.now().toString(36)}`,
+): IssueHomeQuestionnaireInviteBlock {
+  return { id, type: "questionnaireInvite", questionnaireId: null };
 }
 
 export function createEmptyPreviewHomeBlock(

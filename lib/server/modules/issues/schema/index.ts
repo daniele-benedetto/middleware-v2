@@ -65,6 +65,13 @@ export const issueHomeQuestionnaireAnalysisBlockSchema = z.object({
   printSettings: issueHomeBlockPrintSettingsSchema.optional(),
 });
 
+export const issueHomeQuestionnaireInviteBlockSchema = z.object({
+  id: z.string().trim().min(1),
+  type: z.literal("questionnaireInvite"),
+  questionnaireId: z.string().uuid().nullable(),
+  printSettings: issueHomeBlockPrintSettingsSchema.optional(),
+});
+
 export const issueHomePreviewBlockSchema = z.object({
   id: z.string().trim().min(1),
   type: z.literal("preview"),
@@ -77,6 +84,7 @@ export const issueHomeBlockSchema = z.discriminatedUnion("type", [
   issueHomeCourseBlockSchema,
   issueHomeMapBlockSchema,
   issueHomeQuestionnaireAnalysisBlockSchema,
+  issueHomeQuestionnaireInviteBlockSchema,
   issueHomePreviewBlockSchema,
 ]);
 
@@ -88,6 +96,7 @@ export const issueHomeBlocksSchema = z
         block.type === "course" ||
         block.type === "map" ||
         block.type === "questionnaireAnalysis" ||
+        block.type === "questionnaireInvite" ||
         block.type === "preview"
           ? []
           : block.articleIds,
@@ -172,6 +181,9 @@ export type IssueHomeCourseBlock = z.infer<typeof issueHomeCourseBlockSchema>;
 export type IssueHomeMapBlock = z.infer<typeof issueHomeMapBlockSchema>;
 export type IssueHomeQuestionnaireAnalysisBlock = z.infer<
   typeof issueHomeQuestionnaireAnalysisBlockSchema
+>;
+export type IssueHomeQuestionnaireInviteBlock = z.infer<
+  typeof issueHomeQuestionnaireInviteBlockSchema
 >;
 export type IssueHomePreviewBlock = z.infer<typeof issueHomePreviewBlockSchema>;
 export type IssueHomeBlocks = z.infer<typeof issueHomeBlocksSchema>;

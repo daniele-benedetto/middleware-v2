@@ -48,6 +48,60 @@ describe("public questionnaires router", () => {
     expect(ctx.responseHeaders.get("set-cookie")).toContain("mw_questionnaire_responder=");
   });
 
+  it("exposes whether a questionnaire has a public results page", async () => {
+    publicQuestionnairesServiceMock.getBySlug.mockResolvedValue({
+      id: questionnaireId,
+      title: "Questionario",
+      slug: "questionario",
+      descriptionRich: null,
+      definition: {
+        version: 1,
+        copy: {
+          progressLabel: "{current}/{total}",
+          backLabel: "Indietro",
+          nextLabel: "Avanti",
+          submitLabel: "Invia",
+          requiredFieldsMessage: "Obbligatorio",
+          resumeMessage: "Riprendi",
+          successTitle: "Grazie",
+          successMessage: "Ricevuto",
+          alreadySubmittedTitle: "Gia inviato",
+          alreadySubmittedMessage: "Hai gia risposto",
+          closedTitle: "Chiuso",
+          closedMessage: "Non disponibile",
+          resultsTitle: "Risultati",
+          resultsEmptyMessage: "Vuoto",
+        },
+        steps: [
+          {
+            id: "00000000-0000-4000-8000-000000000004",
+            fields: [
+              {
+                id: fieldId,
+                type: "boolean",
+                label: "Parteciperai?",
+                trueLabel: "Si",
+                falseLabel: "No",
+                publicResults: true,
+              },
+            ],
+          },
+        ],
+      },
+      isClosed: true,
+      hasPublicResults: true,
+    });
+    const caller = publicQuestionnairesRouter.createCaller(
+      context("/api/trpc/public.questionnaires.getBySlug"),
+    );
+
+    await expect(caller.getBySlug({ slug: "questionario" })).resolves.toMatchObject({
+      slug: "questionario",
+      isClosed: true,
+      hasPublicResults: true,
+    });
+  });
+
   it("submits using the cookie hash and exposes only the minimal result", async () => {
     questionnaireResponsesServiceMock.submit.mockResolvedValue({
       id: "00000000-0000-4000-8000-000000000003",

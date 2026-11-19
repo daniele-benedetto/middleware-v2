@@ -1,6 +1,15 @@
 "use client";
 
-import { ChartBar, GraduationCap, List, Map, Newspaper, Search, X } from "lucide-react";
+import {
+  ChartBar,
+  ClipboardList,
+  GraduationCap,
+  List,
+  Map,
+  Newspaper,
+  Search,
+  X,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
@@ -23,6 +32,7 @@ const blockIcons = {
   course: GraduationCap,
   map: Map,
   questionnaireAnalysis: ChartBar,
+  questionnaireInvite: ClipboardList,
   preview: Newspaper,
 } as const;
 

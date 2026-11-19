@@ -39,6 +39,22 @@ export const listQuestionnairesQuerySchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
+const responseInstantSchema = z.iso.datetime({ offset: true });
+
+/** Inclusive `submittedAt` bounds, as ISO instants (the caller resolves day boundaries). */
+export const listQuestionnaireResponsesFilterSchema = z
+  .object({
+    submittedFrom: responseInstantSchema.optional(),
+    submittedTo: responseInstantSchema.optional(),
+  })
+  .refine(
+    (filter) =>
+      !filter.submittedFrom ||
+      !filter.submittedTo ||
+      Date.parse(filter.submittedFrom) <= Date.parse(filter.submittedTo),
+    { message: "submittedFrom must not be after submittedTo", path: ["submittedTo"] },
+  );
+
 export {
   createQuestionnaireAnswersSchema,
   createQuestionnaireFieldAnswerSchema,
@@ -70,4 +86,7 @@ export type {
 export type CreateQuestionnaireInput = z.infer<typeof createQuestionnaireInputSchema>;
 export type UpdateQuestionnaireInput = z.infer<typeof updateQuestionnaireInputSchema>;
 export type ListQuestionnairesQuery = z.infer<typeof listQuestionnairesQuerySchema>;
+export type ListQuestionnaireResponsesFilter = z.infer<
+  typeof listQuestionnaireResponsesFilterSchema
+>;
 export type QuestionnaireHomeVariant = z.infer<typeof questionnaireHomeVariantSchema>;

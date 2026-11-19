@@ -44,6 +44,9 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): ResolvedHomeB
   const questionnaireAnalysesById = new Map(
     (issue.questionnaireAnalyses ?? []).map((analysis) => [analysis.id, analysis]),
   );
+  const questionnaireInvitesById = new Map(
+    (issue.questionnaireInvites ?? []).map((invite) => [invite.id, invite]),
+  );
   const previewIssuesById = new Map(
     (issue.previewIssues ?? []).map((preview) => [preview.id, preview]),
   );
@@ -78,6 +81,20 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): ResolvedHomeB
 
       if (questionnaireAnalysis) {
         blocks.push({ id: rawBlock.id, type: "questionnaireAnalysis", questionnaireAnalysis });
+      }
+
+      continue;
+    }
+
+    if (rawBlock.type === "questionnaireInvite") {
+      // Only open questionnaires are resolved server-side: a closed one never falls back to
+      // the analysis block, the invite simply disappears.
+      const questionnaireInvite = rawBlock.questionnaireId
+        ? questionnaireInvitesById.get(rawBlock.questionnaireId)
+        : null;
+
+      if (questionnaireInvite) {
+        blocks.push({ id: rawBlock.id, type: "questionnaireInvite", questionnaireInvite });
       }
 
       continue;

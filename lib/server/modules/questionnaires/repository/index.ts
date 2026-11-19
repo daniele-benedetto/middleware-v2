@@ -115,6 +115,21 @@ export const questionnairesRepository = {
   },
 };
 
+export type QuestionnaireResponsesFilter = { submittedFrom?: Date; submittedTo?: Date };
+
+function whereForCmsResponses(
+  questionnaireId: string,
+  filter: QuestionnaireResponsesFilter,
+): Prisma.QuestionnaireResponseWhereInput {
+  return {
+    questionnaireId,
+    submittedAt:
+      filter.submittedFrom || filter.submittedTo
+        ? { gte: filter.submittedFrom, lte: filter.submittedTo }
+        : undefined,
+  };
+}
+
 export const questionnaireResponsesRepository = {
   async hasResponse(questionnaireId: string, anonymousTokenHash: string) {
     const response = await prisma.questionnaireResponse.findUnique({
@@ -133,17 +148,29 @@ export const questionnaireResponsesRepository = {
       select: QUESTIONNAIRE_RESPONSE_SELECT,
     });
   },
-  async listForCms(questionnaireId: string, pagination: PaginationParams) {
+  async listForCms(
+    questionnaireId: string,
+    filter: QuestionnaireResponsesFilter,
+    pagination: PaginationParams,
+  ) {
     return prisma.questionnaireResponse.findMany({
-      where: { questionnaireId },
-      orderBy: { submittedAt: "desc" },
+      where: whereForCmsResponses(questionnaireId, filter),
+      orderBy: [{ submittedAt: "desc" }, { id: "desc" }],
       skip: (pagination.page - 1) * pagination.pageSize,
       take: pagination.pageSize,
-      select: { id: true, questionnaireId: true, schemaVersion: true, submittedAt: true },
+      select: {
+        id: true,
+        questionnaireId: true,
+        schemaVersion: true,
+        answers: true,
+        submittedAt: true,
+      },
     });
   },
-  async countForCms(questionnaireId: string) {
-    return prisma.questionnaireResponse.count({ where: { questionnaireId } });
+  async countForCms(questionnaireId: string, filter: QuestionnaireResponsesFilter) {
+    return prisma.questionnaireResponse.count({
+      where: whereForCmsResponses(questionnaireId, filter),
+    });
   },
   async getByIdForCms(id: string, questionnaireId?: string) {
     return prisma.questionnaireResponse.findFirst({
@@ -158,8 +185,42 @@ export const questionnaireResponsesRepository = {
       },
     });
   },
+  /** Ids of the responses right before/after one, in (submittedAt, id) order. */
+  async getAdjacentIdsForCms(response: { id: string; questionnaireId: string; submittedAt: Date }) {
+    const { id, questionnaireId, submittedAt } = response;
+    const [previous, next] = await Promise.all([
+      prisma.questionnaireResponse.findFirst({
+        where: {
+          questionnaireId,
+          OR: [{ submittedAt: { lt: submittedAt } }, { submittedAt, id: { lt: id } }],
+        },
+        orderBy: [{ submittedAt: "desc" }, { id: "desc" }],
+        select: { id: true },
+      }),
+      prisma.questionnaireResponse.findFirst({
+        where: {
+          questionnaireId,
+          OR: [{ submittedAt: { gt: submittedAt } }, { submittedAt, id: { gt: id } }],
+        },
+        orderBy: [{ submittedAt: "asc" }, { id: "asc" }],
+        select: { id: true },
+      }),
+    ]);
+    return { previousId: previous?.id ?? null, nextId: next?.id ?? null };
+  },
 };
 
+const cmsQuestionnaireResultsSelect = {
+  id: true,
+  status: true,
+  publishedAt: true,
+  closedAt: true,
+  definition: true,
+  responses: {
+    orderBy: [{ submittedAt: "asc" }, { id: "asc" }],
+    select: { id: true, answers: true, submittedAt: true },
+  },
+} as const satisfies Prisma.QuestionnaireSelect;
 const cmsQuestionnaireSelect = {
   id: true,
   title: true,
@@ -206,6 +267,13 @@ export const cmsQuestionnairesRepository = {
   },
   getById(id: string) {
     return prisma.questionnaire.findUnique({ where: { id }, select: cmsQuestionnaireDetailSelect });
+  },
+  /** Questionnaire with all its responses (oldest first), for in-memory aggregation. */
+  getWithResponsesForResults(id: string) {
+    return prisma.questionnaire.findUnique({
+      where: { id },
+      select: cmsQuestionnaireResultsSelect,
+    });
   },
   create(input: {
     title: string;

@@ -113,6 +113,43 @@ describe("issues schemas", () => {
     expect(parsed.homeBlocks).toEqual([{ id: "anteprima", type: "preview", previewIssueId }]);
   });
 
+  it("allows questionnaire invite blocks without article fields", () => {
+    const questionnaireId = "00000000-0000-4000-8000-000000000001";
+    const parsed = createIssueInputSchema.parse({
+      title: "Issue 01",
+      homeBlocks: [
+        { id: "invito", type: "questionnaireInvite", questionnaireId },
+        { id: "invito-vuoto", type: "questionnaireInvite", questionnaireId: null },
+      ],
+    });
+
+    expect(parsed.homeBlocks).toEqual([
+      { id: "invito", type: "questionnaireInvite", questionnaireId },
+      { id: "invito-vuoto", type: "questionnaireInvite", questionnaireId: null },
+    ]);
+  });
+
+  it("keeps invite and analysis blocks of the same questionnaire independent", () => {
+    const questionnaireId = "00000000-0000-4000-8000-000000000001";
+    const homeBlocks = [
+      { id: "invito", type: "questionnaireInvite", questionnaireId },
+      { id: "analisi", type: "questionnaireAnalysis", questionnaireId },
+    ];
+
+    expect(createIssueInputSchema.parse({ title: "Issue 01", homeBlocks }).homeBlocks).toEqual(
+      homeBlocks,
+    );
+  });
+
+  it("rejects questionnaire invite blocks with an invalid questionnaire id", () => {
+    expect(
+      createIssueInputSchema.safeParse({
+        title: "Issue 01",
+        homeBlocks: [{ id: "invito", type: "questionnaireInvite", questionnaireId: "aperto" }],
+      }).success,
+    ).toBe(false);
+  });
+
   it("rejects more than one preview block", () => {
     const issueId = "00000000-0000-4000-8000-000000000001";
 

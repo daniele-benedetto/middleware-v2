@@ -24,6 +24,7 @@ function resolveNarrativeBlocks(issue: IssuePreview): NarrativeBlock[] {
       rawBlock.type === "course" ||
       rawBlock.type === "map" ||
       rawBlock.type === "questionnaireAnalysis" ||
+      rawBlock.type === "questionnaireInvite" ||
       rawBlock.type === "preview"
     ) {
       continue;

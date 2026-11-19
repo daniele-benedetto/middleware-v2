@@ -62,6 +62,7 @@ function resolveNarrativeBlocks(issue: IssueNumberingSource): NarrativeBlock[] {
       rawBlock.type === "course" ||
       rawBlock.type === "map" ||
       rawBlock.type === "questionnaireAnalysis" ||
+      rawBlock.type === "questionnaireInvite" ||
       rawBlock.type === "preview"
     ) {
       continue;

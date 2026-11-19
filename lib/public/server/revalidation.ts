@@ -12,6 +12,7 @@ import { PUBLIC_NAVIGATION_CACHE_TAG } from "@/lib/public/server/navigation-cach
 import { PUBLIC_PAGE_CACHE_TAG } from "@/lib/public/server/page";
 import {
   getPublicQuestionnaireAnalysisCacheTag,
+  getPublicQuestionnaireInviteCacheTag,
   PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG,
 } from "@/lib/public/server/questionnaire-page";
 import { PUBLIC_SITEMAP_CACHE_TAG } from "@/lib/public/server/sitemap";
@@ -60,6 +61,16 @@ export function revalidatePublicQuestionnaireAnalysisContent(questionnaireId?: s
   revalidatePublicTag(PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG);
   if (questionnaireId) {
     revalidatePublicTag(getPublicQuestionnaireAnalysisCacheTag(questionnaireId));
+  }
+}
+
+/** Refreshes the issue home invite block (and the fill-in page) of an open questionnaire. */
+export function revalidatePublicQuestionnaireInviteContent(questionnaireId?: string) {
+  revalidatePublicTag(PUBLIC_HOME_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);
+  revalidatePublicTag(PUBLIC_QUESTIONNAIRE_PAGE_CACHE_TAG);
+  if (questionnaireId) {
+    revalidatePublicTag(getPublicQuestionnaireInviteCacheTag(questionnaireId));
   }
 }
 

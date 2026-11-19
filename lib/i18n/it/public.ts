@@ -266,6 +266,9 @@ export const publicIt = {
     courseNotFound: "Contro-formazione non trovata",
     lessonNotFound: "Incontro non trovato",
     questionnaireNotFound: "Questionario non trovato",
+    questionnaireResultsTitle: (title: string) => `Risultati: ${title}`,
+    questionnaireResultsDescription: (title: string) =>
+      `I risultati aggregati del questionario «${title}», domanda per domanda.`,
   },
   system: {
     notFoundCode: "404",
@@ -308,24 +311,58 @@ export const publicIt = {
   loading: {
     content: "Caricamento contenuti in corso.",
   },
+  questionnaireInvite: {
+    kicker: "Questionario aperto",
+    cta: "Partecipa al questionario",
+    summary: (questionCount: number, minutes: number) =>
+      `${questionCount} ${questionCount === 1 ? "domanda" : "domande"} · circa ${minutes} min`,
+  },
   questionnaire: {
     skipToQuestionnaire: "Vai al questionario",
     exit: "Esci",
     loading: "Caricamento questionario in corso.",
-    submitError: "Non e stato possibile inviare il questionario. Riprova tra poco.",
-    invalidAnswer: "Controlla le risposte evidenziate e riprova.",
+    submitError:
+      "Non è stato possibile inviare il questionario. Le risposte restano salvate su questo dispositivo: riprova tra poco.",
+    submitRateLimited:
+      "Hai effettuato troppi tentativi in poco tempo. Attendi qualche minuto e invia di nuovo: le risposte restano salvate.",
     defaultStepTitle: "Domande",
     validation: {
       required: "Campo obbligatorio.",
       invalidFormat: "Inserisci un valore valido.",
-      minCharacters: (minimum: number) => `Inserisci almeno ${minimum} caratteri.`,
-      minOptions: (minimum: number) => `Seleziona almeno ${minimum} opzioni.`,
+      minCharacters: (minimum: number) =>
+        minimum === 1 ? "Inserisci almeno 1 carattere." : `Inserisci almeno ${minimum} caratteri.`,
+      maxCharacters: (maximum: number) =>
+        maximum === 1
+          ? "Inserisci al massimo 1 carattere."
+          : `Inserisci al massimo ${maximum} caratteri.`,
+      minOptions: (minimum: number) =>
+        minimum === 1 ? "Seleziona almeno 1 opzione." : `Seleziona almeno ${minimum} opzioni.`,
+      maxOptions: (maximum: number) =>
+        maximum === 1
+          ? "Seleziona al massimo 1 opzione."
+          : `Seleziona al massimo ${maximum} opzioni.`,
+      minValue: (minimum: number) => `Inserisci un valore non inferiore a ${minimum}.`,
       maxValue: (maximum: number) => `Inserisci un valore non superiore a ${maximum}.`,
+      integer: "Inserisci un numero intero.",
+      invalidEmail: "Inserisci un indirizzo email valido.",
+      invalidUrl: "Inserisci un indirizzo web valido, completo di https://.",
+      invalidDate: "Inserisci una data valida.",
+      dateTooEarly: (minimum: string) => `Inserisci una data non precedente al ${minimum}.`,
+      dateTooLate: (maximum: string) => `Inserisci una data non successiva al ${maximum}.`,
+      invalidOption: "Seleziona una delle opzioni disponibili.",
+      otherRequired: "Specifica la risposta.",
       invalidValue: "Controlla il valore inserito.",
       summary: "Completa o correggi i campi evidenziati per continuare.",
     },
     defaultCompletionCta: "Torna alla rivista",
     closedCta: "Torna alla rivista",
+    closedCode: "Fine",
+    closedResultsCta: "Vedi i risultati",
+    privacyLinkLabel: "Leggi l'informativa sulla privacy",
+    draftStatus: {
+      saving: "Salvataggio in corso",
+      saved: "Risposte salvate su questo dispositivo",
+    },
     stats: {
       stepsLabel: "Step",
       questionsLabel: "Domande",
@@ -336,6 +373,25 @@ export const publicIt = {
     restartCta: "Ricomincia",
     startCta: "Inizia il questionario",
     progressLabel: (current: number, total: number) => `Sezione ${current} di ${total}`,
+    questionProgress: (answered: number, total: number) =>
+      total === 1 ? `${answered} di 1 domanda` : `${answered} di ${total} domande`,
+    other: {
+      inputLabel: (label: string) => `${label}: specifica la risposta`,
+      placeholder: "Specifica la risposta",
+    },
+    review: {
+      title: "Riepilogo",
+      description: "Controlla le risposte prima di inviare. Puoi ancora modificarle.",
+      empty: "Non ci sono domande a cui rispondere.",
+      unanswered: "Non risposto",
+      edit: "Modifica",
+      editStep: (title: string) => `Modifica le risposte della sezione ${title}`,
+      backToReview: "Torna al riepilogo",
+      consentGiven: "Sì",
+      consentNotGiven: "No",
+    },
+    resultsAfterClose:
+      "I risultati aggregati saranno pubblicati dopo la chiusura del questionario.",
     submitting: "Invio in corso...",
     submittingStatus: "Invio del questionario in corso",
   },
@@ -363,7 +419,7 @@ export const publicIt = {
     methodBinaryPercentage: "Percentuale sul totale delle risposte valide al campo.",
     methodCategoryPercentage: "Percentuale sul totale delle risposte valide al campo.",
     methodRespondentPercentage:
-      "Ogni percentuale indica la quota di rispondenti che ha scelto l'opzione; la somma puo superare il 100%.",
+      "Ogni percentuale indica la quota di rispondenti che ha scelto l'opzione; la somma può superare il 100%.",
     methodOrdinalDistribution: "Distribuzione dei valori della scala nell'ordine naturale.",
     methodNumericDistribution: "Distribuzione dei valori nei bucket calcolati dal questionario.",
     methodTemporalDistribution:
@@ -381,6 +437,34 @@ export const publicIt = {
     questionsListAriaLabel: "Elenco del questionario",
     questionsNavAriaLabel: "Domande del questionario",
     resultsAriaLabel: (label: string) => `Risultati: ${label}`,
+    range: "Min–max",
+    answer: "Risposta",
+    period: "Periodo",
+    hour: "Ora",
+    closedOn: (date: string) => `Questionario chiuso il ${date}`,
+    allResultsCta: "Tutti i risultati",
+    resultsPage: {
+      eyebrow: "Risultati del questionario",
+      totalResponses: (count: number) => (count === 1 ? "1 risposta" : `${count} risposte`),
+      indexTitle: "Domande",
+      indexNavAriaLabel: "Indice delle domande",
+      resultsHeading: "Risultati per domanda",
+      questionLinkLabel: "Link alla domanda",
+      questionLinkAriaLabel: (label: string) => `Link diretto alla domanda: ${label}`,
+    },
+    questionPosition: (number: string, total: number) => `Domanda ${number} di ${total}`,
+    tableCaption: (label: string) => `Tabella dei risultati: ${label}`,
+    hourTableCaption: (label: string) => `Tabella dei risultati per fascia oraria: ${label}`,
+    viewToggleAriaLabel: "Tipo di visualizzazione",
+    viewLabels: {
+      pie: "Torta",
+      bar: "Barre",
+      discreteBar: "Barre",
+      histogram: "Istogramma",
+      frequencyArea: "Area",
+      temporalBar: "Barre",
+      table: "Tabella",
+    },
     percentageAriaLabel: (label: string, percentage: string) => `${label}: ${percentage}`,
   },
   schema: {

@@ -1,12 +1,19 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { courseVariantClasses } from "@/components/public/course-variant";
 import { publicInteraction, publicTypography } from "@/components/public/primitives";
-import { AnalysisFieldRenderer } from "@/components/public/sections/questionnaires/charts/analysis-field-renderer";
+import { PublicLink } from "@/components/public/public-link";
+import { AnalysisFieldResults } from "@/components/public/sections/questionnaires/analysis-field-results";
+import {
+  formatAnalysisClosedDate,
+  formatQuestionNumber,
+  getAnalysisFieldAnchorId,
+  getQuestionnaireResultsPath,
+} from "@/components/public/sections/questionnaires/analysis-format";
 import { StyledTitle } from "@/components/public/styled-title";
 import { i18n } from "@/lib/i18n";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
@@ -16,6 +23,10 @@ import type { QuestionnaireAnalysisHomeBlock as QuestionnaireAnalysisHomeBlockDa
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
 
 type AnalysisField = PublicQuestionnaireAnalysisDto["fields"][number];
+
+const questionNumberClass =
+  "shrink-0 font-heading text-[13px] leading-[1.2] font-black tabular-nums";
+const questionLabelClass = "min-w-0 font-ui leading-[1.3] font-bold tracking-[0.03em] uppercase";
 
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -140,8 +151,13 @@ function MobileQuestionMenu({
           "flex min-h-16 w-full items-center justify-between gap-4 px-4 py-4 text-left text-foreground focus-visible:outline-offset-[-3px] sm:px-6",
         )}
       >
-        <span className="line-clamp-2 min-w-0 font-ui text-[11px] leading-[1.25] font-bold tracking-[0.03em] uppercase">
-          {activeField.label}
+        <span className="flex min-w-0 items-baseline gap-3">
+          <span aria-hidden="true" className={cn(questionNumberClass, "text-accent")}>
+            {formatQuestionNumber(activeIndex)}
+          </span>
+          <span className={cn(questionLabelClass, "line-clamp-2 text-[11px]")}>
+            {activeField.label}
+          </span>
         </span>
         <span className="flex size-9 items-center justify-center" aria-hidden="true">
           <Menu size={26} strokeWidth={2.5} />
@@ -181,7 +197,7 @@ function MobileQuestionMenu({
                   <button
                     className={cn(
                       publicInteraction.cardSurface,
-                      "relative min-h-16 w-full border-b border-b-foreground border-l border-l-transparent px-4 py-5 text-left last:border-b-0 focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px] sm:px-6",
+                      "relative flex min-h-16 w-full items-baseline gap-3 border-b border-b-foreground border-l border-l-transparent px-4 py-5 text-left last:border-b-0 focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px] sm:px-6",
                       index === activeIndex
                         ? "border-l-accent bg-surface-hover text-foreground"
                         : "bg-background text-foreground",
@@ -189,14 +205,16 @@ function MobileQuestionMenu({
                     key={field.id}
                     type="button"
                     aria-current={index === activeIndex ? "true" : undefined}
+                    data-field-id={field.id}
                     onClick={() => {
                       onSelect(index);
                       closeMenu();
                     }}
                   >
-                    <span className="font-ui text-[12px] leading-[1.25] font-bold tracking-[0.03em] uppercase">
-                      {field.label}
+                    <span aria-hidden="true" className={cn(questionNumberClass, "text-accent")}>
+                      {formatQuestionNumber(index)}
                     </span>
+                    <span className={cn(questionLabelClass, "text-[12px]")}>{field.label}</span>
                   </button>
                 ))}
               </nav>
@@ -217,10 +235,6 @@ function QuestionList({
   activeIndex: number;
   onSelect: (index: number) => void;
 }) {
-  function selectQuestion(index: number) {
-    onSelect(index);
-  }
-
   return (
     <aside className="hidden min-h-0 flex-col bg-background md:absolute md:inset-y-0 md:left-0 md:flex md:w-1/3 md:border-r md:border-foreground">
       <nav
@@ -233,21 +247,21 @@ function QuestionList({
             <button
               key={field.id}
               type="button"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                selectQuestion(index);
-              }}
+              onClick={() => onSelect(index)}
               aria-current={selected ? "true" : undefined}
+              data-field-id={field.id}
               className={cn(
                 publicInteraction.cardSurface,
-                "relative min-w-55 border-b border-r border-b-foreground border-r-foreground px-6 py-5 text-left last:border-r-0 last:border-b-0 md:min-w-0 md:border-x-0 md:px-8 md:py-6",
+                "relative flex min-w-55 items-baseline gap-3 border-b border-r border-b-foreground border-r-foreground px-6 py-5 text-left last:border-r-0 last:border-b-0 md:min-w-0 md:border-x-0 md:px-8 md:py-6",
                 selected
                   ? "bg-surface-hover text-foreground shadow-(--interactive-rail-shadow)"
                   : "bg-background text-foreground",
               )}
             >
-              <span className="line-clamp-3 block font-ui text-[11px] leading-[1.25] font-bold tracking-[0.03em] uppercase">
+              <span aria-hidden="true" className={cn(questionNumberClass, "text-accent")}>
+                {formatQuestionNumber(index)}
+              </span>
+              <span className={cn(questionLabelClass, "line-clamp-6 text-[12px]")}>
                 {field.label}
               </span>
             </button>
@@ -258,23 +272,26 @@ function QuestionList({
   );
 }
 
-function QuestionCanvas({ field }: { field: AnalysisField }) {
-  const headingId = useId();
-
+function QuestionCanvas({
+  field,
+  index,
+  total,
+  announcement,
+}: {
+  field: AnalysisField;
+  index: number;
+  total: number;
+  announcement: string;
+}) {
   return (
     <section
-      aria-labelledby={headingId}
+      aria-labelledby={getAnalysisFieldAnchorId(field.id)}
       className="min-w-0 p-4 sm:p-6 md:col-start-2 md:p-8 lg:p-10"
     >
-      <h3 className="sr-only" id={headingId}>
-        {i18n.public.questionnaireAnalysis.resultsAriaLabel(field.label)}
-      </h3>
       <p aria-live="polite" className="sr-only">
-        {i18n.public.questionnaireAnalysis.resultsAriaLabel(field.label)}
+        {announcement}
       </p>
-      <div className="py-2">
-        <AnalysisFieldRenderer field={field} />
-      </div>
+      <AnalysisFieldResults key={field.id} field={field} index={index} total={total} />
     </section>
   );
 }
@@ -290,11 +307,23 @@ export function QuestionnaireAnalysisHomeBlock({
   const activeField = analysis.fields[safeActiveIndex];
   const description = extractPlainText(analysis.descriptionRich);
   const variant = courseVariantClasses[analysis.homeVariant];
+  // Empty until the reader picks a question, so the live region only speaks on change.
+  const [announcement, setAnnouncement] = useState("");
+
+  function selectQuestion(index: number) {
+    const field = analysis.fields[index];
+    if (!field) return;
+    setActiveIndex(index);
+    setAnnouncement(i18n.public.questionnaireAnalysis.resultsAriaLabel(field.label));
+  }
 
   if (!activeField) return null;
 
   return (
-    <section className="scroll-mt-[var(--public-issue-anchor-offset)] py-10 md:py-12">
+    <section
+      className="scroll-mt-[var(--public-issue-anchor-offset)] py-10 md:py-12"
+      data-questionnaire-id={analysis.id}
+    >
       <div className="w-full md:mx-auto md:max-w-384 md:px-12">
         <div className="overflow-hidden border-y border-foreground md:border">
           <header
@@ -324,20 +353,45 @@ export function QuestionnaireAnalysisHomeBlock({
                 {description}
               </p>
             ) : null}
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+              <p className={cn(publicTypography.smallKicker, variant.meta)}>
+                {i18n.public.questionnaireAnalysis.closedOn(
+                  formatAnalysisClosedDate(analysis.closedAt),
+                )}
+              </p>
+              {analysis.slug ? (
+                <PublicLink
+                  href={getQuestionnaireResultsPath(analysis.slug)}
+                  className={cn(
+                    publicTypography.smallKicker,
+                    variant.title,
+                    "inline-flex items-center gap-2 underline decoration-2 underline-offset-4 hover:no-underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-current",
+                  )}
+                >
+                  {i18n.public.questionnaireAnalysis.allResultsCta}
+                  <ArrowRight aria-hidden className="size-3.5" />
+                </PublicLink>
+              ) : null}
+            </div>
           </header>
           <div className="relative grid md:grid-cols-[minmax(240px,1fr)_minmax(0,2fr)]">
             <MobileQuestionMenu
               fields={analysis.fields}
               activeIndex={safeActiveIndex}
               title={analysis.title}
-              onSelect={setActiveIndex}
+              onSelect={selectQuestion}
             />
             <QuestionList
               fields={analysis.fields}
               activeIndex={safeActiveIndex}
-              onSelect={setActiveIndex}
+              onSelect={selectQuestion}
             />
-            <QuestionCanvas field={activeField} />
+            <QuestionCanvas
+              field={activeField}
+              index={safeActiveIndex}
+              total={analysis.fields.length}
+              announcement={announcement}
+            />
           </div>
         </div>
       </div>

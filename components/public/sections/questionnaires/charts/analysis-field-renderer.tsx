@@ -2,19 +2,15 @@
 
 import { i18n } from "@/lib/i18n";
 
+import { AnalysisTable } from "./analysis-table";
+import { resolveAnalysisView, type AnalysisField, type AnalysisView } from "./analysis-views";
 import { BooleanPieChart } from "./boolean-pie-chart";
 import { ChoiceBarChart } from "./choice-bar-chart";
 import { DiscreteDistributionChart } from "./discrete-distribution-chart";
-import { DotPlot } from "./dot-plot";
 import { Histogram } from "./histogram";
 import { HourlyBarChart } from "./hourly-bar-chart";
-import { MultipleChoiceRadialChart } from "./multiple-choice-radial-chart";
 import { NumericFrequencyArea } from "./numeric-frequency-area";
 import { TemporalBarChart } from "./temporal-bar-chart";
-
-import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
-
-type AnalysisField = PublicQuestionnaireAnalysisDto["fields"][number];
 
 function EmptyField() {
   return (
@@ -26,39 +22,47 @@ function EmptyField() {
   );
 }
 
-export function AnalysisFieldRenderer({ field }: { field: AnalysisField }) {
+function AnalysisFieldView({ field, view }: { field: AnalysisField; view: AnalysisView }) {
+  if (view === "table") return <AnalysisTable field={field} />;
+
+  if (field.kind === "boolean") {
+    return view === "pie" ? <BooleanPieChart field={field} /> : <EmptyField />;
+  }
+  if (field.kind === "choice") {
+    return view === "bar" ? <ChoiceBarChart field={field} /> : <EmptyField />;
+  }
+  if (field.kind === "number") {
+    if (view === "discreteBar") return <DiscreteDistributionChart field={field} />;
+    if (view === "histogram") return <Histogram field={field} />;
+    if (view === "frequencyArea") return <NumericFrequencyArea field={field} />;
+    return <EmptyField />;
+  }
+  if (view !== "temporalBar") return <EmptyField />;
+  return field.timeDetail === "hourOfDay" ? (
+    <HourlyBarChart field={field} />
+  ) : (
+    <TemporalBarChart field={field} />
+  );
+}
+
+/**
+ * Renders one field with the requested view; without `view` (or with one the
+ * field cannot use) it falls back to the recommended `visualization.chart`.
+ */
+export function AnalysisFieldRenderer({
+  field,
+  view,
+}: {
+  field: AnalysisField;
+  view?: AnalysisView;
+}) {
   if (field.responseCount === 0) {
     return <EmptyField />;
   }
 
   return (
     <div className="space-y-4">
-      {field.visualization.chart === "pie" && field.kind === "boolean" ? (
-        <BooleanPieChart field={field} />
-      ) : (field.visualization.chart === "bar" || field.visualization.chart === "table") &&
-        field.kind === "choice" ? (
-        field.multiple ? (
-          <MultipleChoiceRadialChart field={field} />
-        ) : (
-          <ChoiceBarChart field={field} />
-        )
-      ) : field.visualization.chart === "discreteBar" && field.kind === "number" ? (
-        <DiscreteDistributionChart field={field} />
-      ) : field.visualization.chart === "histogram" && field.kind === "number" ? (
-        <Histogram field={field} />
-      ) : field.visualization.chart === "frequencyArea" && field.kind === "number" ? (
-        <NumericFrequencyArea field={field} />
-      ) : field.visualization.chart === "dotPlot" && field.kind === "number" ? (
-        <DotPlot field={field} />
-      ) : field.visualization.chart === "temporalBar" && field.kind === "date" ? (
-        field.timeDetail === "hourOfDay" ? (
-          <HourlyBarChart field={field} />
-        ) : (
-          <TemporalBarChart field={field} />
-        )
-      ) : (
-        <EmptyField />
-      )}
+      <AnalysisFieldView field={field} view={resolveAnalysisView(field, view)} />
     </div>
   );
 }

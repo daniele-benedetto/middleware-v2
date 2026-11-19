@@ -12,6 +12,10 @@ import {
   createQuestionnaireAnswersSchema,
   questionnaireDefinitionSchema,
 } from "@/lib/server/modules/questionnaires/schema";
+import {
+  isQuestionnaireOtherAnswer,
+  QUESTIONNAIRE_OTHER_OPTION_ID,
+} from "@/lib/server/modules/questionnaires/schema/definition";
 
 import type {
   QuestionnaireResponseRecord,
@@ -157,6 +161,7 @@ function aggregateField(
   if (field.type === "singleChoice" || field.type === "multipleChoice") {
     const counts = new Map(field.options.map((option) => [option.id, 0]));
     let responseCount = 0;
+    let otherCount = 0;
 
     for (const value of values) {
       const selected = field.type === "multipleChoice" ? value : [value];
@@ -164,18 +169,26 @@ function aggregateField(
       const selectedOptionIds = selected.filter(
         (optionId): optionId is string => typeof optionId === "string" && counts.has(optionId),
       );
-      if (selectedOptionIds.length === 0) continue;
+      const hasOther = Boolean(field.allowOther) && selected.some(isQuestionnaireOtherAnswer);
+      if (selectedOptionIds.length === 0 && !hasOther) continue;
       responseCount += 1;
       selectedOptionIds.forEach((optionId) =>
         counts.set(optionId, (counts.get(optionId) ?? 0) + 1),
       );
+      if (hasOther) otherCount += 1;
     }
 
     return {
       kind: "choice",
       fieldId: field.id,
       responseCount,
-      options: [...counts].map(([optionId, count]) => ({ optionId, count })),
+      options: [
+        ...[...counts].map(([optionId, count]) => ({ optionId, count })),
+        // "Altro" answers are counted under a synthetic option; their free text is never public.
+        ...(field.allowOther
+          ? [{ optionId: QUESTIONNAIRE_OTHER_OPTION_ID, count: otherCount }]
+          : []),
+      ],
     };
   }
 

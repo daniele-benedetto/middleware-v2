@@ -5,6 +5,7 @@ import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public
 import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
 import type { PublicIssuePreviewDto } from "@/lib/server/modules/issues/dto/public";
 import type { PublicMapDetailDto } from "@/lib/server/modules/maps/dto/public";
+import type { PublicQuestionnaireInviteDto } from "@/lib/server/modules/questionnaires/dto/invite";
 import type { PublicQuestionnaireAnalysisDto } from "@/lib/server/modules/questionnaires/dto/public";
 
 export type HomeIssueArticle = PublicCurrentIssueDetail["articles"][number];
@@ -30,6 +31,12 @@ export type QuestionnaireAnalysisHomeBlock = {
   questionnaireAnalysis: PublicQuestionnaireAnalysisDto;
 };
 
+export type QuestionnaireInviteHomeBlock = {
+  id: string;
+  type: "questionnaireInvite";
+  questionnaireInvite: PublicQuestionnaireInviteDto;
+};
+
 export type PreviewHomeBlock = {
   id: string;
   type: "preview";
@@ -41,6 +48,7 @@ export type ResolvedHomeBlock =
   | CourseHomeBlock
   | MapHomeBlock
   | QuestionnaireAnalysisHomeBlock
+  | QuestionnaireInviteHomeBlock
   | PreviewHomeBlock;
 
 export function sortHomeArticles(articles: HomeIssueArticle[]) {

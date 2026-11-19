@@ -1,3 +1,4 @@
+import { QUESTIONNAIRE_OTHER_OPTION_ID } from "@/lib/server/modules/questionnaires/schema/definition";
 import { toPublicQuestionnaireAnalysis } from "@/lib/server/modules/questionnaires/service/analysis";
 
 const ids = {
@@ -289,5 +290,212 @@ describe("toPublicQuestionnaireAnalysis", () => {
       },
     ]);
     expect(JSON.stringify(analysis)).not.toContain("https://");
+  });
+
+  describe("choice results order", () => {
+    function ordinalRecord(resultsOrder?: "frequency" | "definition") {
+      const source = record();
+      return {
+        ...source,
+        definition: {
+          ...source.definition,
+          steps: [
+            {
+              id: "00000000-0000-4000-8000-000000000007",
+              fields: [
+                {
+                  id: ids.choice,
+                  type: "singleChoice" as const,
+                  label: "Quanto spesso?",
+                  publicResults: true,
+                  ...(resultsOrder ? { resultsOrder } : {}),
+                  options: [
+                    { id: ids.optionOne, label: "Mai" },
+                    { id: ids.optionTwo, label: "A volte" },
+                    { id: ids.optionThree, label: "Spesso" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        responses: [
+          { answers: { [ids.choice]: ids.optionThree } },
+          { answers: { [ids.choice]: ids.optionThree } },
+          { answers: { [ids.choice]: ids.optionThree } },
+          { answers: { [ids.choice]: ids.optionTwo } },
+          { answers: { [ids.choice]: ids.optionTwo } },
+          { answers: { [ids.choice]: ids.optionOne } },
+        ],
+      };
+    }
+
+    it("sorts options by frequency when the setting is absent", () => {
+      const analysis = toPublicQuestionnaireAnalysis(ordinalRecord());
+
+      expect(analysis?.fields).toMatchObject([
+        {
+          resultsOrder: "frequency",
+          options: [
+            { label: "Spesso", count: 3, rank: 1 },
+            { label: "A volte", count: 2, rank: 2 },
+            { label: "Mai", count: 1, rank: 3 },
+          ],
+        },
+      ]);
+      expect(toPublicQuestionnaireAnalysis(ordinalRecord("frequency"))?.fields).toEqual(
+        analysis?.fields,
+      );
+    });
+
+    it("keeps the authored order and a frequency rank when set to definition", () => {
+      const analysis = toPublicQuestionnaireAnalysis(ordinalRecord("definition"));
+
+      expect(analysis?.fields).toMatchObject([
+        {
+          resultsOrder: "definition",
+          options: [
+            { label: "Mai", count: 1, percentage: 16.67, rank: 3 },
+            { label: "A volte", count: 2, percentage: 33.33, rank: 2 },
+            { label: "Spesso", count: 3, percentage: 50, rank: 1 },
+          ],
+        },
+      ]);
+    });
+  });
+});
+
+describe("toPublicQuestionnaireAnalysis: Altro and conditional fields", () => {
+  const detail = "00000000-0000-4000-8000-000000000021";
+
+  function otherRecord(resultsOrder?: "definition") {
+    const source = record();
+    return {
+      ...source,
+      definition: {
+        ...source.definition,
+        steps: [
+          {
+            id: "00000000-0000-4000-8000-000000000007",
+            fields: [
+              {
+                id: ids.choice,
+                type: "singleChoice" as const,
+                label: "Scelta",
+                publicResults: true,
+                allowOther: true,
+                otherLabel: "Altro (specificare)",
+                ...(resultsOrder ? { resultsOrder } : {}),
+                options: [
+                  { id: ids.optionOne, label: "Uno" },
+                  { id: ids.optionTwo, label: "Due" },
+                ],
+              },
+              {
+                id: ids.multiple,
+                type: "multipleChoice" as const,
+                label: "Multipla",
+                publicResults: true,
+                allowOther: true,
+                options: [{ id: ids.optionThree, label: "Tre" }],
+              },
+              {
+                id: detail,
+                type: "scale" as const,
+                label: "Solo se Uno",
+                publicResults: true,
+                min: 1,
+                max: 3,
+                visibleWhen: {
+                  fieldId: ids.choice,
+                  operator: "equals" as const,
+                  value: ids.optionOne,
+                },
+              },
+            ],
+          },
+        ],
+      },
+      responses: [
+        {
+          answers: {
+            [ids.choice]: { other: "Testo riservato" },
+            [ids.multiple]: [ids.optionThree],
+          },
+        },
+        {
+          answers: {
+            [ids.choice]: { other: "Secondo testo" },
+            [ids.multiple]: [ids.optionThree, { other: "Quattro" }],
+          },
+        },
+        { answers: { [ids.choice]: ids.optionOne, [detail]: 2 } },
+        { answers: {} },
+      ],
+    };
+  }
+
+  it("adds a synthetic Altro option with count, percentage and rank", () => {
+    const analysis = toPublicQuestionnaireAnalysis(otherRecord());
+    const [choice, multiple] = analysis?.fields ?? [];
+
+    expect(choice).toMatchObject({ kind: "choice", responseCount: 3, missingCount: 1 });
+    expect(choice?.kind === "choice" ? choice.options : []).toEqual([
+      {
+        id: QUESTIONNAIRE_OTHER_OPTION_ID,
+        label: "Altro (specificare)",
+        count: 2,
+        percentage: 66.67,
+        rank: 1,
+        isOther: true,
+      },
+      { id: ids.optionOne, label: "Uno", count: 1, percentage: 33.33, rank: 2 },
+      { id: ids.optionTwo, label: "Due", count: 0, percentage: 0, rank: 3 },
+    ]);
+    expect(multiple?.kind === "choice" ? multiple.options : []).toEqual([
+      { id: ids.optionThree, label: "Tre", count: 2, percentage: 100, rank: 1 },
+      {
+        id: QUESTIONNAIRE_OTHER_OPTION_ID,
+        label: "Altro",
+        count: 1,
+        percentage: 50,
+        rank: 2,
+        isOther: true,
+      },
+    ]);
+  });
+
+  it("keeps Altro last in the authored order", () => {
+    const analysis = toPublicQuestionnaireAnalysis(otherRecord("definition"));
+    const choice = analysis?.fields[0];
+
+    expect(choice?.kind === "choice" ? choice.options.map((option) => option.id) : []).toEqual([
+      ids.optionOne,
+      ids.optionTwo,
+      QUESTIONNAIRE_OTHER_OPTION_ID,
+    ]);
+  });
+
+  it("never exposes the free texts", () => {
+    const serialized = JSON.stringify(toPublicQuestionnaireAnalysis(otherRecord()));
+
+    expect(serialized).not.toContain("Testo riservato");
+    expect(serialized).not.toContain("Quattro");
+  });
+
+  it("counts the non-answers of a hidden field as missing", () => {
+    const analysis = toPublicQuestionnaireAnalysis(otherRecord());
+
+    expect(analysis?.fields[2]).toMatchObject({ id: detail, responseCount: 1, missingCount: 3 });
+  });
+
+  it("adds no Altro option to fields that do not allow it", () => {
+    const analysis = toPublicQuestionnaireAnalysis(record());
+    const choice = analysis?.fields[0];
+
+    expect(
+      choice?.kind === "choice" ? choice.options.map((option) => option.id).sort() : [],
+    ).toEqual([ids.optionOne, ids.optionTwo].sort());
+    expect(JSON.stringify(choice)).not.toContain("isOther");
   });
 });

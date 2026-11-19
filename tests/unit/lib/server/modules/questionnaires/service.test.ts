@@ -12,6 +12,7 @@ vi.mock("@/lib/server/modules/questionnaires/repository", () => ({
   questionnaireResponsesRepository: questionnaireResponsesRepositoryMock,
 }));
 
+import { QUESTIONNAIRE_OTHER_OPTION_ID } from "@/lib/server/modules/questionnaires/schema/definition";
 import {
   createQuestionnaireResponsesService,
   type QuestionnaireResponseServiceRepositories,
@@ -235,5 +236,120 @@ describe("questionnaire responses service", () => {
       code: "NOT_FOUND",
       status: 404,
     });
+  });
+});
+
+describe("questionnaire responses service: conditional fields and Altro", () => {
+  const detailId = "00000000-0000-4000-8000-000000000031";
+
+  function logicQuestionnaire(status: "PUBLISHED" | "CLOSED" = "PUBLISHED") {
+    const source = definition();
+    const [text, boolean, choice] = source.steps[0]!.fields;
+    return {
+      ...questionnaire(status),
+      definition: {
+        ...source,
+        steps: [
+          {
+            ...source.steps[0]!,
+            fields: [
+              text,
+              boolean,
+              { ...choice, allowOther: true },
+              {
+                id: detailId,
+                type: "text" as const,
+                label: "Perche si?",
+                required: true,
+                visibleWhen: { fieldId: ids.boolean, operator: "equals" as const, value: true },
+              },
+            ],
+          },
+        ],
+      } as unknown as ReturnType<typeof definition>,
+    };
+  }
+
+  it("stores only the answers of visible fields", async () => {
+    const mock = repositories(logicQuestionnaire());
+    const service = createQuestionnaireResponsesService(mock.value);
+
+    await service.submit({
+      questionnaireId: ids.questionnaire,
+      anonymousTokenHash: "hashed-token",
+      answers: {
+        [ids.text]: "Ada",
+        [ids.boolean]: false,
+        [detailId]: "Rimasto dal passo precedente",
+      },
+    });
+
+    expect(mock.createResponse.mock.calls[0]?.[0].answers).toEqual({
+      [ids.text]: "Ada",
+      [ids.boolean]: false,
+    });
+  });
+
+  it("requires a conditional field once its condition is satisfied", async () => {
+    const service = createQuestionnaireResponsesService(repositories(logicQuestionnaire()).value);
+
+    await expect(
+      service.submit({
+        questionnaireId: ids.questionnaire,
+        anonymousTokenHash: "hashed-token",
+        answers: { [ids.text]: "Ada", [ids.boolean]: true },
+      }),
+    ).rejects.toMatchObject({ status: 422, code: "VALIDATION_ERROR" });
+  });
+
+  it("stores the Altro free text with the answer", async () => {
+    const mock = repositories(logicQuestionnaire());
+    const service = createQuestionnaireResponsesService(mock.value);
+
+    await service.submit({
+      questionnaireId: ids.questionnaire,
+      anonymousTokenHash: "hashed-token",
+      answers: { [ids.text]: "Ada", [ids.boolean]: false, [ids.choice]: { other: " Tre " } },
+    });
+
+    expect(mock.createResponse.mock.calls[0]?.[0].answers).toEqual({
+      [ids.text]: "Ada",
+      [ids.boolean]: false,
+      [ids.choice]: { other: "Tre" },
+    });
+  });
+
+  it("counts Altro answers under a synthetic option without exposing the text", async () => {
+    const record = logicQuestionnaire("CLOSED");
+    const response = (id: string, answers: unknown) => ({
+      id,
+      questionnaireId: ids.questionnaire,
+      schemaVersion: 1,
+      definitionSnapshot: record.definition,
+      anonymousTokenHash: id,
+      answers,
+      submittedAt: new Date("2026-09-04T10:00:00.000Z"),
+    });
+    const service = createQuestionnaireResponsesService(
+      repositories(record, [
+        response("a", { [ids.boolean]: false, [ids.choice]: ids.optionOne }),
+        response("b", { [ids.boolean]: false, [ids.choice]: { other: "Dato riservato" } }),
+        response("c", { [ids.boolean]: false }),
+      ]).value,
+    );
+
+    const results = await service.getPublicResults(ids.questionnaire);
+
+    expect(results.find((result) => result.fieldId === ids.choice)).toEqual({
+      kind: "choice",
+      fieldId: ids.choice,
+      responseCount: 2,
+      options: [
+        { optionId: ids.optionOne, count: 1 },
+        { optionId: ids.optionTwo, count: 0 },
+        { optionId: QUESTIONNAIRE_OTHER_OPTION_ID, count: 1 },
+      ],
+    });
+    expect(JSON.stringify(results)).not.toContain("Dato riservato");
   });
 });

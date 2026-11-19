@@ -21,3 +21,4 @@ export type MapDetailInitialData = RouterOutputs["maps"]["getById"];
 export type QuestionnairesListInitialData = RouterOutputs["questionnaires"]["list"];
 export type QuestionnaireResponsesListInitialData =
   RouterOutputs["questionnaires"]["listResponses"];
+export type QuestionnaireSummaryInitialData = RouterOutputs["questionnaires"]["getSummary"];
