@@ -31,9 +31,11 @@ export function QuestionnaireReview({
         >
           {text.review.title}
         </h1>
-        <p className="mt-4 font-editorial text-[18px] leading-relaxed text-body-text">
-          {sections.length > 0 ? text.review.description : text.review.empty}
-        </p>
+        {sections.length === 0 ? (
+          <p className="mt-4 font-editorial text-[18px] leading-relaxed text-body-text">
+            {text.review.empty}
+          </p>
+        ) : null}
       </div>
 
       <div className="divide-y divide-foreground">

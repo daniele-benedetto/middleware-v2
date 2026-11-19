@@ -670,45 +670,36 @@ export const cmsIt = {
           removeCondition: "Rimuovi condizione",
           consentGiven: "Accettato",
           consentNotGiven: "Non accettato",
-          invalidValue: "Valore non valido per la domanda scelta: non viene salvato.",
-          noSources:
-            "Per aggiungere una condizione serve una domanda che venga prima (i blocchi informativi non contano).",
+          invalidValue: "Valore non valido.",
+          noSources: "Serve una domanda precedente.",
           conditionsRemoved: (count: number) =>
-            count === 1
-              ? "Una condizione non era più valida ed è stata rimossa: la domanda di riferimento è stata eliminata, spostata o modificata."
-              : `${count} condizioni non erano più valide e sono state rimosse: la domanda di riferimento è stata eliminata, spostata o modificata.`,
+            count === 1 ? "Una condizione rimossa." : `${count} condizioni rimosse.`,
           conditionsRemovedTitle: "Condizioni rimosse",
           optionCondition: "Condizione",
           optionConditionActive: "Condizione attiva",
           visibleWhen: {
             label: "Mostra solo se…",
             always: "Mostra sempre",
-            hint: "La domanda compare solo se le risposte alle domande precedenti soddisfano le condizioni. Finché la domanda di riferimento è nascosta o senza risposta vale solo «non ha una risposta».",
           },
           requiredWhen: {
             label: "Obbligatoria solo se…",
             always: "Sempre facoltativa",
-            hint: "La domanda resta facoltativa e diventa obbligatoria solo quando le condizioni sono soddisfatte.",
           },
           optionVisibleWhen: {
             label: "Mostra questa opzione solo se…",
             always: "Mostra sempre",
-            hint: "L'opzione viene proposta solo quando le condizioni sono soddisfatte. Se tutte le opzioni sono nascoste e non c'è «Altro», la domanda non viene mostrata.",
           },
           stepVisibleWhen: {
             label: "Mostra questo step solo se…",
             always: "Mostra sempre",
-            hint: "Lo step intero viene saltato quando le condizioni non sono soddisfatte. Può dipendere solo da domande degli step precedenti.",
           },
           stepEndWhen: {
             label: "Termina il questionario dopo questo step se…",
             always: "Prosegui sempre",
-            hint: "Quando le condizioni sono soddisfatte gli step successivi vengono saltati e si passa al riepilogo. Può dipendere anche dalle domande di questo step.",
           },
           filter: {
             label: "Filtra le risposte",
             always: "Tutte le risposte",
-            hint: "Il riepilogo considera solo le risposte che soddisfano le condizioni.",
           },
         },
         trueLabel: "Etichetta si",
@@ -1072,15 +1063,11 @@ export const cmsIt = {
         },
         summary: {
           loading: "Caricamento sintesi",
-          partialEyebrow: "Risultati parziali",
-          partialDescription:
-            "Il questionario è ancora aperto: i dati cambiano a ogni nuova risposta.",
           totalResponses: "Risposte",
           filteredResponses: (shown: string, total: string) =>
             `${shown} risposte su ${total} soddisfano il filtro`,
           filterEmptyTitle: "Nessuna risposta soddisfa il filtro",
           filterEmptyDescription: "Cambia o rimuovi le condizioni per vedere di nuovo i risultati.",
-          conditionalBadge: "Condizionale",
           notShown: "Non mostrata",
           firstResponse: "Prima risposta",
           lastResponse: "Ultima risposta",
@@ -1098,14 +1085,11 @@ export const cmsIt = {
           emptyDescription: "La sintesi comparirà dopo la prima risposta.",
           noFieldsDescription: "Il questionario non contiene domande con risposta.",
           timelineTitle: "Risposte nel tempo",
-          timelineDescription: "Risposte ricevute per giorno (ora italiana).",
           timelineAriaLabel: (total: number, days: number) =>
             `Grafico a colonne: ${total} risposte distribuite su ${days} giorni.`,
           timelineDayResponses: "Risposte del giorno",
           timelineCumulative: "Totale progressivo",
           questionsTitle: "Domande",
-          publicBadge: "Pubblico",
-          requiredBadge: "Obbligatoria",
           answered: "Risposte valide",
           missing: "Senza risposta",
           invalid: "Non leggibili",

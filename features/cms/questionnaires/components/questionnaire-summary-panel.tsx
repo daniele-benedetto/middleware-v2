@@ -4,7 +4,7 @@ import { keepPreviousData } from "@tanstack/react-query";
 import { useState, type ComponentProps, type ReactNode } from "react";
 
 import { CmsEmptyState, CmsErrorState } from "@/components/cms/common";
-import { CmsBadge, CmsEyebrow, CmsHeading, CmsSurface } from "@/components/cms/primitives";
+import { CmsBadge, CmsHeading, CmsSurface } from "@/components/cms/primitives";
 import { QuestionnaireSummaryLoading } from "@/features/cms/questionnaires/components/questionnaire-list-loading";
 import { QuestionnaireResponsesTimelineChart } from "@/features/cms/questionnaires/components/questionnaire-responses-timeline-chart";
 import { QuestionnaireRuleEditor } from "@/features/cms/questionnaires/components/questionnaire-rule-editor";
@@ -98,18 +98,6 @@ function SummaryTotals({ summary }: { summary: Summary }) {
   );
 }
 
-function PartialResultsNote() {
-  return (
-    <div
-      role="note"
-      className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-[6px] border border-warning px-4 py-3"
-    >
-      <CmsEyebrow className="text-warning">{text.partialEyebrow}</CmsEyebrow>
-      <p className="font-editorial text-[15px] text-body-text">{text.partialDescription}</p>
-    </div>
-  );
-}
-
 export function QuestionnaireSummaryPanel({
   questionnaireId,
   initialData,
@@ -149,7 +137,6 @@ export function QuestionnaireSummaryPanel({
 
   return (
     <div className="space-y-6 pb-6">
-      {summary.status === "PUBLISHED" ? <PartialResultsNote /> : null}
       {summary.totalResponseCount > 0 && filterSources.length > 0 ? (
         <CmsSurface as="section" className="grid gap-2">
           <QuestionnaireRuleEditor
@@ -192,9 +179,6 @@ export function QuestionnaireSummaryPanel({
               <CmsHeading size="section" className="text-[19px]!">
                 {text.timelineTitle}
               </CmsHeading>
-              <p className="font-ui text-[12px] text-muted-foreground">
-                {text.timelineDescription}
-              </p>
             </header>
             <QuestionnaireResponsesTimelineChart timeline={summary.timeline} />
           </CmsSurface>

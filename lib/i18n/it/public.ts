@@ -381,7 +381,6 @@ export const publicIt = {
     },
     review: {
       title: "Riepilogo",
-      description: "Controlla le risposte prima di inviare. Puoi ancora modificarle.",
       empty: "Non ci sono domande a cui rispondere.",
       unanswered: "Non risposto",
       edit: "Modifica",
@@ -390,8 +389,6 @@ export const publicIt = {
       consentGiven: "Sì",
       consentNotGiven: "No",
     },
-    resultsAfterClose:
-      "I risultati aggregati saranno pubblicati dopo la chiusura del questionario.",
     submitting: "Invio in corso...",
     submittingStatus: "Invio del questionario in corso",
   },
@@ -450,7 +447,6 @@ export const publicIt = {
     audiencePartsSeparator: ". ",
   },
   questionnaireAnalysis: {
-    conditionalQuestion: "Domanda condizionale.",
     emptyChart: "Nessun dato aggregato disponibile.",
     validResponses: "Risposte valide",
     missingResponses: "Non risposte",
@@ -461,15 +457,6 @@ export const publicIt = {
     firstQuartile: "Primo quartile",
     thirdQuartile: "Terzo quartile",
     interquartileRange: "Intervallo interquartile",
-    methodBinaryPercentage: "Percentuale sul totale delle risposte valide al campo.",
-    methodCategoryPercentage: "Percentuale sul totale delle risposte valide al campo.",
-    methodRespondentPercentage:
-      "Ogni percentuale indica la quota di rispondenti che ha scelto l'opzione; la somma può superare il 100%.",
-    methodOrdinalDistribution: "Distribuzione dei valori della scala nell'ordine naturale.",
-    methodNumericDistribution: "Distribuzione dei valori nei bucket calcolati dal questionario.",
-    methodTemporalDistribution:
-      "Distribuzione per intervallo temporale; i bucket datetime sono aggregati in UTC e le fasce orarie sono presentate in Europe/Rome.",
-    methodNoData: "Non ci sono valori validi da visualizzare.",
     value: "Valore",
     interval: "Intervallo",
     start: "Inizio",

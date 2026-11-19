@@ -115,7 +115,7 @@ describe("questionnaire field audiences", () => {
     });
   });
 
-  it("exposes the audience in the summary and in the public analysis", () => {
+  it("exposes the audience in the CMS summary only", () => {
     const summary = summarizeQuestionnaireFields(definition, responses);
     expect(summary.find((field) => field.id === ids.why)?.audience?.shownCount).toBe(2);
     expect(summary.find((field) => field.id === ids.happy)?.audience).toBeUndefined();
@@ -128,11 +128,8 @@ describe("questionnaire field audiences", () => {
       definition: rawDefinition,
       responses,
     });
-    expect(analysis?.fields.find((field) => field.id === ids.why)?.audience).toMatchObject({
-      shownCount: 2,
-      totalCount: 4,
-    });
-    expect(analysis?.fields.find((field) => field.id === ids.happy)?.audience).toBeUndefined();
+    // Public results stay plain: who saw a question is CMS-only information.
+    expect(analysis?.fields.every((field) => !("audience" in field))).toBe(true);
   });
 });
 

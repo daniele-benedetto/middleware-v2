@@ -36,7 +36,6 @@ export type QuestionnaireRuleEditorText = {
   label: string;
   /** What happens without conditions, e.g. "Mostra sempre". */
   always: string;
-  hint: string;
 };
 
 type Props = {
@@ -405,7 +404,7 @@ export function QuestionnaireRuleEditor({ id, rule, sources, disabled, text, onC
           {shared.addCondition}
         </CmsActionButton>
       </div>
-      <CmsMetaText>{sources.length === 0 ? shared.noSources : text.hint}</CmsMetaText>
+      {sources.length === 0 ? <CmsMetaText>{shared.noSources}</CmsMetaText> : null}
     </div>
   );
 }

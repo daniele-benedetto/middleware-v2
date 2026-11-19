@@ -419,8 +419,10 @@ export function createQuestionnaireFieldAnswerSchema(field: QuestionnaireField) 
     case "scale":
       return createNumberAnswerSchema(field);
     case "boolean":
-    case "consent":
       return withOptionalRequirement(z.boolean(), field.required);
+    case "consent":
+      // A mandatory consent must be given: an unchecked box (`false`) is not an answer.
+      return field.required ? z.literal(true) : z.boolean().optional();
     case "date":
     case "datetime":
       return createDateAnswerSchema(field);

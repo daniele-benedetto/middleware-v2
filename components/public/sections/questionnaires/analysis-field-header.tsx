@@ -1,6 +1,5 @@
 import { publicTypography } from "@/components/public/primitives";
 import { i18n } from "@/lib/i18n";
-import { formatQuestionnaireAudience } from "@/lib/questionnaires/rule-format";
 import { cn } from "@/lib/utils";
 
 import { formatQuestionNumber, getAnalysisFieldAnchorId } from "./analysis-format";
@@ -8,20 +7,7 @@ import { formatChartNumber, formatChartRange } from "./charts/chart-format";
 
 import type { AnalysisField } from "./charts/analysis-views";
 
-type Methodology = AnalysisField["visualization"]["methodology"];
-
 const strings = i18n.public.questionnaireAnalysis;
-
-const methodologyNotes: Record<Methodology, string | null> = {
-  binary_percentage: strings.methodBinaryPercentage,
-  category_percentage: strings.methodCategoryPercentage,
-  respondent_percentage: strings.methodRespondentPercentage,
-  ordinal_distribution: strings.methodOrdinalDistribution,
-  numeric_distribution: strings.methodNumericDistribution,
-  temporal_distribution: strings.methodTemporalDistribution,
-  // The empty state already says there is nothing to show.
-  no_data: null,
-};
 
 type Stat = { label: string; value: string };
 
@@ -61,9 +47,6 @@ export function AnalysisFieldHeader({
   index: number;
   total: number;
 }) {
-  const methodologyNote = methodologyNotes[field.visualization.methodology];
-  const audience = field.audience ? formatQuestionnaireAudience(field.audience) : null;
-
   return (
     <header className="grid gap-4">
       <div className="grid gap-2">
@@ -95,19 +78,6 @@ export function AnalysisFieldHeader({
           </div>
         ))}
       </dl>
-      {audience ? (
-        <p
-          data-testid="analysis-field-audience"
-          className="max-w-[68ch] font-ui text-xs leading-normal text-muted"
-        >
-          <span className="font-bold text-foreground">{strings.conditionalQuestion}</span>{" "}
-          {audience.shown}
-          {audience.condition ? `. ${audience.condition}.` : "."}
-        </p>
-      ) : null}
-      {methodologyNote ? (
-        <p className="max-w-[68ch] font-ui text-xs leading-normal text-muted">{methodologyNote}</p>
-      ) : null}
     </header>
   );
 }

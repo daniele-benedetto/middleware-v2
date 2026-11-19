@@ -3,7 +3,7 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useId, useState } from "react";
 
-import { CmsActionButton, CmsBadge, CmsSurface } from "@/components/cms/primitives";
+import { CmsActionButton, CmsSurface } from "@/components/cms/primitives";
 import { AnalysisFieldRenderer } from "@/components/public/sections/questionnaires/charts/analysis-field-renderer";
 import { AnalysisViewToggle } from "@/components/public/sections/questionnaires/charts/analysis-view-toggle";
 import {
@@ -32,17 +32,6 @@ type OtherAnswer = NonNullable<
 type Stat = { label: string; value: string };
 
 const text = i18n.cms.lists.questionnaires.responses.summary;
-const publicText = i18n.public.questionnaireAnalysis;
-
-const methodologyNotes: Record<AnalysisField["visualization"]["methodology"], string | null> = {
-  binary_percentage: publicText.methodBinaryPercentage,
-  category_percentage: publicText.methodCategoryPercentage,
-  respondent_percentage: publicText.methodRespondentPercentage,
-  ordinal_distribution: publicText.methodOrdinalDistribution,
-  numeric_distribution: publicText.methodNumericDistribution,
-  temporal_distribution: publicText.methodTemporalDistribution,
-  no_data: null,
-};
 
 function buildStats(field: SummaryField): Stat[] {
   const stats: Stat[] = [
@@ -106,19 +95,11 @@ function FieldStats({ stats }: { stats: Stat[] }) {
 function AnalysisResult({ analysis }: { analysis: AnalysisField }) {
   const [requestedView, setRequestedView] = useState<AnalysisView>();
   const activeView = resolveAnalysisView(analysis, requestedView);
-  const methodologyNote = methodologyNotes[analysis.visualization.methodology];
 
   return (
     <div className="grid gap-4">
       {analysis.responseCount > 0 ? (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {methodologyNote ? (
-            <p className="max-w-[68ch] font-ui text-[12px] leading-normal text-muted-foreground">
-              {methodologyNote}
-            </p>
-          ) : (
-            <span />
-          )}
+        <div className="flex justify-end">
           <AnalysisViewToggle
             views={getAnalysisViews(analysis)}
             activeView={activeView}
@@ -258,19 +239,10 @@ export function QuestionnaireSummaryFieldCard({
   return (
     <CmsSurface as="article" className="grid gap-4">
       <header className="grid gap-2">
-        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <div>
           <h4 className="min-w-0 font-display text-[19px] leading-[1.2] font-extrabold tracking-[-0.01em] text-balance text-foreground">
             {field.label}
           </h4>
-          <div className="flex shrink-0 flex-wrap gap-1.5">
-            {field.required ? (
-              <CmsBadge variant="status-draft">{text.requiredBadge}</CmsBadge>
-            ) : null}
-            {field.publicResults ? (
-              <CmsBadge variant="status-published">{text.publicBadge}</CmsBadge>
-            ) : null}
-            {audience ? <CmsBadge variant="status-new">{text.conditionalBadge}</CmsBadge> : null}
-          </div>
         </div>
         {field.description ? (
           <p className="max-w-[68ch] font-editorial text-[15px] text-body-text">

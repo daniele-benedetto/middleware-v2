@@ -14,7 +14,6 @@ import {
   getQuestionnaireOtherLabel,
   QUESTIONNAIRE_OTHER_OPTION_ID,
 } from "@/lib/server/modules/questionnaires/schema/definition";
-import { createQuestionnaireFieldAudiences } from "@/lib/server/modules/questionnaires/service/audience";
 import {
   calculateMean,
   calculateMedian,
@@ -268,16 +267,11 @@ export function toPublicQuestionnaireAnalysis(
 ): PublicQuestionnaireAnalysisDto | null {
   if (!record.closedAt) return null;
   const definition = questionnaireDefinitionSchema.parse(record.definition);
-  const audiences = createQuestionnaireFieldAudiences(definition, record.responses);
   const fields = definition.steps
     .flatMap((step) => step.fields)
     .filter((field) => field.publicResults)
     .map((field) => aggregateQuestionnaireAnalysisField(field, record.responses))
-    .filter((field): field is NonNullable<typeof field> => field !== null)
-    .map((field) => {
-      const audience = audiences.get(field.id);
-      return audience ? { ...field, audience } : field;
-    });
+    .filter((field): field is NonNullable<typeof field> => field !== null);
 
   if (fields.length === 0) return null;
 

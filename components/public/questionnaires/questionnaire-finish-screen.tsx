@@ -6,14 +6,11 @@ import { PublicLink } from "@/components/public/public-link";
 export function QuestionnaireFinishScreen({
   title,
   message,
-  note,
   actionLabel,
   actionHref,
 }: {
   title: string;
   message: string;
-  /** Secondary line shown under the message. */
-  note?: string;
   actionLabel: string;
   actionHref: string;
 }) {
@@ -40,11 +37,6 @@ export function QuestionnaireFinishScreen({
           <p className="mt-6 max-w-[52ch] font-editorial text-[20px] leading-relaxed text-body-text">
             {message}
           </p>
-          {note ? (
-            <p className="mt-4 max-w-[52ch] font-editorial text-[17px] leading-relaxed text-muted">
-              {note}
-            </p>
-          ) : null}
           <PublicLink
             href={actionHref}
             className="mt-9 inline-flex items-center gap-2 bg-foreground px-5 py-3 font-ui text-[12px] font-bold tracking-[0.08em] text-background uppercase transition-colors hover:bg-accent focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-accent"

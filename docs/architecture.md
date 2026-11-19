@@ -283,7 +283,7 @@ Editorial image semantics:
 - A rule only references fields that come before it (`step.endWhen` also sees its own step), so cycles are impossible. Every answerable field type can control a rule; operators depend on the type (comparisons and ranges on numbers and dates, sets and selection counts on choices, the synthetic "Altro" option, presence on anything).
 - Invariants: a condition is never satisfied while its controlling field is hidden; while it is unanswered only `notAnswered` holds. A choice left without options to pick is hidden. Scale conditions and scale answers must be values the scale offers.
 - `resolveQuestionnaireLogic(definition, answers)` is the single evaluator: visible fields, currently mandatory fields, hidden options, early end. `createQuestionnaireAnswersSchema` validates submissions with it and stores only answers of visible fields.
-- Results: conditional fields carry an `audience` (shown to N of M, with the label-resolved rules) in the public analysis and in the CMS summary; the CSV marks cells of fields that were not shown; the CMS summary can be filtered with a rule over any field (`questionnaires.getSummary({ filter })`).
+- Results: conditional fields carry an `audience` (shown to N of M, with the label-resolved rules) in the CMS summary only, never in the public analysis; the CSV marks cells of fields that were not shown; the CMS summary can be filtered with a rule over any field (`questionnaires.getSummary({ filter })`).
 - New operators or rule locations must stay additive: stored definitions and cached public payloads are parsed with the current schema.
 
 ## Decision Boundaries

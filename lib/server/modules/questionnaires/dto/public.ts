@@ -92,7 +92,7 @@ export const questionnaireDescribedRuleDtoSchema = z.object({
   conditions: z.array(describedConditionDtoSchema),
 });
 
-/** Who a conditional field was shown to. */
+/** Who a conditional field was shown to. CMS-only: never part of the public analysis. */
 export const questionnaireFieldAudienceDtoSchema = z.object({
   /** Responses the field was shown to. */
   shownCount: z.number().int().nonnegative(),
@@ -124,8 +124,6 @@ const publicAnalysisFieldBaseSchema = z.object({
   responseCount: z.number().int().nonnegative(),
   /** Responses without an answer, the ones the field was not shown to included. */
   missingCount: z.number().int().nonnegative(),
-  /** Present only for conditional fields; absent means "shown to every respondent". */
-  audience: questionnaireFieldAudienceDtoSchema.optional(),
   visualization: publicVisualizationSchema,
 });
 

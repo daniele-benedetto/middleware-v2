@@ -323,14 +323,10 @@ export function PublicQuestionnairePage({
   }
 
   if (phase === "submitted") {
-    const publishesResults = definition.steps.some((step) =>
-      step.fields.some((field) => field.publicResults),
-    );
     return (
       <QuestionnaireFinishScreen
         title={definition.copy.successTitle}
         message={definition.copy.successMessage}
-        note={publishesResults ? text.resultsAfterClose : undefined}
         actionLabel={completionLabel}
         actionHref={completionHref}
       />

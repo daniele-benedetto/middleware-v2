@@ -469,6 +469,30 @@ describe("questionnaire rules", () => {
     ).toBe(true);
   });
 
+  it("requires a mandatory consent to be given, not just present", () => {
+    const definition = questionnaireDefinitionSchema.parse({
+      ...build(),
+      steps: [
+        {
+          id: ids.stepOne,
+          fields: [
+            {
+              id: ids.consent,
+              type: "consent",
+              label: "Privacy",
+              consentText: "Ok",
+              required: true,
+            },
+          ],
+        },
+      ],
+    });
+    const schema = createQuestionnaireAnswersSchema(definition);
+    expect(schema.safeParse({ [ids.consent]: true }).success).toBe(true);
+    expect(schema.safeParse({ [ids.consent]: false }).success).toBe(false);
+    expect(schema.safeParse({}).success).toBe(false);
+  });
+
   it("only accepts the values a scale offers as answers", () => {
     const schema = createQuestionnaireAnswersSchema(base);
     expect(schema.safeParse({ [ids.rating]: 3 }).success).toBe(true);
