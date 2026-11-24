@@ -69,6 +69,10 @@ Regole SSH:
 - Tutti i container hanno limite memoria/CPU/PID, log rotation e
   `no-new-privileges`; app, database, Redis, Umami e Caddy hanno healthcheck.
 - `vm.overcommit_memory=1` e persistito per l'affidabilita Redis.
+- `unattended-upgrades` installa ogni giorno gli aggiornamenti di sicurezza e, quando un
+  aggiornamento lo richiede, riavvia la VPS alle `04:30 UTC` (circa 1 minuto offline).
+  La config e versionata in `ops/apt/52middleware-auto-reboot` e installata in
+  `/etc/apt/apt.conf.d/52middleware-auto-reboot`.
 - `auditd` e attivo con watch su SSH, sudoers, env/secrets, Compose e Caddy.
 - Build production richiede il plugin `docker-buildx` sulla VPS.
 - I questionari pubblici richiedono `QUESTIONNAIRE_TOKEN_SECRET` in `.env.production`: senza, ogni chiamata `public.questionnaires.*` risponde `500`. Il segreto firma il cookie anonimo che impedisce le risposte doppie: ruotarlo solo a questionari chiusi o prima di raccogliere risposte, perche dopo la rotazione chi ha gia risposto non viene piu riconosciuto.
@@ -542,7 +546,11 @@ Healthcheck automatico locale:
 - Sorgente repo: `scripts/production-healthcheck-timer.sh`.
 - Timer: `middleware-healthcheck.timer`, ogni 15 minuti.
 - Fallisce se uno dei due dump manca, e vuoto/non valido o ha piu di 5 ore e 45 minuti.
-- Fallisce se manifest completato o marker backup cifrato off-host mancano/hanno piu di 5 ore e 45 minuti.
+- Fallisce se il manifest del backup non e completato.
+- Fallisce se un riavvio richiesto dagli aggiornamenti e in sospeso da piu di 2 giorni: con il
+  riavvio automatico notturno significa che il riavvio non e avvenuto.
+- Non controlla backup off-host: oggi non esiste una copia automatica fuori dalla VPS (ultimo
+  backup off-host: `2026-08-05`, vedi `docs/migration.md`). Da configurare.
 - I log restano locali in `journalctl`; senza servizi esterni non c'e alert se la VPS e down.
 - Il timer invia un heartbeat esterno solo dopo tutti i controlli; 30 minuti senza
   heartbeat devono generare alert.

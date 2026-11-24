@@ -42,12 +42,14 @@ test "$inode_percent" -lt 70
 test "$available_kb" -gt 1048576
 test "$swap_used_kb" -lt 1048576
 
+# unattended-upgrades reboots at 04:30 UTC when an update needs it
+# (ops/apt/52middleware-auto-reboot): a reboot still pending after 2 days means that failed.
 reboot_marker="backups/automated/reboot-required-since"
 if [ -f /var/run/reboot-required ]; then
   if [ ! -e "$reboot_marker" ]; then
     touch "$reboot_marker"
   fi
-  test $(( $(date +%s) - $(stat -c %Y "$reboot_marker") )) -lt 604800
+  test $(( $(date +%s) - $(stat -c %Y "$reboot_marker") )) -lt 172800
 else
   rm -f "$reboot_marker"
 fi

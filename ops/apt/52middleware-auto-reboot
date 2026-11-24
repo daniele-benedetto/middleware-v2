@@ -1,0 +1,8 @@
+// Installed as /etc/apt/apt.conf.d/52middleware-auto-reboot (see docs/production-ops.md).
+// unattended-upgrades already installs security updates every day; without this file a
+// kernel or libc update waits for a manual reboot, and the healthcheck timer fails once the
+// pending reboot is older than its threshold. Reboot only when an update requires it, at a
+// quiet time: after the popular-articles job (02:35 UTC) and before the 05:15 UTC backup.
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
+Unattended-Upgrade::Automatic-Reboot-Time "04:30";

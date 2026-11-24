@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1.7
 
-FROM node:22-slim@sha256:d649c27dae7ba0137b3cef5dd75baa422c08dc3d9e3fc0c23dfb172dc3cc6436 AS base
+ARG NODE_IMAGE=node:22-slim@sha256:d649c27dae7ba0137b3cef5dd75baa422c08dc3d9e3fc0c23dfb172dc3cc6436
+
+FROM ${NODE_IMAGE} AS base
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
@@ -42,6 +44,8 @@ ARG BUILD_NEXT_PUBLIC_UMAMI_DO_NOT_TRACK=true
 ARG BUILD_NEXT_PUBLIC_UMAMI_EXCLUDE_SEARCH=false
 ARG BUILD_NEXT_PUBLIC_UMAMI_EXCLUDE_HASH=true
 ARG BUILD_NEXT_PUBLIC_PRIVACY_BANNER_MODE=acknowledge
+ARG BUILD_NEXT_PUBLIC_TWITTER_HANDLE=
+ARG BUILD_NEXT_PUBLIC_SOCIAL_PROFILES=
 ENV NEXT_PUBLIC_SITE_URL=$BUILD_NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_UMAMI_SRC=$BUILD_NEXT_PUBLIC_UMAMI_SRC
 ENV NEXT_PUBLIC_UMAMI_WEBSITE_ID=$BUILD_NEXT_PUBLIC_UMAMI_WEBSITE_ID
@@ -51,6 +55,8 @@ ENV NEXT_PUBLIC_UMAMI_DO_NOT_TRACK=$BUILD_NEXT_PUBLIC_UMAMI_DO_NOT_TRACK
 ENV NEXT_PUBLIC_UMAMI_EXCLUDE_SEARCH=$BUILD_NEXT_PUBLIC_UMAMI_EXCLUDE_SEARCH
 ENV NEXT_PUBLIC_UMAMI_EXCLUDE_HASH=$BUILD_NEXT_PUBLIC_UMAMI_EXCLUDE_HASH
 ENV NEXT_PUBLIC_PRIVACY_BANNER_MODE=$BUILD_NEXT_PUBLIC_PRIVACY_BANNER_MODE
+ENV NEXT_PUBLIC_TWITTER_HANDLE=$BUILD_NEXT_PUBLIC_TWITTER_HANDLE
+ENV NEXT_PUBLIC_SOCIAL_PROFILES=$BUILD_NEXT_PUBLIC_SOCIAL_PROFILES
 ENV SITE_URL=$BUILD_NEXT_PUBLIC_SITE_URL
 
 # Production builds may mount /run/secrets/build_env so Next.js page-data
@@ -81,11 +87,21 @@ COPY prisma.config.ts ./
 # with no egress, so it must not try to download the engine at deploy time.
 RUN pnpm exec prisma -v
 
-FROM deps AS jobs
+# The popular-articles job imports only `pg`: install that alone, at the version the
+# lockfile resolved, instead of shipping every app and dev dependency plus Chromium.
+FROM deps AS jobs-deps
+WORKDIR /jobs
+
+RUN pg_version="$(node -p 'require("/app/node_modules/pg/package.json").version')" \
+  && npm init -y > /dev/null \
+  && npm install --omit=dev --no-audit --no-fund --no-update-notifier "pg@${pg_version}"
+
+FROM ${NODE_IMAGE} AS jobs
 WORKDIR /app
 
 ENV NODE_ENV=production
 
+COPY --from=jobs-deps /jobs/node_modules ./node_modules
 COPY scripts/sync-popular-articles.mjs ./scripts/sync-popular-articles.mjs
 COPY scripts/lib ./scripts/lib
 
