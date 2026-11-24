@@ -450,3 +450,24 @@ Nel frattempo `main` ha ricevuto 4 commit con 349 file modificati, tra cui `5111
 ### Deploy e Caddy
 
 Il deploy è manuale via SSH (`scripts/production-deploy-manual.sh`, vedi `docs/production-ops.md`). Il build avviene sulla VPS con un relay verso Postgres, quindi **il rischio "build senza DB" della sezione 7.6 non si applica al deploy reale**: riguarda solo il workflow GitHub Actions, che il runbook indica come non in uso. L'accesso SSH dalla sessione di lavoro è stato negato dai permessi locali: deploy e `encode zstd gzip` su Caddy vanno eseguiti da chi ha accesso, seguendo il runbook.
+
+## 10. In produzione (deploy `859dc3fc`, 2026-11-24 11:55 UTC)
+
+Deploy manuale (`scripts/production-deploy-manual.sh --execute`) riuscito: healthcheck ok e smoke HTTPS 200 su home, www, CMS, stats e `/api/og`. Sul sito pubblico risultano serviti:
+
+- CSS pubblico da 20 KB gzip, senza Leaflet;
+- 5 font precaricati;
+- `icon0.svg` da 26 KB;
+- header già nell'HTML iniziale;
+- CSS CMS completo solo sulle route CMS.
+
+Title, description, canonical, JSON-LD, `robots.txt`, `sitemap.xml` e feed sono invariati.
+
+| Metrica (mobile Slow 4G, CPU 4×, cache vuota) | Prima, produzione (mattina) | Dopo, produzione                |
+| --------------------------------------------- | --------------------------- | ------------------------------- |
+| LCP home                                      | 3.728 ms (n=1)              | **2.247 ms** (2.168–2.248, n=3) |
+| CLS home                                      | 0,00                        | 0,00                            |
+
+Nota: la misura del mattino precede anche i commit di `main` pubblicati nel frattempo (tra cui la rimozione di Recharts). Il guadagno attribuibile solo a queste ottimizzazioni è quello del confronto controllato della sezione 9, cioè −17%. In produzione il valore assoluto è più basso che in laboratorio perché Caddy gestisce meglio la priorità delle risorse in HTTP/2–3 rispetto al proxy di prova.
+
+Resta aperto, sul server: `encode zstd gzip` nel `Caddyfile` (oggi solo gzip).
