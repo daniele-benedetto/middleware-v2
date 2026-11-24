@@ -3,7 +3,7 @@ import { getCourseNumberLabel } from "@/components/public/sections/formazione/co
 import { CourseDossier } from "@/components/public/sections/formazione/course-dossier";
 import { formatCourseDate } from "@/components/public/sections/formazione/course-format";
 import { CoursesArchiveSection } from "@/components/public/sections/formazione/courses-archive-section";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { buildCoursePageJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type {

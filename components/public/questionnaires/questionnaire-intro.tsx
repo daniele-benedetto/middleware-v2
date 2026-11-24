@@ -9,7 +9,7 @@ import {
   secondaryCtaClass,
 } from "@/components/public/questionnaires/questionnaire-ui";
 import { PublicRichText } from "@/components/public/rich-text";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { getEstimatedMinutes } from "@/lib/questionnaires/flow";
 import { cn } from "@/lib/utils";
 

@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 export function PublicFooterBrand() {
   const text = i18n.public.brand;

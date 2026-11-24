@@ -6,7 +6,7 @@ import {
   getIssuePlainDescription,
 } from "@/components/public/home/home-view-model";
 import { DossierHome } from "@/components/public/sections/dossier/dossier-home";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { formatIssueNumber } from "@/lib/public/format/issue";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";

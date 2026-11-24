@@ -1,6 +1,6 @@
 import { IssueArchiveCard } from "@/components/public/sections/archive/issue-archive-card";
 import { IssuesArchiveRail } from "@/components/public/sections/archive/issues-archive-rail";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 import type { ArchiveIssueViewModel } from "@/components/public/sections/archive/archive-view-model";
 import type { CSSProperties } from "react";

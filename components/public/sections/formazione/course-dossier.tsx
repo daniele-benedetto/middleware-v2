@@ -1,6 +1,6 @@
 import { publicContentClassName } from "@/components/public/primitives";
 import { DossierLessonCard } from "@/components/public/sections/formazione/dossier-lesson-card";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 import type { PublicCourseDetailDto } from "@/lib/server/modules/courses/dto/public";
 import type { CSSProperties } from "react";

@@ -4,6 +4,7 @@ import * as L from "leaflet";
 import { X } from "lucide-react";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
+import "@/components/maps/leaflet.css";
 import { PublicRichText } from "@/components/public/rich-text";
 import { createModenaMap } from "@/features/cms/maps/utils/leaflet-map";
 import { i18n } from "@/lib/i18n";

@@ -7,7 +7,7 @@ import { PublicReadingDepth } from "@/components/public/public-reading-depth";
 import { PublicRichText } from "@/components/public/rich-text";
 import { LessonRelatedSection } from "@/components/public/sections/formazione/lesson-related-section";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { editorialImageAlt } from "@/lib/public/format/image";
 import { buildLessonPageJsonLd, serializeJsonLd } from "@/lib/seo";
@@ -119,6 +119,7 @@ export function PublicLessonPage({
               height={900}
               sizes="(min-width: 1600px) 1600px, 100vw"
               preload
+              fetchPriority="high"
               className="mx-auto aspect-video w-full max-w-400 object-cover grayscale"
             />
           </figure>

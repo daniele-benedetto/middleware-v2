@@ -6,7 +6,7 @@ import {
   questionnaireHeadingId,
   questionnaireType,
 } from "@/components/public/questionnaires/questionnaire-ui";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { cn } from "@/lib/utils";
 
 import type { QuestionnaireAnswerError } from "@/lib/questionnaires/flow";

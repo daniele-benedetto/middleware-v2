@@ -54,7 +54,7 @@ Do not change block validation, article assignment, featured placement, article 
 - The responsive baseline collapses to one column below `768px`.
 - Accessibility requires WCAG AA contrast, visible focus states, keyboard operation, and reduced-motion support.
 
-The source of truth for these foundations is `docs/cms-ui.md` and `app/globals.css`. Preserve them unless a specific, reviewed problem requires a token change.
+The source of truth for these foundations is `docs/cms-ui.md` and `app/site.css`. Preserve them unless a specific, reviewed problem requires a token change.
 
 ## Required Workflow
 

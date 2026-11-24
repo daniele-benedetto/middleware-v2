@@ -5,7 +5,7 @@ import {
   PublicSystemActionLink,
   PublicSystemScreen,
 } from "@/components/public";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 export default function PublicError({ reset }: { error: Error; reset: () => void }) {
   const text = i18n.public.system;

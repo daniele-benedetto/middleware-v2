@@ -1,24 +1,11 @@
-import { Archivo, Spectral } from "next/font/google";
-
 import { buildRootMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
+
+import { archivo, spectral } from "./fonts";
 
 import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
-
-const archivo = Archivo({
-  variable: "--font-archivo",
-  weight: ["400", "500", "600", "700", "800", "900"],
-  subsets: ["latin"],
-});
-
-const spectral = Spectral({
-  variable: "--font-spectral",
-  weight: ["300", "400", "600"],
-  style: ["normal", "italic"],
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = buildRootMetadata();
 

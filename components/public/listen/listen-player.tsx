@@ -19,7 +19,7 @@ import {
   type AudioProgressRecord,
   type AudioProgressStatus,
 } from "@/lib/browser/storage/audio-progress-store";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import {
   getAudioDurationBucket,
   getAudioPositionBucket,

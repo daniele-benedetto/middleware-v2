@@ -98,7 +98,7 @@ Responsive rule:
 - Focus visible treatment per component type (both mandatory):
   - Text input / textarea / select trigger: **border swap** — default `border 1px ink` → focus `border 2px accent`, `outline: none`. No outer ring.
   - Bottoni, link, accordion, dialog trigger, checkbox, radio, toggle, generic focusable: **outer outline** — `outline: 3px solid accent` con `outline-offset: 2px`.
-- Global rule `*:focus-visible` in `app/globals.css` è in `@layer base` così le utility `outline-none` delle primitive shadcn (usate da input/textarea/select) vincono e non si ha doppio focus.
+- Global rule `*:focus-visible` in `app/site.css` è in `@layer base` così le utility `outline-none` delle primitive shadcn (usate da input/textarea/select) vincono e non si ha doppio focus.
 - Dark mode: **non supportato**. Nessuna utility `dark:*` nei componenti CMS; `color-scheme: light` forzato in `:root`.
 - Text selection: accent background + crema text.
 - Accessibility target: WCAG AA minimum.
@@ -247,7 +247,7 @@ Rule:
 
 ## Foundation freeze
 
-Tokens fondazionali (palette, alpha, filetti, spacing, type scale, line-heights, griglie) sono documentati qui e implementati in `app/globals.css` e nelle primitives CMS. Aggiungere nuovi token solo quando servono davvero e mantenerli coerenti tra documentazione e implementazione.
+Tokens fondazionali (palette, alpha, filetti, spacing, type scale, line-heights, griglie) sono documentati qui e implementati in `app/site.css` e nelle primitives CMS. Aggiungere nuovi token solo quando servono davvero e mantenerli coerenti tra documentazione e implementazione.
 
 ## Print edition direction
 

@@ -8,6 +8,9 @@ import { getSafeCmsNextPath } from "@/lib/cms/redirect";
 import { i18n } from "@/lib/i18n";
 import { buildCmsMetadata } from "@/lib/seo";
 
+// CMS utilities (full stylesheet), layered after the public app/globals.css.
+import "@/app/cms.css";
+
 type CmsLoginPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };

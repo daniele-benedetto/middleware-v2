@@ -26,7 +26,17 @@ export function PublicReadingDepth({
     const container = containerRef.current;
     if (!container) return;
 
+    let frameId: number | null = null;
+
+    const stopTracking = () => {
+      window.removeEventListener("scroll", scheduleTrackDepth);
+      window.removeEventListener("resize", scheduleTrackDepth);
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
+      frameId = null;
+    };
+
     const trackDepth = () => {
+      frameId = null;
       const rect = container.getBoundingClientRect();
       const total = Math.max(container.scrollHeight, rect.height);
       const visibleBottom = Math.min(total, window.innerHeight - rect.top);
@@ -42,15 +52,21 @@ export function PublicReadingDepth({
           milestone,
         });
       }
+
+      // Every milestone is reported once: no reason to keep measuring on scroll.
+      if (trackedRef.current.size === milestones.length) stopTracking();
     };
 
+    // Measure at most once per frame instead of on every scroll event.
+    function scheduleTrackDepth() {
+      if (frameId === null) frameId = window.requestAnimationFrame(trackDepth);
+    }
+
     trackDepth();
-    window.addEventListener("scroll", trackDepth, { passive: true });
-    window.addEventListener("resize", trackDepth);
-    return () => {
-      window.removeEventListener("scroll", trackDepth);
-      window.removeEventListener("resize", trackDepth);
-    };
+    if (trackedRef.current.size === milestones.length) return;
+    window.addEventListener("scroll", scheduleTrackDepth, { passive: true });
+    window.addEventListener("resize", scheduleTrackDepth);
+    return stopTracking;
   }, [contentType, courseSlug, slug]);
 
   return <div ref={containerRef}>{children}</div>;

@@ -1,13 +1,25 @@
 "use client";
 
 import { Search, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 
-import { PublicSearchMenuResults } from "@/components/public/home/public-search-menu-results";
 import { publicContentClassName } from "@/components/public/primitives";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
+
+// Search results (with their own tRPC/React Query provider) load only when the
+// search is about to open, so public pages do not ship that client stack upfront.
+const loadSearchMenuResults = () =>
+  import("@/components/public/home/issue-search-menu-results").then(
+    (mod) => mod.IssueSearchMenuResults,
+  );
+
+const SearchMenuResults = dynamic(loadSearchMenuResults, {
+  ssr: false,
+  loading: () => <div aria-hidden="true" className="min-h-full" />,
+});
 
 export function PublicSearchSubheader() {
   const pathname = usePathname();
@@ -57,6 +69,12 @@ export function PublicSearchSubheader() {
               trackPublicAnalyticsEvent(publicAnalyticsEvents.searchOpen, { source: "subheader" });
               setOpen(true);
             }}
+            onPointerEnter={() => {
+              void loadSearchMenuResults();
+            }}
+            onFocus={() => {
+              void loadSearchMenuResults();
+            }}
             className="inline-flex min-h-10 cursor-pointer items-center gap-2 px-2 font-ui text-[11px] font-bold tracking-[0.1em] text-foreground uppercase underline-offset-4 transition-colors duration-(--motion-fast) hover:text-accent hover:underline focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-2"
           >
             <Search size={18} strokeWidth={2.5} aria-hidden="true" />
@@ -98,7 +116,7 @@ export function PublicSearchSubheader() {
             </div>
           </div>
           <div className={`${publicContentClassName} py-8`}>
-            <PublicSearchMenuResults query={query} onNavigate={navigate} />
+            <SearchMenuResults query={query} onNavigate={navigate} />
           </div>
         </div>
       ) : null}

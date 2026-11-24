@@ -2,7 +2,7 @@ import { PublicSystemScreen } from "@/components/public";
 import { publicContentClassName } from "@/components/public/primitives";
 import { ArticleArchiveCard } from "@/components/public/sections/archive/article-archive-card";
 import { IssuesArchiveHero } from "@/components/public/sections/archive/issues-archive-hero";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { buildArticlesArchiveJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type { PublicArticleSummaryDto } from "@/lib/server/modules/articles/dto/public";

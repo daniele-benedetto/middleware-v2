@@ -2,7 +2,7 @@ import { PublicMetaRail } from "@/components/public/compounds";
 import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import { StyledTitle } from "@/components/public/styled-title";
 import { TrackedPublicLink } from "@/components/public/tracked-public-link";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { publicAnalyticsEvents } from "@/lib/public/analytics";
 import { cn } from "@/lib/utils";
 

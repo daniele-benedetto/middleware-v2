@@ -1,7 +1,7 @@
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
 import { publicContentClassName } from "@/components/public/primitives";
 import { PublicRichText } from "@/components/public/rich-text";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { getPublicStaticPagePath, isPublicStaticPageSlug } from "@/lib/public/pages/static-pages";
 import { buildStaticPageJsonLd, serializeJsonLd } from "@/lib/seo";
 

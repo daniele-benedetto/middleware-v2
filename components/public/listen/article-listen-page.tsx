@@ -3,7 +3,7 @@ import { ListenEmptyState } from "@/components/public/listen/listen-empty-state"
 import { ListenInfo } from "@/components/public/listen/listen-info";
 import { ListenPlayer } from "@/components/public/listen/listen-player";
 import { publicContentClassName } from "@/components/public/primitives";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 
 import type { PublicMetaRailItem } from "@/components/public/compounds";

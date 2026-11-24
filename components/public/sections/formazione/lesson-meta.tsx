@@ -1,5 +1,5 @@
 import { PublicMetaRail } from "@/components/public/compounds";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 import type { PublicCourseLessonSummaryDto } from "@/lib/server/modules/courses/dto/public";
 

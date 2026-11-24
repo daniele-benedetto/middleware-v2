@@ -5,7 +5,7 @@ import {
   PublicSystemActionLink,
   PublicSystemScreen,
 } from "@/components/public";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 type ErrorPageProps = {
   error: Error;

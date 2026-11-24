@@ -2,7 +2,7 @@ import { PublicFooterBottomBar } from "@/components/public/footer/public-footer-
 import { PublicFooterBrand } from "@/components/public/footer/public-footer-brand";
 import { PublicFooterLinkGroup } from "@/components/public/footer/public-footer-link-group";
 import { publicContentClassName } from "@/components/public/primitives";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 import type { PublicNavigationItemDto } from "@/lib/server/modules/navigation/dto";
 

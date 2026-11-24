@@ -1,7 +1,7 @@
 import { DossierArticleCard } from "@/components/public/compounds";
 import { publicContentClassName } from "@/components/public/primitives";
 import { getArticleNumber } from "@/components/public/sections/dossier/dossier-format";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { cn } from "@/lib/utils";
 
 import type { NarrativeHomeBlock } from "@/components/public/home/home-view-model";

@@ -1,29 +1,15 @@
 "use client";
 
-import { Archivo, Spectral } from "next/font/google";
-
 import {
   PublicSystemActionButton,
   PublicSystemActionLink,
   PublicSystemScreen,
 } from "@/components/public";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { cn } from "@/lib/utils";
 
+import { archivo, spectral } from "./fonts";
 import "./globals.css";
-
-const archivo = Archivo({
-  variable: "--font-archivo",
-  weight: ["400", "500", "600", "700", "800", "900"],
-  subsets: ["latin"],
-});
-
-const spectral = Spectral({
-  variable: "--font-spectral",
-  weight: ["300", "400", "600"],
-  style: ["normal", "italic"],
-  subsets: ["latin"],
-});
 
 type GlobalErrorProps = {
   error: Error;

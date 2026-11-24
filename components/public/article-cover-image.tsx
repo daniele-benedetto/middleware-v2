@@ -40,6 +40,9 @@ export function ArticleCoverImage({
       {...(fill ? { fill: true } : { width: width ?? 1200, height: height ?? 800 })}
       sizes={sizes}
       preload={preload}
+      // A preloaded cover is the page's LCP candidate: request it at high
+      // priority instead of the default image priority (Low).
+      fetchPriority={preload ? "high" : undefined}
       className={cn(imageSettings.grayscale && "grayscale", className)}
       style={
         {

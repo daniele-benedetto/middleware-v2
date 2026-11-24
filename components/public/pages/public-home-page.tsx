@@ -1,6 +1,6 @@
 import { getArchiveIssues } from "@/components/public/home/home-view-model";
 import { PublicIssueDossierPage } from "@/components/public/pages/public-issue-dossier-page";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { buildHomeJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type { PublicCurrentIssueDetail, PublicIssueListItem } from "@/lib/public/types/issues";

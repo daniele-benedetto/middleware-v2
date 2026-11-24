@@ -1,6 +1,6 @@
 import { IssuesArchiveRail } from "@/components/public/sections/archive/issues-archive-rail";
 import { CourseArchiveCard } from "@/components/public/sections/formazione/course-archive-card";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 import type { CourseArchiveViewModel } from "@/components/public/sections/formazione/course-archive-view-model";
 import type { CSSProperties } from "react";

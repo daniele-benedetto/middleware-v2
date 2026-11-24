@@ -3,7 +3,7 @@ import { Fragment, type ReactNode } from "react";
 
 import { publicTypography } from "@/components/public/primitives";
 import { TrackedExternalLink } from "@/components/public/tracked-external-link";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { resolvePublicMediaUrl } from "@/lib/media/blob";
 import { splitPrintDropCap } from "@/lib/print/drop-cap";
 import { resolvePublicImageSettings } from "@/lib/public/image-settings";

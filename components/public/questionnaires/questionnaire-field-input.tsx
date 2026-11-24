@@ -9,7 +9,7 @@ import {
   questionnaireType,
   textInputClass,
 } from "@/components/public/questionnaires/questionnaire-ui";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { toDateTimeLocalValue, toIsoDateTimeValue } from "@/lib/questionnaires/flow";
 import { getQuestionnaireScaleValues } from "@/lib/server/modules/questionnaires/schema/definition";
 import { cn } from "@/lib/utils";

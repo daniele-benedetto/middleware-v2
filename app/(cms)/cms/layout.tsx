@@ -10,6 +10,9 @@ import { TrpcProvider } from "@/lib/trpc/provider";
 
 import type { ReactNode } from "react";
 
+// CMS utilities (full stylesheet), layered after the public app/globals.css.
+import "@/app/cms.css";
+
 type CmsLayoutProps = {
   children: ReactNode;
 };

@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { PublicLink } from "@/components/public/public-link";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { publicPrivacy } from "@/lib/public/config";
 import { usePrivacyChoice, writePrivacyDecision } from "@/lib/public/privacy-consent";
 import { cn } from "@/lib/utils";

@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 import { PublicLink as Link } from "@/components/public/public-link";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 import type { MouseEventHandler } from "react";
 

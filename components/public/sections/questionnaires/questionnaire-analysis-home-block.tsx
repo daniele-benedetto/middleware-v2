@@ -12,7 +12,7 @@ import {
   getAnalysisFieldAnchorId,
 } from "@/components/public/sections/questionnaires/analysis-format";
 import { StyledTitle } from "@/components/public/styled-title";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { cn } from "@/lib/utils";
 

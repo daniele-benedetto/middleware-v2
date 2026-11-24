@@ -5,7 +5,7 @@ import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 
 import { PublicFullscreenMenu } from "@/components/public/header/public-fullscreen-menu";
 import { PublicMenuButton } from "@/components/public/header/public-menu-button";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 
 import type { PublicMenuItem } from "@/components/public/header/public-fullscreen-menu";

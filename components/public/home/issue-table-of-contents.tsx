@@ -4,7 +4,7 @@ import { IssueTableOfContentsMenu } from "@/components/public/home/issue-table-o
 import { PublicSmoothAnchor } from "@/components/public/home/public-smooth-anchor";
 import { publicContentClassName } from "@/components/public/primitives";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 import type { CSSProperties } from "react";
 

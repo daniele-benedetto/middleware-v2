@@ -13,7 +13,6 @@ import { i18n } from "@/lib/i18n";
 import { publicAnalytics, publicFeatures, publicPrivacy } from "@/lib/public/config";
 import { getLegalConsentVersion } from "@/lib/public/server/legal-consent";
 import { getPublicNavigation } from "@/lib/public/server/navigation";
-import { TrpcProvider } from "@/lib/trpc/provider";
 
 import type { ReactNode } from "react";
 
@@ -61,46 +60,47 @@ async function PublicAnalyticsSlot() {
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <TrpcProvider>
-      <>
-        <div aria-hidden="true" className="fixed inset-x-0 bottom-0 z-0 h-svh bg-foreground" />
-        <div
-          data-public-shell
-          className="relative z-10 flex min-h-svh flex-1 flex-col bg-background font-heading text-foreground"
+    <>
+      <div aria-hidden="true" className="fixed inset-x-0 bottom-0 z-0 h-svh bg-foreground" />
+      <div
+        data-public-shell
+        className="relative z-10 flex min-h-svh flex-1 flex-col bg-background font-heading text-foreground"
+      >
+        <Suspense fallback={null}>
+          <PublicRouteScrollReset />
+        </Suspense>
+        <a
+          href="#main-content"
+          className="sr-only z-200 bg-foreground px-4 py-3 font-heading text-sm font-bold text-background uppercase focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:outline-3 focus:outline-offset-2 focus:outline-accent"
         >
+          {i18n.public.header.skipToContent}
+        </a>
+        {/* The fallback is the same header without menu items, so the static shell
+            already reserves the sticky bar and content does not shift when the
+            navigation streams in. */}
+        <Suspense fallback={<PublicHeader menuItems={[]} />}>
+          <PublicHeaderSlot />
+        </Suspense>
+        <Suspense fallback={null}>
+          <PublicSearchSubheader />
+        </Suspense>
+        <div data-public-page-content className="flex min-h-0 flex-1 flex-col">
+          {children}
+        </div>
+        <div data-public-footer className="shrink-0">
           <Suspense fallback={null}>
-            <PublicRouteScrollReset />
-          </Suspense>
-          <a
-            href="#main-content"
-            className="sr-only z-200 bg-foreground px-4 py-3 font-heading text-sm font-bold text-background uppercase focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:outline-3 focus:outline-offset-2 focus:outline-accent"
-          >
-            {i18n.public.header.skipToContent}
-          </a>
-          <Suspense fallback={null}>
-            <PublicHeaderSlot />
-          </Suspense>
-          <Suspense fallback={null}>
-            <PublicSearchSubheader />
-          </Suspense>
-          <div data-public-page-content className="flex min-h-0 flex-1 flex-col">
-            {children}
-          </div>
-          <div data-public-footer className="shrink-0">
-            <Suspense fallback={null}>
-              <PublicFooterSlot />
-            </Suspense>
-          </div>
-          {publicFeatures.cookieConsentBanner ? (
-            <Suspense fallback={null}>
-              <CookieConsentSlot />
-            </Suspense>
-          ) : null}
-          <Suspense fallback={null}>
-            <PublicAnalyticsSlot />
+            <PublicFooterSlot />
           </Suspense>
         </div>
-      </>
-    </TrpcProvider>
+        {publicFeatures.cookieConsentBanner ? (
+          <Suspense fallback={null}>
+            <CookieConsentSlot />
+          </Suspense>
+        ) : null}
+        <Suspense fallback={null}>
+          <PublicAnalyticsSlot />
+        </Suspense>
+      </div>
+    </>
   );
 }

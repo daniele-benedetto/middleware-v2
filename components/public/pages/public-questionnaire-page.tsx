@@ -21,7 +21,7 @@ import {
   useQuestionnaireHistoryTraversal,
 } from "@/components/public/questionnaires/use-questionnaire-history";
 import { PublicSystemScreen } from "@/components/public/system-screen";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import {
   getFirstInvalidStepIndex,
   getQuestionnaireProgress,

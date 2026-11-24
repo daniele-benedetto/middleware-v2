@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { PublicRichText } from "@/components/public/rich-text";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { modenaComuneMaxBounds } from "@/lib/server/modules/maps/boundary/modena-comune";
 
 import type { PublicMapDetailDto } from "@/lib/server/modules/maps/dto/public";
@@ -164,7 +164,8 @@ export function MapHomeCanvas({
     let cancelled = false;
     let cleanup = () => undefined;
 
-    void import("leaflet")
+    void import("./load-leaflet")
+      .then(({ loadLeaflet }) => loadLeaflet())
       .then((L) => {
         if (cancelled) return;
 

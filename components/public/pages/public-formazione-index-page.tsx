@@ -2,7 +2,7 @@ import { PublicSystemScreen } from "@/components/public";
 import { IssuesArchiveHero } from "@/components/public/sections/archive/issues-archive-hero";
 import { CourseArchiveGrid } from "@/components/public/sections/formazione/course-archive-grid";
 import { getCourseArchiveViewModels } from "@/components/public/sections/formazione/course-archive-view-model";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { buildFormazioneArchiveJsonLd, serializeJsonLd } from "@/lib/seo";
 
 import type { PublicCourseDto } from "@/lib/server/modules/courses/dto/public";

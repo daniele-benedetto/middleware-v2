@@ -3,7 +3,7 @@
 import { AlertCircle, SearchX } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 import { trpc } from "@/lib/trpc/react";
 

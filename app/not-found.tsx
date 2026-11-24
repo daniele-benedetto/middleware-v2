@@ -1,5 +1,5 @@
 import { PublicSystemActionLink, PublicSystemScreen } from "@/components/public";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 export default function NotFound() {
   const text = i18n.public.system;

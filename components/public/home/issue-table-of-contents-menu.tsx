@@ -17,7 +17,7 @@ import { createPortal } from "react-dom";
 
 import { publicContentClassName } from "@/components/public/primitives";
 import { formatArticleNumber } from "@/components/public/sections/dossier/dossier-format";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 import { cn } from "@/lib/utils";

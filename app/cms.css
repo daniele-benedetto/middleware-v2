@@ -1,0 +1,8 @@
+/*
+ * Full stylesheet for CMS routes (CMS layouts and login), loaded after
+ * app/globals.css. It scans every source like the former single global
+ * stylesheet, and since it comes last in the cascade, CMS pages resolve
+ * exactly as they did before the public/CMS split.
+ */
+@import "tailwindcss";
+@import "./site.css";

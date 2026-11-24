@@ -2,7 +2,8 @@ import { readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const ROOT = process.cwd();
-const GLOBALS_CSS = path.join(ROOT, "app", "globals.css");
+// Theme tokens live in the shared design-system stylesheet (see app/globals.css).
+const GLOBALS_CSS = path.join(ROOT, "app", "site.css");
 const SOURCE_EXTENSIONS = new Set([".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"]);
 const SKIP_DIRS = new Set([".git", ".next", "node_modules", "dist", "build", "coverage", "out"]);
 const PIXEL_TO_SCALE_UTILITIES = new Set([

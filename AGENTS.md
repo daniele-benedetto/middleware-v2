@@ -18,8 +18,8 @@
 
 ## Verified Tooling Quirks
 
-- Tailwind CSS v4 is wired through `postcss.config.mjs` with `@tailwindcss/postcss`; global styles use `@import "tailwindcss"` in `app/globals.css`.
-- No `tailwind.config.*` exists; theme tokens are defined via `@theme inline` in `app/globals.css`.
+- Tailwind CSS v4 is wired through `postcss.config.mjs` with `@tailwindcss/postcss`. Stylesheets: `app/site.css` holds the design system (theme tokens, base, custom classes); `app/globals.css` (root layout, every route) imports it and excludes CMS sources from the utility scan; `app/cms.css` (CMS layouts + login) imports it with a full scan and loads after globals. Put new tokens/custom CSS in `app/site.css`.
+- No `tailwind.config.*` exists; theme tokens are defined via `@theme inline` in `app/site.css`.
 - TS path alias is root-based: `@/*` -> `./*` (see `tsconfig.json`).
 - Vitest is configured for Node-based, docker-free unit tests under `tests/unit/**`; `server-only` imports are shimmed in test via `vitest.config.ts`.
 - No browser E2E framework is configured yet; do not assume Playwright/Cypress.

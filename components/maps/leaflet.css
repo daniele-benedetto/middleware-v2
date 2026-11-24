@@ -1,0 +1,17 @@
+/*
+ * Leaflet base styles plus project overrides, kept together so the overrides
+ * always come after Leaflet. Imported only by map components (public map
+ * loader, CMS map editors) instead of the global stylesheet, so pages without
+ * a map do not download or block rendering on it.
+ */
+@import "leaflet/dist/leaflet.css";
+
+.public-map-canvas.leaflet-container {
+  touch-action: pan-y;
+}
+
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 0 !important;
+}

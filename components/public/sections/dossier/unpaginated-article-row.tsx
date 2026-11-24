@@ -1,7 +1,7 @@
 import { DossierArticleCard } from "@/components/public/compounds";
 import { publicContentClassName } from "@/components/public/primitives";
 import { sortUnpaginatedArticles } from "@/components/public/sections/dossier/dossier-view-model";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 import type { HomeIssueArticle } from "@/components/public/home/home-view-model";
 

@@ -8,7 +8,7 @@ import {
   choiceOptionClass,
   textInputClass,
 } from "@/components/public/questionnaires/questionnaire-ui";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import {
   getQuestionnaireOtherLabel,
   getQuestionnaireOtherMaxLength,

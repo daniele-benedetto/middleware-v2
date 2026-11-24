@@ -5,7 +5,7 @@ import { PublicBrand } from "@/components/public/header/public-brand";
 import { PublicMenuButton } from "@/components/public/header/public-menu-button";
 import { publicContentClassName, publicTypography } from "@/components/public/primitives";
 import { PublicLink as Link } from "@/components/public/public-link";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import {
   getAnalyticsHost,
   publicAnalyticsEvents,

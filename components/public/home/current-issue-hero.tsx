@@ -1,5 +1,5 @@
 import { PublicMetaRail, PublicPageHero } from "@/components/public/compounds";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { formatIssueMonthYearLong } from "@/lib/public/format/issue";
 
 import type { PublicCurrentIssueDetail } from "@/lib/public/types/issues";

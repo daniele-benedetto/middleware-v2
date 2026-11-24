@@ -3,6 +3,7 @@
 import * as L from "leaflet";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
+import "@/components/maps/leaflet.css";
 import {
   normalizeMapCoordinates,
   type MapCoordinates,

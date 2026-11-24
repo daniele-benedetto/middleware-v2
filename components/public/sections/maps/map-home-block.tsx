@@ -8,7 +8,7 @@ import { courseVariantClasses } from "@/components/public/course-variant";
 import { publicInteraction, publicTypography } from "@/components/public/primitives";
 import { MapHomeCanvas } from "@/components/public/sections/maps/map-home-canvas";
 import { StyledTitle } from "@/components/public/styled-title";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { cn } from "@/lib/utils";
 

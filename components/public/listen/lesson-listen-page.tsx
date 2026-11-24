@@ -4,7 +4,7 @@ import { ListenInfo } from "@/components/public/listen/listen-info";
 import { ListenPlayer } from "@/components/public/listen/listen-player";
 import { publicContentClassName } from "@/components/public/primitives";
 import { LessonRelatedSection } from "@/components/public/sections/formazione/lesson-related-section";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 import type { AudioChunk } from "@/lib/audio/audio-chunks";
 import type { PublicLessonListenPageData } from "@/lib/public/server/lesson-listen-page";

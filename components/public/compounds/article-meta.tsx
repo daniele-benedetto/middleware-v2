@@ -1,5 +1,5 @@
 import { PublicMetaRail } from "@/components/public/compounds/public-meta-rail";
-import { i18n } from "@/lib/i18n";
+import { i18n } from "@/lib/i18n/public";
 
 import type { HomeIssueArticle } from "@/components/public/home/home-view-model";
 
