@@ -20,7 +20,6 @@ import {
   questionnaireHistory,
   useQuestionnaireHistoryTraversal,
 } from "@/components/public/questionnaires/use-questionnaire-history";
-import { getQuestionnaireResultsPath } from "@/components/public/sections/questionnaires/analysis-format";
 import { PublicSystemScreen } from "@/components/public/system-screen";
 import { i18n } from "@/lib/i18n";
 import {
@@ -76,19 +75,15 @@ export function PublicQuestionnairePage({
   responder,
 }: {
   questionnaire: PublicQuestionnaireDto;
-  /** Whether the visitor already answered, resolved on the server. */
   responder: QuestionnaireResponderStatus;
 }) {
   const { definition } = questionnaire;
   const text = i18n.public.questionnaire;
   const [phase, setPhase] = useState<QuestionnairePhase>("intro");
   const [stop, setStop] = useState<QuestionnaireFlowStop>(0);
-  // True while a step is open from the review ("Modifica"): the primary action returns there.
   const [editing, setEditing] = useState(false);
-  // True once the form has been opened in this visit: the answers in memory win over the draft.
   const [started, setStarted] = useState(false);
   const [answers, setAnswersState] = useState<QuestionnaireAnswerValues>({});
-  // Latest answers, ahead of the render: two changes in the same tick must not overwrite each other.
   const answersRef = useRef(answers);
   const setAnswers = (nextAnswers: QuestionnaireAnswerValues) => {
     answersRef.current = nextAnswers;
@@ -98,7 +93,6 @@ export function PublicQuestionnairePage({
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const pageId = useId();
   const draftDiscarded = useRef(false);
-  // Set as soon as the questionnaire ends: later history traversals must not reopen the form.
   const finished = useRef(false);
   const submit = trpc.public.questionnaires.submit.useMutation();
   const draft = useQuestionnaireDraft(questionnaire.id, definition.version);
@@ -107,15 +101,12 @@ export function PublicQuestionnairePage({
     { questionnaireId: questionnaire.id },
     {
       enabled: !questionnaire.isClosed,
-      // The server already answered: no request, and the right screen from the first paint.
-      // When it could not tell (no cookie on the page request) the API is asked once.
       initialData: { hasResponded: responder.hasResponded },
       staleTime: responder.isKnown ? Number.POSITIVE_INFINITY : 0,
     },
   );
   const hasResponded = responderStatus.data?.hasResponded === true;
 
-  // Steps without visible fields are not part of the flow: they are skipped in both directions.
   const visibleSteps = useMemo(
     () => getVisibleQuestionnaireSteps(definition, answers),
     [definition, answers],
@@ -143,14 +134,12 @@ export function PublicQuestionnairePage({
   const toDraftStepIndex = (target: QuestionnaireFlowStop) =>
     target === "review" ? definition.steps.length : target;
 
-  // Every move (buttons or browser history) lands on the heading of the new stop.
   useEffect(() => {
     if (phase !== "form") return;
     document.getElementById(questionnaireHeadingId)?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   }, [phase, stop]);
 
-  // A questionnaire that can no longer be answered must not leave answers on the device.
   const shouldDiscardDraft = questionnaire.isClosed || hasResponded;
   useEffect(() => {
     if (!shouldDiscardDraft || !isDraftHydrated || draftDiscarded.current) return;
@@ -166,17 +155,12 @@ export function PublicQuestionnairePage({
     setSubmitError(null);
   };
 
-  /** Opens `target` as a new history entry. */
   const goTo = (target: QuestionnaireFlowStop, nextEditing = false) => {
     questionnaireHistory.push(target, nextEditing);
     showStop(target, nextEditing);
     draft.persist(answers, toDraftStepIndex(target));
   };
 
-  /**
-   * Opens `target` as a step back: through the browser history when the previous entry is that
-   * stop (the traversal handler shows it), otherwise in place of the current entry.
-   */
   const goBackTo = (target: QuestionnaireFlowStop, nextEditing = false) => {
     if (questionnaireHistory.isPrevious(target)) {
       questionnaireHistory.back();
@@ -193,7 +177,6 @@ export function PublicQuestionnairePage({
       setPhase("intro");
       return;
     }
-    // The entry may point to a step that is now hidden or beyond an incomplete one.
     const target = getResumeStop(definition, {
       answers,
       stepIndex: toDraftStepIndex(entry.stop),
@@ -204,11 +187,6 @@ export function PublicQuestionnairePage({
     draft.persist(answers, toDraftStepIndex(target));
   });
 
-  /**
-   * Where the flow continues when `answers` hide every field of the step on screen (a field that
-   * controls the visibility of its own step): the next visible step, or the review. `null` when
-   * the current stop is still visible.
-   */
   const getStopReplacingHiddenStep = (nextAnswers: QuestionnaireAnswerValues) => {
     if (stop === "review") return null;
     const stillVisible = getVisibleQuestionnaireSteps(definition, nextAnswers).some(
@@ -284,10 +262,6 @@ export function PublicQuestionnairePage({
     return false;
   };
 
-  /**
-   * Opens the review, or the first step that still needs an answer: editing an answer can
-   * reveal questions in later steps.
-   */
   const goToReview = () => {
     const blockingIndex = getFirstInvalidStepIndex(definition, answers);
     if (blockingIndex !== -1) goTo(blockingIndex, true);
@@ -311,7 +285,6 @@ export function PublicQuestionnairePage({
     draftDiscarded.current = true;
     draft.clear();
     setPhase(nextPhase);
-    // The steps stay behind in the history: leave them so "back" exits the questionnaire.
     questionnaireHistory.unwind();
     window.scrollTo({ top: 0, behavior: "auto" });
   };
@@ -351,22 +324,12 @@ export function PublicQuestionnairePage({
         title={definition.copy.closedTitle}
         description={definition.copy.closedMessage}
         actions={
-          <>
-            {questionnaire.hasPublicResults ? (
-              <PublicLink
-                href={getQuestionnaireResultsPath(questionnaire.slug)}
-                className="font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase hover:text-foreground"
-              >
-                {text.closedResultsCta}
-              </PublicLink>
-            ) : null}
-            <PublicLink
-              href="/"
-              className="font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase hover:text-foreground"
-            >
-              {text.closedCta}
-            </PublicLink>
-          </>
+          <PublicLink
+            href="/"
+            className="font-heading text-xs font-bold tracking-[0.08em] text-accent uppercase hover:text-foreground"
+          >
+            {text.closedCta}
+          </PublicLink>
         }
       />
     );

@@ -4,25 +4,19 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { useId, useState } from "react";
 
 import { CmsActionButton, CmsSurface } from "@/components/cms/primitives";
-import { AnalysisFieldRenderer } from "@/components/public/sections/questionnaires/charts/analysis-field-renderer";
-import { AnalysisViewToggle } from "@/components/public/sections/questionnaires/charts/analysis-view-toggle";
 import {
-  getAnalysisViews,
-  resolveAnalysisView,
-  type AnalysisField,
-  type AnalysisView,
-} from "@/components/public/sections/questionnaires/charts/analysis-views";
-import {
-  formatChartNumber,
-  formatChartPercentage,
-  formatChartRange,
-} from "@/components/public/sections/questionnaires/charts/chart-format";
+  formatAnalysisNumber,
+  formatAnalysisPercentage,
+  formatAnalysisRange,
+} from "@/components/public/sections/questionnaires/analysis-number-format";
+import { AnalysisTable } from "@/components/public/sections/questionnaires/analysis-table";
 import { QuestionnaireFieldAnswersList } from "@/features/cms/questionnaires/components/questionnaire-field-answers-list";
 import { QuestionnaireOtherAnswersList } from "@/features/cms/questionnaires/components/questionnaire-other-answers-list";
 import { i18n } from "@/lib/i18n";
 import { formatQuestionnaireAudience } from "@/lib/questionnaires/rule-format";
 import { QUESTIONNAIRE_OTHER_DEFAULT_LABEL } from "@/lib/server/modules/questionnaires/schema/definition";
 
+import type { QuestionnaireAnalysisFieldDto } from "@/lib/server/modules/questionnaires/dto/public";
 import type { RouterOutputs } from "@/lib/trpc/types";
 
 type SummaryField = RouterOutputs["questionnaires"]["getSummary"]["fields"][number];
@@ -35,40 +29,38 @@ const text = i18n.cms.lists.questionnaires.responses.summary;
 
 function buildStats(field: SummaryField): Stat[] {
   const stats: Stat[] = [
-    { label: text.answered, value: formatChartNumber(field.answeredCount) },
-    { label: text.missing, value: formatChartNumber(field.missingCount) },
+    { label: text.answered, value: formatAnalysisNumber(field.answeredCount) },
+    { label: text.missing, value: formatAnalysisNumber(field.missingCount) },
   ];
   if (field.audience) {
-    // Splits "senza risposta" between who saw the question and who never did.
     stats.push({
       label: text.notShown,
-      value: formatChartNumber(field.audience.totalCount - field.audience.shownCount),
+      value: formatAnalysisNumber(field.audience.totalCount - field.audience.shownCount),
     });
   }
   if (field.invalidCount > 0) {
-    stats.push({ label: text.invalid, value: formatChartNumber(field.invalidCount) });
+    stats.push({ label: text.invalid, value: formatAnalysisNumber(field.invalidCount) });
   }
   if (field.result.kind !== "analysis") return stats;
 
   const { analysis } = field.result;
   if (analysis.kind !== "number" || analysis.responseCount === 0) return stats;
   if (analysis.average !== null) {
-    stats.push({ label: text.average, value: formatChartNumber(analysis.average) });
+    stats.push({ label: text.average, value: formatAnalysisNumber(analysis.average) });
   }
   if (analysis.median !== null) {
-    stats.push({ label: text.median, value: formatChartNumber(analysis.median) });
+    stats.push({ label: text.median, value: formatAnalysisNumber(analysis.median) });
   }
   if (analysis.minimum !== null && analysis.maximum !== null) {
     stats.push({
       label: text.range,
-      value: formatChartRange(analysis.minimum, analysis.maximum),
+      value: formatAnalysisRange(analysis.minimum, analysis.maximum),
     });
   }
   return stats;
 }
 
-/** Label of the "Altro" choice as shown in the chart of the field. */
-function getOtherChoiceLabel(analysis: AnalysisField) {
+function getOtherChoiceLabel(analysis: QuestionnaireAnalysisFieldDto) {
   const otherOption =
     analysis.kind === "choice" ? analysis.options.find((option) => option.isOther) : undefined;
   return otherOption?.label ?? QUESTIONNAIRE_OTHER_DEFAULT_LABEL;
@@ -91,27 +83,6 @@ function FieldStats({ stats }: { stats: Stat[] }) {
   );
 }
 
-/** Chart/table of a chartable field, rendered with the public analysis components. */
-function AnalysisResult({ analysis }: { analysis: AnalysisField }) {
-  const [requestedView, setRequestedView] = useState<AnalysisView>();
-  const activeView = resolveAnalysisView(analysis, requestedView);
-
-  return (
-    <div className="grid gap-4">
-      {analysis.responseCount > 0 ? (
-        <div className="flex justify-end">
-          <AnalysisViewToggle
-            views={getAnalysisViews(analysis)}
-            activeView={activeView}
-            onChange={setRequestedView}
-          />
-        </div>
-      ) : null}
-      <AnalysisFieldRenderer field={analysis} view={activeView} />
-    </div>
-  );
-}
-
 function ConsentResult({ accepted, declined }: { accepted: number; declined: number }) {
   const total = accepted + declined;
   const rows = [
@@ -128,11 +99,11 @@ function ConsentResult({ accepted, declined }: { accepted: number; declined: num
           </dt>
           <dd className="mt-1.5 flex items-baseline gap-2">
             <span className="font-display text-[24px] leading-none font-black text-foreground">
-              {formatChartNumber(row.count)}
+              {formatAnalysisNumber(row.count)}
             </span>
             {total > 0 ? (
               <span className="font-ui text-[12px] font-semibold text-muted-foreground">
-                {formatChartPercentage((row.count / total) * 100)}
+                {formatAnalysisPercentage((row.count / total) * 100)}
               </span>
             ) : null}
           </dd>
@@ -142,7 +113,6 @@ function ConsentResult({ accepted, declined }: { accepted: number; declined: num
   );
 }
 
-/** Free texts of the "Altro" choice, collapsed under the chart of the field. */
 function OtherAnswersResult({
   label,
   answers,
@@ -178,7 +148,6 @@ function OtherAnswersResult({
   );
 }
 
-/** Free-text answers stay collapsed so each field is fetched only when the admin asks for it. */
 function TextResult({
   questionnaireId,
   field,
@@ -262,7 +231,7 @@ export function QuestionnaireSummaryFieldCard({
       <FieldStats stats={buildStats(field)} />
       {result.kind === "analysis" ? (
         <>
-          <AnalysisResult analysis={result.analysis} />
+          <AnalysisTable field={result.analysis} />
           {result.otherAnswers?.length ? (
             <OtherAnswersResult
               label={getOtherChoiceLabel(result.analysis)}

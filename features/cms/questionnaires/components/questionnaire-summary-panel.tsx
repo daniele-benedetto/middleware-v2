@@ -6,7 +6,7 @@ import { useState, type ComponentProps, type ReactNode } from "react";
 import { CmsEmptyState, CmsErrorState } from "@/components/cms/common";
 import { CmsBadge, CmsHeading, CmsSurface } from "@/components/cms/primitives";
 import { QuestionnaireSummaryLoading } from "@/features/cms/questionnaires/components/questionnaire-list-loading";
-import { QuestionnaireResponsesTimelineChart } from "@/features/cms/questionnaires/components/questionnaire-responses-timeline-chart";
+import { QuestionnaireResponsesTimelineTable } from "@/features/cms/questionnaires/components/questionnaire-responses-timeline-table";
 import { QuestionnaireRuleEditor } from "@/features/cms/questionnaires/components/questionnaire-rule-editor";
 import { QuestionnaireSummaryFieldCard } from "@/features/cms/questionnaires/components/questionnaire-summary-field-card";
 import { useQuestionnaireById } from "@/features/cms/questionnaires/hooks/use-questionnaire-crud";
@@ -110,11 +110,8 @@ export function QuestionnaireSummaryPanel({
   const [filter, setFilter] = useState<QuestionnaireRule>();
   const query = trpc.questionnaires.getSummary.useQuery(
     { id: questionnaireId, filter },
-    // The server-rendered summary is the unfiltered one; keep the previous one while a new
-    // filter loads so the page does not collapse into a skeleton at every change.
     { initialData: filter ? undefined : initialData, placeholderData: keepPreviousData },
   );
-  // The filter can reference any question: their definition comes with the questionnaire.
   const questionnaire = useQuestionnaireById(questionnaireId);
   const filterSources = questionnaire.data
     ? listQuestionnaireRuleSourceFields(questionnaire.data.definition, { kind: "all" })
@@ -180,7 +177,7 @@ export function QuestionnaireSummaryPanel({
                 {text.timelineTitle}
               </CmsHeading>
             </header>
-            <QuestionnaireResponsesTimelineChart timeline={summary.timeline} />
+            <QuestionnaireResponsesTimelineTable timeline={summary.timeline} />
           </CmsSurface>
           {steps.length === 0 ? (
             <p className="font-editorial text-[15px] text-muted-foreground">

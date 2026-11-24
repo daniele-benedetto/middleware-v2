@@ -89,7 +89,6 @@ describe("public questionnaires router", () => {
         ],
       },
       isClosed: true,
-      hasPublicResults: true,
     });
     const caller = publicQuestionnairesRouter.createCaller(
       context("/api/trpc/public.questionnaires.getBySlug"),
@@ -98,7 +97,6 @@ describe("public questionnaires router", () => {
     await expect(caller.getBySlug({ slug: "questionario" })).resolves.toMatchObject({
       slug: "questionario",
       isClosed: true,
-      hasPublicResults: true,
     });
   });
 

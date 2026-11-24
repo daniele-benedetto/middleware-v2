@@ -1086,8 +1086,8 @@ export const cmsIt = {
           emptyDescription: "La sintesi comparirà dopo la prima risposta.",
           noFieldsDescription: "Il questionario non contiene domande con risposta.",
           timelineTitle: "Risposte nel tempo",
-          timelineAriaLabel: (total: number, days: number) =>
-            `Grafico a colonne: ${total} risposte distribuite su ${days} giorni.`,
+          timelineCaption: "Risposte ricevute per giorno, con il totale progressivo",
+          timelineDay: "Giorno",
           timelineDayResponses: "Risposte del giorno",
           timelineCumulative: "Totale progressivo",
           questionsTitle: "Domande",

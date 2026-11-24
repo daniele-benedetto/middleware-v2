@@ -1,5 +1,11 @@
-import { QUESTIONNAIRE_OTHER_OPTION_ID } from "@/lib/server/modules/questionnaires/schema/definition";
-import { toPublicQuestionnaireAnalysis } from "@/lib/server/modules/questionnaires/service/analysis";
+import {
+  QUESTIONNAIRE_OTHER_OPTION_ID,
+  questionnaireDefinitionSchema,
+} from "@/lib/server/modules/questionnaires/schema/definition";
+import {
+  aggregateQuestionnaireAnalysisField,
+  toPublicQuestionnaireAnalysis,
+} from "@/lib/server/modules/questionnaires/service/analysis";
 
 const ids = {
   questionnaire: "00000000-0000-4000-8000-000000000001",
@@ -72,7 +78,6 @@ function record() {
         },
       ],
     },
-    _count: { responses: 2 },
     responses: [
       { answers: { [ids.choice]: ids.optionOne, [ids.text]: "Dato sensibile", [ids.scale]: 1 } },
       { answers: { [ids.choice]: ids.optionTwo, [ids.text]: "Altro dato", [ids.scale]: 3 } },
@@ -80,9 +85,21 @@ function record() {
   };
 }
 
+type TestRecord = Parameters<typeof toPublicQuestionnaireAnalysis>[0];
+
+function withFullAggregates(source: TestRecord) {
+  const definition = questionnaireDefinitionSchema.parse(source.definition);
+  const fields = definition.steps
+    .flatMap((step) => step.fields)
+    .filter((field) => field.publicResults)
+    .map((field) => aggregateQuestionnaireAnalysisField(field, source.responses))
+    .filter((field) => field !== null);
+  return { ...toPublicQuestionnaireAnalysis(source), fields };
+}
+
 describe("toPublicQuestionnaireAnalysis", () => {
   it("returns only aggregate data for supported public fields", () => {
-    const analysis = toPublicQuestionnaireAnalysis(record());
+    const analysis = withFullAggregates(record());
 
     expect(analysis).toMatchObject({ id: ids.questionnaire, analysisVersion: 1 });
     expect(analysis).toMatchObject({
@@ -122,7 +139,7 @@ describe("toPublicQuestionnaireAnalysis", () => {
 
   it("creates safe histogram and temporal aggregates", () => {
     const source = record();
-    const analysis = toPublicQuestionnaireAnalysis({
+    const analysis = withFullAggregates({
       ...source,
       definition: {
         ...source.definition,
@@ -235,7 +252,7 @@ describe("toPublicQuestionnaireAnalysis", () => {
 
   it("uses field respondents for multiple-choice percentages and excludes URLs", () => {
     const source = record();
-    const analysis = toPublicQuestionnaireAnalysis({
+    const analysis = withFullAggregates({
       ...source,
       definition: {
         ...source.definition,
@@ -331,7 +348,7 @@ describe("toPublicQuestionnaireAnalysis", () => {
     }
 
     it("sorts options by frequency when the setting is absent", () => {
-      const analysis = toPublicQuestionnaireAnalysis(ordinalRecord());
+      const analysis = withFullAggregates(ordinalRecord());
 
       expect(analysis?.fields).toMatchObject([
         {
@@ -343,13 +360,11 @@ describe("toPublicQuestionnaireAnalysis", () => {
           ],
         },
       ]);
-      expect(toPublicQuestionnaireAnalysis(ordinalRecord("frequency"))?.fields).toEqual(
-        analysis?.fields,
-      );
+      expect(withFullAggregates(ordinalRecord("frequency"))?.fields).toEqual(analysis?.fields);
     });
 
     it("keeps the authored order and a frequency rank when set to definition", () => {
-      const analysis = toPublicQuestionnaireAnalysis(ordinalRecord("definition"));
+      const analysis = withFullAggregates(ordinalRecord("definition"));
 
       expect(analysis?.fields).toMatchObject([
         {
@@ -436,7 +451,7 @@ describe("toPublicQuestionnaireAnalysis: Altro and conditional fields", () => {
   }
 
   it("adds a synthetic Altro option with count, percentage and rank", () => {
-    const analysis = toPublicQuestionnaireAnalysis(otherRecord());
+    const analysis = withFullAggregates(otherRecord());
     const [choice, multiple] = analysis?.fields ?? [];
 
     expect(choice).toMatchObject({ kind: "choice", responseCount: 3, missingCount: 1 });
@@ -476,6 +491,25 @@ describe("toPublicQuestionnaireAnalysis: Altro and conditional fields", () => {
     ]);
   });
 
+  it("never exposes how many people answered", () => {
+    const analysis = toPublicQuestionnaireAnalysis(otherRecord());
+    const serialized = JSON.stringify(analysis);
+
+    expect(serialized).not.toMatch(/"(count|responseCount|missingCount|trueCount|falseCount)"/);
+    for (const field of analysis?.fields ?? []) {
+      for (const key of ["minimum", "maximum", "q1", "q3", "iqr"]) {
+        expect(field).not.toHaveProperty(key);
+      }
+    }
+    expect(analysis?.fields.every((field) => field.hasResponses)).toBe(true);
+    expect(analysis?.fields[0]).toMatchObject({
+      kind: "choice",
+      options: expect.arrayContaining([
+        expect.objectContaining({ isOther: true, percentage: 66.67 }),
+      ]),
+    });
+  });
+
   it("never exposes the free texts", () => {
     const serialized = JSON.stringify(toPublicQuestionnaireAnalysis(otherRecord()));
 
@@ -484,7 +518,7 @@ describe("toPublicQuestionnaireAnalysis: Altro and conditional fields", () => {
   });
 
   it("counts the non-answers of a hidden field as missing", () => {
-    const analysis = toPublicQuestionnaireAnalysis(otherRecord());
+    const analysis = withFullAggregates(otherRecord());
 
     expect(analysis?.fields[2]).toMatchObject({ id: detail, responseCount: 1, missingCount: 3 });
   });

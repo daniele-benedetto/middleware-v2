@@ -6,7 +6,7 @@ import { CmsErrorState } from "@/components/cms/common/error-state";
 import { CmsLoadingState } from "@/components/cms/common/loading-state";
 import { CmsFormField, CmsPageHeader, CmsTextInput } from "@/components/cms/primitives";
 import { ListenEmptyState } from "@/components/public/listen/listen-empty-state";
-import { AnalysisFieldRenderer } from "@/components/public/sections/questionnaires/charts/analysis-field-renderer";
+import { AnalysisTable } from "@/components/public/sections/questionnaires/analysis-table";
 import { editorialImageAlt } from "@/lib/public/format/image";
 
 describe("accessibility primitives", () => {
@@ -64,9 +64,9 @@ describe("accessibility primitives", () => {
     expect(editorialImageAlt("Descrizione editoriale")).toBe("Descrizione editoriale");
   });
 
-  it("renders questionnaire aggregates as a chart", () => {
+  it("renders questionnaire aggregates as an accessible table", () => {
     const html = renderToStaticMarkup(
-      createElement(AnalysisFieldRenderer, {
+      createElement(AnalysisTable, {
         field: {
           id: "00000000-0000-4000-8000-000000000001",
           label: "Scelta",
@@ -74,26 +74,17 @@ describe("accessibility primitives", () => {
           fieldType: "singleChoice",
           kind: "choice",
           multiple: false,
-          responseCount: 10,
-          missingCount: 0,
-          visualization: {
-            chart: "bar",
-            alternatives: ["table"],
-            rationale: "singleNominal",
-            methodology: "category_percentage",
-          },
+          hasResponses: true,
           options: [
             {
               id: "00000000-0000-4000-8000-000000000002",
               label: "Prima opzione",
-              count: 7,
               percentage: 70,
               rank: 1,
             },
             {
               id: "00000000-0000-4000-8000-000000000003",
               label: "Seconda opzione",
-              count: 3,
               percentage: 30,
               rank: 2,
             },
@@ -102,7 +93,8 @@ describe("accessibility primitives", () => {
       }),
     );
 
-    expect(html).toContain("data-chart");
-    expect(html).not.toContain("Tabella dati");
+    expect(html).toContain("<caption");
+    expect(html).toContain('scope="col"');
+    expect(html).toContain('scope="row"');
   });
 });

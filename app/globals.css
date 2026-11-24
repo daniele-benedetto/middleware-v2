@@ -227,11 +227,6 @@
   --border: var(--ink-30);
   --input: var(--ink-30);
   --ring: var(--ink);
-  --chart-1: var(--ink);
-  --chart-2: var(--accent);
-  --chart-3: var(--ui-success);
-  --chart-4: var(--ui-warning);
-  --chart-5: var(--ink-60);
   --radius: var(--radius-panel);
   --sidebar: var(--bg-main);
   --sidebar-foreground: var(--ink);
@@ -281,11 +276,6 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-accent-foreground: var(--accent-foreground);
@@ -310,7 +300,6 @@ html {
   scrollbar-gutter: stable;
 }
 
-/* Keep scrollable surfaces visually transparent and prevent layout shifts. */
 :where(
   .cms-scroll,
   [class*="overflow-auto"],
@@ -365,8 +354,6 @@ html {
   background-clip: padding-box;
 }
 
-/* Keep hash navigation in the public editorial surface smooth without adding
-   a client component to the server-rendered table of contents. */
 body {
   background: var(--bg-main);
   color: var(--ink);
@@ -398,8 +385,6 @@ body {
   }
 }
 
-/* Print viewer: hosts the Vivliostyle-paginated issue (see public/print/issue.css).
-   Only non-metric overrides live here, so preview and PDF share the same layout. */
 .print-viewer {
   display: flex;
   flex: 1;
@@ -471,8 +456,6 @@ body {
   margin-left: 0 !important;
 }
 
-/* Vivliostyle measures pages in this DOM, so Tailwind preflight must not leak in:
-   authored elements carry their own inline box model, structural boxes do not. */
 .print-viewer__host,
 .print-viewer__host *,
 .print-viewer__host *::before,
@@ -481,7 +464,6 @@ body {
   border-style: none;
 }
 
-/* PDF mode mirrors Vivliostyle's own print frame: full-size boxes, visible overflow. */
 .print-viewer--pdf,
 .print-viewer--pdf .print-viewer__stage,
 .print-viewer--pdf .print-viewer__pages,
@@ -495,8 +477,6 @@ body {
   background: #fff;
 }
 
-/* Opening pages with a photo take the issue color. The photo only exists on the
-   first fragment of the article, so it identifies the opening page. */
 [data-vivliostyle-page-container]:has(.article--dark .article__image) [data-vivliostyle-bleed-box] {
   background-color: var(--print-dark-bg) !important;
 }
@@ -519,7 +499,6 @@ body {
   background-color: var(--print-dark-accent) !important;
 }
 
-/* Back cover in the next issue's color (preview block, black or red variant). */
 [data-vivliostyle-page-container]:has(.back-cover--dark) [data-vivliostyle-bleed-box] {
   background-color: var(--print-back-cover-bg) !important;
 }
@@ -541,8 +520,6 @@ body {
   background-color: var(--print-back-cover-accent) !important;
 }
 
-/* Closing logo (printSettings.showEndLogo), on the page box of the section's last
-   page, outside the paginated flow (lib/print/end-logo.ts). Adjust it here. */
 .print-end-logo {
   --print-end-logo-left: 50%;
   --print-end-logo-bottom: 0;
@@ -562,24 +539,18 @@ body {
   pointer-events: none;
 }
 
-/* The logo is wider than the page: the page edge clips it, as on paper. */
 [data-vivliostyle-page-container]:has(.print-end-logo) {
   overflow: clip !important;
 }
 
-/* Half-page openings bleed off the page: the page edge clips the photo. */
 [data-vivliostyle-page-container]:has(.article--halfpage .article__image) {
   overflow: clip !important;
 }
 
-/* Own stacking context: the logo (z-index -1) stays above the page background
-   and below the text and the folio. */
 [data-vivliostyle-page-box]:has(> .print-end-logo) {
   isolation: isolate;
 }
 
-/* The footer QR stays on the inner side, opposite the folio.
-   Absolute positioning only, so the pagination is not affected. */
 [data-vivliostyle-page-container][data-vivliostyle-page-side="right"] .print-footer-qr {
   right: auto !important;
   left: 0 !important;

@@ -6,39 +6,7 @@ import { questionnaireDefinitionSchema } from "@/lib/server/modules/questionnair
 import { toPublicQuestionnaireAnalysis } from "@/lib/server/modules/questionnaires/service/analysis";
 import { toPublicQuestionnaireInvite } from "@/lib/server/modules/questionnaires/service/invite";
 
-import type {
-  PublicQuestionnaireAnalysisDto,
-  PublicQuestionnaireDto,
-} from "@/lib/server/modules/questionnaires/dto/public";
-
-type ClosedAnalysisRecord = NonNullable<
-  Awaited<ReturnType<typeof publicQuestionnairesRepository.getClosedAnalysisBySlug>>
->;
-
-/** Aggregated results plus what links to the results page: slug and number of responses. */
-function toLinkedPublicAnalysis(
-  record: ClosedAnalysisRecord,
-): PublicQuestionnaireAnalysisDto | null {
-  const analysis = toPublicQuestionnaireAnalysis(record);
-  if (!analysis) return null;
-  return { ...analysis, slug: record.slug, totalResponses: record._count.responses };
-}
-
-/**
- * Whether a questionnaire has a results page. Runs the analysis without responses so the
- * answer always matches what the results page itself would decide.
- */
-function hasPublicResults(record: {
-  id: string;
-  title: string;
-  descriptionRich: unknown;
-  status: string;
-  closedAt: Date | null;
-  definition: unknown;
-}) {
-  if (record.status !== "CLOSED") return false;
-  return toPublicQuestionnaireAnalysis({ ...record, responses: [] }) !== null;
-}
+import type { PublicQuestionnaireDto } from "@/lib/server/modules/questionnaires/dto/public";
 
 export const publicQuestionnairesService = {
   async getBySlug(slug: string): Promise<PublicQuestionnaireDto> {
@@ -60,23 +28,13 @@ export const publicQuestionnairesService = {
       descriptionRich: questionnaire.descriptionRich,
       definition: definition.data,
       isClosed: questionnaire.status === "CLOSED",
-      hasPublicResults: hasPublicResults(questionnaire),
     };
   },
   async getClosedAnalysesByIds(ids: string[]) {
     const records = await publicQuestionnairesRepository.getClosedAnalysesByIds(ids);
     return records
-      .map(toLinkedPublicAnalysis)
+      .map(toPublicQuestionnaireAnalysis)
       .filter((analysis): analysis is NonNullable<typeof analysis> => analysis !== null);
-  },
-  /** Results of a closed questionnaire with at least one public-result field, else 404. */
-  async getClosedAnalysisBySlug(slug: string): Promise<PublicQuestionnaireAnalysisDto> {
-    const record = await publicQuestionnairesRepository.getClosedAnalysisBySlug(slug);
-    const analysis = record ? toLinkedPublicAnalysis(record) : null;
-    if (!analysis) {
-      throw new ApiError(404, "NOT_FOUND", "Questionnaire results not found");
-    }
-    return analysis;
   },
   async getOpenInvitesByIds(ids: string[]) {
     const records = await publicQuestionnairesRepository.getOpenInvitesByIds(ids);

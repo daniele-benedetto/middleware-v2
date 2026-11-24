@@ -10,19 +10,16 @@ const PUBLIC_QUESTIONNAIRE_SELECT = {
   descriptionRich: true,
   definition: true,
   status: true,
-  closedAt: true,
 } as const satisfies Prisma.QuestionnaireSelect;
 
 const PUBLIC_QUESTIONNAIRE_ANALYSIS_SELECT = {
   id: true,
-  slug: true,
   title: true,
   titleStyled: true,
   homeVariant: true,
   descriptionRich: true,
   closedAt: true,
   definition: true,
-  _count: { select: { responses: true } },
   responses: { select: { answers: true } },
 } as const satisfies Prisma.QuestionnaireSelect;
 
@@ -38,6 +35,14 @@ const PUBLIC_QUESTIONNAIRE_INVITE_SELECT = {
 } as const satisfies Prisma.QuestionnaireSelect;
 
 export const publicQuestionnairesRepository = {
+  async existsBySlug(slug: string) {
+    const questionnaire = await prisma.questionnaire.findFirst({
+      where: { slug, status: { in: ["PUBLISHED", "CLOSED"] } },
+      select: { id: true },
+    });
+
+    return questionnaire !== null;
+  },
   async getBySlug(slug: string) {
     return prisma.questionnaire.findFirst({
       where: {
@@ -51,12 +56,6 @@ export const publicQuestionnairesRepository = {
     if (ids.length === 0) return [];
     return prisma.questionnaire.findMany({
       where: { id: { in: ids }, status: "CLOSED" },
-      select: PUBLIC_QUESTIONNAIRE_ANALYSIS_SELECT,
-    });
-  },
-  async getClosedAnalysisBySlug(slug: string) {
-    return prisma.questionnaire.findFirst({
-      where: { slug, status: "CLOSED" },
       select: PUBLIC_QUESTIONNAIRE_ANALYSIS_SELECT,
     });
   },

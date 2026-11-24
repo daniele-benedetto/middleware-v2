@@ -1,7 +1,6 @@
 const publicQuestionnairesRepositoryMock = vi.hoisted(() => ({
   getBySlug: vi.fn(),
   getClosedAnalysesByIds: vi.fn(),
-  getClosedAnalysisBySlug: vi.fn(),
   getOpenInvitesByIds: vi.fn(),
 }));
 
@@ -42,7 +41,6 @@ function definition({ publicBoolean = true } = {}) {
       {
         id: ids.step,
         fields: [
-          // Free text never has aggregated results, even when flagged as public.
           { id: ids.text, type: "text" as const, label: "Testo", publicResults: true },
           {
             id: ids.boolean,
@@ -80,14 +78,12 @@ function questionnaireRecord(
 function analysisRecord(overrides: Partial<{ definition: unknown; closedAt: Date | null }> = {}) {
   return {
     id: ids.questionnaire,
-    slug: "questionario",
     title: "Questionario",
     titleStyled: null,
     homeVariant: "black",
     descriptionRich: null,
     closedAt,
     definition: definition(),
-    _count: { responses: 3 },
     responses: [
       { answers: { [ids.boolean]: true } },
       { answers: { [ids.boolean]: false } },
@@ -103,45 +99,22 @@ describe("public questionnaires service", () => {
   });
 
   describe("getBySlug", () => {
-    it("flags public results for a closed questionnaire with an aggregable public field", async () => {
+    it("returns a closed questionnaire as closed", async () => {
       publicQuestionnairesRepositoryMock.getBySlug.mockResolvedValue(questionnaireRecord());
 
-      await expect(publicQuestionnairesService.getBySlug("questionario")).resolves.toMatchObject({
-        slug: "questionario",
-        isClosed: true,
-        hasPublicResults: true,
-      });
+      const questionnaire = await publicQuestionnairesService.getBySlug("questionario");
+
+      expect(questionnaire).toMatchObject({ slug: "questionario", isClosed: true });
+      expect(questionnaire).not.toHaveProperty("hasPublicResults");
     });
 
-    it("does not flag public results while the questionnaire is open", async () => {
+    it("returns an open questionnaire as not closed", async () => {
       publicQuestionnairesRepositoryMock.getBySlug.mockResolvedValue(
         questionnaireRecord({ status: "PUBLISHED", closedAt: null }),
       );
 
       await expect(publicQuestionnairesService.getBySlug("questionario")).resolves.toMatchObject({
         isClosed: false,
-        hasPublicResults: false,
-      });
-    });
-
-    it("does not flag public results without an aggregable public field", async () => {
-      publicQuestionnairesRepositoryMock.getBySlug.mockResolvedValue(
-        questionnaireRecord({ definition: definition({ publicBoolean: false }) }),
-      );
-
-      await expect(publicQuestionnairesService.getBySlug("questionario")).resolves.toMatchObject({
-        isClosed: true,
-        hasPublicResults: false,
-      });
-    });
-
-    it("does not flag public results without a closing date", async () => {
-      publicQuestionnairesRepositoryMock.getBySlug.mockResolvedValue(
-        questionnaireRecord({ closedAt: null }),
-      );
-
-      await expect(publicQuestionnairesService.getBySlug("questionario")).resolves.toMatchObject({
-        hasPublicResults: false,
       });
     });
 
@@ -154,53 +127,8 @@ describe("public questionnaires service", () => {
     });
   });
 
-  describe("getClosedAnalysisBySlug", () => {
-    it("returns the aggregated results with slug and total responses", async () => {
-      publicQuestionnairesRepositoryMock.getClosedAnalysisBySlug.mockResolvedValue(
-        analysisRecord(),
-      );
-
-      const analysis = await publicQuestionnairesService.getClosedAnalysisBySlug("questionario");
-
-      expect(publicQuestionnairesRepositoryMock.getClosedAnalysisBySlug).toHaveBeenCalledWith(
-        "questionario",
-      );
-      expect(analysis).toMatchObject({
-        id: ids.questionnaire,
-        slug: "questionario",
-        totalResponses: 3,
-        closedAt: closedAt.toISOString(),
-      });
-      expect(analysis.fields).toHaveLength(1);
-      expect(analysis.fields[0]).toMatchObject({
-        id: ids.boolean,
-        responseCount: 2,
-        missingCount: 1,
-      });
-      expect(JSON.stringify(analysis)).not.toContain(ids.text);
-    });
-
-    it("rejects a questionnaire that is not closed or does not exist", async () => {
-      publicQuestionnairesRepositoryMock.getClosedAnalysisBySlug.mockResolvedValue(null);
-
-      await expect(
-        publicQuestionnairesService.getClosedAnalysisBySlug("aperto"),
-      ).rejects.toMatchObject({ status: 404, code: "NOT_FOUND" });
-    });
-
-    it("rejects a closed questionnaire without public-result fields", async () => {
-      publicQuestionnairesRepositoryMock.getClosedAnalysisBySlug.mockResolvedValue(
-        analysisRecord({ definition: definition({ publicBoolean: false }) }),
-      );
-
-      await expect(
-        publicQuestionnairesService.getClosedAnalysisBySlug("questionario"),
-      ).rejects.toMatchObject({ code: "NOT_FOUND" });
-    });
-  });
-
   describe("getClosedAnalysesByIds", () => {
-    it("adds the results page slug and drops questionnaires without results", async () => {
+    it("aggregates the public fields and drops questionnaires without results", async () => {
       publicQuestionnairesRepositoryMock.getClosedAnalysesByIds.mockResolvedValue([
         analysisRecord(),
         analysisRecord({ definition: definition({ publicBoolean: false }) }),
@@ -211,7 +139,21 @@ describe("public questionnaires service", () => {
       ]);
 
       expect(analyses).toHaveLength(1);
-      expect(analyses[0]).toMatchObject({ slug: "questionario", totalResponses: 3 });
+      const [analysis] = analyses;
+      expect(analysis).toMatchObject({ id: ids.questionnaire, closedAt: closedAt.toISOString() });
+      expect(analysis).not.toHaveProperty("slug");
+      expect(analysis).not.toHaveProperty("totalResponses");
+      expect(analysis?.fields).toHaveLength(1);
+      expect(analysis?.fields[0]).toMatchObject({
+        id: ids.boolean,
+        hasResponses: true,
+        truePercentage: 50,
+        falsePercentage: 50,
+      });
+      expect(JSON.stringify(analysis)).not.toMatch(
+        /"(responseCount|missingCount|trueCount|falseCount)"/,
+      );
+      expect(JSON.stringify(analysis)).not.toContain(ids.text);
     });
   });
 });

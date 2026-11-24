@@ -121,10 +121,8 @@ const responses = [
 
 describe("questionnaire summary timeline", () => {
   it("assigns responses to the Europe/Rome calendar day, not the UTC one", () => {
-    // Winter (UTC+1): 23:30Z is already the next day in Rome.
     expect(toSummaryDayKey(new Date("2026-01-15T22:59:59.000Z"))).toBe("2026-01-15");
     expect(toSummaryDayKey(new Date("2026-01-15T23:00:00.000Z"))).toBe("2026-01-16");
-    // Summer (UTC+2): the day turns at 22:00Z.
     expect(toSummaryDayKey(new Date("2026-07-15T21:59:59.000Z"))).toBe("2026-07-15");
     expect(toSummaryDayKey(new Date("2026-07-15T22:00:00.000Z"))).toBe("2026-07-16");
   });
@@ -154,7 +152,6 @@ describe("questionnaire summary timeline", () => {
       new Date("2026-04-01T12:00:00.000Z"),
     ]);
 
-    // 2026-03-29 is the 23-hour day on which Rome switches to summer time.
     expect(timeline.days.map((day) => day.date)).toEqual([
       "2026-03-28",
       "2026-03-29",
@@ -195,7 +192,7 @@ describe("summarizeQuestionnaireFields", () => {
     });
   });
 
-  it("aggregates private fields with the public analysis shape and visualization", () => {
+  it("aggregates private fields with the public analysis shape", () => {
     const scale = fields[1];
     expect(scale).toMatchObject({
       answeredCount: 1,
@@ -210,7 +207,6 @@ describe("summarizeQuestionnaireFields", () => {
           responseCount: 1,
           minimum: 1,
           maximum: 1,
-          visualization: { chart: "table", alternatives: ["discreteBar"] },
         },
       },
     });
@@ -221,7 +217,7 @@ describe("summarizeQuestionnaireFields", () => {
     });
   });
 
-  it("produces the same field as the public analysis for a public field", () => {
+  it("extends the public analysis field with the CMS-only counts", () => {
     const analysis = toPublicQuestionnaireAnalysis({
       id: ids.questionnaire,
       title: "Chiuso",
@@ -232,7 +228,7 @@ describe("summarizeQuestionnaireFields", () => {
     });
 
     expect(analysis?.fields).toHaveLength(1);
-    expect(fields[0].result).toEqual({ kind: "analysis", analysis: analysis?.fields[0] });
+    expect(fields[0].result).toMatchObject({ kind: "analysis", analysis: analysis?.fields[0] });
   });
 
   it("counts answered and missing free-text answers, ignoring blank strings", () => {
@@ -263,10 +259,7 @@ describe("summarizeQuestionnaireFields", () => {
     expect(empty.every((field) => field.answeredCount === 0 && field.missingCount === 0)).toBe(
       true,
     );
-    expect(empty[0].result).toMatchObject({
-      kind: "analysis",
-      analysis: { visualization: { chart: "table", rationale: "emptyData" } },
-    });
+    expect(empty[0].result).toMatchObject({ kind: "analysis", analysis: { responseCount: 0 } });
   });
 });
 

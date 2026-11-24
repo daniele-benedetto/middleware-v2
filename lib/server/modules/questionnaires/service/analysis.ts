@@ -24,7 +24,6 @@ import {
   createTemporalDistribution,
   roundStatistic,
 } from "@/lib/server/modules/questionnaires/service/statistics";
-import { selectQuestionnaireFieldVisualization } from "@/lib/server/modules/questionnaires/service/visualization";
 import { parseOutput } from "@/lib/server/validation/output";
 
 import type { QuestionnaireField } from "@/lib/server/modules/questionnaires/schema";
@@ -95,7 +94,6 @@ const ANALYSIS_FIELD_TYPES = [
 type AnalysisFieldType = (typeof ANALYSIS_FIELD_TYPES)[number];
 type AnalysisSourceField = Extract<QuestionnaireField, { type: AnalysisFieldType }>;
 
-/** Field types that can be aggregated into a chart/table, whatever their `publicResults` flag. */
 export function isQuestionnaireAnalysisField(
   field: QuestionnaireField,
 ): field is AnalysisSourceField {
@@ -108,6 +106,7 @@ function createBase(field: AnalysisSourceField, values: ParsedFieldValues) {
     label: field.label,
     description: field.description ?? null,
     fieldType: field.type,
+    hasResponses: values.values.length > 0,
     responseCount: values.values.length,
     missingCount: values.missingCount,
   };
@@ -118,13 +117,17 @@ function aggregateBoolean(
   parsed: ParsedFieldValues,
 ) {
   const answers = parsed.values as boolean[];
+  const trueCount = answers.filter(Boolean).length;
+  const falseCount = answers.length - trueCount;
   return {
     ...createBase(field, parsed),
     kind: "boolean" as const,
     trueLabel: field.trueLabel,
     falseLabel: field.falseLabel,
-    trueCount: answers.filter(Boolean).length,
-    falseCount: answers.filter((value) => !value).length,
+    trueCount,
+    falseCount,
+    truePercentage: calculatePercentage(trueCount, answers.length),
+    falsePercentage: calculatePercentage(falseCount, answers.length),
   };
 }
 
@@ -138,7 +141,6 @@ function aggregateChoice(
       field.type === "multipleChoice" ? value : [value]
     ) as QuestionnaireChoiceAnswerValue[];
     for (const item of selected) {
-      // Every "Altro" answer, whatever its free text, is counted under one synthetic option.
       const optionId = typeof item === "string" ? item : QUESTIONNAIRE_OTHER_OPTION_ID;
       counts.set(optionId, (counts.get(optionId) ?? 0) + 1);
     }
@@ -233,7 +235,10 @@ function aggregateDate(
   };
 }
 
-function aggregateField(field: QuestionnaireField, records: AnalysisResponseRecord[]) {
+export function aggregateQuestionnaireAnalysisField(
+  field: QuestionnaireField,
+  records: AnalysisResponseRecord[],
+) {
   if (!isQuestionnaireAnalysisField(field)) return null;
   const parsed = parseFieldValues(field, records);
 
@@ -246,20 +251,6 @@ function aggregateField(field: QuestionnaireField, records: AnalysisResponseReco
   }
   if (field.type === "date" || field.type === "datetime") return aggregateDate(field, parsed);
   return null;
-}
-
-/**
- * Aggregate + visualization of one field, in the public analysis field shape.
- * Ignores `publicResults`: callers decide which fields they are allowed to expose.
- * Returns null for field types that cannot be aggregated (free text, consent, information).
- */
-export function aggregateQuestionnaireAnalysisField(
-  field: QuestionnaireField,
-  records: AnalysisResponseRecord[],
-) {
-  const aggregate = aggregateField(field, records);
-  if (!aggregate) return null;
-  return { ...aggregate, visualization: selectQuestionnaireFieldVisualization(aggregate) };
 }
 
 export function toPublicQuestionnaireAnalysis(

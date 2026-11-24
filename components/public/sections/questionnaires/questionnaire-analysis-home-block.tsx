@@ -1,18 +1,15 @@
 "use client";
 
-import { ArrowRight, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { courseVariantClasses } from "@/components/public/course-variant";
 import { publicInteraction, publicTypography } from "@/components/public/primitives";
-import { PublicLink } from "@/components/public/public-link";
 import { AnalysisFieldResults } from "@/components/public/sections/questionnaires/analysis-field-results";
 import {
-  formatAnalysisClosedDate,
   formatQuestionNumber,
   getAnalysisFieldAnchorId,
-  getQuestionnaireResultsPath,
 } from "@/components/public/sections/questionnaires/analysis-format";
 import { StyledTitle } from "@/components/public/styled-title";
 import { i18n } from "@/lib/i18n";
@@ -272,26 +269,16 @@ function QuestionList({
   );
 }
 
-function QuestionCanvas({
-  field,
-  index,
-  total,
-  announcement,
-}: {
-  field: AnalysisField;
-  index: number;
-  total: number;
-  announcement: string;
-}) {
+function QuestionCanvas({ field, announcement }: { field: AnalysisField; announcement: string }) {
   return (
     <section
       aria-labelledby={getAnalysisFieldAnchorId(field.id)}
-      className="min-w-0 p-4 sm:p-6 md:col-start-2 md:p-8 lg:p-10"
+      className="flex h-105 min-w-0 flex-col p-4 sm:p-6 md:col-start-2 md:h-130 md:p-8 lg:p-10"
     >
       <p aria-live="polite" className="sr-only">
         {announcement}
       </p>
-      <AnalysisFieldResults key={field.id} field={field} index={index} total={total} />
+      <AnalysisFieldResults key={field.id} field={field} />
     </section>
   );
 }
@@ -307,7 +294,6 @@ export function QuestionnaireAnalysisHomeBlock({
   const activeField = analysis.fields[safeActiveIndex];
   const description = extractPlainText(analysis.descriptionRich);
   const variant = courseVariantClasses[analysis.homeVariant];
-  // Empty until the reader picks a question, so the live region only speaks on change.
   const [announcement, setAnnouncement] = useState("");
 
   function selectQuestion(index: number) {
@@ -353,26 +339,6 @@ export function QuestionnaireAnalysisHomeBlock({
                 {description}
               </p>
             ) : null}
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-              <p className={cn(publicTypography.smallKicker, variant.meta)}>
-                {i18n.public.questionnaireAnalysis.closedOn(
-                  formatAnalysisClosedDate(analysis.closedAt),
-                )}
-              </p>
-              {analysis.slug ? (
-                <PublicLink
-                  href={getQuestionnaireResultsPath(analysis.slug)}
-                  className={cn(
-                    publicTypography.smallKicker,
-                    variant.title,
-                    "inline-flex items-center gap-2 underline decoration-2 underline-offset-4 hover:no-underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-current",
-                  )}
-                >
-                  {i18n.public.questionnaireAnalysis.allResultsCta}
-                  <ArrowRight aria-hidden className="size-3.5" />
-                </PublicLink>
-              ) : null}
-            </div>
           </header>
           <div className="relative grid md:grid-cols-[minmax(240px,1fr)_minmax(0,2fr)]">
             <MobileQuestionMenu
@@ -386,12 +352,7 @@ export function QuestionnaireAnalysisHomeBlock({
               activeIndex={safeActiveIndex}
               onSelect={selectQuestion}
             />
-            <QuestionCanvas
-              field={activeField}
-              index={safeActiveIndex}
-              total={analysis.fields.length}
-              announcement={announcement}
-            />
+            <QuestionCanvas field={activeField} announcement={announcement} />
           </div>
         </div>
       </div>

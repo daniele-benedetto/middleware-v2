@@ -1,40 +1,13 @@
-"use client";
-
-import { useState } from "react";
-
 import { AnalysisFieldHeader } from "./analysis-field-header";
-import { AnalysisFieldRenderer } from "./charts/analysis-field-renderer";
-import { AnalysisViewToggle } from "./charts/analysis-view-toggle";
-import {
-  getAnalysisViews,
-  resolveAnalysisView,
-  type AnalysisField,
-  type AnalysisView,
-} from "./charts/analysis-views";
+import { AnalysisTable } from "./analysis-table";
 
-/** Results of one question: heading with sample base, view toggle and chart/table. */
-export function AnalysisFieldResults({
-  field,
-  index,
-  total,
-}: {
-  field: AnalysisField;
-  index: number;
-  total: number;
-}) {
-  const [requestedView, setRequestedView] = useState<AnalysisView>();
-  const views = getAnalysisViews(field);
-  const activeView = resolveAnalysisView(field, requestedView);
+import type { AnalysisField } from "./analysis-field";
 
+export function AnalysisFieldResults({ field }: { field: AnalysisField }) {
   return (
-    <div className="grid gap-6">
-      <AnalysisFieldHeader field={field} index={index} total={total} />
-      {field.responseCount > 0 ? (
-        <div className="flex justify-end">
-          <AnalysisViewToggle views={views} activeView={activeView} onChange={setRequestedView} />
-        </div>
-      ) : null}
-      <AnalysisFieldRenderer field={field} view={activeView} />
+    <div className="flex min-h-0 flex-1 flex-col gap-6">
+      <AnalysisFieldHeader field={field} />
+      <AnalysisTable field={field} scrollRows />
     </div>
   );
 }

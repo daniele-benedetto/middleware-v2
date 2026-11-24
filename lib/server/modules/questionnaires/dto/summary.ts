@@ -1,14 +1,10 @@
 import { z } from "zod";
 
 import {
-  publicQuestionnaireAnalysisDtoSchema,
+  questionnaireAnalysisFieldDtoSchema,
   questionnaireFieldAudienceDtoSchema,
 } from "@/lib/server/modules/questionnaires/dto/public";
 import { questionnaireStatusSchema } from "@/lib/server/modules/questionnaires/schema";
-
-/** Exactly the field shape of the public analysis, so the public chart/table components apply. */
-export const questionnaireAnalysisFieldDtoSchema =
-  publicQuestionnaireAnalysisDtoSchema.shape.fields.element;
 
 export const QUESTIONNAIRE_SUMMARY_TIMEZONE = "Europe/Rome";
 
@@ -35,17 +31,11 @@ const questionnaireOtherAnswerDtoSchema = z.object({
 });
 
 export const questionnaireSummaryFieldResultDtoSchema = z.discriminatedUnion("kind", [
-  /** Chartable field: `analysis` is a public analysis field (aggregate + visualization). */
   z.object({
     kind: z.literal("analysis"),
     analysis: questionnaireAnalysisFieldDtoSchema,
-    /**
-     * Free texts of the "Altro (specificare)" answers, newest first. Present only for choice
-     * fields with `allowOther`; CMS-only, never part of the public analysis.
-     */
     otherAnswers: z.array(questionnaireOtherAnswerDtoSchema).optional(),
   }),
-  /** Free text (text, textarea, email, phone, url): answers come from `listFieldAnswers`. */
   z.object({ kind: z.literal("text") }),
   z.object({
     kind: z.literal("consent"),
@@ -64,20 +54,15 @@ export const questionnaireSummaryFieldDtoSchema = z.object({
   stepId: z.string().uuid(),
   stepIndex: countSchema,
   stepTitle: z.string().nullable(),
-  /** Responses with a valid, non-empty answer for this field. */
   answeredCount: countSchema,
-  /** Responses without an answer for this field, the ones it was not shown to included. */
   missingCount: countSchema,
-  /** Present only for conditional fields; absent means "shown to every respondent". */
   audience: questionnaireFieldAudienceDtoSchema.optional(),
-  /** Responses whose stored answer no longer validates against the field definition. */
   invalidCount: countSchema,
   result: questionnaireSummaryFieldResultDtoSchema,
 });
 
 export const questionnaireSummaryTimelineDtoSchema = z.object({
   timezone: z.literal(QUESTIONNAIRE_SUMMARY_TIMEZONE),
-  /** One entry per calendar day from the first to the last response, empty days included. */
   days: z.array(z.object({ date: dayKeySchema, count: countSchema, cumulative: countSchema })),
 });
 
@@ -86,9 +71,7 @@ export const questionnaireSummaryDtoSchema = z.object({
   status: questionnaireStatusSchema,
   publishedAt: z.string().nullable(),
   closedAt: z.string().nullable(),
-  /** Responses the summary is computed on (the ones matching the filter, when there is one). */
   responseCount: countSchema,
-  /** Every response of the questionnaire, whatever the filter. */
   totalResponseCount: countSchema,
   firstResponseAt: z.string().nullable(),
   lastResponseAt: z.string().nullable(),
@@ -113,7 +96,6 @@ export const questionnaireFieldAnswersDtoSchema = z.object({
   total: countSchema,
 });
 
-export type QuestionnaireAnalysisFieldDto = z.infer<typeof questionnaireAnalysisFieldDtoSchema>;
 export type QuestionnaireOtherAnswerDto = z.infer<typeof questionnaireOtherAnswerDtoSchema>;
 export type QuestionnaireSummaryFieldDto = z.infer<typeof questionnaireSummaryFieldDtoSchema>;
 export type QuestionnaireSummaryFieldResultDto = z.infer<
