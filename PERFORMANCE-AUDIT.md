@@ -471,3 +471,38 @@ Title, description, canonical, JSON-LD, `robots.txt`, `sitemap.xml` e feed sono 
 Nota: la misura del mattino precede anche i commit di `main` pubblicati nel frattempo (tra cui la rimozione di Recharts). Il guadagno attribuibile solo a queste ottimizzazioni è quello del confronto controllato della sezione 9, cioè −17%. In produzione il valore assoluto è più basso che in laboratorio perché Caddy gestisce meglio la priorità delle risorse in HTTP/2–3 rispetto al proxy di prova.
 
 Resta aperto, sul server: `encode zstd gzip` nel `Caddyfile` (oggi solo gzip).
+
+## 11. Compressione zstd e prova del CSS inline (2026-11-24, pomeriggio)
+
+### Compressione zstd (Caddy) — ✅ applicata in produzione
+
+`encode zstd gzip` era già nel `Caddyfile`, ma Next comprime già da sé in gzip (`compress` predefinito) e Caddy inoltrava quella risposta senza ricomprimerla. Configurazione applicata (dettagli e rollback in `docs/production-ops.md`, sezione "Caddy Compression"):
+
+- `encode { zstd better; gzip 6 }`;
+- `/_next/static/*` passa il gzip di Next così com'è: lì è già ottimale, e lo zstd di Caddy produrrebbe file più grandi (+2%);
+- il resto (HTML, RSC, API) chiede a Next la risposta non compressa (`header_up -Accept-Encoding`) e Caddy la comprime in zstd.
+
+Lo streaming è stato verificato con un server di prova: il primo blocco arriva a 40 ms e il secondo a 2.044 ms, come senza compressione.
+
+| Risorsa                       | Prima (gzip) | Dopo (zstd)                                                      |
+| ----------------------------- | ------------ | ---------------------------------------------------------------- |
+| HTML home                     | 33,9 KB      | **22,0 KB (−35%)**                                               |
+| LCP home mobile in produzione | 2.247 ms     | 2.247 ms (invariato: il collo di bottiglia è il CSS, non l'HTML) |
+
+Il guadagno è in byte trasferiti e consumo dati, non in LCP.
+
+### CSS inline (`experimental.inlineCss`) — ❌ scartato
+
+Misura con Caddy locale identico alla produzione (TLS, HTTP/2, zstd), mobile Slow 4G, CPU 4×, prima visita:
+
+|                     | CSS esterno (attuale)       | CSS inline                                            |
+| ------------------- | --------------------------- | ----------------------------------------------------- |
+| LCP home            | 3.005 ms                    | **925 / 927 ms**                                      |
+| CLS home            | 0,00                        | **0,21** ("da migliorare")                            |
+| HTML home compresso | 39 KB (+21 KB CSS in cache) | 109 KB (CSS duplicato in `<style>` e nel payload RSC) |
+
+L'insight `CLSCulprits` attribuisce lo spostamento ai font Archivo/Spectral. Con il CSS inline la pagina viene disegnata prima che i font siano arrivati, con il font di riserva. Quando i font arrivano (circa 2,4–2,9 s) i titoli in Archivo Black cambiano larghezza e il layout salta. Con il CSS esterno il primo disegno avviene quando i font sono già pronti.
+
+Per renderlo accettabile servirebbe `font-display: optional`, che però a chi visita per la prima volta mostrerebbe il font di riserva, quindi un design diverso. Entrambe le strade violano il vincolo di non alterare design ed esperienza visiva, quindi la funzione non viene adottata.
+
+Va considerato anche che la funzione è sperimentale, triplica l'HTML compresso della home e su questo sito, con HTML non cacheabile, penalizzerebbe chi torna sul sito.

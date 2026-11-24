@@ -350,6 +350,24 @@ curl -L https://middleware.media/ | grep -F 'umami'
 
 Il `grep` finale non deve trovare lo script. Non cancellare subito volumi o database analytics: prima decidere retention e obblighi documentali.
 
+## Caddy Compression
+
+Stato del blocco `middleware.media` nel `Caddyfile` (non versionato), applicato il 2026-11-24 (backup: `Caddyfile.backup.20261124T121013Z-before-zstd-html`):
+
+- `encode { zstd better; gzip 6 }`.
+- `handle /_next/static/*` → `reverse_proxy app:3000`: gli asset hashati arrivano gia gzip da Next (livello piu alto di quello di Caddy) e passano invariati.
+- `handle` (tutto il resto) → `reverse_proxy app:3000 { header_up -Accept-Encoding }`: Next risponde in chiaro e Caddy comprime in zstd/gzip. HTML home circa −35% rispetto a gzip; lo streaming dei Suspense boundary resta progressivo (verificato).
+- Il blocco `stats.middleware.media` non e stato modificato.
+
+Verifica:
+
+```bash
+curl -s -o /dev/null -D - -H 'Accept-Encoding: zstd, gzip' https://middleware.media/ | grep -i content-encoding   # zstd
+curl -s -o /dev/null -D - -H 'Accept-Encoding: zstd, gzip' "https://middleware.media$(curl -s https://middleware.media/ | grep -oE '/_next/static/chunks/[^"]+\.css' | head -1)" | grep -i content-encoding   # gzip
+```
+
+Rollback: ripristinare il backup del `Caddyfile`, poi `docker compose --env-file .env.production -f compose.production.yml exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile`.
+
 ## Map Tiles Ops
 
 Le mappe CMS usano Leaflet e tile OpenStreetMap. Il browser richiede immagini direttamente a `https://*.tile.openstreetmap.org`; la CSP autorizza esclusivamente tale origine. Il servizio e adatto al CMS autenticato con traffico limitato, non a pagine pubbliche o alto traffico.
