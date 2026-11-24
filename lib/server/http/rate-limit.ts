@@ -64,10 +64,13 @@ function buildRateLimitBackendUnavailableError(): ApiError {
   return new ApiError(500, "INTERNAL_ERROR", "Rate limit backend unavailable");
 }
 
-function buildRateLimitKey(request: Request, policy: RateLimitPolicy): string {
-  const url = new URL(request.url);
+export function toTrpcRateLimitScope(procedurePath: string): string {
+  return `trpc:${procedurePath}`;
+}
+
+function buildRateLimitKey(request: Request, policy: RateLimitPolicy, scope: string): string {
   const clientIp = getRequestClientIp(request) ?? "unknown";
-  return `${policy.name}:${request.method}:${url.pathname}:${clientIp}`;
+  return `${policy.name}:${request.method}:${scope}:${clientIp}`;
 }
 
 function incrementInMemoryCounter(
@@ -143,9 +146,13 @@ async function incrementRequiredRedisCounter(
   return counter;
 }
 
-export async function enforceRateLimit(request: Request, policy: RateLimitPolicy): Promise<void> {
+export async function enforceRateLimit(
+  request: Request,
+  policy: RateLimitPolicy,
+  scope: string = new URL(request.url).pathname,
+): Promise<void> {
   const now = Date.now();
-  const key = buildRateLimitKey(request, policy);
+  const key = buildRateLimitKey(request, policy, scope);
 
   let counter: RateLimitCounter;
 

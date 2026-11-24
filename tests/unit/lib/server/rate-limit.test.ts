@@ -1,5 +1,5 @@
 import { getRedisClient } from "@/lib/redis";
-import { enforceRateLimit } from "@/lib/server/http/rate-limit";
+import { enforceRateLimit, toTrpcRateLimitScope } from "@/lib/server/http/rate-limit";
 
 vi.mock("@/lib/redis", () => ({
   getRedisClient: vi.fn(),
@@ -50,6 +50,25 @@ describe("enforceRateLimit", () => {
       code: "RATE_LIMITED",
       message: "Rate limit exceeded for this endpoint",
     });
+  });
+
+  it("counts a tRPC procedure once across differently batched URLs", async () => {
+    vi.stubEnv("NODE_ENV", "test");
+    getRedisClientMock.mockRejectedValue(new Error("Redis unavailable"));
+
+    const policy = { name: "test-rate-limit-trpc-batch", limit: 1, windowMs: 60_000 };
+    const scope = toTrpcRateLimitScope("public.questionnaires.submit");
+
+    await expect(
+      enforceRateLimit(createRequest("/api/trpc/public.questionnaires.submit"), policy, scope),
+    ).resolves.toBeUndefined();
+    await expect(
+      enforceRateLimit(
+        createRequest("/api/trpc/public.questionnaires.submit,public.questionnaires.getBySlug"),
+        policy,
+        scope,
+      ),
+    ).rejects.toMatchObject({ status: 429, code: "RATE_LIMITED" });
   });
 
   it("fails closed in production when Redis is unavailable", async () => {

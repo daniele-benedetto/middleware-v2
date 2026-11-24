@@ -1,7 +1,11 @@
 import "server-only";
 
 import { enforceSameOrigin } from "@/lib/server/http/origin";
-import { enforceRateLimit, rateLimitPolicies } from "@/lib/server/http/rate-limit";
+import {
+  enforceRateLimit,
+  rateLimitPolicies,
+  toTrpcRateLimitScope,
+} from "@/lib/server/http/rate-limit";
 import { toTrpcError } from "@/lib/server/trpc/errors";
 import { publicProcedure } from "@/lib/server/trpc/init";
 import { rateLimitMiddleware } from "@/lib/server/trpc/middlewares/rate-limit";
@@ -14,10 +18,10 @@ export const publicReadProcedure = publicProcedure.use(
 function publicMutationProcedure(
   policy: (typeof rateLimitPolicies)[keyof typeof rateLimitPolicies],
 ) {
-  return publicProcedure.use(async ({ ctx, next }) => {
+  return publicProcedure.use(async ({ ctx, path, next }) => {
     try {
       enforceSameOrigin(ctx.request);
-      await enforceRateLimit(ctx.request, policy);
+      await enforceRateLimit(ctx.request, policy, toTrpcRateLimitScope(path));
       return await next();
     } catch (error) {
       throw toTrpcError(error);
