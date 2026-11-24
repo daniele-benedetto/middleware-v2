@@ -12,10 +12,6 @@ const text = i18n.cms.lists.questionnaires.responses;
 
 type OtherAnswer = { responseId: string; submittedAt: string; value: string };
 
-/**
- * Free texts of the "Altro (specificare)" choice of one field, newest first.
- * The answers come with the summary, so pagination is local.
- */
 export function QuestionnaireOtherAnswersList({
   answers,
   onOpenResponse,

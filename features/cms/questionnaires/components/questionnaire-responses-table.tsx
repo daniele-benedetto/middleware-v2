@@ -42,7 +42,6 @@ export const RESPONSES_DEFAULT_PAGE_SIZE = 20;
 export type QuestionnaireResponsesFilters = {
   page: number;
   pageSize: number;
-  /** Europe/Rome calendar days (`YYYY-MM-DD`), both inclusive. */
   from?: string;
   to?: string;
 };
@@ -99,7 +98,6 @@ function DateRangeFilter({
   );
 }
 
-/** Individual responses, newest first, filterable by Europe/Rome submission day. */
 export function QuestionnaireResponsesTable({
   questionnaire,
   filters,
@@ -147,7 +145,6 @@ export function QuestionnaireResponsesTable({
   }
   if (!query.data) {
     if (!invalidRange) return <QuestionnaireResponsesTableLoading />;
-    // Invalid range on first load: nothing was fetched, keep the filter reachable.
     return (
       <CmsDataTableShell
         toolbar={<DateRangeFilter filters={filters} invalidRange onChange={changeFilters} />}

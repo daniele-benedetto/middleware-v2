@@ -19,18 +19,11 @@ export type QuestionnaireDraftSnapshot = {
   stepIndex?: number;
 };
 
-/** Where the user is inside the form: a step (index in `definition.steps`) or the final review. */
 export type QuestionnaireFlowStop = number | "review";
-/** `target` tells which control the message belongs to: the field itself or its "Altro" text. */
 export type QuestionnaireAnswerError = { message: string; target: "field" | "other" };
 export type VisibleQuestionnaireStep = {
   step: QuestionnaireStep;
   stepIndex: number;
-  /**
-   * Visible fields of the step, in definition order (never empty), as the respondent must see
-   * them: `required` already accounts for `requiredWhen` and choice fields only list the
-   * options currently offered.
-   */
   fields: QuestionnaireField[];
 };
 export type QuestionnaireReviewItem = { field: QuestionnaireField; answer: string | null };
@@ -70,13 +63,11 @@ const estimatedSecondsByFieldType: Record<QuestionnaireField["type"], number> = 
 const estimatedSecondsPerChoiceOption = 1.5;
 const maxWeightedChoiceOptions = 12;
 
-/** A conditional question is shown only to some respondents: it weighs half in the estimate. */
 const conditionalFieldWeight = 0.5;
 
 const validation = i18n.public.questionnaire.validation;
 const reviewText = i18n.public.questionnaire.review;
 
-/** ISO datetime → value for `<input type="datetime-local">` (local time, minutes precision). */
 export function toDateTimeLocalValue(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
@@ -84,7 +75,6 @@ export function toDateTimeLocalValue(value: string): string {
   return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
 }
 
-/** `datetime-local` value (or any parseable date string) → ISO datetime; "" when empty or invalid. */
 export function toIsoDateTimeValue(value: string): string {
   if (!value) return "";
   const date = new Date(value);
@@ -100,7 +90,6 @@ function isEmptyAnswer(
   if (typeof value === "string") return value.trim() === "";
   if (typeof value === "number") return Number.isNaN(value);
   if (Array.isArray(value)) return value.length === 0;
-  // An unchecked mandatory consent is a missing answer, not a "false" one.
   return field.type === "consent" && required && value === false;
 }
 
@@ -108,13 +97,11 @@ function isBlankOtherAnswer(value: unknown) {
   return isQuestionnaireOtherAnswer(value) && value.other.trim() === "";
 }
 
-/** True when the field has a usable answer (an "Altro" choice without its text does not count). */
 function isAnswered(field: QuestionnaireField, value: unknown) {
   if (isEmptyAnswer(field, value) || isBlankOtherAnswer(value)) return false;
   return !Array.isArray(value) || !value.every(isBlankOtherAnswer);
 }
 
-/** Trims the "Altro" text; drops it when the field does not offer the "Altro" choice. */
 function normalizeChoiceEntry(field: { allowOther?: boolean }, entry: unknown) {
   if (!isQuestionnaireOtherAnswer(entry)) return entry;
   return field.allowOther ? { other: entry.other.trim() } : undefined;
@@ -131,16 +118,6 @@ function normalizeAnswer(field: QuestionnaireField, value: unknown) {
   return value;
 }
 
-/**
- * Prepares answers for the answers schema:
- * - empty values are omitted (so cleared optional fields do not fail validation and cleared
- *   required ones are reported as missing);
- * - answers of hidden fields, choices of options that are not offered any more (see
- *   `schema/logic.ts`) and keys outside the definition are dropped;
- * - datetime values are converted to ISO strings;
- * - the "Altro" text is trimmed. An "Altro" choice left without text is KEPT (as `{ other: "" }`)
- *   so that validation asks for it instead of silently discarding the choice.
- */
 export function normalizeAnswersForSubmission(
   definition: QuestionnaireDefinition,
   answers: QuestionnaireAnswerValues,
@@ -228,12 +205,6 @@ function answerIssueMessage(field: QuestionnaireField, value: unknown, issue: An
   }
 }
 
-/**
- * Validates the answers of a single step against the real answers schema. Visibility is resolved
- * against the answers of the WHOLE questionnaire, so a conditional field controlled from an
- * earlier step is validated only (and always) when it is shown.
- * Returns `fieldId → error`; an empty object means the step is valid.
- */
 export function getStepAnswerErrors(
   definition: QuestionnaireDefinition,
   step: QuestionnaireStep,
@@ -260,7 +231,6 @@ export function getStepAnswerErrors(
   return errors;
 }
 
-/** Same as `getStepAnswerErrors`, messages only: `fieldId → localized message`. */
 export function validateStepAnswers(
   definition: QuestionnaireDefinition,
   step: QuestionnaireStep,
@@ -284,13 +254,11 @@ function isStepValid(
 
 function isStepUntouched(fields: QuestionnaireField[], answers: QuestionnaireAnswerValues) {
   const questions = fields.filter((field) => field.type !== "information");
-  // Steps without questions cannot be "answered": never treat them as the place to resume.
   return (
     questions.length > 0 && questions.every((field) => isEmptyAnswer(field, answers[field.id]))
   );
 }
 
-/** The field as the respondent must see it: resolved `required`, only the offered options. */
 function toPresentedField(
   field: QuestionnaireField,
   logic: QuestionnaireLogicState,
@@ -317,11 +285,6 @@ function getVisibleSteps(
   });
 }
 
-/**
- * Steps that have at least one visible field given `answers`, each with its visible fields.
- * Steps left without visible fields (hidden by a rule, or coming after a step whose `endWhen`
- * ended the questionnaire) are skipped by the flow in both directions.
- */
 export function getVisibleQuestionnaireSteps(
   definition: QuestionnaireDefinition,
   answers: QuestionnaireAnswerValues,
@@ -329,7 +292,6 @@ export function getVisibleQuestionnaireSteps(
   return getVisibleSteps(definition, resolveQuestionnaireLogic(definition, answers));
 }
 
-/** Answered and total visible questions (information fields are not questions). */
 export function getQuestionnaireProgress(
   definition: QuestionnaireDefinition,
   answers: QuestionnaireAnswerValues,
@@ -345,7 +307,6 @@ export function getQuestionnaireProgress(
   };
 }
 
-/** Index of the first step whose visible fields fail validation, or -1 when all are valid. */
 export function getFirstInvalidStepIndex(
   definition: QuestionnaireDefinition,
   answers: QuestionnaireAnswerValues,
@@ -353,16 +314,6 @@ export function getFirstInvalidStepIndex(
   return definition.steps.findIndex((step) => !isStepValid(definition, step, answers));
 }
 
-/**
- * Stop to reopen when resuming a draft (or when the browser history asks for a stop).
- * Only steps with at least one visible field are eligible.
- * - With a saved `stepIndex`: that step (or the next visible one), never beyond the first step
- *   that fails validation. An index past the last step means the review, which is reachable only
- *   when every step is valid.
- * - Without it (legacy drafts): the first step that fails validation or has no answered question,
- *   falling back to the last visible step.
- * Returns `"review"` when no step is visible at all.
- */
 export function getResumeStop(
   definition: QuestionnaireDefinition,
   draft: QuestionnaireDraftSnapshot,
@@ -386,7 +337,6 @@ export function getResumeStop(
   if (!firstBlocking && savedIndex >= definition.steps.length) return "review";
 
   const target = Math.min(savedIndex, furthestReachable);
-  // `furthestReachable` is a visible step at or after `target`, so a match always exists.
   const resumed = visibleSteps.find((visibleStep) => visibleStep.stepIndex >= target);
   return resumed?.stepIndex ?? furthestReachable;
 }
@@ -413,10 +363,6 @@ function formatDateAnswer(field: QuestionnaireField, value: string) {
     : new Intl.DateTimeFormat(i18n.locale, { dateStyle: "short", timeStyle: "short" }).format(date);
 }
 
-/**
- * Human-readable answer for the review screen; `null` when the question has no usable answer
- * (the caller shows "Non risposto").
- */
 export function formatAnswerForReview(field: QuestionnaireField, value: unknown): string | null {
   if (field.type === "information" || !isAnswered(field, value)) return null;
 
@@ -444,10 +390,6 @@ export function formatAnswerForReview(field: QuestionnaireField, value: unknown)
   }
 }
 
-/**
- * Answers grouped by step for the review screen: only visible questions, in definition order.
- * Steps without visible questions (e.g. information only) are left out.
- */
 export function getQuestionnaireReviewSections(
   definition: QuestionnaireDefinition,
   answers: QuestionnaireAnswerValues,
@@ -473,10 +415,6 @@ function estimatedFieldSeconds(field: QuestionnaireField) {
   return seconds;
 }
 
-/**
- * Estimated completion time in whole minutes (at least 1), weighted by field type.
- * Conditional questions count for half: which ones are shown depends on the answers.
- */
 export function getEstimatedMinutes(definition: QuestionnaireDefinition): number {
   const seconds = definition.steps
     .flatMap((step) =>

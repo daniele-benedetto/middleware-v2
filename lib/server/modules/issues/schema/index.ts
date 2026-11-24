@@ -116,11 +116,8 @@ export const issuePrintSettingsSchema = z.object({
   coverImageUrl: z.string().trim().min(1).nullable().default(null),
   coverImageAlt: z.string().trim().default(""),
   coverImageMode: z.enum(["contained", "bleed"]).default("contained"),
-  /** Same display settings as an article cover (black and white, fit, focal point, zoom). */
   coverImageSettings: articleImageSettingsSchema.default(defaultArticleImageSettings),
-  /** The menu quote, printed under the index. */
   showMenuQuote: z.boolean().default(true),
-  /** Acknowledgements (rich text), printed under the index. */
   acknowledgements: z.unknown().default(null),
 });
 

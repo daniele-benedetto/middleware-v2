@@ -24,7 +24,6 @@ function parseDayKey(value: string | null | undefined): DayParts | null {
   return valid ? { year, month, day } : null;
 }
 
-/** Offset (ms) between the Rome wall clock and UTC at the given instant. */
 function getRomeOffsetMs(instantMs: number) {
   const parts = Object.fromEntries(
     romePartsFormatter.formatToParts(new Date(instantMs)).map((part) => [part.type, part.value]),
@@ -40,27 +39,21 @@ function getRomeOffsetMs(instantMs: number) {
   return wallClockAsUtc - Math.floor(instantMs / 1000) * 1000;
 }
 
-/** Instant (ms) of midnight Europe/Rome at the start of the given calendar day. */
 function getRomeDayStartMs({ year, month, day }: DayParts) {
   const midnightAsUtc = Date.UTC(year, month - 1, day);
-  // Midnight never falls inside a Rome DST transition (they happen at 02:00/03:00),
-  // so resolving the offset twice converges on the exact instant.
   const guess = midnightAsUtc - getRomeOffsetMs(midnightAsUtc);
   return midnightAsUtc - getRomeOffsetMs(guess);
 }
 
-/** Returns the `YYYY-MM-DD` key when it is a real calendar day, otherwise `undefined`. */
 export function normalizeDayKey(value: string | null | undefined) {
   return parseDayKey(value) ? (value as string) : undefined;
 }
 
-/** First instant of a Europe/Rome calendar day, as an ISO datetime with offset (`Z`). */
 export function romeDayStartIso(dayKey: string) {
   const parts = parseDayKey(dayKey);
   return parts ? new Date(getRomeDayStartMs(parts)).toISOString() : undefined;
 }
 
-/** Last millisecond of a Europe/Rome calendar day (inclusive upper bound). */
 export function romeDayEndIso(dayKey: string) {
   const parts = parseDayKey(dayKey);
   if (!parts) return undefined;

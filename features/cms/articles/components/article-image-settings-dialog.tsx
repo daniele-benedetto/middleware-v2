@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 type ArticleImageSettingsDialogProps = {
   imageUrl: string;
   value: ArticleImageSettings;
-  /** Where the settings apply, when not the article cover. */
   description?: string;
   disabled?: boolean;
   onChange: (value: ArticleImageSettings) => void;

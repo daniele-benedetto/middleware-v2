@@ -10,7 +10,6 @@ export function CmsQuestionnairesListLoading() {
   return <CmsListLoadingState columns={7} filterColumns={3} />;
 }
 
-/** Body of the "Sintesi" tab: totals row, timeline chart and question cards. */
 export function QuestionnaireSummaryLoading() {
   return (
     <div
@@ -47,7 +46,6 @@ export function QuestionnaireSummaryLoading() {
   );
 }
 
-/** Body of the "Risposte" tab while the first page of responses loads. */
 export function QuestionnaireResponsesTableLoading() {
   return (
     <CmsSurface spacing="none" className="flex min-h-0 flex-1 flex-col divide-y divide-foreground">
@@ -68,7 +66,6 @@ export function QuestionnaireResponsesTableLoading() {
   );
 }
 
-/** Route-level skeleton of the results screen: header, tabs, then the default "Sintesi" tab. */
 export function CmsQuestionnaireResponsesLoading() {
   return (
     <div className="flex h-full min-h-0 flex-col">

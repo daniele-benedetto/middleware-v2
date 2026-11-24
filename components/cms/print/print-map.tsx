@@ -5,9 +5,8 @@ import { PrintTitle } from "@/components/cms/print/print-title";
 import type { PrintMapEntry, PrintMapSection } from "@/lib/print/issue-document";
 import type { CSSProperties } from "react";
 
-/* eslint-disable @next/next/no-img-element -- the print document is serialized for the paginator. */
+/* eslint-disable @next/next/no-img-element */
 
-/** All entries share one page, in rows of two with the same height. */
 function toRows(entries: PrintMapEntry[]) {
   const rows: PrintMapEntry[][] = [];
   for (let index = 0; index < entries.length; index += 2) {

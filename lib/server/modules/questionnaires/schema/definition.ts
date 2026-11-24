@@ -49,16 +49,13 @@ const fieldBaseSchema = z.object({
   description: copyTextSchema.optional(),
   required: z.boolean().default(false),
   publicResults: z.boolean().default(false),
-  /** Absent means "always visible". See `schema/logic.ts`. */
   visibleWhen: questionnaireRuleSchema.optional(),
-  /** The field is mandatory while this rule is satisfied, on top of `required`. */
   requiredWhen: questionnaireRuleSchema.optional(),
 });
 
 const choiceOptionSchema = z.object({
   id: fieldIdSchema,
   label: copyTextSchema,
-  /** The option is offered only while this rule is satisfied. Absent means "always". */
   visibleWhen: questionnaireRuleSchema.optional(),
 });
 
@@ -133,23 +130,14 @@ const contactFieldSchema = fieldBaseSchema.extend({
   placeholder: copyTextSchema.optional(),
 });
 
-/**
- * Presentation-only: order of the options in the public results.
- * Omitted means "frequency" (most chosen first); "definition" keeps the authored order,
- * which is what ordinal options ("Mai / A volte / Spesso") need.
- */
 export const choiceResultsOrderSchema = z.enum(["frequency", "definition"]);
 
 export const QUESTIONNAIRE_OTHER_DEFAULT_LABEL = "Altro";
-/** Max length of the "Altro" free text when the field does not set `otherMaxLength`. */
 export const QUESTIONNAIRE_OTHER_DEFAULT_MAX_LENGTH = 200;
 
-/** "Altro (specificare)": an extra choice whose free text is stored with the answer. */
 const choiceOtherShape = {
   allowOther: z.boolean().optional(),
-  /** Label of the extra choice; omitted or empty means `QUESTIONNAIRE_OTHER_DEFAULT_LABEL`. */
   otherLabel: copyTextSchema.optional(),
-  /** Omitted means `QUESTIONNAIRE_OTHER_DEFAULT_MAX_LENGTH`. */
   otherMaxLength: z.number().int().positive().max(2000).optional(),
 };
 
@@ -224,12 +212,7 @@ export const questionnaireStepSchema = z.object({
   id: fieldIdSchema,
   title: copyTextSchema.optional(),
   description: copyTextSchema.optional(),
-  /** The whole step is shown only while this rule (on fields of earlier steps) is satisfied. */
   visibleWhen: questionnaireRuleSchema.optional(),
-  /**
-   * When satisfied once the step is filled in (fields up to this step included), the
-   * questionnaire ends here: every later step is skipped.
-   */
   endWhen: questionnaireRuleSchema.optional(),
   fields: z.array(questionnaireFieldSchema),
 });
@@ -317,7 +300,6 @@ function createNumberAnswerSchema(
   if (field.min !== undefined) schema = schema.min(field.min);
   if (field.max !== undefined) schema = schema.max(field.max);
   if (field.type !== "scale") return withOptionalRequirement(schema, field.required);
-  // A scale only offers `min`, `min + step`, …: anything in between is not a real answer.
   const scaleSchema = schema.refine((value) => isQuestionnaireScaleValue(field, value), {
     message: "Value is not one of the scale values",
   });
@@ -338,7 +320,6 @@ function createDateAnswerSchema(field: Extract<QuestionnaireField, { type: "date
   return withOptionalRequirement(schema, field.required);
 }
 
-/** Re-emits the issues of a nested parse (code, bounds, format… preserved) under `path`. */
 function forwardIssues(
   context: z.RefinementCtx,
   issues: readonly z.core.$ZodIssue[],
@@ -355,7 +336,6 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** Label of the "Altro" choice of a field. */
 export function getQuestionnaireOtherLabel(field: { otherLabel?: string }) {
   return field.otherLabel?.trim() || QUESTIONNAIRE_OTHER_DEFAULT_LABEL;
 }
@@ -364,11 +344,6 @@ export function getQuestionnaireOtherMaxLength(field: { otherMaxLength?: number 
   return field.otherMaxLength ?? QUESTIONNAIRE_OTHER_DEFAULT_MAX_LENGTH;
 }
 
-/**
- * One selected value of a choice field: an option id or, when the field allows it,
- * `{ other: string }` (trimmed, non-empty, at most `otherMaxLength` characters).
- * Issues of the free text are reported under the `other` key.
- */
 function createChoiceValueSchema(field: QuestionnaireChoiceField) {
   const optionIds = new Set(field.options.map((option) => option.id));
   const optionSchema = z
@@ -405,7 +380,6 @@ function createChoiceAnswerSchema(field: QuestionnaireChoiceField) {
     return withOptionalRequirement(valueSchema, field.required);
   }
 
-  // The "Altro" entry counts as one selection for minSelections/maxSelections.
   let schema = z.array(valueSchema).refine(hasUniqueChoiceValues, {
     message: "Choice values must be unique",
   });
@@ -427,7 +401,6 @@ export function createQuestionnaireFieldAnswerSchema(field: QuestionnaireField) 
     case "boolean":
       return withOptionalRequirement(z.boolean(), field.required);
     case "consent":
-      // A mandatory consent must be given: an unchecked box (`false`) is not an answer.
       return field.required ? z.literal(true) : z.boolean().optional();
     case "date":
     case "datetime":
@@ -451,7 +424,6 @@ function createAnswersSchema(definition: QuestionnaireDefinition, stepId?: strin
     step.fields.map((field) => ({
       field,
       schema: createQuestionnaireFieldAnswerSchema(field),
-      // Used while a `requiredWhen` rule makes an optional field mandatory.
       requiredSchema: field.required
         ? null
         : createQuestionnaireFieldAnswerSchema({ ...field, required: true }),
@@ -492,24 +464,10 @@ function createAnswersSchema(definition: QuestionnaireDefinition, stepId?: strin
   });
 }
 
-/**
- * Schema of a whole submission (`fieldId → answer`).
- * - Keys that are not answerable fields of the definition are rejected.
- * - Hidden fields (see `schema/logic.ts`) are never required and their answers are STRIPPED from
- *   the parsed output without validation: what gets stored only contains answers of visible
- *   fields. Fields made mandatory by `requiredWhen` are required; options that are not offered
- *   are rejected.
- * - Issues are reported with `path[0] === fieldId` and the code/bounds of the field schema.
- */
 export function createQuestionnaireAnswersSchema(definition: QuestionnaireDefinition) {
   return createAnswersSchema(definition);
 }
 
-/**
- * Schema for validating ONE step while filling in: takes the answers of the whole questionnaire
- * (needed to resolve visibility against earlier steps), validates only the visible fields of
- * the step `stepId` and outputs only their answers.
- */
 export function createQuestionnaireStepAnswersSchema(
   definition: QuestionnaireDefinition,
   stepId: string,
@@ -526,6 +484,5 @@ export type QuestionnaireChoiceField = Extract<
   QuestionnaireField,
   { type: "singleChoice" | "multipleChoice" }
 >;
-/** Stored answer of a singleChoice field / one entry of a multipleChoice answer. */
 export type QuestionnaireChoiceAnswerValue = string | QuestionnaireOtherAnswer;
 export type QuestionnaireAnswers = z.infer<ReturnType<typeof createQuestionnaireAnswersSchema>>;

@@ -57,7 +57,6 @@ function ResponseAnswersLoading() {
 }
 
 function ResponseAnswers({ detail }: { detail: ResponseDetail }) {
-  // Tells "not shown to this respondent" (conditional logic) from "shown and left empty".
   const { visibleFieldIds } = resolveQuestionnaireLogic(detail.definitionSnapshot, detail.answers);
 
   return (
@@ -97,10 +96,6 @@ function ResponseAnswers({ detail }: { detail: ResponseDetail }) {
   );
 }
 
-/**
- * Detail of one response. Controlled by the id of the open response so the
- * previous/next buttons can swap the response without closing the dialog.
- */
 export function QuestionnaireResponseDetailDialog({
   questionnaireId,
   responseId,
@@ -116,7 +111,6 @@ export function QuestionnaireResponseDetailDialog({
   );
   const error = query.isError ? mapTrpcErrorToCmsUiMessage(query.error) : null;
   const detail = query.data;
-  // While the next response loads, the previous one stays visible (dimmed) to avoid a flash.
   const switching = query.isPlaceholderData;
 
   return (

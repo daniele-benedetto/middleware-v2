@@ -29,7 +29,6 @@ function AnswersLoading() {
   );
 }
 
-/** Paginated free-text answers of one field, newest first. Mounted only when expanded. */
 export function QuestionnaireFieldAnswersList({
   questionnaireId,
   fieldId,

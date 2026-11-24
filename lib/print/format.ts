@@ -4,13 +4,10 @@ import type { PrintMapPlateOptions } from "@/lib/print/map-plate";
 const PT_TO_MM = 25.4 / 72;
 
 export type PrintFormatSpec = {
-  /** Label of the printed page. */
   pageLabel: string;
-  /** Label of the sheet the booklet is imposed on, two pages per side. */
   sheetLabel: string;
   page: { widthMm: number; heightMm: number };
   sheet: { widthMm: number; heightMm: number };
-  /** Index entries that fit one page. */
   tocCapacity: number;
   mapPlate: PrintMapPlateOptions;
   mapDirectory: PrintMapDirectoryMetrics;
@@ -18,16 +15,11 @@ export type PrintFormatSpec = {
 
 export const PRINT_STYLESHEET = "/print/issue.css";
 
-/**
- * The issue is printed on A5 pages, imposed two-up on A4 sheets and folded into
- * a booklet. These measures depend on the page and mirror `public/print/issue.css`.
- */
 export const printFormat: PrintFormatSpec = {
   pageLabel: "A5",
   sheetLabel: "A4",
   page: { widthMm: 148, heightMm: 210 },
   sheet: { widthMm: 297, heightMm: 210 },
-  /* Under the "In questo numero" kicker; quote and acknowledgements take more (preflight). */
   tocCapacity: 20,
   mapPlate: {
     widthMm: 121,

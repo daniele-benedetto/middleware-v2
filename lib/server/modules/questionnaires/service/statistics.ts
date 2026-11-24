@@ -77,7 +77,6 @@ export function createNumericDistribution(
 
   if (discrete) {
     if (field.type === "scale") {
-      // Every value of the scale gets a bucket, answered or not.
       getQuestionnaireScaleValues(field).forEach((value) =>
         counts.set(value, counts.get(value) ?? 0),
       );

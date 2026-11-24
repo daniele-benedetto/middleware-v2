@@ -1,8 +1,3 @@
-/**
- * Comune di Modena administrative boundary, version 2026-08-12.
- * Source: OpenStreetMap relation 43336, retrieved through Nominatim. Coordinates
- * are [longitude, latitude] in WGS84 and simplified for editor validation.
- */
 export const modenaComuneBoundaryVersion = "2026-08-12";
 
 type Position = readonly [longitude: number, latitude: number];

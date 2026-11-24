@@ -185,7 +185,6 @@ export const questionnaireResponsesRepository = {
       },
     });
   },
-  /** Ids of the responses right before/after one, in (submittedAt, id) order. */
   async getAdjacentIdsForCms(response: { id: string; questionnaireId: string; submittedAt: Date }) {
     const { id, questionnaireId, submittedAt } = response;
     const [previous, next] = await Promise.all([
@@ -268,7 +267,6 @@ export const cmsQuestionnairesRepository = {
   getById(id: string) {
     return prisma.questionnaire.findUnique({ where: { id }, select: cmsQuestionnaireDetailSelect });
   },
-  /** Questionnaire with all its responses (oldest first), for in-memory aggregation. */
   getWithResponsesForResults(id: string) {
     return prisma.questionnaire.findUnique({
       where: { id },

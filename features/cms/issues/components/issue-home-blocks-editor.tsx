@@ -921,7 +921,6 @@ function PrintBlockSettings({
   onChange,
 }: {
   settings?: IssueHomeBlockPrintSettings;
-  /** Courses always close with the QR, so the stop option only applies to maps. */
   allowStop: boolean;
   disabled?: boolean;
   text: IssueHomeBlocksEditorText;

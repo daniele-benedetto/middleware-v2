@@ -7,10 +7,6 @@ function textLength(node: RichTextNode): number {
     : 0;
 }
 
-/**
- * Keeps the top-level blocks of a rich text document until `maxChars` of text,
- * so the print source stays light. Fine trimming happens on the laid-out page.
- */
 export function truncatePrintRichText(value: unknown, maxChars: number): unknown {
   if (!value || typeof value !== "object") return value;
 

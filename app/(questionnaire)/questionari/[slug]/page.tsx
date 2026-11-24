@@ -30,7 +30,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 async function Content({ params }: Props) {
   const questionnaire = await getPublicQuestionnairePageData((await params).slug);
   if (!questionnaire) notFound();
-  // Resolved on the server: the page is sent already in its final state (thanks or form).
   const responder = questionnaire.isClosed
     ? { hasResponded: false, isKnown: true }
     : await getQuestionnaireResponderStatus(questionnaire.id);

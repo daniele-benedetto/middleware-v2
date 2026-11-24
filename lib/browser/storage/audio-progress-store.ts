@@ -10,7 +10,6 @@ export type AudioProgressRecord = {
   contentSlug: string;
   contentTitle: string;
   contentUpdatedAt: string | null;
-  /** Legacy keyPath kept to preserve existing IndexedDB stores. */
   articleId: string;
   articleSlug: string;
   articleTitle: string;
@@ -32,7 +31,6 @@ export type AudioBookmarkRecord = {
   contentSlug: string;
   contentTitle: string;
   contentUpdatedAt: string | null;
-  /** Legacy field kept for the existing by-articleId index. */
   articleId: string;
   articleSlug: string;
   articleTitle: string;

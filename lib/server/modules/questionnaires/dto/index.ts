@@ -39,9 +39,7 @@ export const questionnaireResponseListItemDtoSchema = questionnaireResponseDtoSc
 export const questionnaireResponseDetailDtoSchema = questionnaireResponseDtoSchema.extend({
   definitionSnapshot: questionnaireDefinitionSchema,
   answers: questionnaireResponseAnswersDtoSchema,
-  /** Response submitted immediately before this one (older), null on the first. */
   previousResponseId: z.string().uuid().nullable(),
-  /** Response submitted immediately after this one (newer), null on the last. */
   nextResponseId: z.string().uuid().nullable(),
 });
 export const questionnaireResponsesListDtoSchema = z.array(questionnaireResponseListItemDtoSchema);

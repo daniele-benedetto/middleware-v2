@@ -17,10 +17,6 @@ function hasLinkMark(node: RichTextNode) {
   );
 }
 
-/**
- * Inserts Italian soft hyphens so justified text breaks the same way in every
- * Chromium build: headless Linux Chromium ships without hyphenation dictionaries.
- */
 export function hyphenatePrintText(text: string): string {
   return text
     .split(/(\s+)/)

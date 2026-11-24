@@ -54,7 +54,6 @@ type IssuePrintViewerProps = {
 
 const MM_TO_PX = 96 / 25.4;
 const PREVIEW_STAGE_PADDING_PX = 48;
-// Long issues in a background tab are throttled by the browser: only flag a real stall.
 const PAGINATION_TIMEOUT_MS = 180_000;
 
 function toneStyle(tone: PrintDarkTone | null, backCoverTone: PrintDarkTone | null) {
@@ -89,11 +88,6 @@ function paginate(
   });
 }
 
-/**
- * Lays the issue out with Vivliostyle. Sections that must fit into a number of
- * pages (courses, cut articles) are measured after each pass and their texts
- * trimmed, then the issue is laid out again with the same paginator.
- */
 function usePrintPagination(variant: IssueHomeVariant) {
   const sourceRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -227,16 +221,11 @@ function usePrintPagination(variant: IssueHomeVariant) {
             }
           }
 
-          // Reuse spare leaves for actual omitted prose, starting with the
-          // latest cut article. A trial is committed only after a stable render
-          // consumes exactly one blank and gives it a meaningful amount of text.
           const available = backCover
             ? fillers
             : buildBookletPlan(countPrintPages(result.host)).paddedPageCount -
               countPrintPages(result.host);
 
-          // A complete article has nothing to continue online. Removing its QR
-          // must trigger another pass so the final page and booklet are measured again.
           if (
             !changed &&
             hasPreviewQr &&
@@ -411,12 +400,6 @@ function usePrintPagination(variant: IssueHomeVariant) {
   };
 }
 
-/**
- * Fits pages to the stage height through Vivliostyle's own zoom option: a CSS
- * zoom or transform on the host would distort the paginator's measurements.
- * Vivliostyle emulates a high pixel ratio with zoom + transform, so the scroll
- * area is clipped to the pages' visual box.
- */
 function usePreviewZoom(
   viewerRef: { current: CoreViewer | null },
   viewportRef: { current: HTMLDivElement | null },
@@ -519,8 +502,6 @@ export function IssuePrintViewer({
     mode === "preview" ? status : "loading",
     printFormat.page.heightMm,
   );
-  // Both outputs paginate under the same host CSS; PDF switches to its print
-  // frame only after Vivliostyle has finished laying out the page boxes.
   const frameMode = status === "ready" ? mode : "preview";
 
   return (

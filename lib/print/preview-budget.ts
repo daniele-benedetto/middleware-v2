@@ -1,4 +1,3 @@
-/** Reserve a meaningful continuation for the QR, without shortening a tiny article. */
 export const MIN_PREVIEW_CONTINUATION_CHARS = 600;
 
 export function initialPreviewBudget(length: number) {

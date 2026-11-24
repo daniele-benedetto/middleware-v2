@@ -18,7 +18,6 @@ import {
 import type { QuestionnaireAnswerError } from "@/lib/questionnaires/flow";
 import type { QuestionnaireChoiceField } from "@/lib/server/modules/questionnaires/schema/definition";
 
-/** Free text of the "Altro" choice; takes focus when the choice has just been selected. */
 function OtherTextInput({
   id,
   label,
@@ -68,7 +67,6 @@ function OtherTextInput({
   );
 }
 
-/** Options of a single/multiple choice question, plus the optional "Altro (specificare)" choice. */
 export function QuestionnaireChoiceInput({
   field,
   value,
@@ -97,7 +95,6 @@ export function QuestionnaireChoiceInput({
       : undefined;
   const otherSelected = field.allowOther === true && otherAnswer !== undefined;
   const otherLabel = getQuestionnaireOtherLabel(field);
-  // A group of checkboxes cannot carry the invalid state: each checkbox does.
   const checkboxInvalid = multiple && error?.target === "field" ? true : undefined;
 
   const toggleOption = (optionId: string, checked: boolean) => {

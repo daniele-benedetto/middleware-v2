@@ -4,7 +4,6 @@ export function formatPrintPageNumber(page: number) {
   return String(page).padStart(2, "0");
 }
 
-/** Maps every `data-print-anchor` to the first paginated page that contains it. */
 export function collectAnchorPages(root: ParentNode) {
   const anchorPages = new Map<string, number>();
 
@@ -18,10 +17,6 @@ export function collectAnchorPages(root: ParentNode) {
   return anchorPages;
 }
 
-/**
- * Fills index and cover references after pagination. Folio widths are fixed in
- * the stylesheet, so replacing the digits never changes the layout.
- */
 export function resolvePrintPageReferences(root: ParentNode) {
   const anchorPages = collectAnchorPages(root);
 

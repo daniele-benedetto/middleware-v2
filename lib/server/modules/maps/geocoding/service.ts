@@ -29,7 +29,6 @@ async function searchNominatim(query: string) {
     q: query,
     limit: "5",
     countrycodes: "it",
-    // Nominatim expects west,north,east,south; the previous order excluded Modena.
     viewbox: "10.7820845,44.7424432,11.0122721,44.5629531",
     bounded: "1",
   }).toString();

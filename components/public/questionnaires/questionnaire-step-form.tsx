@@ -34,7 +34,6 @@ export function QuestionnaireStepForm({
   onAnswerChange,
 }: {
   step: QuestionnaireStep;
-  /** Visible fields of the step. */
   fields: QuestionnaireField[];
   answers: Record<string, unknown>;
   errors: Record<string, QuestionnaireAnswerError>;
@@ -89,7 +88,6 @@ export function QuestionnaireStepForm({
           );
 
           return (
-            // A question revealed by an earlier answer fades in instead of popping.
             <section
               className="py-8 transition-opacity duration-300 starting:opacity-0 motion-reduce:transition-none"
               key={field.id}
@@ -121,7 +119,6 @@ export function QuestionnaireStepForm({
                   descriptionId={descriptionId}
                   onChange={(value) => onAnswerChange(field.id, value)}
                 />
-                {/* The error of the "Altro" text is rendered next to its input. */}
                 {error && error.target === "field" ? (
                   <QuestionnaireFieldError id={`${inputId}-error`} message={error.message} />
                 ) : null}

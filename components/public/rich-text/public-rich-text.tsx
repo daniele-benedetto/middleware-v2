@@ -437,11 +437,6 @@ export function PublicRichText({ value, className, dropCap = false }: PublicRich
   );
 }
 
-/**
- * Renders a rich-text document as inline content (marks and links preserved),
- * joining top-level blocks with line breaks. Meant for short texts such as
- * excerpts rendered inside an existing paragraph element.
- */
 export function PublicRichTextInline({ value }: PublicRichTextInlineProps) {
   if (!value || typeof value !== "object") {
     return null;

@@ -3,9 +3,8 @@ import { resolveCmsMediaPreviewUrl } from "@/lib/media/blob";
 import type { PrintImage as PrintImageModel } from "@/lib/print/issue-document";
 import type { CSSProperties } from "react";
 
-/* eslint-disable @next/next/no-img-element -- the print document is serialized for the paginator. */
+/* eslint-disable @next/next/no-img-element */
 
-/** Printed photo with the site display settings: black and white, fit, focal point, zoom. */
 export function PrintImage({ image }: { image: PrintImageModel }) {
   const { grayscale, fit, positionX, positionY, zoom } = image.settings;
   const style: CSSProperties = {

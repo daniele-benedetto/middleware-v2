@@ -23,10 +23,8 @@ export type PrintMapPlate = {
 export type PrintMapPlateOptions = {
   widthMm: number;
   heightMm: number;
-  /** Region that must contain every marker, centered in the plate. */
   safeWidthMm: number;
   safeHeightMm: number;
-  /** Printed size of one 256px tile: smaller is sharper, but map labels shrink. */
   tileSizeMm: number;
   minZoom: number;
   maxZoom: number;
@@ -96,11 +94,6 @@ function toPercent(value: number, total: number) {
   return Math.round((value / total) * 100_000) / 1000;
 }
 
-/**
- * Builds a static OpenStreetMap plate (same tiles as the site map) whose tiles
- * and markers are positioned in percentages of the plate, so it scales with
- * the page without a client-side map library.
- */
 export function buildPrintMapPlate(
   points: PrintMapCoordinate[],
   options: PrintMapPlateOptions = printMapPlateOptions,

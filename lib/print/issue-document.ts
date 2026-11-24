@@ -49,7 +49,6 @@ export type PrintArticleSource = {
   contentRich: unknown;
   imageUrl: string | null;
   imageAlt: string | null;
-  /** Article image settings: the print honours their black-and-white choice. */
   imageSettings?: unknown;
 };
 
@@ -85,7 +84,6 @@ export type PrintMapSource = {
   }>;
 };
 
-/** The issue chosen in the preview block, with its lead article (as on the site). */
 export type PrintPreviewIssueSource = {
   id: string;
   homeVariant: IssueHomeVariant;
@@ -114,13 +112,11 @@ export type PrintIssueSource = {
   printSettings: IssuePrintSettings;
 };
 
-/** A printed photo with the same display settings as on the site. */
 export type PrintImage = { url: string; alt: string; settings: ArticleImageSettings };
 
 type PrintSectionSettings = {
   stopWithSiteCta: boolean;
   showInIssueIntro: boolean;
-  /** The red logo across the foot of the section's last page. */
   showEndLogo: boolean;
 };
 
@@ -132,24 +128,14 @@ export type PrintArticleSection = PrintSectionSettings & {
   title: PrintTitleSegment[];
   subtitle: string | null;
   plainTitle: string;
-  /**
-   * The excerpt, for the cover highlights. On paper it opens `content`, or sits
-   * on the opening page of a fullscreen article.
-   */
   deck: string | null;
   author: string;
   image: PrintImage | null;
   content: unknown;
-  /** The article text has words of its own, besides the excerpt. */
   hasText: boolean;
   articlePath: string;
   ctaLabel: string;
-  /**
-   * "fullscreen": the first page holds photo, title and excerpt. "halfpage":
-   * photo (bleeding off the page) and title fill the top half, the text the rest.
-   */
   layout: IssueHomeArticlePrintLayout;
-  /** A photo layout requested without a photo: printed with the standard layout. */
   layoutFallback: Exclude<IssueHomeArticlePrintLayout, "default"> | null;
   dark: boolean;
 };
@@ -171,7 +157,6 @@ export type PrintMapSection = PrintSectionSettings & {
   plate: PrintMapPlate;
   entries: PrintMapEntry[];
   directory: PrintMapDirectoryLayout;
-  /** The map block on the public issue page. */
   sitePath: string;
 };
 
@@ -191,13 +176,11 @@ export type PrintCourseSection = PrintSectionSettings & {
   plainTitle: string;
   deck: string | null;
   lessons: PrintCourseLesson[];
-  /** The course page on the site, which lists every meeting. */
   sitePath: string;
 };
 
 export type PrintSection = PrintArticleSection | PrintMapSection | PrintCourseSection;
 
-/** Pages that a course and a cut article may fill, before the QR invite. */
 export const PRINT_FIT_PAGES = 2;
 
 export type PrintCoverHighlight = {
@@ -215,7 +198,6 @@ export type PrintCover = {
   highlights: PrintCoverHighlight[];
 };
 
-/** Back cover from the preview block: the lead article of the next issue. */
 export type PrintBackCover = {
   anchor: string;
   label: string;
@@ -227,16 +209,13 @@ export type PrintBackCover = {
   hasText: boolean;
   author: string;
   articlePath: string;
-  /** The next issue's color, as its card on the site. */
   variant: IssueHomeVariant;
   dark: boolean;
 };
 
-/** Under the index: the menu quote and the issue acknowledgements. */
 export type PrintQuoteSegment = { text: string; accent: boolean };
 
 export type PrintColophon = {
-  /** One entry per line of the menu quote. */
   quote: PrintQuoteSegment[][] | null;
   acknowledgements: unknown;
   acknowledgementsText: string | null;
@@ -244,12 +223,10 @@ export type PrintColophon = {
 
 export type PrintIssueDocument = {
   variant: IssueHomeVariant;
-  /** Umami campaign of the QR codes, e.g. "numero-zero". */
   campaign: string;
   cover: PrintCover;
   sections: PrintSection[];
   backCover: PrintBackCover | null;
-  /** A preview block is set but its issue has no published article to show. */
   backCoverUnavailable: boolean;
   colophon: PrintColophon | null;
 };
@@ -284,7 +261,6 @@ function buildCoverMeta(issue: PrintIssueSource, issueNumber: string) {
     .join(" · ");
 }
 
-/** Without settings an image uses the site defaults (black and white, centred). */
 function toPrintImage(
   url: string | null,
   alt: string | null,
@@ -392,11 +368,6 @@ function toPrintMapSection(
   };
 }
 
-/**
- * Lessons are generously pre-trimmed to keep the print source light: the viewer
- * trims each meeting again to fill its box on the laid-out page. Their images
- * are left out: each meeting has a fixed box.
- */
 const COURSE_LESSON_MAX_CHARS = 8000;
 
 function toPrintCourseLesson(lesson: PrintCourseSource["lessons"][number], index: number) {
@@ -441,11 +412,6 @@ function toPrintCourseSection(
   };
 }
 
-/**
- * The printed sequence follows the home blocks: the special (opening, rupture,
- * closing), the body articles, the map plates and the courses. Questionnaires
- * are not printed; the preview becomes the back cover (`backCover`).
- */
 export function buildPrintSections({
   issue,
   articles,
@@ -554,7 +520,6 @@ function resolveCoverImage(issue: PrintIssueSource, sections: PrintSection[]) {
   return fallback ? { ...fallback, bleed } : null;
 }
 
-/** Words of the menu quote printed in accent, as the accent words of the titles. */
 const QUOTE_ACCENT_WORDS = new Set(["lotta", "odia"]);
 
 function toQuoteSegments(line: string): PrintQuoteSegment[] {

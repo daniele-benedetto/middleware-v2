@@ -42,7 +42,6 @@ const dayKeyFormatter = new Intl.DateTimeFormat("en-CA", {
   day: "2-digit",
 });
 
-/** Calendar day (`YYYY-MM-DD`) of an instant in the summary timezone. */
 export function toSummaryDayKey(date: Date) {
   return dayKeyFormatter.format(date);
 }
@@ -51,7 +50,6 @@ function nextDayKey(dayKey: string) {
   return new Date(Date.parse(`${dayKey}T00:00:00.000Z`) + MS_PER_DAY).toISOString().slice(0, 10);
 }
 
-/** Responses per calendar day, from the first to the last response day, gaps filled with 0. */
 export function createResponsesTimeline(submittedAt: Date[]): QuestionnaireSummaryTimelineDto {
   const counts = new Map<string, number>();
   for (const date of submittedAt) {
@@ -104,11 +102,6 @@ function sortNewestFirst<T extends { responseId: string; submittedAt: Date }>(it
     .map((item) => ({ ...item, submittedAt: item.submittedAt.toISOString() }));
 }
 
-/**
- * Free texts of the "Altro" answers of a choice field, newest first.
- * Only texts that are valid for the field (non-empty, within its max length) are listed,
- * i.e. the same answers counted under the synthetic "Altro" option of the analysis.
- */
 export function listOtherChoiceAnswers(
   field: QuestionnaireChoiceField,
   responses: SummaryResponseRecord[],
@@ -175,7 +168,6 @@ function summarizeFieldResult(
   };
 }
 
-/** Every answerable field in definition order, whatever its `publicResults` flag. */
 export function summarizeQuestionnaireFields(
   definition: QuestionnaireDefinition,
   responses: SummaryResponseRecord[],
@@ -214,7 +206,6 @@ export function findQuestionnaireField(definition: QuestionnaireDefinition, fiel
   return null;
 }
 
-/** Non-empty answers of one free-text field, newest first. */
 export function listFreeTextFieldAnswers(fieldId: string, responses: SummaryResponseRecord[]) {
   return sortNewestFirst(
     responses.flatMap((response) => {
@@ -226,10 +217,6 @@ export function listFreeTextFieldAnswers(fieldId: string, responses: SummaryResp
   );
 }
 
-/**
- * Responses whose answers satisfy `rule` (all of them without a rule). Any field of the
- * definition can be referenced; a rule that is not valid for the definition is a 400.
- */
 export function filterResponsesByRule<T extends { answers: unknown }>(
   definition: QuestionnaireDefinition,
   responses: T[],

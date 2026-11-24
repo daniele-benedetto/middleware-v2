@@ -1,6 +1,5 @@
 import type { PrintFitSection } from "@/lib/print/fit-dom";
 
-/** A spare leaf is worth using only for substantial, previously omitted copy. */
 export const MIN_CLOSING_PAGE_LINES = 18;
 const MIN_REMAINING_CHARS = 600;
 

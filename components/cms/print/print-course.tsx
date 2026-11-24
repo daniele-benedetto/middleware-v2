@@ -24,12 +24,6 @@ function CourseLesson({ lesson }: { lesson: PrintCourseLesson }) {
   );
 }
 
-/**
- * Two page-sized boxes, as in the mockup: the first meeting fills the opening
- * page under the course header, the others share the second page in equal
- * heights and the footer QR closes it. The viewer trims each meeting to fill
- * its box (`data-print-fit-box`).
- */
 export function PrintCourse({
   course,
   qrCode,

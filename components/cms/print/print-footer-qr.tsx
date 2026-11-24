@@ -1,10 +1,5 @@
-/* eslint-disable @next/next/no-img-element -- the print document is serialized for the paginator. */
+/* eslint-disable @next/next/no-img-element */
 
-/**
- * Same QR block as the cover, in the page footer on the folio line. The parent
- * is either a page-height, relatively positioned box (map) or the
- * `print-footer-float` strip that closes a fitted text (cut article, course).
- */
 export function PrintFooterQr({
   qrCode,
   label,

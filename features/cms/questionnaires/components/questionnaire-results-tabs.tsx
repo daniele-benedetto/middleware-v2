@@ -15,10 +15,6 @@ export function parseQuestionnaireResultsTab(value: string | null | undefined) {
   return QUESTIONNAIRE_RESULTS_TABS.find((tab) => tab === value) ?? "sintesi";
 }
 
-/**
- * Tab list of the results screen. Custom because no shadcn `Tabs` primitive is installed;
- * it follows the WAI-ARIA tabs pattern (roving tabindex, arrow keys).
- */
 export function QuestionnaireResultsTabs({
   activeTab,
   onChange,

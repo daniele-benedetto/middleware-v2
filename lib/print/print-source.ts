@@ -6,10 +6,6 @@ function escapeAttribute(value: string) {
   return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
 
-/**
- * Serializes the rendered print source as a standalone document for the
- * paginator, with absolute resource URLs so it does not depend on the host page.
- */
 export function serializePrintSource(
   source: HTMLElement,
   variant: IssueHomeVariant,

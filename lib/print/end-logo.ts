@@ -12,11 +12,6 @@ export function collectEndLogoAnchors(source: ParentNode) {
   });
 }
 
-/**
- * Lays the red logo under the text of the last page of each flagged section, once the issue
- * is paginated: it sits on the page box, outside the flow, so the layout does
- * not change. Position and size live in `.print-end-logo` (app/globals.css).
- */
 export function placePrintEndLogos(rendered: ParentNode, anchors: string[]) {
   for (const anchor of anchors) {
     const pageBox = pagesWithAnchor(rendered, anchor).at(-1)?.querySelector(PAGE_BOX_SELECTOR);

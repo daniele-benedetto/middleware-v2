@@ -184,7 +184,6 @@ function aggregateField(
       responseCount,
       options: [
         ...[...counts].map(([optionId, count]) => ({ optionId, count })),
-        // "Altro" answers are counted under a synthetic option; their free text is never public.
         ...(field.allowOther
           ? [{ optionId: QUESTIONNAIRE_OTHER_OPTION_ID, count: otherCount }]
           : []),

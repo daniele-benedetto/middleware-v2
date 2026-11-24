@@ -7,10 +7,6 @@ import {
 } from "@/components/public/questionnaires/questionnaire-ui";
 import { cn } from "@/lib/utils";
 
-/**
- * Footer of the form: the "back" button and the primary (submit) button of the stop, always on
- * one row, stuck to the bottom of the screen.
- */
 export function QuestionnaireFlowActions({
   backLabel,
   backDisabled,

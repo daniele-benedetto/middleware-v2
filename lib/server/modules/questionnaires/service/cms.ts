@@ -208,14 +208,6 @@ export const cmsQuestionnairesService = {
       nextResponseId: adjacent.nextId,
     };
   },
-  /**
-   * Aggregates over the current definition: the structure (everything but `copy`) is locked
-   * by `update` once `firstResponseAt` is set, so every response snapshot has the same fields.
-   */
-  /**
-   * `filter` keeps only the responses whose answers satisfy the rule (any field of the
-   * definition can be referenced), to read the results of a group of respondents.
-   */
   async getSummary(id: string, filter?: QuestionnaireRule) {
     const record = await cmsQuestionnairesRepository.getWithResponsesForResults(id);
     if (!record) throw new ApiError(404, "NOT_FOUND", "Questionnaire not found");

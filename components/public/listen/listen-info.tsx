@@ -7,7 +7,6 @@ import { StyledTitle } from "@/components/public/styled-title";
 import type { IssueTitleStyled } from "@/lib/server/modules/issues/schema";
 
 type ListenInfoProps = {
-  /** Where the content belongs (issue and category, or course). */
   kicker: PublicMetaRailItem[];
   title: string;
   titleStyled: IssueTitleStyled | null;
@@ -15,7 +14,6 @@ type ListenInfoProps = {
   backLink: { href: string; label: string };
 };
 
-/** Title block of the listen page, as the track info of a player. */
 export function ListenInfo({ kicker, title, titleStyled, meta, backLink }: ListenInfoProps) {
   return (
     <header className="grid gap-1.5 lg:gap-3">

@@ -58,7 +58,6 @@ function defineQuestionnaire(steps: FieldInput[][]): QuestionnaireDefinition {
   });
 }
 
-/** Single-step questionnaire with one field; returns the message produced for `value`. */
 function messageFor(field: FieldInput, value: unknown) {
   const definition = defineQuestionnaire([[field]]);
   const [step] = definition.steps;
@@ -287,7 +286,6 @@ describe("validateStepAnswers", () => {
 });
 
 describe("getResumeStop", () => {
-  // step 0: required text · step 1: optional only · step 2: required text · step 3: optional only
   const definition = defineQuestionnaire([
     [{ type: "text", required: true }],
     [{ type: "text" }, { type: "boolean", trueLabel: "Si", falseLabel: "No" }],
@@ -435,7 +433,6 @@ describe("conditional questions", () => {
   const yes = { type: "boolean", trueLabel: "Si", falseLabel: "No" };
   const controllerId = id();
   const optionId = id();
-  // step 0: controller · step 1: only conditional fields · step 2: optional text
   const definition = defineQuestionnaire([
     [{ ...yes, id: controllerId, required: true }],
     [
@@ -581,7 +578,6 @@ describe('"Altro" choice', () => {
   });
 
   it("trims the text and keeps an empty one so that validation can ask for it", () => {
-    // Option ids are unique per step: the two fields share them, so they live in two steps.
     const definition = defineQuestionnaire([[single], [multiple]]);
     const [singleId, multipleId] = definition.steps.map((step) => step.fields[0].id);
 
@@ -609,7 +605,6 @@ describe('"Altro" choice', () => {
   });
 
   it("does not count a choice without its text as answered", () => {
-    // Option ids are unique per step: the two fields share them, so they live in two steps.
     const definition = defineQuestionnaire([[single], [multiple]]);
     const [singleId, multipleId] = definition.steps.map((step) => step.fields[0].id);
 

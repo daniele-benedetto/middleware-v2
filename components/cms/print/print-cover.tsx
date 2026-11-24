@@ -3,7 +3,7 @@ import { PrintTitle } from "@/components/cms/print/print-title";
 
 import type { PrintCover as PrintCoverModel } from "@/lib/print/issue-document";
 
-/* eslint-disable @next/next/no-img-element -- the print document is serialized for the paginator. */
+/* eslint-disable @next/next/no-img-element */
 
 export function PrintCover({ cover }: { cover: PrintCoverModel }) {
   return (

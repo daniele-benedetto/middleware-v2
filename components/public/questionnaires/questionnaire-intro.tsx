@@ -82,7 +82,6 @@ function QuestionnairePrivacyNotice({ notice, href }: { notice?: string; href?: 
       {safeHref ? (
         <PublicLink
           href={safeHref}
-          // Always a new tab: reading the policy must not lose the questionnaire.
           target="_blank"
           rel="noopener noreferrer"
           className="text-accent underline underline-offset-3 hover:text-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -102,7 +101,6 @@ export function QuestionnaireIntro({
 }: {
   questionnaire: PublicQuestionnaireDto;
   isLoading: boolean;
-  /** True when there are answers to resume (stored draft or answers of this visit). */
   hasDraft: boolean;
   onStart: (restoreDraft: boolean) => void;
 }) {

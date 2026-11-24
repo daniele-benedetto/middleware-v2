@@ -1,10 +1,3 @@
-/**
- * Workaround for a Vivliostyle bug: a two-column text whose first paragraph must
- * break inside a short remaining space can be pushed whole to the next page,
- * leaving the opening page without text. When that happens the viewer shifts
- * the gap under the header (`data-print-nudge` in issue.css) until the text
- * starts on the opening page; if no step works, the article stays as it was.
- */
 export const PRINT_NUDGE_MAX_LEVEL = 5;
 
 export type PrintNudgeMeasure = { pageCount: number; openingHasText: boolean };

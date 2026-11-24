@@ -9,7 +9,6 @@ const roleLabels: Record<PrintArticleRole, string> = {
   body: "Contributi",
 };
 
-/** Noun used by the "read it all online" invite, by editorial category. */
 const ctaNouns: Record<string, string> = {
   interviste: "l’intera intervista",
   intervista: "l’intera intervista",
@@ -20,7 +19,6 @@ const ctaNouns: Record<string, string> = {
   approfondimento: "l’intero approfondimento",
 };
 
-/** "“Quote”, Intervista a Sara": the quote becomes the headline, the rest the subtitle. */
 const QUOTED_HEADLINE = /^(\s*“[^”]+”)\s*[,–—-]\s*(\S.*)$/;
 
 export function resolvePrintArticleLabel(categoryName: string | null, role: PrintArticleRole) {
@@ -47,10 +45,6 @@ function sliceSegments(segments: PrintTitleSegment[], end: number) {
   return result;
 }
 
-/**
- * Splits a quoted interview title into headline and subtitle, keeping the
- * accent segments of the styled title inside the quote.
- */
 export function splitPrintHeadline(segments: PrintTitleSegment[]): {
   headline: PrintTitleSegment[];
   subtitle: string | null;

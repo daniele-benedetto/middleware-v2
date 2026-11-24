@@ -12,7 +12,6 @@ const darkToneByVariant: Record<IssueHomeVariant, PrintDarkTone | null> = {
   default: null,
 };
 
-/** Special openings with a photo take the issue color as full-page background. */
 export function resolvePrintDarkTone(variant: IssueHomeVariant): PrintDarkTone | null {
   return darkToneByVariant[variant];
 }

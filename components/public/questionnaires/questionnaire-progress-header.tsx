@@ -2,21 +2,13 @@ import { questionnaireColumnClass } from "@/components/public/questionnaires/que
 import { i18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-/**
- * Sticky header of the form: where the user is ("Sezione X di Y" or the review) and the progress
- * bar of the visible questions answered. The count itself is only announced to assistive
- * technologies: on screen the bar is enough. Its height is fixed: the position is a single,
- * non-wrapping line, so the page below never moves when it changes.
- */
 export function QuestionnaireProgressHeader({
   label,
   position,
   answered,
   total,
 }: {
-  /** `copy.progressLabel`, a plain label ("Avanzamento") that names the bar. */
   label: string;
-  /** "Sezione X di Y" or the title of the review. */
   position: string;
   answered: number;
   total: number;

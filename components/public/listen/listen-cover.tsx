@@ -8,7 +8,6 @@ type ListenCoverProps = {
   imageSettings?: unknown;
 };
 
-/** Square cover of the listen page: the content photo, or the brand pictogram. */
 export function ListenCover({ imageUrl, imageAlt, imageSettings }: ListenCoverProps) {
   if (imageUrl) {
     return (

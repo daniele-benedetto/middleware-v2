@@ -5,25 +5,6 @@ import type {
   QuestionnaireField,
 } from "@/lib/server/modules/questionnaires/schema/definition";
 
-/**
- * Conditional logic of a questionnaire: rules made of conditions on the answers of EARLIER
- * fields. The same rule shape drives:
- * - `field.visibleWhen`   → the field is shown only when the rule is satisfied;
- * - `field.requiredWhen`  → the field becomes mandatory when the rule is satisfied;
- * - `option.visibleWhen`  → the option of a choice field is offered only when satisfied;
- * - `step.visibleWhen`    → the whole step is shown only when satisfied;
- * - `step.endWhen`        → when satisfied after the step, every later step is skipped.
- *
- * A condition is never satisfied while its controlling field is hidden, whatever the operator.
- * While the controlling field is unanswered only `notAnswered` can be satisfied, so negative
- * operators (`notEquals`, `notIncludes`, `isNoneOf`) never fire on a blank answer.
- */
-
-/**
- * Id of the synthetic "Altro" option in aggregates (analysis, public results) and in conditions.
- * It is never stored in answers (the free text travels as `{ other: string }`) and can never be
- * the id of an authored option.
- */
 export const QUESTIONNAIRE_OTHER_OPTION_ID = "ffffffff-ffff-4fff-8fff-ffffffffffff";
 
 export const questionnaireConditionOperatorSchema = z.enum([
@@ -48,17 +29,6 @@ export const questionnaireConditionOperatorSchema = z.enum([
 
 const conditionListItemSchema = z.union([z.number().finite(), z.string().trim().min(1)]);
 
-/**
- * One condition on the answer of the field `fieldId`. The value depends on field and operator:
- * - boolean / consent: a boolean;
- * - choice fields: an option id (or `QUESTIONNAIRE_OTHER_OPTION_ID` when the field allows
- *   "Altro"), a list of them for `isOneOf` / `isNoneOf` / `includesAny` / `includesAll`, a
- *   number of selections for `selectedAtLeast` / `selectedAtMost`;
- * - scale / integer / decimal: a number, `[from, to]` (inclusive) for `between`;
- * - date / datetime: a date (`YYYY-MM-DD`) or ISO datetime, `[from, to]` for `between`;
- * - `answered` / `notAnswered`: no value.
- * Cross-field consistency is validated by the definition schema.
- */
 export const questionnaireFieldConditionSchema = z.object({
   fieldId: z.string().uuid(),
   operator: questionnaireConditionOperatorSchema,
@@ -74,7 +44,6 @@ export const questionnaireFieldConditionSchema = z.object({
 
 export const QUESTIONNAIRE_RULE_MAX_CONDITIONS = 10;
 
-/** Several conditions: `all` = every one must hold (E), `any` = at least one (O). */
 export const questionnaireConditionGroupSchema = z.object({
   match: z.enum(["all", "any"]),
   conditions: z
@@ -83,7 +52,6 @@ export const questionnaireConditionGroupSchema = z.object({
     .max(QUESTIONNAIRE_RULE_MAX_CONDITIONS),
 });
 
-/** A single condition (the original `visibleWhen` shape) or a group of conditions. */
 export const questionnaireRuleSchema = z.union([
   questionnaireFieldConditionSchema,
   questionnaireConditionGroupSchema,
@@ -103,9 +71,7 @@ type LogicStep = {
   endWhen?: QuestionnaireRule;
   fields: QuestionnaireField[];
 };
-/** Minimal structure needed to resolve the logic (a full definition satisfies it). */
 export type QuestionnaireDefinitionShape = { steps: LogicStep[] };
-/** Every field type except `information` can control a rule. */
 export type QuestionnaireConditionSourceField = Exclude<
   QuestionnaireField,
   { type: "information" }
@@ -152,7 +118,6 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** True for the "Altro" variant of a choice answer: `{ other: "free text" }`. */
 export function isQuestionnaireOtherAnswer(value: unknown): value is QuestionnaireOtherAnswer {
   return isPlainObject(value) && typeof value.other === "string";
 }
@@ -163,7 +128,6 @@ export function isQuestionnaireConditionGroup(
   return "conditions" in rule;
 }
 
-/** Conditions of a rule, whatever its shape (none for an absent rule). */
 export function getQuestionnaireRuleConditions(
   rule: QuestionnaireRule | undefined,
 ): QuestionnaireFieldCondition[] {
@@ -171,15 +135,10 @@ export function getQuestionnaireRuleConditions(
   return isQuestionnaireConditionGroup(rule) ? rule.conditions : [rule];
 }
 
-/** Whether the conditions of a rule must all hold (`all`) or one is enough (`any`). */
 export function getQuestionnaireRuleMatch(rule: QuestionnaireRule): "all" | "any" {
   return isQuestionnaireConditionGroup(rule) ? rule.match : "all";
 }
 
-/**
- * Builds the most compact valid rule: undefined without conditions, the plain condition when
- * there is only one, a group otherwise.
- */
 export function createQuestionnaireRule(
   conditions: QuestionnaireFieldCondition[],
   match: "all" | "any" = "all",
@@ -188,14 +147,12 @@ export function createQuestionnaireRule(
   return conditions.length === 1 ? conditions[0] : { match, conditions };
 }
 
-/** Field types whose answer can control a rule. */
 export function isQuestionnaireConditionSourceField(
   field: QuestionnaireField,
 ): field is QuestionnaireConditionSourceField {
   return field.type !== "information";
 }
 
-/** Operators a condition can use on a controlling field, first one being the default. */
 export function getQuestionnaireConditionOperators(
   field: QuestionnaireField,
 ): QuestionnaireConditionOperator[] {
@@ -230,7 +187,6 @@ export function getQuestionnaireConditionOperators(
   }
 }
 
-/** Shape of the value an operator expects on a controlling field. */
 export type QuestionnaireConditionValueKind =
   | "none"
   | "boolean"
@@ -257,7 +213,6 @@ export function getQuestionnaireConditionValueKind(
   return "none";
 }
 
-/** Option ids a condition can reference on a choice field ("Altro" included when allowed). */
 export function getQuestionnaireConditionOptionIds(field: QuestionnaireChoiceField): string[] {
   return [
     ...field.options.map((option) => option.id),
@@ -268,12 +223,10 @@ export function getQuestionnaireConditionOptionIds(field: QuestionnaireChoiceFie
 const SCALE_GRID_TOLERANCE = 1e-9;
 const SCALE_MAX_DECIMALS = 10;
 
-/** Most values a scale can offer: more would not fit a row of buttons. */
 export const QUESTIONNAIRE_SCALE_MAX_VALUES = 101;
 
 type ScaleBounds = { min: number; max: number; step?: number };
 
-/** Decimal places needed to write `value` exactly (capped), e.g. 0.25 → 2. */
 function countDecimals(value: number) {
   for (let decimals = 0; decimals < SCALE_MAX_DECIMALS; decimals += 1) {
     const scaled = value * 10 ** decimals;
@@ -282,16 +235,10 @@ function countDecimals(value: number) {
   return SCALE_MAX_DECIMALS;
 }
 
-/** How many values the scale offers: `min`, `min + step`, … up to `max`. */
 export function getQuestionnaireScaleValueCount(field: ScaleBounds): number {
   return Math.floor((field.max - field.min) / (field.step ?? 1) + SCALE_GRID_TOLERANCE) + 1;
 }
 
-/**
- * Selectable values of a scale, each computed as `min + i * step` and rounded to the decimals of
- * `min` and `step`: adding the step repeatedly would drift (0.1 + 0.2 = 0.30000000000000004).
- * Never more than `QUESTIONNAIRE_SCALE_MAX_VALUES`.
- */
 export function getQuestionnaireScaleValues(field: ScaleBounds): number[] {
   const step = field.step ?? 1;
   const decimals = Math.max(countDecimals(field.min), countDecimals(step));
@@ -301,7 +248,6 @@ export function getQuestionnaireScaleValues(field: ScaleBounds): number[] {
   );
 }
 
-/** Whether `value` is one of the selectable values of a scale (`min`, `min + step`, …). */
 export function isQuestionnaireScaleValue(
   field: { min: number; max: number; step?: number },
   value: number,
@@ -401,11 +347,6 @@ function getValueIssue(
   }
 }
 
-/**
- * Why `condition` is not valid against its controlling field, or null when it is valid.
- * `controller` must be the field with id `condition.fieldId` taken among the fields the rule is
- * allowed to reference (undefined when there is none).
- */
 export function getQuestionnaireConditionIssue(
   condition: QuestionnaireFieldCondition,
   controller: QuestionnaireField | undefined,
@@ -419,7 +360,6 @@ export function getQuestionnaireConditionIssue(
 
 export type QuestionnaireRuleIssue = { message: string; path: PropertyKey[] };
 
-/** Issues of every condition of `rule`, with the path of the condition inside the rule. */
 export function getQuestionnaireRuleIssues(
   rule: QuestionnaireRule | undefined,
   controllers: ReadonlyMap<string, QuestionnaireField>,
@@ -432,7 +372,6 @@ export function getQuestionnaireRuleIssues(
   });
 }
 
-/** Whether a choice field can be compared with something (it needs an option or "Altro"). */
 function hasComparableValues(field: QuestionnaireField) {
   return !isChoiceField(field) || getQuestionnaireConditionOptionIds(field).length > 0;
 }
@@ -444,21 +383,12 @@ function toSourceFields(fields: QuestionnaireField[]) {
   );
 }
 
-/**
- * Where a rule lives, which decides the fields it can reference:
- * - `field` (its `visibleWhen` / `requiredWhen` and the `visibleWhen` of its options): the
- *   fields that come before it in definition order;
- * - `step` (`visibleWhen`): the fields of the earlier steps;
- * - `stepEnd` (`endWhen`): the fields up to the end of that step;
- * - `all`: every field (filters over the responses).
- */
 export type QuestionnaireRuleTarget =
   | { kind: "field"; fieldId: string }
   | { kind: "step"; stepIndex: number }
   | { kind: "stepEnd"; stepIndex: number }
   | { kind: "all" };
 
-/** Fields a rule placed at `target` can reference, in definition order. */
 export function listQuestionnaireRuleSourceFields(
   definition: QuestionnaireDefinitionShape,
   target: QuestionnaireRuleTarget,
@@ -479,7 +409,6 @@ export function listQuestionnaireRuleSourceFields(
   return target.kind === "all" ? toSourceFields(collected) : [];
 }
 
-/** Fields a rule on the field `fieldId` can reference: the eligible fields that come before it. */
 export function listQuestionnaireConditionSourceFields(
   definition: QuestionnaireDefinitionShape,
   fieldId: string,
@@ -498,11 +427,6 @@ function defaultScalar(controller: QuestionnaireField, now: Date): number | stri
   return 0;
 }
 
-/**
- * Value of a condition after its operator (or controlling field) changed: `previous` is kept
- * when it still has the right shape, converted when possible, else replaced by a default.
- * `now` is only used as the default of date conditions without `min` / `max`.
- */
 export function coerceQuestionnaireConditionValue(
   controller: QuestionnaireField,
   operator: QuestionnaireConditionOperator,
@@ -555,7 +479,6 @@ export function coerceQuestionnaireConditionValue(
   }
 }
 
-/** Default condition when `controller` is picked as the controlling field. */
 export function createQuestionnaireCondition(
   controller: QuestionnaireConditionSourceField,
   now: Date = new Date(),
@@ -579,7 +502,6 @@ function toComparable(controller: QuestionnaireField, value: unknown): number | 
   return null;
 }
 
-/** Ids selected in a choice answer, the "Altro" variant counted as its synthetic option. */
 function getSelectedOptionIds(answer: unknown): string[] {
   const entries = Array.isArray(answer) ? answer : answer === undefined ? [] : [answer];
   return entries.flatMap((entry) => {
@@ -588,11 +510,6 @@ function getSelectedOptionIds(answer: unknown): string[] {
   });
 }
 
-/**
- * Whether the controlling field has an answer conditions can look at. A consent is always
- * answered (unchecked = false); an "Altro" choice counts as soon as it is picked, before its
- * free text is typed, so that the fields depending on it show up immediately.
- */
 function hasConditionAnswer(controller: QuestionnaireField, answer: unknown) {
   switch (controller.type) {
     case "consent":
@@ -671,10 +588,6 @@ function isChoiceConditionSatisfied(condition: QuestionnaireFieldCondition, answ
   }
 }
 
-/**
- * Whether the answer of a VISIBLE controlling field satisfies the condition.
- * `answer` is a raw client value or a stored answer.
- */
 export function isQuestionnaireConditionSatisfied(
   condition: QuestionnaireFieldCondition,
   controller: QuestionnaireField,
@@ -697,18 +610,10 @@ export function isQuestionnaireConditionSatisfied(
 }
 
 export type QuestionnaireLogicState = {
-  /** Fields currently shown, in definition order. */
   visibleFieldIds: Set<string>;
-  /** Visible fields that are mandatory (`required` or a satisfied `requiredWhen`). */
   requiredFieldIds: Set<string>;
-  /** Options of visible choice fields that are not offered (their own rule is not satisfied). */
   hiddenOptionIds: Set<string>;
-  /** Index of the step whose `endWhen` ended the questionnaire, or null. */
   endedAtStepIndex: number | null;
-  /**
-   * Answers of the visible fields that conditions look at: choices pointing to options that
-   * are not offered are dropped. Fields without an answer are absent.
-   */
   answers: Record<string, unknown>;
 };
 
@@ -724,12 +629,6 @@ function withoutHiddenOptions(
   return isOffered(answer) ? answer : undefined;
 }
 
-/**
- * Resolves the whole conditional logic given `answers` (raw client values or stored answers),
- * in definition order: every rule only sees the fields that come before it, so chains collapse
- * as expected and answers left on hidden fields or hidden options are ignored.
- * A choice field left without any option to pick (all hidden, no "Altro") is hidden.
- */
 export function resolveQuestionnaireLogic(
   definition: QuestionnaireDefinitionShape,
   answers: Record<string, unknown>,
@@ -795,7 +694,6 @@ export function resolveQuestionnaireLogic(
   return state;
 }
 
-/** Ids of the fields currently visible given `answers`. See `resolveQuestionnaireLogic`. */
 export function getVisibleQuestionnaireFieldIds(
   definition: QuestionnaireDefinitionShape,
   answers: Record<string, unknown>,
@@ -803,11 +701,6 @@ export function getVisibleQuestionnaireFieldIds(
   return resolveQuestionnaireLogic(definition, answers).visibleFieldIds;
 }
 
-/**
- * Whether `field` is visible given `answers`. `definition` must be the FULL definition:
- * a condition whose controlling field is not found before `field` hides the field.
- * When checking many fields, prefer one `resolveQuestionnaireLogic` call.
- */
 export function isQuestionnaireFieldVisible(
   definition: QuestionnaireDefinitionShape,
   field: { id: string },
@@ -816,10 +709,6 @@ export function isQuestionnaireFieldVisible(
   return getVisibleQuestionnaireFieldIds(definition, answers).has(field.id);
 }
 
-/**
- * Whether a set of answers satisfies `rule`, every field of the definition being a possible
- * controlling field (used to filter responses). Hidden controlling fields never satisfy it.
- */
 export function matchesQuestionnaireRule(
   definition: QuestionnaireDefinitionShape,
   answers: Record<string, unknown>,
@@ -853,14 +742,9 @@ export type QuestionnaireRuleLocation =
 export type QuestionnaireRuleEntry = {
   location: QuestionnaireRuleLocation;
   rule: QuestionnaireRule;
-  /** Fields the rule can reference, by id. Only valid while the walk is on this entry. */
   controllers: ReadonlyMap<string, QuestionnaireField>;
 };
 
-/**
- * Visits every rule of the definition in definition order, each with the fields it is allowed
- * to reference. `controllers` is a live map: read it inside `visit`, do not keep it.
- */
 export function forEachQuestionnaireRule(
   definition: QuestionnaireDefinitionShape,
   visit: (entry: QuestionnaireRuleEntry) => void,
@@ -886,7 +770,6 @@ export function forEachQuestionnaireRule(
   });
 }
 
-/** Path of a rule inside the definition object. */
 export function getQuestionnaireRulePath(location: QuestionnaireRuleLocation): PropertyKey[] {
   switch (location.kind) {
     case "stepVisible":
@@ -910,7 +793,6 @@ export function getQuestionnaireRulePath(location: QuestionnaireRuleLocation): P
   }
 }
 
-/** Number of conditions in the whole definition (to tell when a cleanup removed some). */
 export function countQuestionnaireConditions(definition: QuestionnaireDefinitionShape): number {
   let count = 0;
   forEachQuestionnaireRule(definition, ({ rule }) => {
@@ -942,11 +824,6 @@ function withRule<T extends object, K extends string>(
   return (rule ? { ...rest, [key]: rule } : rest) as T;
 }
 
-/**
- * Removes every condition that is not valid any more (controlling field removed, moved after
- * the rule, changed type, option removed, value out of range), dropping the rules left empty.
- * Returns the same reference when nothing has to change.
- */
 export function clearInvalidQuestionnaireConditions<T extends QuestionnaireDefinitionShape>(
   definition: T,
 ): T {
@@ -985,9 +862,7 @@ export function clearInvalidQuestionnaireConditions<T extends QuestionnaireDefin
 export type QuestionnaireDescribedCondition = {
   fieldLabel: string;
   operator: QuestionnaireConditionOperator;
-  /** How `values` must be formatted for display. */
   valueKind: "none" | "text" | "number" | "date" | "datetime" | "consent";
-  /** Labels, numbers or ISO dates; for a consent `1` (given) or `0` (not given). */
   values: Array<string | number>;
 };
 export type QuestionnaireDescribedRule = {
@@ -1037,10 +912,6 @@ function describeConditionValues(
   };
 }
 
-/**
- * Label-resolved version of a rule, ready to be formatted for people (who never see ids).
- * Conditions whose controlling field is unknown are left out.
- */
 export function describeQuestionnaireRule(
   rule: QuestionnaireRule,
   fields: ReadonlyMap<string, QuestionnaireField>,

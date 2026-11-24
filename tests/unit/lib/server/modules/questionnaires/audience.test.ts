@@ -97,9 +97,7 @@ describe("questionnaire field audiences", () => {
         },
       ],
     });
-    // Step rule: only the response with a vote of 4 or more saw it.
     expect(audiences.get(ids.after)).toMatchObject({ shownCount: 1, totalCount: 4 });
-    // No rule of its own, but it comes after a step that can end the questionnaire.
     expect(audiences.get(ids.tail)).toEqual({
       shownCount: 3,
       totalCount: 4,
@@ -128,7 +126,6 @@ describe("questionnaire field audiences", () => {
       definition: rawDefinition,
       responses,
     });
-    // Public results stay plain: who saw a question is CMS-only information.
     expect(analysis?.fields.every((field) => !("audience" in field))).toBe(true);
   });
 });
@@ -169,9 +166,7 @@ describe("csv of conditional fields", () => {
       })),
     ).split("\r\n");
 
-    // happy=true, vote 3: "Quanto?" shown but empty, step two not shown, tail shown but empty.
     expect(lines[2]?.endsWith('"true","","3","(non mostrata)",""')).toBe(true);
-    // Vote 1 ends the questionnaire: everything after the first step was not shown.
     expect(
       lines[3]?.endsWith('"false","(non mostrata)","1","(non mostrata)","(non mostrata)"'),
     ).toBe(true);

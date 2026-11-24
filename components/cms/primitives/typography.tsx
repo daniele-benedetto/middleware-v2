@@ -4,11 +4,6 @@ import { cn } from "@/lib/utils";
 
 import type { ElementType, ReactNode } from "react";
 
-/* =============================================================
- * DISPLAY (Archivo)
- * SG: hero / h1 / h2 / h3 / pull-quote / section-label
- * ============================================================= */
-
 const cmsDisplayVariants = cva("font-display text-foreground", {
   variants: {
     size: {
@@ -59,11 +54,6 @@ function defaultTagFor(size: CmsDisplayProps["size"]): ElementType {
       return "p";
   }
 }
-
-/* =============================================================
- * EDITORIAL (Spectral)
- * SG: body / epigraph / blockquote / hairline / note
- * ============================================================= */
 
 const cmsBodyVariants = cva("font-editorial", {
   variants: {
@@ -156,11 +146,6 @@ export function CmsNote({ number, children, className }: CmsNoteProps) {
   );
 }
 
-/* =============================================================
- * META (Archivo)
- * SG: category / meta / tagline / paragraph-number / section-number
- * ============================================================= */
-
 const cmsMetaTextVariants = cva("font-ui uppercase", {
   variants: {
     variant: {
@@ -233,10 +218,6 @@ export function CmsSectionNumber({ number, label, className }: CmsSectionNumberP
     </div>
   );
 }
-
-/* =============================================================
- * BACK-COMPAT: CmsEyebrow / CmsHeading / CmsBodyText
- * ============================================================= */
 
 const cmsEyebrowVariants = cva(
   "font-ui text-(length:--text-meta) font-extrabold uppercase tracking-[var(--tracking-kicker)]",

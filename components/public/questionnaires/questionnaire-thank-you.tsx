@@ -8,7 +8,6 @@ import {
 } from "@/components/public/questionnaires/questionnaire-ui";
 import { cn } from "@/lib/utils";
 
-/** Closing screen of the questionnaire: a plain thank-you, with the texts set in the CMS. */
 export function QuestionnaireThankYou({
   title,
   message,

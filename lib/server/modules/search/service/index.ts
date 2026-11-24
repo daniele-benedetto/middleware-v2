@@ -121,7 +121,6 @@ async function ensureGlobalSearchProjection() {
   }
 }
 
-/** Rebuilds the complete public projection from canonical CMS records. */
 export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) {
   const [issues, articles, courses, lessons, pages, maps, questionnaires] = await Promise.all([
     prisma.issue.findMany({
@@ -205,7 +204,6 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
     articles.filter((article) => publicIssueIds.has(article.issueId)).map((article) => article.id),
   );
 
-  // A public issue may expose exactly the selected article of an unpublished preview issue.
   for (const hostIssue of publicIssues) {
     for (const block of publicBlocks(hostIssue.homeBlocks)) {
       if (block.type !== "preview" || !block.previewIssueId) continue;

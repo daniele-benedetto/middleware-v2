@@ -9,7 +9,6 @@ type DescribedCondition = QuestionnaireDescribedRuleDto["conditions"][number];
 
 const text = i18n.public.questionnaireRules;
 const numberFormatter = new Intl.NumberFormat(i18n.locale, { maximumFractionDigits: 20 });
-// Stored instants are shown in the site timezone whatever the viewer's one.
 const dateTimeFormatter = new Intl.DateTimeFormat(i18n.locale, {
   dateStyle: "short",
   timeStyle: "short",
@@ -39,7 +38,6 @@ function getOperatorLabel(condition: DescribedCondition) {
   return dateLabel ?? text.operators[condition.operator];
 }
 
-/** One condition as a sentence: `«Domanda» è maggiore di 3`. */
 export function formatQuestionnaireCondition(condition: DescribedCondition): string {
   const subject = text.quoted(condition.fieldLabel);
   if (condition.valueKind === "consent") {
@@ -55,19 +53,12 @@ export function formatQuestionnaireCondition(condition: DescribedCondition): str
   return `${subject} ${operator} ${values.join(separator)}`;
 }
 
-/** A whole rule as a sentence, conditions joined by "e" (all) or "oppure" (any). */
 export function formatQuestionnaireRule(rule: QuestionnaireDescribedRuleDto): string {
   return rule.conditions
     .map(formatQuestionnaireCondition)
     .join(rule.match === "any" ? text.matchAny : text.matchAll);
 }
 
-/**
- * Who a conditional field was shown to, for people reading the results:
- * `{ shown: "Mostrata a 85 su 137", condition: "Solo se «…» è uguale a «Sì»" }`.
- * `condition` also tells when an earlier step can end the questionnaire; it is null when
- * nothing can be said (e.g. a choice whose options can all be hidden).
- */
 export function formatQuestionnaireAudience(audience: QuestionnaireFieldAudienceDto): {
   shown: string;
   condition: string | null;

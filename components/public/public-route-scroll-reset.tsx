@@ -67,7 +67,6 @@ export function PublicRouteScrollReset() {
     let secondFrameId: number | null = null;
     let thirdFrameId: number | null = null;
 
-    // Prevent late streamed layout changes from anchoring the viewport below the top.
     root.style.overflowAnchor = "none";
     scrollToTop();
 

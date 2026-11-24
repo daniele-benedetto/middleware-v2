@@ -70,7 +70,6 @@ describe("toPublicQuestionnaireInvite", () => {
       slug: "questionario-aperto",
       description: "Raccontaci il turno.",
       homeVariant: "red",
-      // The information field is not a question; 8s + 20s + 60s round to 1 minute.
       questionCount: 2,
       estimatedMinutes: 1,
     });

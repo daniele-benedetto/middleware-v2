@@ -1,4 +1,3 @@
-/** Keep a modest breathing space above the QR, matching other fitted articles. */
 export const MIN_PREVIEW_QR_GAP_LINES = 2;
 const IDEAL_PREVIEW_QR_GAP_LINES = 3;
 const MIN_BUDGET_STEP = 80;

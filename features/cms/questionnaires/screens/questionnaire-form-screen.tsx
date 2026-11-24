@@ -174,7 +174,6 @@ type Props = {
   mode: "create" | "edit";
   questionnaireId?: string;
   initialData?: QuestionnaireDetail;
-  /** Results are reserved to the results roles: others do not get the entry point. */
   canViewResponses?: boolean;
 };
 
@@ -329,8 +328,6 @@ function QuestionnaireFormContent({
   const updateDefinition = (
     transform: (value: QuestionnaireDefinition) => QuestionnaireDefinition,
   ) => {
-    // A removed, moved, retyped or edited controlling field must never leave a dangling
-    // condition: they are dropped, and the editor is told instead of finding out later.
     const preview = transform(definition);
     const removed =
       countQuestionnaireConditions(preview) -

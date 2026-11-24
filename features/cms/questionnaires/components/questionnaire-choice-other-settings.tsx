@@ -14,7 +14,6 @@ type Props = {
   onChange: (field: QuestionnaireChoiceField) => void;
 };
 
-/** "Altro (specificare)": extra choice with a free text, for single and multiple choice fields. */
 export function QuestionnaireChoiceOtherSettings({ field, disabled, onChange }: Props) {
   const text = i18n.cms.forms.resources.questionnaires;
 

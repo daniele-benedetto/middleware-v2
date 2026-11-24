@@ -1,7 +1,3 @@
-/**
- * UTM parameters for the print QR codes, so Umami can attribute visits to the
- * paper issue. Same scheme as the social links (e.g. utm_campaign=numero-zero).
- */
 export type PrintQrPlacement = "articolo" | "mappa" | "contro_formazione" | "anteprima";
 
 const ITALIAN_NUMBERS = [
@@ -28,7 +24,6 @@ const ITALIAN_NUMBERS = [
   "venti",
 ];
 
-/** "N. 00" -> "numero-zero"; numbers past twenty keep their digits ("numero-21"). */
 export function buildPrintCampaign(issueNumber: string) {
   const digits = issueNumber.match(/\d+/)?.[0];
   if (!digits) return "numero";

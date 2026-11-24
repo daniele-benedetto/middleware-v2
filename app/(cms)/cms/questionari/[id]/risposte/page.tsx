@@ -27,7 +27,6 @@ export default async function CmsQuestionnaireResponsesPage({
 }) {
   const id = resolveCmsRouteEntityIdOrNotFound((await params).id);
   const session = await requireCmsSession();
-  // Individual responses and their summary are reserved to the results roles (ADMIN).
   if (!hasAnyCmsRole(session, questionnairesPolicy.resultsRoles)) {
     forbidden();
   }

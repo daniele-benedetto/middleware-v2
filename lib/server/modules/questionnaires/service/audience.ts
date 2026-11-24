@@ -16,13 +16,6 @@ function getAnswers(value: unknown): Record<string, unknown> {
     : {};
 }
 
-/**
- * Who each CONDITIONAL field was shown to: how many of `responses` saw it and the rules that
- * decide it (step rule first, then the field's own). Fields that every respondent sees are
- * absent from the map. A field is conditional when it has a `visibleWhen`, belongs to a step
- * that has one, comes after a step that can end the questionnaire (`endWhen`) or is a choice
- * whose options can all be hidden.
- */
 export function createQuestionnaireFieldAudiences(
   definition: QuestionnaireDefinition,
   responses: ReadonlyArray<{ answers: unknown }>,

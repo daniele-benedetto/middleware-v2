@@ -9,10 +9,6 @@ function hasMark(node: RichTextNode | undefined, type: string) {
   );
 }
 
-/**
- * Interviews set questions as a bold speaker initial ("D:", "F:") followed by
- * italic text; answers keep the bold initial with roman text.
- */
 export function isInterviewQuestion(paragraph: RichTextNode) {
   const children = Array.isArray(paragraph.content) ? (paragraph.content as RichTextNode[]) : [];
   const [label, ...rest] = children;

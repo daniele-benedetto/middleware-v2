@@ -64,7 +64,6 @@ export function revalidatePublicQuestionnaireAnalysisContent(questionnaireId?: s
   }
 }
 
-/** Refreshes the issue home invite block (and the fill-in page) of an open questionnaire. */
 export function revalidatePublicQuestionnaireInviteContent(questionnaireId?: string) {
   revalidatePublicTag(PUBLIC_HOME_CACHE_TAG);
   revalidatePublicTag(PUBLIC_ISSUE_PAGE_CACHE_TAG);

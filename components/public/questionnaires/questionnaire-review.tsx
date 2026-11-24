@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 
 import type { QuestionnaireReviewSection } from "@/lib/questionnaires/flow";
 
-/** Last stop before submitting: the answers grouped by step, each step editable. */
 export function QuestionnaireReview({
   sections,
   disabled,

@@ -16,7 +16,6 @@ import type { PreviewHomeBlock as PreviewHomeBlockModel } from "@/components/pub
 import type { IssueHomeVariant } from "@/lib/server/modules/issues/schema";
 import type { CSSProperties } from "react";
 
-// Solid square badge that contrasts with each preview surface (no pills on public pages).
 const previewBadgeClasses: Record<IssueHomeVariant, string> = {
   default: "bg-accent text-background",
   red: "bg-foreground text-background",

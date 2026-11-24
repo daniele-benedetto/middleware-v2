@@ -69,7 +69,6 @@ export function CmsQuestionnaireResponsesScreen({
   const text = i18n.cms.lists.questionnaires.responses;
   const activeTab = parseQuestionnaireResultsTab(searchParams?.get("tab"));
   const filters = parseResponsesFilters(searchParams);
-  // The open response is transient UI state: it is not worth a shareable URL.
   const [openResponseId, setOpenResponseId] = useState<string | null>(null);
   const { updateSearchParams } = useCmsListUrlState({
     baseParams: {

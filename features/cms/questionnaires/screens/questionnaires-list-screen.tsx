@@ -55,7 +55,6 @@ type QuestionnairesListInput = RouterInputs["questionnaires"]["list"];
 type Props = {
   initialInput?: QuestionnairesListInput;
   initialData?: QuestionnairesListInitialData;
-  /** Individual responses are reserved to the results roles: only they get the link. */
   canViewResponses?: boolean;
 };
 type Filters = { status: string; sortBy: string; sortOrder: string };

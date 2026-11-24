@@ -17,7 +17,6 @@ function articleClassName(article: PrintArticleSection) {
     .join(" ");
 }
 
-/** A fullscreen opening is a page of its own: the cut text keeps two more pages. */
 function fitPages(article: PrintArticleSection) {
   return article.layout === "fullscreen" ? PRINT_FIT_PAGES + 1 : PRINT_FIT_PAGES;
 }

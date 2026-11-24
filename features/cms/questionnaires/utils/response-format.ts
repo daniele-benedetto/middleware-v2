@@ -42,7 +42,6 @@ export function formatResponseDateTime(value: string | null | undefined) {
 
 type ChoiceField = Extract<QuestionnaireField, { type: "singleChoice" | "multipleChoice" }>;
 
-/** Label of one selected value: an option, or "<Altro label>: <free text>". */
 function formatChoiceValue(value: unknown, field: ChoiceField, labels: ResponseAnswerLabels) {
   if (isQuestionnaireOtherAnswer(value)) {
     return `${getQuestionnaireOtherLabel(field)}: ${value.other}`;
@@ -50,7 +49,6 @@ function formatChoiceValue(value: unknown, field: ChoiceField, labels: ResponseA
   return field.options.find((option) => option.id === value)?.label ?? labels.invalidValue;
 }
 
-/** Human-readable answer of one field, shared by the responses table and the detail dialog. */
 export function formatResponseAnswer(
   value: unknown,
   field: QuestionnaireField,
@@ -70,7 +68,6 @@ export function formatResponseAnswer(
   return labels.invalidValue;
 }
 
-/** First closed-answer fields of the questionnaire, used as key columns of the responses table. */
 export function selectResponseKeyFields(
   definition: QuestionnaireDefinition,
   limit = RESPONSE_KEY_COLUMN_LIMIT,

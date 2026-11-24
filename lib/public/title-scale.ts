@@ -1,4 +1,3 @@
-/** Long headlines need a smaller display scale even when they have few words. */
 export function isLongPublicTitle(title: string) {
   const visible = title.replaceAll("[[", "").replaceAll("]]", "").trim();
   const wordCount = visible.split(/\s+/).filter(Boolean).length;

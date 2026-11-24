@@ -36,7 +36,6 @@ const contentSecurityPolicy = [
   ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
 
-// The authenticated print preview is embedded by the issue editor on this origin.
 const printPreviewContentSecurityPolicy = contentSecurityPolicy.replace(
   "frame-ancestors 'none'",
   "frame-ancestors 'self'",
@@ -158,13 +157,6 @@ const nextConfig: NextConfig = {
     authInterrupts: true,
     proxyClientMaxBodySize: "100mb",
   },
-  // Next's tracer copies the sharp wrapper and its .node addon, but not the
-  // libvips shared objects: those are dlopen'd, so static tracing never sees
-  // them. Without them the optimizer throws and silently falls back to the
-  // unoptimized original (image-optimizer.js: "If we fail to optimize, fallback
-  // to the original image"), which also makes images.formats below dead config.
-  // Version is globbed so a sharp upgrade does not silently stop matching; the
-  // Dockerfile asserts the load at build time to catch exactly that.
   outputFileTracingIncludes: {
     "/**": ["./node_modules/.pnpm/@img+*/node_modules/@img/**/*"],
   },

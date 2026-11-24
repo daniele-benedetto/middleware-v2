@@ -32,17 +32,13 @@ import {
 } from "@/lib/server/modules/questionnaires/schema/definition";
 
 export type QuestionnaireRuleEditorText = {
-  /** Heading of the rule, e.g. "Mostra solo se…". */
   label: string;
-  /** What happens without conditions, e.g. "Mostra sempre". */
   always: string;
 };
 
 type Props = {
-  /** Unique prefix for the ids of the controls. */
   id: string;
   rule: QuestionnaireRule | undefined;
-  /** Fields the rule can reference. */
   sources: QuestionnaireConditionSourceField[];
   disabled: boolean;
   text: QuestionnaireRuleEditorText;
@@ -87,23 +83,16 @@ function getBooleanChoices(source: QuestionnaireConditionSourceField) {
 type DraftInputProps = {
   id: string;
   type: "number" | "date" | "datetime-local";
-  /** Committed value, as the input shows it. */
   value: string;
   disabled: boolean;
   min?: number | string;
   max?: number | string;
   step?: number;
-  /** Returns false when the typed value cannot be used: it then stays local to the input. */
   onCommit: (value: string) => boolean;
 };
 
-/**
- * Input that keeps what is being typed locally and only hands valid values to the rule, so the
- * definition never holds a condition its own validation would reject.
- */
 function DraftInput({ id, type, value, disabled, min, max, step, onCommit }: DraftInputProps) {
   const [draft, setDraft] = useState({ text: value, committed: value, invalid: false });
-  // The committed value changed from outside (another control, a cleanup): follow it.
   if (draft.committed !== value) {
     setDraft({ text: value, committed: value, invalid: false });
   }
@@ -136,7 +125,6 @@ type ValueEditorProps = {
   source: QuestionnaireConditionSourceField;
   condition: QuestionnaireFieldCondition;
   disabled: boolean;
-  /** Returns false when the value is not valid for the condition. */
   onCommit: (value: QuestionnaireConditionValue) => boolean;
 };
 
@@ -190,7 +178,6 @@ function ConditionValueEditor({ id, source, condition, disabled, onCommit }: Val
             compact
             label={option.label}
             checked={selected.includes(option.value)}
-            // At least one option must stay selected for the condition to mean something.
             disabled={disabled || (selected.length === 1 && selected[0] === option.value)}
             onChange={(checked) =>
               onCommit(
@@ -266,10 +253,6 @@ function ConditionValueEditor({ id, source, condition, disabled, onCommit }: Val
   );
 }
 
-/**
- * Editor of one conditional rule: one or more conditions on the answers of `sources`, joined
- * by "all" (E) or "any" (O). Only valid conditions are ever handed to `onChange`.
- */
 export function QuestionnaireRuleEditor({ id, rule, sources, disabled, text, onChange }: Props) {
   const untitled = i18n.cms.forms.resources.questionnaires.untitledQuestion;
   const conditions = getQuestionnaireRuleConditions(rule);

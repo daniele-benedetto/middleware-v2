@@ -25,13 +25,11 @@ function escapeCsv(value: unknown) {
   return `"${text.replaceAll('"', '""')}"`;
 }
 
-/** Option label, or `Altro: free text` for the "Altro (specificare)" variant of a choice answer. */
 function formatAnswerValue(value: unknown, column: CsvColumn) {
   if (isQuestionnaireOtherAnswer(value)) return `${column.otherLabel}: ${value.other}`;
   return column.options?.get(String(value)) ?? String(value ?? "");
 }
 
-/** Unanswered fields are empty cells (fields that were not shown are marked by the caller). */
 function formatAnswer(value: unknown, column: CsvColumn) {
   if (Array.isArray(value)) {
     return value.map((item) => formatAnswerValue(item, column)).join(" | ");
@@ -74,7 +72,6 @@ export function createQuestionnaireResponsesCsv(responses: CsvResponse[]) {
   ];
   const notShown = i18n.cms.forms.resources.questionnaires.csv.notShown;
   const rows = responses.map((response) => {
-    // Tells "not shown to this respondent" (hidden by the conditional logic) from "left empty".
     const definition = questionnaireDefinitionSchema.parse(response.definitionSnapshot);
     const { visibleFieldIds } = resolveQuestionnaireLogic(definition, response.answers);
     return [

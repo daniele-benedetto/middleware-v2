@@ -73,7 +73,6 @@ const copy = {
 
 type Patch = Record<string, unknown>;
 
-/** Three steps with one field of every controlling type, then two dependent fields. */
 function build(
   patches: { followUp?: Patch; last?: Patch; stepTwo?: Patch; stepOne?: Patch; color?: Patch } = {},
 ) {
@@ -419,7 +418,6 @@ describe("questionnaire rules", () => {
     expect(ended.visibleFieldIds.has(ids.followUp)).toBe(false);
     expect(ended.visibleFieldIds.has(ids.last)).toBe(false);
     expect(resolveQuestionnaireLogic(ending, { [ids.agree]: true }).endedAtStepIndex).toBeNull();
-    // A hidden required field after the end never blocks the submission.
     const strict = parse({
       stepOne: { endWhen: { fieldId: ids.agree, operator: "equals", value: false } },
       last: { required: true },
@@ -482,7 +480,6 @@ describe("questionnaire rules", () => {
     expect(resolveQuestionnaireLogic(definition, {}).hiddenOptionIds.has(ids.blue)).toBe(true);
     expect(schema.safeParse({ [ids.color]: ids.blue }).success).toBe(false);
     expect(schema.safeParse({ [ids.agree]: true, [ids.color]: ids.blue }).success).toBe(true);
-    // A stale pick of a hidden option does not count as an answer for later conditions.
     const dependent = parse({
       color: {
         allowOther: false,

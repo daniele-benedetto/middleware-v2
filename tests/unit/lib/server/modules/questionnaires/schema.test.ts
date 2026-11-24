@@ -330,7 +330,6 @@ describe("questionnaire conditional fields (visibleWhen)", () => {
         [logicIds.petKind]: logicIds.dog,
       }),
     ).toBe(true);
-    // The controlling field still holds "dog" but is itself hidden: the chain collapses.
     expect(
       isQuestionnaireFieldVisible(parsed, dogName, {
         [logicIds.hasPet]: false,
@@ -353,7 +352,6 @@ describe("questionnaire conditional fields (visibleWhen)", () => {
     expect(isQuestionnaireFieldVisible(parsed, ratingWhy, { [logicIds.rating]: 3 })).toBe(true);
     expect(isQuestionnaireFieldVisible(parsed, ratingWhy, { [logicIds.rating]: 5 })).toBe(false);
     expect(isQuestionnaireFieldVisible(parsed, ratingWhy, {})).toBe(false);
-    // An "Altro" answer is an answer different from every authored option.
     expect(
       isQuestionnaireFieldVisible(parsed, parsed.steps[1]!.fields[0]!, {
         [logicIds.hasPet]: true,
@@ -428,7 +426,6 @@ describe("questionnaire conditional fields (visibleWhen)", () => {
     expect(schema.parse({ ...earlier, [logicIds.dogName]: "Fido" })).toEqual({
       [logicIds.dogName]: "Fido",
     });
-    // Other steps are used for visibility only: their own problems are not reported here.
     expect(schema.safeParse({}).success).toBe(true);
     expect(
       createQuestionnaireStepAnswersSchema(parsed, logicIds.stepOne)
@@ -459,7 +456,6 @@ describe("questionnaire conditional fields (visibleWhen)", () => {
     });
     expect(createQuestionnaireCondition(petKind!)?.value).toBe(logicIds.dog);
     expect(createQuestionnaireCondition(topics!)?.operator).toBe("includes");
-    // Free text can only be checked for presence, so its default condition has no value.
     expect(createQuestionnaireCondition(dogName!)).toEqual({
       fieldId: logicIds.dogName,
       operator: "answered",

@@ -13,7 +13,6 @@ function hasMark(node: RichTextNode, type: string) {
   );
 }
 
-/** Print fonts have no emoji glyphs: drop them instead of printing fallback boxes. */
 export function stripPictographs(text: string) {
   return text.replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, "");
 }
@@ -52,10 +51,6 @@ function mergeRuns(runs: PrintTextRun[]) {
   }, []);
 }
 
-/**
- * Flattens rich text into one inline excerpt, keeping bold and italic. Blocks
- * become spaces so the excerpt can be clamped to an exact number of lines.
- */
 export function toPrintTextRuns(value: unknown): PrintTextRun[] {
   if (!value || typeof value !== "object") return [];
 

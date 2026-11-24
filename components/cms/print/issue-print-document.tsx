@@ -31,7 +31,6 @@ function sectionQrTarget(
   }
 }
 
-/** Semantic print source: Vivliostyle paginates this markup with `public/print/issue.css`. */
 export async function IssuePrintDocument({
   document,
   siteUrl,

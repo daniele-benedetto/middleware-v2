@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 import type { QuestionnaireInviteHomeBlock as QuestionnaireInviteHomeBlockData } from "@/components/public/home/home-view-model";
 import type { QuestionnaireHomeVariant } from "@/lib/server/modules/questionnaires/schema";
 
-// Solid square CTA that contrasts with each invite surface (no pills on public pages).
 const inviteCtaClasses: Record<QuestionnaireHomeVariant, string> = {
   default: "bg-accent text-background md:hover:bg-foreground",
   red: "bg-foreground text-background md:hover:bg-background md:hover:text-foreground",

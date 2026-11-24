@@ -1,6 +1,5 @@
 import { printFormat } from "@/lib/print/format";
 
-/** Page area, footer QR and entry chrome in mm, mirroring the print stylesheets. */
 export type PrintMapDirectoryMetrics = {
   pageAreaHeightMm: number;
   footerIntrusionMm: number;
@@ -17,10 +16,6 @@ export type PrintMapDirectoryLayout = {
   excerptLines: number;
 };
 
-/**
- * Every entry fits on a single page: rows share the available height and each
- * excerpt gets as many whole lines as its row can hold.
- */
 export function buildPrintMapDirectoryLayout(
   entryCount: number,
   metrics: PrintMapDirectoryMetrics = printFormat.mapDirectory,

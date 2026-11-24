@@ -39,9 +39,7 @@ type ListenPlayerProps = {
   audioUrl: string;
   chunks: AudioChunk[];
   emptyState: ReactNode;
-  /** Square cover: small beside the title on mobile, large above it on desktop. */
   cover: ReactNode;
-  /** Kicker, title and meta of the content being played. */
   info: ReactNode;
 };
 
@@ -80,7 +78,6 @@ const completionThresholdSeconds = 3;
 const seekConfirmationToleranceSeconds = 0.75;
 const playbackRates = [1, 1.25, 1.5] as const;
 const audioProgressMilestones = [25, 50, 75] as const;
-/** The line being read sits at this fraction of the transcript height. */
 const activeLineAnchor = 0.3;
 const lineTransition = "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)";
 
@@ -111,11 +108,6 @@ function isResumeCandidate(record: AudioProgressRecord) {
   return true;
 }
 
-/**
- * The whole text as one list that glides so the line being read stays at the
- * same height, as in synced lyrics. It only renders again when the line
- * changes; the movement is a CSS transform, so playback does not re-render it.
- */
 const SyncedTranscript = memo(function SyncedTranscript({
   chunks,
   activeIndex,
@@ -129,15 +121,12 @@ const SyncedTranscript = memo(function SyncedTranscript({
   const previousIndexRef = useRef(activeIndex);
   const activeIndexRef = useRef(activeIndex);
 
-  // Reads the active line from a ref, so it stays stable and the resize
-  // observer below is created once (re-creating it would cancel the glide).
   const alignActiveLine = useCallback((animate: boolean) => {
     const viewport = viewportRef.current;
     const list = listRef.current;
     const line = list?.children[activeIndexRef.current] as HTMLElement | undefined;
     if (!viewport || !list || !line) return;
 
-    // Every line, the first one too, is read at the same height.
     const offset = line.offsetTop - viewport.clientHeight * activeLineAnchor;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     list.style.transition = animate && !reduceMotion ? lineTransition : "none";
@@ -145,7 +134,6 @@ const SyncedTranscript = memo(function SyncedTranscript({
   }, []);
 
   useLayoutEffect(() => {
-    // A seek or a scrub jumps straight to the line; reading moves on smoothly.
     const isJump = isScrubbing || Math.abs(activeIndex - previousIndexRef.current) > 1;
     previousIndexRef.current = activeIndex;
     activeIndexRef.current = activeIndex;
@@ -157,7 +145,6 @@ const SyncedTranscript = memo(function SyncedTranscript({
     const list = listRef.current;
     if (!viewport || !list) return;
 
-    // Realign only when the layout really changes (viewport height, text width).
     let lastSize = `${viewport.clientHeight}x${list.clientWidth}`;
     const observer = new ResizeObserver(() => {
       const size = `${viewport.clientHeight}x${list.clientWidth}`;
@@ -539,8 +526,6 @@ export function ListenPlayer({
     if (audio) audio.playbackRate = playbackRate;
   }, [playbackRate]);
 
-  // `timeupdate` fires only a few times a second: while playing, follow the
-  // audio clock on every frame so lines change exactly with the voice.
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -875,7 +860,6 @@ export function ListenPlayer({
         }}
       />
 
-      {/* Desktop: the largest square that fits the space left above the title. */}
       <div className="aspect-square w-18 self-center [grid-area:cover] lg:flex lg:aspect-auto lg:size-full lg:min-h-0 lg:items-end lg:[container-type:size]">
         <div className="relative size-full overflow-hidden lg:aspect-square lg:size-auto lg:w-[min(100cqw,100cqh)]">
           {cover}

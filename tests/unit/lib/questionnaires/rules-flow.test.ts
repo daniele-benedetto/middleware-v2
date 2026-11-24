@@ -119,7 +119,6 @@ describe("questionnaire flow with rules", () => {
     expect(normalizeAnswersForSubmission(definition, picked)).toMatchObject({
       [ids.plan]: ids.pro,
     });
-    // The consent is withdrawn: "Pro" is hidden again and the stale pick is not submitted.
     const withdrawn = normalizeAnswersForSubmission(definition, {
       ...picked,
       [ids.contact]: false,
@@ -137,7 +136,6 @@ describe("questionnaire flow with rules", () => {
     expect(titles({})).toEqual(["Contatti", "Extra"]);
     expect(titles({ [ids.plan]: ids.free })).toEqual(["Contatti", "Dettagli", "Extra"]);
     expect(titles({ [ids.plan]: ids.free, [ids.score]: 2 })).toEqual(["Contatti"]);
-    // With the questionnaire ended on the first step the review is reachable right away.
     expect(getResumeStop(definition, { answers: { [ids.score]: 2 }, stepIndex: 3 })).toBe("review");
     expect(normalizeAnswersForSubmission(definition, { [ids.score]: 2, [ids.extra]: "x" })).toEqual(
       {

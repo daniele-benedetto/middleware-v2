@@ -29,7 +29,6 @@ function toNote(content: RichTextNode[]): RichTextNode {
   return { type: PRINT_NOTE_TYPE, content };
 }
 
-/** CMS notes keep their text in `attrs.contentRich`: its paragraphs become one inline run. */
 function cmsNoteContent(node: RichTextNode): RichTextNode[] {
   const attrs = node.attrs && typeof node.attrs === "object" ? node.attrs : {};
   const contentRich = (attrs as { contentRich?: unknown }).contentRich as RichTextNode | undefined;
@@ -49,7 +48,6 @@ function stripMarker(content: RichTextNode[]) {
   return text ? [{ ...first, text }, ...rest] : rest;
 }
 
-/** Hand-typed notes: a closing run of paragraphs that start with a superscript number. */
 function splitTypedNotes(blocks: RichTextNode[]) {
   const notes = new Map<number, RichTextNode[]>();
   let end = blocks.length;
@@ -106,12 +104,6 @@ function placeNotes(node: RichTextNode, typedNotes: Map<number, RichTextNode[]>)
   return [{ ...node, content: childrenOf(node).flatMap((child) => placeNotes(child, typedNotes)) }];
 }
 
-/**
- * Turns the notes of an article into `printNote` inline nodes at their call,
- * so print can lay them out as footnotes. Both the CMS note references and
- * the hand-typed convention (superscript calls, numbered paragraphs at the
- * end) are supported; typed notes without a call in the text stay where they are.
- */
 export function toPrintNotes(value: unknown): unknown {
   if (!value || typeof value !== "object") return value;
 

@@ -36,11 +36,6 @@ function collectUnsupportedNodes(value: unknown, found: Set<string>) {
 
 const layoutLabels = { fullscreen: "full screen", halfpage: "mezza pagina" } as const;
 
-/**
- * Index rows (about 8 mm each) taken by what follows the list, estimated from
- * issue.css: the quote with the white above it, and the acknowledgements with
- * their gap and kicker plus about 180 characters (two 8pt lines) per row.
- */
 const COLOPHON_QUOTE_ENTRIES = 3;
 const ACKNOWLEDGEMENT_FRAME_ENTRIES = 3;
 const ACKNOWLEDGEMENT_CHARS_PER_ENTRY = 180;

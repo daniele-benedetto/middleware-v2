@@ -28,11 +28,6 @@ function countQuestions(definition: QuestionnaireDefinition) {
     .filter((field) => field.type !== "information").length;
 }
 
-/**
- * Maps a questionnaire to the invite shown on the issue home. Returns `null` unless the
- * questionnaire is open (`PUBLISHED`) and its stored data is valid, so nothing about
- * draft, closed or archived questionnaires can reach the public payload.
- */
 export function toPublicQuestionnaireInvite(
   record: QuestionnaireInviteRecord,
 ): PublicQuestionnaireInviteDto | null {

@@ -87,8 +87,6 @@ function resolveConfiguredBlocks(issue: PublicCurrentIssueDetail): ResolvedHomeB
     }
 
     if (rawBlock.type === "questionnaireInvite") {
-      // Only open questionnaires are resolved server-side: a closed one never falls back to
-      // the analysis block, the invite simply disappears.
       const questionnaireInvite = rawBlock.questionnaireId
         ? questionnaireInvitesById.get(rawBlock.questionnaireId)
         : null;

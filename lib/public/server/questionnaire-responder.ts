@@ -10,19 +10,9 @@ import { questionnaireResponsesService } from "@/lib/server/modules/questionnair
 
 export type QuestionnaireResponderStatus = {
   hasResponded: boolean;
-  /**
-   * False when the request carries no responder cookie. That normally means a first visit, but
-   * cookies issued before they became site-wide are only sent to the API: the page then asks
-   * the API once to be sure.
-   */
   isKnown: boolean;
 };
 
-/**
- * Request-time: whether the visitor already answered the questionnaire, so the page can be
- * rendered on the server in its final state. Never throws: on any failure the page falls back
- * to asking the API from the browser.
- */
 export async function getQuestionnaireResponderStatus(
   questionnaireId: string,
 ): Promise<QuestionnaireResponderStatus> {

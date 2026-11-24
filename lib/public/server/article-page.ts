@@ -132,8 +132,6 @@ function getArticleNumberInIssue(article: PublicArticleDetailDto, issue: IssueNu
   return numberedArticles.find((item) => item.article.id === article.id)?.number ?? null;
 }
 
-// Articles previewed before their issue is out keep their order number, but no related
-// articles: the rest of the issue is not public yet.
 async function getUpcomingIssueArticleContext(article: PublicArticleDetailDto) {
   try {
     const issue = await publicIssuesService.getUpcomingNumberingById(article.issueId);

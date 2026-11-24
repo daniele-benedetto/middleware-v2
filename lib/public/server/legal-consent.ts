@@ -10,7 +10,6 @@ import { publicPagesService } from "@/lib/server/modules/pages/service/public";
 const legalPolicySlugs = ["privacy-policy", "cookie-policy"] as const;
 
 export const getLegalConsentVersion = cache(async (): Promise<string> => {
-  // Prisma reads cannot fill a Cache Component while prerendering dynamic routes.
   const pages = await Promise.all(
     legalPolicySlugs.map(async (slug) => {
       try {

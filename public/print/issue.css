@@ -33,11 +33,6 @@
   font-style: italic;
 }
 
-/*
- * A5 pages, printed two-up on A4 sheets and folded into a booklet. One column of
- * running text, about 70 characters per line on 121 mm. Measures that depend on
- * the page are mirrored by `printFormat` in lib/print/format.ts.
- */
 :root {
   --paper: #fff;
   --ink: #000;
@@ -51,21 +46,19 @@
   --cover-x: 11mm;
   --cover-y: 10mm;
   --page-height: 210mm;
-  /* Folio line and footer QR, from the bottom edge; the strip is what the QR
-     takes from the text area (QR top minus the bottom margin, plus a gap). */
+
   --folio-bottom: 8mm;
   --qr-size: 16mm;
   --footer-strip: 9mm;
   --column-gap: 7mm;
-  /* Same weight as the site's 1px dividers. */
+
   --rule: 0.75pt;
-  /* Body 9.5/13pt (137%): every vertical step in running text is a multiple
-     of the leading, so baselines stay aligned. */
+
   --body-size: 9.5pt;
   --body-leading: 13pt;
-  /* Section titles stay below the cover title (36pt): the cover leads. */
+
   --section-title-size: 27pt;
-  /* Opening photo of the articles; body images are omitted from print. */
+
   --article-image-height: 62mm;
 }
 
@@ -74,7 +67,6 @@
   margin: var(--page-top) var(--page-outer) var(--page-bottom) var(--page-inner);
   background: var(--paper);
 
-  /* Notes sit above the folio line, across the text block. */
   @footnote {
     float-reference: page;
     margin-top: 3mm;
@@ -83,9 +75,6 @@
   }
 }
 
-/* Running heads on the outer side: the section's rubric on the verso, its title
-   on the recto, as far from the top edge as the folio from the bottom one.
-   `first-except` leaves them out of the opening page, under the big title. */
 @page :left {
   margin-left: var(--page-outer);
   margin-right: var(--page-inner);
@@ -168,8 +157,6 @@
   }
 }
 
-/* Preview pages use the article grid, with the next-issue label outside the
-   text block. The last fragment remains the unnumbered back cover. */
 @page back-cover {
   @top-left {
     content: none;
@@ -214,7 +201,6 @@
   }
 }
 
-/* Blank pages before the back cover (lib/print/back-cover-fill.ts). */
 @page filler {
   @top-left {
     content: none;
@@ -278,8 +264,6 @@ a {
   color: var(--accent);
 }
 
-/* Cover */
-
 .cover {
   page: cover;
   display: flex;
@@ -332,7 +316,6 @@ a {
   object-fit: cover;
 }
 
-/* Photos print in colour unless their settings ask for black and white. */
 .print-image--grayscale {
   filter: grayscale(1);
 }
@@ -376,7 +359,6 @@ a {
   color: var(--accent);
 }
 
-/* Two-line title slot, vertically centered, so the excerpts start on one line. */
 .cover__highlight-title {
   display: flex;
   align-items: center;
@@ -389,7 +371,6 @@ a {
   letter-spacing: -0.02em;
 }
 
-/* Exactly five lines: the excerpt reaches the page reference and never cuts a line. */
 .cover__highlight-excerpt {
   display: -webkit-box;
   height: calc(5 * 1.4em);
@@ -412,9 +393,6 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
-/* Index, from the top of the text block: kicker, list between two rules, the
-   acknowledgements after it, and the menu quote alone on the bottom margin. */
-
 .toc {
   display: flex;
   flex-direction: column;
@@ -423,7 +401,6 @@ a {
   break-after: page;
 }
 
-/* Same voice as the cover kickers. */
 .toc__kicker {
   margin-bottom: 3mm;
   font-family: var(--sans);
@@ -439,7 +416,6 @@ a {
   border-top: var(--rule) solid var(--ink);
 }
 
-/* Long titles wrap onto a second line instead of being cut. */
 .toc__entry {
   display: grid;
   grid-template-columns: 6mm minmax(0, 1fr) 10mm;
@@ -472,8 +448,6 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
-/* Acknowledgements (printSettings.acknowledgements): between the notes (7.5pt)
-   and the body (9.5pt); paragraphs follow each other without indent or gap. */
 .toc__thanks {
   margin-top: calc(3 * var(--body-leading));
 }
@@ -484,8 +458,6 @@ a {
   line-height: 11.5pt;
 }
 
-/* The menu quote (printSettings.showMenuQuote) closes the page on the bottom
-   margin, with at least two lines of white above it. */
 .toc__closing {
   margin-top: auto;
   padding-top: calc(2 * var(--body-leading));
@@ -503,8 +475,6 @@ a {
   font-size: 9.5pt;
   font-style: italic;
 }
-
-/* Special: opening, rupture, closing */
 
 .article {
   break-before: page;
@@ -534,7 +504,6 @@ a {
   margin-top: 6mm;
 }
 
-/* Interviews: the quote is the headline, "Intervista a …" the subtitle. */
 .article__subtitle {
   margin-top: 2.5mm;
   font-size: 13pt;
@@ -543,8 +512,6 @@ a {
   letter-spacing: -0.03em;
 }
 
-/* The gap above the text is padding on the header, so the nudge steps below
-   can change it without touching the body. */
 .article__header {
   padding-bottom: 5mm;
 }
@@ -553,7 +520,6 @@ a {
   padding-bottom: 0;
 }
 
-/* Header gap steps for the Vivliostyle workaround in lib/print/nudge.ts. */
 .article[data-print-nudge="1"] .article__header {
   padding-bottom: 4mm;
 }
@@ -583,7 +549,6 @@ a {
   font-weight: 600;
 }
 
-/* Fullscreen opening: the excerpt stays with the title, set as running text. */
 .article__lead {
   margin-top: 4mm;
   font-family: var(--serif);
@@ -593,7 +558,6 @@ a {
   hyphens: manual;
 }
 
-/* The rule that set the excerpt apart now sits above category and author. */
 .article__header .article__meta {
   margin-top: 4mm;
   padding-top: 3.5mm;
@@ -619,14 +583,10 @@ a {
   widows: 2;
 }
 
-/* Separate paragraphs by half a baseline: no first-line indent or apparent
-   leading space before the text. */
 .article__body p + p {
   margin-top: calc(var(--body-leading) / 2);
 }
 
-/* Interview questions: one blank line before, flush left, set apart by weight. */
-/* Notes (CMS or hand-typed) become footnotes of the page that calls them. */
 .article {
   counter-reset: footnote;
 }
@@ -717,10 +677,6 @@ a {
   padding-left: 4.5mm;
 }
 
-/* Short tail pull-back (lib/print/tighten.ts): when a full article spills a few
-   lines onto a new page, the viewer tries these levels in order. Photos keep
-   their height; leading and type size never change, so the baseline grid
-   holds. */
 .article[data-print-tighten="1"] .article__body {
   letter-spacing: -0.0025em;
 }
@@ -729,17 +685,12 @@ a {
   letter-spacing: -0.005em;
 }
 
-/* Half page: the photo bleeds off the top and both sides (the page edge clips
-   it), the title follows, and the rule above category and author marks the
-   middle of the page; the text fills the lower half. */
 .article--halfpage .article__opening {
   display: flex;
   flex-direction: column;
   height: calc(var(--page-height) / 2 - var(--page-top));
 }
 
-/* The photo fills the flexed frame in flow: an absolutely positioned photo is
-   dropped from Chromium's print output. */
 .article--halfpage .article__image {
   flex: 1 1 0;
   height: auto;
@@ -757,8 +708,6 @@ a {
   border-top: var(--rule) solid currentColor;
 }
 
-/* Fullscreen: the opening fills the first page; the photo grows and pushes
-   title and deck to the foot. The text starts on the next page. */
 .article--fullscreen .article__opening {
   display: flex;
   flex-direction: column;
@@ -778,21 +727,16 @@ a {
   inset: 0;
 }
 
-/* The next issue begins as an article. Its last fragment is the back cover. */
 .back-cover {
   page: back-cover;
   break-before: page;
   counter-reset: footnote;
 }
 
-/* Preserve the article's measure while avoiding a stranded short final word. */
 .back-cover .article__body p {
   text-wrap: pretty;
 }
 
-/* Fitted sections (cut article, course): a page float reserves the footer strip
-   under the text of the last page, and the QR sits in it on the folio line, as
-   in the map. */
 .print-footer-float {
   position: relative;
   float: block-end;
@@ -800,12 +744,6 @@ a {
   width: 100%;
   height: var(--footer-strip);
 }
-
-/* Course, as in the mockup: two page-sized boxes. The first meeting fills the
-   opening page under the header; the others share the second page in equal
-   heights. Each meeting: divider with red number and title, then its text
-   filling the box. The viewer trims the text to fit the box
-   (fitPrintBoxes in lib/print/fit-dom.ts). */
 
 .course {
   break-before: page;
@@ -824,7 +762,6 @@ a {
   break-before: page;
 }
 
-/* Leaves the footer strip to the QR, which sits on the folio line. */
 .course__page--with-service {
   padding-bottom: var(--footer-strip);
 }
@@ -926,8 +863,6 @@ a {
   text-indent: 0;
 }
 
-/* Map: opener with the plate, then the numbered entries in two columns. */
-
 .map {
   break-before: page;
 }
@@ -1008,8 +943,6 @@ a {
   font-style: italic;
 }
 
-/* All entries on one page: row height and excerpt lines come from
-   lib/print/map-directory.ts, which mirrors the measures below. */
 .map__directory {
   position: relative;
   height: calc(var(--page-height) - var(--page-top) - var(--page-bottom));
@@ -1055,7 +988,6 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
-/* Two-line title slot, as on the cover, so every excerpt starts on the same line. */
 .map__entry-title {
   display: flex;
   align-items: center;
@@ -1083,8 +1015,6 @@ a {
   padding-bottom: var(--footer-strip);
 }
 
-/* Footer QR, same block as the cover: its bottom sits on the folio line (11 mm
-   from the edge), on the inner side so it never meets the folio. */
 .map__opener,
 .map__directory {
   position: relative;

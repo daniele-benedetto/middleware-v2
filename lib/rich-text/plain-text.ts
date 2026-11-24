@@ -49,10 +49,6 @@ function collectFragments(value: unknown, fragments: string[]) {
   }
 }
 
-/**
- * Extract plain text from a TipTap-style rich-text JSON document.
- * Returns a single-line string with collapsed whitespace, or `null` when empty.
- */
 export function extractPlainText(value: unknown): string | null {
   const fragments: string[] = [];
   collectFragments(value, fragments);
@@ -60,10 +56,6 @@ export function extractPlainText(value: unknown): string | null {
   return text.length > 0 ? text : null;
 }
 
-/**
- * Extract plain text preserving paragraph breaks (`\n\n`).
- * Useful for rendering excerpts split into multiple paragraphs.
- */
 export function extractPlainTextWithBreaks(value: unknown): string | null {
   const fragments: string[] = [];
   collectFragments(value, fragments);

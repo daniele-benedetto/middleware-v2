@@ -3,8 +3,6 @@ import "server-only";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
-// Mirrors public article visibility: a published article is readable even when its
-// issue is not public, so its media must be served too.
 const PUBLIC_ARTICLE_MEDIA_WHERE = {
   status: "PUBLISHED",
   publishedAt: { not: null },

@@ -10,7 +10,6 @@ const FOOTNOTE_SELECTOR = ".print-footnote";
 const SOFT_HYPHEN = /­/g;
 const ELLIPSIS = "…";
 
-/** Running text only: footnotes leave the column and never take the ellipsis. */
 function runningTextNodes(element: Element) {
   const walker = element.ownerDocument.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
     acceptNode: (node) =>
@@ -32,7 +31,6 @@ function visibleLength(element: Element) {
 
 export type PrintFitSection = { anchor: string; maxPages: number; lengths: number[] };
 
-/** Sections of the print source that must fit into a number of pages. */
 export function collectFitSections(source: ParentNode): PrintFitSection[] {
   return Array.from(source.querySelectorAll(SECTION_SELECTOR)).flatMap((section) => {
     const anchor = section.getAttribute("data-print-anchor");
@@ -49,7 +47,6 @@ export function collectFitSections(source: ParentNode): PrintFitSection[] {
   });
 }
 
-/** Text of a section laid out on its allowed pages and past them. */
 export function measureFitSection(
   rendered: ParentNode,
   { anchor, maxPages }: Pick<PrintFitSection, "anchor" | "maxPages">,
@@ -76,7 +73,6 @@ function removeFollowing(node: Node, boundary: Element) {
   }
 }
 
-/** Cuts an element after `budget` visible characters, on a word, with an ellipsis. */
 export function truncateFitText(element: Element, budget: number, preferSentence = false) {
   if (visibleLength(element) <= budget) return;
 
@@ -113,7 +109,6 @@ export function truncateFitText(element: Element, budget: number, preferSentence
   }
 }
 
-/** Applies each section's total budget to its texts, sharing it among them. */
 export function applyFitBudgets(source: ParentNode, budgets: Map<string, number>) {
   for (const section of Array.from(source.querySelectorAll(SECTION_SELECTOR))) {
     const budget = budgets.get(section.getAttribute("data-print-anchor") ?? "");
@@ -133,11 +128,6 @@ function overflows(box: HTMLElement) {
   return box.scrollWidth > box.clientWidth + 1 || box.scrollHeight > box.clientHeight + 1;
 }
 
-/**
- * Fixed-size boxes (course meetings) keep as much text as they can show: a
- * binary search on the visible characters, ending on a word with an ellipsis.
- * The boxes do not change size, so the pagination stays valid.
- */
 export function fitPrintBoxes(rendered: ParentNode) {
   for (const box of Array.from(rendered.querySelectorAll<HTMLElement>(BOX_SELECTOR))) {
     if (!overflows(box)) continue;
@@ -169,7 +159,6 @@ export function pagesWithAnchor(rendered: ParentNode, anchor: string) {
   );
 }
 
-/** Last preview fragment: measure its actual text-to-QR distance in body lines. */
 export function measurePreviewQrGap(rendered: ParentNode, anchor: string): number | null {
   const page = pagesWithAnchor(rendered, anchor).at(-1);
   const text = page?.querySelector<HTMLElement>(".back-cover [data-print-fit-text]");
@@ -181,7 +170,6 @@ export function measurePreviewQrGap(rendered: ParentNode, anchor: string): numbe
   return (qr.getBoundingClientRect().top - text.getBoundingClientRect().bottom) / lineHeight;
 }
 
-/** Text lines of an element across its columns, from the rendered line boxes. */
 function countLines(element: Element) {
   const bounds = element.getBoundingClientRect();
   const middle = bounds.left + bounds.width / 2;
@@ -201,7 +189,6 @@ function countLines(element: Element) {
   return lines.size;
 }
 
-/** Full articles: candidates for pulling a short tail back. */
 function collectAnchors(source: ParentNode, selector: string) {
   return Array.from(source.querySelectorAll(selector)).flatMap((article) => {
     const anchor = article.getAttribute("data-print-anchor");
@@ -224,7 +211,6 @@ export function measureArticleTail(rendered: ParentNode, anchor: string): PrintT
   return { pageCount: pages.length, tailLines: body ? countLines(body) : 0 };
 }
 
-/** Marks each article with its adjustment level (see `data-print-tighten` in issue.css). */
 export function applyTightenLevels(source: ParentNode, levels: Map<string, number>) {
   for (const [anchor, level] of levels) {
     const article = source.querySelector(`[data-print-anchor="${CSS.escape(anchor)}"]`);
@@ -234,7 +220,6 @@ export function applyTightenLevels(source: ParentNode, levels: Map<string, numbe
   }
 }
 
-/** Whether the article's opening page carries body text (see lib/print/nudge.ts). */
 export function measureArticleOpening(rendered: ParentNode, anchor: string) {
   const pages = pagesWithAnchor(rendered, anchor);
   const body = pages[0]?.querySelector(".article__body");
@@ -242,7 +227,6 @@ export function measureArticleOpening(rendered: ParentNode, anchor: string) {
   return { pageCount: pages.length, openingHasText: Boolean(body?.textContent?.trim()) };
 }
 
-/** Marks each article with its header gap step (see `data-print-nudge` in issue.css). */
 export function applyNudgeLevels(source: ParentNode, levels: Map<string, number>) {
   for (const [anchor, level] of levels) {
     const article = source.querySelector(`[data-print-anchor="${CSS.escape(anchor)}"]`);

@@ -7,13 +7,11 @@ type StoredDraft = {
   version: number;
   answers: Record<string, unknown>;
   stepIndex?: number;
-  /** Epoch ms of the last write; missing on drafts written before drafts could expire. */
   savedAt?: number;
 };
 
 const databaseName = "middleware-questionnaire-drafts";
 const storeName = "drafts";
-/** Answers (possibly personal data) are kept on the device for at most this long. */
 export const QUESTIONNAIRE_DRAFT_MAX_AGE_DAYS = 30;
 const draftMaxAgeMs = QUESTIONNAIRE_DRAFT_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
 
@@ -57,17 +55,12 @@ async function deleteDraft(key: string) {
   }).finally(() => database.close());
 }
 
-/** True when the draft was last saved longer ago than the allowed age. */
 export function isQuestionnaireDraftExpired(stored: unknown, now: number): boolean {
   if (!stored || typeof stored !== "object") return false;
   const { savedAt } = stored as Partial<StoredDraft>;
   return typeof savedAt === "number" && now - savedAt > draftMaxAgeMs;
 }
 
-/**
- * Accepts drafts written by the previous formats too (no `stepIndex`, no `savedAt`); drops
- * expired ones.
- */
 export function toRestoredDraft(
   stored: unknown,
   version: number,
@@ -88,10 +81,7 @@ export function toRestoredDraft(
 export function useQuestionnaireDraft(questionnaireId: string, version: number) {
   const key = `${questionnaireId}:v${version}`;
   const hydrated = useRef(false);
-  // Storage operations run one at a time, in call order, so a delete always lands after any
-  // write that was already in flight.
   const queue = useRef<Promise<void>>(Promise.resolve());
-  // Bumped by `clear()`: writes requested before it are dropped instead of resurrecting the draft.
   const generation = useRef(0);
   const latestWrite = useRef(0);
   const [restoredDraft, setRestoredDraft] = useState<RestoredDraft | null>(null);
@@ -114,11 +104,9 @@ export function useQuestionnaireDraft(questionnaireId: string, version: number) 
       const readGeneration = generation.current;
       void readDraft(key)
         .then((stored) => {
-          // An expired draft is not just ignored: its answers are removed from the device.
           if (isQuestionnaireDraftExpired(stored, Date.now())) {
             void deleteDraft(key).catch(() => undefined);
           }
-          // A `clear()` issued while reading wins over whatever was stored.
           finish(
             readGeneration === generation.current
               ? toRestoredDraft(stored, version, Date.now())
@@ -148,7 +136,6 @@ export function useQuestionnaireDraft(questionnaireId: string, version: number) 
         writeGeneration === generation.current && writeId === latestWrite.current;
 
       void enqueue(async () => {
-        // Superseded by a newer write or by `clear()`: nothing to store.
         if (!isCurrent()) return;
         await writeDraft(key, { version, answers, stepIndex, savedAt: Date.now() });
       }).catch(() => undefined);

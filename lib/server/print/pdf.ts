@@ -7,7 +7,6 @@ import { join } from "node:path";
 
 import puppeteer, { type CookieData } from "puppeteer-core";
 
-// Same budget as the viewer's own pagination timeout.
 const DEFAULT_TIMEOUT_MS = 180_000;
 
 function resolveChromiumExecutablePath() {
@@ -34,7 +33,6 @@ function resolveChromiumExecutablePath() {
   return executablePath;
 }
 
-/** Request cookies, re-scoped to the site so third-party requests (map tiles, media) never carry them. */
 export function toViewerCookies(cookieHeader: string | null, origin: string): CookieData[] {
   if (!cookieHeader) return [];
 
@@ -56,11 +54,6 @@ export function toViewerCookies(cookieHeader: string | null, origin: string): Co
   });
 }
 
-/**
- * Where headless Chromium opens the viewer. In production it is the app itself
- * on loopback, so the render does not depend on DNS, the reverse proxy or the
- * public network; `PRINT_RENDER_ORIGIN` overrides it.
- */
 export function resolveRenderOrigin(requestUrl: string, env: NodeJS.ProcessEnv = process.env) {
   const configured = env.PRINT_RENDER_ORIGIN?.trim();
   if (configured) return new URL(configured).origin;
@@ -83,10 +76,6 @@ async function step<T>(name: string, run: () => Promise<T>) {
   }
 }
 
-/**
- * Prints the same Vivliostyle-paginated page used by the CMS preview, so the PDF
- * matches what the editors approved page by page.
- */
 export async function renderIssuePagesPdf({
   issueId,
   requestUrl,
@@ -97,8 +86,6 @@ export async function renderIssuePagesPdf({
   cookie: string | null;
 }) {
   const timeout = resolveTimeoutMs();
-  // The app user has no home: Chromium gets its own writable profile, home and
-  // crash dump folder, or its crash handler refuses to start.
   const workDir = await mkdtemp(join(tmpdir(), "middleware-print-"));
   const browser = await step("launch", () =>
     puppeteer.launch({
