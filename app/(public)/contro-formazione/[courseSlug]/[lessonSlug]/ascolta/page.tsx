@@ -7,7 +7,7 @@ import {
   getPublicLessonListenMetadataData,
   getPublicLessonListenPageData,
 } from "@/lib/public/server/lesson-listen-page";
-import { buildArticleListenMetadata } from "@/lib/seo";
+import { buildListenMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
@@ -38,18 +38,16 @@ export async function generateMetadata({
   const text = i18n.public.lessonPage.listen;
 
   if (!data) {
-    return buildArticleListenMetadata({
+    return buildListenMetadata({
       title: text.notFoundTitle,
-      slug: lessonSlug,
-      canonicalPath: `/contro-formazione/${courseSlug}/${lessonSlug}`,
+      path: `/contro-formazione/${courseSlug}/${lessonSlug}/ascolta`,
     });
   }
 
-  return buildArticleListenMetadata({
+  return buildListenMetadata({
     title: text.metadataTitle(data.lesson.title),
     description: data.lesson.excerpt ?? undefined,
-    slug: data.lesson.slug,
-    canonicalPath: `/contro-formazione/${data.lesson.courseSlug}/${data.lesson.slug}`,
+    path: `/contro-formazione/${data.lesson.courseSlug}/${data.lesson.slug}/ascolta`,
     imageUrl: data.lesson.imageUrl,
   });
 }

@@ -61,6 +61,14 @@ const PUBLIC_ISSUE_WHERE = {
 } as const satisfies Prisma.IssueWhereInput;
 
 export const publicIssuesRepository = {
+  async existsBySlug(slug: string) {
+    const record = await prisma.issue.findFirst({
+      where: { ...PUBLIC_ISSUE_WHERE, slug },
+      select: { id: true },
+    });
+
+    return record !== null;
+  },
   async listPublished(pagination: PaginationParams) {
     return prisma.issue.findMany({
       where: PUBLIC_ISSUE_WHERE,

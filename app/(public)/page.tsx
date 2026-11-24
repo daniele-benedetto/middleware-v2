@@ -1,22 +1,15 @@
 import { PublicHomePage } from "@/components/public/pages/public-home-page";
 import { getPublicHomeData } from "@/lib/public/server/home";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildHomeMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { currentIssue, currentIssueDescription, leadImage, leadImageAlt } =
-    await getPublicHomeData();
+  const { leadImage, leadImageAlt } = await getPublicHomeData();
 
-  return buildPageMetadata({
-    title: currentIssue?.title,
-    description: currentIssueDescription,
-    path: "/",
+  return buildHomeMetadata({
     openGraphImage: leadImage,
     openGraphImageAlt: leadImageAlt,
-    twitterImage: leadImage,
-    socialImageSection: "home",
-    socialImageTheme: "cream",
   });
 }
 

@@ -103,6 +103,8 @@ The public app integration reads these optional variables:
 - `NEXT_PUBLIC_UMAMI_EXCLUDE_SEARCH`: set to `true` to avoid collecting URL query strings
 - `NEXT_PUBLIC_UMAMI_EXCLUDE_HASH`: defaults to `true`, avoids collecting URL hash fragments
 - `NEXT_PUBLIC_PRIVACY_BANNER_MODE`: `acknowledge` by default, or `consent` to load Umami only after explicit consent
+- `NEXT_PUBLIC_TWITTER_HANDLE`: optional X/Twitter handle emitted as `twitter:creator`; omitted when empty (production: `.env.production` for `scripts/production-deploy-manual.sh`, repository variable `PRODUCTION_TWITTER_HANDLE` for the GitHub deploy workflow)
+- `NEXT_PUBLIC_SOCIAL_PROFILES`: optional comma-separated `https://` profile URLs for `Organization.sameAs` in JSON-LD (production: `.env.production` for `scripts/production-deploy-manual.sh`, repository variable `PRODUCTION_SOCIAL_PROFILES` for the GitHub deploy workflow)
 
 The local analytics compose file pins the Umami image by digest instead of using a moving `latest` reference. When updating Umami, verify the runtime version supports the enabled tracker attributes, update the digest intentionally, and smoke-test pageviews plus Performance if `NEXT_PUBLIC_UMAMI_PERFORMANCE=true`.
 

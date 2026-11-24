@@ -47,6 +47,18 @@ const PUBLIC_ARTICLE_DETAIL_SELECT = {
 } as const satisfies Prisma.ArticleSelect;
 
 export const publicArticlesRepository = {
+  async existsBySlug(slug: string, options: { withAudio?: boolean } = {}) {
+    const article = await prisma.article.findFirst({
+      where: {
+        slug,
+        ...PUBLIC_ARTICLE_WHERE,
+        ...(options.withAudio ? { audioUrl: { not: null } } : {}),
+      },
+      select: { id: true },
+    });
+
+    return article !== null;
+  },
   async getBySlug(slug: string) {
     return prisma.article.findFirst({
       where: {

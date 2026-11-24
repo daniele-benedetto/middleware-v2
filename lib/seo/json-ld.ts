@@ -100,6 +100,29 @@ export function buildWebPageJsonLd(title: string, path: string) {
   };
 }
 
+function isArticleIssuePublic(article: PublicArticleDetailDto): boolean {
+  return article.isIssuePublic !== false;
+}
+
+function buildArticleBreadcrumbItems(article: PublicArticleDetailDto): BreadcrumbItem[] {
+  const articleItem = { name: article.title, path: `/articoli/${article.slug}` };
+  const homeItem = { name: seoConfig.siteName, path: "/" };
+
+  if (!isArticleIssuePublic(article)) {
+    return [
+      homeItem,
+      { name: i18n.public.articlesArchive.metadata.title, path: "/articoli" },
+      articleItem,
+    ];
+  }
+
+  return [
+    homeItem,
+    { name: article.issueTitle, path: `/uscite/${article.issueSlug}` },
+    articleItem,
+  ];
+}
+
 export function buildArticleJsonLd(article: PublicArticleDetailDto, description?: string | null) {
   const articleUrl = getCanonicalUrl(`/articoli/${article.slug}`);
   const imageUrl = article.imageUrl
@@ -122,11 +145,13 @@ export function buildArticleJsonLd(article: PublicArticleDetailDto, description?
     isAccessibleForFree: true,
     timeRequired: `PT${article.readingTimeMinutes}M`,
     wordCount: countWords(article.contentRich),
-    isPartOf: {
-      "@type": "PublicationIssue",
-      name: article.issueTitle,
-      url: getCanonicalUrl(`/uscite/${article.issueSlug}`),
-    },
+    isPartOf: isArticleIssuePublic(article)
+      ? {
+          "@type": "PublicationIssue",
+          name: article.issueTitle,
+          url: getCanonicalUrl(`/uscite/${article.issueSlug}`),
+        }
+      : undefined,
   };
 }
 
@@ -283,11 +308,7 @@ export function buildArticlePageJsonLd(
   return buildJsonLdGraph([
     buildWebsiteJsonLd(),
     buildOrganizationJsonLd(),
-    buildBreadcrumbJsonLd([
-      { name: seoConfig.siteName, path: "/" },
-      { name: article.issueTitle, path: `/uscite/${article.issueSlug}` },
-      { name: article.title, path: `/articoli/${article.slug}` },
-    ]),
+    buildBreadcrumbJsonLd(buildArticleBreadcrumbItems(article)),
     buildArticleJsonLd(article, description),
   ]);
 }

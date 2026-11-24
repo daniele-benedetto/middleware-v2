@@ -20,6 +20,14 @@ const PUBLIC_PAGE_SELECT = {
 } as const satisfies Prisma.PageSelect;
 
 export const publicPagesRepository = {
+  async existsBySlug(slug: string) {
+    const record = await prisma.page.findFirst({
+      where: { ...PUBLIC_PAGE_WHERE, slug },
+      select: { id: true },
+    });
+
+    return record !== null;
+  },
   async getBySlug(slug: string) {
     return prisma.page.findFirst({
       where: { ...PUBLIC_PAGE_WHERE, slug },

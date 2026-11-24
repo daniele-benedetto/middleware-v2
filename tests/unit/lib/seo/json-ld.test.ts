@@ -120,6 +120,26 @@ describe("seo json-ld", () => {
     expect(publisher?.["@id"]).toBe("http://localhost:3000/#organization");
   });
 
+  it("links the issue from article json-ld only while the issue is public", () => {
+    const publicGraph = getGraph(buildArticlePageJsonLd({ ...article, isIssuePublic: true }));
+    const publicArticle = publicGraph.find((node) => node["@type"] === "Article");
+    expect(publicArticle?.isPartOf).toMatchObject({
+      url: "http://localhost:3000/uscite/numero-uno",
+    });
+
+    const hiddenGraph = getGraph(buildArticlePageJsonLd({ ...article, isIssuePublic: false }));
+    const hiddenArticle = hiddenGraph.find((node) => node["@type"] === "Article");
+    const breadcrumb = hiddenGraph.find((node) => node["@type"] === "BreadcrumbList");
+    const breadcrumbUrls = (breadcrumb?.itemListElement as JsonLdNode[]).map((item) => item.item);
+
+    expect(hiddenArticle?.isPartOf).toBeUndefined();
+    expect(breadcrumbUrls).toEqual([
+      "http://localhost:3000/",
+      "http://localhost:3000/articoli",
+      "http://localhost:3000/articoli/articolo-uno",
+    ]);
+  });
+
   it("builds issue page graph with CollectionPage and BreadcrumbList", () => {
     const jsonLd = buildIssuePageJsonLd(issue);
 

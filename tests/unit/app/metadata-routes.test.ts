@@ -81,6 +81,16 @@ describe("metadata routes", () => {
     expect(urls).toContain("http://localhost:3000/contro-formazione");
   });
 
+  it("lists only canonical URLs and lastmod, without Google-ignored hints", async () => {
+    const { default: sitemap } = await import("@/app/sitemap");
+    const entries = await sitemap();
+
+    for (const entry of entries) {
+      expect(entry).not.toHaveProperty("changeFrequency");
+      expect(entry).not.toHaveProperty("priority");
+    }
+  });
+
   it("allows the OG image endpoint in robots", async () => {
     const { default: robots } = await import("@/app/robots");
     const rules = robots().rules;

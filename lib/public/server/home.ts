@@ -2,11 +2,7 @@ import "server-only";
 
 import { cacheLife, cacheTag } from "next/cache";
 
-import {
-  getPublicIssueDescription,
-  getPublicIssueLeadImage,
-  getPublicPublishedIssues,
-} from "@/lib/public/server/issues";
+import { getPublicIssueLeadImage, getPublicPublishedIssues } from "@/lib/public/server/issues";
 import { ApiError } from "@/lib/server/http/api-error";
 import { publicIssuesService } from "@/lib/server/modules/issues/service/public";
 
@@ -17,7 +13,6 @@ export const PUBLIC_HOME_CACHE_TAG = "public-home";
 export type PublicHomeData = {
   currentIssue: PublicCurrentIssueDetail | null;
   publishedIssues: PublicIssueListItem[];
-  currentIssueDescription?: string;
   leadImage?: string;
   leadImageAlt?: string;
 };
@@ -49,7 +44,6 @@ export async function getPublicHomeData(): Promise<PublicHomeData> {
   return {
     currentIssue,
     publishedIssues,
-    currentIssueDescription: getPublicIssueDescription(currentIssue),
     leadImage: leadImage.url,
     leadImageAlt: leadImage.alt,
   };

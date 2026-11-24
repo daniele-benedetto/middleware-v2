@@ -54,6 +54,14 @@ const PUBLIC_COURSE_WHERE = {
 } as const satisfies Prisma.CourseWhereInput;
 
 export const publicCoursesRepository = {
+  async existsBySlug(slug: string) {
+    const record = await prisma.course.findFirst({
+      where: { ...PUBLIC_COURSE_WHERE, slug },
+      select: { id: true },
+    });
+
+    return record !== null;
+  },
   async listPublished(pagination: PaginationParams) {
     return prisma.course.findMany({
       where: PUBLIC_COURSE_WHERE,

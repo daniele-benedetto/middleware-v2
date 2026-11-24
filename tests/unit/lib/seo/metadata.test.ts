@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
-  buildArticleListenMetadata,
   buildArticleMetadata,
+  buildHomeMetadata,
+  buildListenMetadata,
   buildPageMetadata,
   buildRootMetadata,
   getCanonicalUrl,
   getGeneratedSocialImageUrl,
+  seoConfig,
 } from "@/lib/seo";
 
 describe("seo metadata", () => {
@@ -96,15 +98,17 @@ describe("seo metadata", () => {
     });
   });
 
-  it("builds noindex listen metadata with canonical article URL and social cards", () => {
-    const metadata = buildArticleListenMetadata({
+  it("builds noindex listen metadata that stays self-canonical", () => {
+    const metadata = buildListenMetadata({
       title: "Ascolta: Titolo articolo",
       description: "Descrizione audio",
-      slug: "titolo-articolo",
+      path: "/articoli/titolo-articolo/ascolta",
       imageUrl: "/api/public/media/blob?pathname=covers%2Fhero.jpg",
     });
 
-    expect(metadata.alternates?.canonical).toBe("http://localhost:3000/articoli/titolo-articolo");
+    expect(metadata.alternates?.canonical).toBe(
+      "http://localhost:3000/articoli/titolo-articolo/ascolta",
+    );
     expect(metadata.robots).toMatchObject({
       index: false,
       follow: true,
@@ -113,29 +117,65 @@ describe("seo metadata", () => {
     expect(metadata.openGraph).toMatchObject({
       type: "article",
       siteName: "middleware",
-      url: "http://localhost:3000/articoli/titolo-articolo",
+      url: "http://localhost:3000/articoli/titolo-articolo/ascolta",
     });
     expect(metadata.twitter?.images).toEqual([
       "http://localhost:3000/_next/image?url=%2Fapi%2Fpublic%2Fmedia%2Fblob%3Fpathname%3Dcovers%252Fhero.jpg&w=1200&q=75",
     ]);
   });
 
-  it("builds noindex listen metadata with a custom canonical path", () => {
-    const metadata = buildArticleListenMetadata({
+  it("builds listen metadata with a generated card when there is no image", () => {
+    const metadata = buildListenMetadata({
       title: "Ascolta l'incontro: Titolo",
-      slug: "titolo",
-      canonicalPath: "/contro-formazione/corso/titolo",
+      path: "/contro-formazione/corso/titolo/ascolta",
     });
 
     expect(metadata.alternates?.canonical).toBe(
-      "http://localhost:3000/contro-formazione/corso/titolo",
+      "http://localhost:3000/contro-formazione/corso/titolo/ascolta",
     );
-    expect(metadata.openGraph).toMatchObject({
-      url: "http://localhost:3000/contro-formazione/corso/titolo",
-    });
     expect(metadata.twitter?.images).toEqual([
       "http://localhost:3000/api/og?title=Ascolta+l%27incontro%3A+Titolo&description=Middleware+%C3%A8+un+laboratorio+di+inchiesta+a+Modena.+Ci+occupiamo+di+territorio%2C+conflitto+sociale%2C+trasformazioni+urbane+e+contro-formazione.&section=audio&theme=red",
     ]);
+  });
+
+  it("keeps a stable brand title on the homepage", () => {
+    const metadata = buildHomeMetadata({
+      openGraphImage: "/api/public/media/blob?pathname=hero.jpg",
+      openGraphImageAlt: "Copertina",
+    });
+
+    expect(metadata.title).toEqual({
+      absolute: "Middleware | Laboratorio di inchiesta a Modena",
+    });
+    expect(metadata.description).toBe(seoConfig.defaultDescription);
+    expect(metadata.alternates?.canonical).toBe("http://localhost:3000/");
+    expect(metadata.openGraph).toMatchObject({
+      title: "Middleware | Laboratorio di inchiesta a Modena",
+      images: [{ alt: "Copertina" }],
+    });
+  });
+
+  it("caps long descriptions in metadata and generated card URLs", () => {
+    const body = "Parola ".repeat(200);
+    const metadata = buildArticleMetadata({ title: "Lungo", description: body, slug: "lungo" });
+
+    expect(String(metadata.description).length).toBeLessThanOrEqual(160);
+    expect(metadata.openGraph?.description).toBe(metadata.description);
+    const ogImage = (metadata.openGraph?.images as { url: string }[])[0]?.url ?? "";
+    expect(new URL(ogImage).searchParams.get("description")).toBe(metadata.description);
+  });
+
+  it("omits twitter:creator when no handle is configured", () => {
+    const metadata = buildPageMetadata({ title: "Archivio", path: "/uscite" });
+
+    expect(metadata.twitter).not.toHaveProperty("creator", expect.any(String));
+  });
+
+  it("does not emit Google-ignored keywords or a stale manifest link", () => {
+    const metadata = buildRootMetadata();
+
+    expect(metadata.keywords).toBeUndefined();
+    expect(metadata.manifest).toBeUndefined();
   });
 
   it("builds generated social image URLs directly", () => {

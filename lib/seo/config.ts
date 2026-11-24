@@ -40,6 +40,11 @@ const siteUrl = normalizeSiteUrl(
     process.env.VERCEL_PROJECT_PRODUCTION_URL,
 );
 
+function normalizeTwitterHandle(rawValue: string | undefined): string | undefined {
+  const handle = rawValue?.trim().replace(/^@?/, "@");
+  return handle && /^@\w{1,15}$/.test(handle) ? handle : undefined;
+}
+
 function normalizeSocialProfiles(rawValue: string | undefined): readonly string[] {
   if (!rawValue) {
     return [];
@@ -55,12 +60,12 @@ export const seoConfig = {
   siteName: i18n.public.brand.wordmark,
   applicationName: i18n.public.brand.wordmark,
   defaultTitle: i18n.public.brand.title,
+  homeTitle: i18n.public.brand.homeTitle,
   titleTemplate: i18n.public.brand.titleTemplate("%s"),
   defaultDescription: i18n.public.brand.description,
-  keywords: i18n.public.brand.keywords,
   locale: "it_IT",
   language: "it-IT",
-  twitterHandle: "@middleware",
+  twitterHandle: normalizeTwitterHandle(process.env.NEXT_PUBLIC_TWITTER_HANDLE),
   siteUrl,
   areaServed: i18n.public.brand.areaServed,
   socialProfiles: normalizeSocialProfiles(process.env.NEXT_PUBLIC_SOCIAL_PROFILES),

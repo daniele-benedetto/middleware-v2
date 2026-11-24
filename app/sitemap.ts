@@ -5,18 +5,10 @@ import { getCanonicalUrl } from "@/lib/seo";
 
 import type { MetadataRoute } from "next";
 
-type SitemapItem = MetadataRoute.Sitemap[number];
-
-function toSitemapItems(
-  entries: SitemapEntry[],
-  changeFrequency: SitemapItem["changeFrequency"],
-  priority: number,
-): MetadataRoute.Sitemap {
+function toSitemapItems(entries: SitemapEntry[]): MetadataRoute.Sitemap {
   return entries.map((entry) => ({
     url: getCanonicalUrl(entry.path),
     lastModified: entry.lastModified,
-    changeFrequency,
-    priority,
   }));
 }
 
@@ -35,26 +27,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     staticPages,
   } = await getPublicSitemapData();
 
-  const indexPaths = ["/", "/uscite", "/articoli", "/contro-formazione"];
-
-  const indexLastModified = new Map([
-    ["/", homeLastModified],
-    ["/uscite", issuesArchiveLastModified],
-    ["/articoli", articlesArchiveLastModified],
-    ["/contro-formazione", coursesArchiveLastModified],
-  ]);
-
-  return [
-    ...indexPaths.map((path, index) => ({
-      url: getCanonicalUrl(path),
-      lastModified: indexLastModified.get(path),
-      changeFrequency: "weekly" as const,
-      priority: index === 0 ? 1 : 0.8,
-    })),
-    ...toSitemapItems(issues, "monthly", 0.7),
-    ...toSitemapItems(articles, "monthly", 0.7),
-    ...toSitemapItems(courses, "monthly", 0.7),
-    ...toSitemapItems(lessons, "monthly", 0.6),
-    ...toSitemapItems(staticPages, "monthly", 0.6),
+  const indexEntries: SitemapEntry[] = [
+    { path: "/", lastModified: homeLastModified },
+    { path: "/uscite", lastModified: issuesArchiveLastModified },
+    { path: "/articoli", lastModified: articlesArchiveLastModified },
+    { path: "/contro-formazione", lastModified: coursesArchiveLastModified },
   ];
+
+  return toSitemapItems([
+    ...indexEntries,
+    ...issues,
+    ...articles,
+    ...courses,
+    ...lessons,
+    ...staticPages,
+  ]);
 }

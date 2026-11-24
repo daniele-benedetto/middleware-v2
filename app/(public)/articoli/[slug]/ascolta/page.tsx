@@ -6,7 +6,7 @@ import {
   getPublicArticleListenChunks,
   getPublicArticleListenMetadataData,
 } from "@/lib/public/server/article-listen-page";
-import { buildArticleListenMetadata } from "@/lib/seo";
+import { buildListenMetadata } from "@/lib/seo";
 
 import type { Metadata } from "next";
 
@@ -37,18 +37,18 @@ export async function generateMetadata({
   const text = i18n.public.listenPage;
 
   if (!data) {
-    return buildArticleListenMetadata({
+    return buildListenMetadata({
       title: text.notFoundTitle,
-      slug,
+      path: `/articoli/${slug}/ascolta`,
     });
   }
 
   const title = text.metadataTitle(data.article.title);
 
-  return buildArticleListenMetadata({
+  return buildListenMetadata({
     title,
     description: data.article.excerpt ?? undefined,
-    slug: data.article.slug,
+    path: `/articoli/${data.article.slug}/ascolta`,
     imageUrl: data.article.imageUrl,
   });
 }

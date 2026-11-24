@@ -1,4 +1,5 @@
 import { seoConfig } from "@/lib/seo/config";
+import { toMetaDescription } from "@/lib/seo/meta-description";
 import {
   buildEditorialSocialImage,
   buildGeneratedSocialImage,
@@ -44,12 +45,16 @@ type LessonMetadataInput = {
   imageAlt?: string | null;
 };
 
-type ArticleListenMetadataInput = {
+type ListenMetadataInput = {
   title: string;
   description?: string | null;
-  slug: string;
-  canonicalPath?: string;
+  path: string;
   imageUrl?: string | null;
+};
+
+type HomeMetadataInput = {
+  openGraphImage?: string;
+  openGraphImageAlt?: string;
 };
 
 function resolveRobots(index: boolean): Metadata["robots"] {
@@ -65,8 +70,8 @@ function resolveRobots(index: boolean): Metadata["robots"] {
   };
 }
 
-function getDefaultKeywords(): string[] {
-  return [...seoConfig.keywords];
+function resolveDescription(value: string | null | undefined): string {
+  return toMetaDescription(value) ?? seoConfig.defaultDescription;
 }
 
 export function getCanonicalUrl(path = "/"): string {
@@ -98,7 +103,7 @@ export function getGeneratedSocialImageUrl(
 ): string {
   const params = new URLSearchParams();
   params.set("title", input.title || seoConfig.defaultTitle);
-  params.set("description", input.description || seoConfig.defaultDescription);
+  params.set("description", resolveDescription(input.description));
 
   if (input.section) {
     params.set("section", input.section);
@@ -141,8 +146,6 @@ export function buildRootMetadata(): Metadata {
       template: seoConfig.titleTemplate,
     },
     description: seoConfig.defaultDescription,
-    keywords: getDefaultKeywords(),
-    manifest: "/manifest.json",
     appleWebApp: {
       title: seoConfig.applicationName,
     },
@@ -192,7 +195,7 @@ export function buildRootMetadata(): Metadata {
 export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
   const {
     title,
-    description = seoConfig.defaultDescription,
+    description: rawDescription,
     path = "/",
     index = true,
     openGraphImage,
@@ -202,6 +205,7 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
     socialImageTheme,
   } = input;
   const canonical = getCanonicalUrl(path);
+  const description = resolveDescription(rawDescription);
   const socialImage = resolveSocialImage({
     editorialImageUrl: openGraphImage,
     alt: openGraphImageAlt ?? title ?? seoConfig.defaultTitle,
@@ -240,6 +244,21 @@ export function buildPageMetadata(input: PageMetadataInput = {}): Metadata {
   };
 }
 
+export function buildHomeMetadata(input: HomeMetadataInput = {}): Metadata {
+  const metadata = buildPageMetadata({
+    title: seoConfig.homeTitle,
+    description: seoConfig.defaultDescription,
+    path: "/",
+    openGraphImage: input.openGraphImage,
+    openGraphImageAlt: input.openGraphImageAlt,
+    twitterImage: input.openGraphImage,
+    socialImageSection: "home",
+    socialImageTheme: "cream",
+  });
+
+  return { ...metadata, title: { absolute: seoConfig.homeTitle } };
+}
+
 export function buildCmsMetadata(input: Omit<PageMetadataInput, "index"> = {}): Metadata {
   return buildPageMetadata({
     ...input,
@@ -250,7 +269,7 @@ export function buildCmsMetadata(input: Omit<PageMetadataInput, "index"> = {}): 
 export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
   const path = `/articoli/${input.slug}`;
   const canonical = getCanonicalUrl(path);
-  const description = input.description ?? seoConfig.defaultDescription;
+  const description = resolveDescription(input.description);
   const socialImage = resolveSocialImage({
     editorialImageUrl: input.imageUrl,
     alt: input.title,
@@ -294,7 +313,7 @@ export function buildArticleMetadata(input: ArticleMetadataInput): Metadata {
 
 export function buildLessonMetadata(input: LessonMetadataInput): Metadata {
   const canonical = getCanonicalUrl(`/contro-formazione/${input.courseSlug}/${input.slug}`);
-  const description = input.description ?? seoConfig.defaultDescription;
+  const description = resolveDescription(input.description);
   const socialImage = resolveSocialImage({
     editorialImageUrl: input.imageUrl,
     alt: input.imageAlt || input.title,
@@ -333,9 +352,9 @@ export function buildLessonMetadata(input: LessonMetadataInput): Metadata {
   };
 }
 
-export function buildArticleListenMetadata(input: ArticleListenMetadataInput): Metadata {
-  const canonical = getCanonicalUrl(input.canonicalPath ?? `/articoli/${input.slug}`);
-  const description = input.description ?? seoConfig.defaultDescription;
+export function buildListenMetadata(input: ListenMetadataInput): Metadata {
+  const canonical = getCanonicalUrl(input.path);
+  const description = resolveDescription(input.description);
   const socialImage = resolveSocialImage({
     editorialImageUrl: input.imageUrl,
     alt: input.title,

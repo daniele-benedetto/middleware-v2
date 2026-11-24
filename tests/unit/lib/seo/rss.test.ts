@@ -46,6 +46,15 @@ describe("rss feed", () => {
     );
   });
 
+  it("declares the enclosure MIME type of the original upload", () => {
+    expect(feed).toContain('type="image/jpeg"');
+
+    const pngFeed = buildRssFeed([
+      { ...items[0], imageUrl: "/api/public/media/blob?pathname=covers%2Fmap.png" },
+    ]);
+    expect(pngFeed).toContain('type="image/png"');
+  });
+
   it("emits a valid empty channel when there are no items", () => {
     const emptyFeed = buildRssFeed([]);
 

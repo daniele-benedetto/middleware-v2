@@ -40,6 +40,23 @@ const PUBLIC_LESSON_DETAIL_SELECT = {
 } as const satisfies Prisma.LessonSelect;
 
 export const publicLessonsRepository = {
+  async existsBySlug(
+    courseSlug: string,
+    lessonSlug: string,
+    options: { withAudio?: boolean } = {},
+  ) {
+    const lesson = await prisma.lesson.findFirst({
+      where: {
+        ...PUBLIC_LESSON_WHERE,
+        slug: lessonSlug,
+        course: { ...PUBLIC_COURSE_WHERE, slug: courseSlug },
+        ...(options.withAudio ? { audioUrl: { not: null } } : {}),
+      },
+      select: { id: true },
+    });
+
+    return lesson !== null;
+  },
   async getBySlug(courseSlug: string, lessonSlug: string) {
     return prisma.lesson.findFirst({
       where: {

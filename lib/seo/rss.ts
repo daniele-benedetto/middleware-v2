@@ -33,10 +33,30 @@ function renderTag(name: string, value: string | null | undefined): string {
   return `    <${name}>${escapeXml(value)}</${name}>\n`;
 }
 
+const IMAGE_MIME_TYPES: Record<string, string> = {
+  avif: "image/avif",
+  gif: "image/gif",
+  jpeg: "image/jpeg",
+  jpg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+};
+
+function getImageMimeType(imageUrl: string): string {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(imageUrl).toLowerCase();
+  } catch {
+    decoded = imageUrl.toLowerCase();
+  }
+  const extension = decoded.match(/\.([a-z0-9]+)(?:[?#&]|$)/)?.[1];
+  return (extension && IMAGE_MIME_TYPES[extension]) || "image/jpeg";
+}
+
 function renderItem(item: RssItem): string {
   const url = getCanonicalUrl(item.path);
   const enclosure = item.imageUrl
-    ? `    <enclosure url="${escapeXml(toOptimizedImageUrl(item.imageUrl))}" type="image/jpeg" />\n`
+    ? `    <enclosure url="${escapeXml(toOptimizedImageUrl(item.imageUrl))}" type="${getImageMimeType(item.imageUrl)}" />\n`
     : "";
 
   return (
