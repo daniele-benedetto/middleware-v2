@@ -10,11 +10,13 @@ import {
   getQuestionnaireConditionIssue,
   getQuestionnaireConditionOperators,
   getQuestionnaireOtherLabel,
+  getQuestionnaireScaleValues,
   isQuestionnaireConditionSatisfied,
   isQuestionnaireScaleValue,
   listQuestionnaireRuleSourceFields,
   matchesQuestionnaireRule,
   QUESTIONNAIRE_OTHER_OPTION_ID,
+  QUESTIONNAIRE_SCALE_MAX_VALUES,
   questionnaireDefinitionSchema,
   resolveQuestionnaireLogic,
 } from "@/lib/server/modules/questionnaires/schema/definition";
@@ -229,6 +231,50 @@ describe("questionnaire condition operators", () => {
     expect(isQuestionnaireScaleValue({ min: 1, max: 5 }, 2.5)).toBe(false);
     expect(isQuestionnaireScaleValue({ min: 0, max: 1, step: 0.1 }, 0.3)).toBe(true);
     expect(isQuestionnaireScaleValue({ min: 1, max: 5 }, 6)).toBe(false);
+  });
+});
+
+describe("questionnaire scale values", () => {
+  it("lists integer scales from min to max", () => {
+    expect(getQuestionnaireScaleValues({ min: 1, max: 5 })).toEqual([1, 2, 3, 4, 5]);
+    expect(getQuestionnaireScaleValues({ min: 0, max: 10, step: 5 })).toEqual([0, 5, 10]);
+  });
+
+  it("does not accumulate floating point drift with decimal steps", () => {
+    expect(getQuestionnaireScaleValues({ min: 0, max: 1, step: 0.1 })).toEqual([
+      0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1,
+    ]);
+    expect(getQuestionnaireScaleValues({ min: 0.5, max: 2, step: 0.25 })).toEqual([
+      0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,
+    ]);
+  });
+
+  it("stops before max when the step does not land on it", () => {
+    expect(getQuestionnaireScaleValues({ min: 1, max: 6, step: 2 })).toEqual([1, 3, 5]);
+  });
+
+  it("offers only values the answers schema accepts", () => {
+    const field = { min: 0, max: 1, step: 0.1 };
+    expect(
+      getQuestionnaireScaleValues(field).every((value) => isQuestionnaireScaleValue(field, value)),
+    ).toBe(true);
+  });
+
+  it("rejects scales with too many values", () => {
+    const parseScale = (step: number) =>
+      questionnaireDefinitionSchema.safeParse({
+        ...build(),
+        steps: [
+          {
+            id: uuid(9001),
+            fields: [{ id: uuid(9002), type: "scale", label: "Scala", min: 0, max: 100, step }],
+          },
+        ],
+      }).success;
+
+    expect(QUESTIONNAIRE_SCALE_MAX_VALUES).toBe(101);
+    expect(parseScale(1)).toBe(true);
+    expect(parseScale(0.5)).toBe(false);
   });
 });
 

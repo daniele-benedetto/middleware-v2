@@ -1,3 +1,5 @@
+import { getQuestionnaireScaleValues } from "@/lib/server/modules/questionnaires/schema/definition";
+
 import type { QuestionnaireField } from "@/lib/server/modules/questionnaires/schema";
 
 export type NumericDistributionBucket = {
@@ -75,10 +77,10 @@ export function createNumericDistribution(
 
   if (discrete) {
     if (field.type === "scale") {
-      const step = field.step ?? 1;
-      for (let value = field.min; value <= field.max; value += step) {
-        counts.set(roundStatistic(value) ?? value, counts.get(roundStatistic(value) ?? value) ?? 0);
-      }
+      // Every value of the scale gets a bucket, answered or not.
+      getQuestionnaireScaleValues(field).forEach((value) =>
+        counts.set(value, counts.get(value) ?? 0),
+      );
     }
 
     return {

@@ -4,8 +4,10 @@ import {
   forEachQuestionnaireRule,
   getQuestionnaireRuleIssues,
   getQuestionnaireRulePath,
+  getQuestionnaireScaleValueCount,
   isQuestionnaireScaleValue,
   QUESTIONNAIRE_OTHER_OPTION_ID,
+  QUESTIONNAIRE_SCALE_MAX_VALUES,
   questionnaireRuleSchema,
   resolveQuestionnaireLogic,
 } from "@/lib/server/modules/questionnaires/schema/logic";
@@ -190,6 +192,10 @@ const scaleFieldSchema = fieldBaseSchema
   .refine((field) => field.min <= field.max, {
     message: "min must be less than or equal to max",
     path: ["max"],
+  })
+  .refine((field) => getQuestionnaireScaleValueCount(field) <= QUESTIONNAIRE_SCALE_MAX_VALUES, {
+    message: `A scale can offer at most ${QUESTIONNAIRE_SCALE_MAX_VALUES} values`,
+    path: ["step"],
   });
 
 const consentFieldSchema = fieldBaseSchema.extend({

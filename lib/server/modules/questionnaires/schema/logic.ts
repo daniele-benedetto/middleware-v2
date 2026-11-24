@@ -266,6 +266,40 @@ export function getQuestionnaireConditionOptionIds(field: QuestionnaireChoiceFie
 }
 
 const SCALE_GRID_TOLERANCE = 1e-9;
+const SCALE_MAX_DECIMALS = 10;
+
+/** Most values a scale can offer: more would not fit a row of buttons. */
+export const QUESTIONNAIRE_SCALE_MAX_VALUES = 101;
+
+type ScaleBounds = { min: number; max: number; step?: number };
+
+/** Decimal places needed to write `value` exactly (capped), e.g. 0.25 → 2. */
+function countDecimals(value: number) {
+  for (let decimals = 0; decimals < SCALE_MAX_DECIMALS; decimals += 1) {
+    const scaled = value * 10 ** decimals;
+    if (Math.abs(scaled - Math.round(scaled)) < SCALE_GRID_TOLERANCE) return decimals;
+  }
+  return SCALE_MAX_DECIMALS;
+}
+
+/** How many values the scale offers: `min`, `min + step`, … up to `max`. */
+export function getQuestionnaireScaleValueCount(field: ScaleBounds): number {
+  return Math.floor((field.max - field.min) / (field.step ?? 1) + SCALE_GRID_TOLERANCE) + 1;
+}
+
+/**
+ * Selectable values of a scale, each computed as `min + i * step` and rounded to the decimals of
+ * `min` and `step`: adding the step repeatedly would drift (0.1 + 0.2 = 0.30000000000000004).
+ * Never more than `QUESTIONNAIRE_SCALE_MAX_VALUES`.
+ */
+export function getQuestionnaireScaleValues(field: ScaleBounds): number[] {
+  const step = field.step ?? 1;
+  const decimals = Math.max(countDecimals(field.min), countDecimals(step));
+  const count = Math.min(getQuestionnaireScaleValueCount(field), QUESTIONNAIRE_SCALE_MAX_VALUES);
+  return Array.from({ length: count }, (_, index) =>
+    Number((field.min + index * step).toFixed(decimals)),
+  );
+}
 
 /** Whether `value` is one of the selectable values of a scale (`min`, `min + step`, …). */
 export function isQuestionnaireScaleValue(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { PublicLink } from "@/components/public/public-link";
 import { focusNextControlOnEnter } from "@/components/public/questionnaires/focus-next-control";
@@ -87,7 +87,13 @@ export function PublicQuestionnairePage({
   const [editing, setEditing] = useState(false);
   // True once the form has been opened in this visit: the answers in memory win over the draft.
   const [started, setStarted] = useState(false);
-  const [answers, setAnswers] = useState<QuestionnaireAnswerValues>({});
+  const [answers, setAnswersState] = useState<QuestionnaireAnswerValues>({});
+  // Latest answers, ahead of the render: two changes in the same tick must not overwrite each other.
+  const answersRef = useRef(answers);
+  const setAnswers = (nextAnswers: QuestionnaireAnswerValues) => {
+    answersRef.current = nextAnswers;
+    setAnswersState(nextAnswers);
+  };
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const pageId = useId();
@@ -110,7 +116,14 @@ export function PublicQuestionnairePage({
   const hasResponded = responderStatus.data?.hasResponded === true;
 
   // Steps without visible fields are not part of the flow: they are skipped in both directions.
-  const visibleSteps = getVisibleQuestionnaireSteps(definition, answers);
+  const visibleSteps = useMemo(
+    () => getVisibleQuestionnaireSteps(definition, answers),
+    [definition, answers],
+  );
+  const progress = useMemo(
+    () => getQuestionnaireProgress(definition, answers),
+    [definition, answers],
+  );
   const position =
     stop === "review" ? -1 : visibleSteps.findIndex(({ stepIndex }) => stepIndex === stop);
   const currentStep = position === -1 ? null : visibleSteps[position];
@@ -191,16 +204,40 @@ export function PublicQuestionnairePage({
     draft.persist(answers, toDraftStepIndex(target));
   });
 
+  /**
+   * Where the flow continues when `answers` hide every field of the step on screen (a field that
+   * controls the visibility of its own step): the next visible step, or the review. `null` when
+   * the current stop is still visible.
+   */
+  const getStopReplacingHiddenStep = (nextAnswers: QuestionnaireAnswerValues) => {
+    if (stop === "review") return null;
+    const stillVisible = getVisibleQuestionnaireSteps(definition, nextAnswers).some(
+      ({ stepIndex }) => stepIndex === stop,
+    );
+    return stillVisible
+      ? null
+      : getResumeStop(definition, { answers: nextAnswers, stepIndex: stop });
+  };
+
   const updateAnswer = (id: string, value: unknown) => {
-    const nextAnswers = { ...answers, [id]: value };
+    const nextAnswers = { ...answersRef.current, [id]: value };
     setAnswers(nextAnswers);
-    draft.persist(nextAnswers, toDraftStepIndex(stop));
     setFieldErrors((current) => {
       if (!current[id]) return current;
       const { [id]: _error, ...rest } = current;
       return rest;
     });
     setSubmitError(null);
+
+    const replacement = getStopReplacingHiddenStep(nextAnswers);
+    if (replacement === null) {
+      draft.persist(nextAnswers, toDraftStepIndex(stop));
+      return;
+    }
+    const nextEditing = editing && replacement !== "review";
+    questionnaireHistory.replace(replacement, nextEditing);
+    showStop(replacement, nextEditing);
+    draft.persist(nextAnswers, toDraftStepIndex(replacement));
   };
 
   const start = (restoreDraft: boolean) => {
@@ -360,7 +397,6 @@ export function PublicQuestionnairePage({
     );
   }
 
-  const progress = getQuestionnaireProgress(definition, answers);
   const primaryLabel = submit.isPending
     ? text.submitting
     : !currentStep
@@ -382,7 +418,6 @@ export function PublicQuestionnairePage({
         }
         answered={progress.answered}
         total={progress.total}
-        draftStatus={draft.status}
       />
       <form
         noValidate

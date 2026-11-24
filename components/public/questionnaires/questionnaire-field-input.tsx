@@ -11,6 +11,7 @@ import {
 } from "@/components/public/questionnaires/questionnaire-ui";
 import { i18n } from "@/lib/i18n";
 import { toDateTimeLocalValue, toIsoDateTimeValue } from "@/lib/questionnaires/flow";
+import { getQuestionnaireScaleValues } from "@/lib/server/modules/questionnaires/schema/definition";
 import { cn } from "@/lib/utils";
 
 import type { QuestionnaireAnswerError } from "@/lib/questionnaires/flow";
@@ -144,9 +145,7 @@ export function QuestionnaireFieldInput({
   }
 
   if (field.type === "scale") {
-    const options = [];
-    for (let current = field.min; current <= field.max; current += field.step ?? 1)
-      options.push(current);
+    const options = getQuestionnaireScaleValues(field);
     return (
       <div
         role="radiogroup"

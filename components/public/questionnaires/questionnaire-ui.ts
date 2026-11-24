@@ -81,7 +81,12 @@ export function textInputClass(invalid: boolean) {
   );
 }
 
+/**
+ * A site path ("/…") or an absolute http(s) URL. "//host" and "/\host" are rejected: browsers
+ * read them as protocol-relative URLs to another site.
+ */
 export function isSafeHref(value: string | undefined): value is string {
   if (!value) return false;
-  return value.startsWith("/") || /^https?:\/\//.test(value);
+  if (/^\/[/\\]/.test(value)) return false;
+  return value.startsWith("/") || /^https?:\/\//i.test(value);
 }

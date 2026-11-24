@@ -109,13 +109,6 @@ export function QuestionnaireIntro({
   const { definition } = questionnaire;
   const text = i18n.public.questionnaire;
   const estimatedMinutes = getEstimatedMinutes(definition);
-  const questionCount = definition.steps
-    .flatMap((current) => current.fields)
-    .filter((field) => field.type !== "information").length;
-  const stats = [
-    { label: text.stats.stepsLabel, value: String(definition.steps.length).padStart(2, "0") },
-    { label: text.stats.questionsLabel, value: String(questionCount).padStart(2, "0") },
-  ];
 
   return (
     <main
@@ -136,16 +129,8 @@ export function QuestionnaireIntro({
               {definition.copy.introduction}
             </p>
           ) : null}
-          <dl className="mt-10 grid grid-cols-3 divide-x divide-foreground/25 border-y border-foreground/25">
-            {stats.map((stat) => (
-              <div className="px-4 py-4 first:pl-0" key={stat.label}>
-                <dt className={cn(questionnaireType.meta, "text-muted")}>{stat.label}</dt>
-                <dd className="mt-2 font-heading text-[28px] leading-none font-black tabular-nums">
-                  {stat.value}
-                </dd>
-              </div>
-            ))}
-            <div className="px-4 py-4">
+          <dl className="mt-10 border-y border-foreground/25">
+            <div className="py-4">
               <dt className={cn(questionnaireType.meta, "text-muted")}>
                 {text.stats.estimatedTimeLabel}
               </dt>

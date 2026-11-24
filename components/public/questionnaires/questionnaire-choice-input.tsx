@@ -97,6 +97,8 @@ export function QuestionnaireChoiceInput({
       : undefined;
   const otherSelected = field.allowOther === true && otherAnswer !== undefined;
   const otherLabel = getQuestionnaireOtherLabel(field);
+  // A group of checkboxes cannot carry the invalid state: each checkbox does.
+  const checkboxInvalid = multiple && error?.target === "field" ? true : undefined;
 
   const toggleOption = (optionId: string, checked: boolean) => {
     if (!multiple) onChange(optionId);
@@ -139,6 +141,7 @@ export function QuestionnaireChoiceInput({
               className={choiceMarkerClass}
               checked={selected}
               required={field.required && !multiple}
+              aria-invalid={checkboxInvalid}
               onChange={(event) => toggleOption(option.id, event.target.checked)}
             />
             <span>{option.label}</span>
@@ -155,6 +158,7 @@ export function QuestionnaireChoiceInput({
               className={choiceMarkerClass}
               checked={otherSelected}
               required={field.required && !multiple}
+              aria-invalid={checkboxInvalid}
               onChange={(event) => toggleOther(event.target.checked)}
             />
             <span>{otherLabel}</span>
