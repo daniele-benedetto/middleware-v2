@@ -3,9 +3,12 @@
 import { AlertCircle, SearchX } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { PublicMetaRail } from "@/components/public/compounds/public-meta-rail";
+import { publicTypography } from "@/components/public/primitives";
 import { i18n } from "@/lib/i18n/public";
 import { publicAnalyticsEvents, trackPublicAnalyticsEvent } from "@/lib/public/analytics";
 import { trpc } from "@/lib/trpc/react";
+import { cn } from "@/lib/utils";
 
 export function PublicSearchMenuResults({
   query,
@@ -137,8 +140,19 @@ export function PublicSearchMenuResults({
               }}
               className="block cursor-pointer py-4 transition-colors duration-(--motion-fast) hover:bg-surface-hover focus-visible:outline-3 focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
             >
-              <p className="font-ui text-(length:--text-xs) font-bold tracking-[0.08em] text-accent uppercase">
-                {i18n.public.home.dossier.searchTypeLabel(result.type)}
+              <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 font-ui text-(length:--text-xs)">
+                <span className="font-bold tracking-[0.08em] text-accent uppercase">
+                  {i18n.public.home.dossier.searchTypeLabel(result.type)}
+                </span>
+                {result.context ? (
+                  <>
+                    <span aria-hidden="true" className="text-muted">
+                      ·
+                    </span>
+                    <span className="sr-only">, </span>
+                    <span className="font-semibold text-body-text">{result.context}</span>
+                  </>
+                ) : null}
               </p>
               <h3 className="mt-1 font-heading text-(length:--text-lg) leading-[1.1] font-bold tracking-[-0.025em]">
                 {result.title}
@@ -147,6 +161,19 @@ export function PublicSearchMenuResults({
                 <p className="mt-2 max-w-full font-editorial text-(length:--text-md) leading-[1.35] text-body-text md:max-w-[75%]">
                   {result.snippet}
                 </p>
+              ) : null}
+              {result.meta.length > 0 ? (
+                <PublicMetaRail
+                  items={result.meta.map((label, metaIndex) => ({
+                    key: `${label}-${metaIndex}`,
+                    label,
+                  }))}
+                  className={cn(
+                    "mt-3 flex flex-wrap items-center gap-3",
+                    publicTypography.meta,
+                    "text-muted",
+                  )}
+                />
               ) : null}
             </a>
           </li>

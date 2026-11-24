@@ -1,33 +1,24 @@
 import "server-only";
 
 import { Prisma } from "@/lib/generated/prisma/client";
+import { i18n } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { extractPlainText } from "@/lib/rich-text/plain-text";
 import { issueHomeBlocksSchema } from "@/lib/server/modules/issues/schema";
+import { articleSearchMeta } from "@/lib/server/modules/search/projection/article-meta";
+import { questionnaireSearchText } from "@/lib/server/modules/search/projection/questionnaire-text";
+import { toPrefixTsQuery } from "@/lib/server/modules/search/query/prefix-tsquery";
 import { searchRepository } from "@/lib/server/modules/search/repository";
+import { bodyExcerpt } from "@/lib/server/modules/search/service/body-excerpt";
+import { createSingleFlightThrottle } from "@/lib/server/modules/search/service/single-flight-throttle";
 
 import type { PublicSearchResultDto } from "@/lib/server/modules/search/dto";
+import type { ProjectionDocumentInput as ProjectionDocument } from "@/lib/server/modules/search/repository";
 
-type ProjectionDocument = {
-  id: string;
-  sourceType: "article" | "course" | "lesson" | "page" | "map" | "questionnaire";
-  sourceId: string;
-  title: string;
-  body: string;
-  href: string;
-  publishedAt: Date | null;
-};
+const PROJECTION_CHECK_INTERVAL_MS = 15_000;
 
 function richText(value: unknown) {
   return extractPlainText(value) ?? "";
-}
-
-function questionnaireText(definition: unknown) {
-  if (!definition || typeof definition !== "object") return "";
-  return JSON.stringify(definition)
-    .replace(/[{}\[\]",:]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
 }
 
 function publicBlocks(value: unknown) {
@@ -39,28 +30,31 @@ function documentId(sourceType: ProjectionDocument["sourceType"], sourceId: stri
   return `${sourceType}:${sourceId}:${href}`;
 }
 
-function plainSnippet(snippet: string | null) {
-  return snippet?.replaceAll("<mark>", "").replaceAll("</mark>", "") ?? null;
-}
+type SearchRecord = Awaited<ReturnType<typeof searchRepository.search>>[number];
 
-function toResult(
-  record: Awaited<ReturnType<typeof searchRepository.search>>[number],
-): PublicSearchResultDto {
+const searchContext = i18n.public.home.dossier.searchContext;
+
+function toResult(record: SearchRecord): PublicSearchResultDto {
   return {
     id: record.id,
     type: record.sourceType as PublicSearchResultDto["type"],
     title: record.title,
     href: record.href,
-    snippet: plainSnippet(record.snippet),
+    snippet: bodyExcerpt(record.snippet),
     publishedAt: record.publishedAt?.toISOString() ?? null,
+    context: record.context,
+    meta: record.meta,
   };
 }
 
 export const publicSearchService = {
   async search(query: string, limit: number) {
+    const tsQuery = toPrefixTsQuery(query);
+    if (!tsQuery) return { total: 0, items: [] };
+
     await ensureGlobalSearchProjection();
 
-    const records = await searchRepository.search(query, limit);
+    const records = await searchRepository.search(tsQuery, limit);
     return {
       total: records[0]?.total ?? 0,
       items: records.map(toResult),
@@ -109,7 +103,7 @@ function containsMissingTableMarker(value: unknown): boolean {
   return Object.values(value).some(containsMissingTableMarker);
 }
 
-async function ensureGlobalSearchProjection() {
+async function syncGlobalSearchProjection() {
   const [documents, sourceFingerprint, projectionFingerprint] = await Promise.all([
     searchRepository.count(),
     searchRepository.getSourceFingerprint(),
@@ -120,6 +114,11 @@ async function ensureGlobalSearchProjection() {
     await rebuildGlobalSearchProjection(sourceFingerprint);
   }
 }
+
+const ensureGlobalSearchProjection = createSingleFlightThrottle(
+  syncGlobalSearchProjection,
+  PROJECTION_CHECK_INTERVAL_MS,
+);
 
 export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) {
   const [issues, articles, courses, lessons, pages, maps, questionnaires] = await Promise.all([
@@ -137,11 +136,23 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
         excerptRich: true,
         contentRich: true,
         publishedAt: true,
+        audioUrl: true,
+        category: { select: { name: true } },
+        author: { select: { name: true } },
       },
     }),
     prisma.course.findMany({
       where: { isActive: true, publishedAt: { not: null } },
-      select: { id: true, slug: true, title: true, description: true, publishedAt: true },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        description: true,
+        publishedAt: true,
+        _count: {
+          select: { lessons: { where: { status: "PUBLISHED", publishedAt: { not: null } } } },
+        },
+      },
     }),
     prisma.lesson.findMany({
       where: {
@@ -157,7 +168,7 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
         excerptRich: true,
         contentRich: true,
         publishedAt: true,
-        course: { select: { slug: true } },
+        course: { select: { slug: true, title: true } },
       },
     }),
     prisma.page.findMany({
@@ -198,6 +209,13 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
 
   const documents: ProjectionDocument[] = [];
   const publicIssues = issues.filter((issue) => issue.isActive && issue.publishedAt);
+  const issuePositions = new Map(
+    publicIssues
+      .toSorted((a, b) => (a.publishedAt?.getTime() ?? 0) - (b.publishedAt?.getTime() ?? 0))
+      .map((issue, index) => [issue.id, index]),
+  );
+  const issuePosition = (issueId: string) => issuePositions.get(issueId) ?? publicIssues.length;
+  const issueNumberLabel = (issueId: string) => searchContext.issue(issuePosition(issueId));
   const publicIssueIds = new Set(publicIssues.map((issue) => issue.id));
   const articleById = new Map(articles.map((article) => [article.id, article]));
   const visibleArticleIds = new Set(
@@ -243,6 +261,13 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
         .join(" "),
       href: `/articoli/${article.slug}`,
       publishedAt: article.publishedAt,
+      context: issueNumberLabel(article.issueId),
+      meta: articleSearchMeta({
+        categoryName: article.category.name,
+        authorName: article.author?.name ?? null,
+        publishedAt: article.publishedAt,
+        hasAudio: Boolean(article.audioUrl),
+      }),
     });
   }
   for (const course of courses) {
@@ -254,6 +279,8 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
       body: richText(course.description),
       href: `/contro-formazione/${course.slug}`,
       publishedAt: course.publishedAt,
+      context: searchContext.lessonCount(course._count.lessons),
+      meta: [],
     });
   }
   for (const lesson of lessons) {
@@ -268,6 +295,8 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
         .join(" "),
       href,
       publishedAt: lesson.publishedAt,
+      context: searchContext.course(lesson.course.title),
+      meta: [],
     });
   }
   for (const page of pages) {
@@ -282,6 +311,8 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
         .join(" "),
       href,
       publishedAt: page.publishedAt,
+      context: null,
+      meta: [],
     });
   }
 
@@ -306,6 +337,8 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
               .join(" "),
             href,
             publishedAt: issue.publishedAt,
+            context: issueNumberLabel(issue.id),
+            meta: [],
           });
       }
       if (block.type === "questionnaireAnalysis" && block.questionnaireId) {
@@ -318,12 +351,14 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
             title: questionnaire.title,
             body: [
               richText(questionnaire.descriptionRich),
-              questionnaireText(questionnaire.definition),
+              questionnaireSearchText(questionnaire.definition),
             ]
               .filter(Boolean)
               .join(" "),
             href,
             publishedAt: issue.publishedAt,
+            context: searchContext.questionnaireResults(issuePosition(issue.id)),
+            meta: [],
           });
       }
     }
@@ -336,20 +371,20 @@ export async function rebuildGlobalSearchProjection(sourceFingerprint?: string) 
       sourceType: "questionnaire",
       sourceId: questionnaire.id,
       title: questionnaire.title,
-      body: [richText(questionnaire.descriptionRich), questionnaireText(questionnaire.definition)]
+      body: [
+        richText(questionnaire.descriptionRich),
+        questionnaireSearchText(questionnaire.definition),
+      ]
         .filter(Boolean)
         .join(" "),
       href,
       publishedAt: questionnaire.publishedAt,
+      context: searchContext.openQuestionnaire,
+      meta: [],
     });
   }
 
   const fingerprint = sourceFingerprint ?? (await searchRepository.getSourceFingerprint());
-  await prisma.$transaction([
-    prisma.globalSearchDocument.deleteMany(),
-    prisma.globalSearchDocument.createMany({
-      data: documents.map((document) => ({ ...document, sourceFingerprint: fingerprint })),
-    }),
-  ]);
+  await searchRepository.replaceProjection(documents, fingerprint);
   return { documents: documents.length };
 }

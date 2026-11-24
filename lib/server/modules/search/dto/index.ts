@@ -7,6 +7,8 @@ export const publicSearchResultDtoSchema = z.object({
   href: z.string(),
   snippet: z.string().nullable(),
   publishedAt: z.string().nullable(),
+  context: z.string().nullable(),
+  meta: z.array(z.string()),
 });
 
 export const publicSearchResultsDtoSchema = z.array(publicSearchResultDtoSchema);

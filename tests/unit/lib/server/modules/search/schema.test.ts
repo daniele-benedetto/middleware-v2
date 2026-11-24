@@ -27,6 +27,8 @@ describe("public search contract", () => {
             href: "/articoli/example",
             snippet: "A <mark>match</mark>",
             publishedAt: "2026-09-18T00:00:00.000Z",
+            context: "Numero 03",
+            meta: ["Inchiesta", "Redazione", "18 settembre 2026"],
           },
         ],
       }),

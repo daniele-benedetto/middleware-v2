@@ -360,6 +360,8 @@ model GlobalSearchDocument {
   body              String    @default("")
   href              String
   publishedAt       DateTime?
+  context           String?
+  meta              String[]  @default([])
   sourceFingerprint String
   updatedAt         DateTime  @updatedAt
 

@@ -32,6 +32,7 @@ export type GlobalSearchDocumentMinAggregateOutputType = {
   body: string | null
   href: string | null
   publishedAt: Date | null
+  context: string | null
   sourceFingerprint: string | null
   updatedAt: Date | null
 }
@@ -44,6 +45,7 @@ export type GlobalSearchDocumentMaxAggregateOutputType = {
   body: string | null
   href: string | null
   publishedAt: Date | null
+  context: string | null
   sourceFingerprint: string | null
   updatedAt: Date | null
 }
@@ -56,6 +58,8 @@ export type GlobalSearchDocumentCountAggregateOutputType = {
   body: number
   href: number
   publishedAt: number
+  context: number
+  meta: number
   sourceFingerprint: number
   updatedAt: number
   _all: number
@@ -70,6 +74,7 @@ export type GlobalSearchDocumentMinAggregateInputType = {
   body?: true
   href?: true
   publishedAt?: true
+  context?: true
   sourceFingerprint?: true
   updatedAt?: true
 }
@@ -82,6 +87,7 @@ export type GlobalSearchDocumentMaxAggregateInputType = {
   body?: true
   href?: true
   publishedAt?: true
+  context?: true
   sourceFingerprint?: true
   updatedAt?: true
 }
@@ -94,6 +100,8 @@ export type GlobalSearchDocumentCountAggregateInputType = {
   body?: true
   href?: true
   publishedAt?: true
+  context?: true
+  meta?: true
   sourceFingerprint?: true
   updatedAt?: true
   _all?: true
@@ -179,6 +187,8 @@ export type GlobalSearchDocumentGroupByOutputType = {
   body: string
   href: string
   publishedAt: Date | null
+  context: string | null
+  meta: string[]
   sourceFingerprint: string
   updatedAt: Date
   _count: GlobalSearchDocumentCountAggregateOutputType | null
@@ -212,6 +222,8 @@ export type GlobalSearchDocumentWhereInput = {
   body?: Prisma.StringFilter<"GlobalSearchDocument"> | string
   href?: Prisma.StringFilter<"GlobalSearchDocument"> | string
   publishedAt?: Prisma.DateTimeNullableFilter<"GlobalSearchDocument"> | Date | string | null
+  context?: Prisma.StringNullableFilter<"GlobalSearchDocument"> | string | null
+  meta?: Prisma.StringNullableListFilter<"GlobalSearchDocument">
   sourceFingerprint?: Prisma.StringFilter<"GlobalSearchDocument"> | string
   updatedAt?: Prisma.DateTimeFilter<"GlobalSearchDocument"> | Date | string
 }
@@ -224,6 +236,8 @@ export type GlobalSearchDocumentOrderByWithRelationInput = {
   body?: Prisma.SortOrder
   href?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  context?: Prisma.SortOrderInput | Prisma.SortOrder
+  meta?: Prisma.SortOrder
   sourceFingerprint?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -239,6 +253,8 @@ export type GlobalSearchDocumentWhereUniqueInput = Prisma.AtLeast<{
   body?: Prisma.StringFilter<"GlobalSearchDocument"> | string
   href?: Prisma.StringFilter<"GlobalSearchDocument"> | string
   publishedAt?: Prisma.DateTimeNullableFilter<"GlobalSearchDocument"> | Date | string | null
+  context?: Prisma.StringNullableFilter<"GlobalSearchDocument"> | string | null
+  meta?: Prisma.StringNullableListFilter<"GlobalSearchDocument">
   sourceFingerprint?: Prisma.StringFilter<"GlobalSearchDocument"> | string
   updatedAt?: Prisma.DateTimeFilter<"GlobalSearchDocument"> | Date | string
 }, "id">
@@ -251,6 +267,8 @@ export type GlobalSearchDocumentOrderByWithAggregationInput = {
   body?: Prisma.SortOrder
   href?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  context?: Prisma.SortOrderInput | Prisma.SortOrder
+  meta?: Prisma.SortOrder
   sourceFingerprint?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.GlobalSearchDocumentCountOrderByAggregateInput
@@ -269,6 +287,8 @@ export type GlobalSearchDocumentScalarWhereWithAggregatesInput = {
   body?: Prisma.StringWithAggregatesFilter<"GlobalSearchDocument"> | string
   href?: Prisma.StringWithAggregatesFilter<"GlobalSearchDocument"> | string
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"GlobalSearchDocument"> | Date | string | null
+  context?: Prisma.StringNullableWithAggregatesFilter<"GlobalSearchDocument"> | string | null
+  meta?: Prisma.StringNullableListFilter<"GlobalSearchDocument">
   sourceFingerprint?: Prisma.StringWithAggregatesFilter<"GlobalSearchDocument"> | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"GlobalSearchDocument"> | Date | string
 }
@@ -281,6 +301,8 @@ export type GlobalSearchDocumentCreateInput = {
   body?: string
   href: string
   publishedAt?: Date | string | null
+  context?: string | null
+  meta?: Prisma.GlobalSearchDocumentCreatemetaInput | string[]
   sourceFingerprint: string
   updatedAt?: Date | string
 }
@@ -293,6 +315,8 @@ export type GlobalSearchDocumentUncheckedCreateInput = {
   body?: string
   href: string
   publishedAt?: Date | string | null
+  context?: string | null
+  meta?: Prisma.GlobalSearchDocumentCreatemetaInput | string[]
   sourceFingerprint: string
   updatedAt?: Date | string
 }
@@ -305,6 +329,8 @@ export type GlobalSearchDocumentUpdateInput = {
   body?: Prisma.StringFieldUpdateOperationsInput | string
   href?: Prisma.StringFieldUpdateOperationsInput | string
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  context?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  meta?: Prisma.GlobalSearchDocumentUpdatemetaInput | string[]
   sourceFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -317,6 +343,8 @@ export type GlobalSearchDocumentUncheckedUpdateInput = {
   body?: Prisma.StringFieldUpdateOperationsInput | string
   href?: Prisma.StringFieldUpdateOperationsInput | string
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  context?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  meta?: Prisma.GlobalSearchDocumentUpdatemetaInput | string[]
   sourceFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -329,6 +357,8 @@ export type GlobalSearchDocumentCreateManyInput = {
   body?: string
   href: string
   publishedAt?: Date | string | null
+  context?: string | null
+  meta?: Prisma.GlobalSearchDocumentCreatemetaInput | string[]
   sourceFingerprint: string
   updatedAt?: Date | string
 }
@@ -341,6 +371,8 @@ export type GlobalSearchDocumentUpdateManyMutationInput = {
   body?: Prisma.StringFieldUpdateOperationsInput | string
   href?: Prisma.StringFieldUpdateOperationsInput | string
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  context?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  meta?: Prisma.GlobalSearchDocumentUpdatemetaInput | string[]
   sourceFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -353,8 +385,18 @@ export type GlobalSearchDocumentUncheckedUpdateManyInput = {
   body?: Prisma.StringFieldUpdateOperationsInput | string
   href?: Prisma.StringFieldUpdateOperationsInput | string
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  context?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  meta?: Prisma.GlobalSearchDocumentUpdatemetaInput | string[]
   sourceFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
 }
 
 export type GlobalSearchDocumentCountOrderByAggregateInput = {
@@ -365,6 +407,8 @@ export type GlobalSearchDocumentCountOrderByAggregateInput = {
   body?: Prisma.SortOrder
   href?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
+  context?: Prisma.SortOrder
+  meta?: Prisma.SortOrder
   sourceFingerprint?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -377,6 +421,7 @@ export type GlobalSearchDocumentMaxOrderByAggregateInput = {
   body?: Prisma.SortOrder
   href?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
+  context?: Prisma.SortOrder
   sourceFingerprint?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -389,8 +434,18 @@ export type GlobalSearchDocumentMinOrderByAggregateInput = {
   body?: Prisma.SortOrder
   href?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
+  context?: Prisma.SortOrder
   sourceFingerprint?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type GlobalSearchDocumentCreatemetaInput = {
+  set: string[]
+}
+
+export type GlobalSearchDocumentUpdatemetaInput = {
+  set?: string[]
+  push?: string | string[]
 }
 
 
@@ -403,6 +458,8 @@ export type GlobalSearchDocumentSelect<ExtArgs extends runtime.Types.Extensions.
   body?: boolean
   href?: boolean
   publishedAt?: boolean
+  context?: boolean
+  meta?: boolean
   sourceFingerprint?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["globalSearchDocument"]>
@@ -415,6 +472,8 @@ export type GlobalSearchDocumentSelectCreateManyAndReturn<ExtArgs extends runtim
   body?: boolean
   href?: boolean
   publishedAt?: boolean
+  context?: boolean
+  meta?: boolean
   sourceFingerprint?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["globalSearchDocument"]>
@@ -427,6 +486,8 @@ export type GlobalSearchDocumentSelectUpdateManyAndReturn<ExtArgs extends runtim
   body?: boolean
   href?: boolean
   publishedAt?: boolean
+  context?: boolean
+  meta?: boolean
   sourceFingerprint?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["globalSearchDocument"]>
@@ -439,11 +500,13 @@ export type GlobalSearchDocumentSelectScalar = {
   body?: boolean
   href?: boolean
   publishedAt?: boolean
+  context?: boolean
+  meta?: boolean
   sourceFingerprint?: boolean
   updatedAt?: boolean
 }
 
-export type GlobalSearchDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sourceType" | "sourceId" | "title" | "body" | "href" | "publishedAt" | "sourceFingerprint" | "updatedAt", ExtArgs["result"]["globalSearchDocument"]>
+export type GlobalSearchDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sourceType" | "sourceId" | "title" | "body" | "href" | "publishedAt" | "context" | "meta" | "sourceFingerprint" | "updatedAt", ExtArgs["result"]["globalSearchDocument"]>
 
 export type $GlobalSearchDocumentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "GlobalSearchDocument"
@@ -456,6 +519,8 @@ export type $GlobalSearchDocumentPayload<ExtArgs extends runtime.Types.Extension
     body: string
     href: string
     publishedAt: Date | null
+    context: string | null
+    meta: string[]
     sourceFingerprint: string
     updatedAt: Date
   }, ExtArgs["result"]["globalSearchDocument"]>
@@ -888,6 +953,8 @@ export interface GlobalSearchDocumentFieldRefs {
   readonly body: Prisma.FieldRef<"GlobalSearchDocument", 'String'>
   readonly href: Prisma.FieldRef<"GlobalSearchDocument", 'String'>
   readonly publishedAt: Prisma.FieldRef<"GlobalSearchDocument", 'DateTime'>
+  readonly context: Prisma.FieldRef<"GlobalSearchDocument", 'String'>
+  readonly meta: Prisma.FieldRef<"GlobalSearchDocument", 'String[]'>
   readonly sourceFingerprint: Prisma.FieldRef<"GlobalSearchDocument", 'String'>
   readonly updatedAt: Prisma.FieldRef<"GlobalSearchDocument", 'DateTime'>
 }

@@ -10,7 +10,23 @@ type SearchRecord = {
   href: string;
   snippet: string | null;
   publishedAt: Date | null;
+  context: string | null;
+  meta: string[];
   total: number;
+};
+
+const PROJECTION_VERSION = "5";
+
+export type ProjectionDocumentInput = {
+  id: string;
+  sourceType: "article" | "course" | "lesson" | "page" | "map" | "questionnaire";
+  sourceId: string;
+  title: string;
+  body: string;
+  href: string;
+  publishedAt: Date | null;
+  context: string | null;
+  meta: string[];
 };
 
 export const searchRepository = {
@@ -29,7 +45,9 @@ export const searchRepository = {
         COALESCE((SELECT MAX("updatedAt") FROM "pages"), to_timestamp(0)),
         COALESCE((SELECT MAX("updatedAt") FROM "maps"), to_timestamp(0)),
         COALESCE((SELECT MAX("updatedAt") FROM "map_items"), to_timestamp(0)),
-         COALESCE((SELECT MAX("updatedAt") FROM "questionnaires"), to_timestamp(0))
+         COALESCE((SELECT MAX("updatedAt") FROM "questionnaires"), to_timestamp(0)),
+         COALESCE((SELECT MAX("updatedAt") FROM "categories"), to_timestamp(0)),
+         COALESCE((SELECT MAX("updatedAt") FROM "authors"), to_timestamp(0))
         ) AS "updatedAt",
         (SELECT COUNT(*) FROM "issues") +
         (SELECT COUNT(*) FROM "articles") +
@@ -38,11 +56,13 @@ export const searchRepository = {
         (SELECT COUNT(*) FROM "pages") +
         (SELECT COUNT(*) FROM "maps") +
         (SELECT COUNT(*) FROM "map_items") +
-        (SELECT COUNT(*) FROM "questionnaires") AS "count"
+        (SELECT COUNT(*) FROM "questionnaires") +
+        (SELECT COUNT(*) FROM "categories") +
+        (SELECT COUNT(*) FROM "authors") AS "count"
       `,
     );
 
-    return `${record?.updatedAt?.toISOString() ?? ""}:${record?.count.toString() ?? "0"}`;
+    return `v${PROJECTION_VERSION}:${record?.updatedAt?.toISOString() ?? ""}:${record?.count.toString() ?? "0"}`;
   },
   async getProjectionFingerprint() {
     const document = await prisma.globalSearchDocument.findFirst({
@@ -52,10 +72,34 @@ export const searchRepository = {
 
     return document?.sourceFingerprint ?? null;
   },
-  async search(query: string, limit: number): Promise<SearchRecord[]> {
+  async replaceProjection(documents: ProjectionDocumentInput[], sourceFingerprint: string) {
+    return prisma.$transaction(
+      async (tx) => {
+        await tx.$executeRaw(
+          Prisma.sql`SELECT pg_advisory_xact_lock(hashtext('global_search_projection'))`,
+        );
+
+        const current = await tx.globalSearchDocument.findFirst({
+          select: { sourceFingerprint: true },
+          orderBy: { updatedAt: "desc" },
+        });
+        if (current?.sourceFingerprint === sourceFingerprint) {
+          return false;
+        }
+
+        await tx.globalSearchDocument.deleteMany();
+        await tx.globalSearchDocument.createMany({
+          data: documents.map((document) => ({ ...document, sourceFingerprint })),
+        });
+        return true;
+      },
+      { maxWait: 30_000, timeout: 60_000 },
+    );
+  },
+  async search(tsQuery: string, limit: number): Promise<SearchRecord[]> {
     return prisma.$queryRaw<SearchRecord[]>(Prisma.sql`
       WITH search_query AS (
-        SELECT websearch_to_tsquery('italian', ${query}) AS value
+        SELECT to_tsquery('italian', ${tsQuery}) AS value
       )
       SELECT
         document."id",
@@ -63,16 +107,10 @@ export const searchRepository = {
         document."title",
         document."href",
         COUNT(*) OVER()::int AS "total",
-        NULLIF(
-          ts_headline(
-            'italian',
-            document."body",
-            search_query.value,
-            'StartSel=<mark>, StopSel=</mark>, MaxWords=24, MinWords=12, MaxFragments=2'
-          ),
-          ''
-        ) AS "snippet",
-        document."publishedAt"
+        left(document."body", 1000) AS "snippet",
+        document."publishedAt",
+        document."context",
+        document."meta"
       FROM "global_search_documents" AS document
       CROSS JOIN search_query
       WHERE document."searchVector" @@ search_query.value
@@ -90,8 +128,10 @@ export const searchRepository = {
         document."sourceType",
         document."title",
         document."href",
-        NULL::text AS "snippet",
+        left(document."body", 1000) AS "snippet",
         document."publishedAt",
+        document."context",
+        document."meta",
         COUNT(*) OVER()::int AS "total"
       FROM "global_search_documents" AS document
       INNER JOIN "article_popularities" AS popularity
@@ -116,8 +156,10 @@ export const searchRepository = {
         document."sourceType",
         document."title",
         document."href",
-        NULL::text AS "snippet",
+        left(document."body", 1000) AS "snippet",
         document."publishedAt",
+        document."context",
+        document."meta",
         COUNT(*) OVER()::int AS "total"
       FROM "global_search_documents" AS document
       INNER JOIN "articles" AS article

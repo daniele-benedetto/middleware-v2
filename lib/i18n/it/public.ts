@@ -81,11 +81,20 @@ export const publicIt = {
         ({
           article: "Articolo",
           course: "Contro-formazione",
-          lesson: "Contro-formazione",
+          lesson: "Incontro",
           map: "Mappatura",
           page: "Pagina",
           questionnaire: "Raccolta dati",
         })[type],
+      searchContext: {
+        issue: (positionFromOldest: number) =>
+          `Numero ${String(positionFromOldest).padStart(2, "0")}`,
+        questionnaireResults: (positionFromOldest: number) =>
+          `Risultati nel numero ${String(positionFromOldest).padStart(2, "0")}`,
+        course: (courseTitle: string) => `Contro-formazione: ${courseTitle}`,
+        lessonCount: lessonCountLabel,
+        openQuestionnaire: "Aperta, puoi partecipare",
+      },
       openingLabel: "Apertura",
       bodyLabel: "Materiali",
       ruptureLabel: "Interruzione",

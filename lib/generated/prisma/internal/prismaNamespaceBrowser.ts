@@ -355,6 +355,8 @@ export const GlobalSearchDocumentScalarFieldEnum = {
   body: 'body',
   href: 'href',
   publishedAt: 'publishedAt',
+  context: 'context',
+  meta: 'meta',
   sourceFingerprint: 'sourceFingerprint',
   updatedAt: 'updatedAt'
 } as const
