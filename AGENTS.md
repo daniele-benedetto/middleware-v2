@@ -3,7 +3,7 @@
 ## Baseline
 
 - Single-package Next.js app (no monorepo packages despite `pnpm-workspace.yaml`).
-- Framework/runtime versions are pinned and modern: `next@16.2.4`, `react@19.2.4`.
+- Framework/runtime versions are pinned and modern: `next@16.4.6`, `react@19.2.7`.
 - App Router only; main entrypoints are `app/layout.tsx` and `app/page.tsx`.
 
 ## Commands (root)
