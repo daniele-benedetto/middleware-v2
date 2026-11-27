@@ -30,6 +30,7 @@
 - Keep project docs lean. The active docs set is:
   - `docs/architecture.md` for architecture, runtime invariants, auth, media flow, and data-fetching overview.
   - `docs/cms-ui.md` for CMS visual system and component governance.
+  - `docs/production-ops.md` for the production runbook (VPS, deploy, backup, disaster recovery).
 - `README.md` remains the operational setup and workflow entrypoint.
 - Prefer updating these files instead of creating new audit/report/checklist docs unless explicitly requested.
 

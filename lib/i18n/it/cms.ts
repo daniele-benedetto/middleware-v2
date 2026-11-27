@@ -953,9 +953,6 @@ export const cmsIt = {
       inactive: "Non attiva",
       reorderUpdated: "Ordine uscite aggiornato con successo.",
       selectItem: (title: string) => `Seleziona ${title}`,
-      articlesPanelTitle: "Articoli",
-      articlesPanelEmpty: "Nessun articolo in questa uscita.",
-      articlesPanelReorderAria: (title: string) => `Riordina ${title}`,
     },
     courses: {
       subtitle: "Gestisci i percorsi di contro-formazione e il loro ordine pubblico.",

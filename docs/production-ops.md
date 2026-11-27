@@ -15,7 +15,6 @@ Runbook operativo per lavorare sulla VPS production. Non inserire segreti in que
 - Prima di deploy o migrazioni, creare un dump DB in `/opt/middleware/backups`.
 - Non usare comandi distruttivi se non richiesti esplicitamente e dopo backup verificato.
 - Se durante un intervento emerge uno stato inatteso, fermarsi e fotografare stato/log prima di correggere.
-- Tenere `docs/migration.md` come checklist delle cose da fare; tenere questo file come procedura operativa.
 
 ## Accesso SSH
 
@@ -568,7 +567,7 @@ Healthcheck automatico locale:
 - Fallisce se un riavvio richiesto dagli aggiornamenti e in sospeso da piu di 2 giorni: con il
   riavvio automatico notturno significa che il riavvio non e avvenuto.
 - Non controlla backup off-host: oggi non esiste una copia automatica fuori dalla VPS (ultimo
-  backup off-host: `2026-08-05`, vedi `docs/migration.md`). Da configurare.
+  backup off-host: `2026-08-05`, copie workstation in `~/middleware-migration-backups`). Da configurare.
 - I log restano locali in `journalctl`; senza servizi esterni non c'e alert se la VPS e down.
 - Il timer invia un heartbeat esterno solo dopo tutti i controlli; 30 minuti senza
   heartbeat devono generare alert.
@@ -614,6 +613,28 @@ Note:
 - Il seed usa upsert per issue/articoli e salta bootstrap admin se esiste gia un admin.
 - Il seed non e un backup e non recupera contenuti editoriali reali cancellati.
 - Se Postgres logga `initdb`, il volume montato era vuoto: controllare subito `docker volume inspect middleware_postgres-data` e cercare snapshot/dump precedenti.
+
+## Disaster Recovery
+
+In caso di perdita della CX33:
+
+1. Mettere il sito in maintenance via DNS o servizio sostitutivo.
+2. Creare e verificare ogni dump CX33 ancora accessibile.
+3. Creare una VPS dallo snapshot protetto CX33 `416531198`.
+4. Assegnare Primary IP protette e applicare firewall/hardening correnti.
+5. Ripristinare i dump app e Umami piu recenti dal backup disponibile.
+6. Configurare l'endpoint S3 del bucket media primario.
+7. Validare internamente app, Umami, DB, Redis, backup e heartbeat.
+8. Aggiornare i record DNS root e `stats` (`ROOT_A_RECORD_ID=rec_4794e9f34340c664b7a94273`,
+   `STATS_A_RECORD_ID=rec_df300537cb3e902c6abff23c`, team Vercel
+   `team_1nBYQGF51ql1riyCnEmrLPM5`) con `PATCH /v1/domains/records/{recordId}`.
+9. Verificare DNS autoritativo, `1.1.1.1`, `8.8.8.8`, assenza `AAAA` e attendere un TTL completo.
+10. Eseguire smoke pubblico e autenticato prima di riaprire le scritture.
+
+Credenziali e recovery key restano fuori dal repository:
+`~/.config/middleware/migration-credentials.env` e `~/.config/middleware/age-recovery-key.txt`.
+Il capability URL di Healthchecks.io (monitor heartbeat primario) e salvato solo in
+`/opt/middleware/secrets/monitoring.env` sulla CX33.
 
 ## Smoke Test
 
@@ -661,9 +682,8 @@ docker compose --env-file .env.production -f compose.production.yml exec -T app 
 - Record A root e `stats`: `62.238.105.217`, TTL `60`.
 - `www` resta alias di `middleware.media`; nessun record `AAAA` production.
 - PTR IPv4: `62.238.105.217 -> middleware.media`.
-- La CX43 precedente e stata eliminata il `2026-08-05`; il recovery host resta
-  possibile dallo snapshot protetto `416553849` e dai dump off-host descritti in
-  `docs/migration.md`.
+- Production migrata dalla CX43 NBG1 alla CX33 HEL1 il `2026-08-05`; la CX43 e stata
+  eliminata. Per il recovery vedi [Disaster Recovery](#disaster-recovery).
 
 ## Troubleshooting Rapido
 

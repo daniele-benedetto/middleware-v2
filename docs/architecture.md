@@ -2,7 +2,7 @@
 
 This document is the short, current overview of how `middleware-v2` is wired.
 
-Use it as the entrypoint before diving into the deeper audit, UI, or checklist docs.
+Use it as the entrypoint before diving into `docs/cms-ui.md` (UI) or `docs/production-ops.md` (operations).
 
 ## System Snapshot
 
@@ -74,17 +74,17 @@ CMS page/request
 - List hooks keep previous data visible during filter, sort, and pagination changes.
 - Post-mutation cache invalidation is centralized in `lib/cms/trpc/invalidation.ts`.
 - The public home uses `lib/public/server/home.ts` as its single data loader for page rendering and metadata.
-- Public database loaders are currently uncached at `"use cache"` level because production Docker prerender hits `USE_CACHE_TIMEOUT` when filling DB-backed cache scopes. Reintroduce Cache Components caching only after validating with the VPS Docker build, not just local `pnpm build`.
-- When reintroducing cache, keep `"use cache"` close to deterministic async loaders with serializable arguments and return values. Do not add it at public layout/route file level unless the whole segment is intentionally cached and the production Docker build proves it does not create `USE_CACHE_TIMEOUT`.
-- Public layout slots such as navigation, consent, and analytics remain uncached and wrapped in `<Suspense>` because production Docker prerender currently times out when filling shared layout-slot caches from database reads.
-- Public cache tags are already defined per resource and invalidated from CMS mutation flows through `lib/public/server/revalidation.ts`; they become effective again when DB-backed `"use cache"` scopes are safely reintroduced.
+- Public read loaders in `lib/public/server/*` are cached with `"use cache"` + `cacheLife("hours")` + a per-resource `cacheTag` (home, issue, issues archive, article, articles archive, course, static page, navigation, questionnaire, listen pages, sitemap). Keep `"use cache"` on deterministic async loaders with serializable arguments and return values, never at layout/route file level. Validate cache changes with the VPS Docker build, not only local `pnpm build`: DB-backed cache scopes that do not settle during prerender fail with `USE_CACHE_TIMEOUT`.
+- `getLegalConsentVersion` is request-scoped (`React.cache`), not `"use cache"`.
+- Public layout slots such as navigation, consent, and analytics are wrapped in `<Suspense>`.
+- CMS mutation flows invalidate the affected public cache tags through `lib/public/server/revalidation.ts`.
 - The public home loader calls the public issue service directly, not the request-bound tRPC caller, so it is safe to reuse across requests.
 - The public home loader uses `publicIssuesService.listPublishedItems()` for archive cards, avoiding the `countPublished()` query used by paginated API responses.
 - Public issue pages use `lib/public/server/issue-page.ts`.
 - Public static CMS pages use `lib/public/server/page.ts`; only slugs listed in `PUBLIC_STATIC_PAGE_SLUGS` are routed publicly at top level.
 - The flat article archive uses `lib/public/server/articles-archive.ts` (`PUBLIC_ARTICLES_ARCHIVE_CACHE_TAG`, `public-articles-archive`), consumed by both `/articoli` and `/feed.xml`.
 - Sitemap data access lives in `lib/public/server/sitemap.ts` (`PUBLIC_SITEMAP_CACHE_TAG`, `public-sitemap`); `app/sitemap.ts` only maps entries to URLs and calls `connection()` so the sitemap is never frozen at build time.
-- `/sitemap.xml` and `/feed.xml` are intentionally dynamic (`ƒ`) for the same `USE_CACHE_TIMEOUT` reason as the other DB-backed public loaders; `/feed.xml` relies on HTTP `s-maxage` instead.
+- `/sitemap.xml` and `/feed.xml` are dynamic (`ƒ`) routes on top of cached loaders; `/feed.xml` also sets HTTP `s-maxage`.
 - Missing public content returns a real `404`: public pages stream behind `app/(public)/loading.tsx`, so a `notFound()` in the page would ship as `200` + `noindex` (soft 404). `proxy.ts` resolves the pathname with `lib/public/routes/public-content-route.ts` and checks existence with `lib/public/server/content-availability.ts` (id-only queries with the same visibility rules as the page loaders) before rendering; missing content is rewritten to `app/(public)/non-trovato`, which calls `notFound()` during prerender and is therefore served as a real `404` with the public layout (a `status` on `NextResponse.next()` is not enough: production serves the PPR shell with `200`). Only GET/HEAD document requests are checked (RSC/prefetch requests and server actions pass through) and any lookup error fails open. A new top-level static route must be added to `RESERVED_TOP_LEVEL_SEGMENTS`; a unit test enforces it.
 - SEO metadata builders live in `lib/seo/metadata.ts`: descriptions go through `toMetaDescription` (160 chars, word boundary) while pages keep the full text; the homepage uses a stable brand title (`buildHomeMetadata`) instead of the current issue title; listen pages are `noindex, follow` and self-canonical. `twitter:creator` and `Organization.sameAs` come from the optional `NEXT_PUBLIC_TWITTER_HANDLE` and `NEXT_PUBLIC_SOCIAL_PROFILES` build-time variables.
 - Route segment config exports such as `runtime`, `dynamic`, `revalidate`, `fetchCache`, and `dynamicParams` must not be added while `cacheComponents: true` is enabled.
@@ -211,12 +211,9 @@ export function EditorialSection({ title, description }: EditorialSectionProps) 
 
 Current role matrix:
 
-- `users.*`: `ADMIN`
-- `auditLogs.*`: `ADMIN`
-- `issues.*`: `ADMIN`, `EDITOR`
-- `categories.*`: `ADMIN`, `EDITOR`
-- `articles.*`: `ADMIN`, `EDITOR`
-- `media.*`: `ADMIN`, `EDITOR`
+- `users.*`, `auditLogs.*`: `ADMIN`
+- `questionnaires.*`: `ADMIN`, `EDITOR`; responses, CSV export and results: `ADMIN`
+- `issues.*`, `articles.*`, `categories.*`, `authors.*`, `courses.*`, `lessons.*`, `maps.*`, `pages.*`, `navigation.*`, `media.*`: `ADMIN`, `EDITOR`
 
 ## Media Flow
 
@@ -356,6 +353,7 @@ Stessa issue, stessi blocchi e stessi contenuti producono lo stesso documento. N
 
 ## Related Docs
 
-- `README.md`: operational setup and API baseline.
+- `README.md`: local setup, commands, and workflow.
 - `AGENTS.md`: repo-specific engineering rules.
 - `docs/cms-ui.md`: CMS visual system and component governance.
+- `docs/production-ops.md`: production runbook, deploy, backup, and disaster recovery.
